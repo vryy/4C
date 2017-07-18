@@ -14,7 +14,7 @@
 /*-----------------------------------------------------------*/
 
 #include "str_impl_generic.H"
-#include "str_timint_base.H"
+#include "str_timint_implicit.H"
 #include "str_model_evaluator.H"
 #include "str_model_evaluator_data.H"
 
@@ -22,6 +22,8 @@
 #include "../solver_nonlin_nox/nox_nln_aux.H"
 #include "../solver_nonlin_nox/nox_nln_solver_linesearchbased.H"
 #include "../solver_nonlin_nox/nox_nln_group_prepostoperator.H"
+
+#include "../drt_io/io_pstream.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -120,6 +122,21 @@ void STR::IMPLICIT::Generic::ResetEvalParams()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::IMPLICIT::Generic::PrintJacobianInMatlabFormat(
+    const NOX::NLN::Group& curr_grp ) const
+{
+  // do nothing during the predictor step
+  if ( EvalData().IsPredictor() )
+    return;
+
+  const STR::TIMINT::Implicit& timint_impl =
+      dynamic_cast<const STR::TIMINT::Implicit&>( TimInt() );
+
+  timint_impl.PrintJacobianInMatlabFormat( curr_grp );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void NOX::NLN::GROUP::PrePostOp::IMPLICIT::Generic::runPreComputeX(
     const NOX::NLN::Group& input_grp,
     const Epetra_Vector& dir,
@@ -134,6 +151,8 @@ void NOX::NLN::GROUP::PrePostOp::IMPLICIT::Generic::runPreComputeX(
   const bool isdefaultstep = (step == default_step_);
   impl_.ModelEval().RunPreComputeX( xold, dir_mutable, step, curr_grp,
       isdefaultstep );
+
+  impl_.PrintJacobianInMatlabFormat( curr_grp );
 }
 
 /*----------------------------------------------------------------------------*

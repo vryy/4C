@@ -78,10 +78,10 @@ namespace LineSearch {
     //!@}
 
     //! @name Mutator functionality
-    //@{
+    //! @{
     //! set current step length
     virtual void SetStepLength(double& step);
-    //!@}
+    //! @}
 
   protected:
     //! print inner status test results

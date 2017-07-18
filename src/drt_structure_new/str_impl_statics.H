@@ -53,7 +53,8 @@ namespace IMPLICIT {
         LINALG::SparseOperator& jac);
 
     //! (derived)
-    virtual bool AssembleForce( Epetra_Vector& f ) const;
+    virtual bool AssembleForce( Epetra_Vector& f,
+        const std::vector<INPAR::STR::ModelType>* without_these_models = NULL ) const;
 
     //! (derived)
     virtual void WriteRestart(IO::DiscretizationWriter& iowriter,

@@ -65,6 +65,17 @@ namespace CONSTRAINT {
 
     // @name "Get" functions
     //@{
+    /// derived
+    virtual double GetModelValue(
+        const enum NOX::NLN::MeritFunction::MeritFctName merit_func_type ) const;
+
+    /// derived
+    virtual double GetLinearizedModelTerms(
+        const NOX::Abstract::Vector& dir,
+        const enum NOX::NLN::MeritFunction::MeritFctName mf_type,
+        const enum NOX::NLN::MeritFunction::LinOrder linorder,
+        const enum NOX::NLN::MeritFunction::LinType lintype ) const;
+
     //! Returns the right-hand-side norms of the primary and constraint quantities
     virtual Teuchos::RCP<const std::vector<double> > GetRHSNorms(
         const std::vector<NOX::Abstract::Vector::NormType>& type,

@@ -91,10 +91,11 @@ void NOX::NLN::LineSearch::Backtrack::reset()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::LineSearch::Backtrack::compute
-    (NOX::Abstract::Group& grp, double& step,
-     const NOX::Abstract::Vector& dir,
-     const NOX::Solver::Generic& s)
+bool NOX::NLN::LineSearch::Backtrack::compute(
+    NOX::Abstract::Group& grp,
+    double& step,
+    const NOX::Abstract::Vector& dir,
+    const NOX::Solver::Generic& s)
 {
   DisableInternalExceptionChecks();
   // -------------------------------------------------
@@ -125,7 +126,7 @@ bool NOX::NLN::LineSearch::Backtrack::compute
   /* If the solution passed into the line search method fulfills the inner
    * stopping criterion already during the setup process, the line search
    * method will not attempt to find a capable step length. */
-  status_ = innerTestsPtr_->CheckStatus(*this,oldGrp,checkType_);
+  status_ = innerTestsPtr_->CheckStatus(*this,s,oldGrp,checkType_);
 
   // increase iteration counter after initialization
   ++lsIters_;
@@ -191,7 +192,7 @@ bool NOX::NLN::LineSearch::Backtrack::compute
 
   if (not failed)
   {
-    status_ = innerTestsPtr_->CheckStatus(*this,grp,checkType_);
+    status_ = innerTestsPtr_->CheckStatus(*this,s,grp,checkType_);
     PrintUpdate();
   }
   // -------------------------------------------------
@@ -214,7 +215,7 @@ bool NOX::NLN::LineSearch::Backtrack::compute
       rtype = grp.computeF();
       if (rtype != NOX::Abstract::Group::Ok)
         throwError("compute","Unable to compute F!");
-      status_ = innerTestsPtr_->CheckStatus(*this,grp,checkType_);
+      status_ = innerTestsPtr_->CheckStatus(*this,s,grp,checkType_);
       PrintUpdate();
     }
     // catch error of the computeF method

@@ -24,15 +24,21 @@
 
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io.H"
+#include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
 
 #include <NOX_Abstract_Group.H>
+
+#include "../solver_nonlin_nox/nox_nln_linearsystem.H"
+#include "../solver_nonlin_nox/nox_nln_group.H"
+
+#include "../linalg/linalg_blocksparsematrix.H"
+#include "../linalg/linalg_utils.H"
 
 // factories
 #include "str_predict_factory.H"
 #include "str_nln_solver_factory.H"
 
-#include "../solver_nonlin_nox/nox_nln_group.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -438,3 +444,69 @@ void STR::TIMINT::Implicit::CheckForTimeStepIncrease(INPAR::STR::ConvergenceStat
     return;
   }
 } //CheckForTimeStepIncrease()
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Implicit::PrintJacobianInMatlabFormat(
+    const NOX::NLN::Group& curr_grp ) const
+{
+  typedef LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> LinalgBlockSparseMatrix;
+
+  if ( not GetDataIO().IsWriteJacobianToMatlab() )
+    return;
+
+  // create file name
+  std::stringstream filebase;
+
+  filebase << "str_jacobian" << "_step-" << GetDataGlobalState().GetStepNp()
+      << "_nlniter-" << nlnsolver_ptr_->GetNumNlnIterations();
+
+  std::stringstream filename;
+  filename << GetDataIO().GetOutputPtr()->Output()->FileName() << "_"
+      << filebase.str() << ".mtl";
+
+  if ( GetDataGlobalState().GetMyRank() == 0 )
+    std::cout << "Writing structural jacobian to \"" << filename.str() << "\"\n";
+
+  Teuchos::RCP<const NOX::Epetra::LinearSystem> linear_system =
+      curr_grp.getLinearSystem();
+
+  Teuchos::RCP<const NOX::NLN::LinearSystem> nln_lin_system =
+      Teuchos::rcp_dynamic_cast<const NOX::NLN::LinearSystem>( linear_system, true );
+
+  const enum NOX::NLN::LinSystem::OperatorType jac_type =
+      nln_lin_system->getJacobianOperatorType();
+
+  Teuchos::RCP<const Epetra_Operator> jac_ptr =
+      nln_lin_system->getJacobianOperator();
+
+  switch ( jac_type )
+  {
+    case NOX::NLN::LinSystem::LinalgSparseMatrix:
+    {
+      Teuchos::RCP<const LINALG::SparseMatrix> sparse_matrix =
+          Teuchos::rcp_dynamic_cast<const LINALG::SparseMatrix>( jac_ptr, true );
+      LINALG::PrintMatrixInMatlabFormat( filename.str().c_str(),
+          *sparse_matrix->EpetraMatrix() );
+
+      break;
+    }
+    case NOX::NLN::LinSystem::LinalgBlockSparseMatrix:
+    {
+      Teuchos::RCP<const LinalgBlockSparseMatrix> block_matrix =
+          Teuchos::rcp_dynamic_cast<const LinalgBlockSparseMatrix>( jac_ptr, true );
+      LINALG::PrintBlockMatrixInMatlabFormat( filename.str(), *block_matrix );
+
+      break;
+    }
+    default:
+    {
+      dserror( "Unsupported NOX::NLN::LinSystem::OperatorType: \"%s\"",
+          NOX::NLN::LinSystem::OperatorType2String( jac_type ).c_str() );
+      exit( EXIT_FAILURE );
+    }
+  }
+
+  // print sparsity pattern to file
+//  LINALG::PrintSparsityToPostscript( *(SystemMatrix()->EpetraMatrix()) );
+}

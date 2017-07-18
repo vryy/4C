@@ -97,10 +97,11 @@ bool STR::IMPLICIT::Statics::ApplyForceStiff(const Epetra_Vector& x,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::Statics::AssembleForce( Epetra_Vector& f ) const
+bool STR::IMPLICIT::Statics::AssembleForce( Epetra_Vector& f,
+    const std::vector<INPAR::STR::ModelType>* without_these_models ) const
 {
   CheckInitSetup();
-  return ModelEval().AssembleForce( 1.0, f );
+  return ModelEval().AssembleForce( 1.0, f, without_these_models );
 }
 
 /*----------------------------------------------------------------------------*

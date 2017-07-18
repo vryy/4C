@@ -394,10 +394,29 @@ Teuchos::RCP<std::vector<double> > NOX::NLN::Group::GetPreviousSolutionNorms(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::Group::GetObjectiveModelValue(const std::string& name) const
+double NOX::NLN::Group::GetModelValue(
+    const enum MeritFunction::MeritFctName merit_func_type ) const
 {
-  return GetNlnReqInterfacePtr()->GetObjectiveModelValue(xVector.getEpetraVector(),
-      RHSVector.getEpetraVector(),name);
+  return GetNlnReqInterfacePtr()->GetModelValue(
+      xVector.getEpetraVector(),
+      RHSVector.getEpetraVector(),
+      merit_func_type);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double NOX::NLN::Group::GetLinearizedModelTerms(
+    const NOX::Abstract::Vector& dir,
+    const enum NOX::NLN::MeritFunction::MeritFctName mf_type,
+    const enum NOX::NLN::MeritFunction::LinOrder linorder,
+    const enum NOX::NLN::MeritFunction::LinType lintype ) const
+{
+  const NOX::Epetra::Vector& dir_nox_epetra =
+      dynamic_cast<const NOX::Epetra::Vector&>( dir );
+  const Epetra_Vector& dir_epetra = dir_nox_epetra.getEpetraVector();
+
+  return GetNlnReqInterfacePtr()->GetLinearizedModelTerms(
+      this, dir_epetra, mf_type, linorder, lintype );
 }
 
 /*----------------------------------------------------------------------*

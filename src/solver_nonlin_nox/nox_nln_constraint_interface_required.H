@@ -63,63 +63,23 @@ namespace Interface {
      *  which we try to minimize and the subjected constraint equations.
      *  Typical examples are the Lagrangian function value and the augmented Lagrangian
      *  function value. */
-    virtual double GetConstrObjectiveModelValue( NOX::NLN::MeritFunction::MeritFctName name ) const
+    virtual double GetModelValue( NOX::NLN::MeritFunction::MeritFctName name ) const
     {
-      dserror("GetConstrObjectiveModelValue() is not implemented!");
+      dserror("GetObjectiveModelValue() is not implemented!");
       return -1.0;
     };
 
     //! Get the desired linearization terms of the objective model
-    const LINALG::SerialDenseVector & GetLinearizedObjectiveModelTerms(
-          NOX::NLN::MeritFunction::MeritFctName name ) const
-      {
-        return GetLinearizedObjectiveModelTerms(
-            name, NOX::NLN::MeritFunction::linorder_first,
-            NOX::NLN::MeritFunction::lin_wrt_all_dofs );
-      };
-    const LINALG::SerialDenseVector & GetLinearizedObjectiveModelTerms(
-        NOX::NLN::MeritFunction::MeritFctName name,
-        NOX::NLN::MeritFunction::LinOrder order ) const
-    {
-      return GetLinearizedObjectiveModelTerms( name, order,
-          NOX::NLN::MeritFunction::lin_wrt_all_dofs );
-    };
-    virtual const LINALG::SerialDenseVector & GetLinearizedObjectiveModelTerms(
-        NOX::NLN::MeritFunction::MeritFctName name,
-        NOX::NLN::MeritFunction::LinOrder order,
-        NOX::NLN::MeritFunction::LinType type ) const
+    virtual double GetLinearizedModelTerms(
+        const Epetra_Vector& dir,
+        const enum NOX::NLN::MeritFunction::MeritFctName name,
+        const enum NOX::NLN::MeritFunction::LinOrder order,
+        const enum NOX::NLN::MeritFunction::LinType type ) const
     {
       dserror("GetLinearizedObjectiveModelTerms() is not implemented!");
       exit( EXIT_FAILURE );
     };
 
-    //! Get value of the infeasibility model
-    virtual double GetInfeasibilityModelValue() const
-    {
-      dserror("GetInfeasibilityModelValue() is not implemented!");
-      return -1.0;
-    };
-
-    //! Get the desired linearization terms of the infeasibility model
-    const LINALG::SerialDenseVector & GetLinearizedInfeasibilityModelTerms() const
-    {
-      return GetLinearizedInfeasibilityModelTerms(
-          NOX::NLN::MeritFunction::linorder_first,
-          NOX::NLN::MeritFunction::lin_wrt_all_dofs );
-    };
-    const LINALG::SerialDenseVector & GetLinearizedInfeasibilityModelTerms(
-          NOX::NLN::MeritFunction::LinOrder order ) const
-    {
-      return GetLinearizedInfeasibilityModelTerms(
-          order,NOX::NLN::MeritFunction::lin_wrt_all_dofs );
-    };
-    virtual const LINALG::SerialDenseVector & GetLinearizedInfeasibilityModelTerms(
-        NOX::NLN::MeritFunction::LinOrder order,
-        NOX::NLN::MeritFunction::LinType  type ) const
-    {
-      dserror("GetLinearizedInfeasibilityModelTerms() is not implemented!");
-      exit( EXIT_FAILURE );
-    };
     //! @}
 
     //! @name Status test support functions

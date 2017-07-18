@@ -111,6 +111,20 @@ namespace MODELEVALUATOR {
 
     /** \brief Assembly of all force contributions
      *
+     *  \param timefac_np           (in) : time integration factor for the current contribution
+     *                                     \f$t_{n+1}\f$
+     *  \param f                   (out) : force vector which is going to be assembled.
+     *  \param without_these_models (in) : Assemble all models, except the models in this
+     *                                     vector (optional)
+     *
+     *  \author hiermeier \date 03/17 */
+    bool AssembleForce(
+        const double timefac_np,
+        Epetra_Vector& f,
+        const std::vector<INPAR::STR::ModelType>* without_these_models ) const;
+
+    /** \brief Assembly of all force contributions
+     *
      *  \param timefac_np (in) : time integration factor for the current contribution \f$t_{n+1}\f$
      *  \param f         (out) : force vector which is going to be assembled.
      *

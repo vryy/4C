@@ -61,6 +61,13 @@ namespace Solver {
     //! Returns the stopping test.
     virtual const NOX::StatusTest::Generic& GetOuterStatusTest() const;
 
+    //! \brief Returns a pointer to one specific stopping test %T.
+    /** If there is no outer test of type T, a NULL pointer will be returned.
+     *
+     *  \author hiermeier \date 04/17 */
+    template<class T>
+    NOX::StatusTest::Generic* GetOuterStatusTest() const;
+
     //! Returns the NOX::Utils object
     const NOX::Utils& GetUtils() const;
 

@@ -66,7 +66,8 @@ namespace IMPLICIT {
         LINALG::SparseOperator& jac) = 0;
 
     //! derived
-    virtual bool AssembleForce( Epetra_Vector& f ) const = 0;
+    virtual bool AssembleForce( Epetra_Vector& f,
+        const std::vector<INPAR::STR::ModelType>* without_these_models = NULL ) const = 0;
 
     //! derived
     virtual void WriteRestart(IO::DiscretizationWriter& iowriter,
@@ -147,6 +148,12 @@ namespace IMPLICIT {
 
     //! Get the predictor state flag
     const bool& IsPredictorState() const;
+
+    /** \brief Print jacbian into text file for later use in MATLAB
+     *
+     *  \author hiermeier \date 06/17 */
+    void PrintJacobianInMatlabFormat(
+        const NOX::NLN::Group& curr_grp ) const;
 
   protected:
     //! reset the time step dependent parameters for the element evaluation [derived]
@@ -266,7 +273,7 @@ namespace IMPLICIT {
      *  a possible LineSearch or other globalization method has been used.
      *
      *  \author hiermeier \date 03/17 */
-    virtual void runPostIterate(const NOX::Solver::Generic& solver);
+    virtual void runPostIterate( const NOX::Solver::Generic& solver );
 
   private:
     //! reference to the STR::IMPLICIT::Generic object (read-only)

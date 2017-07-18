@@ -76,7 +76,7 @@ namespace INPAR
 
     /// Type of the used models/conditions
     /// necessary for the model evaluator
-    enum ModelType
+    enum ModelType : int
     {
       model_vague                 = -1, ///< undefined model type
       model_structure             =  0, ///< evaluate the structural model

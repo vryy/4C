@@ -41,7 +41,7 @@ XCONTACT::Strategy::Strategy(
     const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap,
     const Teuchos::ParameterList& params,
-    std::vector<Teuchos::RCP<CONTACT::CoInterface> >& interfaces,
+    const std::vector<Teuchos::RCP<CONTACT::CoInterface> >& interfaces,
     const int& dim,
     const Teuchos::RCP<const Epetra_Comm>& comm,
     const int& maxdof)

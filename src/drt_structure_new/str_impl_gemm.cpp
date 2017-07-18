@@ -57,7 +57,8 @@ bool STR::IMPLICIT::Gemm::ApplyForce(const Epetra_Vector& x,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::Gemm::AssembleForce( Epetra_Vector& f ) const
+bool STR::IMPLICIT::Gemm::AssembleForce( Epetra_Vector& f,
+    const std::vector<INPAR::STR::ModelType>* without_these_models ) const
 {
   CheckInitSetup();
   return false;

@@ -179,7 +179,14 @@ namespace GROUP {
     //! @}
 
     //! compute and return some energy representative
-    virtual double GetObjectiveModelValue(const std::string& name) const;
+    virtual double GetModelValue(
+        const enum MeritFunction::MeritFctName merit_func_type ) const;
+
+    virtual double GetLinearizedModelTerms(
+        const NOX::Abstract::Vector& dir,
+        enum NOX::NLN::MeritFunction::MeritFctName mf_type,
+        enum NOX::NLN::MeritFunction::LinOrder linorder,
+        enum NOX::NLN::MeritFunction::LinType lintype ) const;
 
     const Epetra_BlockMap& getDofMap() const;
 

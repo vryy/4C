@@ -99,18 +99,18 @@ NOX::NLN::INNER::StatusTest::Factory::BuildArmijoTest(
   // to use the (strong) Wolfe conditions,
   // or the Goldstein rule.
   // ------------------------------------------
-  double c_1 = p.get("c_1",1.0e-4);
+  const double c_1 = p.get<double>("c_1",1.0e-4);
 
   // ------------------------------------------
   // Switch monotone behavior on and off
   // ------------------------------------------
-  bool isMonotone = p.get("Monotone",true);
+  const bool isMonotone = p.get<bool>("Monotone",true);
 
   // ------------------------------------------
   // Get the maximal length of the history
   // vector for a non-monotone Armijo rule
   // ------------------------------------------
-  std::size_t maxHistSize = static_cast<std::size_t>(p.get<int>("Maximal History Length",1));
+  std::size_t maxHistSize = static_cast<unsigned>(p.get<int>("Maximal History Length",1));
 
   Teuchos::RCP<NOX::NLN::INNER::StatusTest::Armijo> status_test = Teuchos::null;
   if (isMonotone)
@@ -130,8 +130,48 @@ NOX::NLN::INNER::StatusTest::Factory::BuildFilterTest(
     Teuchos::ParameterList& p,
     const NOX::Utils& u) const
 {
+  std::vector<Teuchos::RCP<NOX::MeritFunction::Generic> > infeasibility_vec;
+
+  unsigned count = 0;
+  std::ostringstream infeasibility_count;
+
+  infeasibility_count << "Infeasibility Function " << count;
+  while ( p.isSublist( infeasibility_count.str() ) )
+  {
+    const Teuchos::ParameterList& p_infeasibility = p.sublist( infeasibility_count.str() );
+
+    // build infeasibility function object
+    infeasibility_vec.push_back(
+        Teuchos::rcp( new NOX::NLN::MeritFunction::Infeasibility( p_infeasibility, u ) ) );
+
+    /// clear and increase infeasibility function count string
+    infeasibility_count.str("");
+    infeasibility_count << "Infeasibility Function " << ++count;
+  }
+
+  const double weight_objective_func = p.get<double>( "Objective Function Weight" );
+  const double weight_infeasibility_func = p.get<double>( "Infeasibility Function Weight" );
+
+  const double sf = p.get<double>( "Ftype Condition Exponent s_f" );
+  const double st = p.get<double>( "Ftype Condition Exponent s_t" );
+
+  /* Safety factor gamma_alpha to compensate for the neglected higher order
+   * terms in the chosen model equation during the minimal step length
+   * approximation. */
+  const double gamma_alpha = p.get<double>( "Gamma Alpha" );
+
+  Teuchos::RCP<Generic> armijo = BuildArmijoTest( p.sublist("Filter-Armijo"), u );
+
   Teuchos::RCP<NOX::NLN::INNER::StatusTest::Filter> status_test_ptr =
-      Teuchos::rcp( new NOX::NLN::INNER::StatusTest::Filter() );
+      Teuchos::rcp( new NOX::NLN::INNER::StatusTest::Filter(
+          armijo,
+          infeasibility_vec,
+          weight_objective_func,
+          weight_infeasibility_func,
+          sf,
+          st,
+          gamma_alpha,
+          u ) );
 
   return status_test_ptr;
 }

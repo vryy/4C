@@ -85,9 +85,8 @@ Teuchos::RCP<const NOX::NLN::CONSTRAINT::Interface::Required>
 {
   Teuchos::RCP<const NOX::NLN::CONSTRAINT::Interface::Required> constrptr =
       Teuchos::null;
-  std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::
-           Required> >::const_iterator it;
-  it = userConstraintInterfaces_.find(soltype);
+
+  ReqInterfaceMap::const_iterator it = userConstraintInterfaces_.find(soltype);
   if (errflag and it == userConstraintInterfaces_.end())
   {
     std::ostringstream msg;
@@ -100,6 +99,46 @@ Teuchos::RCP<const NOX::NLN::CONSTRAINT::Interface::Required>
     constrptr = it->second;
 
   return constrptr;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double NOX::NLN::CONSTRAINT::Group::GetModelValue(
+    const enum NOX::NLN::MeritFunction::MeritFctName mf_type) const
+{
+  double mrtFctVal = NOX::NLN::Group::GetModelValue( mf_type );
+
+  // constraint contributions
+  for ( ReqInterfaceMap::const_iterator constr_iter = userConstraintInterfaces_.begin();
+        constr_iter != userConstraintInterfaces_.end(); ++constr_iter )
+    mrtFctVal += constr_iter->second->GetModelValue( mf_type );
+
+  return mrtFctVal;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double NOX::NLN::CONSTRAINT::Group::GetLinearizedModelTerms(
+    const NOX::Abstract::Vector& dir,
+    const enum NOX::NLN::MeritFunction::MeritFctName mf_type,
+    const enum NOX::NLN::MeritFunction::LinOrder linorder,
+    const enum NOX::NLN::MeritFunction::LinType lintype ) const
+{
+  // contributions of the primary field
+  double linVal = NOX::NLN::Group::GetLinearizedModelTerms( dir,
+      mf_type, linorder, lintype );
+
+  const NOX::Epetra::Vector& dir_nox_epetra =
+      dynamic_cast<const NOX::Epetra::Vector&>( dir );
+  const Epetra_Vector& dir_epetra = dir_nox_epetra.getEpetraVector();
+
+  // constraint contributions
+  for ( ReqInterfaceMap::const_iterator constr_iter = userConstraintInterfaces_.begin();
+        constr_iter != userConstraintInterfaces_.end(); ++constr_iter )
+    linVal += constr_iter->second->GetLinearizedModelTerms( dir_epetra,
+        mf_type, linorder, lintype );
+
+  return linVal;
 }
 
 /*----------------------------------------------------------------------------*

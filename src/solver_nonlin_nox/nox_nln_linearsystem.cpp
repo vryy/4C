@@ -230,6 +230,28 @@ bool NOX::NLN::LinearSystem::applyJacobianTranspose(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void NOX::NLN::LinearSystem::SetLinearProblemForSolve(
+    Epetra_LinearProblem& linear_problem,
+    LINALG::SparseOperator& jac,
+    Epetra_Vector& lhs,
+    Epetra_Vector& rhs ) const
+{
+  linear_problem.SetOperator( jac.EpetraOperator().get() );
+  linear_problem.SetLHS( &lhs );
+  linear_problem.SetRHS( &rhs );
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void NOX::NLN::LinearSystem::CompleteSolutionAfterSolve(
+    const Epetra_LinearProblem& linProblem,
+    Epetra_Vector& lhs ) const
+{
+  /* nothing to do in the default case */
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 bool NOX::NLN::LinearSystem::applyJacobianInverse(
     Teuchos::ParameterList& linearSolverParams,
     const NOX::Epetra::Vector& input,
@@ -257,9 +279,9 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(
   /* Note: We switch from LINALG_objects to pure Epetra_objects.
    * This is necessary for the linear solver.
    *     LINALG::SparseMatrix ---> Epetra_CrsMatrix */
-  Epetra_LinearProblem linProblem(Jacobian().EpetraOperator().get(),
-      &(result.getEpetraVector()),
-      &(nonConstInput.getEpetraVector()));
+  Epetra_LinearProblem linProblem;
+  SetLinearProblemForSolve( linProblem, Jacobian(),
+      result.getEpetraVector(), nonConstInput.getEpetraVector() );
 
   // ************* Begin linear system scaling *****************
   if ( !Teuchos::is_null(scaling_) )
@@ -301,15 +323,10 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(
     scaling_->unscaleLinearSystem(linProblem);
   // ************* End linear system unscaling ***************
 
+  CompleteSolutionAfterSolve( linProblem, result.getEpetraVector() );
+
   double endTime = timer_.WallTime();
   timeApplyJacbianInverse_ += (endTime - startTime);
-
-//  std::cout << input.getEpetraVector() << std::endl;
-//  std::cout << result.getEpetraVector() << std::endl;
-//  LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>* blockmat =
-//      dynamic_cast<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>* >(jacPtr_.get());
-//  std::cout << blockmat->Matrix(0,0) << std::endl;
-//  std::cout << blockmat->Matrix(1,1) << std::endl;
 
   prePostOperatorPtr_->runPostApplyJacobianInverse(nonConstInput,Jacobian(),*this);
 

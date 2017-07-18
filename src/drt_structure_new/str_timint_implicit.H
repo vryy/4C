@@ -119,6 +119,21 @@ namespace TIMINT {
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc);
     virtual void Evaluate();
 
+    /** \brief Print structural jacobian matrix into a text file for later use
+     *  in MATLAB
+     *
+     *  This routine can be activated via the input parameter
+     *  %STRUCT_JACOBIAN_MATLAB. See the corresponding inpar section for more
+     *  details.
+     *
+     *  The text file can be found in the user-provided output folder using the
+     *  following file name extension:
+     *
+     *  [OUTPUT-FOLDER]/[OUTPUT FILE NAME]_str_jacobian_step-[STEP]_nlniter-[NEWTON-ITERATION].mtl
+     *
+     *  \author hiermeier \date 06/17 */
+    void PrintJacobianInMatlabFormat( const NOX::NLN::Group& curr_grp ) const;
+
   protected:
     //! returns the current solution group
     virtual const NOX::Abstract::Group& GetSolutionGroup() const;

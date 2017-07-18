@@ -22,6 +22,7 @@
 #include "str_utils.H"
 
 #include "../solver_nonlin_nox/nox_nln_aux.H"
+#include "../solver_nonlin_nox/nox_nln_constraint_group.H"
 
 #include "../linalg/linalg_sparseoperator.H"
 #include "../drt_lib/drt_discret.H"
@@ -397,44 +398,160 @@ double STR::TIMINT::NoxInterface::GetPreviousPrimarySolutionNorms(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TIMINT::NoxInterface::GetObjectiveModelValue(
+double STR::TIMINT::NoxInterface::GetModelValue(
     const Epetra_Vector& x,
     const Epetra_Vector& F,
-    const std::string& name) const
+    const enum NOX::NLN::MeritFunction::MeritFctName merit_func_type ) const
 {
   CheckInitSetup();
 
   double omval = 0.0;
 
-  if (boost::iequals(name,"energy"))
+  switch ( merit_func_type )
   {
-    // get the current displacement vector
-    Teuchos::RCP<const Epetra_Vector> disnp =
-        gstate_ptr_->ExtractDisplEntries(x);
+    case NOX::NLN::MeritFunction::mrtfct_lagrangian:
+    {
+      // get the current displacement vector
+      Teuchos::RCP<const Epetra_Vector> disnp =
+          gstate_ptr_->ExtractDisplEntries(x);
 
-    Teuchos::ParameterList p;
-    // parameter needed by the elements
-    p.set("action", "calc_struct_energy");
+      Teuchos::ParameterList p;
+      // parameter needed by the elements
+      p.set("action", "calc_struct_energy");
 
-    Teuchos::RCP<DRT::DiscretizationInterface> discret_ptr =
-        gstate_ptr_->GetMutableDiscret();
-    // set vector values needed by elements
-    discret_ptr->ClearState();
-    discret_ptr->SetState("displacement", disnp);
-    // get internal structural energy
-    Teuchos::RCP<Epetra_SerialDenseVector> energy
-      = Teuchos::rcp(new Epetra_SerialDenseVector(1));
-    discret_ptr->EvaluateScalars(p, energy);
-    discret_ptr->ClearState();
+      Teuchos::RCP<DRT::DiscretizationInterface> discret_ptr =
+          gstate_ptr_->GetMutableDiscret();
+      // set vector values needed by elements
+      discret_ptr->ClearState();
+      discret_ptr->SetState("displacement", disnp);
+      // get internal structural energy
+      Teuchos::RCP<Epetra_SerialDenseVector> energy
+        = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+      discret_ptr->EvaluateScalars(p, energy);
+      discret_ptr->ClearState();
 
-    omval = (*energy)(0);
+      omval = (*energy)(0);
+
+      break;
+    }
+    case NOX::NLN::MeritFunction::mrtfct_infeasibility_two_norm:
+    {
+      // do nothing in the primary field
+      break;
+    }
+    default:
+    {
+      dserror("There is no objective model value with the enum %d.",
+          merit_func_type );
+      exit( EXIT_FAILURE );
+    }
   }
-  else
-    dserror("There is no objective model value with the name \"%s\".",
-        name.c_str());
 
   return omval;
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double STR::TIMINT::NoxInterface::GetLinearizedModelTerms(
+    const NOX::Abstract::Group* group,
+    const Epetra_Vector& dir,
+    const enum NOX::NLN::MeritFunction::MeritFctName mf_type,
+    const enum NOX::NLN::MeritFunction::LinOrder linorder,
+    const enum NOX::NLN::MeritFunction::LinType lintype ) const
+{
+  switch ( mf_type )
+  {
+    case NOX::NLN::MeritFunction::mrtfct_lagrangian:
+    {
+      return GetLinearizedEnergyModelTerms( group, dir, linorder, lintype );
+    }
+    case NOX::NLN::MeritFunction::mrtfct_infeasibility_two_norm:
+      return 0.0;
+    default:
+    {
+      dserror("There is no linearization of the objective model with the enum %d.",
+          mf_type );
+      exit( EXIT_FAILURE );
+    }
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double STR::TIMINT::NoxInterface::GetLinearizedEnergyModelTerms(
+    const NOX::Abstract::Group* group,
+    const Epetra_Vector& dir,
+    const enum NOX::NLN::MeritFunction::LinOrder linorder,
+    const enum NOX::NLN::MeritFunction::LinType lintype ) const
+{
+  double lin_val = 0.0;
+
+  switch ( linorder )
+  {
+    case NOX::NLN::MeritFunction::linorder_first:
+    case NOX::NLN::MeritFunction::linorder_all:
+    {
+      switch( lintype )
+      {
+        case NOX::NLN::MeritFunction::lin_wrt_all_dofs:
+        case NOX::NLN::MeritFunction::lin_wrt_primary_dofs:
+        {
+          Epetra_Vector str_gradient( dir.Map(), true );
+
+          std::vector<INPAR::STR::ModelType> constraint_models;
+          FindConstraintModels( group, constraint_models );
+
+          // assemble the force and exclude all constraint models
+          implint_ptr_->AssembleForce( str_gradient, &constraint_models );
+          str_gradient.Dot( dir, &lin_val );
+
+          break;
+        }
+        default:
+        {
+          /* do nothing, there are only primary dofs */
+          break;
+        }
+      }
+
+      break;
+    }
+    default:
+    {
+      /* do nothing, there are no high order terms */
+      break;
+    }
+  }
+
+  return lin_val;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::NoxInterface::FindConstraintModels(
+    const NOX::Abstract::Group* grp,
+    std::vector<INPAR::STR::ModelType>& constraint_models ) const
+{
+  const NOX::NLN::CONSTRAINT::Group* constr_grp =
+      dynamic_cast<const NOX::NLN::CONSTRAINT::Group*>( grp );
+
+  // direct return if this is no constraint problem
+  if ( not constr_grp )
+    return;
+
+  // find the constraint model types
+  const auto& imap = constr_grp->GetConstrInterfaces();
+  constraint_models.reserve( imap.size() );
+
+  for ( auto cit = imap.begin(); cit != imap.end(); ++cit )
+  {
+    const enum NOX::NLN::SolutionType soltype = cit->first;
+    const enum INPAR::STR::ModelType mtype = STR::NLN::ConvertSolType2ModelType( soltype );
+
+    constraint_models.push_back( mtype );
+  }
+}
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

@@ -114,7 +114,7 @@ NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormUpdate::checkStatus(
   if (niters == 0)
   {
     // set some default values
-    normUpdate_   = Teuchos::rcp(new std::vector<double>(nChecks_,1.0e+12));
+    normUpdate_ = Teuchos::rcp(new std::vector<double>(nChecks_,1.0e+12));
     normRefSol_ = Teuchos::rcp(new std::vector<double>(nChecks_,1.0));
     return gStatus_;
   }

@@ -32,17 +32,17 @@ namespace Interface {
     //! destructor
     virtual ~Required() {};
 
-    //! Get the number of nonlinear iterations
+    //! Get the number of inner-loop nonlinear iterations (e.g. line search iterations)
     virtual const int& GetNumIterations() const = 0;
 
     //! Get the objective or meritfunction
     virtual const NOX::MeritFunction::Generic& GetMeritFunction() const = 0;
-  };
-}
-}
-}
-}
-}
+  };  // class Required
+} // namespace Interface
+} // namespace StatusTest
+} // namespace INNER
+} // namespace NLN
+} // namespace NOX
 
 
 #endif /* NOX_NLN_INNER_STATUSTEST_INTERFACE_REQUIRED_H_ */

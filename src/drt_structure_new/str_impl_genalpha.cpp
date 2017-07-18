@@ -324,12 +324,14 @@ bool STR::IMPLICIT::GenAlpha::ApplyForceStiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::GenAlpha::AssembleForce( Epetra_Vector& f ) const
+bool STR::IMPLICIT::GenAlpha::AssembleForce( Epetra_Vector& f,
+    const std::vector<INPAR::STR::ModelType>* without_these_models ) const
 {
   CheckInitSetup();
 
   // set the time step dependent parameters for the assembly
-  const bool ok = ModelEval().AssembleForce( 1.0-GetIntParam(), f );
+  const bool ok = ModelEval().AssembleForce( 1.0-GetIntParam(), f,
+      without_these_models );
 
   if (not ok)
     return ok;

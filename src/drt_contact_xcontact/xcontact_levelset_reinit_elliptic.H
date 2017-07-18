@@ -140,10 +140,10 @@ namespace REINIT {
         const NOX::Abstract::Vector::NormType& type = NOX::Abstract::Vector::TwoNorm,
         const bool& isScaled = false) const;
 
-    virtual double GetObjectiveModelValue(
+    virtual double GetModelValue(
         const Epetra_Vector& x,
         const Epetra_Vector& F,
-        const std::string& name) const;
+        enum NOX::NLN::MeritFunction::MeritFctName mrt_func_type ) const;
 
     virtual double CalcRefNormForce();
 

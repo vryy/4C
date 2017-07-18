@@ -78,7 +78,8 @@ namespace TIMINT {
         Epetra_Vector& f) = 0;
 
     //! Assemble the right hand side
-    virtual bool AssembleForce( Epetra_Vector& f ) const = 0;
+    virtual bool AssembleForce( Epetra_Vector& f,
+        const std::vector<INPAR::STR::ModelType>* without_these_models = NULL ) const = 0;
 
     //! return integration factor
     virtual double GetIntParam() const = 0;

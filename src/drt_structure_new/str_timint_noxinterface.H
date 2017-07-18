@@ -23,6 +23,11 @@
 #include <NOX_Epetra_Interface_Preconditioner.H>             // (3) base class: preconditioner stuff
 
 // forward declaration ...
+namespace INPAR {
+namespace STR {
+  enum ModelType : int;
+} // namespace STR
+} // namespace INPAR
 namespace STR {
   class Dbc;
 namespace IMPLICIT {
@@ -105,10 +110,17 @@ namespace TIMINT {
     /*! Compute and return some energy representative or any other scalar value
      *  which is capable to describe the solution path progress
      *  (derived from NOX::NLN::Interface::Required) */
-    virtual double GetObjectiveModelValue(
+    virtual double GetModelValue(
         const Epetra_Vector& x,
         const Epetra_Vector& F,
-        const std::string& name) const;
+        const enum NOX::NLN::MeritFunction::MeritFctName merit_func_type ) const;
+
+    virtual double GetLinearizedModelTerms(
+        const NOX::Abstract::Group* group,
+        const Epetra_Vector& dir,
+        const enum NOX::NLN::MeritFunction::MeritFctName mf_type,
+        const enum NOX::NLN::MeritFunction::LinOrder linorder,
+        const enum NOX::NLN::MeritFunction::LinType lintype ) const;
 
     /*! \brief calculate characteristic/reference norms for forces
      *
@@ -135,11 +147,21 @@ namespace TIMINT {
     //! check if init and setup have been called
     void CheckInitSetup() const;
 
+    double GetLinearizedEnergyModelTerms(
+        const NOX::Abstract::Group* group,
+        const Epetra_Vector& dir,
+        const enum NOX::NLN::MeritFunction::LinOrder linorder,
+        const enum NOX::NLN::MeritFunction::LinType lintype ) const;
+
+    void FindConstraintModels(
+        const NOX::Abstract::Group* grp,
+        std::vector<INPAR::STR::ModelType>& constraint_models ) const;
+
   protected:
-    //! init flagg
+    //! init flag
     bool isinit_;
 
-    //! setup flagg
+    //! setup flag
     bool issetup_;
 
   private:

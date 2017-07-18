@@ -78,6 +78,13 @@ namespace TIMINT {
       return output_;
     };
 
+    /// get the binary output writer
+    Teuchos::RCP<const IO::DiscretizationWriter> GetOutputPtr() const
+    {
+      CheckInitSetup();
+      return output_;
+    }
+
     /// get the data container for parameters regarding VTK output at runtime
     Teuchos::RCP<const ParamsRuntimeVtkOutput> GetRuntimeVtkOutputParams() const
     {
@@ -163,6 +170,13 @@ namespace TIMINT {
       CheckInitSetup();
       return writevelacc_;
     };
+
+    /// Shall we write the jacobian to MATLAB?
+    bool IsWriteJacobianToMatlab() const
+    {
+      CheckInitSetup();
+      return writejac2matlab_;
+    }
 
     /// Is this the first output of the current run?
     const bool& IsFirstOutputOfRun() const
@@ -328,6 +342,9 @@ namespace TIMINT {
 
     /// write velocity and acceleration on/off
     bool writevelacc_;
+
+    /// write jacobian to MATLAB
+    bool writejac2matlab_;
 
     /// flag whether this output step is the first one (restarted or not)
     bool firstoutputofrun_;

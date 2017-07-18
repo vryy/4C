@@ -32,139 +32,120 @@ NOX::NLN::MeritFunction::Lagrangian::Lagrangian(const Teuchos::RCP<NOX::Utils>& 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::MeritFunction::Lagrangian::computef(const NOX::Abstract::Group& grp) const
+double NOX::NLN::MeritFunction::Lagrangian::computef(
+    const NOX::Abstract::Group& grp) const
 {
-  double mrtFctVal = 0.0;
-
   if (!grp.isF())
   {
-    throwError("computef()","The current function value was not computed yet. Please call "
-        "computeF() on the group passed into this function.");
+    throwError("computef()","The current function value was not computed yet. "
+        "Please call computeF() on the group passed into this function.");
   }
 
   // cast the underlying nox-group to the constraint group
   const NOX::NLN::CONSTRAINT::Group* constr_grp_ptr =
       dynamic_cast<const NOX::NLN::CONSTRAINT::Group*>(&grp);
-  if (constr_grp_ptr == NULL)
+  if ( not constr_grp_ptr )
   {
     throwError("computef()","Dynamic cast to NOX::NLN::Constraint::Group failed!");
   }
 
-  // Get the primary contribution
-  mrtFctVal = constr_grp_ptr->GetObjectiveModelValue( "energy" );
-
-  // Get the part of the merit function, which is based on the constraint equations.
-  // Get the constraint interfaces map
-  const std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >&
-      constr_interfaces = constr_grp_ptr->GetConstrInterfaces();
-  std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >::const_iterator
-      constr_iter;
-
-  // loop over the second entries of the stl_map
-  for (constr_iter=constr_interfaces.begin();constr_iter!=constr_interfaces.end();++constr_iter)
-    mrtFctVal += constr_iter->second->GetConstrObjectiveModelValue( nameAsEnum() );
-
-  return mrtFctVal;
+  // Get the primary contribution and constraint contributions
+  return constr_grp_ptr->GetModelValue( Type() );
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::MeritFunction::Lagrangian::computeSlope(const NOX::Abstract::Vector& dir,
-               const NOX::Abstract::Group& grp) const
+double NOX::NLN::MeritFunction::Lagrangian::computeSlope(
+    const NOX::Abstract::Vector& dir,
+    const NOX::Abstract::Group& grp) const
 {
   if (!grp.isF())
   {
-    throwError("computeSlope()","The current function value was not computed yet. Please call "
-      "computeF() on the group passed into this function.");
+    throwError( "computeSlope()", "The current function value was not computed yet. "
+        "Please call computeF() on the group passed into this function." );
   }
 
   // cast the underlying nox-group to the constraint group
   const NOX::NLN::CONSTRAINT::Group* constr_grp_ptr =
       dynamic_cast<const NOX::NLN::CONSTRAINT::Group*>(&grp);
-  if (constr_grp_ptr==NULL)
-    throwError("computeSlope()","Dynamic cast to NOX::NLN::Constraint::Group failed!");
-
-  // Get the constraint interfaces map
-  const NOX::NLN::CONSTRAINT::ReqInterfaceMap & constr_interfaces =
-      constr_grp_ptr->GetConstrInterfaces();
+  if ( not constr_grp_ptr )
+    throwError( "computeSlope()", "Dynamic cast to NOX::NLN::Constraint::Group failed!" );
 
   // compute the slope
-  double slope = 0.0;
-  for ( NOX::NLN::CONSTRAINT::ReqInterfaceMap::const_iterator constr_iter =
-        constr_interfaces.begin(); constr_iter != constr_interfaces.end(); ++constr_iter )
-  {
-    // get the first order linearization terms of the Lagrangian objective model
-    const LINALG::SerialDenseVector & allfirstOrderTerms =
-        constr_iter->second->GetLinearizedObjectiveModelTerms( nameAsEnum(),
-        linorder_first );
+  return constr_grp_ptr->GetLinearizedModelTerms( dir, Type(),
+      linorder_first, lin_wrt_all_dofs );
+}
 
-    for ( unsigned i=0; i < static_cast<unsigned>( allfirstOrderTerms.M() ); ++i )
-      slope += allfirstOrderTerms[i];
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double NOX::NLN::MeritFunction::Lagrangian::computeMixed2ndOrderTerms(
+    const NOX::Abstract::Vector& dir,
+    const NOX::Abstract::Group& grp) const
+{
+  if (!grp.isF())
+  {
+    throwError( "computeSlope()", "The current function value was not computed yet. "
+        "Please call computeF() on the group passed into this function." );
   }
-  return slope;
+
+  // cast the underlying nox-group to the constraint group
+  const NOX::NLN::CONSTRAINT::Group* constr_grp_ptr =
+      dynamic_cast<const NOX::NLN::CONSTRAINT::Group*>(&grp);
+  if ( not constr_grp_ptr )
+    throwError( "computeSlope()", "Dynamic cast to NOX::NLN::Constraint::Group failed!" );
+
+  // compute the slope
+  return constr_grp_ptr->GetLinearizedModelTerms( dir, Type(),
+      linorder_second, lin_wrt_mixed_dofs );
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double NOX::NLN::MeritFunction::Lagrangian::computeSaddlePointModel(
-       const double& stepPV, const double& stepLM,
-       const NOX::Abstract::Group& grp) const
+    const double& stepPV,
+    const double& stepLM,
+    const NOX::Abstract::Vector& dir,
+    const NOX::Abstract::Group& grp) const
 {
   if (!grp.isF())
   {
-    throwError("computeModel()","The current function value was not computed yet. Please call "
-        "computeF() on the group passed into this function.");
+    throwError( "computeSaddlePointModel()", "The current function value was not "
+        "computed yet. Please call computeF() on the group passed into this function." );
   }
 
   // cast the underlying nox-group to the constraint group
   const NOX::NLN::CONSTRAINT::Group* constr_grp_ptr =
       dynamic_cast<const NOX::NLN::CONSTRAINT::Group*>(&grp);
-  if (constr_grp_ptr==NULL)
+  if ( not constr_grp_ptr )
   {
     throwError("computeModel()","Dynamic cast to NOX::NLN::Constraint::Group failed!");
   }
 
+  const NOX::NLN::CONSTRAINT::Group& constr_grp = *constr_grp_ptr;
+
+  // compute the function value
   double model = 0.0;
-  // Get the constraint interfaces map
-  const NOX::NLN::CONSTRAINT::ReqInterfaceMap & constr_interfaces =
-      constr_grp_ptr->GetConstrInterfaces();
 
-  for ( NOX::NLN::CONSTRAINT::ReqInterfaceMap::const_iterator constr_iter =
-        constr_interfaces.begin(); constr_iter != constr_interfaces.end(); ++constr_iter )
-  {
-    // --------------------------------------------
-    // Get the 1-st order linearization terms of the Lagrangian objective model
-    // w.r.t the primary degrees of freedom
-    // --------------------------------------------
-    const LINALG::SerialDenseVector & pFirstOrderTerms =
-        constr_iter->second->GetLinearizedObjectiveModelTerms( nameAsEnum(),
-        linorder_first,lin_wrt_primary_dofs );
+  // --------------------------------------------
+  // Get the 1-st order linearization terms of the Lagrangian objective model
+  // w.r.t the primary degrees of freedom
+  // --------------------------------------------
+  model += stepPV * constr_grp.GetLinearizedModelTerms( dir, Type(),
+      linorder_first, lin_wrt_primary_dofs );
 
-    for ( unsigned i=0; i < static_cast<unsigned>( pFirstOrderTerms.M() ); ++i )
-      model += stepPV * pFirstOrderTerms[i];
+  // --------------------------------------------
+  // Get the 1-st order linearization terms of the Lagrangian objective model
+  // w.r.t the Lagrange multiplier degrees of freedom
+  // --------------------------------------------
+  model += stepLM * constr_grp.GetLinearizedModelTerms( dir, Type(),
+      linorder_first, lin_wrt_lagrange_multiplier_dofs );
 
-    // --------------------------------------------
-    // Get the 1-st order linearization terms of the Lagrangian objective model
-    // w.r.t the Lagrange multiplier degrees of freedom
-    // --------------------------------------------
-    const LINALG::SerialDenseVector & lmFirstOrderTerms =
-        constr_iter->second->GetLinearizedObjectiveModelTerms( nameAsEnum(),
-        linorder_first,lin_wrt_lagrange_multiplier_dofs );
-
-    for ( unsigned i=0; i < static_cast<unsigned>( lmFirstOrderTerms.M() ); ++i )
-      model += stepLM * lmFirstOrderTerms[i];
-
-    // --------------------------------------------
-    // Get the 2-nd order linearization terms of the Lagrangian objective model
-    // w.r.t the Lagrange multiplier AND primary degrees of freedom
-    // --------------------------------------------
-    const LINALG::SerialDenseVector & pLmSecondOrderTerms =
-        constr_iter->second->GetLinearizedObjectiveModelTerms( nameAsEnum(),
-        linorder_second,lin_wrt_mixed_dofs );
-
-    for ( unsigned i=0; i < static_cast<unsigned>( pLmSecondOrderTerms.M() ); ++i )
-      model += stepLM * stepPV * pLmSecondOrderTerms[i];
-  }
+  // --------------------------------------------
+  // Get the 2-nd order linearization terms of the Lagrangian objective model
+  // w.r.t the Lagrange multiplier AND primary degrees of freedom
+  // --------------------------------------------
+  model += stepLM * stepPV * constr_grp.GetLinearizedModelTerms( dir, Type(),
+      linorder_second, lin_wrt_mixed_dofs );
 
   return model;
 }
@@ -172,9 +153,11 @@ double NOX::NLN::MeritFunction::Lagrangian::computeSaddlePointModel(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double NOX::NLN::MeritFunction::Lagrangian::computeSaddlePointModel(
-       const double& step, const NOX::Abstract::Group& grp) const
+    const double& step,
+    const NOX::Abstract::Vector& dir,
+    const NOX::Abstract::Group& grp) const
 {
-  return computeSaddlePointModel(step,step,grp);
+  return computeSaddlePointModel( step, step, dir, grp );
 }
 
 /*----------------------------------------------------------------------------*

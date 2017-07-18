@@ -211,13 +211,12 @@ void NOX::NLN::GlobalData::SetSolverOptionParameters()
        (ls_method_name != "Full Step"))
   {
     // Pure reading access to the unfinished nox_nln_globaldata class
-    Teuchos::RCP<const NOX::NLN::GlobalData> nlnGlobalDataPtr = Teuchos::rcp(this,false);
-    mrtFctPtr_ =
-        NOX::NLN::MeritFunction::BuildMeritFunction(nlnGlobalDataPtr);
+    mrtFctPtr_ = NOX::NLN::MeritFunction::BuildMeritFunction(*this);
   }
+
   // If the mrtFctPtr is Teuchos::null the default "Sum of Squares" NOX internal
   // merit function is used.
-  if (not mrtFctPtr_.is_null())
+  if ( not mrtFctPtr_.is_null() )
     solverOptionsList.set<Teuchos::RCP<NOX::MeritFunction::Generic> >
       ("User Defined Merit Function",mrtFctPtr_);
 

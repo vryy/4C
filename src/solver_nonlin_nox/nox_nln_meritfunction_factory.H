@@ -25,13 +25,12 @@ namespace Teuchos {
 }
 namespace NOX {
   class Utils;
-
 namespace MeritFunction {
   class Generic;
-}
-
+} // namespace MeritFunction
 namespace NLN {
 namespace MeritFunction {
+
   class Factory
   {
   public:
@@ -41,28 +40,36 @@ namespace MeritFunction {
     //! destructor
     virtual ~Factory() {};
 
-    //! choose between constrainted and unconstrainted
+    /** \brief get a valid merit function pointer
+     *
+     *  choose between constraint and unconstraint */
     Teuchos::RCP<NOX::MeritFunction::Generic> BuildMeritFunction
-        (Teuchos::RCP<const NOX::NLN::GlobalData>& noxNlnGlobalData);
+        ( const NOX::NLN::GlobalData& noxNlnGlobalData ) const;
 
-    //! unconstrainted factory
-    Teuchos::RCP<NOX::MeritFunction::Generic> BuildUnconstrainedMeritFunction
-        (Teuchos::RCP<const NOX::NLN::GlobalData>& noxNlnGlobalData);
+  private:
+    //! unconstraint factory
+    Teuchos::RCP<NOX::MeritFunction::Generic>
+    BuildUnconstrainedMeritFunction(
+        const std::string& mftype,
+        const NOX::NLN::GlobalData& noxNlnGlobalData ) const;
 
-    //! constrainted factory
-    Teuchos::RCP<NOX::MeritFunction::Generic> BuildConstrainedMeritFunction
-        (Teuchos::RCP<const NOX::NLN::GlobalData>& noxNlnGlobalData);
-  };
+    //! constraint factory
+    Teuchos::RCP<NOX::MeritFunction::Generic>
+    BuildConstrainedMeritFunction(
+        const std::string& mftype,
+        const NOX::NLN::GlobalData& noxNlnGlobalData ) const;
 
-  /*! Nonmember function to build a merit function object.
+  };  // class Factory
+
+  /*! \brief Non-member function to build a merit function object.
 
   \relates NOX::NLNSOL::Constraint::MeritFunction::Factory
 
   */
   Teuchos::RCP<NOX::MeritFunction::Generic> BuildMeritFunction
-      (Teuchos::RCP<const NOX::NLN::GlobalData>& noxNlnGlobalData);
-} // MeritFunction
-} // NLN
-} // NOX
+      ( const NOX::NLN::GlobalData& noxNlnGlobalData );
+} // namespace MeritFunction
+} // namespace NLN
+} // namespace NOX
 
 #endif /* NOX_NLN_MERITFUNCTION_FACTORY_H_ */

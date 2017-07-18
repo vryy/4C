@@ -24,6 +24,7 @@
 // Forward declaration
 class Epetra_Vector;
 class Epetra_RowMatrix;
+class Epetra_LinearProblem;
 
 namespace Teuchos {
   class ParameterList;
@@ -31,6 +32,7 @@ namespace Teuchos {
 namespace LINALG {
   class Solver;
   class SparseOperator;
+  class SparseMatrix;
 } // namespace LINALG
 namespace NOX {
 namespace Epetra {
@@ -252,6 +254,26 @@ namespace LinSystem {
     virtual NOX::NLN::SolutionType GetActiveLinSolver(
         const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
         Teuchos::RCP<LINALG::Solver>& currSolver) = 0;
+
+    //! Set-up the linear problem object
+    virtual void SetLinearProblemForSolve(
+        Epetra_LinearProblem& linear_problem,
+        LINALG::SparseOperator& jac,
+        Epetra_Vector& lhs,
+        Epetra_Vector& rhs ) const;
+
+    /*! \brief Complete the solution vector after a linear solver attempt
+     *
+     *  This method is especially meaningful, when a sub-part of the linear
+     *  problem has been solved explicitly.
+     *
+     *  \param linProblem (in) : Solved linear problem
+     *  \param lhs        (out): left-hand-side vector which can be extended
+     *
+     *  \author hiermeier \date 04/17 */
+    virtual void CompleteSolutionAfterSolve(
+        const Epetra_LinearProblem& linProblem,
+        Epetra_Vector& lhs ) const;
 
   private:
     //! throws an error

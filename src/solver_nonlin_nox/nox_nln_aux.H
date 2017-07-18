@@ -106,6 +106,10 @@ namespace AUX {
   int GetNormType(const NOX::StatusTest::Generic& test,
       const NOX::NLN::StatusTest::QuantityType& qtype);
 
+  /// \brief Do a recursive search for a <T> status test class.
+  template <class T>
+  NOX::StatusTest::Generic* GetOuterStatusTest( NOX::StatusTest::Generic& full_otest );
+
   /*! \brief Do a recursive search for a <T> status test class and return its status.
    *
    * If more than one of the given status test objects is combined in a combination list,
@@ -113,7 +117,7 @@ namespace AUX {
    * is unconverged, the return status is unconverged.
    * If we cannot find the given status test class, a default value of -100 is returned.
    *
-   * \param test : StatusTest object which will be scanned.
+   * \param test (in) : StatusTest object which will be scanned.
    */
   template <class T>
   int GetOuterStatus(const NOX::StatusTest::Generic& test);

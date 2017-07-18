@@ -1975,6 +1975,7 @@ set(OBJS_SOLVER_NONLIN_NOX
   src/solver_nonlin_nox/nox_nln_constraint_group.cpp
   src/solver_nonlin_nox/nox_nln_linesearch_backtrack.cpp
   src/solver_nonlin_nox/nox_nln_meritfunction_lagrangian.cpp
+  src/solver_nonlin_nox/nox_nln_meritfunction_infeasibility.cpp
   src/solver_nonlin_nox/nox_nln_direction_newton.cpp
   src/solver_nonlin_nox/nox_nln_statustest_factory.cpp
   src/solver_nonlin_nox/nox_nln_statustest_combo.cpp

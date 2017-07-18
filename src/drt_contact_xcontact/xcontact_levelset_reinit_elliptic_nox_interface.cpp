@@ -280,10 +280,10 @@ double XCONTACT::LEVELSET::REINIT::Elliptic::GetPreviousPrimarySolutionNorms(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double XCONTACT::LEVELSET::REINIT::Elliptic::GetObjectiveModelValue(
+double XCONTACT::LEVELSET::REINIT::Elliptic::GetModelValue(
     const Epetra_Vector& x,
     const Epetra_Vector& F,
-    const std::string& name) const
+    enum NOX::NLN::MeritFunction::MeritFctName mrt_func_type ) const
 {
   dserror("Currently unsupported!");
   exit(EXIT_FAILURE);

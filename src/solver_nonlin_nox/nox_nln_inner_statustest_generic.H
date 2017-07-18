@@ -18,6 +18,9 @@
 
 // forward declaration ...
 namespace NOX {
+namespace Solver {
+  class Generic;
+} // namespace Solver
 namespace Abstract {
   class Group;
 } // namespace Abstract
@@ -54,21 +57,21 @@ namespace Interface {
     //! destructor
     virtual ~Generic() {};
 
-    //! %Test the inner stopping criterion
-    /*!
-      The test can (and should, if possible) be skipped if
-      checkType is NOX::StatusType::None.  If the test is skipped, then
-      the status should be set to NOX::StatusTest::Unevaluated.
-    */
+    /** \brief %Test the inner stopping criterion
+     *
+     *  The test can (and should, if possible) be skipped if
+     *  checkType is NOX::StatusType::None.  If the test is skipped, then
+     *  the status should be set to NOX::StatusTest::Unevaluated. */
     virtual StatusType CheckStatus(
         const Interface::Required& interface,
+        const NOX::Solver::Generic& solver,
         const NOX::Abstract::Group& grp,
         NOX::StatusTest::CheckType checkType) = 0;
 
     //! Return the result of the most recent inner checkStatus call
     virtual StatusType GetStatus() const = 0;
 
-    ///! Output formatted description of inner stopping test to output stream.
+    //! Output formatted description of inner stopping test to output stream.
     virtual std::ostream& Print(std::ostream& stream, int indent = 0) const = 0;
   };
 

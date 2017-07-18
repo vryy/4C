@@ -21,6 +21,7 @@
 #include "nox_nln_statustest_normf.H"
 #include "nox_nln_statustest_normupdate.H"
 #include "nox_nln_statustest_normwrms.H"
+#include "nox_nln_statustest_activeset.H"
 
 #include "../linalg/linalg_blocksparsematrix.H"
 
@@ -409,6 +410,57 @@ int NOX::NLN::AUX::GetNormType(const NOX::StatusTest::Generic& test,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <class T>
+NOX::StatusTest::Generic* NOX::NLN::AUX::GetOuterStatusTest(
+    NOX::StatusTest::Generic& otest )
+{
+  // try to cast the given test to a NOX_StatusTest_Combo
+  const NOX::NLN::StatusTest::Combo* comboTest =
+      dynamic_cast<const NOX::NLN::StatusTest::Combo*>( &otest );
+
+  // if it is no combo test, we just have to check for the desired type
+  if ( not comboTest )
+  {
+    return dynamic_cast<T*>( &otest );
+  }
+  // if the nox_nln_statustest_combo Test cast was successful
+  else
+  {
+    const std::vector<Teuchos::RCP<NOX::StatusTest::Generic> >& tests =
+        comboTest->GetTestVector();
+
+    NOX::StatusTest::Generic* gdesired_test = NULL;
+    for ( const auto& test : tests )
+    {
+      // recursive function call
+      NOX::StatusTest::Generic* desired_test = GetOuterStatusTest<T>( *test );
+
+      // the test is not of the specified type, go to the next one
+      if ( not desired_test )
+        continue;
+
+      // first found test
+      if ( not gdesired_test )
+        gdesired_test = desired_test;
+      // we've found already one test of the same type
+      else
+      {
+        const enum NOX::StatusTest::StatusType gstatus = gdesired_test->getStatus();
+
+        // If there are more tests of the same type, we return the
+        // test which is possible unconverged (conservative choice, AND-combination).
+        gdesired_test = ( gstatus==NOX::StatusTest::Converged ? desired_test : gdesired_test );
+      }
+    }
+    return gdesired_test;
+  }
+
+  // default return
+  return NULL;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template <class T>
 int NOX::NLN::AUX::GetOuterStatus(const NOX::StatusTest::Generic& test)
 {
   // try to cast the given test to a NOX_StatusTest_Combo
@@ -441,15 +493,23 @@ int NOX::NLN::AUX::GetOuterStatus(const NOX::StatusTest::Generic& test)
     {
       // recursive function call
       int lRet = GetOuterStatus<T>(*(tests[i]));
+
+      // the test is not of the specified type, go to the next one
       if (lRet==-100)
         continue;
+
+      // first found test
       if (gRet == -100)
         gRet = lRet;
+      // we've found already one test of the same type
       else
       {
         NOX::StatusTest::StatusType gstatus =
             static_cast<enum NOX::StatusTest::StatusType>(gRet);
-        gRet = (gstatus==NOX::StatusTest::Converged) ? lRet : gRet;
+
+        // If there are more tests of the same type, we return the
+        // status of the possible unconverged test (conservative choice).
+        gRet = ( gstatus==NOX::StatusTest::Converged ? lRet : gRet );
       }
     }
     return gRet;
@@ -565,9 +625,14 @@ template int NOX::NLN::AUX::GetNormType<NOX::NLN::StatusTest::NormF>(
 template int NOX::NLN::AUX::GetNormType<NOX::NLN::StatusTest::NormUpdate>(
     const NOX::StatusTest::Generic& test,
     const NOX::NLN::StatusTest::QuantityType& qtype);
+template NOX::StatusTest::Generic*
+NOX::NLN::AUX::GetOuterStatusTest<NOX::NLN::StatusTest::ActiveSet>(
+    NOX::StatusTest::Generic& otest );
 template int NOX::NLN::AUX::GetOuterStatus<NOX::NLN::StatusTest::NormF>(
     const NOX::StatusTest::Generic& test);
 template int NOX::NLN::AUX::GetOuterStatus<NOX::NLN::StatusTest::NormUpdate>(
     const NOX::StatusTest::Generic& test);
 template int NOX::NLN::AUX::GetOuterStatus<NOX::NLN::StatusTest::NormWRMS>(
+    const NOX::StatusTest::Generic& test);
+template int NOX::NLN::AUX::GetOuterStatus<NOX::NLN::StatusTest::ActiveSet>(
     const NOX::StatusTest::Generic& test);

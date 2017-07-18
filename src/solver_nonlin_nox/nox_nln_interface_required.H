@@ -24,6 +24,9 @@
 #include <NOX_Epetra_Vector.H>
 
 namespace NOX {
+namespace Abstract {
+  class Group;
+} // namespace Abstract
 namespace NLN {
 namespace Interface {
   class Required : public virtual NOX::Epetra::Interface::Required
@@ -64,22 +67,24 @@ namespace Interface {
         const bool& isScaled = false) const = 0;
 
     //! compute and return some energy representative
-    virtual double GetObjectiveModelValue(
+    virtual double GetModelValue(
         const Epetra_Vector& x,
         const Epetra_Vector& F,
-        const std::string& name) const = 0;
+        const enum MeritFunction::MeritFctName merit_func_type ) const = 0;
+
+    virtual double GetLinearizedModelTerms(
+        const NOX::Abstract::Group* group,
+        const Epetra_Vector& dir,
+        const enum NOX::NLN::MeritFunction::MeritFctName mf_type,
+        const enum NOX::NLN::MeritFunction::LinOrder linorder,
+        const enum NOX::NLN::MeritFunction::LinType lintype ) const
+    {
+      dserror( "Not implemented!" );
+      exit( EXIT_FAILURE );
+    }
 
     //! calculate characteristic/reference norms for forces
     virtual double CalcRefNormForce() = 0;
-
-    //! update the internal variables of the required interface (e.g. displacements)
-    virtual void SetPrimarySolution(const NOX::Epetra::Vector& xOld,
-        const NOX::Epetra::Vector& d,
-        const double& step)
-    {
-      /*will be deleted in a up-coming commit*/
-      dserror("SetPrimarySolution has to be implemented!");
-    };
 
     virtual Teuchos::RCP<const Epetra_Vector> GetLumpedMassMatrixPtr() const
     {

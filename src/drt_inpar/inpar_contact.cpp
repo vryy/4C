@@ -236,37 +236,57 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
       "Do and print the angular momentum conservation check.",
       yesnotuple,yesnovalue,&augcontact);
 
+  setStringToIntegralParameter<int>("VARIATIONAL_APPROACH",
+      "incomplete", "Type of employed variational approach",
+          tuple<std::string>(
+              "complete",
+              "incomplete"),
+          tuple<int>(
+                  var_complete,
+                  var_incomplete ), &augcontact);
+
+  setStringToIntegralParameter<int>("ASSEMBLE_STRATEGY","node_based",
+      "Type of employed assemble strategy",
+        tuple<std::string>("node_based"),
+        tuple<int>(
+                assemble_node_based),
+        &augcontact);
+
   // --------------------------------------------------------------------------
   // sub-sub-list "Augmented/SteepestAscent"
   Teuchos::ParameterList& sacontact=augcontact.sublist("STEEPESTASCENT");
 
-  DoubleParameter("CN_UPPER_BOUND",std::numeric_limits<double>::max(),
+  DoubleParameter("CN_UPPER_BOUND", std::numeric_limits<double>::max(),
       "Upper bound for the cn value. Used during the dynamic cn update.",&sacontact);
 
   // --------------------------------------------------------------------------
   // sub-sub-list "Augmented/Combo"
   Teuchos::ParameterList& combo_contact=augcontact.sublist("COMBO");
 
-  setStringToIntegralParameter<int>("STRATEGY_0","Augmented","Type of"
+  setStringToIntegralParameter<int>("STRATEGY_0","Vague","Type of"
       " first solving strategy",
-        tuple<std::string>("Augmented",
+        tuple<std::string>("Vague",
+                           "Augmented",
                            "StdLagrange",
                            "SteepestAscent"),
         tuple<int>(
-                solution_augmented,
-                solution_std_lagrange,
-                solution_steepest_ascent),
+            solution_vague,
+            solution_augmented,
+            solution_std_lagrange,
+            solution_steepest_ascent),
         &combo_contact);
 
-  setStringToIntegralParameter<int>("STRATEGY_1","Augmented","Type of"
+  setStringToIntegralParameter<int>("STRATEGY_1","Vague","Type of"
       " second solving strategy",
-        tuple<std::string>("Augmented",
+        tuple<std::string>("Vague",
+                           "Augmented",
                            "StdLagrange",
                            "SteepestAscent"),
         tuple<int>(
-                solution_augmented,
-                solution_std_lagrange,
-                solution_steepest_ascent),
+            solution_vague,
+            solution_augmented,
+            solution_std_lagrange,
+            solution_steepest_ascent),
         &combo_contact);
 
   setStringToIntegralParameter<int>("SWITCHING_STRATEGY","PreAsymptotic","Type of"
@@ -274,6 +294,13 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
           tuple<std::string>("PreAsymptotic"),
           tuple<int>( switch_preasymptotic ),
           &combo_contact);
+
+  // --------------------------------------------------------------------------
+  // sub-sub-list "Augmented/Lagrange_Multiplier_Function"
+  Teuchos::ParameterList& lm_funct=augcontact.sublist("LAGRANGE_MULTIPLIER_FUNCTION");
+
+  IntParameter( "LINEAR_SOLVER", -1, "Linear Solver number for the "
+      "least squares problem.", &lm_funct );
 
   // --------------------------------------------------------------------------
   // sub-list "eXtended contact formulation"

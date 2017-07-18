@@ -89,6 +89,7 @@ bool NOX::NLN::INNER::StatusTest::Armijo::Setup(
  *----------------------------------------------------------------------------*/
 NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::Armijo::CheckStatus(
     const NOX::NLN::INNER::StatusTest::Interface::Required& interface,
+    const NOX::Solver::Generic& solver,
     const NOX::Abstract::Group& grp,
     NOX::StatusTest::CheckType checkType)
 {

@@ -168,6 +168,51 @@ namespace INPAR
       NitThr_nitsche
     };
 
+    /// Assemble strategy for the augmented Lagrangian framework
+    enum AssembleStrategy : int
+    {
+      assemble_none,
+      assemble_node_based   ///< assemble based on nodal data containers
+    };
+
+    /// convert assemble strategy to string
+    inline std::string AssembleStrategy2String( enum AssembleStrategy assemble_type )
+    {
+      switch ( assemble_type )
+      {
+        case assemble_none:
+          return "assemble_none";
+        case assemble_node_based:
+          return "assemble_node_based";
+        default:
+          return "UNSUPPORTED assemble strategy";
+      }
+    }
+
+    /// Variational approach for the augmented Lagrangian framework
+    enum VariationalApproach : int
+    {
+      var_unknown,
+      var_complete,   ///< complete variation
+      var_incomplete  ///< incomplete variation
+    };
+
+    /// convert variational approach to string
+    inline std::string VariationalApproach2String( enum VariationalApproach vartype )
+    {
+      switch ( vartype )
+      {
+        case var_unknown:
+          return "var_unknown";
+        case var_complete:
+          return "var_complete";
+        case var_incomplete:
+          return "var_incomplete";
+        default:
+          return "UNSUPPORTED variational approach";
+      }
+    }
+
     /// set the contact parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 

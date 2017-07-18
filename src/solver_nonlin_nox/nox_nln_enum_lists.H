@@ -20,11 +20,13 @@
 
 #include <string>
 #include <boost/algorithm/string/predicate.hpp>
+#include <NOX_StatusTest_Generic.H>
 
 namespace NOX {
 namespace NLN {
   //! Supported solution type names
-  enum SolutionType {
+  enum SolutionType : int
+  {
     sol_unknown,
     sol_structure,          ///< structural problem
     sol_contact,            ///< contact problem
@@ -35,7 +37,7 @@ namespace NLN {
   };
 
   //! Map quantity enum to std::string
-  static inline const std::string SolutionType2String(const enum SolutionType& type)
+  inline std::string SolutionType2String(const enum SolutionType type)
   {
     switch (type)
     {
@@ -79,18 +81,16 @@ namespace NLN {
   };
 
   //! type of the optimization problem
-  enum OptimizationProblemType
+  enum OptimizationProblemType : int
   {
-    // unconstrained optimization problem
-    opt_unconstrained,
-    // pure equality constrained optimization problem
-    opt_equality_constrained,
-    // inequality or mixed optimization problem
-    opt_inequality_constrained
+    opt_unconstrained,          ///< unconstrained optimization problem
+    opt_equality_constrained,   ///< pure equality constrained optimization problem
+    opt_inequality_constrained  ///< inequality or mixed optimization problem
   };
 namespace LinSystem {
   //! supported LinearSystem types
-  enum LinearSystemType {
+  enum LinearSystemType : int
+  {
     linear_system_structure,
     linear_system_structure_contact,
     linear_system_structure_cardiovascular0d,
@@ -99,8 +99,8 @@ namespace LinSystem {
     linear_system_undefined
   };
 
-  /// Map quantity name to std::string
-  static inline const std::string LinearSystemType2String(const enum LinearSystemType& type)
+  /// Map linear system type to std::string
+  inline std::string LinearSystemType2String(const enum LinearSystemType type)
   {
     switch ( type )
     {
@@ -123,19 +123,16 @@ namespace LinSystem {
   };
 
   //! List of types of epetra objects that can be used for the Jacobian and/or Preconditioner.
-  enum OperatorType {
-    //! A LINALG_SparseOperator object.
-    LinalgSparseOperator,
-    //! A LINALG_SparseMatrixBase object.
-    LinalgSparseMatrixBase,
-    //! A LINALG_BlockSparseMatrix object.
-    LinalgBlockSparseMatrix,
-    //! A LINALG_SparseMatrix object.
-    LinalgSparseMatrix
+  enum OperatorType : int
+  {
+    LinalgSparseOperator,     ///< A LINALG_SparseOperator object.
+    LinalgSparseMatrixBase,   ///< A LINALG_SparseMatrixBase object.
+    LinalgBlockSparseMatrix,  ///< A LINALG_BlockSparseMatrix object.
+    LinalgSparseMatrix        ///< A LINALG_SparseMatrix object.
   };
 
-  /// Map quantity name to std::string
-  static inline const std::string OperatorType2String(const enum OperatorType& type)
+  /// Map operator type to std::string
+  inline std::string OperatorType2String(const enum OperatorType type)
   {
     switch ( type )
     {
@@ -153,9 +150,10 @@ namespace LinSystem {
     exit(EXIT_FAILURE);
   };
 } // namespace LinSystem
+
 namespace MeritFunction {
   //! order of the linearization term
-  enum LinOrder
+  enum LinOrder : int
   {
     //! all orders
     linorder_all,
@@ -166,7 +164,7 @@ namespace MeritFunction {
   };
 
   //! type of the linearization term, i.e. with respect to which quantity the linearization was performed
-  enum LinType
+  enum LinType : int
   {
     //! linearization with respect to primary and Lagrange multiplier degrees of freedom
     lin_wrt_all_dofs,
@@ -179,17 +177,37 @@ namespace MeritFunction {
   };
 
   //! merit function names
-  enum MeritFctName
+  enum MeritFctName : int
   {
-    //! sum of squares merit function
-    mrtfct_sum_of_squares,
-    //! lagrangian merit function
-    mrtfct_lagrangian
+    mrtfct_sum_of_squares,          //!< sum of squares merit function
+    mrtfct_lagrangian,              //!< lagrangian merit function
+    mrtfct_infeasibility_two_norm   //!< infeasibility merit function
   };
+
 } // namespace MeritFunction
+
 namespace StatusTest {
+  //! map status type (outer status test) to std::string
+  inline std::string StatusType2String( const enum NOX::StatusTest::StatusType stype )
+  {
+    switch ( stype )
+    {
+      case NOX::StatusTest::Unevaluated:
+        return "Unevaluated";
+      case NOX::StatusTest::Unconverged:
+        return "Unconverged";
+      case NOX::StatusTest::Converged:
+        return "Converged";
+      case NOX::StatusTest::Failed:
+        return "Failed";
+      default:
+        return "Unknown StatusType";
+    }
+  };
+
   //! Supported quantity names for distinguished status tests
-  enum QuantityType {
+  enum QuantityType : int
+  {
     quantity_unknown,           ///< unknown quantity (dummy)
     quantity_structure,         ///< check structural quantities
     quantity_contact_normal,    ///< check (semi-smooth) contact quantities (normal/frictionless)
@@ -204,7 +222,7 @@ namespace StatusTest {
   };
 
   /// Map quantity name to std::string
-  static inline const std::string QuantityType2String(const enum QuantityType type)
+  inline std::string QuantityType2String(const enum QuantityType type)
   {
     switch (type)
     {

@@ -43,6 +43,7 @@ namespace StatusTest {
     //! Test the line search stopping criterion
     virtual NOX::NLN::INNER::StatusTest::StatusType CheckStatus(
           const NOX::NLN::INNER::StatusTest::Interface::Required& interface,
+          const NOX::Solver::Generic& solver,
           const NOX::Abstract::Group& grp,
           NOX::StatusTest::CheckType checkType);
 

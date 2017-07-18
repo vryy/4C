@@ -59,43 +59,56 @@ public:
    *          \lambda_{N}^{\mathcal{A}}, -\tilde{g}_N^{\mathcal{A}}, -\frac{2}{c_N} A^{\mathcal{I}}
    *          \lambda_{N}^{\mathcal{I}} ] \f$. */
   virtual void computeGradient(const NOX::Abstract::Group& group,
-               NOX::Abstract::Vector& result) const
+      NOX::Abstract::Vector& result) const
   { dserror("computeGradient is not implemented.");}
 
   //! Compute the slope of the Lagrangian merit function.
   virtual double computeSlope(const NOX::Abstract::Vector& dir,
-                 const NOX::Abstract::Group& grp) const;
+      const NOX::Abstract::Group& grp) const;
+
+  double computeMixed2ndOrderTerms(
+      const NOX::Abstract::Vector& dir,
+      const NOX::Abstract::Group& grp) const;
 
   /** \brief Computes the quadratic model.
    *
    *  An alternative is the SaddlePointModel. */
-  virtual double computeQuadraticModel(const NOX::Abstract::Vector& dir,
-                 const NOX::Abstract::Group& grp) const
+  virtual double computeQuadraticModel(
+      const NOX::Abstract::Vector& dir,
+      const NOX::Abstract::Group& grp) const
   { dserror("computeQuadraticModel is not implemented."); return 0.0; }
 
   //! Computes the quadratic model minimizer.
-  virtual void computeQuadraticMinimizer(const NOX::Abstract::Group& grp,
-                   NOX::Abstract::Vector& result) const
+  virtual void computeQuadraticMinimizer(
+      const NOX::Abstract::Group& grp,
+      NOX::Abstract::Vector& result) const
   { dserror("computeQuadraticMinimizer is not implemented.");}
 
-  /** \brief Computes the desired model of the Lagrangian functional
+  /** \brief Computes the saddle-point model of the Lagrangian functional
    *
-   *  Be aware of the neglected function value at the beginning. We consider
-   *  only the linearization terms! */
-  virtual double computeSaddlePointModel(const double& stepPV, const double& stepLM,
-                 const NOX::Abstract::Group& grp) const;
+   *  The function returns the linearized model without the actual function value!
+   *
+   *  \author hiermeier \date 04/17 */
+  virtual double computeSaddlePointModel(
+      const double& stepPV,
+      const double& stepLM,
+      const NOX::Abstract::Vector& dir,
+      const NOX::Abstract::Group& grp ) const;
 
   /** \brief Alternative function call.
    *
    *  Here we choose the same step size for
    *  the primary and Lagrange multiplier degrees of freedom. */
-  double computeSaddlePointModel(const double& step, const NOX::Abstract::Group& grp) const;
+  double computeSaddlePointModel(
+      const double& step,
+      const NOX::Abstract::Vector& dir,
+      const NOX::Abstract::Group& grp ) const;
 
   //! return the name of the merit function
   virtual const std::string& name() const;
 
   //! return the name of the merit function
-  inline enum MeritFctName nameAsEnum() const
+  inline enum MeritFctName Type() const
   {
     return mrtfct_lagrangian;
   }

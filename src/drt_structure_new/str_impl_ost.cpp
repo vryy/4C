@@ -294,9 +294,10 @@ bool STR::IMPLICIT::OneStepTheta::ApplyForceStiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::OneStepTheta::AssembleForce( Epetra_Vector& f ) const
+bool STR::IMPLICIT::OneStepTheta::AssembleForce( Epetra_Vector& f,
+    const std::vector<INPAR::STR::ModelType>* without_these_models ) const
 {
-  const bool ok = ModelEval().AssembleForce( theta_, f );
+  const bool ok = ModelEval().AssembleForce( theta_, f, without_these_models );
 
   if (not ok)
     return ok;

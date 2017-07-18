@@ -22,6 +22,7 @@
 #include "nox_nln_statustest_normf.H"
 #include "nox_nln_statustest_normupdate.H"
 #include "nox_nln_statustest_normwrms.H"
+#include "nox_nln_statustest_activeset.H"
 
 #include <NOX_Solver_SolverUtils.H>
 #include <NOX_Direction_Factory.H>
@@ -57,11 +58,11 @@ void NOX::NLN::Solver::LineSearchBased::init(
   checkType = NOX::Solver::parseStatusTestCheckType(paramsPtr->sublist("Solver Options"));
 
   // NOTE: We use different factories at this point!
-  lineSearchPtr = NOX::NLN::LineSearch::
-      BuildLineSearch(globalDataPtr,testPtr,innerTests,paramsPtr->sublist("Line Search"));
+  lineSearchPtr = NOX::NLN::LineSearch::BuildLineSearch(
+      globalDataPtr,testPtr,innerTests,paramsPtr->sublist("Line Search"));
 
-  directionPtr = NOX::NLN::Direction::
-    BuildDirection(globalDataPtr, paramsPtr->sublist("Direction"));
+  directionPtr = NOX::NLN::Direction::BuildDirection(
+      globalDataPtr, paramsPtr->sublist("Direction"));
 }
 
 /*----------------------------------------------------------------------------*
@@ -141,7 +142,8 @@ void NOX::NLN::Solver::LineSearchBased::printUpdate()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const NOX::StatusTest::Generic& NOX::NLN::Solver::LineSearchBased::GetOuterStatusTest() const
+const NOX::StatusTest::Generic&
+NOX::NLN::Solver::LineSearchBased::GetOuterStatusTest() const
 {
   if (testPtr.is_null())
   {
@@ -151,6 +153,21 @@ const NOX::StatusTest::Generic& NOX::NLN::Solver::LineSearchBased::GetOuterStatu
   }
 
   return (*testPtr);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template<class T>
+NOX::StatusTest::Generic* NOX::NLN::Solver::LineSearchBased::GetOuterStatusTest() const
+{
+  if ( testPtr.is_null() )
+  {
+    utilsPtr->err()
+    << "The \"Status Test\" pointer is not initialized!" << std::endl;
+    throw "NOX Error";
+  }
+
+  return NOX::NLN::AUX::GetOuterStatusTest<T>( *testPtr );
 }
 
 /*----------------------------------------------------------------------------*
@@ -178,3 +195,6 @@ const NOX::Utils& NOX::NLN::Solver::LineSearchBased::GetUtils() const
 template NOX::StatusTest::StatusType NOX::NLN::Solver::LineSearchBased::GetStatus<NOX::NLN::StatusTest::NormF>() const;
 template NOX::StatusTest::StatusType NOX::NLN::Solver::LineSearchBased::GetStatus<NOX::NLN::StatusTest::NormUpdate>() const;
 template NOX::StatusTest::StatusType NOX::NLN::Solver::LineSearchBased::GetStatus<NOX::NLN::StatusTest::NormWRMS>() const;
+template NOX::StatusTest::StatusType NOX::NLN::Solver::LineSearchBased::GetStatus<NOX::NLN::StatusTest::ActiveSet>() const;
+
+template NOX::StatusTest::Generic* NOX::NLN::Solver::LineSearchBased::GetOuterStatusTest<NOX::NLN::StatusTest::ActiveSet>() const;
