@@ -4533,10 +4533,10 @@ void STR::TimIntImpl::STCPreconditioning()
       stccompl_=true;
     }
 
-    stiff_ = MLMultiply(*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)),*stcmat_,false,false,true);
+    stiff_ = MLMultiply(*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)),*stcmat_,true,false,true);
     if(stcscale_==INPAR::STR::stc_currsym)
     {
-      stiff_ = MLMultiply(*stcmat_,true,*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)),false,false,false,true);
+      stiff_ = MLMultiply(*stcmat_,true,*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)),false,true,false,true);
       Teuchos::RCP<Epetra_Vector> fressdc = LINALG::CreateVector(*DofRowMapView(), true);
       stcmat_->Multiply(true,*fres_,*fressdc);
       fres_->Update(1.0,*fressdc,0.0);
