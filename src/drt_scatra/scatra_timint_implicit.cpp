@@ -2676,9 +2676,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
 
   // end time measurement for element and take average over all processors via communication
   double mydtele = Teuchos::Time::wallTime()-tcpuele;
-  const Epetra_Comm& comm = discret_->Comm();
-  comm.SumAll(&mydtele,&dtele_,1);
-  dtele_ /= comm.NumProc();
+  discret_->Comm().MaxAll(&mydtele,&dtele_,1);
 
   return;
 } // ScaTraTimIntImpl::AssembleMatAndRHS
@@ -2853,9 +2851,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
 
       // end time measurement for solver and take average over all processors via communication
       double mydtsolve = Teuchos::Time::wallTime()-tcpusolve;
-      const Epetra_Comm& comm = discret_->Comm();
-      comm.SumAll(&mydtsolve,&dtsolve_,1);
-      dtsolve_ /= comm.NumProc();
+      discret_->Comm().MaxAll(&mydtsolve,&dtsolve_,1);
 
       // output performance statistics associated with linear solver into text file if applicable
       if(DRT::INPUT::IntegralValue<int>(*params_,"OUTPUTSOLVERSTATS"))
