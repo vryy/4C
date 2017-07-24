@@ -289,8 +289,9 @@ int STR::TIMINT::BaseDataGlobalState::SetupBlockInformation(
           soltype == INPAR::CONTACT::solution_penalty
           ||
           soltype == INPAR::CONTACT::solution_uzawa)
+      {
         model_block_id_[mt] = 0;
-
+      }
       // --- saddle-point system
       else if (systype == INPAR::CONTACT::system_saddlepoint)
       {
@@ -299,7 +300,9 @@ int STR::TIMINT::BaseDataGlobalState::SetupBlockInformation(
       }
       // --- condensed system
       else
+      {
         model_block_id_[mt] = 0;
+      }
       break;
     }
     case INPAR::STR::model_cardiovascular0d:
@@ -596,6 +599,30 @@ Teuchos::RCP<LINALG::SparseOperator>& STR::TIMINT::BaseDataGlobalState::
   }
 
   return jac_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseOperator> STR::TIMINT::BaseDataGlobalState::
+    CreateAuxJacobian() const
+{
+  CheckInit();
+  Teuchos::RCP<LINALG::SparseOperator> jac = Teuchos::null;
+
+  if (max_block_num_>1)
+  {
+    jac = Teuchos::rcp(new LINALG::BlockSparseMatrix
+         <LINALG::DefaultBlockMatrixStrategy>(BlockExtractor(),BlockExtractor(),
+             81,true,true));
+  }
+  else
+  {
+    // pure structural case
+    jac = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(),
+        81, true, true));
+  }
+
+  return jac;
 }
 
 /*----------------------------------------------------------------------------*

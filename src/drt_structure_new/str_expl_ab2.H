@@ -2,7 +2,7 @@
 /*!
 \file str_expl_ab2.H
 
-\maintainer Philipp Farah
+\maintainer Michael Hiermeier
 
 \date Aug 13, 2015
 

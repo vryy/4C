@@ -5,7 +5,7 @@
 
 \level 1
 
-\maintainer Philipp Farah, Alexander Seitz
+\maintainer Alexander Seitz
 
 *-----------------------------------------------------------------------*/
 

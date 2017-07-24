@@ -5,7 +5,7 @@
 
 \level 2
 
-\maintainer Philipp Farah, Alexander Seitz
+\maintainer Alexander Seitz
 
 *-----------------------------------------------------------------------*/
 #ifndef CONTACT_DEFINES_H

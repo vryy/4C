@@ -6,7 +6,7 @@
 
 \level 2
 
-\maintainer Philipp Farah
+\maintainer Alexander Popp
 */
 /*----------------------------------------------------------------------*/
 #ifndef CONTACT_WEAR_INTERFACE_H_

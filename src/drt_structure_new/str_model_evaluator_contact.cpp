@@ -153,6 +153,7 @@ bool STR::MODELEVALUATOR::Contact::EvaluateForce()
   bool ok = true;
   // --- evaluate contact contributions ---------------------------------
   EvalContact().SetActionType( MORTAR::eval_force );
+  EvalData().SetModelEvaluator( this );
   Strategy().Evaluate(EvalData().Contact());
 
   return ok;
@@ -166,6 +167,7 @@ bool STR::MODELEVALUATOR::Contact::EvaluateStiff()
   bool ok = true;
   // --- evaluate contact contributions ---------------------------------
   EvalContact().SetActionType( MORTAR::eval_force_stiff );
+  EvalData().SetModelEvaluator( this );
   Strategy().Evaluate(EvalData().Contact());
 
   return ok;
@@ -201,10 +203,12 @@ bool STR::MODELEVALUATOR::Contact::AssembleForce(Epetra_Vector& f,
   Teuchos::RCP<const Epetra_Vector> block_vec_ptr = Teuchos::null;
   if (Strategy().IsCondensedSystem())
   {
-    block_vec_ptr = Strategy().GetCondensedRhsPtr();
+    block_vec_ptr = Strategy().GetCondensedRhsPtr(f, timefac_np);
     // if there are no active contact contributions, we can skip this...
-    if (block_vec_ptr.is_null()) return true;
-    LINALG::AssembleMyVector(1.0,f,1.0,*block_vec_ptr);
+    if (block_vec_ptr.is_null())
+      return true;
+
+    LINALG::AssembleMyVector(0.0,f,1.0,*block_vec_ptr);
   }
   else if (Strategy().IsSaddlePointSystem())
   {
@@ -230,6 +234,8 @@ bool STR::MODELEVALUATOR::Contact::AssembleForce(Epetra_Vector& f,
     if (block_vec_ptr.is_null()) return true;
     LINALG::AssembleMyVector(1.0,f,timefac_np,*block_vec_ptr);
   }
+
+
   return true;
 }
 
@@ -245,12 +251,18 @@ bool STR::MODELEVALUATOR::Contact::AssembleJacobian(
   // ---------------------------------------------------------------------
   if (Strategy().IsCondensedSystem())
   {
-    block_ptr = Strategy().GetCondensedMatrixBlockPtr();
-    // if there are no active contact contributions, we can skip this...
-    if (block_ptr.is_null()) return (err==0);
     Teuchos::RCP<LINALG::SparseMatrix> jac_dd =
         GState().ExtractDisplBlock(jac);
-    jac_dd->Add(*block_ptr,false,1.0,1.0);
+
+    block_ptr = Strategy().GetCondensedMatrixBlockPtr(jac_dd, timefac_np);
+    // if there are no active contact contributions, we can skip this...
+    if (block_ptr.is_null())
+    {
+      return (err==0);
+    }
+
+    // here we should hand in the jac_dd matrix and modify it
+    jac_dd->Add(*block_ptr,false,1.0,0.0);
   }
   // ---------------------------------------------------------------------
   // saddle-point system of equations or no contact contributions
@@ -758,11 +770,22 @@ const CONTACT::CoAbstractStrategy& STR::MODELEVALUATOR::Contact::Strategy()
 Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Contact::
     GetBlockDofRowMapPtr() const
 {
+  DRT::Problem* problem = DRT::Problem::Instance();
+
   CheckInitSetup();
   if (Strategy().LMDoFRowMapPtr(false)==Teuchos::null)
     return GState().DofRowMap();
   else
-    return Strategy().LMDoFRowMapPtr(false);
+  {
+    enum INPAR::CONTACT::SystemType systype =
+        DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(
+            problem->ContactDynamicParams(),"SYSTEM");
+
+    if (systype == INPAR::CONTACT::system_saddlepoint)
+      return Strategy().LMDoFRowMapPtr(false);
+    else
+      return GState().DofRowMap();
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -770,6 +793,14 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Contact::
 Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Contact::
     GetCurrentSolutionPtr() const
 {
+  //TODO: this should be removed!
+  DRT::Problem* problem = DRT::Problem::Instance();
+  enum INPAR::CONTACT::SystemType systype =
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(
+          problem->ContactDynamicParams(),"SYSTEM");
+  if (systype == INPAR::CONTACT::system_condensed)
+    return Teuchos::null;
+
   if (Strategy().GetLagrMultNp(false)!=Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> curr_lm_ptr =
@@ -849,3 +880,43 @@ STR::MODELEVALUATOR::Contact::AssembleForceOfAllModels() const
 
   return Teuchos::rcp( new Epetra_Vector( force->getEpetraVector() ) );
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseOperator>
+STR::MODELEVALUATOR::Contact::GetAuxDisplJacobian() const
+{
+  std::vector<INPAR::STR::ModelType> g;
+  g.push_back(INPAR::STR::ModelType::model_contact);
+
+  Teuchos::RCP<LINALG::SparseOperator> jacaux =
+      GState().CreateAuxJacobian();
+  bool ok = Int().AssembleJac( *jacaux, &g );
+
+  if(!ok)
+    dserror("ERROR: CreateAuxJacobian went wrong!");
+
+//  Teuchos::RCP<LINALG::SparseMatrix> jac_dd =
+//      GState().ExtractDisplBlock(*jacaux);
+
+//  Teuchos::RCP<LINALG::SparseOperator> jac_dd_new =
+//  Teuchos::rcp_dynamic_cast<LINALG::SparseOperator>(jac_dd)
+
+  return jacaux;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector>
+STR::MODELEVALUATOR::Contact::AssembleForceOfModels(
+    const std::vector<INPAR::STR::ModelType>* without_these_models ) const
+{
+  std::vector<INPAR::STR::ModelType> g;
+  g.push_back(INPAR::STR::ModelType::model_contact);
+
+  Teuchos::RCP<NOX::Epetra::Vector> force = GState().CreateGlobalVector();
+  Int().AssembleForce( force->getEpetraVector(), &g );
+
+  return Teuchos::rcp( new Epetra_Vector( force->getEpetraVector() ) );
+}
+

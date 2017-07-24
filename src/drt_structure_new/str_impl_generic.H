@@ -70,6 +70,10 @@ namespace IMPLICIT {
         const std::vector<INPAR::STR::ModelType>* without_these_models = NULL ) const = 0;
 
     //! derived
+    virtual bool AssembleJac( LINALG::SparseOperator& jac,
+        const std::vector<INPAR::STR::ModelType>* without_these_models = NULL ) const {return false;};
+
+    //! derived
     virtual void WriteRestart(IO::DiscretizationWriter& iowriter,
         const bool& forced_writerestart) const = 0;
 

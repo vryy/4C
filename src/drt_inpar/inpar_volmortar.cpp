@@ -7,9 +7,7 @@
 \level 1
 
 <pre>
-\maintainer Philipp Farah
-            farah@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
+\maintainer Alexander Popp
 </pre>
 */
 

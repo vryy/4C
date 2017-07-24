@@ -6,7 +6,7 @@
 
 \level 2
 
-\maintainer Philipp Farah, Alexander Seitz
+\maintainer Alexander Seitz
 
 */
 /*---------------------------------------------------------------------*/
@@ -116,6 +116,26 @@ public:
   inline Teuchos::RCP<const Epetra_Map> ActiveDofs() const
   {
     return activedofs_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& InActiveNodes()
+  {
+    return inactivenodes_;
+  }
+
+  inline const Teuchos::RCP<Epetra_Map>& InActiveNodes() const
+  {
+    return inactivenodes_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& InActiveDofs()
+  {
+    return inactivedofs_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> InActiveDofs() const
+  {
+    return inactivedofs_;
   }
 
   inline Teuchos::RCP<Epetra_Map>& ActiveN()
@@ -338,6 +358,8 @@ private:
 
   Teuchos::RCP<Epetra_Map>      activenodes_;    ///< row map of all active slave nodes
   Teuchos::RCP<Epetra_Map>      activedofs_;     ///< row map of all active slave dofs
+  Teuchos::RCP<Epetra_Map>      inactivenodes_;    ///< row map of all inactive slave nodes
+  Teuchos::RCP<Epetra_Map>      inactivedofs_;     ///< row map of all inactive slave dofs
   Teuchos::RCP<Epetra_Map>      activen_;        ///< row map of global N-matrix
   Teuchos::RCP<Epetra_Map>      activet_;        ///< row map of global T-matrix
   Teuchos::RCP<Epetra_Map>      slipnodes_;      ///< row map of all slip slave nodes
@@ -458,6 +480,25 @@ public:
   virtual const Teuchos::RCP<Epetra_Map> ActiveDofs() const
   {
     if (Filled()) return activedofs_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+
+  virtual const Teuchos::RCP<Epetra_Map> InActiveNodes() const
+  {
+    if (Filled()) return inactivenodes_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+
+
+  /*!
+  \brief Get row map of active dofs (Filled()==true is prerequisite)
+
+  */
+  virtual const Teuchos::RCP<Epetra_Map> InActiveDofs() const
+  {
+    if (Filled()) return inactivedofs_;
     else dserror("CONTACT::Interface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
@@ -1433,6 +1474,8 @@ protected:
 
   Teuchos::RCP<Epetra_Map>&     activenodes_;    ///< ref. to row map of all active slave nodes
   Teuchos::RCP<Epetra_Map>&     activedofs_;     ///< ref. to row map of all active slave dofs
+  Teuchos::RCP<Epetra_Map>&     inactivenodes_;    ///< ref. to row map of all active slave nodes
+  Teuchos::RCP<Epetra_Map>&     inactivedofs_;     ///< ref. to row map of all active slave dofs
   Teuchos::RCP<Epetra_Map>&     activen_;        ///< ref. to row map of global N-matrix
   Teuchos::RCP<Epetra_Map>&     activet_;        ///< ref. to row map of global T-matrix
   Teuchos::RCP<Epetra_Map>&     slipnodes_;      ///< ref. to row map of all slip slave nodes

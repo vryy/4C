@@ -6,7 +6,7 @@
 
 \level 1
 
-\maintainer Philipp Farah, Alexander Seitz
+\maintainer Alexander Seitz
 
 *----------------------------------------------------------------------*/
 #ifndef MORTAR_COUPLING3D_CLASSES_H

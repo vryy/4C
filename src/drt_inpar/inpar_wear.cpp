@@ -4,11 +4,11 @@
 
 \brief Input parameters for wear
 
-\level 2
+\level 1
 
-\maintainer Philipp Farah
-            farah@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
+<pre>
+\maintainer Alexander Popp
+</pre>
 */
 
 /*----------------------------------------------------------------------*/

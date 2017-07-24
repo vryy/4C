@@ -6,7 +6,7 @@
 
 \level 2
 
-\maintainer Philipp Farah, Alexander Seitz
+\maintainer Alexander Seitz
 
 */
 /*---------------------------------------------------------------------*/
@@ -121,6 +121,28 @@ public:
       dserror("The gAugActiveSlaveDofsPtr_ is not initialized!");
     return *gactivedofs_;
   }
+
+
+  //! return global active slave node row map (of all interfaces)
+  Teuchos::RCP<Epetra_Map>& GInActiveNodeRowMapPtr() { return ginactivenodes_; };
+  Teuchos::RCP<const Epetra_Map> GInActiveNodeRowMapPtr() const { return ginactivenodes_; };
+  Epetra_Map& GInActiveNodeRowMap()
+  {
+    if (ginactivenodes_.is_null())
+      dserror("The ginactivenodes_ is not initialized!");
+    return *ginactivenodes_;
+  }
+
+  //! return global active slave dof row map (of all interfaces)
+  Teuchos::RCP<Epetra_Map>& GInActiveDofRowMapPtr() { return ginactivedofs_; };
+  Teuchos::RCP<const Epetra_Map> GInActiveDofRowMapPtr() const { return ginactivedofs_; };
+  Epetra_Map& GInActiveDofRowMap()
+  {
+    if (ginactivedofs_.is_null())
+      dserror("The gAugActiveSlaveDofsPtr_ is not initialized!");
+    return *ginactivedofs_;
+  }
+
 
   //! return global active slave dof row map in normal direction (of all interfaces)
   Teuchos::RCP<Epetra_Map>& GActiveNDofRowMapPtr() { return gactiven_; };
@@ -272,6 +294,16 @@ public:
     if (linmmatrix_.is_null())
       dserror("The augMnLinMatrixPtr_ is not initialized!");
     return *linmmatrix_;
+  }
+
+  //! return global Matrix kteffnew containing modified jacobian
+  Teuchos::RCP<LINALG::SparseMatrix>& kteffnewMatrixPtr() { return kteffnew_; };
+  Teuchos::RCP<const LINALG::SparseMatrix> kteffnewMatrixPtr() const { return kteffnew_; };
+  LINALG::SparseMatrix& kteffnewMatrix()
+  {
+    if (kteffnew_.is_null())
+      dserror("The kteffnewMatrixPtr is not initialized!");
+    return *kteffnew_;
   }
 
   //! return global Mortar matrix D (last end-point \f$t_{n}\f$)
@@ -433,6 +465,13 @@ private:
   //! global active slave dof row map (of all interfaces)
   Teuchos::RCP<Epetra_Map> gactivedofs_;
 
+  //! global active slave node row map (of all interfaces)
+  Teuchos::RCP<Epetra_Map> ginactivenodes_;
+
+  //! global active slave dof row map (of all interfaces)
+  Teuchos::RCP<Epetra_Map> ginactivedofs_;
+
+
   //! global active slave dof row map in normal direction (of all interfaces)
   Teuchos::RCP<Epetra_Map> gactiven_;
 
@@ -501,6 +540,9 @@ private:
 
   //! global Matrix LinM containing master fc derivatives
   Teuchos::RCP<LINALG::SparseMatrix> linmmatrix_;
+
+  //! global K matrix
+  Teuchos::RCP<LINALG::SparseMatrix> kteffnew_;
 
   //! global Mortar matrix D (last end-point \f$t_{n}\f$)
   Teuchos::RCP<LINALG::SparseMatrix> dold_;
@@ -785,7 +827,8 @@ public:
    *
    *  \date 05/2016
    *  \author hiermeier */
-  virtual Teuchos::RCP<const Epetra_Vector> GetCondensedRhsPtr() const
+  virtual Teuchos::RCP<const Epetra_Vector> GetCondensedRhsPtr(
+      Epetra_Vector& f, const double & timefac_np) const
   { dserror("Not yet implemented!"); exit(EXIT_FAILURE); };
 
   /*! \brief Return the desired matrix block pointer (read-only)
@@ -806,7 +849,8 @@ public:
    *  \remark Please note, that a Teuchos::null pointer is returned, if no active contact
    *  contributions are present.
    */
-  virtual Teuchos::RCP<LINALG::SparseMatrix> GetCondensedMatrixBlockPtr() const
+  virtual Teuchos::RCP<LINALG::SparseMatrix> GetCondensedMatrixBlockPtr(
+      Teuchos::RCP<LINALG::SparseMatrix>& kteff, const double & timefac_np) const
   { dserror("Not yet implemented!"); exit(EXIT_FAILURE); };
 
   //! Return global slave node row map
@@ -1519,6 +1563,8 @@ protected:
 
     Teuchos::RCP<Epetra_Map>& gactivenodes_;         //!< ref. to global active slave node row map (of all interfaces)
     Teuchos::RCP<Epetra_Map>& gactivedofs_;          //!< ref. to global active slave dof row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map>& ginactivenodes_;         //!< ref. to global active slave node row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map>& ginactivedofs_;          //!< ref. to global active slave dof row map (of all interfaces)
     Teuchos::RCP<Epetra_Map>& gactiven_;             //!< ref. to global dof row map of matrix N (of all interfaces)
     Teuchos::RCP<Epetra_Map>& gactivet_;             //!< ref. to global dof row map of matrix T (of all interfaces)
     Teuchos::RCP<Epetra_Map>& gslipnodes_;           //!< ref. to global slip slave node row map (of all interfaces)
@@ -1547,6 +1593,7 @@ protected:
 
     Teuchos::RCP<LINALG::SparseMatrix>& lindmatrix_; //!< ref. to global Matrix LinD containing slave fc derivatives
     Teuchos::RCP<LINALG::SparseMatrix>& linmmatrix_; //!< ref. to global Matrix LinM containing master fc derivatives
+    Teuchos::RCP<LINALG::SparseMatrix>& kteffnew_;
 
     Teuchos::RCP<LINALG::SparseMatrix>& dold_;       //!< ref. to global Mortar matrix D (last end-point \f$t_{n}\f$)
     Teuchos::RCP<LINALG::SparseMatrix>& mold_;       //!< ref. to global Mortar matrix D (last end-point \f$t_{n}\f$)

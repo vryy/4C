@@ -203,6 +203,43 @@ void STR::ModelEvaluator::AssembleForce(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+bool STR::ModelEvaluator::AssembleJacobian(
+    const double timefac_np,
+    LINALG::SparseOperator& jac,
+    const std::vector<INPAR::STR::ModelType>* without_these_models ) const
+{
+  if ( not without_these_models )
+    return AssembleJacobian( timefac_np, jac );
+
+  Vector partial_me_vec;
+  partial_me_vec.reserve( me_vec_ptr_->size() );
+  for ( Vector::const_iterator cit = me_vec_ptr_->begin();
+        cit != me_vec_ptr_->end(); ++cit )
+  {
+    const STR::MODELEVALUATOR::Generic& model = **cit;
+
+    bool found = false;
+    std::vector<INPAR::STR::ModelType>::const_iterator citer = without_these_models->begin();
+
+    while ( citer != without_these_models->end() )
+    {
+      if ( *citer == model.Type() )
+      {
+        found = true;
+        break;
+      }
+      ++citer;
+    }
+
+    if ( not found )
+      partial_me_vec.push_back( *cit );
+  }
+
+  return AssembleJacobian( partial_me_vec, timefac_np, jac );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::AssembleJacobian(
     bool& ok,
     const Vector& me_vec,

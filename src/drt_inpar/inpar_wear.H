@@ -2,11 +2,10 @@
 /*!
 \file inpar_wear.H
 
+\level 1
+
 <pre>
-Maintainer: Philipp Farah
-            farah@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15257
+\maintainer Alexander Popp
 </pre>
 */
 /*----------------------------------------------------------------------*/

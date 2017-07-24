@@ -6,7 +6,7 @@
 
 \level 2
 
-\maintainer Philipp Farah, Alexander Seitz
+\maintainer Alexander Seitz
 
 */
 /*---------------------------------------------------------------------*/
@@ -48,6 +48,8 @@ CONTACT::AbstractStratDataContainer::AbstractStratDataContainer()
       gdisprowmap_(Teuchos::null),
       gactivenodes_(Teuchos::null),
       gactivedofs_(Teuchos::null),
+      ginactivenodes_(Teuchos::null),
+      ginactivedofs_(Teuchos::null),
       gactiven_(Teuchos::null),
       gactivet_(Teuchos::null),
       gslipnodes_(Teuchos::null),
@@ -71,6 +73,7 @@ CONTACT::AbstractStratDataContainer::AbstractStratDataContainer()
       constrrhs_(Teuchos::null),
       lindmatrix_(Teuchos::null),
       linmmatrix_(Teuchos::null),
+      kteffnew_(Teuchos::null),
       dold_(Teuchos::null),
       mold_(Teuchos::null),
       z_(Teuchos::null),
@@ -130,6 +133,8 @@ CONTACT::CoAbstractStrategy::CoAbstractStrategy(
       gdisprowmap_(data_ptr->GDispDofRowMapPtr()),
       gactivenodes_(data_ptr->GActiveNodeRowMapPtr()),
       gactivedofs_(data_ptr->GActiveDofRowMapPtr()),
+      ginactivenodes_(data_ptr->GInActiveNodeRowMapPtr()),
+      ginactivedofs_(data_ptr->GInActiveDofRowMapPtr()),
       gactiven_(data_ptr->GActiveNDofRowMapPtr()),
       gactivet_(data_ptr->GActiveTDofRowMapPtr()),
       gslipnodes_(data_ptr->GSlipNodeRowMapPtr()),
@@ -153,6 +158,7 @@ CONTACT::CoAbstractStrategy::CoAbstractStrategy(
       constrrhs_(data_ptr->ConstrRhsPtr()),
       lindmatrix_(data_ptr->DLinMatrixPtr()),
       linmmatrix_(data_ptr->MLinMatrixPtr()),
+      kteffnew_(data_ptr->kteffnewMatrixPtr()),
       dold_(data_ptr->OldDMatrixPtr()),
       mold_(data_ptr->OldMMatrixPtr()),
       z_(data_ptr->LmPtr()),
@@ -431,6 +437,8 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
   gmnoderowmap_ = Teuchos::null;
   gactivenodes_ = Teuchos::null;
   gactivedofs_ = Teuchos::null;
+  ginactivenodes_ = Teuchos::null;
+  ginactivedofs_ = Teuchos::null;
   gactiven_ = Teuchos::null;
   gactivet_ = Teuchos::null;
   if (!redistributed)
@@ -487,6 +495,12 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
         Interfaces()[i]->ActiveNodes(), false);
     gactivedofs_ = LINALG::MergeMap(gactivedofs_, Interfaces()[i]->ActiveDofs(),
         false);
+
+    ginactivenodes_ = LINALG::MergeMap(ginactivenodes_,
+        Interfaces()[i]->InActiveNodes(), false);
+    ginactivedofs_ = LINALG::MergeMap(ginactivedofs_, Interfaces()[i]->InActiveDofs(),
+        false);
+
     gactiven_ = LINALG::MergeMap(gactiven_, Interfaces()[i]->ActiveNDofs(),
         false);
     gactivet_ = LINALG::MergeMap(gactivet_, Interfaces()[i]->ActiveTDofs(),

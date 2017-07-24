@@ -6,7 +6,7 @@
 
 \level 2
 
-\maintainer Philipp Farah, Alexander Seitz
+\maintainer Alexander Seitz
 
 */
 /*---------------------------------------------------------------------*/
@@ -46,6 +46,8 @@ CONTACT::IDataContainer::IDataContainer()
       constr_direction_( INPAR::CONTACT::constr_vague ),
       activenodes_( Teuchos::null ),
       activedofs_( Teuchos::null ),
+      inactivenodes_( Teuchos::null ),
+      inactivedofs_( Teuchos::null ),
       activen_( Teuchos::null ),
       activet_( Teuchos::null ),
       slipnodes_( Teuchos::null ),
@@ -97,6 +99,8 @@ CONTACT::CoInterface::CoInterface(
       constr_direction_( idata_.ConstraintDirection() ),
       activenodes_( idata_.ActiveNodes() ),
       activedofs_( idata_.ActiveDofs() ),
+      inactivenodes_( idata_.InActiveNodes() ),
+      inactivedofs_( idata_.InActiveDofs() ),
       activen_( idata_.ActiveN() ),
       activet_( idata_.ActiveT() ),
       slipnodes_( idata_.SlipNodes() ),
@@ -141,6 +145,8 @@ CONTACT::CoInterface::CoInterface(
       constr_direction_( idata_.ConstraintDirection() ),
       activenodes_( idata_.ActiveNodes() ),
       activedofs_( idata_.ActiveDofs() ),
+      inactivenodes_( idata_.InActiveNodes() ),
+      inactivedofs_( idata_.InActiveDofs() ),
       activen_( idata_.ActiveN() ),
       activet_( idata_.ActiveT() ),
       slipnodes_( idata_.SlipNodes() ),
@@ -14087,7 +14093,9 @@ bool CONTACT::CoInterface::BuildActiveSet(bool init)
 {
   // define local variables
   std::vector<int> mynodegids(0);
+  std::vector<int> mynodegidsInactive(0);
   std::vector<int> mydofgids(0);
+  std::vector<int> mydofgidsInactive(0);
   std::vector<int> myslipnodegids(0);
   std::vector<int> myslipdofgids(0);
   std::vector<int> mymnodegids(0);
@@ -14186,6 +14194,13 @@ bool CONTACT::CoInterface::BuildActiveSet(bool init)
         for (int j=0;j<numdof;++j)
           mydofgids.push_back(cnode->Dofs()[j]);
       }
+      else
+      {
+        mynodegidsInactive.push_back(cnode->Id());
+
+        for (int j=0;j<numdof;++j)
+          mydofgidsInactive.push_back(cnode->Dofs()[j]);
+      }
 
       // check if frictional node is in slip state
       if (friction_)
@@ -14204,6 +14219,8 @@ bool CONTACT::CoInterface::BuildActiveSet(bool init)
   // create active node map and active dof map
   activenodes_ = LINALG::CreateMap(mynodegids,Comm());
   activedofs_  = LINALG::CreateMap(mydofgids,Comm());
+  inactivenodes_ = LINALG::CreateMap(mynodegidsInactive,Comm());
+  inactivedofs_  = LINALG::CreateMap(mydofgidsInactive,Comm());
 
   if (friction_)
   {

@@ -3,11 +3,11 @@
 \file wear_utils.H
 
 \brief  utils for wear algorithm
+
+\level 2
+
 <pre>
-Maintainer: Philipp Farah
-            farah@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15257
+\maintainer Alexander Popp
 </pre>
 */
 

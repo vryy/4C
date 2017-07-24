@@ -123,6 +123,21 @@ namespace MODELEVALUATOR {
         Epetra_Vector& f,
         const std::vector<INPAR::STR::ModelType>* without_these_models ) const;
 
+
+    /** \brief Assembly of all jacobian contributions
+     *
+     *  \param timefac_np           (in) : time integration factor for the current contribution
+     *                                     \f$t_{n+1}\f$
+     *  \param jac                 (out) : jacobian which is going to be assembled.
+     *  \param without_these_models (in) : Assemble all models, except the models in this
+     *                                     vector (optional)
+     *
+     *  \author farah \date 07/17 */
+    bool AssembleJacobian(
+        const double timefac_np,
+        LINALG::SparseOperator& jac,
+        const std::vector<INPAR::STR::ModelType>* without_these_models ) const;
+
     /** \brief Assembly of all force contributions
      *
      *  \param timefac_np (in) : time integration factor for the current contribution \f$t_{n+1}\f$
@@ -134,6 +149,13 @@ namespace MODELEVALUATOR {
         Epetra_Vector& f ) const
     {
       return AssembleForce( *me_vec_ptr_, timefac_np, f );
+    }
+
+    inline bool AssembleJacobian(
+        const double timefac_np,
+        LINALG::SparseOperator& jac ) const
+    {
+      return AssembleJacobian( *me_vec_ptr_, timefac_np, jac );
     }
 
     /** \brief Assembly of a sub-set of force contributions
@@ -150,6 +172,23 @@ namespace MODELEVALUATOR {
     {
       bool ok = true;
       AssembleForce( ok, me_vec, timefac_np, f );
+      return ok;
+    }
+
+    /** \brief Assembly of a sub-set of stiffness contributions
+     *
+     *  \param me_vec     (in) : user provided vector of all models which are going to be assembled
+     *  \param timefac_np (in) : time integration factor for the current contribution \f$t_{n+1}\f$
+     *  \param jac         (out) : jacobian which is going to be assembled.
+     *
+     *  \author farah \date 07/17 */
+    inline bool AssembleJacobian(
+        const Vector& me_vec,
+        const double timefac_np,
+        LINALG::SparseOperator& jac ) const
+    {
+      bool ok = true;
+      AssembleJacobian( ok, me_vec, timefac_np, jac );
       return ok;
     }
 

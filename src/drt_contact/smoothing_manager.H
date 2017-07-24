@@ -6,7 +6,7 @@
 
 \level 3
 
-\maintainer Philipp Farah
+\maintainer Alexander Popp
 
 */
 /*---------------------------------------------------------------------*/

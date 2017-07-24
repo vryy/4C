@@ -186,6 +186,8 @@ namespace TIMINT {
     /// Create the jacobian matrix
     Teuchos::RCP<LINALG::SparseOperator>& CreateJacobian();
 
+    Teuchos::RCP<LINALG::SparseOperator> CreateAuxJacobian() const;
+
   protected:
     inline const bool& IsInit() const
     { return isinit_; };

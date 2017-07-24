@@ -3,7 +3,7 @@
 
 \level 2
 
-\maintainer Philipp Farah, Alexander Seitz
+\maintainer Alexander Seitz
 
 \brief BACI implementation of main class to control all meshtying
 

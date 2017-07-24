@@ -2,11 +2,11 @@
 /*!
 \file smoothing_strategy.cpp
 
-\brief ToDo Add meaningful comment.
+\brief strategy for interface smoothing
 
 \level 3
 
-\maintainer Philipp Farah
+\maintainer Alexander Popp
 
 */
 /*---------------------------------------------------------------------*/

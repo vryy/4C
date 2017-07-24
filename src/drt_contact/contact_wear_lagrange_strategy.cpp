@@ -1,11 +1,11 @@
 /*!----------------------------------------------------------------------
 \file contact_wear_lagrange_strategy.cpp
 
-\brief ToDo Add meaningful comment.
+\brief strategy for finite wear modeling
 
 \level 2
 
-\maintainer Philipp Farah
+\maintainer Alexander Popp
 
 *----------------------------------------------------------------------*/
 

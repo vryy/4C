@@ -4,7 +4,7 @@
 
 \brief Generalized Energy Momentum time integrator.
 
-\maintainer Philipp Farah
+\maintainer Michael Hiermeier
 
 \date Dec 14, 2015
 

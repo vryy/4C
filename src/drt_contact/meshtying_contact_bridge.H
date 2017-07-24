@@ -1,11 +1,11 @@
 /*!----------------------------------------------------------------------
 \file meshtying_contact_bridge.H
 
+\level 2
+
 <pre>
-Maintainer: Philipp Farah
-            farah@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15257
+\maintainer Alexander Popp
+
 </pre>
 
 *-----------------------------------------------------------------------*/

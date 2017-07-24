@@ -4,10 +4,7 @@
 <pre>
 \level 3
 
-\maintainer Philipp Farah
-             farah@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15257
+\maintainer Andrea La Spina
 </pre>
 
 *----------------------------------------------------------------------*/

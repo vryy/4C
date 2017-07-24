@@ -4,7 +4,7 @@
 
 \brief explicit structural time integration
 
-\maintainer Philipp Farah
+\maintainer Michael Hiermeier
 
 \date Aug 12, 2015
 

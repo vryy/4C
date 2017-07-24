@@ -3,7 +3,7 @@
 
 \brief A class for a frictional contact node
 \level 2
-\maintainer Philipp Farah, Alexander Seitz
+\maintainer Alexander Seitz
 
 *-----------------------------------------------------------------------*/
 

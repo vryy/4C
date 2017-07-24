@@ -1,7 +1,9 @@
 /*!----------------------------------------------------------------------
 \file mortar_element_integrator.cpp
 
-\maintainer Philipp Farah, Alexander Seitz
+\level 2
+
+\maintainer Alexander Seitz
 
 \brief A class to perform Gaussian integration on a mortar element
 

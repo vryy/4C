@@ -6,7 +6,7 @@
 
 \level 2
 
-\maintainer Philipp Farah, Alexander Seitz
+\maintainer Alexander Seitz
 
 */
 /*---------------------------------------------------------------------*/
@@ -108,6 +108,10 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
        const enum DRT::UTILS::VecBlockType& bt) const;
 
+    virtual Teuchos::RCP<const Epetra_Vector> GetCondensedRhsPtr(
+        Epetra_Vector& f, const double & timefac_np) const;
+
+
     /*! \brief Recover the current state
      *
      *  The main task of this method is to recover the Lagrange multiplier solution.
@@ -135,6 +139,9 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     virtual Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
         const enum DRT::UTILS::MatBlockType& bt) const;
 
+    virtual Teuchos::RCP<LINALG::SparseMatrix> GetCondensedMatrixBlockPtr(
+        Teuchos::RCP<LINALG::SparseMatrix>& kteff, const double & timefac_np) const;
+
     //! Evaluate contact contributions to stiff matrix
     virtual void AssembleContactStiff();
 
@@ -143,6 +150,10 @@ class CoLagrangeStrategy : public CoAbstractStrategy
 
     //! Assemble contact contributions to the rhs
     virtual void AssembleContactRHS();
+
+    //! Assemble all contact contributions for condensed contact
+    virtual void AssembleAllContactTerms();
+    virtual void StoreInitialContributions(CONTACT::ParamsInterface& cparams);
 
     virtual const Epetra_Map& SlNormalDoFRowMap(const bool& redist) const
     {

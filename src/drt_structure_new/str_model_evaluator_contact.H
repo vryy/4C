@@ -133,6 +133,17 @@ namespace MODELEVALUATOR {
     Teuchos::RCP<Epetra_Vector> AssembleForceOfAllModels() const;
     //! @}
 
+    /// @name call-back routines
+    /// @{
+
+    virtual Teuchos::RCP<LINALG::SparseOperator> GetAuxDisplJacobian() const;
+
+    Teuchos::RCP<Epetra_Vector> AssembleForceOfModels(
+        const std::vector<INPAR::STR::ModelType>* without_these_models =
+            NULL ) const;
+
+    /// @}
+
     //! @name Accessors
     //! @{
 

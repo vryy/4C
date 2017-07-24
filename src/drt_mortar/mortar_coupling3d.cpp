@@ -5,7 +5,7 @@
 
 \level 2
 
-\maintainer Philipp Farah, Alexander Seitz
+\maintainer Alexander Seitz
 
 *-----------------------------------------------------------------------*/
 #include "mortar_coupling3d.H"

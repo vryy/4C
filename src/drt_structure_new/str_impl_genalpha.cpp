@@ -346,6 +346,29 @@ bool STR::IMPLICIT::GenAlpha::AssembleForce( Epetra_Vector& f,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+bool STR::IMPLICIT::GenAlpha::AssembleJac( LINALG::SparseOperator& jac,
+    const std::vector<INPAR::STR::ModelType>* without_these_models ) const
+{
+  CheckInitSetup();
+
+  // set the time step dependent parameters for the assembly
+  const bool ok = ModelEval().AssembleJacobian( 1.0-GetIntParam(), jac,
+      without_these_models );
+
+  if (not ok)
+    return ok;
+
+  // ---------------------------------------------------------------------------
+  // add the visco and mass contributions
+  // ---------------------------------------------------------------------------
+  AddViscoMassContributions(jac);
+
+  return ok;
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::GenAlpha::AddViscoMassContributions(Epetra_Vector& f) const
 {
   // viscous damping forces at t_{n+1-alpha_f}
