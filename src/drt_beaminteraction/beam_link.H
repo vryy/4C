@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file beam_to_beam_linkage.H
+\file beam_link.H
 
 \brief One beam-to-beam pair (two beam elements) connected by a mechanical link
 
@@ -9,8 +9,8 @@
 \maintainer Maximilian Grill
 */
 /*----------------------------------------------------------------------*/
-#ifndef BEAMTOBEAMLINKAGE_H
-#define BEAMTOBEAMLINKAGE_H
+#ifndef BeamLink_H
+#define BeamLink_H
 
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_lib/drt_parobject.H"
@@ -37,40 +37,39 @@ namespace LINALG {
 namespace BEAMINTERACTION
 {
 
-class BeamToBeamLinkageType: public DRT::ParObjectType
+class BeamLinkType: public DRT::ParObjectType
 {
 public:
 
-  std::string Name() const{return "BeamToBeamLinkageType";};
+  std::string Name() const{return "BeamLinkType";};
 
-  static BeamToBeamLinkageType & Instance(){return instance_;};
+  static BeamLinkType & Instance(){return instance_;};
 
 private:
 
-  static BeamToBeamLinkageType instance_;
+  static BeamLinkType instance_;
 };
 
 
 /*!
  \brief element for interaction of two 3D beam elements via a mechanical linkage
  */
-class BeamToBeamLinkage : public DRT::ParObject
+class BeamLink : public DRT::ParObject
 {
 public:
   //! @name Constructors and destructors and related methods
 
   //! Constructor
-  BeamToBeamLinkage();
+  BeamLink();
 
   //! Destructor
-  virtual ~BeamToBeamLinkage() {}
+  virtual ~BeamLink() {}
 
   //! Initialization
   virtual void Init(
       const int id,
       const std::vector<std::pair<int, int> >& eleids,
-      const std::vector<LINALG::Matrix<3,1> >& initpos,
-      const std::vector<LINALG::Matrix<3,3> >& inittriad);
+      const std::vector<LINALG::Matrix<3,1> >& initpos);
 
   //! Setup
   virtual void Setup( const int matnum);
@@ -129,17 +128,15 @@ public:
   inline const LINALG::TMatrix<double,3,1>& GetBindSpotPos2() const
     { return bspotpos2_; }
 
-  //! return orientation of first connection site as quaternion
-  inline const LINALG::TMatrix<double,4,1>& GetBindSpotQuaternion1() const
-    { return bspottriad1_; }
-
-  //! return orientation of first connection site as quaternion
-  inline const LINALG::TMatrix<double,4,1>& GetBindSpotQuaternion2() const
-    { return bspottriad2_; }
-
   //@}
 
   //! @name Public evaluation methods
+
+  /*
+  \brief Update position and triad of both connection sites (a.k.a. binding spots)
+  */
+  void ResetState(
+      std::vector<LINALG::Matrix<3,1> >& bspotpos);
 
   /*!
   \brief Evaluate forces
@@ -168,16 +165,6 @@ public:
       LINALG::SerialDenseMatrix& stiffmat21,
       LINALG::SerialDenseMatrix& stiffmat22) = 0;
 
-  /*
-  \brief Update position and triad of both connection sites (a.k.a. binding spots)
-  */
-  void ResetState(
-      std::vector<LINALG::Matrix<3,1> >& bspotpos,
-      std::vector<LINALG::Matrix<3,3> >& bspottriad);
-
-  //! return appropriate instance of the desired class (acts as a simple factory)
-  static Teuchos::RCP<BeamToBeamLinkage> Create();
-  void Print(std::ostream& out) const;
   //@}
 
 protected:
@@ -227,18 +214,9 @@ private:
   LINALG::Matrix<3,1> bspotpos1_;
   LINALG::Matrix<3,1> bspotpos2_;
 
-  //! current triad of the two connection sites as quaternions
-  LINALG::Matrix<4,1> bspottriad1_;
-  LINALG::Matrix<4,1> bspottriad2_;
-
-  //! triads representing the (constant) relative rotation between the two nodal triads of the linker element
-  // and cross-section orientation of its connection sites (a.k.a. binding spots)
-  LINALG::Matrix<3,3> Lambdarel1_;
-  LINALG::Matrix<3,3> Lambdarel2_;
-
   //@}
 };
 
-} // namespace BEAMINTERACTION
+}
 
 #endif

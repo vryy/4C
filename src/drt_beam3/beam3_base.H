@@ -345,7 +345,7 @@ public:
   //! shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions
   virtual void UnShiftNodePosition(
       std::vector<double>&       disp, //!<element disp vector
-      Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox) const;
+      GEO::MESHFREE::BoundingBox const & periodic_boundingbox) const;
 
   /** \brief extract values for those Dofs relevant for centerline-interpolation from total state vector
    *
@@ -613,10 +613,10 @@ protected:
 public:
 
   //! get centerline pos at binding spot with locn x stored in element parameter space coordinates \in [-1,1] from displacement state vector
-  void GetPosOfBindingSpot(LINALG::Matrix<3,1>&       pos,
-                           std::vector<double>&       disp,
-                           const int&                 bspotlocn,
-                           Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox) const;
+  void GetPosOfBindingSpot(LINALG::Matrix<3,1>&               pos,
+                           std::vector<double>&               disp,
+                           const int&                         bspotlocn,
+                           GEO::MESHFREE::BoundingBox const & periodic_boundingbox) const;
 
   //! get triad at binding spot with locn x stored in element parameter space coordinates \in [-1,1] from displacement state vector
   void GetTriadOfBindingSpot(
@@ -633,13 +633,31 @@ public:
     return bspotstatus_;
   }
 
-  const double& GetBindingSpotXi(const int& bspotlocn) const
+  /** \brief get number of binding spots on this element
+   *
+   *  \author eichinger
+   *  \date 06/17 */
+  unsigned int GetNumberOfBindingSpots() const
+  {
+    // safety check
+    if( bspotstatus_.size() != bspotposxi_.size() )
+      dserror("size miss match regarding binding spots on this element");
+
+    return bspotposxi_.size();
+  }
+
+  /** \brief get binding spot positions xi
+   *
+   *  \author eichinger
+   *  \date 03/17 */
+  double GetBindingSpotXi( int bspotlocn ) const
   {
     if ( (unsigned int) bspotlocn > bspotposxi_.size())
       dserror("number of requested binding spot exceeds total number of binding spots");
 
     return bspotposxi_[bspotlocn];
   }
+
   /** \brief set binding spot positions and status in crosslinker simulation
    *
    *  \author eichinger
@@ -657,7 +675,10 @@ public:
    *
    *  \author eichinger
    *  \date 03/17 */
-  void SetBindingSpotStatus(std::map<int, int> bspotstatus) { bspotstatus_ = bspotstatus; }
+  void SetBindingSpotStatus( std::map< int, int > bspotstatus )
+  { bspotstatus_ = bspotstatus; }
+  void SetCertainBindingSpotStatus( std::pair< int, int > bspotstatus )
+  { bspotstatus_[bspotstatus.first] = bspotstatus.second; }
 
   /** \brief set/get type of filament the element is part of
    *

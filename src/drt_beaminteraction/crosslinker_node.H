@@ -22,8 +22,9 @@
 //forward declaration ...
 namespace MAT
 {
+  class Material;
   class CrosslinkerMat;
-} //namespace MATERIAL
+}
 
 namespace CROSSLINKING
 {
@@ -295,6 +296,12 @@ public:
 
    */
   virtual void SetMaterial( int const matnum );
+
+
+  /*!
+   \brief Set material for crosslinker node
+   */
+  virtual void SetMaterial( Teuchos::RCP<MAT::Material> material );
 
   /*!
    \brief Resets the data container of the node

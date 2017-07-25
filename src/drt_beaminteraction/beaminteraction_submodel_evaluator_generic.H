@@ -159,6 +159,9 @@ namespace SUBMODELEVALUATOR {
     virtual void AddBinsWithRelevantContentForIaDiscretColMap( std::set< int >& colbins) const = 0;
 
     //! \brief do submodel specific stuff after partitioning
+    virtual bool PostPartitionProblem() {return false;};
+
+    //! \brief do submodel specific stuff after setup
     virtual void PostSetup() = 0;
 
     //! @name internal accessors

@@ -26,11 +26,15 @@
 
 DRT::ELEMENTS::RigidsphereType DRT::ELEMENTS::RigidsphereType::instance_;
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 DRT::ELEMENTS::RigidsphereType& DRT::ELEMENTS::RigidsphereType::Instance()
 {
   return instance_;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::RigidsphereType::Create( const std::vector<char> & data )
 {
   DRT::ELEMENTS::Rigidsphere* object = new DRT::ELEMENTS::Rigidsphere(-1,-1);
@@ -38,12 +42,15 @@ DRT::ParObject* DRT::ELEMENTS::RigidsphereType::Create( const std::vector<char> 
   return (object);
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RigidsphereType::Create(const std::string eletype,
-                                                               const std::string eledistype,
-                                                               const int id,
-                                                               const int owner )
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RigidsphereType::Create(
+    const std::string eletype,
+    const std::string eledistype,
+    const int id,
+const int owner )
 {
-  if ( eletype=="RIGIDSPHERE" )
+  if ( eletype == "RIGIDSPHERE" )
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Rigidsphere(id,owner));
     return (ele);
@@ -51,28 +58,48 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RigidsphereType::Create(const std::str
   return (Teuchos::null);
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RigidsphereType::Create( const int id, const int owner )
-
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RigidsphereType::Create(
+    const int id,
+    const int owner )
 {
   return (Teuchos::rcp( new Rigidsphere( id, owner ) ));
 }
 
-
-void DRT::ELEMENTS::RigidsphereType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::RigidsphereType::NodalBlockInformation(
+    DRT::Element * dwele,
+    int & numdf,
+    int & dimns,
+    int & nv,
+    int & np )
 {
   numdf = 3;
   nv = 3;
   dimns = 3;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 // TODO: the function ComputeNullSpace has still to be implemented
-void DRT::ELEMENTS::RigidsphereType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+void DRT::ELEMENTS::RigidsphereType::ComputeNullSpace(
+    DRT::Discretization & dis, std::vector<double> & ns,
+    const double * x0,
+    int numdf,
+    int dimns )
 {
   dserror("Function not implemented yet.");
   //DRT::UTILS::ComputeXFluid3DNullSpace( dis, ns, x0, numdf, dimns );
 }
 
-void DRT::ELEMENTS::RigidsphereType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::RigidsphereType::SetupElementDefinition(
+    std::map<std::string,
+    std::map<std::string,
+    DRT::INPUT::LineDefinition> > & definitions )
 {
   std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["RIGIDSPHERE"];
 
@@ -84,14 +111,13 @@ void DRT::ELEMENTS::RigidsphereType::SetupElementDefinition( std::map<std::strin
 
 }
 
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            meier 05/12|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Rigidsphere::Rigidsphere(int id, int owner) :
-DRT::Element(id,owner),
-radius_(0.0),
-rho_(0.0)
+    DRT::Element(id,owner),
+    radius_(0.0),
+    rho_(0.0)
 {
   return;
 }
@@ -99,12 +125,14 @@ rho_(0.0)
  |  copy-ctor (public)                                       meier 05/12|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Rigidsphere::Rigidsphere(const DRT::ELEMENTS::Rigidsphere& old) :
- DRT::Element(old),
- radius_(old.radius_),
- rho_(old.rho_)
+    DRT::Element(old),
+    radius_(old.radius_),
+    rho_(old.rho_),
+    bondstatus_(old.bondstatus_)
 {
   return;
 }
+
 /*----------------------------------------------------------------------*
  |  Deep copy this instance of Rigidsphere and return pointer to it (public) |
  |                                                            meier 05/12 |
@@ -161,6 +189,7 @@ void DRT::ELEMENTS::Rigidsphere::Pack(DRT::PackBuffer& data) const
   //add all class variables
   AddtoPack(data,radius_);
   AddtoPack(data,rho_);
+  AddtoPack(data,bondstatus_);
 
   return;
 }
@@ -185,6 +214,7 @@ void DRT::ELEMENTS::Rigidsphere::Unpack(const std::vector<char>& data)
   //extract all class variables
   ExtractfromPack(position,data,radius_);
   ExtractfromPack(position,data,rho_);
+  ExtractfromPack(position,data,bondstatus_);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

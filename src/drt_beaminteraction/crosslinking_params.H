@@ -64,49 +64,73 @@ namespace BEAMINTERACTION {
     }
 
     /// number of crosslinkers per type
-    std::vector<int> const& NumCrosslinkerPerType() const
+    std::vector<int> const & NumCrosslinkerPerType() const
     {
       CheckInitSetup();
       return numcrosslinkerpertype_;
     };
 
+    /// number of crosslinkers per type
+    int NumInitCrosslinkerPerCrosslinkerMatId( int matid ) const
+    {
+      CheckInitSetup();
+      return maxnum_init_crosslinker_pertype_.at(matid);
+    };
+
+    /// number of crosslinkers per type
+    int TotalNumInitCrosslinker() const
+    {
+      CheckInitSetup();
+      int sum = 0;
+      for ( auto const & iter : maxnum_init_crosslinker_pertype_ )
+        sum += iter.second;
+      return sum;
+    };
+
     /// material number for crosslinker types
-    std::vector<int> const& MatCrosslinkerPerType() const
+    std::vector<int> const & MatCrosslinkerPerType() const
     {
       CheckInitSetup();
       return matcrosslinkerpertype_;
     };
 
+    /// number of different crosslinker types in simulation volume
+    int NumberOfCrosslinkerTypes() const
+    {
+      CheckInitSetup();
+      return static_cast<int>( numcrosslinkerpertype_.size() );
+    };
+
     /// ~ 1e-3 / 2.27 according to cyron2011 eq 52 ff, viscosity of surrounding fluid
-    double const& Viscosity() const
+    double const & Viscosity() const
     {
       CheckInitSetup();
       return viscosity_;
     };
 
     /// thermal energy
-    double const& KT() const
+    double const & KT() const
     {
       CheckInitSetup();
       return kt_;
     };
 
     /// time step for stochastic events concerning crosslinking
-    double const& DeltaTime() const
+    double const & DeltaTime() const
     {
       CheckInitSetup();
       return deltatime_;
     };
 
     // distance between two binding spots on a filament
-    double const& FilamentBspotInterval() const
+    double const & FilamentBspotInterval() const
     {
       CheckInitSetup();
       return filamentbspotinterval_;
     };
 
     // start and end arc parameter for binding spots on a filament
-    std::vector<double> const& FilamentBspotRange() const
+    std::vector<double> const & FilamentBspotRange() const
     {
       CheckInitSetup();
       return filamentbspotrange_;
@@ -118,6 +142,8 @@ namespace BEAMINTERACTION {
 
     bool issetup_;
 
+    /// number of crosslinker that are initially set
+    std::map< int, int > maxnum_init_crosslinker_pertype_;
     /// number of crosslinkers in the simulated volume
     std::vector<int> numcrosslinkerpertype_;
     /// material numbers for crosslinker types

@@ -200,7 +200,7 @@ void DRT::ELEMENTS::Rigidsphere::nlnstiffmass(Teuchos::ParameterList& params,
   if (massmatrix != NULL)
   {
     for (int i=0; i<3; ++i)
-      (*massmatrix)(i,i) = rho_*4.0/3.0*PI*pow(radius_,3);
+      (*massmatrix)(i,i) = rho_ * 4.0 / 3.0 * PI * radius_ * radius_ * radius_;
   }
 
 //    //assemble inertia force vector if requested
@@ -346,6 +346,30 @@ int DRT::ELEMENTS::Rigidsphere::HowManyRandomNumbersINeed()
 {
   /*three randomly excited (translational) DOFs for Rigidsphere element*/
   return 3;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Rigidsphere::GetGeneralizedInterpolationMatrixVariationsAtXi(
+    LINALG::SerialDenseMatrix& Ivar,
+    const double&              dummy1,
+    const std::vector<double>& dummy2) const
+{
+  LINALG::TMatrix< double, 6, 3 > Ivar_fixedsize( &Ivar( 0, 0 ), true );
+  for ( unsigned int i = 0; i < 3; ++i )
+    Ivar_fixedsize( i, i ) = 1.0;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Rigidsphere::GetGeneralizedInterpolationMatrixIncrementsAtXi(
+    LINALG::SerialDenseMatrix& Iinc,
+    const double&              dummy1,
+    const std::vector<double>& dummy2) const
+{
+  LINALG::TMatrix< double, 6, 3 > Iinc_fixedsize( &Iinc( 0, 0 ), true );
+  for ( unsigned int i = 0; i < 3; ++i )
+    Iinc_fixedsize( i, i ) = 1.0;
 }
 
 /*-----------------------------------------------------------------------------------------------------------*

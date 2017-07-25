@@ -925,8 +925,11 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/beam_potential_pair.cpp
   src/drt_beaminteraction/beam_to_beam_potential_pair.cpp
   src/drt_beaminteraction/beam_to_sphere_potential_pair.cpp
-  src/drt_beaminteraction/beam_to_beam_linkage.cpp
-  src/drt_beaminteraction/beam3r_lin2_linkage.cpp
+  src/drt_beaminteraction/beam_link.cpp
+  src/drt_beaminteraction/beam_link_rigidjointed.cpp
+  src/drt_beaminteraction/beam_link_beam3r_lin2_rigidjointed.cpp
+  src/drt_beaminteraction/beam_link_pinjointed.cpp
+  src/drt_beaminteraction/beam_link_beam3r_lin2_pinjointed.cpp
   src/drt_beaminteraction/str_model_evaluator_beamdata.cpp
   src/drt_beaminteraction/str_model_evaluator_beaminteraction.cpp
   src/drt_beaminteraction/str_model_evaluator_beaminteraction_datastate.cpp

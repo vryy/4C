@@ -40,7 +40,7 @@ namespace MESHFREE
 }
 namespace BEAMINTERACTION {
 class CrosslinkingParams;
-class BeamToBeamLinkage;
+class BeamLink;
 }
 
 namespace BEAMINTERACTION
@@ -82,6 +82,20 @@ public:
   bool operator()( ELEMENT const* first, ELEMENT const* second) const { return first->Id() < second->Id(); }
 };
 
+/*! -------------------------------------------------------------------------
+ * class for comparing std::set< std::pair < int, int > >
+ *  \author J. Eichinger March 2017
+ -------------------------------------------------------------------------*/
+class SetOfPairComparator
+{
+public:
+
+  bool operator() (std::pair< int, int > const & lhs, std::pair< int, int > const & rhs) const
+  {
+    return (lhs.first == rhs.first) ? (lhs.second < rhs.second) : (lhs.first < rhs.first);
+  }
+};
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void PeriodicBoundaryConsistentDisVector(
@@ -121,11 +135,11 @@ void GetCurrentElementDis(
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void GetCurrentUnshiftedElementDis(
-    DRT::Discretization const&                      discret,
-    DRT::Element const*                             ele,
-    Teuchos::RCP<Epetra_Vector> const&              ia_discolnp,
-    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& pbb,
-    std::vector<double>&                            eledisp);
+    DRT::Discretization const&          discret,
+    DRT::Element const*                 ele,
+    Teuchos::RCP<const Epetra_Vector> const & ia_discolnp,
+    GEO::MESHFREE::BoundingBox const &  pbb,
+    std::vector<double>&                eledisp);
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
@@ -147,6 +161,28 @@ void GetPosAndTriadOfBindingSpot(
     int const                                       locbspotnum,
     LINALG::Matrix<3,1>&                            bspotpos,
     LINALG::Matrix<3,3>&                            bspottriad);
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+bool IsDistanceOutOfRange(
+    LINALG::Matrix<3,1> const & pos1,
+    LINALG::Matrix<3,1> const & pos2,
+    double const                lowerbound,
+    double const                upperbound);
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+bool IsEnclosedAngleOutOfRange(
+    LINALG::Matrix<3,1> const & direction1,
+    LINALG::Matrix<3,1> const & direction2,
+    double const                lowerbound,
+    double const                upperbound);
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+bool DoBeamElementsShareNodes(
+    DRT::Element const * const beam,
+    DRT::Element const * const nbbeam );
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -178,31 +214,34 @@ void ExtractPosDofVecAbsoluteValues(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+template< class T1, class T2 >
 void ApplyBindingSpotForceToParentElements(
     DRT::Discretization const&                             discret,
     Teuchos::RCP<GEO::MESHFREE::BoundingBox> const&        pbb,
     const Teuchos::RCP<Epetra_Vector>                      disp_np_col,
-    const Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> elepairptr,
+    const Teuchos::RCP<BEAMINTERACTION::BeamLink> elepairptr,
     std::vector< LINALG::SerialDenseVector > const&        bspotforce,
     std::vector< LINALG::SerialDenseVector >&              eleforce);
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+template< class T1, class T2 >
 void ApplyBindingSpotStiffToParentElements(
     DRT::Discretization const&                                     discret,
     Teuchos::RCP<GEO::MESHFREE::BoundingBox> const&                pbb,
     const Teuchos::RCP<Epetra_Vector>                              disp_np_col,
-    const Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage>         elepairptr,
+    const Teuchos::RCP<BEAMINTERACTION::BeamLink>         elepairptr,
     std::vector< std::vector< LINALG::SerialDenseMatrix > > const& bspotstiff,
     std::vector< std::vector< LINALG::SerialDenseMatrix > >&       elestiff);
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+template< class T1, class T2 >
 void ApplyBindingSpotForceStiffToParentElements(
     DRT::Discretization const&                                     discret,
     Teuchos::RCP<GEO::MESHFREE::BoundingBox> const&                pbb,
     const Teuchos::RCP<Epetra_Vector>                              disp_np_col,
-    const Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage>         elepairptr,
+    const Teuchos::RCP<BEAMINTERACTION::BeamLink>         elepairptr,
     std::vector< LINALG::SerialDenseVector > const&                bspotforce,
     std::vector< std::vector< LINALG::SerialDenseMatrix > > const& bspotstiff,
     std::vector< LINALG::SerialDenseVector >&                      eleforce,
@@ -213,6 +252,15 @@ void ApplyBindingSpotForceStiffToParentElements(
 void SetupEleTypeMapExtractor(
     Teuchos::RCP<const DRT::Discretization> const& discret,
     Teuchos::RCP<LINALG::MultiMapExtractor>&       eletypeextractor);
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int CantorPairing( std::pair< int, int > const & pair, bool safe = true );
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+std::pair< int, int > CantorDePairing( int z );
+
 
 }
 }

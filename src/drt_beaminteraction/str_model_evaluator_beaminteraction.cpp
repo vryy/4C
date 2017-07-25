@@ -163,6 +163,10 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   if( not DRT::Problem::Instance()->Restart() )
     PartitionProblem();
 
+  // some actions need a partitioned system followed by a renewal of the partition
+  if ( not DRT::Problem::Instance()->Restart() and PostPartitionProblem() )
+    PartitionProblem();
+
   // post setup submodel loop
   for ( Vector::iterator sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter )
     (*sme_iter)->PostSetup();
@@ -255,7 +259,7 @@ Teuchos::RCP< STR::MODELEVALUATOR::BeamInteraction::Vector >
 
   STR::MODELEVALUATOR::BeamInteraction::Map::iterator miter;
 
-  // if there is a contractile cell submodel, put in in first place
+  // if there is a contractile cell submodel, put in first place
   miter = submodel_map.find( INPAR::BEAMINTERACTION::submodel_contractilecells  );
   if ( miter != submodel_map.end() )
   {
@@ -356,6 +360,22 @@ void STR::MODELEVALUATOR::BeamInteraction::PartitionProblem()
 
   // reset transformation
   UpdateCouplingAdapterAndMatrixTransformation();
+
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::MODELEVALUATOR::BeamInteraction::PostPartitionProblem()
+{
+  CheckInit();
+
+  bool repartition = false;
+
+  Vector::iterator sme_iter;
+  for ( sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter )
+    if ( (*sme_iter)->PostPartitionProblem() ) repartition = true;
+
+  return repartition;
 }
 
 /*----------------------------------------------------------------------------*
@@ -433,7 +453,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Reset(const Epetra_Vector& x)
       TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox(),
       ia_discret_);
 
-  // update colume vector
+  // update column vector
   ia_state_ptr_->GetMutableDisColNp() = Teuchos::rcp( new Epetra_Vector( *ia_discret_->DofColMap() ) );
   LINALG::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetMutableDisColNp());
 

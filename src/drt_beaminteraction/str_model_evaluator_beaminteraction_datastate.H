@@ -191,6 +191,13 @@ namespace MODELEVALUATOR {
       return discolnp_;
     }
 
+    /// Return displacements \f$D_{n+1}\f$
+    Teuchos::RCP<const Epetra_Vector> GetDisColNp()
+    {
+      CheckInitSetup();
+      return discolnp_;
+    }
+
     /// Return displacements \f$D_{n}\f$
     Teuchos::RCP<Epetra_Vector> GetMutableDisN()
     {

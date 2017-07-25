@@ -248,6 +248,18 @@ void CROSSLINKING::CrosslinkerNode::SetMaterial( int const matnum )
 }
 
 /*----------------------------------------------------------------------------*
+ |  create material class (public)                             eichinger 10/16|
+ *---------------------------------------------------------------------------*/
+void CROSSLINKING::CrosslinkerNode::SetMaterial( Teuchos::RCP<MAT::Material> material )
+{
+  Teuchos::RCP<MAT::CrosslinkerMat> mat =
+      Teuchos::rcp_dynamic_cast<MAT::CrosslinkerMat>(material);
+  if( mat == Teuchos::null )
+    dserror("Invalid material given to crosslinker node. \n");
+  mat_ = mat;
+}
+
+/*----------------------------------------------------------------------------*
  |  Reset data container                                       eichinger 10/16|
  *----------------------------------------------------------------------------*/
 void CROSSLINKING::CrosslinkerNode::ResetDataContainer()

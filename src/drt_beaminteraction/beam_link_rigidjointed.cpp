@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file beam_to_beam_linkage.cpp
+\file beam_link_rigidjointed.cpp
 
 \brief One beam-to-beam pair (two beam elements) connected by a mechanical link
 
@@ -19,32 +19,29 @@
 
 #include <Teuchos_RCP.hpp>
 
-#include "beam_to_beam_linkage.H"
-#include "beam3r_lin2_linkage.H"
+#include "beam_link.H"
 
-BEAMINTERACTION::BeamToBeamLinkageType BEAMINTERACTION::BeamToBeamLinkageType::instance_;
+#include "beam_link_rigidjointed.H"
+
+#include "beam_link_beam3r_lin2_rigidjointed.H"
+
+BEAMINTERACTION::BeamLinkRigidJointedType BEAMINTERACTION::BeamLinkRigidJointedType::instance_;
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BEAMINTERACTION::BeamToBeamLinkage::BeamToBeamLinkage() :
-    ParObject(),
-    isinit_(false),
-    issetup_(false),
-    id_(-1),
-    bspotpos1_(true),
-    bspotpos2_(true),
+BEAMINTERACTION::BeamLinkRigidJointed::BeamLinkRigidJointed() :
+    BeamLink(),
     bspottriad1_(true),
     bspottriad2_(true),
     Lambdarel1_(true),
     Lambdarel2_(true)
 {
-  bspotIds_.clear();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamToBeamLinkage::Init(
+void BEAMINTERACTION::BeamLinkRigidJointed::Init(
     const int id,
     const std::vector<std::pair<int, int> >& eleids,
     const std::vector<LINALG::Matrix<3,1> >& initpos,
@@ -52,12 +49,7 @@ void BEAMINTERACTION::BeamToBeamLinkage::Init(
 {
   issetup_ = false;
 
-  id_ = id;
-  bspotIds_ = eleids;
-
-  bspotpos1_ = initpos[0];
-  bspotpos2_ = initpos[1];
-
+  BeamLink::Init( id, eleids, initpos );
 
   // *** initialization of the two triads of the connecting element ***
 
@@ -75,7 +67,7 @@ void BEAMINTERACTION::BeamToBeamLinkage::Init(
   // feasibility check regarding coinciding connection sites
   if (distvec.Norm2() < 1e-12)
   {
-    std::cout << "\nBeamToBeamLinkage initialized with ...";
+    std::cout << "\nBeamLinkRigidJointed initialized with ...";
     std::cout << "\ninitbspotpos1 =";
     initpos[0].Print(std::cout);
     std::cout << "\ninitbspotpos2 =";
@@ -85,7 +77,7 @@ void BEAMINTERACTION::BeamToBeamLinkage::Init(
     std::cout << "\ninitbspottriad2 =";
     inittriad[1].Print(std::cout);
 
-    dserror("Initialization of BeamToBeamLinkage failed because the two given binding "
+    dserror("Initialization of BeamLinkRigidJointed failed because the two given binding "
         "spot positions are almost identical!");
   }
 
@@ -120,7 +112,7 @@ void BEAMINTERACTION::BeamToBeamLinkage::Init(
   // feasibility check
   if ( second_base_vecor_linkerele.Norm2() < 1e-12 )
   {
-    std::cout << "\nBeamToBeamLinkage initialized with ...";
+    std::cout << "\nBeamLinkRigidJointed initialized with ...";
     std::cout << "\ninitbspotpos1 =";
     initpos[0].Print(std::cout);
     std::cout << "\ninitbspotpos2 =";
@@ -135,7 +127,7 @@ void BEAMINTERACTION::BeamToBeamLinkage::Init(
     std::cout << "\nsecond_base_vecor_linkerele = ";
     second_base_vecor_linkerele.Print(std::cout);
 
-    dserror("Initialization of BeamToBeamLinkage failed because the second base vector of the"
+    dserror("Initialization of BeamLinkRigidJointed failed because the second base vector of the"
         "linker element's triad has almost length zero!");
   }
   else
@@ -151,7 +143,7 @@ void BEAMINTERACTION::BeamToBeamLinkage::Init(
   // feasibility check
   if ( std::abs( third_base_vecor_linkerele.Norm2() - 1.0 ) > 1e-12 )
   {
-    std::cout << "\nBeamToBeamLinkage initialized with ...";
+    std::cout << "\nBeamLinkRigidJointed initialized with ...";
     std::cout << "\ninitbspotpos1 =";
     initpos[0].Print(std::cout);
     std::cout << "\ninitbspotpos2 =";
@@ -168,7 +160,7 @@ void BEAMINTERACTION::BeamToBeamLinkage::Init(
     std::cout << "\nthird_base_vecor_linkerele = ";
     third_base_vecor_linkerele.Print(std::cout);
 
-    dserror("Initialization of BeamToBeamLinkage failed because the third base vector of the"
+    dserror("Initialization of BeamLinkRigidJointed failed because the third base vector of the"
         "linker element's triad is no unit vector!");
   }
 
@@ -192,7 +184,7 @@ void BEAMINTERACTION::BeamToBeamLinkage::Init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamToBeamLinkage::Setup( const int matnum )
+void BEAMINTERACTION::BeamLinkRigidJointed::Setup( const int matnum )
 {
   CheckInit();
 
@@ -201,7 +193,7 @@ void BEAMINTERACTION::BeamToBeamLinkage::Setup( const int matnum )
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamToBeamLinkage::Pack(DRT::PackBuffer& data) const
+void BEAMINTERACTION::BeamLinkRigidJointed::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm( data );
   sm.Insert();
@@ -209,19 +201,9 @@ void BEAMINTERACTION::BeamToBeamLinkage::Pack(DRT::PackBuffer& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
-  // isinit_
-  AddtoPack(data,isinit_);
-  // issetup
-  AddtoPack(data,issetup_);
-  // add id
-  AddtoPack(data,id_);
+  // add base class Element
+  BeamLink::Pack(data);
 
-  // add eleids_
-  AddtoPack(data,bspotIds_);
-  // bspotpos1_
-  AddtoPack(data,bspotpos1_);
-  // bspotpos2_
-  AddtoPack(data,bspotpos2_);
   // bspottriad1_
   AddtoPack(data,bspottriad1_);
   // bspottriad2_
@@ -236,7 +218,7 @@ void BEAMINTERACTION::BeamToBeamLinkage::Pack(DRT::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamToBeamLinkage::Unpack(const std::vector<char>& data)
+void BEAMINTERACTION::BeamLinkRigidJointed::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
   // extract type
@@ -244,19 +226,11 @@ void BEAMINTERACTION::BeamToBeamLinkage::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
-  // isinit_
-  isinit_ = DRT::ParObject::ExtractInt(position,data);
-  // issetup
-  issetup_ = DRT::ParObject::ExtractInt(position,data);
-  // id_
-  ExtractfromPack(position,data,id_);
+  // extract base class Element
+  std::vector<char> basedata(0);
+  ExtractfromPack(position,data,basedata);
+  BeamLink::Unpack(basedata);
 
-  // eleids_
-  ExtractfromPack(position,data,bspotIds_);
-  // bspotpos1_
-  ExtractfromPack(position,data,bspotpos1_);
-  // bspotpos2_
-  ExtractfromPack(position,data,bspotpos2_);
   // bspottriad1_
   ExtractfromPack(position,data,bspottriad1_);
   // bspottriad2_
@@ -274,16 +248,13 @@ void BEAMINTERACTION::BeamToBeamLinkage::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamToBeamLinkage::ResetState(
+void BEAMINTERACTION::BeamLinkRigidJointed::ResetState(
     std::vector<LINALG::Matrix<3,1> >& bspotpos,
     std::vector<LINALG::Matrix<3,3> >& bspottriad)
 {
   CheckInitSetup();
 
-  /* the two positions of the linkage element coincide with the positions of the
-   * binding spots on the parent elements */
-  bspotpos1_=bspotpos[0];
-  bspotpos2_=bspotpos[1];
+  BeamLink::ResetState(bspotpos);
 
   /* the two orientations, i.e. triads of the linkage element are defined via a
    * constant relative rotation based on the triads at the binding spots of the
@@ -317,29 +288,29 @@ void BEAMINTERACTION::BeamToBeamLinkage::ResetState(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage>
-BEAMINTERACTION::BeamToBeamLinkage::Create()
+Teuchos::RCP<BEAMINTERACTION::BeamLinkRigidJointed>
+BEAMINTERACTION::BeamLinkRigidJointed::Create()
 {
   // for now, we always use a 2-noded linear Reissner element
-  return Teuchos::rcp(new BEAMINTERACTION::Beam3rLin2Linkage());
+  return Teuchos::rcp(new BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamToBeamLinkage::Print(std::ostream& out) const
+void BEAMINTERACTION::BeamLinkRigidJointed::Print( std::ostream & out ) const
 {
   CheckInit();
 
-  out << "\nBeamToBeamLinkage (ID " << id_ << "):";
+  out << "\nBeamLinkRigidJointed (ID " << Id() << "):";
   out << "\nbspotIds_[0] = ";
-  out << "EleGID " << bspotIds_[0].first << " locbspotnum " << bspotIds_[0].second;
+  out << "EleGID " << GetEleGid(0) << " locbspotnum " << GetLocBSpotNum(0);
   out << "\nbspotIds_[1] = ";
-  out << "EleGID " << bspotIds_[1].first << " locbspotnum " << bspotIds_[0].second;
+  out << "EleGID " << GetEleGid(1)  << " locbspotnum " << GetLocBSpotNum(1);
   out << "\n";
   out << "\nbspotpos1_ = ";
-  bspotpos1_.Print(out);
+  GetBindSpotPos1().Print(out);
   out << "\nbspotpos2_ = ";
-  bspotpos2_.Print(out);
+  GetBindSpotPos1().Print(out);
   out << "\nbspottriad1_ = ";
   LINALG::TMatrix<double,3,3> triad;
   LARGEROTATIONS::quaterniontotriad(bspottriad1_,triad);

@@ -2511,7 +2511,7 @@ void BINSTRATEGY::BinningStrategy::WriteBinOutput(int const step, double const t
 
     // calculate starting index on myrank
     int startnewgid = 0;
-    for(int i=0; i<myrank_; ++i)
+    for( int i = 0; i < myrank_; ++i )
       startnewgid += numcol[i];
 
     // loop over all ghosted bins

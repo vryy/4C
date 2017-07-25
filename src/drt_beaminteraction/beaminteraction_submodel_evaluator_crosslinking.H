@@ -39,7 +39,7 @@ namespace CROSSLINKING {
 }
 namespace BEAMINTERACTION {
 class CrosslinkingParams;
-class BeamToBeamLinkage;
+class BeamLinkRigidJointed;
 
 namespace SUBMODELEVALUATOR {
 
@@ -55,6 +55,9 @@ namespace SUBMODELEVALUATOR {
 
     //! setup class variables
     virtual void Setup();
+
+    //! derive
+    virtual bool PostPartitionProblem();
 
     //! derive
     virtual void PostSetup();
@@ -179,8 +182,10 @@ private:
 
     //! struct that stores all necessary data to handle the crosslining between two elements on each proc
     struct NewDoubleBonds {
-        int id;                                           // gid of crosslinker
-        std::vector< std::pair<int, int> > eleids;         // elegid and local binding spot number of first element
+        int id;                                             // gid of crosslinker
+        std::vector< std::pair<int, int> > eleids;          // elegid and local binding spot number of first element
+        std::vector< LINALG::Matrix< 3, 1 > > bspotposs;
+        std::vector< LINALG::Matrix< 3, 3 > > bspottriads;
       };
 
     //! @}
@@ -213,7 +218,7 @@ private:
     virtual void SetFilamentBindingSpotPositions();
 
     /// set filament types on elements
-    virtual void SetFilamentFilamentTypes();
+    virtual void SetFilamentTypes();
 
     /// extent ghosting so that each proc has all nodes and elemens of a filament containing
     /// at least one of its nodes
@@ -239,6 +244,11 @@ private:
         double const filamentbspotinterval,
         double const tol);
 
+
+    /// set double bonded linker between all binding spots that match certain
+    /// neigbhoring criteria
+    virtual bool SetAllPossibleInitialDoubleBondedCrosslinker();
+
     /// diffuse crosslinker depending on number of bonds they have
     virtual void DiffuseCrosslinker();
 
@@ -251,7 +261,6 @@ private:
     ) const;
 
     void SetPositionOfDoubleBondedCrosslinkerPBCconsistent(
-        DRT::Node* crosslinker,
         LINALG::Matrix<3,1>& clpos,
         LINALG::Matrix<3,1> const& bspot1pos,
         LINALG::Matrix<3,1> const& bspot2pos
@@ -275,28 +284,6 @@ private:
         CrosslinkerData& cldata,
         int const stayoccpotid);
 
-    /// check if crosslink of adjacent elements on same filament
-    virtual bool CheckCrosslinkOfAdjacentElements(
-        DRT::Element const * const nbbeam,
-        CrosslinkerData const& cldata_i
-    ) const;
-
-    /// check whether distance of two points is out of given range
-    bool IsDistanceOutOfBindingRange(
-        LINALG::Matrix<3,1> const& pos1,
-        LINALG::Matrix<3,1> const& pos2,
-        double const lowerbound,
-        double const upperbound
-    ) const;
-
-    /// check whether enclosed angle of two beam centerline tangents is out of given range
-    bool IsEnclosedAngleOfBSpotTangentsOutOfRange(
-        LINALG::Matrix<3,1> const& direction1,
-        LINALG::Matrix<3,1> const& direction2,
-        double const lowerbound,
-        double const upperbound
-    ) const;
-
     /// fill epetar vectors to write vtp output
     void FillStateDataVectorsForOutput(
         Teuchos::RCP<Epetra_Vector> displacement,
@@ -313,13 +300,15 @@ private:
     // this is ensured in the actual algorithm)
     // -------------------------------------------------------------------------
     /// get crosslink data before interaction evaluation
-    virtual void PreComputeCrosslinkerData();
+    virtual void PreComputeCrosslinkerData( std::vector<CrosslinkerData> & crosslinker_data );
 
     /// get beam data before interaction evaluation
-    virtual void PreComputeBeamData();
+    virtual void PreComputeBeamData( std::vector<BeamData> & beam_data );
 
     /// get crosslink and beam data before interaction evaluation
-    virtual void PreComputeCrosslinkerAndBeamData();
+    virtual void PreComputeCrosslinkerAndBeamData(
+        std::vector<CrosslinkerData> & crosslinker_data,
+        std::vector<BeamData> & beam_data);
 
     /// get crosslink data before evaluation
     virtual void BindCrosslinker();
@@ -381,8 +370,8 @@ private:
 
     /// check if crosslinke and filament type are compatible
     virtual bool CheckLinkerAndFilamentTypeCompatibility(
-        CROSSLINKING::CrosslinkerNode const * const crosslinker_i,
-        BeamData const& beamdata) const;
+        INPAR::BEAMINTERACTION::CrosslinkerType linkertype,
+        INPAR::BEAMINTERACTION::FilamentType filamenttype) const;
 
     /// if crosslinker is singly bound, we fetch the orientation vector of the
     /// filament axis at the already occupied binding spot for the orientation
@@ -467,7 +456,7 @@ private:
     /// according to Bell's equation (Howard, eq 5.10, p.89)
     void CalcBellsForceDependentUnbindProbability(
         CROSSLINKING::CrosslinkerNode* linker,
-        Teuchos::RCP< BEAMINTERACTION::BeamToBeamLinkage > const& elepairptr,
+        Teuchos::RCP< BEAMINTERACTION::BeamLinkRigidJointed > const& elepairptr,
         std::vector< double >& punlinkforcedependent
     ) const;
 
@@ -491,7 +480,7 @@ private:
 
     /// in case char vector containing double bonds is read by proc != proc
     /// that has written
-    virtual void UpdateMyDoubleBondsAfterRestartRemoteIdList();
+    virtual void UpdateMyDoubleBondsRemoteIdList();
 
     /// dissolve certain bonds
     virtual void DissolveBond(
@@ -503,8 +492,8 @@ private:
 
     /// send double bonds to new owner if crosslinker ownership change
     /// in the course of redistribution
-    virtual void CommunicateBeamToBeamLinkageAfterRedistribution(
-        std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> > >& dbondcltosend
+    virtual void CommunicateBeamLinkAfterRedistribution(
+        std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::BeamLinkRigidJointed> > >& dbondcltosend
     );
 
     /// send data T to rank= mapkey
@@ -583,9 +572,6 @@ private:
     //! data container holding all beam contact related parameters
     Teuchos::RCP<BEAMINTERACTION::CrosslinkingParams> crosslinking_params_ptr_;
 
-    //! type of eles in bins
-    BINSTRATEGY::UTILS::BinContentType bin_beamcontent_;
-
     //! temporary storage for all relevant crosslinker data
     //! (vector key is col lid of crosslinker)
     std::vector<CrosslinkerData> crosslinker_data_;
@@ -595,7 +581,7 @@ private:
     std::vector<BeamData> beam_data_;
 
     //! double bonded crosslinker that exert forces on network (map key is crosslinker gid)
-    std::map<int, Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> > doublebondcl_;
+    std::map<int, Teuchos::RCP<BEAMINTERACTION::BeamLinkRigidJointed> > doublebondcl_;
 
     //! particle, i.e. crosslinker molecule discretization runtime vtp writer
     Teuchos::RCP<DiscretizationRuntimeVtpWriter> vtp_writer_ptr_;

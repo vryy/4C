@@ -37,6 +37,8 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
   // remove this some day
   setStringToIntegralParameter<int>("CROSSLINKER","No", "Crosslinker in problem", yesnotuple,yesnovalue,&crosslinking);
 
+  // number of initial (are set right in the beginning) crosslinker of certain type
+  setNumericStringParameter("MAXNUMINITCROSSLINKERPERTYPE","0","number of crosslinker of certain type ",&crosslinking);
   // number of crosslinker of certain type
   setNumericStringParameter("NUMCROSSLINKERPERTYPE","0","number of crosslinker of certain type ",&crosslinking);
   // material number characterizing crosslinker type

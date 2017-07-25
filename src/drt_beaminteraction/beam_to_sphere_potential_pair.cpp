@@ -502,11 +502,15 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::GetSh
   }
   else if (numnodalvalues==2)
   {
+    /* TODO hard set distype to line2 in case of numnodalvalues_=2 because
+     *  only 3rd order Hermite interpolation is used (always 2 nodes) */
+    const DRT::Element::DiscretizationType distype1herm = DRT::Element::line2;
+
     for (int gp=0; gp<gausspoints.nquad; ++gp)
     {
       // get values and derivatives of shape functions
-      DRT::UTILS::shape_function_hermite_1D(N1_i[gp], gausspoints.qxg[gp][0], beamele_reflength_, distype1);
-      DRT::UTILS::shape_function_hermite_1D_deriv1(N1_i_xi[gp], gausspoints.qxg[gp][0], beamele_reflength_, distype1);
+      DRT::UTILS::shape_function_hermite_1D(N1_i[gp], gausspoints.qxg[gp][0], beamele_reflength_, distype1herm);
+      DRT::UTILS::shape_function_hermite_1D_deriv1(N1_i_xi[gp], gausspoints.qxg[gp][0], beamele_reflength_, distype1herm);
     }
   }
   else

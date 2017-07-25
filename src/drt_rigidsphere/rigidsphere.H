@@ -24,6 +24,8 @@
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
+#include "../drt_beaminteraction/beaminteraction_calc_utils.H"
+
 // forward declaration ...
 namespace STR {
 namespace ELEMENTS {
@@ -281,9 +283,6 @@ public:
                     Epetra_SerialDenseVector* force,
                     Epetra_SerialDenseVector* inertia_force);
 
-  //!computes the number of different random numbers required in each time step for generation of stochastic forces
-  int HowManyRandomNumbersINeed();
-
   /*! \brief set the parameter interface ptr for the solid elements
    *
    *  \param p (in): Parameter list coming from the time integrator.
@@ -304,6 +303,75 @@ public:
    *  \author hiermeier
    *  \date 04/16 */
   virtual Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr();
+  //@}
+
+  //! @name methods for biopolymer network simulations
+
+  //!computes the number of different random numbers required in each time step for generation of stochastic forces
+  int HowManyRandomNumbersINeed();
+
+  /// \brief get generalized interpolation matrix which yields the variation of the position
+  virtual void GetGeneralizedInterpolationMatrixVariationsAtXi(
+      LINALG::SerialDenseMatrix& Ivar,
+      const double&              dummy1,
+      const std::vector<double>& dummy2) const;
+
+  /// \brief get generalized interpolation matrix which yields the increments of the position
+  virtual void GetGeneralizedInterpolationMatrixIncrementsAtXi(
+      LINALG::SerialDenseMatrix&  Iinc,
+      const double&               dummy1,
+      const std::vector<double>&  dummy2) const;
+
+  /** \brief get linearization of the product of (generalized interpolation matrix for variations
+   *         (see above) and applied force vector) with respect to the primary DoFs of this element
+   *
+   *  \author grill
+   *  \date 01/17 */
+  virtual void GetStiffmatResultingFromGeneralizedInterpolationMatrixAtXi(
+      LINALG::SerialDenseMatrix&       stiffmat,
+      const double&                    xi,
+      const std::vector<double>&       disp,
+      const LINALG::SerialDenseVector& force) const
+  {
+    // nothing to do here
+    stiffmat.Zero();
+  }
+
+  /// return binding spot xi function dummy
+  double GetBindingSpotXi(int dummy ) const
+  {
+    return 0.0;
+  }
+
+  /** \brief add bond
+   *
+   *  \author eichinger
+   *  \date 06/17 */
+  void AddBond( std::pair< int, int > newbondpartner ) { bondstatus_.insert( newbondpartner ); };
+
+   /** \brief get number of bonds
+   *
+   *  \author eichinger
+   *  \date 06/17 */
+  int GetNumberOfBonds( int elepartnergid ) const { return static_cast<int>( bondstatus_.size() ); }
+
+  /** \brief get bond status of sphere element
+   *
+   *  \author eichinger
+   *  \date 06/17 */
+  std::set< std::pair< int, int > , BEAMINTERACTION::UTILS::SetOfPairComparator > const &
+      GetBondStatus() const { return bondstatus_;}
+
+  /** \brief check if bond exists
+   *
+   *  \author eichinger
+   *  \date 06/17 */
+  bool DoesBondExist( std::pair< int, int > bondpartner ) const
+  {
+    return ( bondstatus_.find(bondpartner) != bondstatus_.end() ) ? true : false;
+  }
+
+
   //@}
 
 protected:
@@ -328,7 +396,14 @@ private:
   //! density of the sphere
   double rho_;
 
-  //! @name methods for initilization of the element
+  //! @name variables for biopolymer network simulations
+
+  /// holds gids of (beam) elements to which sphere is bonded to (size equals number of bonds)
+  std::set< std::pair< int, int > , BEAMINTERACTION::UTILS::SetOfPairComparator > bondstatus_;
+
+  //@}
+
+  //! @name methods for initialization of the element
 
   //@}
 

@@ -25,8 +25,10 @@
 #include "../drt_rigidsphere/rigidsphere.H"
 #include "../drt_so3/so_base.H"
 
-#include "../drt_beaminteraction/beam_to_beam_linkage.H"
+#include "../drt_geometry/intersection_math.H"
+
 #include <Epetra_FEVector.h>
+#include "beam_link.H"
 
 namespace BEAMINTERACTION
 {
@@ -171,22 +173,21 @@ void GetCurrentElementDis(
 void GetCurrentUnshiftedElementDis(
     DRT::Discretization const& discret,
     DRT::Element const* ele,
-    Teuchos::RCP<Epetra_Vector> const& ia_discolnp,
-    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& pbb,
+    Teuchos::RCP<const Epetra_Vector> const& ia_discolnp,
+    GEO::MESHFREE::BoundingBox const & pbb,
     std::vector<double>& eledisp)
 {
-  GetCurrentElementDis(discret, ele, ia_discolnp, eledisp);
+  GetCurrentElementDis( discret, ele, ia_discolnp, eledisp );
 
   // cast to beambase element
-  DRT::ELEMENTS::Beam3Base const* beamele =
+  DRT::ELEMENTS::Beam3Base const * beamele =
       dynamic_cast<DRT::ELEMENTS::Beam3Base const*>(ele);
 
-#ifdef DEBUG
+  // so far, only beam elements can be cut by a periodic boundary
   if( beamele == NULL )
-    dserror("Dynamic cast to beam3base failed");
-#endif
+    return;
 
-  beamele->UnShiftNodePosition(eledisp, pbb);
+  beamele->UnShiftNodePosition( eledisp, pbb );
 }
 
 /*-----------------------------------------------------------------------------*
@@ -209,7 +210,7 @@ void GetPosAndTriadOfBindingSpot(
 #endif
 
   // get current position at binding spot xi
-  beamele->GetPosOfBindingSpot( bspotpos, eledisp, locbspotnum, pbb );
+  beamele->GetPosOfBindingSpot( bspotpos, eledisp, locbspotnum, *pbb );
 
   // get current triad at binding spot xi
   beamele->GetTriadOfBindingSpot( bspottriad, eledisp, locbspotnum );
@@ -228,10 +229,70 @@ void GetPosAndTriadOfBindingSpot(
     LINALG::Matrix<3,3>& bspottriad)
 {
   std::vector<double> eledisp;
-  GetCurrentUnshiftedElementDis(discret, ele, ia_discolnp, pbb, eledisp);
+  GetCurrentUnshiftedElementDis(discret, ele, ia_discolnp, *pbb, eledisp);
 
   GetPosAndTriadOfBindingSpot(ele, pbb, locbspotnum,
       bspotpos, bspottriad, eledisp);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool IsDistanceOutOfRange(
+    LINALG::Matrix<3,1> const& pos1,
+    LINALG::Matrix<3,1> const& pos2,
+    double const lowerbound,
+    double const upperbound )
+{
+  LINALG::Matrix< 3, 1 > dist_vec(true);
+  dist_vec.Update( 1.0, pos1, -1.0, pos2 );
+
+  const double distance = dist_vec.Norm2();
+
+  return ( distance < lowerbound or distance > upperbound ) ? true : false;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool IsEnclosedAngleOutOfRange(
+    LINALG::Matrix<3,1> const& direction1,
+    LINALG::Matrix<3,1> const& direction2,
+    double const lowerbound,
+    double const upperbound )
+{
+  // cosine of angle is scalar product of vectors divided by their norms
+  // direction vectors should be unit vectors since they come from triads, but anyway ...
+  double cos_angle = direction1.Dot(direction2) / direction1.Norm2() / direction2.Norm2();
+
+  // to enable parallel directions that are numerically slightly > 1 ( < -1)
+  // ( would lead to NaN in std::acos )
+  if ( abs ( abs( cos_angle ) - 1.0 )   < GEO::TOL12 )
+    cos_angle = std::round(cos_angle);
+
+  double angle = std::acos(cos_angle);
+
+  // acos returns angle \in [0,\pi] but we always want the acute angle here
+  if ( angle > 0.5 * M_PI )
+    angle = M_PI - angle;
+
+  return ( angle < lowerbound or angle > upperbound ) ? true : false;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool DoBeamElementsShareNodes(
+    DRT::Element const * const beam,
+    DRT::Element const * const nbbeam)
+{
+  // check if two considered eles share nodes
+  for ( unsigned int i = 0; i < 2; ++i )
+  {
+    // node 0 and 1 are always first and last node, respectively
+    if ( beam->NodeIds()[i] == nbbeam->NodeIds()[0] ||
+        beam->NodeIds()[i] == nbbeam->NodeIds()[1] )
+      return true;
+  }
+
+  return false;
 }
 
 /*----------------------------------------------------------------------------*
@@ -404,48 +465,53 @@ void ExtractPosDofVecAbsoluteValues(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+template< class T1, class T2 >
 void ApplyBindingSpotForceToParentElements(
-    DRT::Discretization const&                             discret,
-    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const&        pbb,
-    const Teuchos::RCP<Epetra_Vector>                      disp_np_col,
-    const Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> elepairptr,
-    std::vector< LINALG::SerialDenseVector > const&        bspotforce,
-    std::vector< LINALG::SerialDenseVector >&              eleforce)
+    DRT::Discretization const&                      discret,
+    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& pbb,
+    const Teuchos::RCP<Epetra_Vector>               disp_np_col,
+    const Teuchos::RCP<BEAMINTERACTION::BeamLink>   elepairptr,
+    std::vector< LINALG::SerialDenseVector > const& bspotforce,
+    std::vector< LINALG::SerialDenseVector >&       eleforce)
 {
   // auxiliary transformation matrix, will be resized and reused
   LINALG::SerialDenseMatrix trafomatrix;
 
-  for( int elei = 0; elei < 2; ++elei )
+  T1 * cast_ele1 = dynamic_cast< T1 * >( discret.gElement( elepairptr->GetEleGid(0) ) );
+  T2 * cast_ele2 = dynamic_cast< T2 * >( discret.gElement( elepairptr->GetEleGid(1) ) );
+
+  for( unsigned int elei = 0; elei < 2; ++elei )
   {
-    DRT::Element* ele = discret.gElement( elepairptr->GetEleGid(elei) );
-
-    DRT::ELEMENTS::Beam3Base* beamele =
-        dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele);
-
     // get current element displacements
     std::vector<double> eledisp;
-    GetCurrentUnshiftedElementDis( discret, ele, disp_np_col, pbb, eledisp);
+    GetCurrentUnshiftedElementDis( discret, discret.gElement( elepairptr->GetEleGid(elei) ),
+        disp_np_col, *pbb, eledisp );
     const int numdof_ele = eledisp.size();
 
     // zero out and set correct size of transformation matrix
     trafomatrix.Shape( 6, numdof_ele );
 
     // I_variations
-    beamele->GetGeneralizedInterpolationMatrixVariationsAtXi( trafomatrix,
-        beamele->GetBindingSpotXi( elepairptr->GetLocBSpotNum(elei) ), eledisp );
+    if ( elei == 0 )
+      cast_ele1->GetGeneralizedInterpolationMatrixVariationsAtXi( trafomatrix,
+          cast_ele1->GetBindingSpotXi( elepairptr->GetLocBSpotNum(elei) ), eledisp );
+    else
+      cast_ele2->GetGeneralizedInterpolationMatrixVariationsAtXi( trafomatrix,
+          cast_ele2->GetBindingSpotXi( elepairptr->GetLocBSpotNum(elei) ), eledisp );
 
     eleforce[elei].Size(numdof_ele);
-    eleforce[elei].Multiply('T','N',1.0,trafomatrix,bspotforce[elei],0.0);
+    eleforce[elei].Multiply( 'T', 'N', 1.0, trafomatrix, bspotforce[elei], 0.0 );
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+template< class T1, class T2 >
 void ApplyBindingSpotStiffToParentElements(
     DRT::Discretization const&                                     discret,
     Teuchos::RCP<GEO::MESHFREE::BoundingBox> const&                pbb,
     const Teuchos::RCP<Epetra_Vector>                              disp_np_col,
-    const Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage>         elepairptr,
+    const Teuchos::RCP<BEAMINTERACTION::BeamLink>                  elepairptr,
     std::vector< std::vector< LINALG::SerialDenseMatrix > > const& bspotstiff,
     std::vector< std::vector< LINALG::SerialDenseMatrix > >&       elestiff)
 {
@@ -456,21 +522,16 @@ void ApplyBindingSpotStiffToParentElements(
       "Use the combined evaluation method instead!");
 
   // todo: put this in a loop
-  DRT::Element* ele1 = discret.gElement(elepairptr->GetEleGid(0));
-  DRT::Element* ele2 = discret.gElement(elepairptr->GetEleGid(1));
-
-  DRT::ELEMENTS::Beam3Base* beamele1 =
-      dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele1);
-  DRT::ELEMENTS::Beam3Base* beamele2 =
-      dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele2);
+  DRT::Element * ele1 = discret.gElement( elepairptr->GetEleGid(0) );
+  DRT::Element * ele2 = discret.gElement( elepairptr->GetEleGid(1) );
 
   // get current element displacements
   std::vector<double> ele1disp;
-  GetCurrentUnshiftedElementDis(discret, ele1,disp_np_col,pbb,ele1disp);
+  GetCurrentUnshiftedElementDis( discret, ele1, disp_np_col, *pbb, ele1disp );
   const int numdof_ele1 = ele1disp.size();
 
   std::vector<double> ele2disp;
-  GetCurrentUnshiftedElementDis(discret,ele2,disp_np_col,pbb,ele2disp);
+  GetCurrentUnshiftedElementDis( discret, ele2, disp_np_col, *pbb, ele2disp );
   const int numdof_ele2 = ele2disp.size();
 
   // transformation matrix, will be resized and reused for various needs
@@ -481,15 +542,17 @@ void ApplyBindingSpotStiffToParentElements(
   std::vector< std::vector< LINALG::SerialDenseMatrix > > auxmat( 2,
       std::vector< LINALG::SerialDenseMatrix >(2) );
 
+  T1 * cast_ele1 = dynamic_cast< T1 * >(ele1);
+  T2 * cast_ele2 = dynamic_cast< T2 * >(ele2);
+
   // element 1:
   {
     // zero out and set correct size of transformation matrix
      trafomatrix.Shape(6,numdof_ele1);
 
     // i) I_variations
-    beamele1->GetGeneralizedInterpolationMatrixVariationsAtXi(
-        trafomatrix,
-        beamele1->GetBindingSpotXi(elepairptr->GetLocBSpotNum(0)), ele1disp);
+     cast_ele1->GetGeneralizedInterpolationMatrixVariationsAtXi( trafomatrix,
+         cast_ele1->GetBindingSpotXi(elepairptr->GetLocBSpotNum(0)), ele1disp );
 
     auxmat[0][0].Shape(numdof_ele1,6);
     auxmat[0][0].Multiply('T','N',1.0,trafomatrix,bspotstiff[0][0],0.0);
@@ -500,10 +563,8 @@ void ApplyBindingSpotStiffToParentElements(
     // ii) I_increments
     trafomatrix.Shape(6,numdof_ele1);
 
-    beamele1->GetGeneralizedInterpolationMatrixIncrementsAtXi(
-        trafomatrix,
-        beamele1->GetBindingSpotXi(elepairptr->GetLocBSpotNum(0)),
-        ele1disp);
+    cast_ele1->GetGeneralizedInterpolationMatrixIncrementsAtXi( trafomatrix,
+        cast_ele1->GetBindingSpotXi(elepairptr->GetLocBSpotNum(0)), ele1disp );
 
     elestiff[0][0].Shape( numdof_ele1, numdof_ele1 );
     elestiff[0][0].Multiply('N','N',1.0,auxmat[0][0],trafomatrix,0.0);
@@ -517,9 +578,8 @@ void ApplyBindingSpotStiffToParentElements(
     // i) I_variations
     trafomatrix.Shape(6,numdof_ele2);
 
-    beamele2->GetGeneralizedInterpolationMatrixVariationsAtXi(
-        trafomatrix,
-        beamele2->GetBindingSpotXi(elepairptr->GetLocBSpotNum(1)), ele2disp);
+    cast_ele2->GetGeneralizedInterpolationMatrixVariationsAtXi( trafomatrix,
+        cast_ele2->GetBindingSpotXi(elepairptr->GetLocBSpotNum(1)), ele2disp );
 
     elestiff[1][0].Shape(numdof_ele2,numdof_ele1);
     elestiff[1][0].Multiply('T','N',1.0,trafomatrix,auxmat[1][0],0.0);
@@ -530,10 +590,8 @@ void ApplyBindingSpotStiffToParentElements(
   // ii) I_increments
     trafomatrix.Shape(6,numdof_ele2);
 
-    beamele2->GetGeneralizedInterpolationMatrixIncrementsAtXi(
-        trafomatrix,
-        beamele2->GetBindingSpotXi(elepairptr->GetLocBSpotNum(1)),
-        ele2disp);
+    cast_ele2->GetGeneralizedInterpolationMatrixIncrementsAtXi( trafomatrix,
+        cast_ele2->GetBindingSpotXi(elepairptr->GetLocBSpotNum(1)), ele2disp );
 
     elestiff[0][1].Shape(numdof_ele1,numdof_ele2);
     elestiff[0][1].Multiply('N','N',1.0,auxmat[1][0],trafomatrix,0.0);
@@ -545,11 +603,12 @@ void ApplyBindingSpotStiffToParentElements(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+template< class T1, class T2 >
 void ApplyBindingSpotForceStiffToParentElements(
     DRT::Discretization const&                                     discret,
     Teuchos::RCP<GEO::MESHFREE::BoundingBox> const&                pbb,
     const Teuchos::RCP<Epetra_Vector>                              disp_np_col,
-    const Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage>         elepairptr,
+    const Teuchos::RCP<BEAMINTERACTION::BeamLink>                  elepairptr,
     std::vector< LINALG::SerialDenseVector > const&                bspotforce,
     std::vector< std::vector< LINALG::SerialDenseMatrix > > const& bspotstiff,
     std::vector< LINALG::SerialDenseVector >&                      eleforce,
@@ -577,18 +636,13 @@ void ApplyBindingSpotForceStiffToParentElements(
   DRT::Element* ele1 = discret.gElement(elepairptr->GetEleGid(0));
   DRT::Element* ele2 = discret.gElement(elepairptr->GetEleGid(1));
 
-  DRT::ELEMENTS::Beam3Base* beamele1 =
-      dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele1);
-  DRT::ELEMENTS::Beam3Base* beamele2 =
-      dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele2);
-
   // get current element displacements
   std::vector<double> ele1disp;
-  GetCurrentUnshiftedElementDis(discret, ele1,disp_np_col,pbb,ele1disp);
+  GetCurrentUnshiftedElementDis(discret, ele1,disp_np_col,*pbb,ele1disp);
   const int numdof_ele1 = ele1disp.size();
 
   std::vector<double> ele2disp;
-  GetCurrentUnshiftedElementDis(discret,ele2,disp_np_col,pbb,ele2disp);
+  GetCurrentUnshiftedElementDis(discret,ele2,disp_np_col,*pbb,ele2disp);
   const int numdof_ele2 = ele2disp.size();
 
   // transformation matrix, will be resized and reused for various needs
@@ -605,13 +659,16 @@ void ApplyBindingSpotForceStiffToParentElements(
   // zero out and set correct size of transformation matrix
   trafomatrix.Shape(6,numdof_ele1);
 
+  T1 * cast_ele1 = dynamic_cast< T1 * >(ele1);
+  T2 * cast_ele2 = dynamic_cast< T2 * >(ele2);
+
   // todo:
   // element 1:
   {
     // i) I_variations
-    beamele1->GetGeneralizedInterpolationMatrixVariationsAtXi(
+    cast_ele1->GetGeneralizedInterpolationMatrixVariationsAtXi(
         trafomatrix,
-        beamele1->GetBindingSpotXi(elepairptr->GetLocBSpotNum(0)),
+        cast_ele1->GetBindingSpotXi(elepairptr->GetLocBSpotNum(0)),
         ele1disp);
 
     eleforce[0].Size(numdof_ele1);
@@ -626,9 +683,9 @@ void ApplyBindingSpotForceStiffToParentElements(
     // ii) I_increments
     trafomatrix.Shape(6,numdof_ele1);
 
-    beamele1->GetGeneralizedInterpolationMatrixIncrementsAtXi(
+    cast_ele1->GetGeneralizedInterpolationMatrixIncrementsAtXi(
         trafomatrix,
-        beamele1->GetBindingSpotXi(elepairptr->GetLocBSpotNum(0)),
+        cast_ele1->GetBindingSpotXi(elepairptr->GetLocBSpotNum(0)),
         ele1disp);
 
     elestiff[0][0].Shape(numdof_ele1,numdof_ele1);
@@ -641,9 +698,9 @@ void ApplyBindingSpotForceStiffToParentElements(
     // additional contribution from linearization of generalized interpolation matrix for variations
     stiffmat_lin_Ivar.Shape(numdof_ele1,numdof_ele1);
 
-    beamele1->GetStiffmatResultingFromGeneralizedInterpolationMatrixAtXi(
+    cast_ele1->GetStiffmatResultingFromGeneralizedInterpolationMatrixAtXi(
         stiffmat_lin_Ivar,
-        beamele1->GetBindingSpotXi(elepairptr->GetLocBSpotNum(0)),
+        cast_ele1->GetBindingSpotXi(elepairptr->GetLocBSpotNum(0)),
         ele1disp,
         bspotforce[0]);
 
@@ -656,9 +713,9 @@ void ApplyBindingSpotForceStiffToParentElements(
     // i) I_variations
     trafomatrix.Shape(6,numdof_ele2);
 
-    beamele2->GetGeneralizedInterpolationMatrixVariationsAtXi(
+    cast_ele2->GetGeneralizedInterpolationMatrixVariationsAtXi(
         trafomatrix,
-        beamele2->GetBindingSpotXi(elepairptr->GetLocBSpotNum(1)),
+        cast_ele2->GetBindingSpotXi(elepairptr->GetLocBSpotNum(1)),
         ele2disp);
 
     eleforce[1].Size(numdof_ele2);
@@ -673,9 +730,9 @@ void ApplyBindingSpotForceStiffToParentElements(
     // ii) I_increments
     trafomatrix.Shape(6,numdof_ele2);
 
-    beamele2->GetGeneralizedInterpolationMatrixIncrementsAtXi(
+    cast_ele2->GetGeneralizedInterpolationMatrixIncrementsAtXi(
         trafomatrix,
-        beamele2->GetBindingSpotXi(elepairptr->GetLocBSpotNum(1)),
+        cast_ele2->GetBindingSpotXi(elepairptr->GetLocBSpotNum(1)),
         ele2disp);
 
     elestiff[0][1].Shape(numdof_ele1,numdof_ele2);
@@ -688,9 +745,9 @@ void ApplyBindingSpotForceStiffToParentElements(
     // additional contribution from linearization of generalized interpolation matrix for variations
     stiffmat_lin_Ivar.Shape(numdof_ele2,numdof_ele2);
 
-    beamele2->GetStiffmatResultingFromGeneralizedInterpolationMatrixAtXi(
+    cast_ele2->GetStiffmatResultingFromGeneralizedInterpolationMatrixAtXi(
         stiffmat_lin_Ivar,
-        beamele2->GetBindingSpotXi(elepairptr->GetLocBSpotNum(1)),
+        cast_ele2->GetBindingSpotXi(elepairptr->GetLocBSpotNum(1)),
         ele2disp,
         bspotforce[1]);
 
@@ -741,6 +798,94 @@ void SetupEleTypeMapExtractor(
 
   eletypeextractor->Setup( *discret()->ElementRowMap(), maps );
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int CantorPairing( std::pair< int, int > const & pair, bool safe )
+{
+  int z =  0.5 * ( pair.first + pair.second ) * ( pair.first + pair.second + 1 ) + pair.second;
+
+  if ( safe and pair != CantorDePairing( z ) )
+      dserror(" %i and %i cannot be paired using Cantor pairing function", pair.first, pair.second);
+
+  return z;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+std::pair< int, int > CantorDePairing( int z )
+{
+  int w = std::floor( ( std::sqrt( 8.0 * z + 1.0 ) - 1.0 ) * 0.5 );
+  int t = ( w + 1 ) * w * 0.5;
+
+  std::pair< int, int > pair;
+  pair.second = z - t;
+  pair.first = w - pair.second;
+
+  if ( z != CantorPairing( pair, false) )
+    dserror(" Something went wrong during depairing.");
+
+  return pair;
+
+}
+
+
+//-----------------------------------------------------------------------------
+// explicit template instantiation
+//-----------------------------------------------------------------------------
+
+template void ApplyBindingSpotForceToParentElements< DRT::ELEMENTS::Beam3Base, DRT::ELEMENTS::Beam3Base >(
+    DRT::Discretization const&,
+    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const&,
+    const Teuchos::RCP<Epetra_Vector>,
+    const Teuchos::RCP<BEAMINTERACTION::BeamLink>,
+    std::vector< LINALG::SerialDenseVector > const&,
+    std::vector< LINALG::SerialDenseVector >&);
+
+template void ApplyBindingSpotForceToParentElements< DRT::ELEMENTS::Rigidsphere, DRT::ELEMENTS::Beam3Base >(
+    DRT::Discretization const&,
+    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const&,
+    const Teuchos::RCP<Epetra_Vector>,
+    const Teuchos::RCP<BEAMINTERACTION::BeamLink>,
+    std::vector< LINALG::SerialDenseVector > const&,
+    std::vector< LINALG::SerialDenseVector >&);
+
+template void ApplyBindingSpotStiffToParentElements< DRT::ELEMENTS::Beam3Base, DRT::ELEMENTS::Beam3Base >(
+    DRT::Discretization const&,
+    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const&,
+    const Teuchos::RCP<Epetra_Vector>,
+    const Teuchos::RCP<BEAMINTERACTION::BeamLink>,
+    std::vector< std::vector< LINALG::SerialDenseMatrix > > const&,
+    std::vector< std::vector< LINALG::SerialDenseMatrix > >&);
+
+template void ApplyBindingSpotStiffToParentElements< DRT::ELEMENTS::Rigidsphere, DRT::ELEMENTS::Beam3Base >(
+    DRT::Discretization const&,
+    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const&,
+    const Teuchos::RCP<Epetra_Vector>,
+    const Teuchos::RCP<BEAMINTERACTION::BeamLink>,
+    std::vector< std::vector< LINALG::SerialDenseMatrix > > const&,
+    std::vector< std::vector< LINALG::SerialDenseMatrix > >&);
+
+template void ApplyBindingSpotForceStiffToParentElements< DRT::ELEMENTS::Beam3Base, DRT::ELEMENTS::Beam3Base >(
+    DRT::Discretization const&,
+    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const&,
+    const Teuchos::RCP<Epetra_Vector>,
+    const Teuchos::RCP<BEAMINTERACTION::BeamLink>,
+    std::vector< LINALG::SerialDenseVector > const&,
+    std::vector< std::vector< LINALG::SerialDenseMatrix > > const&,
+    std::vector< LINALG::SerialDenseVector >&,
+    std::vector< std::vector< LINALG::SerialDenseMatrix > >&);
+
+template void ApplyBindingSpotForceStiffToParentElements< DRT::ELEMENTS::Rigidsphere, DRT::ELEMENTS::Beam3Base >(
+    DRT::Discretization const&,
+    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const&,
+    const Teuchos::RCP<Epetra_Vector>,
+    const Teuchos::RCP<BEAMINTERACTION::BeamLink>,
+    std::vector< LINALG::SerialDenseVector > const&,
+    std::vector< std::vector< LINALG::SerialDenseMatrix > > const&,
+    std::vector< LINALG::SerialDenseVector >&,
+    std::vector< std::vector< LINALG::SerialDenseMatrix > >&);
+
 
 }
 }

@@ -43,45 +43,45 @@ VERBOSITY              Standard
 // USE_ABSOLUTE_POSITIONS          Yes
 // TRIAD_VISUALIZATIONPOINT        Yes
 // STRAINS_GAUSSPOINT              Yes
-// MATERIAL_FORCES_GAUSSPOINT             Yes
+// // MATERIAL_FORCES_GAUSSPOINT             Yes
 ------------------------------------------------STRUCTURAL DYNAMIC
-LINEAR_SOLVER          1
-INT_STRATEGY           Standard
-DYNAMICTYP             OneStepTheta
-RESULTSEVRY            1
-RESTARTEVRY            10
-NLNSOL                 fullnewton
-DIVERCONT              stop
-TIMESTEP               0.0001
-NUMSTEP                100
-MAXTIME                10000
-PREDICT                ConstDis
-TOLDISP                1.0E-10
-TOLRES                 1.0E-08
-MAXITER                25
-NEGLECTINERTIA         yes
-MASSLIN                rotations
+LINEAR_SOLVER                   1
+INT_STRATEGY                    Standard
+DYNAMICTYP                      OneStepTheta
+RESULTSEVRY                     1
+RESTARTEVRY                     10
+NLNSOL                          fullnewton
+DIVERCONT                       stop
+TIMESTEP                        0.0001
+NUMSTEP                         100
+MAXTIME                         10000
+PREDICT                         ConstDis
+TOLDISP                         1.0E-10
+TOLRES                          1.0E-08
+MAXITER                         25
+NEGLECTINERTIA                  yes
+MASSLIN                         rotations
 -----------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
-THETA                  1
+THETA                           1
 -------------------------------------------------------------------------BINNING STRATEGY
-DEFINEBINSPER          cutoff
-CUTOFF_RADIUS          2
-PERIODICONOFF          1 1 1
-DEFINEXAABBPER         input
-BOUNDINGBOX            0 0 0 10 6 6
+DEFINEBINSPER                   cutoff
+CUTOFF_RADIUS                   2
+PERIODICONOFF                   1 1 1
+DEFINEXAABBPER                  input
+BOUNDINGBOX                     0 0 0 10 6 6
 ----------------------------------------------BROWNIAN DYNAMICS
-BROWNDYNPROB           yes
-VISCOSITY              0.001
-KT                     0.0
-TIMESTEP               0.0001
+BROWNDYNPROB                    yes
+VISCOSITY                       0.001
+KT                              0.0
+TIMESTEP                        0.0001
 ---------------------------------------------------------BEAM INTERACTION/CROSSLINKING
-CROSSLINKER            yes
-NUMCROSSLINKERPERTYPE  2000
-MATCROSSLINKERPERTYPE  2
-FILAMENTBSPOTINTERVAL  0.8
-VISCOSITY              0.001
-KT                     0.0
-TIMESTEP               0.0001
+CROSSLINKER                     yes
+NUMCROSSLINKERPERTYPE           2000
+MATCROSSLINKERPERTYPE           2
+FILAMENTBSPOTINTERVAL           0.8
+VISCOSITY                       0.001
+KT                              0.0
+TIMESTEP                        0.0001
 -----------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

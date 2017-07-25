@@ -39,6 +39,7 @@ void BEAMINTERACTION::CrosslinkingParams::Init( STR::TIMINT::BaseDataGlobalState
   const Teuchos::ParameterList& crosslinking_params_list =
       DRT::Problem::Instance()->BeamInteractionParams().sublist("CROSSLINKING");
 
+
   {
     // number of crosslinkers in the simulated volume
     numcrosslinkerpertype_.clear();
@@ -74,6 +75,33 @@ void BEAMINTERACTION::CrosslinkingParams::Init( STR::TIMINT::BaseDataGlobalState
   // safety check
   if ( numcrosslinkerpertype_.size() != matcrosslinkerpertype_.size() )
     dserror("number of crosslinker types does not fit number of assigned materials");
+
+  {
+    // number of crosslinkers in the simulated volume
+    maxnum_init_crosslinker_pertype_.clear();
+    std::vector<int> maxnuminitcrosslinkerpertype;
+    std::istringstream PL(
+        Teuchos::getNumericStringParameter(crosslinking_params_list,"MAXNUMINITCROSSLINKERPERTYPE"));
+    std::string word;
+    char* input;
+    while (PL >> word)
+      maxnuminitcrosslinkerpertype.push_back( std::strtod( word.c_str(), &input ) );
+
+    if ( maxnuminitcrosslinkerpertype.size() > 1 or maxnuminitcrosslinkerpertype[0] != 0 )
+    {
+      // safety checks
+      for( int i = 0; i < static_cast<int>( maxnuminitcrosslinkerpertype.size() ); ++i )
+        if( maxnuminitcrosslinkerpertype[i] < 0 )
+          dserror(" negative number of crosslinker does not make sense.");
+      if ( maxnuminitcrosslinkerpertype.size() != numcrosslinkerpertype_.size() )
+        dserror("number of initial set crosslinker types does not fit number of crosslinker types");
+
+      for( int i = 0; i < static_cast<int>( maxnuminitcrosslinkerpertype.size() ); ++i )
+        maxnum_init_crosslinker_pertype_[matcrosslinkerpertype_[i]] = maxnuminitcrosslinkerpertype[i];
+    }
+  }
+
+
 
   // viscosity
   viscosity_ =  crosslinking_params_list.get<double> ("VISCOSITY");

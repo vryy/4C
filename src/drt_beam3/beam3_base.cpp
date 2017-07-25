@@ -373,7 +373,7 @@ void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity(
  *-----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(
     std::vector<double>& disp,
-    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox) const
+    GEO::MESHFREE::BoundingBox const & periodic_boundingbox) const
 {
   /* get number of degrees of freedom per node; note:
    * the following function assumes the same number of degrees
@@ -396,7 +396,7 @@ void DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(
       X(dim) = Nodes()[i]->X()[dim];
     }
 
-    periodic_boundingbox->UnShift3D( d, ref, X );
+    periodic_boundingbox.UnShift3D( d, ref, X );
 
     for( unsigned int dim = 0; dim < 3; ++dim )
     {
@@ -411,7 +411,7 @@ void DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(
  *------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(std::vector<double>& disp) const
 {
-  this->UnShiftNodePosition(disp, BrownianDynParamsInterface().GetPeriodicBoundingBox() );
+  this->UnShiftNodePosition( disp, *BrownianDynParamsInterface().GetPeriodicBoundingBox() );
 }
 /*--------------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------------*/
@@ -419,14 +419,14 @@ void DRT::ELEMENTS::Beam3Base::GetPosOfBindingSpot(
     LINALG::Matrix<3,1>& pos,
     std::vector<double>& disp,
     const int& bspotlocn,
-    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox) const
+    GEO::MESHFREE::BoundingBox const & periodic_boundingbox) const
 {
   const double xi = bspotposxi_[bspotlocn];
   // get position
-  GetPosAtXi(pos,xi,disp);
+  GetPosAtXi( pos, xi, disp );
 
   // check if pos at xi lies outside the periodic box, if it does, shift it back in
-  periodic_boundingbox->Shift3D(pos);
+  periodic_boundingbox.Shift3D(pos);
 }
 
 /*--------------------------------------------------------------------------------------------*

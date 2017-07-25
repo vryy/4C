@@ -164,13 +164,6 @@ namespace MODELEVALUATOR{
     virtual void ResetStepState();
     //! @}
 
-    //!@name routines for submodel management
-    //! @{
-
-    //! build, init and setup submodel evaluator
-    void PartitionProblem();
-    //! @}
-
   protected:
     //! derived
     virtual void Reset(const Epetra_Vector& x);
@@ -179,6 +172,10 @@ namespace MODELEVALUATOR{
 
     //!@name routines for submodel management
     //! @{
+
+    void PartitionProblem();
+
+    bool PostPartitionProblem();
 
     //! set beaminteraction sub models
     void SetSubModelTypes();

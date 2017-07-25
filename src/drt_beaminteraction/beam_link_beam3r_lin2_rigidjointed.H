@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file beam3r_lin2_linkage.H
+\file beam_link_beam3r_lin2_rigidjointed.H
 
 \brief Wrapper for a linear Reissner beam element used as mechanical link between two other beam elements
 
@@ -9,11 +9,11 @@
 \maintainer Maximilian Grill
 */
 /*----------------------------------------------------------------------*/
-#ifndef BEAM3RLIN2LINKAGE_H
-#define BEAM3RLIN2LINKAGE_H
+#ifndef BeamLinkBeam3rLin2RigidJointed_H
+#define BeamLinkBeam3rLin2RigidJointed_H
 
 #include "../linalg/linalg_fixedsizematrix.H"
-#include "beam_to_beam_linkage.H"
+#include "beam_link_rigidjointed.H"
 
 // forward declarations
 namespace LINALG
@@ -31,26 +31,26 @@ namespace ELEMENTS {
 namespace BEAMINTERACTION
 {
 
-class Beam3rLin2LinkageType: public DRT::ParObjectType
+class BeamLinkBeam3rLin2RigidJointedType: public DRT::ParObjectType
 {
 public:
 
-  std::string Name() const {return "Beam3rLin2LinkageType";};
+  std::string Name() const {return "BeamLinkBeam3rLin2RigidJointedType";};
 
-  static Beam3rLin2LinkageType & Instance(){return instance_;};
+  static BeamLinkBeam3rLin2RigidJointedType & Instance(){return instance_;};
 
   virtual DRT::ParObject* Create(const std::vector<char> & data);
 
 private:
 
-  static Beam3rLin2LinkageType instance_;
+  static BeamLinkBeam3rLin2RigidJointedType instance_;
 };
 
 
 /*!
  \brief element for link between two 3D beam elements via a linear (2 noded) Simo-Reissner beam element
  */
-class Beam3rLin2Linkage : public BeamToBeamLinkage
+class BeamLinkBeam3rLin2RigidJointed : public BeamLinkRigidJointed
 {
 public:
   //! @name Friends
@@ -61,12 +61,12 @@ public:
   /*!
   \brief Standard Constructor
   */
-  Beam3rLin2Linkage();
+  BeamLinkBeam3rLin2RigidJointed();
 
   /*!
   \brief Destructor
   */
-  virtual ~Beam3rLin2Linkage() {};
+  virtual ~BeamLinkBeam3rLin2RigidJointed() {};
 
   //! Setup [derived]
   virtual void Setup( const int matnum );
@@ -77,7 +77,7 @@ public:
   Every class implementing ParObject needs a unique id defined at the
   top of drt_parobject.H
   */
-  virtual int UniqueParObjectId() const { return Beam3rLin2LinkageType::Instance().UniqueParObjectId(); };
+  virtual int UniqueParObjectId() const { return BeamLinkBeam3rLin2RigidJointedType::Instance().UniqueParObjectId(); };
 
   /*!
   \brief Pack this class so it can be communicated [derived]

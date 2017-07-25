@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file beam3r_lin2_linkage.cpp
+\file beam_link_beam3r_lin2_rigidjointed.cpp
 
 \brief Wrapper for a linear Reissner beam element used as mechanical link between two other beam elements
 
@@ -9,9 +9,6 @@
 \maintainer Maximilian Grill
 */
 /*----------------------------------------------------------------------*/
-
-#include "beam3r_lin2_linkage.H"
-#include "beam_to_beam_linkage.H"
 
 #include "../drt_beam3/beam3r.H"
 
@@ -24,16 +21,18 @@
 #include "../drt_lib/drt_utils_factory.H"
 
 #include <Teuchos_RCP.hpp>
+#include "beam_link.H"
+#include "beam_link_beam3r_lin2_rigidjointed.H"
 
 
-BEAMINTERACTION::Beam3rLin2LinkageType BEAMINTERACTION::Beam3rLin2LinkageType::instance_;
+BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointedType BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointedType::instance_;
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-DRT::ParObject* BEAMINTERACTION::Beam3rLin2LinkageType::Create( const std::vector<char> & data )
+DRT::ParObject* BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointedType::Create( const std::vector<char> & data )
 {
-  BEAMINTERACTION::Beam3rLin2Linkage * my_beam3rlin2 = new BEAMINTERACTION::Beam3rLin2Linkage();
+  BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed * my_beam3rlin2 = new BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed();
   my_beam3rlin2->Unpack(data);
   return my_beam3rlin2;
 }
@@ -41,8 +40,8 @@ DRT::ParObject* BEAMINTERACTION::Beam3rLin2LinkageType::Create( const std::vecto
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BEAMINTERACTION::Beam3rLin2Linkage::Beam3rLin2Linkage() :
-    BeamToBeamLinkage(),
+BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::BeamLinkBeam3rLin2RigidJointed() :
+    BeamLinkRigidJointed(),
     linkele_(Teuchos::null)
 {
   // empty constructor
@@ -51,12 +50,12 @@ BEAMINTERACTION::Beam3rLin2Linkage::Beam3rLin2Linkage() :
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::Beam3rLin2Linkage::Setup( const int matnum )
+void BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::Setup( const int matnum )
 {
   CheckInit();
 
   // call setup of base class first
-  BeamToBeamLinkage::Setup( matnum );
+  BeamLinkRigidJointed::Setup( matnum );
 
   /* the idea is to use a beam element as auxiliary object that provides us with a
    * response force (and moment) depending on the position and orientation of the
@@ -110,7 +109,7 @@ void BEAMINTERACTION::Beam3rLin2Linkage::Setup( const int matnum )
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::Beam3rLin2Linkage::Pack(DRT::PackBuffer& data) const
+void BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::Pack(DRT::PackBuffer& data) const
 {
   CheckInitSetup();
 
@@ -121,7 +120,7 @@ void BEAMINTERACTION::Beam3rLin2Linkage::Pack(DRT::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class
-  BeamToBeamLinkage::Pack(data);
+  BeamLinkRigidJointed::Pack(data);
 
   // pack linker element
   if (linkele_!=Teuchos::null)
@@ -132,7 +131,7 @@ void BEAMINTERACTION::Beam3rLin2Linkage::Pack(DRT::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::Beam3rLin2Linkage::Unpack(const std::vector<char>& data)
+void BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
   // extract type
@@ -142,7 +141,7 @@ void BEAMINTERACTION::Beam3rLin2Linkage::Unpack(const std::vector<char>& data)
   // extract base class
   std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
-  BeamToBeamLinkage::Unpack(basedata);
+  BeamLinkRigidJointed::Unpack(basedata);
 
   // Unpack data of sub material (these lines are copied from drt_element.cpp)
   std::vector<char> dataele;
@@ -152,7 +151,7 @@ void BEAMINTERACTION::Beam3rLin2Linkage::Unpack(const std::vector<char>& data)
     DRT::ParObject* object = DRT::UTILS::Factory(dataele);  // Unpack is done here
     DRT::ELEMENTS::Beam3r* linkele = dynamic_cast<DRT::ELEMENTS::Beam3r*>(object);
     if (linkele==NULL)
-      dserror("failed to unpack Beam3r object within Beam3rLin2Linkage");
+      dserror("failed to unpack Beam3r object within BeamLinkBeam3rLin2RigidJointed");
     linkele_ = Teuchos::rcp(linkele);
   }
   else linkele_ = Teuchos::null;
@@ -162,7 +161,7 @@ void BEAMINTERACTION::Beam3rLin2Linkage::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool BEAMINTERACTION::Beam3rLin2Linkage::EvaluateForce(
+bool BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::EvaluateForce(
     LINALG::SerialDenseVector& forcevec1,
     LINALG::SerialDenseVector& forcevec2)
 {
@@ -187,15 +186,15 @@ bool BEAMINTERACTION::Beam3rLin2Linkage::EvaluateForce(
 
   // Todo maybe we can avoid this copy by setting up 'force' as a view on the
   //      two separate force vectors ?
-  std::copy( &force(0), &force(0)+6, &forcevec1(0) );
-  std::copy( &force(0)+6, &force(0)+12, &forcevec2(0) );
+  std::copy( &force(0), &force(0) + 6, &forcevec1(0) );
+  std::copy( &force(0) + 6, &force(0) + 12, &forcevec2(0) );
 
   return true;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool BEAMINTERACTION::Beam3rLin2Linkage::EvaluateStiff(
+bool BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::EvaluateStiff(
     LINALG::SerialDenseMatrix& stiffmat11,
     LINALG::SerialDenseMatrix& stiffmat12,
     LINALG::SerialDenseMatrix& stiffmat21,
@@ -236,7 +235,7 @@ bool BEAMINTERACTION::Beam3rLin2Linkage::EvaluateStiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool BEAMINTERACTION::Beam3rLin2Linkage::EvaluateForceStiff(
+bool BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::EvaluateForceStiff(
     LINALG::SerialDenseVector& forcevec1,
     LINALG::SerialDenseVector& forcevec2,
     LINALG::SerialDenseMatrix& stiffmat11,
@@ -264,17 +263,17 @@ bool BEAMINTERACTION::Beam3rLin2Linkage::EvaluateForceStiff(
       &force,
       NULL);
 
-  std::copy( &force(0), &force(0)+6, &forcevec1(0) );
-  std::copy( &force(0)+6, &force(0)+12, &forcevec2(0) );
+  std::copy( &force(0), &force(0) + 6, &forcevec1(0) );
+  std::copy( &force(0) + 6, &force(0) + 12, &forcevec2(0) );
 
-  for (unsigned int i=0; i<6; ++i)
+  for ( unsigned int i = 0; i < 6; ++i )
   {
-    for (unsigned int j=0; j<6; ++j)
+    for ( unsigned int j = 0; j < 6; ++j )
     {
-      stiffmat11(i,j) = stiffmat(i,j);
-      stiffmat12(i,j) = stiffmat(i,6+j);
-      stiffmat21(i,j) = stiffmat(6+i,j);
-      stiffmat22(i,j) = stiffmat(6+i,6+j);
+      stiffmat11( i, j ) = stiffmat( i, j );
+      stiffmat12( i, j ) = stiffmat( i, 6 + j );
+      stiffmat21( i, j ) = stiffmat( 6 + i, j );
+      stiffmat22( i, j ) = stiffmat( 6 + i, 6 + j );
     }
   }
 
@@ -283,7 +282,7 @@ bool BEAMINTERACTION::Beam3rLin2Linkage::EvaluateForceStiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::Beam3rLin2Linkage::FillStateVariablesForElementEvaluation(
+void BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::FillStateVariablesForElementEvaluation(
     LINALG::TMatrix<double,6,1>&               disp_totlag_centerline,
     std::vector<LINALG::TMatrix<double,4,1> >& Qnode
     ) const

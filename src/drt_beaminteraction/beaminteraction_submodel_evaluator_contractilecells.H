@@ -21,7 +21,7 @@
 
 #include "../drt_binstrategy/binning_strategy_utils.H"
 #include "beaminteraction_submodel_evaluator_generic.H"
-
+#include <unordered_set>
 
 // forward declaration
 namespace DRT {
@@ -30,6 +30,7 @@ namespace DRT {
 }
 namespace BEAMINTERACTION {
 class ContractileCellsParams;
+class BeamLinkPinJointed;
 
 namespace SUBMODELEVALUATOR {
 
@@ -113,29 +114,36 @@ private:
     //! @name submodel specific, not derived member functions
     //! @{
 
-    /// get neighbouring eles in discret
-    virtual void FindAndStoreNeighboringElements();
+    /// find, check feasibility and add new element pairs
+    virtual void AddNewElementPairsAfterFeasibilityCheck();
 
-    /// update reference position of cells randomly inside a volume
-    virtual void UpdateCellsPositionRandomly();
+    /// get neighboring eles in discret
+    virtual void FindAndStoreNeighboringElements(
+        std::map< int, std::vector< std::pair< int, int > > > & newlinks );
 
+    /// get neighboring eles in discret
+    virtual void CheckFeasibilityOfNewLink(
+        DRT::Element const * currele,
+        std::set< DRT::Element * > const & neighbors,
+        std::unordered_set< int > & tobebonded,
+        std::map< int, std::vector< std::pair< int, int > > > & newlinks ) const;
 
+    /// create new beam to sphere joint object
+    virtual void CreateBeamToSphereJoint(
+        std::map< int, std::vector< std::pair< int, int > > > const & newlinks );
 
     //! @}
 
   private:
 
     //! cell discretization
-    Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking> sm_crosslinkink_ptr;
+    Teuchos::RCP< BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking > sm_crosslinkink_ptr;
 
     //! data container holding all beam contact related parameters
-    Teuchos::RCP<BEAMINTERACTION::ContractileCellsParams> contractilecells_params_ptr_;
+    Teuchos::RCP< BEAMINTERACTION::ContractileCellsParams > contractilecells_params_ptr_;
 
-    //! type of eles in bins
-    BINSTRATEGY::UTILS::BinContentType bin_beamcontent_;
-
-    //! mapping ele (elegid) to set of spatially proximal eles (pointer to elements)
-    std::map<int, std::set<DRT::Element*> > nearby_elements_map_;
+    //! interacting pairs of sphere and beam elements that might exert forces on each other (key is rigid sphere gid)
+    std::map< int, Teuchos::RCP< BEAMINTERACTION::BeamLinkPinJointed > > cell_beam_element_pairs_;
 
   };
 

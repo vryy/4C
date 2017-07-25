@@ -973,10 +973,14 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::GetShap
   }
   else if (numnodalvalues==2)
   {
+    /* TODO hard set distype to line2 in case of numnodalvalues_=2 because
+     *  only 3rd order Hermite interpolation is used (always 2 nodes) */
+    const DRT::Element::DiscretizationType distype1herm = DRT::Element::line2;
+
      // get values and derivatives of shape functions
-     DRT::UTILS::shape_function_hermite_1D(N1_i, eta, beamele_reflength_, distype1);
-     DRT::UTILS::shape_function_hermite_1D_deriv1(N1_i_xi, eta, beamele_reflength_, distype1);
-     DRT::UTILS::shape_function_hermite_1D_deriv2(N1_i_xixi, eta, beamele_reflength_, distype1);
+     DRT::UTILS::shape_function_hermite_1D(N1_i, eta, beamele_reflength_, distype1herm);
+     DRT::UTILS::shape_function_hermite_1D_deriv1(N1_i_xi, eta, beamele_reflength_, distype1herm);
+     DRT::UTILS::shape_function_hermite_1D_deriv2(N1_i_xixi, eta, beamele_reflength_, distype1herm);
   }
   else
     dserror("Only beam elements with one (nodal positions) or two (nodal positions + nodal tangents) values are valid!");
