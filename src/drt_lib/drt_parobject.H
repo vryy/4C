@@ -330,20 +330,20 @@ public:
   /*!
    \brief Add stuff to the end of a char vector data
 
-   This method is templated for std::set<T>
+   This method is templated for std::set<T, U>
    \param data (in/out) : char string stuff shall be added to
    \param stuff (in)    : std::set<T> that get's added to stuff
 
    */
-  template<typename T>
-  static void AddtoPack(PackBuffer& data, const std::set<T> & stuff)
+  template<typename T, typename U>
+  static void AddtoPack(PackBuffer& data, const std::set<T, U> & stuff)
   {
 
     int numentries = (int) stuff.size();
     AddtoPack(data, numentries);
 
     // iterator
-    typename std::set<T>::const_iterator colcurr;
+    typename std::set<T, U>::const_iterator colcurr;
 
     int i = 0;
     for (colcurr = stuff.begin(); colcurr != stuff.end(); ++colcurr)
@@ -631,16 +631,16 @@ public:
   /*!
    \brief Extract stuff from a char vector data and increment position
 
-   This method is templated for stuff of type std::set<T>
+   This method is templated for stuff of type std::set<T, U>
 
    \param position (in/out) : place in data where to extract stuff. Position will be incremented by this method
    \param data (in)         : char vector where stuff is extracted from
    \param stuff (out)       : std::set<T> to extract from data
 
    */
-  template<typename T>
+  template<typename T, typename U>
   static void ExtractfromPack(std::vector<char>::size_type& position,
-      const std::vector<char>& data, std::set<T>& stuff)
+      const std::vector<char>& data, std::set<T, U>& stuff)
   {
 
     int numentries = 0;
