@@ -441,6 +441,21 @@ namespace MAT
         const double scale_phi                                           //!< scaling factor for scalar values (used for reference concentrations)
         ) const;
 
+    /// calculate advanced reaction term derivatives after additional variables of the specified function
+    void CalcReaBodyForceDerivMatrixAddVariables(
+        const int k,                                                     //!< current scalar id
+        std::vector<double>& derivs,                                     //!< vector with derivatives (to be filled)
+        const std::vector<std::pair<std::string,double> >& variables,    //!< variables
+        const std::vector<std::pair<std::string,double> >& constants,    //!< constants (including the scalar values phinp)
+        double scale_phi                                                 //!< scaling factor for scalar values (used for reference concentrations)
+        ) const;
+
+    /// add variables to the by-function reaction
+    void AddAdditionalVariables(
+        const int k,                                                     //!< current scalar id
+        const std::vector<std::pair<std::string,double> >& variables     //!< variables
+        ) const;
+
   protected:
 
     ///helper for calculating advanced reaction terms
@@ -458,6 +473,16 @@ namespace MAT
         std::vector<double>& derivs,                                     //!< vector with derivatives (to be filled)
         const std::vector<double>& phinp,                                //!< scalar values at t_(n+1)
         const std::vector<std::pair<std::string,double> >& constants,    //!< vector containing values which are independent of the scalars
+        double scale_reac,                                               //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
+        double scale_phi                                                 //!< scaling factor for scalar values (used for reference concentrations)
+        ) const;
+
+    ///helper for calculating advanced reaction term derivatives
+    void CalcReaBodyForceDerivAddVariables(
+        int k,                                                           //!< current scalar id
+        std::vector<double>& derivs,                                     //!< vector with derivatives (to be filled)
+        const std::vector<std::pair<std::string,double> >& variables,    //!< variables
+        const std::vector<std::pair<std::string,double> >& constants,    //!< constants (including the scalar values phinp)
         double scale_reac,                                               //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
         double scale_phi                                                 //!< scaling factor for scalar values (used for reference concentrations)
         ) const;

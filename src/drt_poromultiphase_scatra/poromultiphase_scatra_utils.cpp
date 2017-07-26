@@ -14,6 +14,7 @@
 #include "poromultiphase_scatra_utils.H"
 
 #include "poromultiphase_scatra_partitioned_twoway.H"
+#include "poromultiphase_scatra_monolithic_twoway.H"
 
 #include "../drt_poromultiphase/poromultiphase_utils.H"
 
@@ -41,11 +42,20 @@ POROMULTIPHASESCATRA::UTILS::CreatePoroMultiPhaseScatraAlgorithm(
 
   switch(solscheme)
   {
-  case INPAR::POROMULTIPHASESCATRA::solscheme_twoway:
+  case INPAR::POROMULTIPHASESCATRA::solscheme_twoway_partitioned:
   {
     // call constructor
     algo =
         Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay(
+                comm,
+                timeparams));
+    break;
+  }
+  case INPAR::POROMULTIPHASESCATRA::solscheme_twoway_monolithic:
+  {
+    // call constructor
+    algo =
+        Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay(
                 comm,
                 timeparams));
     break;
@@ -154,6 +164,60 @@ void POROMULTIPHASESCATRA::UTILS::AssignMaterialPointers(
   POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis,scatradis);
   POROELAST::UTILS::SetMaterialPointersMatchingGrid(fluiddis,scatradis);
 }
+
+/*----------------------------------------------------------------------*
+ | calculate vector norm                             kremheller 07/17   |
+ *----------------------------------------------------------------------*/
+double POROMULTIPHASESCATRA::UTILS::CalculateVectorNorm(
+  const enum INPAR::POROMULTIPHASESCATRA::VectorNorm norm,
+  const Teuchos::RCP<const Epetra_Vector> vect
+  )
+{
+  // L1 norm
+  // norm = sum_0^i vect[i]
+  if (norm == INPAR::POROMULTIPHASESCATRA::norm_l1)
+  {
+    double vectnorm;
+    vect->Norm1(&vectnorm);
+    return vectnorm;
+  }
+  // L2/Euclidian norm
+  // norm = sqrt{sum_0^i vect[i]^2 }
+  else if (norm == INPAR::POROMULTIPHASESCATRA::norm_l2)
+  {
+    double vectnorm;
+    vect->Norm2(&vectnorm);
+    return vectnorm;
+  }
+  // RMS norm
+  // norm = sqrt{sum_0^i vect[i]^2 }/ sqrt{length_vect}
+  else if (norm == INPAR::POROMULTIPHASESCATRA::norm_rms)
+  {
+    double vectnorm;
+    vect->Norm2(&vectnorm);
+    return vectnorm/sqrt((double) vect->GlobalLength());
+  }
+  // infinity/maximum norm
+  // norm = max( vect[i] )
+  else if (norm == INPAR::POROMULTIPHASESCATRA::norm_inf)
+  {
+    double vectnorm;
+    vect->NormInf(&vectnorm);
+    return vectnorm;
+  }
+  // norm = sum_0^i vect[i]/length_vect
+  else if (norm == INPAR::POROMULTIPHASESCATRA::norm_l1_scaled)
+  {
+    double vectnorm;
+    vect->Norm1(&vectnorm);
+    return vectnorm/((double) vect->GlobalLength());
+  }
+  else
+  {
+    dserror("Cannot handle vector norm");
+    return 0;
+  }
+}  // CalculateVectorNorm()
 
 /*----------------------------------------------------------------------*
  |                                                    kremheller 03/17  |

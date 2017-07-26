@@ -322,8 +322,11 @@ protected:
   //! call elements to calculate system matrix and rhs and assemble
   virtual void AssembleMatAndRHS();
 
-  //! call elements to calculate fluid coupling matrix and assemble
-  virtual void AssembleFluidCouplingMat(Teuchos::RCP< LINALG::SparseOperator> k_fs);
+  //! call elements to calculate fluid coupling matrix with structure and assemble
+  virtual void AssembleFluidStructCouplingMat(Teuchos::RCP< LINALG::SparseOperator> k_fs);
+
+  //! call elements to calculate fluid coupling matrix with scatra and assemble
+  virtual void AssembleFluidScatraCouplingMat(Teuchos::RCP< LINALG::SparseOperator> k_pfs);
 
   //! return the right time-scaling-factor for the true residual
   virtual double ResidualScaling() const = 0;

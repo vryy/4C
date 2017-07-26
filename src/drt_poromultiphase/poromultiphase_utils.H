@@ -57,6 +57,12 @@ Teuchos::RCP<ADAPTER::PoroMultiPhase> CreatePoroMultiPhaseAlgorithm(
     const Teuchos::ParameterList& timeparams, //!< problem parameters (i)
     const Epetra_Comm& comm //!< communicator(i)
     );
+
+//! Determine norm of vector
+double CalculateVectorNorm(const enum INPAR::POROMULTIPHASE::VectorNorm norm, //!< norm to use
+    const Teuchos::RCP<const Epetra_Vector> vect //!< the vector of interest
+    );
+
 } // UTILS
 // Print the logo
 void PrintLogo();

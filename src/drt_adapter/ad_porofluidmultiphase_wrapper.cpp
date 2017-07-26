@@ -254,7 +254,13 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::PoroFluidMultiphaseWrapper::SystemMa
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::PoroFluidMultiphaseWrapper::AssembleFluidCouplingMat(Teuchos::RCP< LINALG::SparseOperator> k_fs)
+void ADAPTER::PoroFluidMultiphaseWrapper::AssembleFluidStructCouplingMat(Teuchos::RCP< LINALG::SparseOperator> k_fs)
 {
-  return porofluid_->AssembleFluidCouplingMat(k_fs);
+  return porofluid_->AssembleFluidStructCouplingMat(k_fs);
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::PoroFluidMultiphaseWrapper::AssembleFluidScatraCouplingMat(Teuchos::RCP< LINALG::SparseOperator> k_pfs)
+{
+  return porofluid_->AssembleFluidScatraCouplingMat(k_pfs);
 }

@@ -48,7 +48,7 @@ void SCATRA::ScaTraTimIntPoroMulti::Init()
 /*----------------------------------------------------------------------*
  | set solution fields on given dof sets                    vuong  08/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMulti::SetSolutionFields(
+void SCATRA::ScaTraTimIntPoroMulti::SetSolutionFieldsWithL2(
     Teuchos::RCP<const Epetra_MultiVector>   multiflux,
     const int                                nds_flux,
     Teuchos::RCP<const Epetra_Vector>        pressure,
@@ -135,6 +135,29 @@ void SCATRA::ScaTraTimIntPoroMulti::SetSolutionFields(
   return;
 
 } // ScaTraTimIntImpl::SetSolutionFields
+
+/*----------------------------------------------------------------------*
+ | set solution fields on given dof sets              kremheller  07/17 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntPoroMulti::SetSolutionFieldsWithoutL2(
+    Teuchos::RCP<const Epetra_Vector>        phinp_fluid,
+    const int                                nds_phi_fluid
+    )
+{
+  if (nds_phi_fluid >= discret_->NumDofSets())
+      dserror("Too few dofsets on scatra discretization!");
+
+  //TODO: this is a hack to allow evaluation of initial time derivative
+  //      with check nds_vel_ != -1 since in the case without L2- projection
+  //      the velocity field is directly calculated at GPs with the Darcy eqn.
+  nds_vel_ = 1;
+
+  // store number of dof-set
+  nds_pres_ = nds_phi_fluid;
+  // provide scatra discretization with fluid primary variable field
+  discret_->SetState(nds_pres_,"phinp_fluid",phinp_fluid);
+
+}
 
 /*----------------------------------------------------------------------*
  | add parameters depending on the problem                  vuong  08/16 |

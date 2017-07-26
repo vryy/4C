@@ -16,6 +16,13 @@
 
 #include "Teuchos_RCP.hpp"
 #include <Epetra_Vector.h>
+#include "../linalg/linalg_utils.H"
+
+namespace ADAPTER
+{
+  class PoroFluidMultiphaseWrapper;
+  class Structure;
+}
 
 namespace ADAPTER
 {
@@ -106,6 +113,36 @@ public:
 
   /// return fluid solution variable
   virtual Teuchos::RCP<const Epetra_Vector> SolidPressure() const =0;
+
+  //! unique map of all dofs that should be constrained with DBC
+  virtual Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const = 0;
+
+  //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
+  virtual void Evaluate(
+      Teuchos::RCP<const Epetra_Vector> sx,
+      Teuchos::RCP<const Epetra_Vector> fx,
+      const bool firstcall) = 0;
+
+  //! access to monolithic right-hand side vector
+  virtual Teuchos::RCP<const Epetra_Vector> RHS() const = 0;
+
+  //! update all fields after convergence (add increment on displacements and fluid primary variables)
+  virtual void UpdateFieldsAfterConvergence(
+      Teuchos::RCP<const Epetra_Vector>& sx,
+      Teuchos::RCP<const Epetra_Vector>& fx
+      ) = 0;
+
+  //! get the extractor
+  virtual Teuchos::RCP<const LINALG::MultiMapExtractor> Extractor() const = 0;
+
+  //! get the monolithic system matrix
+  virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const = 0;
+
+  //! get structure field
+  virtual const Teuchos::RCP<ADAPTER::Structure>& StructureField() = 0;
+
+  //! get fluid field
+  virtual const Teuchos::RCP<ADAPTER::PoroFluidMultiphaseWrapper>& FluidField() = 0;
 
 };
 }

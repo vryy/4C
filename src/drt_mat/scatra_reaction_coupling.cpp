@@ -126,6 +126,34 @@ void MAT::PAR::REACTIONCOUPLING::ReactionWithPhiScaling::CalcReaBodyForceDeriv(
   return;
 }
 
+/*--------------------------------------------------------------------------------*
+ |  helper for calculating advanced reaction term derivatives after additional    |
+ |  variables (e.g. for monolithic coupling)                     kremheller 07/17 |
+ *--------------------------------------------------------------------------------*/
+void MAT::PAR::REACTIONCOUPLING::ReactionWithPhiScaling::CalcReaBodyForceDerivAddVariables(
+    const int k,                                                     //!< current scalar id
+    std::vector<double>& derivs,                                     //!< vector with derivatives (to be filled)
+    const std::vector<std::pair<std::string,double> >& variables,    //!< variables
+    const std::vector<std::pair<std::string,double> >& constants,    //!< constants (including scalar values phinp)
+    const std::vector<double>& couprole,                             //!< coupling role vector
+    double scale_reac,                                               //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
+    double scale_phi                                                 //!< scaling factor for scalar values (used for reference concentrations)
+    )
+{
+
+  // modify the phinp vector if necessary (e.g. for reference concentrations)
+  //std::vector<double> phinp_mod(ModifyPhi(phinp,scale_phi));
+  if(fabs(scale_phi - 1.0) > 1.0e-14)
+  {
+    dserror("scale_phi is not equal to 1.0, you should make your own modify phi function");
+  }
+
+  // call the real evaluation
+  reaction_->CalcReaBodyForceDerivAddVariables(k,derivs,variables,constants,couprole,scale_reac,scale_phi);
+
+  return;
+}
+
 /*----------------------------------------------------------------------------------*
  |  Modify concentrations according to scaling                         vuong 09/16 |
  *----------------------------------------------------------------------------------*/
@@ -623,6 +651,56 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDeriv(
   // add it to derivs
   for (int toderive=0; toderive<numscal ;toderive++)
     derivs[toderive]+=scale_reac*myderivs[toderive];
+
+  return;
+}
+
+/*--------------------------------------------------------------------------------*
+ |  helper for calculating advanced reaction term derivatives after additional    |
+ |  variables (e.g. for monolithic coupling)                     kremheller 07/17 |
+ *--------------------------------------------------------------------------------*/
+void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDerivAddVariables(
+    const int k,                                                     //!< current scalar id
+    std::vector<double>& derivs,                                     //!< vector with derivatives (to be filled)
+    const std::vector<std::pair<std::string,double> >& variables,    //!< variables
+    const std::vector<std::pair<std::string,double> >& constants,    //!< constants (including scalar values phinp)
+    const std::vector<double>& couprole,                             //!< coupling role vector
+    double scale_reac                                                //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
+    )
+{
+
+  // evaluate the derivatives of the reaction term
+  std::vector<double> myderivs = Function(round(couprole[k])-1).EvaluateDerivative(0,variables,constants);
+
+  if(myderivs.size() != derivs.size())
+  {
+    dserror("mismatch in dimensions, Input %d, Output %d", derivs.size(),myderivs.size());
+  }
+
+  // add it to derivs
+  for (unsigned toderive=0; toderive<variables.size() ;toderive++)
+    derivs[toderive]+=scale_reac*myderivs[toderive];
+
+  return;
+}
+
+/*--------------------------------------------------------------------------------*
+ |  helper for adding variables to the function                  kremheller 07/17 |
+ *--------------------------------------------------------------------------------*/
+void MAT::PAR::REACTIONCOUPLING::ByFunction::AddAdditionalVariables(
+    const int k,                                                     //!< current scalar id
+    const std::vector<std::pair<std::string,double> >& variables,    //!< variables
+    const std::vector<double>& couprole                             //!< coupling role vector
+    )
+{
+  // add the variables
+  for (unsigned j=0;j<variables.size();j++)
+  {
+    if(not Function(round(couprole[k])-1).IsVariable(0,variables[j].first))
+    {
+      Function(round(couprole[k])-1).AddVariable(0,variables[j].first,0.0);
+    }
+  }
 
   return;
 }

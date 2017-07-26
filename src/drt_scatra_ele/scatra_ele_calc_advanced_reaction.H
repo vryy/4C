@@ -152,7 +152,9 @@ class ScaTraEleReaManagerAdvReac : public ScaTraEleReaManager
 
     ScaTraEleReaManagerAdvReac(int numscal): ScaTraEleReaManager(numscal),
       reabodyforce_(numscal,0.0), // size of vector + initialized to zero
-      reabodyforcederiv_(numscal,std::vector<double>(numscal,0.0 ))
+      reabodyforcederiv_(numscal,std::vector<double>(numscal,0.0 )),
+      numaddvariables_(0),
+      reabodyforcederivaddvariables_(numscal,std::vector<double>(numaddvariables_,0.0))
       {return;}
 
     virtual ~ScaTraEleReaManagerAdvReac(){};
@@ -167,9 +169,11 @@ class ScaTraEleReaManagerAdvReac : public ScaTraEleReaManager
       //clear
       reabodyforce_.resize(0);
       reabodyforcederiv_.resize(0);
+      reabodyforcederivaddvariables_.resize(0);
       //resize
       reabodyforce_.resize(numscal,0.0);
       reabodyforcederiv_.resize(numscal,std::vector<double>(numscal,0.0 ));
+      reabodyforcederivaddvariables_.resize(numscal,std::vector<double>(numaddvariables_,0.0));
       return;
     }
 
@@ -214,6 +218,17 @@ class ScaTraEleReaManagerAdvReac : public ScaTraEleReaManager
       return stabboeff;
     }
 
+    // initialize
+    void InitializeReaBodyForceDerivVectorAddVariables(const int numscal, const int newsize)
+    {
+      reabodyforcederivaddvariables_.resize(numscal,std::vector<double>(newsize,0.0));
+      numaddvariables_ = newsize;
+    }
+
+    //! Return one line of the jacobian of the reaction vector -- derivatives after additional variables
+    std::vector<double>& GetReaBodyForceDerivVectorAddVariables(const int k)
+    {return reabodyforcederivaddvariables_[k];}
+
     //@}
 
   private:
@@ -224,6 +239,12 @@ class ScaTraEleReaManagerAdvReac : public ScaTraEleReaManager
 
     //! scalar reaction coefficient
     std::vector<std::vector<double> > reabodyforcederiv_;
+
+    //! number of additional variables
+    int numaddvariables_;
+
+    //! derivatives after additional variables (for OD-terms)
+    std::vector<std::vector<double> > reabodyforcederivaddvariables_;
 
     //@}
   };

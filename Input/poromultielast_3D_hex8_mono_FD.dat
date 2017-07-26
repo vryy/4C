@@ -40,7 +40,8 @@ RESULTSEVRY                     1
 ITEMAX                          10
 COUPALGO                        twoway_monolithic
 LINEAR_SOLVER                   1
-CONVTOL                         1e-06
+TOLRES_GLOBAL                   1e-06
+TOLINC_GLOBAL                   1e-06
 FDCHECK                         global
 --------------------------------------------------------------------SOLVER 1
 NAME                            Solver

@@ -144,7 +144,10 @@ namespace ADAPTER {
     virtual void Evaluate()=0;
 
     // Assemble Off-Diagonal Fluid-Structure Coupling matrix
-    virtual void AssembleFluidCouplingMat(Teuchos::RCP< LINALG::SparseOperator> k_fs)=0;
+    virtual void AssembleFluidStructCouplingMat(Teuchos::RCP< LINALG::SparseOperator> k_fs)=0;
+
+    // Assemble Off-Diagonal Fluid-scatra Coupling matrix
+    virtual void AssembleFluidScatraCouplingMat(Teuchos::RCP< LINALG::SparseOperator> k_pfs)=0;
 
     //! direct access to system matrix
     virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() = 0;

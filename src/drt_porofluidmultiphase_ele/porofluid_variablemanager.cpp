@@ -55,6 +55,16 @@ DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>::CreateVariab
       varmanager = Teuchos::rcp(new VariableManagerStruct<nsd,nen>(para.NdsVel(),para.NdsDisp(),varmanager));
     break;
   }
+  // read data from scatra
+  case POROFLUIDMULTIPHASE::get_access_from_scatra:
+  {
+    // NOTE: we do not need the variable manager struct here, since the call ExtractElementsAndNodeValues will
+    //       otherwise also update the current configuration vector xyze_ with which it is called and scatra only
+    //       needs phi and gradphi
+    //       Also, the scatra discretization already has all necessary data for moving meshes such as displacements
+    varmanager = Teuchos::rcp(new VariableManagerPhiGradPhi<nsd,nen>(numdofpernode));
+    break;
+  }
   default:
   {
     // default: potentially read everything
@@ -89,15 +99,17 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerPhi<nsd,nen>::ExtractElemen
     const DRT::Element& ele,
     const DRT::Discretization& discretization,
     DRT::Element::LocationArray& la,
-    LINALG::Matrix<nsd, nen>& xyze)
+    LINALG::Matrix<nsd, nen>& xyze,
+    const int dofsetnum)
 {
   // extract local values from the global vectors
-  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState(dofsetnum, "phinp_fluid");
   if (phinp == Teuchos::null)
     dserror("Cannot get state vector 'phinp'");
 
-   //values of fluid field are always in first dofset
-  const std::vector<int>& lm = la[0].lm_;
+  // values of fluid are in 'dofsetnum' --> 0 if called with porofluid-element
+  //                                    --> correct number has be passed if called with another element (e.g. scatra)
+  const std::vector<int>& lm = la[dofsetnum].lm_;
 
   // extract element vector from global vector
   DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen,1> >(*phinp,ephinp_,lm);
@@ -169,22 +181,25 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInstat<nsd,nen>::ExtractEle
     const DRT::Element& ele,
     const DRT::Discretization& discretization,
     DRT::Element::LocationArray& la,
-    LINALG::Matrix<nsd, nen>& xyze)
+    LINALG::Matrix<nsd, nen>& xyze,
+    const int dofsetnum)
 {
   // extract local values from the global vectors
   Teuchos::RCP<const Epetra_Vector> hist = discretization.GetState("hist");
   Teuchos::RCP<const Epetra_Vector> phidtnp = discretization.GetState("phidtnp");
   if (phidtnp==Teuchos::null) dserror("Cannot get state vector 'phidtnp'");
 
-  //values of fluid field are always in first dofset
-  const std::vector<int>&    lm = la[0].lm_;
+
+ // values of fluid are in 'dofsetnum' --> 0 if called with porofluid-element
+ //                                    --> correct number has be passed if called with another element (e.g. scatra)
+  const std::vector<int>&    lm = la[dofsetnum].lm_;
 
   // extract values from global vector
   DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen,1> >(*hist,ehist_,lm);
   DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen,1> >(*phidtnp,ephidtnp_,lm);
 
   // call wrapped class
-  this->varmanager_->ExtractElementAndNodeValues(ele,discretization,la,xyze);
+  this->varmanager_->ExtractElementAndNodeValues(ele,discretization,la,xyze,dofsetnum);
 
   return;
 };
@@ -224,10 +239,16 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerStruct<nsd,nen>::ExtractEle
     const DRT::Element& ele,
     const DRT::Discretization& discretization,
     DRT::Element::LocationArray& la,
-    LINALG::Matrix<nsd, nen>& xyze)
+    LINALG::Matrix<nsd, nen>& xyze,
+    const int dofsetnum)
 {
+
+  if(dofsetnum != 0)
+    dserror("VariableManagerStruct has been called with dofsetnum = %d, this is not possible.\n"
+        "The VariableManagerStruct always has to be called with a porofluid-element");
+
   // call internal class
-  this->varmanager_->ExtractElementAndNodeValues(ele,discretization,la,xyze);
+  this->varmanager_->ExtractElementAndNodeValues(ele,discretization,la,xyze,dofsetnum);
 
   // determine number of velocity related dofs per node
   const int numveldofpernode = la[ndsvel_].lm_.size()/nen;
@@ -309,10 +330,11 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerScalar<nsd,nen>::ExtractEle
     const DRT::Element& ele,
     const DRT::Discretization& discretization,
     DRT::Element::LocationArray& la,
-    LINALG::Matrix<nsd, nen>& xyze)
+    LINALG::Matrix<nsd, nen>& xyze,
+    const int dofsetnum)
 {
   // call internal class
-  this->varmanager_->ExtractElementAndNodeValues(ele,discretization,la,xyze);
+  this->varmanager_->ExtractElementAndNodeValues(ele,discretization,la,xyze,dofsetnum);
 
   // get state vector from discretization
   Teuchos::RCP<const Epetra_Vector> scalarnp = discretization.GetState(ndsscalar_, "scalars");
@@ -368,6 +390,8 @@ template class DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<1,3>;
 // 2D elements
 // tri3
 template class DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<2,3>;
+// tri6
+template class DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<2,6>;
 // quad4
 template class DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<2,4>;
 

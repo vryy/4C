@@ -112,11 +112,15 @@ class VariableManagerInterface : public VariableManagerMinAccess
         int numdofpernode);
 
     //! extract element and node values from the discretization
+    //! dofsetnum is the number of the porofluid-dofset on the current element
+    //! default is set to zero, if called from a porofluidmultiphase-element
+    //! otherwise it has to be explicitly passed from the caller
     virtual void ExtractElementAndNodeValues(
         const DRT::Element&            ele,
         const DRT::Discretization&     discretization,
         DRT::Element::LocationArray&   la,
-        LINALG::Matrix<nsd,nen>&       xyze
+        LINALG::Matrix<nsd,nen>&       xyze,
+        const int dofsetnum = 0
         ) =0;
 
     //! evaluate variables at gauss point
@@ -272,11 +276,16 @@ public:
   virtual ~VariableManagerPhi(){};
 
   //! extract node values related to the state vector 'phinp'
+  //! dofsetnum is the number of the porofluid-dofset on the current element
+  //! default is set to zero, if called from a porofluidmultiphase-element
+  //! otherwise it has to be explicitly passed from the caller
   virtual void ExtractElementAndNodeValues(
       const DRT::Element& ele,
       const DRT::Discretization& discretization,
       DRT::Element::LocationArray& la,
-      LINALG::Matrix<nsd, nen>& xyze);
+      LINALG::Matrix<nsd, nen>& xyze,
+      const int dofsetnum = 0
+      );
 
   //! evaluate state vector at gauss point
   virtual void EvaluateGPVariables(
@@ -458,11 +467,16 @@ class VariableManagerInstat : public VariableManagerDecorator<nsd,nen>
   virtual ~VariableManagerInstat(){};
 
   //! extract node values related to time derivatives
+  //! dofsetnum is the number of the porofluid-dofset on the current element
+  //! default is set to zero, if called from a porofluidmultiphase-element
+  //! otherwise it has to be explicitly passed from the caller
   void ExtractElementAndNodeValues(
       const DRT::Element&                 ele,
       const DRT::Discretization&          discretization,
       DRT::Element::LocationArray&  la,
-      LINALG::Matrix<nsd,nen>& xyze);
+      LINALG::Matrix<nsd,nen>& xyze,
+      const int dofsetnum = 0
+      );
 
   //! evaluate variables at gauss point
   void EvaluateGPVariables(
@@ -533,11 +547,16 @@ class VariableManagerStruct : public VariableManagerDecorator<nsd,nen>
   virtual ~VariableManagerStruct(){};
 
   //! extract variables related to structure coupling
+  //! dofsetnum is the number of the porofluid-dofset on the current element
+  //! default is set to zero, if called from a porofluidmultiphase-element
+  //! otherwise it has to be explicitly passed from the caller
   void ExtractElementAndNodeValues(
       const DRT::Element&                 ele,
       const DRT::Discretization&          discretization,
       DRT::Element::LocationArray&  la,
-      LINALG::Matrix<nsd,nen>& xyze);
+      LINALG::Matrix<nsd,nen>& xyze,
+      const int dofsetnum = 0
+      );
 
   //! evaluate variables at gauss point
   void EvaluateGPVariables(
@@ -613,11 +632,16 @@ class VariableManagerScalar : public VariableManagerDecorator<nsd,nen>
     virtual ~VariableManagerScalar(){};
 
     //! extract node values related to ScaTra coupling
+    //! dofsetnum is the number of the porofluid-dofset on the current element
+    //! default is set to zero, if called from a porofluidmultiphase-element
+    //! otherwise it has to be explicitly passed from the caller
     void ExtractElementAndNodeValues(
         const DRT::Element&                 ele,
         const DRT::Discretization&          discretization,
         DRT::Element::LocationArray&  la,
-        LINALG::Matrix<nsd,nen>& xyze);
+        LINALG::Matrix<nsd,nen>& xyze,
+        const int dofsetnum = 0
+        );
 
     void EvaluateGPVariables(
         const LINALG::Matrix<nen,1>&   funct,     //! array for shape functions

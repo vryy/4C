@@ -2397,6 +2397,7 @@ set(OBJS_DRT_POROMULTIPHASE
   src/drt_poromultiphase_scatra/poromultiphase_scatra_utils.cpp
   src/drt_poromultiphase_scatra/poromultiphase_scatra_base.cpp
   src/drt_poromultiphase_scatra/poromultiphase_scatra_partitioned_twoway.cpp
+  src/drt_poromultiphase_scatra/poromultiphase_scatra_monolithic_twoway.cpp
 )
 
 set(OBJS_DRT_FPSI

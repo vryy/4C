@@ -291,7 +291,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SysmatODMesh(
       //----------------------------------------------------------------
       // standard Galerkin transient, old part of rhs and bodyforce term
       //----------------------------------------------------------------
-      CalcHistAndSourceODMesh(emat,k,ndofpernodemesh,fac,rhsint,J,dJ_dmesh);
+      CalcHistAndSourceODMesh(emat,k,ndofpernodemesh,fac,rhsint,J,dJ_dmesh,densnp[k]);
 
       //----------------------------------------------------------------
       // standard Galerkin terms - convective term
@@ -386,24 +386,62 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SysmatODFluid(
     // loop all scalars
     for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
     {
+
+      // reactive part of the form: (reaction coefficient)*phi
+      double rea_phi(0.0);
+      rea_phi = densnp[k]*scatravarmanager_->Phinp(k)*reamanager_->GetReaCoeff(k);
+
+      // compute rhs containing bodyforce (divided by specific heat capacity) and,
+      // for temperature equation, the time derivative of thermodynamic pressure,
+      // if not constant, and for temperature equation of a reactive
+      // equation system, the reaction-rate term
+      double rhsint(0.0);
+      GetRhsInt(rhsint,densnp[k],k);
+
+      const double timefacfac = scatraparatimint_->TimeFac()*fac;
+
       //----------------------------------------------------------------
       // standard Galerkin terms
       //----------------------------------------------------------------
 
-      // stabilization parameter and integration factors
-      //const double taufac     = tau[k]*fac;
-      const double timefacfac = scatraparatimint_->TimeFac()*fac;
+      if (scatraparatimint_->IsIncremental() and not scatraparatimint_->IsStationary())
+        CalcLinMassODFluid(emat,
+            k,
+            numdofpernode_fluid,
+            timefacfac,
+            fac,
+            densam[k],
+            densnp[k],
+            scatravarmanager_->Phinp(k),
+            scatravarmanager_->Hist(k)
+          );
+
+      ComputeRhsInt(rhsint,densam[k],densnp[k],scatravarmanager_->Hist(k));
 
       //----------------------------------------------------------------
-      // 1) element matrix: stationary terms
+      // standard Galerkin transient, old part of rhs and bodyforce term
       //----------------------------------------------------------------
+      CalcHistAndSourceODFluid(emat,k,numdofpernode_fluid,fac,rhsint,densnp[k]);
 
+      //----------------------------------------------------------------
+      // standard Galerkin terms - convective term
+      //----------------------------------------------------------------
       // calculation of convective element matrix in convective form
       CalcMatConvODFluid(emat,k,numdofpernode_fluid,timefacfac,densnp[k],scatravarmanager_->GradPhi(k));
 
       // add conservative contributions
       if (scatrapara_->IsConservative())
         CalcMatConvAddConsODFluid(emat,k,numdofpernode_fluid,timefacfac,densnp[k],scatravarmanager_->Phinp(k));
+
+      //----------------------------------------------------------------
+      // standard Galerkin terms  --  diffusive term
+      //----------------------------------------------------------------
+      CalcDiffODFluid(emat,k,numdofpernode_fluid,timefacfac,scatravarmanager_->GradPhi(k));
+
+      //----------------------------------------------------------------
+      // standard Galerkin terms  -- "shapederivatives" reactive term
+      //----------------------------------------------------------------
+      CalcReactODFluid(emat,k,numdofpernode_fluid,timefacfac,rea_phi);
 
     }// end loop all scalars
 
@@ -533,7 +571,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcHistAndSourceODMesh(
     const double                       fac,
     const double                       rhsint,
     const double                       J,
-    const LINALG::Matrix<1,nsd_*nen_>& dJ_dmesh
+    const LINALG::Matrix<1,nsd_*nen_>& dJ_dmesh,
+    const double                       densnp
   )
 {
   double vrhs = -1.0*fac/J*rhsint;
@@ -587,6 +626,29 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcConvODMesh(
     }
   }
 
+  //----------------------------------------------------------------
+  // standard Galerkin terms  -- "shapederivatives" convective term
+  //----------------------------------------------------------------
+  ApplyShapeDerivsConv(emat,k,rhsfac,densnp,J,gradphi,convelint);
+
+  return;
+}
+
+/*-------------------------------------------------------------------- *
+ |  "shapederivatives" convective term (OD mesh)           vuong 08/14 |
+ |  put it into its own function                      kremheller 07/17 |
+ *---------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ApplyShapeDerivsConv(
+    Epetra_SerialDenseMatrix&       emat,
+    const int                       k,
+    const double                    rhsfac,
+    const double                    densnp,
+    const double                    J,
+    const LINALG::Matrix<nsd_,1>&   gradphi,
+    const LINALG::Matrix<nsd_,1>&   convelint
+    )
+{
   //----------------------------------------------------------------
   // standard Galerkin terms  -- "shapederivatives" convective term
   //----------------------------------------------------------------
@@ -982,6 +1044,79 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcReactODMesh(
   //          }
   //        }
   }
+}
+
+/*------------------------------------------------------------------- *
+ |  calculation of linearized mass (OD fluid)        kremheller 07/17 |
+ *--------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcLinMassODFluid(
+  Epetra_SerialDenseMatrix&          emat,
+  const int                          k,
+  const int                          ndofpernodemesh,
+  const double                       rhsfac,
+  const double                       fac,
+  const double                       densam,
+  const double                       densnp,
+  const double                       phinp,
+  const double                       hist
+  )
+{
+
+  // do nothing
+  return;
+}
+
+/*------------------------------------------------------------------------------------------ *
+ |  standard Galerkin transient, old part of rhs and source term (OD fluid) kremheller 07/17 |
+ *-------------------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcHistAndSourceODFluid(
+    Epetra_SerialDenseMatrix&          emat,
+    const int                          k,
+    const int                          ndofpernodemesh,
+    const double                       fac,
+    const double                       rhsint,
+    const double                       densnp
+  )
+{
+
+  //do nothing
+  return;
+}
+
+/*------------------------------------------------------------------ *
+ |  standard Galerkin reactive term (OD fluid)  kremheller 07/17     |
+ *----------------------------------------------------------------   */
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcReactODFluid(
+    Epetra_SerialDenseMatrix&          emat,
+    const int                          k,
+    const int                          ndofpernodemesh,
+    const double                       rhsfac,
+    const double                       rea_phi
+  )
+{
+
+  //do nothing
+  return;
+}
+
+/*------------------------------------------------------------------ *
+ |  standard Galerkin diffusive term (OD fluid)  kremheller 07/17    |
+ *----------------------------------------------------------------   */
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDiffODFluid(
+    Epetra_SerialDenseMatrix&           emat,             //!< element current to be filled
+    const int                           k,                //!< index of current scalar
+    const int                           ndofpernodemesh,  //!< number of dofs per node of ale element
+    const double                        rhsfac,           //!< time-integration factor for rhs times domain-integration factor
+    const LINALG::Matrix<nsd_,1>&       gradphi           //!< scalar gradient at Gauss point
+  )
+{
+
+  //do nothing
+  return;
 }
 
 /*----------------------------------------------------------------------*

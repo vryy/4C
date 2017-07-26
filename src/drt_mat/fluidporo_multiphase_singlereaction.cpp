@@ -103,6 +103,7 @@ void MAT::PAR::FluidPoroSingleReaction::EvaluateFunction(
     std::vector<std::vector<double> >&       reacderivspressure,
     std::vector<std::vector<double> >&       reacderivssaturation,
     std::vector<double>&                     reacderivsporosity,
+    std::vector<std::vector<double> >&       reacderivsscalar,
     const std::vector<double>&               pressure,
     const std::vector<double>&               saturation,
     const double&                            porosity,
@@ -135,12 +136,19 @@ void MAT::PAR::FluidPoroSingleReaction::EvaluateFunction(
     if(numphases_!=(int)reacderivssaturation[k].size())
       dserror("Invalid length of vector for pressure derivatives for this fluid poro reaction material!");
   }
+  if(numphases_!=(int)reacderivsscalar.size())
+    dserror("Invalid length of vector for scalar derivatives for this fluid poro reaction material!");
+  for (int k=0;k<numphases_;k++)
+  {
+    if(numscal_!=(int)reacderivsscalar[k].size())
+      dserror("Invalid length of vector for scalar derivatives for this fluid poro reaction material!");
+  }
 
   std::vector<std::pair<std::string,double> > variables;
-  variables.reserve(numphases_+numphases_+1);
+  variables.reserve(numphases_+numphases_+1+numscal_);
 
   std::vector<std::pair<std::string,double> > constants;
-  constants.reserve(numscal_);
+  constants.reserve(0);
 
   // set pressure values as variable
   for (int k=0;k<numphases_;k++)
@@ -153,9 +161,9 @@ void MAT::PAR::FluidPoroSingleReaction::EvaluateFunction(
   // set porosity value as variable
   variables.push_back(std::pair<std::string,double>(porosityname_,porosity));
 
-  // set scalar values as constants
+  // set scalar values as variables
   for (int k=0;k<numscal_;k++)
-    constants.push_back(std::pair<std::string,double>(scalarnames_[k],scalar[k]));
+    variables.push_back(std::pair<std::string,double>(scalarnames_[k],scalar[k]));
 
   // evaluate the reaction term
   double curval = Function(functID_-1).Evaluate(0,variables,constants);
@@ -180,6 +188,11 @@ void MAT::PAR::FluidPoroSingleReaction::EvaluateFunction(
         satk[j]  += scale*curderivs[numphases_+j];
       }
       reacderivsporosity[k] += scale*curderivs[2*numphases_];
+      std::vector<double>& scalark  = reacderivsscalar[k];
+      for(int j=0;j<numscal_;j++)
+      {
+        scalark[j] += scale*curderivs[2*numphases_+1+j];
+      }
     }
   }
 
@@ -331,6 +344,7 @@ void MAT::FluidPoroSingleReaction::EvaluateReaction(
     std::vector<std::vector<double> >&       reacderivspressure,
     std::vector<std::vector<double> >&       reacderivssaturation,
     std::vector<double>&                     reacderivsporosity,
+    std::vector<std::vector<double> >&       reacderivsscalar,
     const std::vector<double>&               pressure,
     const std::vector<double>&               saturation,
     const double&                            porosity,
@@ -341,6 +355,7 @@ void MAT::FluidPoroSingleReaction::EvaluateReaction(
       reacderivspressure,
       reacderivssaturation,
       reacderivsporosity,
+      reacderivsscalar,
       pressure,
       saturation,
       porosity,

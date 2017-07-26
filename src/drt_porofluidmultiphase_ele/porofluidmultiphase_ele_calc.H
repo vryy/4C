@@ -151,7 +151,16 @@ depending on the action provided by the global algorithm.
         DRT::Element::LocationArray&               la                //!< location array
         );
 
-    void GaussPointLoopOD(
+    void GaussPointLoopODStruct(
+        const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,      ///< integration points
+        DRT::Element*                              ele,              //!< current element
+        std::vector<Epetra_SerialDenseMatrix*>&    elemat,           //!< element matrixes to calculate
+        std::vector<Epetra_SerialDenseVector*>&    elevec,           //!< element rhs vectors to calculate
+        DRT::Discretization&                       discretization,   //!< discretization
+        DRT::Element::LocationArray&               la                //!< location array
+        );
+
+    void GaussPointLoopODScatra(
         const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,      ///< integration points
         DRT::Element*                              ele,              //!< current element
         std::vector<Epetra_SerialDenseMatrix*>&    elemat,           //!< element matrixes to calculate
@@ -169,8 +178,17 @@ depending on the action provided by the global algorithm.
         DRT::Element::LocationArray&               la                //!< location array
     );
 
-    //! calculate off-diagonal fluid-coupling matrix. Here the whole thing is hidden.
-    void GaussPointLoopOD(
+    //! calculate off-diagonal fluid-struct-coupling matrix. Here the whole thing is hidden.
+    void GaussPointLoopODStruct(
+        DRT::Element*                              ele,              //!< current element
+        std::vector<Epetra_SerialDenseMatrix*>&    elemat,           //!< element matrixes to calculate
+        std::vector<Epetra_SerialDenseVector*>&    elevec,           //!< element rhs vectors to calculate
+        DRT::Discretization&                       discretization,   //!< discretization
+        DRT::Element::LocationArray&               la                //!< location array
+    );
+
+    //! calculate off-diagonal fluid-scatra-coupling matrix. Here the whole thing is hidden.
+    void GaussPointLoopODScatra(
         DRT::Element*                              ele,              //!< current element
         std::vector<Epetra_SerialDenseMatrix*>&    elemat,           //!< element matrixes to calculate
         std::vector<Epetra_SerialDenseVector*>&    elevec,           //!< element rhs vectors to calculate

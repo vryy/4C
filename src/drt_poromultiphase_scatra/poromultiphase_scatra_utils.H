@@ -17,6 +17,7 @@
 #include "../drt_inpar/inpar_poromultiphase_scatra.H"
 
 #include "Teuchos_RCP.hpp"
+#include "Epetra_Vector.h"
 #include "Epetra_Comm.h"
 
 namespace POROMULTIPHASESCATRA
@@ -52,6 +53,12 @@ CreatePoroMultiPhaseScatraAlgorithm(
     const Teuchos::ParameterList& timeparams, //!< problem parameters (i)
     const Epetra_Comm& comm //!< communicator(i)
     );
+
+//! Determine norm of vector
+double CalculateVectorNorm(const enum INPAR::POROMULTIPHASESCATRA::VectorNorm norm, //!< norm to use
+    const Teuchos::RCP<const Epetra_Vector> vect //!< the vector of interest
+    );
+
 } // UTILS
 // Print the logo
 void PrintLogo();

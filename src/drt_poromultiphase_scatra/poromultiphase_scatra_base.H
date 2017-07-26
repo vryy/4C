@@ -16,6 +16,7 @@
 
 
 #include "../drt_adapter/adapter_algorithmbase.H"
+#include "../drt_porofluidmultiphase/porofluidmultiphase_utils.H"
 
 #include "Teuchos_RCP.hpp"
 #include <Epetra_Vector.h>
@@ -77,19 +78,22 @@ namespace POROMULTIPHASESCATRA
     virtual void SetupSolver() = 0;
 
     /// prepare timeloop of coupled problem
-    virtual void PrepareTimeLoop() = 0;
+    void PrepareTimeLoop();
 
     /// timeloop of coupled problem
-    virtual void Timeloop() = 0;
+    void Timeloop();
 
-    /// time step of coupled problem
+    /// time step of coupled problem --> here the actual action happens (overwritten by sub-classes)
     virtual void TimeStep() = 0;
 
     /// time step of coupled problem
-    virtual void PrepareTimeStep() = 0;
+    void PrepareTimeStep() {PrepareTimeStep(false);};
+
+    /// time step of coupled problem
+    void PrepareTimeStep(bool printheader);
 
     //! update time step and print to screen
-    virtual void UpdateAndOutput() = 0;
+    void UpdateAndOutput();
 
     //! apply solution of poro-problem to scatra
     void SetPoroSolution();
@@ -97,19 +101,33 @@ namespace POROMULTIPHASESCATRA
     //! apply solution of scatra to poro
     void SetScatraSolution();
 
-  protected:
+    //! access to poro field
+    const Teuchos::RCP<ADAPTER::PoroMultiPhase>& PoroField(){return poromulti_;}
+
+    //! access to fluid field
+    const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>& ScatraAlgo(){return scatra_;}
+
+    /// dof map of vector of unknowns of scatra field
+    virtual Teuchos::RCP<const Epetra_Map> ScatraDofRowMap() const;
+
+
+  private:
+
     /// underlying poroelast multi phase
     Teuchos::RCP<ADAPTER::PoroMultiPhase> poromulti_;
 
     /// underlying scatra problem
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_;
 
-  private:
+    // flux-reconstruction method
+    INPAR::POROFLUIDMULTIPHASE::FluxReconstructionMethod fluxreconmethod_;
 
     //! apply displacement fields to scatra
     void SetMeshDisp();
-    //! apply solution fields (except displacements) to scatra
-    void SetSolutionFields();
+    //! apply solution fields (except displacements) to scatra --> L2-projection case
+    void SetSolutionFieldsWithL2();
+    //! apply solution fields (except displacements) to scatra --> no L2-projection case
+    void SetSolutionFieldsWithoutL2();
 
     //! dofset of scatra field on fluid dis
     // TODO: find a better way to do this. Perhaps this should be moved to the adapter?

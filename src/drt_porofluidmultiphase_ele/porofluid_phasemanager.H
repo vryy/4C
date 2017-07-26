@@ -102,13 +102,18 @@ class PhaseManagerInterface
         Teuchos::RCP< PhaseManagerInterface > corephasemanager
         );
 
-    //! setup
-    virtual void Setup(const DRT::Element* ele)=0;
+    //! setup (matnum is the material number of the porofluid-material on the current element)
+    //! default is set to zero, if called from a porofluidmultiphase-element
+    //! otherwise it has to be explicitly passed from the caller
+    virtual void Setup(const DRT::Element* ele, const int matnum = 0)=0;
 
-    //! evaluate pressures, saturations and derivatives at GP
+    //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of the porofluid-material on the current element)
+    //! default is set to zero, if called from a porofluidmultiphase-element
+    //! otherwise it has to be explicitly passed from the caller
     virtual void EvaluateGPState(
         double                 J,
-        const VariableManagerMinAccess& varmanager)=0;
+        const VariableManagerMinAccess& varmanager,
+        const int matnum = 0)=0;
 
     //! clear the states
     virtual void ClearGPState()=0;
@@ -158,11 +163,6 @@ class PhaseManagerInterface
 
     //! get density of phase 'phasenum'
     virtual double Density(
-        const MAT::Material& material,
-        int phasenum) const=0;
-
-    //! get density of phase 'phasenum'
-    virtual double Density(
         int phasenum) const=0;
 
     //! get the current element the manager was set up with
@@ -171,15 +171,21 @@ class PhaseManagerInterface
     //! get porosity
     virtual double Porosity() const=0;
 
-    //! get jacobian
-    virtual double Jacobian() const=0;
+    //! get Jacobian of deformation gradient
+    virtual double JacobianDefGrad() const=0;
 
-    //! get derivative of porosity wrt Jacobian
-    virtual double PorosityDerivWrtJacobian() const=0;
+    //! get derivative of porosity wrt JacobianDefGrad
+    virtual double PorosityDerivWrtJacobianDefGrad() const=0;
 
     //! get derivative of porosity w.r.t. DOF 'doftoderive'
     virtual double PorosityDeriv(
             int doftoderive) const=0;
+
+    //! check if porosity depends on fluid (pressure)
+    virtual bool PorosityDependsOnFluid() const=0;
+
+    //! check if porosity depends on structure (basically Jacobian of def. gradient)
+    virtual bool PorosityDependsOnStruct() const=0;
 
     //! get derivative of saturation of phase 'phasenum' w.r.t. DOF 'doftoderive'
     virtual double SaturationDeriv(
@@ -214,6 +220,15 @@ class PhaseManagerInterface
     //! get the derivative of the reaction term
     virtual double ReacDeriv(int phasenum, int doftoderive) const=0;
 
+    //! get total number of scalars in system
+    virtual int NumScal() const = 0;
+
+    //! get the derivative of the reaction term w.r.t. scalar 'scaltoderive'
+    virtual double ReacDerivScalar(int phasenum, int scaltoderive) const=0;
+
+    //! get the derivative of the reaction term w.r.t. porosity
+    virtual double ReacDerivPorosity(int phasenum) const=0;
+
     //! get the diffusion tensor
     virtual void PermeabilityTensor(int phasenum,  LINALG::Matrix<3,3>& permeabilitytensor) const=0;
     //! get the diffusion tensor
@@ -230,8 +245,11 @@ class PhaseManagerInterface
 
     //! check for constant dynamic viscosity
     virtual bool HasConstantDynViscosity(int phasenum) const=0;
-    //! get dynamic viscosity of phase
-    virtual double DynViscosity(int phasenum, double abspressgrad) const=0;
+
+    //! get dynamic viscosity of phase (matnum is the material number of the porofluid-material on the current element)
+    //! default is set to zero, if called from a porofluidmultiphase-element
+    //! otherwise it has to be explicitly passed from the caller
+    virtual double DynViscosity(int phasenum, double abspressgrad, int matnum = 0) const=0;
     //! get dynamic viscosity of phase
     virtual double DynViscosity(const MAT::Material& material, int phasenum, double abspressgrad) const=0;
     //! get derivative of dynamic viscosity of phase
@@ -268,13 +286,18 @@ class PhaseManagerCore : public PhaseManagerInterface
     //! destructor
     virtual ~PhaseManagerCore(){};
 
-    //! setup
-    void Setup(const DRT::Element* ele);
+    //! setup (matnum is the material number of the porofluid-material on the current element)
+    //! default is set to zero, if called from a porofluidmultiphase-element
+    //! otherwise it has to be explicitly passed from the caller
+    void Setup(const DRT::Element* ele, const int matnum = 0);
 
-    //! evaluate pressures, saturations and derivatives at GP
+    //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of the porofluid-material on the current element)
+    //! default is set to zero, if called from a porofluidmultiphase-element
+    //! otherwise it has to be explicitly passed from the caller
     void EvaluateGPState(
         double                          J,
-        const VariableManagerMinAccess& varmanager);
+        const VariableManagerMinAccess& varmanager,
+        const int matnum = 0);
 
     //! clear the states
     void ClearGPState();
@@ -318,11 +341,6 @@ class PhaseManagerCore : public PhaseManagerInterface
 
     //! get density of phase 'phasenum'
     double Density(
-        const MAT::Material& material,
-        int phasenum) const;
-
-    //! get density of phase 'phasenum'
-    double Density(
         int phasenum) const;
 
     //! get the current element the manager was set up with
@@ -349,17 +367,25 @@ class PhaseManagerCore : public PhaseManagerInterface
     {dserror("Porosity not available for this phase manager!");return 0.0;};
 
     //! get porosity
-    virtual double Jacobian() const
-    {dserror("Jacobian not available for this phase manager!");return 0.0;};
+    virtual double JacobianDefGrad() const
+    {dserror("JacobianDefGrad not available for this phase manager!");return 0.0;};
 
-    //! get derivative of porosity wrt Jacobian
-    virtual double PorosityDerivWrtJacobian() const
-    {dserror("Derivative of Porosity w.r.t. Jacobian not available for this phase manager!");return 0.0;};
+    //! get derivative of porosity wrt JacobianDefGrad
+    virtual double PorosityDerivWrtJacobianDefGrad() const
+    {dserror("Derivative of Porosity w.r.t. JacobianDefGrad not available for this phase manager!");return 0.0;};
 
     //! get derivative of porosity w.r.t. DOF 'doftoderive'
     virtual double PorosityDeriv(
             int doftoderive) const
     {dserror("Derivative of porosity not available for this phase manager!");return 0.0;};
+
+    //! check if porosity depends on fluid (pressure)
+    virtual bool PorosityDependsOnFluid() const
+    {dserror("PorosityDependsOnFluid() not available for this phase manager!");return false;};
+
+    //! check if porosity depends on structure (basically Jacobian of def. gradient)
+    virtual bool PorosityDependsOnStruct() const
+    {dserror("PorosityDependsOnStruct() not available for this phase manager!");return false;};
 
     //! get derivative of saturation of phase 'phasenum' w.r.t. DOF 'doftoderive'
     virtual double SaturationDeriv(
@@ -397,9 +423,21 @@ class PhaseManagerCore : public PhaseManagerInterface
     virtual double ReacTerm(int phasenum) const
     {dserror("Reaction term not available for this phase manager!");return 0.0;};
 
+    //! get total number of scalars in system
+    virtual int NumScal() const
+    {dserror("Number of scalars not available for this phase manager"); return 0;};
+
     //! get the derivative of the reaction term
     virtual double ReacDeriv(int phasenum, int doftoderive) const
-    {dserror("Reaction term not available for this phase manager!");return 0.0;};
+    {dserror("Reaction term derivative not available for this phase manager!");return 0.0;};
+
+    //! get the derivative of the reaction term w.r.t. scalar 'scaltoderive'
+    virtual double ReacDerivScalar(int phasenum, int scaltoderive) const
+    {dserror("Reaction term derivative (scalar) not available for this phase manager!");return 0.0;};
+
+    //! get the derivative of the reaction term w.r.t. porosity
+    virtual double ReacDerivPorosity(int phasenum) const
+    {dserror("Reaction term derivative (porosity) not available for this phase manager!");return 0.0;};
 
     //! get the diffusion tensor
     virtual void PermeabilityTensor(int phasenum,  LINALG::Matrix<3,3>& permeabilitytensor) const
@@ -425,7 +463,7 @@ class PhaseManagerCore : public PhaseManagerInterface
     virtual bool HasConstantDynViscosity(int phasenum) const
         {dserror("Check for Constant Dynamic Viscosity not available for this phase manager!");return false;};
     //! get relative diffusivity of phase
-    virtual double DynViscosity(int phasenum, double abspressgrad) const
+    virtual double DynViscosity(int phasenum, double abspressgrad, int matnum = 0) const
         {dserror("Dynamic Viscosity not available for this phase manager!");return 0.0;};
     //! get dynamic viscosity of phase
     virtual double DynViscosity(const MAT::Material& material, int phasenum, double abspressgrad) const
@@ -447,6 +485,8 @@ class PhaseManagerCore : public PhaseManagerInterface
     std::vector<double> pressure_;
     //! saturation
     std::vector<double> saturation_;
+    //! densities
+    std::vector<double> density_;
     //! solid pressure
     double solidpressure_;
     //! inverse bulk moduli of the fluid phases
@@ -491,9 +531,11 @@ class PhaseManagerDecorator : public PhaseManagerInterface
     //! destructor
     virtual ~PhaseManagerDecorator(){};
 
-    //! setup
-    virtual void Setup(const DRT::Element* ele)
-    {phasemanager_->Setup(ele);};
+    //! setup (matnum is the material number of the porofluid-material on the current element)
+    //! default is set to zero, if called from a porofluidmultiphase-element
+    //! otherwise it has to be explicitly passed from the caller
+    virtual void Setup(const DRT::Element* ele, const int matnum = 0)
+    {phasemanager_->Setup(ele, matnum);};
 
     //! check if EvaluateGPState() was called
     virtual void CheckIsEvaluated() const
@@ -509,6 +551,14 @@ class PhaseManagerDecorator : public PhaseManagerInterface
     virtual double PorosityDeriv(
             int doftoderive) const
     {return phasemanager_->PorosityDeriv(doftoderive);};
+
+    //! check if porosity depends on fluid (pressure)
+    virtual bool PorosityDependsOnFluid() const
+    {return phasemanager_->PorosityDependsOnFluid();};
+
+    //! check if porosity depends on structure (basically Jacobian of def. gradient)
+    virtual bool PorosityDependsOnStruct() const
+    {return phasemanager_->PorosityDependsOnStruct();};
 
     //! get derivative of saturation of phase 'phasenum' w.r.t. DOF 'doftoderive'
     virtual double SaturationDeriv(
@@ -592,19 +642,13 @@ class PhaseManagerDecorator : public PhaseManagerInterface
     virtual double Porosity() const
     {return phasemanager_->Porosity();};
 
-    //! get Jacobian
-    virtual double Jacobian() const
-    {return phasemanager_->Jacobian();};
+    //! get JacobianDefGrad
+    virtual double JacobianDefGrad() const
+    {return phasemanager_->JacobianDefGrad();};
 
-    //! get derivative of porosity wrt Jacobian
-    virtual double PorosityDerivWrtJacobian() const
-    {return phasemanager_->PorosityDerivWrtJacobian();};
-
-    //! get density of phase 'phasenum'
-    virtual double Density(
-        const MAT::Material& material,
-        int phasenum) const
-    {return phasemanager_->Density(material,phasenum);};
+    //! get derivative of porosity wrt JacobianDefGrad
+    virtual double PorosityDerivWrtJacobianDefGrad() const
+    {return phasemanager_->PorosityDerivWrtJacobianDefGrad();};
 
     //! get density of phase 'phasenum'
     virtual double Density(
@@ -619,9 +663,21 @@ class PhaseManagerDecorator : public PhaseManagerInterface
     virtual double ReacTerm(int phasenum) const
     {return phasemanager_->ReacTerm(phasenum);};
 
+    //! get total number of scalars in system
+    virtual int NumScal() const
+    {return phasemanager_->NumScal();};
+
     //! get the derivative of the reaction term
     virtual double ReacDeriv(int phasenum, int doftoderive) const
     {return phasemanager_->ReacDeriv(phasenum,doftoderive);};
+
+    //! get the derivative of the reaction term w.r.t. scalar 'scaltoderive'
+    virtual double ReacDerivScalar(int phasenum, int scaltoderive) const
+    {return phasemanager_->ReacDerivScalar(phasenum,scaltoderive);};
+
+    //! get the derivative of the reaction term w.r.t. porosity
+    virtual double ReacDerivPorosity(int phasenum) const
+    {return phasemanager_->ReacDerivPorosity(phasenum);};
 
     //! get the diffusion tensor
     virtual void PermeabilityTensor(int phasenum,  LINALG::Matrix<3,3>& permeabilitytensor) const
@@ -649,8 +705,8 @@ class PhaseManagerDecorator : public PhaseManagerInterface
     virtual bool HasConstantDynViscosity(int phasenum) const
     {return phasemanager_->HasConstantDynViscosity(phasenum);};
     //! get dynamic viscosity of phase
-    virtual double DynViscosity(int phasenum, double abspressgrad) const
-    {return phasemanager_->DynViscosity(phasenum, abspressgrad);};
+    virtual double DynViscosity(int phasenum, double abspressgrad, int matnum = 0) const
+    {return phasemanager_->DynViscosity(phasenum, abspressgrad, matnum = 0);};
     //! get dynamic viscosity of phase
     virtual double DynViscosity(const MAT::Material& material, int phasenum, double abspressgrad) const
     {return phasemanager_->DynViscosity(material, phasenum, abspressgrad);};
@@ -691,10 +747,13 @@ class PhaseManagerDeriv : public PhaseManagerDecorator
     //! destructor
     virtual ~PhaseManagerDeriv(){};
 
-    //! evaluate pressures, saturations and derivatives at GP
+    //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of the porofluid-material on the current element)
+    //! default is set to zero, if called from a porofluidmultiphase-element
+    //! otherwise it has to be explicitly passed from the caller
     void EvaluateGPState(
         double                 J,
-        const VariableManagerMinAccess& varmanager);
+        const VariableManagerMinAccess& varmanager,
+        const int matnum = 0);
 
     //! clear the states
     void ClearGPState();
@@ -770,10 +829,13 @@ class PhaseManagerDerivAndPorosity : public PhaseManagerDeriv
     //! destructor
     virtual ~PhaseManagerDerivAndPorosity(){};
 
-    //! evaluate pressures, saturations and derivatives at GP
+    //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of the porofluid-material on the current element)
+    //! default is set to zero, if called from a porofluidmultiphase-element
+    //! otherwise it has to be explicitly passed from the caller
     void EvaluateGPState(
         double                 J,
-        const VariableManagerMinAccess& varmanager);
+        const VariableManagerMinAccess& varmanager,
+        const int matnum = 0);
 
     //! clear the states
     void ClearGPState();
@@ -784,14 +846,20 @@ class PhaseManagerDerivAndPorosity : public PhaseManagerDeriv
     double Porosity() const;
 
     //! get porosity
-    double Jacobian() const;
+    double JacobianDefGrad() const;
 
-    //! get derivative of porosity wrt Jacobian
-    double PorosityDerivWrtJacobian() const;
+    //! get derivative of porosity wrt JacobianDefGrad
+    double PorosityDerivWrtJacobianDefGrad() const;
 
     //! get derivative of porosity w.r.t. DOF 'doftoderive'
     double PorosityDeriv(
             int doftoderive) const;
+
+    //! check if porosity depends on fluid (pressure)
+    bool PorosityDependsOnFluid() const;
+
+    //! check if porosity depends on structure (basically Jacobian of def. gradient)
+    bool PorosityDependsOnStruct() const;
 
     //@}
 
@@ -805,6 +873,9 @@ class PhaseManagerDerivAndPorosity : public PhaseManagerDeriv
 
     //! derivative of porosity w.r.t. Jacobian of defgradient
     double dporosity_dJ_;
+
+    //! derivative of porosity w.r.t. solid pressure
+    double dporosity_dp_;
 
     //! derivative of porosity w.r.t. degrees of freedom
     Teuchos::RCP<Epetra_SerialDenseVector> porosityderiv_;
@@ -832,13 +903,18 @@ class PhaseManagerReaction : public PhaseManagerDecorator
     //! destructor
     virtual ~PhaseManagerReaction(){};
 
-    //! setup
-    void Setup(const DRT::Element* ele);
+    //! setup (matnum is the material number of the porofluid-material on the current element)
+    //! default is set to zero, if called from a porofluidmultiphase-element
+    //! otherwise it has to be explicitly passed from the caller
+    void Setup(const DRT::Element* ele, const int matnum = 0);
 
-    //! evaluate pressures, saturations and derivatives at GP
+    //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of the porofluid-material on the current element)
+    //! default is set to zero, if called from a porofluidmultiphase-element
+    //! otherwise it has to be explicitly passed from the caller
     void EvaluateGPState(
         double                 J,
-        const VariableManagerMinAccess& varmanager);
+        const VariableManagerMinAccess& varmanager,
+        const int matnum = 0);
 
     //! clear the states
     void ClearGPState();
@@ -854,6 +930,15 @@ class PhaseManagerReaction : public PhaseManagerDecorator
     //! check if the current phase is involved in a reaction
     bool IsReactive(int phasenum) const {CheckIsSetup();return isreactive_[phasenum];};
 
+    //! get total number of scalars in system
+    int NumScal() const;
+
+    //! get the derivative of the reaction term w.r.t. scalar 'scaltoderive'
+    double ReacDerivScalar(int phasenum, int scaltoderive) const;
+
+    //! get the derivative of the reaction term w.r.t. porosity
+    double ReacDerivPorosity(int phasenum) const;
+
     //@}
 
   private:
@@ -867,9 +952,13 @@ class PhaseManagerReaction : public PhaseManagerDecorator
     std::vector<std::vector<double> > reactermsderivssaturation_;
     //! derivatives of reaction terms w.r.t. porosity
     std::vector<double> reactermsderivsporosity_;
+    //! derivatives of reaction terms w.r.t. scalars --> needed for off-diagonal matrices
+    std::vector<std::vector<double> > reactermsderivsscalar_;
 
     //! flags indicating whether the phase is involved in a reaction
     std::vector<bool> isreactive_;
+    //! number of scalars
+    int numscal_;
 
   };
 
@@ -896,13 +985,18 @@ class PhaseManagerDiffusion : public PhaseManagerDecorator
     //! destructor
     virtual ~PhaseManagerDiffusion(){};
 
-    //! setup
-    void Setup(const DRT::Element* ele);
+    //! setup (matnum is the material number of the porofluid-material on the current element)
+    //! default is set to zero, if called from a porofluidmultiphase-element
+    //! otherwise it has to be explicitly passed from the caller
+    void Setup(const DRT::Element* ele, const int matnum = 0);
 
-    //! evaluate pressures, saturations and derivatives at GP
+    //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of the porofluid-material on the current element)
+    //! default is set to zero, if called from a porofluidmultiphase-element
+    //! otherwise it has to be explicitly passed from the caller
     void EvaluateGPState(
         double                 J,
-        const VariableManagerMinAccess& varmanager);
+        const VariableManagerMinAccess& varmanager,
+        const int matnum = 0);
 
     //! clear the states
     void ClearGPState();
@@ -924,7 +1018,7 @@ class PhaseManagerDiffusion : public PhaseManagerDecorator
     //! check for constant dynamic viscosity
     bool HasConstantDynViscosity(int phasenum) const;
     //! get dynamic viscosity of phase
-    double DynViscosity(int phasenum, double abspressgrad) const;
+    double DynViscosity(int phasenum, double abspressgrad, int matnum = 0) const;
     //! get dynamic viscosity of phase
     double DynViscosity(const MAT::Material& material, int phasenum, double abspressgrad) const;
     //! get derivative of dynamic viscosity of phase

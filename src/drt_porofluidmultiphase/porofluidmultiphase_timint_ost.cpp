@@ -137,7 +137,7 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::AddNeumannToResidual()
 void POROFLUIDMULTIPHASE::TimIntOneStepTheta::AddTimeIntegrationSpecificVectors()
 {
   discret_->SetState("hist",hist_);
-  discret_->SetState("phinp",phinp_);
+  discret_->SetState("phinp_fluid",phinp_);
   discret_->SetState("phidtnp", phidtnp_);
 
   return;
@@ -193,8 +193,8 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::Update()
 void POROFLUIDMULTIPHASE::TimIntOneStepTheta::OutputRestart()
 {
   // additional state vectors that are needed for One-Step-Theta restart
-  output_->WriteVector("phidtn", phidtn_);
-  output_->WriteVector("phin", phin_);
+  output_->WriteVector("phidtn_fluid", phidtn_);
+  output_->WriteVector("phin_fluid", phin_);
 
   return;
 }
@@ -215,9 +215,9 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::ReadRestart(const int step)
     std::cout<<"Reading POROFLUIDMULTIPHASE restart data (time="<<time_<<" ; step="<<step_<<")"<<std::endl;
 
   // read state vectors that are needed for One-Step-Theta restart
-  reader->ReadVector(phinp_, "phinp");
-  reader->ReadVector(phin_,  "phin");
-  reader->ReadVector(phidtn_,"phidtn");
+  reader->ReadVector(phinp_, "phinp_fluid");
+  reader->ReadVector(phin_,  "phin_fluid");
+  reader->ReadVector(phidtn_,"phidtn_fluid");
 
 
   return;

@@ -207,7 +207,7 @@ public:
       )=0;
 
   //! evaluate off-diagonal coupling matrix with structure
-  virtual void EvaluateMatrixOD(
+  virtual void EvaluateMatrixODStruct(
       std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
       const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
       const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
@@ -219,6 +219,18 @@ public:
       double                                                      timefacfac,     //!< domain-integration factor times time-integration factor
       double                                                      fac,            //!< domain-integration factor
       double                                                      det
+  ) = 0;
+
+  //! evaluate off-diagonal coupling matrix with scatra
+  virtual void EvaluateMatrixODScatra(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor times time-integration factor
+      double                                                      fac             //!< domain-integration factor
   ) = 0;
 
 };
@@ -297,7 +309,7 @@ public:
   };
 
   //! evaluate off-diagonal coupling matrix with structure
-  void EvaluateMatrixOD(
+  void EvaluateMatrixODStruct(
       std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
       const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
       const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
@@ -315,7 +327,7 @@ public:
     typename std::vector<Teuchos::RCP<EvaluatorInterface<nsd,nen> > >::iterator it;
     for(it=evaluators_.begin();it!=evaluators_.end();it++)
     {
-      (*it)->EvaluateMatrixOD(
+      (*it)->EvaluateMatrixODStruct(
             elemat,
             funct,
             deriv,
@@ -327,6 +339,34 @@ public:
             timefacfac,
             fac,
             det);
+    }
+  };
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODScatra(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac             //!< domain-integration factor times time-integration factor
+    )
+  {
+    // loop over the evaluators
+    typename std::vector<Teuchos::RCP<EvaluatorInterface<nsd,nen> > >::iterator it;
+    for(it=evaluators_.begin();it!=evaluators_.end();it++)
+    {
+      (*it)->EvaluateMatrixODScatra(
+            elemat,
+            funct,
+            derxy,
+            numdofpernode,
+            phasemanager,
+            variablemanager,
+            timefacfac,
+            fac);
     }
   };
 
@@ -432,7 +472,7 @@ public:
   };
 
   //! evaluate off-diagonal coupling matrix with structure
-  void EvaluateMatrixOD(
+  void EvaluateMatrixODStruct(
       std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
       const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
       const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
@@ -450,7 +490,7 @@ public:
     for(int iassemble=0; iassemble<assembler_->NumPhasesToAssembleInto(); iassemble++)
     {
       // call the actual evaluation and assembly of the respective term (defined by derived class)
-       EvaluateMatrixODAndAssemble(
+       EvaluateMatrixODStructAndAssemble(
           elemat,
           funct,
           deriv,
@@ -464,6 +504,37 @@ public:
           timefacfac,
           fac,
           det
+        );
+    }
+  };
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODScatra(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac            //!< domain-integration factor times time-integration factor
+    )
+  {
+    // the assembler class decides, where the terms are assembled into
+    for(int iassemble=0; iassemble<assembler_->NumPhasesToAssembleInto(); iassemble++)
+    {
+      // call the actual evaluation and assembly of the respective term (defined by derived class)
+       EvaluateMatrixODScatraAndAssemble(
+          elemat,
+          funct,
+          derxy,
+          myphase_,
+          assembler_->PhaseToAssembleInto(iassemble,numdofpernode),
+          numdofpernode,
+          phasemanager,
+          variablemanager,
+          timefacfac,
+          fac
         );
     }
   };
@@ -501,7 +572,7 @@ protected:
       )=0;
 
   // actual evaluation and assembly of the respective term in the off-diagonal matrix (defined by derived class)
-  virtual void EvaluateMatrixODAndAssemble(
+  virtual void EvaluateMatrixODStructAndAssemble(
       std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
       const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
       const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
@@ -515,6 +586,20 @@ protected:
       double                                                      timefacfac,     //!< domain-integration factor
       double                                                      fac,            //!< domain-integration factor times time-integration factor
       double                                                      det
+      )=0;
+
+  // actual evaluation and assembly of the respective term in the off-diagonal matrix (defined by derived class)
+  virtual void EvaluateMatrixODScatraAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of phase to add into
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac             //!< domain-integration factor times time-integration factor
       )=0;
 
 private:
@@ -582,7 +667,7 @@ protected:
       );
 
   //! evaluate off-diagonal coupling matrix with structure
-  void EvaluateMatrixODAndAssemble(
+  void EvaluateMatrixODStructAndAssemble(
       std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
       const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
       const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
@@ -596,6 +681,20 @@ protected:
       double                                                      timefacfac,     //!< domain-integration factor
       double                                                      fac,            //!< domain-integration factor times time-integration factor
       double                                                      det
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODScatraAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac             //!< domain-integration factor times time-integration factor
       );
 
 };
@@ -655,7 +754,7 @@ protected:
       );
 
   //! evaluate off-diagonal coupling matrix with structure
-  void EvaluateMatrixODAndAssemble(
+  void EvaluateMatrixODStructAndAssemble(
       std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
       const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
       const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
@@ -669,6 +768,20 @@ protected:
       double                                                      timefacfac,     //!< domain-integration factor
       double                                                      fac,            //!< domain-integration factor times time-integration factor
       double                                                      det
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODScatraAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac             //!< domain-integration factor times time-integration factor
       );
 
 };
@@ -728,7 +841,7 @@ protected:
       );
 
   //! evaluate off-diagonal coupling matrix with structure
-  void EvaluateMatrixODAndAssemble(
+  void EvaluateMatrixODStructAndAssemble(
       std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
       const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
       const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
@@ -742,6 +855,20 @@ protected:
       double                                                      timefacfac,     //!< domain-integration factor
       double                                                      fac,            //!< domain-integration factor times time-integration factor
       double                                                      det
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODScatraAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac             //!< domain-integration factor times time-integration factor
       );
 
 };
@@ -801,7 +928,7 @@ protected:
       );
 
   //! evaluate off-diagonal coupling matrix with structure
-  void EvaluateMatrixODAndAssemble(
+  void EvaluateMatrixODStructAndAssemble(
       std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
       const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
       const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
@@ -815,6 +942,20 @@ protected:
       double                                                      timefacfac,     //!< domain-integration factor
       double                                                      fac,            //!< domain-integration factor times time-integration factor
       double                                                      det
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODScatraAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac             //!< domain-integration factor times time-integration factor
       );
 
 };
@@ -875,7 +1016,7 @@ protected:
       );
 
   //! evaluate off-diagonal coupling matrix with structure
-  void EvaluateMatrixODAndAssemble(
+  void EvaluateMatrixODStructAndAssemble(
       std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
       const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
       const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
@@ -889,6 +1030,20 @@ protected:
       double                                                      timefacfac,     //!< domain-integration factor
       double                                                      fac,            //!< domain-integration factor times time-integration factor
       double                                                      det
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODScatraAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac             //!< domain-integration factor times time-integration factor
       );
 };
 
@@ -947,7 +1102,7 @@ protected:
       );
 
   //! evaluate off-diagonal coupling matrix with structure
-  void EvaluateMatrixODAndAssemble(
+  void EvaluateMatrixODStructAndAssemble(
       std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
       const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
       const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
@@ -961,6 +1116,20 @@ protected:
       double                                                      timefacfac,     //!< domain-integration factor
       double                                                      fac,            //!< domain-integration factor times time-integration factor
       double                                                      det
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODScatraAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac             //!< domain-integration factor times time-integration factor
       );
 
 };
@@ -1020,7 +1189,7 @@ protected:
       );
 
   //! evaluate off-diagonal coupling matrix with structure
-  void EvaluateMatrixODAndAssemble(
+  void EvaluateMatrixODStructAndAssemble(
       std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
       const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
       const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
@@ -1034,6 +1203,20 @@ protected:
       double                                                      timefacfac,     //!< domain-integration factor
       double                                                      fac,            //!< domain-integration factor times time-integration factor
       double                                                      det
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODScatraAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac             //!< domain-integration factor times time-integration factor
       );
 
   //! get transient term for rhs and OD
@@ -1104,7 +1287,7 @@ protected:
       );
 
   //! evaluate off-diagonal coupling matrix with structure
-  void EvaluateMatrixODAndAssemble(
+  void EvaluateMatrixODStructAndAssemble(
       std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
       const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
       const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
@@ -1118,6 +1301,20 @@ protected:
       double                                                      timefacfac,     //!< domain-integration factor
       double                                                      fac,            //!< domain-integration factor times time-integration factor
       double                                                      det
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODScatraAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac             //!< domain-integration factor times time-integration factor
       );
 
   //! get transient term for rhs and OD
@@ -1189,7 +1386,7 @@ protected:
       );
 
   //! evaluate off-diagonal coupling matrix with structure
-  void EvaluateMatrixODAndAssemble(
+  void EvaluateMatrixODStructAndAssemble(
       std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
       const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
       const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
@@ -1203,6 +1400,20 @@ protected:
       double                                                      timefacfac,     //!< domain-integration factor
       double                                                      fac,            //!< domain-integration factor times time-integration factor
       double                                                      det
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODScatraAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac             //!< domain-integration factor times time-integration factor
       );
 
 };
@@ -1262,7 +1473,7 @@ protected:
       );
 
   //! evaluate off-diagonal coupling matrix with structure
-  void EvaluateMatrixODAndAssemble(
+  void EvaluateMatrixODStructAndAssemble(
       std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
       const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
       const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
@@ -1276,6 +1487,20 @@ protected:
       double                                                      timefacfac,     //!< domain-integration factor
       double                                                      fac,            //!< domain-integration factor times time-integration factor
       double                                                      det
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODScatraAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac             //!< domain-integration factor times time-integration factor
       );
 
   //! get transient term for rhs and OD
@@ -1347,7 +1572,7 @@ protected:
       );
 
   //! evaluate off-diagonal coupling matrix with structure
-  void EvaluateMatrixODAndAssemble(
+  void EvaluateMatrixODStructAndAssemble(
       std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
       const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
       const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
@@ -1361,6 +1586,20 @@ protected:
       double                                                      timefacfac,     //!< domain-integration factor
       double                                                      fac,            //!< domain-integration factor times time-integration factor
       double                                                      det
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODScatraAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac             //!< domain-integration factor times time-integration factor
       );
 
 };
@@ -1420,7 +1659,7 @@ protected:
       );
 
   //! evaluate off-diagonal coupling matrix with structure
-  void EvaluateMatrixODAndAssemble(
+  void EvaluateMatrixODStructAndAssemble(
       std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
       const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
       const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
@@ -1434,6 +1673,20 @@ protected:
       double                                                      timefacfac,     //!< domain-integration factor
       double                                                      fac,            //!< domain-integration factor times time-integration factor
       double                                                      det
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODScatraAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac             //!< domain-integration factor times time-integration factor
       );
 
 };
@@ -1493,7 +1746,7 @@ protected:
       );
 
   //! evaluate off-diagonal coupling matrix with structure
-  void EvaluateMatrixODAndAssemble(
+  void EvaluateMatrixODStructAndAssemble(
       std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
       const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
       const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
@@ -1507,6 +1760,20 @@ protected:
       double                                                      timefacfac,     //!< domain-integration factor
       double                                                      fac,            //!< domain-integration factor times time-integration factor
       double                                                      det
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODScatraAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac             //!< domain-integration factor times time-integration factor
       );
 
 };
@@ -1567,7 +1834,7 @@ protected:
       );
 
   //! evaluate off-diagonal coupling matrix with structure
-  void EvaluateMatrixODAndAssemble(
+  void EvaluateMatrixODStructAndAssemble(
       std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
       const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
       const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
@@ -1581,6 +1848,20 @@ protected:
       double                                                      timefacfac,     //!< domain-integration factor
       double                                                      fac,            //!< domain-integration factor times time-integration factor
       double                                                      det
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODScatraAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac             //!< domain-integration factor times time-integration factor
       );
 
 };
@@ -1641,7 +1922,7 @@ protected:
       );
 
   //! evaluate off-diagonal coupling matrix with structure
-  void EvaluateMatrixODAndAssemble(
+  void EvaluateMatrixODStructAndAssemble(
       std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
       const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
       const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
@@ -1655,6 +1936,20 @@ protected:
       double                                                      timefacfac,     //!< domain-integration factor
       double                                                      fac,            //!< domain-integration factor times time-integration factor
       double                                                      det
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODScatraAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac             //!< domain-integration factor times time-integration factor
       );
 };
 

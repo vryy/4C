@@ -58,7 +58,7 @@ namespace SCATRA
     ) {return;};
 
     //! set solution fields on given dof sets
-    virtual void SetSolutionFields(
+    virtual void SetSolutionFieldsWithL2(
       Teuchos::RCP<const Epetra_MultiVector>   multiflux,
       const int                                nds_flux,
       Teuchos::RCP<const Epetra_Vector>        pressure,
@@ -67,6 +67,11 @@ namespace SCATRA
       const int                                nds_sat,
       Teuchos::RCP<const Epetra_Vector>        solid_pressure,
       const int                                nds_solid_pressure
+     );
+
+    virtual void SetSolutionFieldsWithoutL2(
+      Teuchos::RCP<const Epetra_Vector>        phinp_fluid,
+      const int                                nds_phi_fluid
      );
 
     //! set the velocity field (zero or field by function)

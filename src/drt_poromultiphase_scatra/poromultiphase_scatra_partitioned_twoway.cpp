@@ -81,75 +81,19 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::Init(
   ittol_ = algoparams.get<double>("TOLINC_GLOBAL");
 
   // initialize increment vectors
-  scaincnp_    = Teuchos::rcp(new Epetra_Vector(*(scatra_->ScaTraField()->Discretization()->DofRowMap())));
-  structincnp_ = Teuchos::rcp(new Epetra_Vector(*(poromulti_->StructDofRowMap())));
-  fluidincnp_  = (Teuchos::rcp(new Epetra_Vector(*(poromulti_->FluidDofRowMap()))));
+  scaincnp_    = Teuchos::rcp(new Epetra_Vector(*(ScatraAlgo()->ScaTraField()->Discretization()->DofRowMap())));
+  structincnp_ = Teuchos::rcp(new Epetra_Vector(*(PoroField()->StructDofRowMap())));
+  fluidincnp_  = (Teuchos::rcp(new Epetra_Vector(*(PoroField()->FluidDofRowMap()))));
 
 }
 
 /*----------------------------------------------------------------------*
- | time loop                                                 vuong 08/16 |
- *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::Timeloop()
-{
-  PrepareTimeLoop();
-
-  while (NotFinished())
-  {
-    PrepareTimeStep();
-
-    Solve();
-
-    UpdateAndOutput();
-
-  }
-  return;
-
-}
-
-/*----------------------------------------------------------------------*
- | prepare one time step                                     vuong 08/16 |
- *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::PrepareTimeStep(bool printheader)
-{
-  // the global control routine has its own time_ and step_ variables, as well as the single fields
-  // keep them in sync!
-  IncrementTimeAndStep();
-
-  if(printheader)
-    PrintHeader();
-
-  SetPoroSolution();
-  scatra_->ScaTraField()->PrepareTimeStep();
-  // set structure-based scalar transport values
-  SetScatraSolution();
-
-  poromulti_-> PrepareTimeStep();
-  SetPoroSolution();
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | prepare the time loop                                     vuong 08/16 |
- *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::PrepareTimeLoop()
-{
-  // set structure-based scalar transport values
-  SetScatraSolution();
-  poromulti_->PrepareTimeLoop();
-  // initial output for scatra field
-  SetPoroSolution();
-  scatra_->ScaTraField()->Output();
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | setup the system if necessary                             vuong 08/16 |
+ | setup the monolithic fluid-structure system (called in               |
+ | poromultiphase_scatra_dyn.cpp)                      kremheller 03/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::SetupSystem()
 {
-  poromulti_->SetupSystem();
+  PoroField()->SetupSystem();
   return;
 }
 
@@ -158,20 +102,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::SetupSystem()
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::SetupSolver()
 {
-  poromulti_->SetupSolver();
+  PoroField()->SetupSolver();
   return;
-}
-
-/*----------------------------------------------------------------------*
- | update fields and output results                         vuong 08/16 |
- *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::UpdateAndOutput()
-{
-  poromulti_-> UpdateAndOutput();
-
-  scatra_->ScaTraField()->Update();
-  scatra_->ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
-  scatra_->ScaTraField()->Output();
 }
 
 /*----------------------------------------------------------------------*
@@ -203,9 +135,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::Solve()
 
     // store scalar from first solution for convergence check (like in
     // elch_algorithm: use current values)
-    scaincnp_->Update(1.0,*scatra_->ScaTraField()->Phinp(),0.0);
-    structincnp_->Update(1.0,*poromulti_->StructDispnp(),0.0);
-    fluidincnp_->Update(1.0,*poromulti_->FluidPhinp(),0.0);
+    scaincnp_->Update(1.0,*ScatraAlgo()->ScaTraField()->Phinp(),0.0);
+    structincnp_->Update(1.0,*PoroField()->StructDispnp(),0.0);
+    fluidincnp_->Update(1.0,*PoroField()->FluidPhinp(),0.0);
 
     // set structure-based scalar transport values
     SetScatraSolution();
@@ -235,7 +167,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::DoPoroStep()
 {
 
   // Newton-Raphson iteration
-  poromulti_-> TimeStep();
+  PoroField()-> TimeStep();
 }
 
 /*----------------------------------------------------------------------*
@@ -255,7 +187,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::DoScatraStep()
   // -------------------------------------------------------------------
   //                  solve nonlinear / linear equation
   // -------------------------------------------------------------------
-  scatra_->ScaTraField()->Solve();
+  ScatraAlgo()->ScaTraField()->Solve();
 
 }
 
@@ -283,17 +215,17 @@ bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::ConvergenceChe
 
   // build the current scalar increment Inc T^{i+1}
   // \f Delta T^{k+1} = Inc T^{k+1} = T^{k+1} - T^{k}  \f
-  scaincnp_->Update(1.0,*(scatra_->ScaTraField()->Phinp()),-1.0);
-  structincnp_->Update(1.0,*(poromulti_->StructDispnp()),-1.0);
-  fluidincnp_->Update(1.0,*(poromulti_->FluidPhinp()),-1.0);
+  scaincnp_->Update(1.0,*(ScatraAlgo()->ScaTraField()->Phinp()),-1.0);
+  structincnp_->Update(1.0,*(PoroField()->StructDispnp()),-1.0);
+  fluidincnp_->Update(1.0,*(PoroField()->FluidPhinp()),-1.0);
 
   // build the L2-norm of the scalar increment and the scalar
   scaincnp_->Norm2(&scaincnorm_L2);
-  scatra_->ScaTraField()->Phinp()->Norm2(&scanorm_L2);
+  ScatraAlgo()->ScaTraField()->Phinp()->Norm2(&scanorm_L2);
   structincnp_->Norm2(&dispincnorm_L2);
-  poromulti_->StructDispnp()->Norm2(&dispnorm_L2);
+  PoroField()->StructDispnp()->Norm2(&dispnorm_L2);
   fluidincnp_->Norm2(&fluidincnorm_L2);
-  poromulti_->FluidPhinp()->Norm2(&fluidnorm_L2);
+  PoroField()->FluidPhinp()->Norm2(&fluidnorm_L2);
 
   // care for the case that there is (almost) zero scalar
   if (scanorm_L2 < 1e-6) scanorm_L2 = 1.0;

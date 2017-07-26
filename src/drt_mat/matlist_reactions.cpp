@@ -343,3 +343,62 @@ void MAT::MatListReactions::CalcReaBodyForceDerivMatrix(
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ | add additional variables to reaction                kremheller 07/17 |
+ *----------------------------------------------------------------------*/
+void MAT::MatListReactions::AddAdditionalVariables(
+        const int k,
+        const std::vector<std::pair<std::string,double> >& variables
+    ) const
+{
+
+  for (int condnum = 0;condnum < NumReac();condnum++)
+  {
+    const int reacid = ReacID(condnum);
+    const Teuchos::RCP<const MAT::ScatraReactionMat> reacmat = Teuchos::rcp_static_cast<const MAT::ScatraReactionMat>(MaterialById(reacid));
+
+    reacmat->AddAdditionalVariables(k, variables);
+  }
+}
+
+/*--------------------------------------------------------------------------------*
+ |  calculating advanced reaction term derivatives after additional variables     |
+ |  (e.g. for monolithic coupling)                               kremheller 07/17 |
+ *--------------------------------------------------------------------------------*/
+void MAT::MatListReactions::CalcReaBodyForceDerivMatrixAddVariables(
+        const int k,
+        std::vector<double>& derivs,
+        const std::vector<double>& phinp,
+        const std::vector<std::pair<std::string,double> >& variables,
+        const std::vector<std::pair<std::string,double> >& constants,
+        const double* gpcoord,
+        const double scale
+    ) const
+{
+
+  // add time and space coordinates
+  std::vector<std::pair<std::string,double> >constants_mod(constants);
+  constants_mod.push_back(std::pair<std::string,double>("t",0.0));
+  constants_mod.push_back(std::pair<std::string,double>("x",gpcoord[0]));
+  constants_mod.push_back(std::pair<std::string,double>("y",gpcoord[1]));
+  constants_mod.push_back(std::pair<std::string,double>("z",gpcoord[2]));
+
+  // add scalar values as constants
+  for (unsigned iscal = 0; iscal < phinp.size(); iscal++)
+  {
+    std::ostringstream temp;
+    temp << iscal+1;
+    constants_mod.push_back(std::pair<std::string,double>("phi"+temp.str(),phinp[iscal]));
+  }
+
+  for (int condnum = 0;condnum < NumReac();condnum++)
+  {
+    const int reacid = ReacID(condnum);
+    const Teuchos::RCP<const MAT::ScatraReactionMat> reacmat = Teuchos::rcp_static_cast<const MAT::ScatraReactionMat>(MaterialById(reacid));
+
+    reacmat->CalcReaBodyForceDerivMatrixAddVariables(k, derivs, variables, constants_mod, scale);
+  }
+
+  return;
+}

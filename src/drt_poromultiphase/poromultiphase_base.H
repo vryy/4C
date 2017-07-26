@@ -17,6 +17,7 @@
 
 #include "../drt_adapter/adapter_algorithmbase.H"
 #include "../drt_adapter/ad_poromultiphase.H"
+#include "../drt_lib/drt_dserror.H"
 
 namespace ADAPTER
 {
@@ -128,6 +129,37 @@ namespace POROMULTIPHASE
 
     /// return fluid solution variable
     Teuchos::RCP<const Epetra_Vector> SolidPressure() const;
+
+    //! unique map of all dofs that should be constrained with DBC
+    virtual Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const
+        {dserror("CombinedDBCMap() only available for monolithic schemes!"); return Teuchos::null;};
+
+    //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
+    virtual void Evaluate(
+        Teuchos::RCP<const Epetra_Vector> sx,
+        Teuchos::RCP<const Epetra_Vector> fx,
+        const bool firstcall
+        )
+        {dserror("Evaluate() only available for monolithic schemes!"); return;};
+
+    //! update all fields after convergence (add increment on displacements and fluid primary variables)
+    virtual void UpdateFieldsAfterConvergence(
+        Teuchos::RCP<const Epetra_Vector>& sx,
+        Teuchos::RCP<const Epetra_Vector>& fx
+        )
+        {dserror("UpdateFieldsAfterConvergence() only available for monolithic schemes!"); return;};
+
+    //! get monolithic rhs vector
+    virtual Teuchos::RCP<const Epetra_Vector> RHS() const
+        {dserror("RHS() only available for monolithic schemes!"); return Teuchos::null;};
+
+    //! get extractor
+    virtual Teuchos::RCP<const LINALG::MultiMapExtractor> Extractor() const
+       {dserror("Extractor() only available for monolithic schemes!"); return Teuchos::null;};
+
+    //! get monolithic block system matrix
+    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const
+       {dserror("BlockSystemMatrix() only available for monolithic schemes!"); return Teuchos::null;};
 
   private:
 

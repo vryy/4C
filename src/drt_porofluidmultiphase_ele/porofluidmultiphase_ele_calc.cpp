@@ -174,10 +174,21 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvaluateAction(
         la);
     break;
   }
-  case POROFLUIDMULTIPHASE::calc_fluid_coupl_mat:
+  case POROFLUIDMULTIPHASE::calc_fluid_struct_coupl_mat:
   {
     // loop over gauss points and evaluate off-diagonal terms
-    GaussPointLoopOD(
+    GaussPointLoopODStruct(
+        ele,
+        elemat,
+        elevec,
+        discretization,
+        la);
+    break;
+  }
+  case POROFLUIDMULTIPHASE::calc_fluid_scatra_coupl_mat:
+  {
+    // loop over gauss points and evaluate off-diagonal terms
+    GaussPointLoopODScatra(
         ele,
         elemat,
         elevec,
@@ -249,10 +260,10 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(
 }
 
 /*----------------------------------------------------------------------*
-| calculate off-diagonal fluid-coupling matrix         kremheller 03/17 |
+| calculate off-diagonal fluid-struct-coupling matrix  kremheller 03/17 |
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopOD(
+void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODStruct(
     DRT::Element*                              ele,
     std::vector<Epetra_SerialDenseMatrix*>&    elemat,
     std::vector<Epetra_SerialDenseVector*>&    elevec,
@@ -268,7 +279,32 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopOD(
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(POROFLUIDMULTIPHASE::ELEUTILS::DisTypeToOptGaussRule<distype>::rule);
 
   // start loop over gauss points
-  GaussPointLoopOD(intpoints,ele,elemat,elevec,discretization,la);
+  GaussPointLoopODStruct(intpoints,ele,elemat,elevec,discretization,la);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+| calculate off-diagonal fluid-scatra-coupling matrix  kremheller 06/17 |
+*----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODScatra(
+    DRT::Element*                              ele,
+    std::vector<Epetra_SerialDenseMatrix*>&    elemat,
+    std::vector<Epetra_SerialDenseVector*>&    elevec,
+    DRT::Discretization&                       discretization,
+    DRT::Element::LocationArray&               la
+  )
+{
+
+  // prepare gauss point evaluation
+  PrepareGaussPointLoop(ele);
+
+  // integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(POROFLUIDMULTIPHASE::ELEUTILS::DisTypeToOptGaussRule<distype>::rule);
+
+  // start loop over gauss points
+  GaussPointLoopODScatra(intpoints,ele,elemat,elevec,discretization,la);
 
   return;
 }
@@ -351,10 +387,10 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(
 }
 
 /*----------------------------------------------------------------------*
-|  calculate off-diagonal fluid-coupling matrix        kremheller 03/17 |
+| calculate off-diagonal fluid-struct-coupling matrix  kremheller 03/17 |
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopOD(
+void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODStruct(
     const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,
     DRT::Element*                                ele,
     std::vector<Epetra_SerialDenseMatrix*>&      elemat,
@@ -381,7 +417,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopOD(
     //----------------------------------------------------------------
     // 1) element off-diagonal matrix
     //----------------------------------------------------------------
-    evaluator_->EvaluateMatrixOD(
+    evaluator_->EvaluateMatrixODStruct(
         elemat,
         funct_,
         deriv_,
@@ -393,6 +429,57 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopOD(
         rhsfac,
         fac,
         det_
+      );
+
+    // clear current gauss point data for safety
+    phasemanager_->ClearGPState();
+  }
+
+  return;
+
+}
+
+/*----------------------------------------------------------------------*
+| calculate off-diagonal fluid-scatra-coupling matrix  kremheller 03/17 |
+*----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODScatra(
+    const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,
+    DRT::Element*                                ele,
+    std::vector<Epetra_SerialDenseMatrix*>&      elemat,
+    std::vector<Epetra_SerialDenseVector*>&      elevec,
+    DRT::Discretization&                         discretization,
+    DRT::Element::LocationArray&                 la
+)
+{
+  // start the loop
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+
+    variablemanager_->EvaluateGPVariables(funct_,derxy_);
+
+    // set the current gauss point state in the manager
+    phasemanager_->EvaluateGPState(J_,*variablemanager_);
+
+    // stabilization parameter and integration factors
+    //const double taufac     = tau[k]*fac;
+    double rhsfac = para_->TimeFacRhs() * fac;
+
+    //const double timetaufac = para_->TimeFac()*taufac;
+
+    //----------------------------------------------------------------
+    // 1) element off-diagonal matrix
+    //----------------------------------------------------------------
+    evaluator_->EvaluateMatrixODScatra(
+        elemat,
+        funct_,
+        derxy_,
+        numdofpernode_,
+        *phasemanager_,
+        *variablemanager_,
+        rhsfac,
+        fac
       );
 
     // clear current gauss point data for safety

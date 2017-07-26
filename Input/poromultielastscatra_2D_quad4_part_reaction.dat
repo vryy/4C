@@ -24,7 +24,7 @@ RESTARTEVRY                     4
 NUMSTEP                         5
 MAXTIME                         2.0
 TIMESTEP                        0.1
-COUPALGO                        two_way
+COUPALGO                        twoway_partitioned
 NORM_INC                        AbsGlobal
 NORM_RESF                       AbsGlobal
 TOLRES_GLOBAL                   1e-08

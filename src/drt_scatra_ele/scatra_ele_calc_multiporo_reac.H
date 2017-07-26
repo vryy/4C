@@ -17,6 +17,20 @@
 
 
 #include "scatra_ele_calc_poro_reac.H"
+#include "../drt_mat/fluidporo_multiphase.H"
+#include "../drt_mat/fluidporo_singlephase.H"
+#include "../drt_mat/fluidporo_multiphase_reactions.H"
+#include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele_calc_utils.H"
+
+#include "../drt_porofluidmultiphase_ele/porofluid_phasemanager.H"
+#include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele_action.H"
+#include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele_calc.H"
+#include "../drt_porofluidmultiphase_ele/porofluid_variablemanager.H"
+#include "../drt_porofluidmultiphase_ele/porofluid_evaluator.H"
+#include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele_parameter.H"
+
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_utils.H"
 
 //forward declarations
 namespace MAT
@@ -71,6 +85,17 @@ public:
       Teuchos::ParameterList&       params,
       DRT::Discretization&          discretization,
       DRT::Element::LocationArray&  la
+  );
+
+  //! extract element based or nodal values --> L2-projection case: called within ExtractElementAndNodeValues
+  //  return extracted values of phinp
+  virtual void ExtractElementAndNodeValuesWithL2(
+      DRT::Element*                 ele,
+      Teuchos::ParameterList&       params,
+      DRT::Discretization&          discretization,
+      DRT::Element::LocationArray&  la,
+      const int                     ndspres,
+      const int                     numphases
   );
 
   //! set internal variables
@@ -143,9 +168,182 @@ public:
     const double                  densnp       //!< density at time_(n+1)
   );
 
-  void FillCouplingVector();
+  //! calculation of mass element matrix (standard shape functions)
+  virtual void CalcMatMass(
+    Epetra_SerialDenseMatrix &     emat,        //!< element matrix to be filled
+    const int &                    k,           //!< index of current scalar
+    const double &                 fac,         //!< domain-integration factor
+    const double &                 densam       //!< density at time_(n+am)
+  );
+
+  //! calculation of convective element matrix (OD term structure coupling)
+  //! difference to base class: linearization of mesh motion + shapederivatives pressure gradient have to be included
+  virtual void CalcConvODMesh(
+    Epetra_SerialDenseMatrix&       emat,
+    const int                       k,
+    const int                       ndofpernodemesh,
+    const double                    fac,
+    const double                    rhsfac,
+    const double                    densnp,
+    const double                    J,
+    const LINALG::Matrix<my::nsd_,1>&   gradphi,
+    const LINALG::Matrix<my::nsd_,1>&   convelint
+    );
+
+  //! calculation of linearized mass (off diagonal/shapederivative term mesh)
+  //! difference to base class: linearization of porosity is included
+  virtual void CalcLinMassODMesh(
+    Epetra_SerialDenseMatrix&                  emat,              //!< element matrix to be filled
+    const int                                  k,                 //!< index of current scalar
+    const int                                  ndofpernodemesh,   //!< number of dofs per node of ale element
+    const double                               rhsfac,            //!< time-integration factor for rhs times domain-integration factor
+    const double                               fac,               //!< domain-integration factor
+    const double                               densam,            //!< density at time_(n+am)
+    const double                               densnp,            //!< density at time_(n+1)
+    const double                               phinp,             //!< scalar at time_(n+1)
+    const double                               hist,              //!< history of time integartion
+    const double                               J,                 //!< determinant of Jacobian det(dx/ds)
+    const LINALG::Matrix<1,my::nsd_*my::nen_>& dJ_dmesh           //!< derivative of det(dx/ds) w.r.t. mesh displacement
+  );
+
+  //! standard Galerkin transient, old part of rhs and source term (off diagonal/shapederivative term mesh)
+  //! difference to base class: linearization of porosity and advanced reaction terms are included
+  virtual void CalcHistAndSourceODMesh(
+    Epetra_SerialDenseMatrix&                  emat,             //!< element current to be filled
+    const int                                  k,                //!< index of current scalar
+    const int                                  ndofpernodemesh,  //!< number of dofs per node of ale element
+    const double                               fac,              //!< domain-integration factor
+    const double                               rhsint,           //!< rhs at Gauss point
+    const double                               J,                //!< determinant of Jacobian det(dx/ds)
+    const LINALG::Matrix<1,my::nsd_*my::nen_>& dJ_dmesh,         //!< derivative of det(dx/ds) w.r.t. mesh displacement
+    const double                               densnp            //!< density
+  );
+
+  //! standard Galerkin diffusive term (off diagonal/shapederivative term mesh)
+  //! difference to base class: linearization of porosity and effective diffusivity
+  virtual void CalcDiffODMesh(
+      Epetra_SerialDenseMatrix&                   emat,             //!< element current to be filled
+      const int                                   k,                //!< index of current scalar
+      const int                                   ndofpernodemesh,  //!< number of dofs per node of ale element
+      const double                                fac,              //!< domain-integration factor
+      const double                                rhsfac,           //!< time-integration factor for rhs times domain-integration factor
+      const double                                J,                //!< determinant of Jacobian det(dx/ds)
+      const LINALG::Matrix<my::nsd_,1>&           gradphi,          //!< scalar gradient at Gauss point
+      const LINALG::Matrix<my::nsd_,1>&           convelint,        //!< convective velocity
+      const LINALG::Matrix<1,my::nsd_*my::nen_>&  dJ_dmesh          //!< derivative of det(dx/ds) w.r.t. mesh displacement
+  );
+
+  //! reactive terms (standard Galerkin) (off diagonal/shapederivative term mesh)
+  //! difference to base class: linearization of porosity
+  virtual void CalcReactODMesh(
+      Epetra_SerialDenseMatrix&                   emat,             //!< element current to be filled
+      const int                                   k,                //!< index of current scalar
+      const int                                   ndofpernodemesh,  //!< number of dofs per node of ale element
+      const double                                rhsfac,           //!< time-integration factor for rhs times domain-integration factor
+      const double                                rea_phi,          //!< reactive term
+      const double                                J,                //!< determinant of Jacobian det(dx/ds)
+      const LINALG::Matrix<1,my::nsd_*my::nen_>&  dJ_dmesh          //!< derivative of det(dx/ds) w.r.t. mesh displacement
+  );
+
+  //! generic linearization of term scaled with porosity for coupling with structure (OD terms)
+  void PorosityLinearizationStruct(
+      Epetra_SerialDenseMatrix&                   emat,             //!< element current to be filled
+      const int                                   k,                //!< index of current scalar
+      double                                      prefac            //!< generic factor with which the matrix is multiplied
+  );
+
+  //! generic linearization of term scaled with porosity for coupling with fluid (OD terms)
+  void PorosityLinearizationFluid(
+      Epetra_SerialDenseMatrix&                   emat,             //!< element current to be filled
+      const int                                   k,                //!< index of current scalar
+      const int                                   curphase,         //!< current phase (k belongs to curphase)
+      const int                                   numphases,        //!< total number of phases
+      double                                      prefac            //!< generic factor with which the matrix is multiplied
+  );
+
+  //! generic linearization of term scaled with saturation for coupling with fluid (OD terms)
+  void SaturationLinearization(
+      Epetra_SerialDenseMatrix&                   emat,             //!< element current to be filled
+      const int                                   k,                //!< index of current scalar
+      const int                                   curphase,         //!< current phase (k belongs to curphase)
+      const int                                   numphases,        //!< total number of phases
+      double                                      prefac            //!< generic factor with which the matrix is multiplied
+  );
+
+  //! calculation of convective element matrix in convective form (off diagonal term fluid)
+  virtual void CalcMatConvODFluid(
+    Epetra_SerialDenseMatrix&         emat,             //!< element matrix to be filled
+    const int                         k,                //!< index of current scalar
+    const int                         ndofpernodefluid, //!< number of dofs per node of fluid element // only a dummy variable
+    const double                      timefacfac,       //!< domain-integration factor times time-integration factor
+    const double                      densnp,           //!< density at time_(n+1)
+    const LINALG::Matrix<my::nsd_,1>& gradphi           //!< scalar gradient
+  );
+
+  //! calculation of convective element matrix in convective form -- additional conservative contributions (off diagonal term fluid)
+  //! not yet implemented --> dserror
+  virtual void CalcMatConvAddConsODFluid(
+    Epetra_SerialDenseMatrix&     emat,             //!< element matrix to be filled
+    const int                     k,                //!< index of current scalar
+    const int                     ndofpernodefluid, //!< number of dofs per node of fluid element
+    const double                  timefacfac,       //!< domain-integration factor times time-integration factor
+    const double                  densnp,           //!< density at time_(n+1)
+    const double                  phinp             //!< scalar at time_(n+1)
+  );
+
+  //! calculation of linearized mass (off diagonal terms fluid)
+  //! linearization of porosity*saturation*vtrans
+  virtual void CalcLinMassODFluid(
+    Epetra_SerialDenseMatrix&          emat,              //!< element matrix to be filled
+    const int                          k,                 //!< index of current scalar
+    const int                          ndofpernodemesh,   //!< number of dofs per node of fluid element // only a dummy variable
+    const double                       rhsfac,            //!< time-integration factor for rhs times domain-integration factor
+    const double                       fac,               //!< domain-integration factor
+    const double                       densam,            //!< density at time_(n+am)
+    const double                       densnp,            //!< density at time_(n+1)
+    const double                       phinp,             //!< scalar at time_(n+1)
+    const double                       hist               //!< history of time integartion
+  );
+
+  //! standard Galerkin transient, old part of rhs and source term (off diagonal terms fluid)
+  //! linearization of porosity*saturation*vtrans + advanced reaction terms
+  virtual void CalcHistAndSourceODFluid(
+    Epetra_SerialDenseMatrix&          emat,             //!< element current to be filled
+    const int                          k,                //!< index of current scalar
+    const int                          ndofpernodemesh,  //!< number of dofs per node of ale element
+    const double                       fac,              //!< domain-integration factor
+    const double                       rhsint,           //!< rhs at Gauss point
+    const double                       densnp            //!< density
+  );
+
+  //! standard Galerkin reactive term (off diagonal terms fluid)
+  //! linearization of porosity*saturation*vreact
+  virtual void CalcReactODFluid(
+    Epetra_SerialDenseMatrix&          emat,             //!< element current to be filled
+    const int                          k,                //!< index of current scalar
+    const int                          ndofpernodemesh,  //!< number of dofs per node of ale element
+    const double                       rhsfac,           //!< time-integration factor for rhs times domain-integration factor
+    const double                       rea_phi           //!< rhs at Gauss point
+  );
+
+  //! standard Galerkin diffusive term (off diagonal terms fluid)
+  //! linearization of porosity*saturation*d_eff
+  virtual void CalcDiffODFluid(
+    Epetra_SerialDenseMatrix&           emat,             //!< element current to be filled
+    const int                           k,                //!< index of current scalar
+    const int                           ndofpernodemesh,  //!< number of dofs per node of ale element
+    const double                        rhsfac,           //!< time-integration factor for rhs times domain-integration factor
+    const LINALG::Matrix<my::nsd_,1>&   gradphi           //!< scalar gradient at Gauss point
+  );
+
+  // fill coupling vector and add variables to reaction in order to compute reaction values and derivatives
+  void FillCouplingVectorAndAddVariables(
+      const int                                       k,
+      const Teuchos::RCP<MAT::MatListReactions> matreaclist,
+      const Teuchos::RCP<ScaTraEleReaManagerAdvReac>  remanager);
 
   protected:
+
   //! nodal flux values at t_(n+1)
   std::vector<LINALG::Matrix<my::nsd_,my::nen_> > efluxnp_;
   //! nodal phase pressures at t_(n+1) or t_(n+alpha_F)
@@ -160,7 +358,13 @@ public:
   std::vector<std::pair<std::string,double> > couplingvalues_;
 
   //! penalty factor to avoid very small "densities"
-  const double penalty_ = 1000.0;
+  const double penalty_ = 1.0;
+
+  //! under this saturation we assume that also the corresponding mass fraction is equal to zero
+  const double minimum_saturation_ = 1.0e-9;
+
+  //! do we use L2-projection or evaluation at GP
+  bool L2_projection_ = false;
 
 };
 
@@ -179,50 +383,94 @@ public:
     pressure_(0),
     saturation_(0),
     solidpressure_(0.0),
-    scalartophaseID_(numscal,-1)
+    scalartophaseID_(numscal,-1),
+    delta_(numscal,0.0),
+    materialset_(false),
+    myaction_(SCATRA::Action::calc_mat_and_rhs)
   {return;}
 
   virtual ~ScaTraEleInternalVariableManagerMultiPoro(){};
 
-  // compute and set internal variables
-   void SetInternalVariablesMultiPoro(
+  // compute and set internal variables -- no L2-projection but evaluation at GP
+   void SetInternalVariablesMultiPoroWithoutL2(
        const LINALG::Matrix<NEN,1>&                 funct,       //! array for shape functions
        const LINALG::Matrix<NSD,NEN>&               derxy,       //! global derivatives of shape functions w.r.t x,y,z
+       const LINALG::Matrix<NSD,NEN>&               deriv,       //! global derivatives of shape functions w.r.t r,s,t
+       const LINALG::Matrix<NSD,NSD>&               xjm,
+       const LINALG::Matrix<NSD,NEN>&               xyze0,
        const std::vector<LINALG::Matrix<NEN,1> >&   ephinp,      //! scalar at t_(n+1) or t_(n+alpha_F)
        const std::vector<LINALG::Matrix<NEN,1> >&   ephin,       //! scalar at t_(n)
-       const std::vector<LINALG::Matrix<NSD,NEN> >& econvelnp,   //! nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
-       const std::vector<LINALG::Matrix<NEN,1> >&   epresnp,
-       const std::vector<LINALG::Matrix<NEN,1> >&   esatnp,
-       const LINALG::Matrix<NEN,1>&                 esolidpresnp,
        const std::vector<LINALG::Matrix<NEN,1> >&   ehist        //! history vector of transported scalars
        )
    {
-     // call base class (scatra)
-     my::SetInternalVariables(funct,derxy,ephinp,ephin,econvelnp[0],ehist);
+     // call base class (scatra) with dummy variable econvelnp
+     const LINALG::Matrix<NSD,NEN> econvelnp(true);
+     my::SetInternalVariables(funct,derxy,ephinp,ephin,econvelnp,ehist);
 
-     const int numphases = econvelnp.size();
+     //------------------------get determinant of Jacobian dX / ds
+     // transposed jacobian "dX/ds"
+     LINALG::Matrix<NSD,NSD> xjm0;
+     xjm0.MultiplyNT(deriv,xyze0);
+
+     // inverse of transposed jacobian "ds/dX"
+     const double det0= xjm0.Determinant();
+
+     const double det = xjm.Determinant();
+
+     // determinant of deformationgradient det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
+     const double JacobianDefGradient = det/det0;
+
+     // clear current gauss point data for safety
+     phasemanager_->ClearGPState();
+     variablemanager_->EvaluateGPVariables(funct,derxy);
+     // access from outside to the phasemanager: scatra-discretization has fluid-dis on dofset 2
+     phasemanager_->EvaluateGPState(JacobianDefGradient,*variablemanager_,ndsscatra_porofluid_);
+
+     const int numphases = phasemanager_->NumPhases();
 
      // resize all phase related vectors
      multiconvelint_.resize(numphases);
      multiconv_.resize(numphases);
      pressure_.resize(numphases);
      saturation_.resize(numphases);
+     pressuregrad_.resize(numphases);
+     abspressuregrad_.resize(numphases);
+
+     const std::vector<LINALG::Matrix<NSD,1> >& fluidgradphi = *(variablemanager_->GradPhinp());
 
      for (int k = 0; k < numphases; ++k)
      {
-       // convective velocity
-       multiconvelint_[k].Multiply(econvelnp[k],funct);
-       // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
-       multiconv_[k].MultiplyTN(derxy,multiconvelint_[k]);
+       // current pressure gradient
+       pressuregrad_[k].Clear();
+
+       // compute the pressure gradient from the phi gradients
+       for (int idof=0; idof<numphases; ++idof)
+         pressuregrad_[k].Update(phasemanager_->PressureDeriv(k,idof),fluidgradphi[idof],1.0);
+
+       // compute the absolute value of the pressure gradient from the phi gradients
+       abspressuregrad_[k]=0.0;
+       for (int i=0; i<NSD; i++)
+         abspressuregrad_[k]+=pressuregrad_[k](i)*pressuregrad_[k](i);
+       abspressuregrad_[k]=sqrt(abspressuregrad_[k]);
+
+       // diffusion tensor
+       LINALG::Matrix<NSD,NSD> difftensor(true);
+       phasemanager_->PermeabilityTensor(k,difftensor);
+       difftensor.Scale(phasemanager_->RelPermeability(k)/phasemanager_->DynViscosity(k, abspressuregrad_[k],ndsscatra_porofluid_));
+
+       // Insert Darcy's law: porosity*S^\pi*(v^\pi - v_s) = - k/\mu * grad p
+       multiconvelint_[k].Multiply(-1.0,difftensor,pressuregrad_[k]);
 
        // phase pressure
-       pressure_[k] = epresnp[k].Dot(funct);
+       pressure_[k] = phasemanager_->Pressure(k);
        // phase saturation
-       saturation_[k] = esatnp[k].Dot(funct);
+       saturation_[k] = phasemanager_->Saturation(k);
+       // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
+       multiconv_[k].MultiplyTN(derxy,multiconvelint_[k]);
      }
 
      // solid pressure
-     solidpressure_ = esolidpresnp.Dot(funct);
+     solidpressure_ = phasemanager_->SolidPressure();
 
      // check if the IDs make sense
      for (std::vector<int>::iterator it = scalartophaseID_.begin() ; it != scalartophaseID_.end(); ++it)
@@ -239,6 +487,79 @@ public:
 
      return;
    };
+
+   // compute and set internal variables -- L2-projection
+    void SetInternalVariablesMultiPoroWithL2(
+        const LINALG::Matrix<NEN,1>&                 funct,       //! array for shape functions
+        const LINALG::Matrix<NSD,NEN>&               derxy,       //! global derivatives of shape functions w.r.t x,y,z
+        const std::vector<LINALG::Matrix<NEN,1> >&   ephinp,      //! scalar at t_(n+1) or t_(n+alpha_F)
+        const std::vector<LINALG::Matrix<NEN,1> >&   ephin,       //! scalar at t_(n)
+        const std::vector<LINALG::Matrix<NSD,NEN> >& econvelnp,   //! nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
+        const std::vector<LINALG::Matrix<NEN,1> >&   epresnp,
+        const std::vector<LINALG::Matrix<NEN,1> >&   esatnp,
+        const LINALG::Matrix<NEN,1>&                 esolidpresnp,
+        const std::vector<LINALG::Matrix<NEN,1> >&   ehist        //! history vector of transported scalars
+        )
+    {
+      // call base class (scatra)
+      my::SetInternalVariables(funct,derxy,ephinp,ephin,econvelnp[0],ehist);
+
+      const int numphases = econvelnp.size();
+
+      // resize all phase related vectors
+      multiconvelint_.resize(numphases);
+      multiconv_.resize(numphases);
+      pressure_.resize(numphases);
+      saturation_.resize(numphases);
+
+      for (int k = 0; k < numphases; ++k)
+      {
+        // convective velocity
+        multiconvelint_[k].Multiply(econvelnp[k],funct);
+        // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
+        multiconv_[k].MultiplyTN(derxy,multiconvelint_[k]);
+
+        // phase pressure
+        pressure_[k] = epresnp[k].Dot(funct);
+        // phase saturation
+        saturation_[k] = esatnp[k].Dot(funct);
+      }
+
+      // solid pressure
+      solidpressure_ = esolidpresnp.Dot(funct);
+
+      // check if the IDs make sense
+      for (std::vector<int>::iterator it = scalartophaseID_.begin() ; it != scalartophaseID_.end(); ++it)
+      {
+         if( *it<0 or *it>=numphases )
+           dserror("Invalid phase ID %i",*it);
+      }
+
+      // overwrite convective term
+      for (int k = 0; k < my::numscal_; ++k)
+      {
+        my::conv_phi_[k] = multiconvelint_[scalartophaseID_[k]].Dot(my::gradphi_[k]);
+      }
+
+      return;
+    };
+
+     // Set the fluid-material in the scatra-Varmanager
+    void SetFluidPoromultiphaseMaterial(
+        DRT::Element*               ele
+        )
+    {
+      // check if we actually have three materials
+      if(ele->NumMaterial()<3)
+        dserror("no third material available");
+
+      //here we rely that the PoroMultiPhase material has been added as third material
+      multiphasemat_ = Teuchos::rcp_dynamic_cast<MAT::FluidPoroMultiPhase>(ele->Material(ndsscatra_porofluid_));
+      if(multiphasemat_==Teuchos::null)
+        dserror("cast to MAT::FluidPoroMultiPhase failed!");
+
+      materialset_ = true;
+    }
 
   /*========================================================================*/
   //! @name return methods for internal variables
@@ -292,6 +613,127 @@ public:
     scalartophaseID_[scalarID] = phaseID;
   };
 
+  //! get phase ID from scalar ID
+  int GetPhaseID(const int scalarID)
+  {
+    return scalartophaseID_[scalarID];
+  };
+
+  //! set delta for evaluation of effective diffusivity
+  void SetDelta(const double delta, const int k)
+  {
+    // set
+    delta_[k] = delta;
+  };
+
+  //! set action
+  void SetAction(const SCATRA::Action action)
+  {
+    // set
+    myaction_ = action;
+  };
+
+  //! get delta
+  double GetDelta(const int k)
+  {
+    return delta_[k];
+  };
+
+  //! get action
+  SCATRA::Action GetAction()
+  {
+    // return
+    return myaction_;
+  };
+
+  //! return pressure gradient of current phase
+  const LINALG::Matrix<NSD,1>& PressureGradient(const int curphase) const
+  {
+    return pressuregrad_[curphase];
+  };
+
+  //! return absolute value of pressure gradient of current phase
+  double AbsPressureGradient(const int curphase) const
+  {
+    return abspressuregrad_[curphase];
+  };
+
+  //! return fluid material
+  Teuchos::RCP<MAT::FluidPoroMultiPhase> MultiphaseMat()
+  {
+    if(!materialset_)
+      dserror("Fluid-Multiphase Material has not yet been set in Variablemanager");
+
+    return multiphasemat_;
+  }
+
+  //! Setup phasemanager and variablemanager of fluid
+  void SetupPoroFluidManagers(
+      DRT::Element*                 ele,
+      Teuchos::ParameterList&       params,
+      DRT::Discretization&          discretization,
+      DRT::Element::LocationArray&  la,
+      const int                     numphases
+      )
+  {
+
+    // dummy parameter list
+    DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter* para =
+        DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance(discretization.Name());
+
+    // create phase-manager
+    phasemanager_ =
+        DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::CreatePhaseManager(
+            *para,
+            NSD,
+            MultiphaseMat()->MaterialType(),
+            POROFLUIDMULTIPHASE::Action::get_access_from_scatra,
+            numphases
+            );
+
+    // access from outside to the phasemanager: scatra-discretization has fluid-dis on dofset 2
+    phasemanager_->Setup(ele,ndsscatra_porofluid_);
+
+    // create variablemanager
+    variablemanager_ =
+        DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<NSD,NEN>::CreateVariableManager(
+            *para,
+            POROFLUIDMULTIPHASE::Action::get_access_from_scatra,
+            numphases
+            );
+
+    return;
+
+  }
+
+  // extract the element and node values of the poro-fluid --> extract them from its variablemanager
+  void ExtractElementAndNodeValuesOfPoroFluid(
+      DRT::Element*                 ele,
+      DRT::Discretization&          discretization,
+      DRT::Element::LocationArray&  la,
+      LINALG::Matrix<NSD, NEN>& xyze
+      )
+  {
+
+    // access from outside to the variablemananger: scatra-discretization has fluid-dis on dofset 2
+    variablemanager_->ExtractElementAndNodeValues(*ele,discretization,la,xyze,ndsscatra_porofluid_);
+
+    return;
+
+  }
+
+  // get the phasemanager of the fluid
+  Teuchos::RCP< DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface > FluidPhaseManager()
+  {
+    return phasemanager_;
+  }
+
+  // get the variablemanager of the fluid
+  Teuchos::RCP< DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<NSD,NEN> > FluidVarManager()
+  {
+    return variablemanager_;
+  }
+
 private:
 
   //! convective velocity
@@ -305,9 +747,32 @@ private:
   std::vector<double> saturation_;
   //! solid pressure
   double solidpressure_;
+  //! pressure gradient
+  std::vector<LINALG::Matrix<NSD,1> > pressuregrad_;
+  //! norm of pressure-gradient
+  std::vector<double> abspressuregrad_;
+
+  //! fluid-poro multiphase material
+  Teuchos::RCP<MAT::FluidPoroMultiPhase> multiphasemat_;
 
   //! mapping from scalar ID to phase ID
   std::vector<int > scalartophaseID_;
+  //! delta for effective diffusivity
+  std::vector<double> delta_;
+  //! check if multiphase material has been set
+  bool materialset_;
+
+  SCATRA::Action myaction_;
+
+  //! phase manager of the fluid
+  Teuchos::RCP< DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface > phasemanager_;
+
+  //! variable manager of the fluid
+  Teuchos::RCP< DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<NSD,NEN> > variablemanager_;
+
+  //! dofset of fluid field on scatra dis
+  // TODO: find a better way to do this
+  const int ndsscatra_porofluid_ = 2;
 
 };
 

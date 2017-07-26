@@ -385,6 +385,44 @@ void MAT::ScatraReactionMat::CalcReaBodyForceDerivMatrix(
   return;
 }
 
+/*--------------------------------------------------------------------------------*
+ |  calculate advanced reaction term derivatives after additional variables       |
+ |  (e.g. for monolithic coupling with by-function reaction)     kremheller 07/17 |
+ *--------------------------------------------------------------------------------*/
+void MAT::ScatraReactionMat::CalcReaBodyForceDerivMatrixAddVariables(
+    const int k,                                                     //!< current scalar id
+    std::vector<double>& derivs,                                     //!< vector with derivatives (to be filled)
+    const std::vector<std::pair<std::string,double> >& variables,    //!< variables
+    const std::vector<std::pair<std::string,double> >& constants,    //!< constants (including the scalar values phinp)
+    double scale_phi                                                 //!< scaling factor for scalar values (used for reference concentrations)
+    ) const
+{
+  const double reaccoeff = ReacCoeff(constants);
+
+  if ( Stoich()->at(k)!=0 and fabs(reaccoeff)>1.0e-14)
+  {
+    CalcReaBodyForceDerivAddVariables(k,derivs,variables,constants,reaccoeff*Stoich()->at(k),scale_phi);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------/
+ | add variables to the reaction (only by-function)    kremheller 07/17 |
+/----------------------------------------------------------------------*/
+void MAT::ScatraReactionMat::AddAdditionalVariables(
+    const int k,                                                     //!< current scalar id
+    const std::vector<std::pair<std::string,double> >& variables     //!< variables
+    ) const
+{
+  if ( Stoich()->at(k)!=0 )
+  {
+    params_->reaction_->AddAdditionalVariables(k,variables,*Couprole());
+  }
+
+  return;
+}
+
 /*----------------------------------------------------------------------*
  |  helper for calculating advanced reaction terms           thon 08/16 |
  *----------------------------------------------------------------------*/
@@ -412,6 +450,24 @@ void MAT::ScatraReactionMat::CalcReaBodyForceDeriv(
     ) const
 {
   params_->reaction_->CalcReaBodyForceDeriv(k,NumScal(),derivs,phinp,constants,*Couprole(),scale_reac,scale_phi);
+
+  return;
+}
+
+/*--------------------------------------------------------------------------------*
+ |  calculate advanced reaction term derivatives after additional variables       |
+ |  (e.g. for monolithic coupling with by-function reaction)     kremheller 07/17 |
+ *--------------------------------------------------------------------------------*/
+void MAT::ScatraReactionMat::CalcReaBodyForceDerivAddVariables(
+    int k,                                                           //!< current scalar id
+    std::vector<double>& derivs,                                     //!< vector with derivatives (to be filled)
+    const std::vector<std::pair<std::string,double> >& variables,    //!< variables
+    const std::vector<std::pair<std::string,double> >& constants,    //!< constants (including the scalar values phinp)
+    double scale_reac,                                               //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
+    double scale_phi                                                 //!< scaling factor for scalar values (used for reference concentrations)
+    ) const
+{
+  params_->reaction_->CalcReaBodyForceDerivAddVariables(k,derivs,variables,constants,*Couprole(),scale_reac,scale_phi);
 
   return;
 }

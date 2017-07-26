@@ -184,6 +184,24 @@ private:
             const double scale = 1.0
         ) const;
 
+    // add additional variables to the reaction (only for by-function coupling)
+    void AddAdditionalVariables(
+            const int k,
+            const std::vector<std::pair<std::string,double> >& variables
+        ) const;
+
+    /// calculate advanced reaction term derivatives
+    void CalcReaBodyForceDerivMatrixAddVariables(
+            const int k,
+            std::vector<double>& derivs,
+            const std::vector<double>& phinp,
+            const std::vector<std::pair<std::string,double> >& variables,
+            const std::vector<std::pair<std::string,double> >& constants,
+            const double* gpcoord,
+            const double scale = 1.0
+    ) const;
+
+
   protected:
 
     /// setup of material map

@@ -84,6 +84,34 @@ namespace REACTIONCOUPLING
         double scale_reac,                                               //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
         double scale_phi                                                 //!< scaling factor for scalar values (used for reference concentrations)
         ) =0;
+
+    /// add additional variables for by-function reaction
+    virtual void AddAdditionalVariables(
+        const int k,                                                     //!< current scalar id
+        const std::vector<std::pair<std::string,double> >& variables,    //!< variables
+        const std::vector<double>& couprole                              //!< coupling role vector
+        )
+    {
+      // do nothing in this case --> only the by-function reaction will override this method
+      // if you want to evaluate any coupling terms in your own reaction coupling just override it in your own function
+      return;
+    }
+
+    ///helper for calculating advanced reaction term derivatives w.r.t. additional variables
+    virtual void CalcReaBodyForceDerivAddVariables(
+        const int k,                                                     //!< current scalar id
+        std::vector<double>& derivs,                                     //!< vector with derivatives (to be filled)
+        const std::vector<std::pair<std::string,double> >& variables,    //!< variables
+        const std::vector<std::pair<std::string,double> >& constants,    //!< constants (including scalar values phinp)
+        const std::vector<double>& couprole,                             //!< coupling role vector
+        double scale_reac,                                               //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
+        double scale_phi                                                 //!< scaling factor for scalar values (used for reference concentrations)
+        )
+    {
+      //do nothing in this case --> only the by-function reaction will override this method
+      // if you want to evaluate any coupling terms in your own reaction coupling just override it in your own function
+      return;
+    }
   };
 
   /*----------------------------------------------------------------------*
@@ -201,6 +229,25 @@ namespace REACTIONCOUPLING
         double scale_reac,                                               //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
         double scale_phi                                                 //!< scaling factor for scalar values (used for reference concentrations)
         );
+
+    ///helper for calculating advanced reaction term derivatives after additional variables
+    virtual void CalcReaBodyForceDerivAddVariables(
+        const int k,                                                     //!< current scalar id
+        std::vector<double>& derivs,                                     //!< vector with derivatives (to be filled)
+        const std::vector<std::pair<std::string,double> >& variables,    //!< variables
+        const std::vector<std::pair<std::string,double> >& constants,    //!< constants (including scalar values phinp)
+        const std::vector<double>& couprole,                             //!< coupling role vector
+        double scale_reac,                                               //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
+        double scale_phi                                                 //!< scaling factor for scalar values (used for reference concentrations)
+        );
+
+    /// add additional variables for by-function reaction
+    virtual void AddAdditionalVariables(
+        const int k,                                                     //!< current scalar id
+        const std::vector<std::pair<std::string,double> >& variables,    //!< variables
+        const std::vector<double>& couprole                              //!< coupling role vector
+        )
+    {reaction_->AddAdditionalVariables(k, variables, couprole);}
 
   protected:
 
@@ -514,6 +561,31 @@ namespace REACTIONCOUPLING
         const std::vector<double>& couprole  //!< coupling role vector
         ) ;
 
+    ///helper for calculating advanced reaction term derivatives after additional variables
+    void CalcReaBodyForceDerivAddVariables(
+        const int k,                                                     //!< current scalar id
+        std::vector<double>& derivs,                                     //!< vector with derivatives (to be filled)
+        const std::vector<std::pair<std::string,double> >& variables,    //!< variables
+        const std::vector<std::pair<std::string,double> >& constants,    //!< constants (including scalar values phinp)
+        const std::vector<double>& couprole,                             //!< coupling role vector
+        double scale_reac,                                               //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
+        double scale_phi                                                 //!< scaling factor for scalar values (used for reference concentrations)
+        )
+    {
+      // check
+      dsassert(IsInit(),"Reaction class has not been initialized!");
+
+      // call the real evaluation (scale_phi should have been applied in wrapper class)
+      CalcReaBodyForceDerivAddVariables(k, derivs, variables, constants, couprole, scale_reac);
+    }
+
+    /// add additional variables for by-function reaction
+    void AddAdditionalVariables(
+        const int k,                                                     //!< current scalar id
+        const std::vector<std::pair<std::string,double> >& variables,    //!< variables
+        const std::vector<double>& couprole                              //!< coupling role vector
+        );
+
   private:
 
     ///helper for calculating advanced reaction terms
@@ -536,6 +608,16 @@ namespace REACTIONCOUPLING
         const std::vector<double>& couprole,                             //!< coupling role vector
         double scale_reac                                                //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
         ) ;
+
+    ///helper for calculating advanced reaction term derivatives after additional variables
+    void CalcReaBodyForceDerivAddVariables(
+        const int k,                                                     //!< current scalar id
+        std::vector<double>& derivs,                                     //!< vector with derivatives (to be filled)
+        const std::vector<std::pair<std::string,double> >& variables,    //!< variables
+        const std::vector<std::pair<std::string,double> >& constants,    //!< constants (including scalar values phinp)
+        const std::vector<double>& couprole,                             //!< coupling role vector
+        double scale_reac                                                //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
+        );
 
     /// helper for evaluation by function
     void BuildPhiVectorForFunction(

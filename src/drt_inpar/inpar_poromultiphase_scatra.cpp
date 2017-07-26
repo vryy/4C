@@ -95,11 +95,11 @@ void INPAR::POROMULTIPHASESCATRA::SetValidParameters(Teuchos::RCP<Teuchos::Param
                                   "Rms",
                                   "Inf"),
                                 tuple<int>(
-                                  INPAR::POROELAST::norm_l1,
-                                  INPAR::POROELAST::norm_l1_scaled,
-                                  INPAR::POROELAST::norm_l2,
-                                  INPAR::POROELAST::norm_rms,
-                                  INPAR::POROELAST::norm_inf),
+                                  INPAR::POROMULTIPHASESCATRA::norm_l1,
+                                  INPAR::POROMULTIPHASESCATRA::norm_l1_scaled,
+                                  INPAR::POROMULTIPHASESCATRA::norm_l2,
+                                  INPAR::POROMULTIPHASESCATRA::norm_rms,
+                                  INPAR::POROMULTIPHASESCATRA::norm_inf),
                                 &poromultiphasescatradyn
                                 );
 
@@ -112,11 +112,11 @@ void INPAR::POROMULTIPHASESCATRA::SetValidParameters(Teuchos::RCP<Teuchos::Param
                                 "Rms",
                                 "Inf"),
                               tuple<int>(
-                                INPAR::POROELAST::norm_l1,
-                                INPAR::POROELAST::norm_l1_scaled,
-                                INPAR::POROELAST::norm_l2,
-                                INPAR::POROELAST::norm_rms,
-                                INPAR::POROELAST::norm_inf),
+                                INPAR::POROMULTIPHASESCATRA::norm_l1,
+                                INPAR::POROMULTIPHASESCATRA::norm_l1_scaled,
+                                INPAR::POROMULTIPHASESCATRA::norm_l2,
+                                INPAR::POROMULTIPHASESCATRA::norm_rms,
+                                INPAR::POROMULTIPHASESCATRA::norm_inf),
                               &poromultiphasescatradyn
                               );
 
@@ -125,13 +125,15 @@ void INPAR::POROMULTIPHASESCATRA::SetValidParameters(Teuchos::RCP<Teuchos::Param
 
   // Coupling strategy for poroscatra solvers
   setStringToIntegralParameter<int>(
-                              "COUPALGO","two_way",
+                              "COUPALGO","twoway_partitioned",
                               "Coupling strategies for poroscatra solvers",
                               tuple<std::string>(
-                                "two_way"
+                                "twoway_partitioned",
+                                "twoway_monolithic"
                                 ),
                               tuple<int>(
-                                  solscheme_twoway
+                                  solscheme_twoway_partitioned,
+                                  solscheme_twoway_monolithic
                                 ),
                               &poromultiphasescatradyn);
 
@@ -146,6 +148,16 @@ void INPAR::POROMULTIPHASESCATRA::SetValidParameters(Teuchos::RCP<Teuchos::Param
                                  INPAR::SCATRA::impltype_undefined,
                                  INPAR::SCATRA::impltype_multipororeac),
                                  &poromultiphasescatradyn);
+
+  // parameters for finite difference check
+  setStringToIntegralParameter<int>("FDCHECK", "none", "flag for finite difference check: none or global",
+                                    tuple<std::string>(
+                                      "none",
+                                      "global"),  // perform finite difference check on time integrator level
+                                    tuple<int>(
+                                        fdcheck_none,
+                                        fdcheck_global),
+                                    &poromultiphasescatradyn);
 
 }
 

@@ -79,6 +79,35 @@ namespace POROMULTIPHASE
       return blockrowdofmap_;
     }
 
+    //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
+    void Evaluate(
+        Teuchos::RCP<const Epetra_Vector> sx,
+        Teuchos::RCP<const Epetra_Vector> fx,
+        const bool firstcall
+        );
+
+    //! update all fields after convergence (add increment on displacements and fluid primary variables)
+    //! public for access from monolithic scatra problem
+    void UpdateFieldsAfterConvergence(
+        Teuchos::RCP<const Epetra_Vector>& sx,
+        Teuchos::RCP<const Epetra_Vector>& fx
+        );
+
+    // access to monolithic rhs vector
+    Teuchos::RCP<const Epetra_Vector> RHS() const
+    {
+      return rhs_;
+    }
+
+    // access to monolithic block system matrix
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const
+    {
+      return systemmatrix_;
+    }
+
+    //! unique map of all dofs that should be constrained with DBC
+    Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const {return combinedDBCMap_;};
+
   private:
 
     //! Newton output to screen
@@ -106,7 +135,7 @@ namespace POROMULTIPHASE
      x is the sum of all increments up to this point.
      \param x  (i) composed vector that contains all field vectors
      \param sx (o) structural vector (e.g. displacements)
-     \param fx (o) fluid vector (e.g. velocities and pressure)
+     \param fx (o) fluid vector (primary variables of fluid field, i.e. pressures or saturations)
      */
     virtual void ExtractFieldVectors(
         Teuchos::RCP<const Epetra_Vector> x,
@@ -140,9 +169,6 @@ namespace POROMULTIPHASE
     //! return fluid structure coupling sparse matrix
     Teuchos::RCP<LINALG::SparseMatrix> FluidStructCouplingMatrix();
 
-    //! unique map of all dofs that should be constrained with DBC
-    Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const {return combinedDBCMap_;};
-
     //! Solve the linear system of equations
     void LinearSolve();
 
@@ -151,6 +177,9 @@ namespace POROMULTIPHASE
 
     //! Print Header to screen
     void PrintHeader();
+
+    //! update all fields after convergence (add increment on displacements and fluid primary variables)
+    void UpdateFieldsAfterConvergence();
 
     // build norms for convergence check
     void BuildConvergenceNorms();
@@ -163,8 +192,10 @@ namespace POROMULTIPHASE
 
     //! linear solver
     bool directsolve_;
-    //! convergence tolerance
-    double ittol_;
+    //! convergence tolerance for increments
+    double ittolinc_;
+    //! convergence tolerance for residuals
+    double ittolres_;
     //! maximally permitted iterations
     int itmax_;
     //! minimally necessary iterations
@@ -222,6 +253,9 @@ namespace POROMULTIPHASE
 
     double normrhsstruct_;    //!< norm of residual forces (structure)
     double normincstruct_;    //!< norm of residual unknowns (structure)
+
+    enum INPAR::POROMULTIPHASE::VectorNorm vectornormfres_;   //!< type of norm for residual
+    enum INPAR::POROMULTIPHASE::VectorNorm vectornorminc_;   //!< type of norm for increments
 
     Epetra_Time timernewton_; //!< timer for measurement of solution time of newton iterations
     double dtsolve_; //!< linear solver time

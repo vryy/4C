@@ -56,23 +56,8 @@ namespace POROMULTIPHASESCATRA
     /// setup solver (only needed for poromultiphase monolithic coupling)
     virtual void SetupSolver();
 
-    /// prepare timeloop of coupled problem
-    virtual void PrepareTimeLoop();
-
-    /// timeloop of coupled problem
-    virtual void Timeloop();
-
     /// time step of coupled problem
-    virtual void TimeStep() {return;};
-
-    /// time step of coupled problem
-    virtual void PrepareTimeStep() {PrepareTimeStep(false);};
-
-    /// time step of coupled problem
-    virtual void PrepareTimeStep(bool printheader);
-
-    //! update time step and print to screen
-    virtual void UpdateAndOutput();
+    void TimeStep() {return Solve();};
 
     //! perform iteration loop between fields
     void Solve();

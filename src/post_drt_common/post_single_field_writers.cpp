@@ -325,7 +325,7 @@ void PoroFluidMultiPhaseFilter::WriteAllResults(PostField* field)
     std::ostringstream temp;
     temp << k;
     // write generic degree of freedom
-    writer_->WriteResult("phinp", "phi_"+temp.str(), dofbased, 1,k-1);
+    writer_->WriteResult("phinp_fluid", "phi_"+temp.str(), dofbased, 1,k-1);
     // write pressure solution
     writer_->WriteResult("pressure", "pressure_"+temp.str(), dofbased, 1,k-1);
     // write saturation solution

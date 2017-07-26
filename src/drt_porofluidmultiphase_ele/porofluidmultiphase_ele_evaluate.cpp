@@ -46,7 +46,8 @@ int DRT::ELEMENTS::PoroFluidMultiPhase::Evaluate(
     // all physics-related stuff is included in the implementation class(es) that can
     // be used in principle inside any element (at the moment: only PoroFluidMultiPhase element)
     case POROFLUIDMULTIPHASE::calc_mat_and_rhs:
-    case POROFLUIDMULTIPHASE::calc_fluid_coupl_mat:
+    case POROFLUIDMULTIPHASE::calc_fluid_struct_coupl_mat:
+    case POROFLUIDMULTIPHASE::calc_fluid_scatra_coupl_mat:
     case POROFLUIDMULTIPHASE::calc_error:
     case POROFLUIDMULTIPHASE::calc_pres_and_sat:
     case POROFLUIDMULTIPHASE::calc_solidpressure:

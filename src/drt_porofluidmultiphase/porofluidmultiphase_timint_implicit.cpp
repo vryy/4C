@@ -649,9 +649,9 @@ void POROFLUIDMULTIPHASE::TimIntImpl::AssembleMatAndRHS()
 } // TimIntImpl::AssembleMatAndRHS
 
 /*----------------------------------------------------------------------*
- | contains assembly process for fluid-coupling matrix kremheller 03/17 |
+ | assembly process for fluid-structure-coupling matrix kremheller 03/17 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntImpl::AssembleFluidCouplingMat(
+void POROFLUIDMULTIPHASE::TimIntImpl::AssembleFluidStructCouplingMat(
     Teuchos::RCP< LINALG::SparseOperator> k_fs)
 {
   // time measurement: element calls
@@ -664,7 +664,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::AssembleFluidCouplingMat(
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  eleparams.set<int>("action",POROFLUIDMULTIPHASE::calc_fluid_coupl_mat);
+  eleparams.set<int>("action",POROFLUIDMULTIPHASE::calc_fluid_struct_coupl_mat);
 
   // clean up, just in case ...
   discret_->ClearState();
@@ -678,6 +678,54 @@ void POROFLUIDMULTIPHASE::TimIntImpl::AssembleFluidCouplingMat(
       0,              // fluiddofset for row
       1,              // structdofset for column
       k_fs,           // fluid-mechanical matrix
+      Teuchos::null,  // no other matrix or vectors
+      Teuchos::null ,
+      Teuchos::null,
+      Teuchos::null
+  );
+
+  //Evaluate coupling matrix
+  discret_->Evaluate(eleparams,fluidstrategy);
+
+  // clean up
+  discret_->ClearState();
+
+  // end time measurement for element
+  dtele_=Teuchos::Time::wallTime()-tcpuele;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | assembly process for fluid-scatra-coupling matrix   kremheller 06/17 |
+ *----------------------------------------------------------------------*/
+void POROFLUIDMULTIPHASE::TimIntImpl::AssembleFluidScatraCouplingMat(
+    Teuchos::RCP< LINALG::SparseOperator> k_pfs)
+{
+  // time measurement: element calls
+  TEUCHOS_FUNC_TIME_MONITOR("POROFLUIDMULTIPHASE:       + element calls");
+
+  // get cpu time
+  const double tcpuele = Teuchos::Time::wallTime();
+
+  // create parameter list for elements
+  Teuchos::ParameterList eleparams;
+
+  // action for elements
+  eleparams.set<int>("action",POROFLUIDMULTIPHASE::calc_fluid_scatra_coupl_mat);
+
+  // clean up, just in case ...
+  discret_->ClearState();
+
+  // set vector values needed by elements
+  // add state vectors according to time-integration scheme
+  AddTimeIntegrationSpecificVectors();
+
+  // create strategy for assembly of solid pressure
+  DRT::AssembleStrategy fluidstrategy(
+      0,              // fluiddofset for row
+      3,              // scatradofset for column
+      k_pfs,           // fluid-scatra matrix
       Teuchos::null,  // no other matrix or vectors
       Teuchos::null ,
       Teuchos::null,
@@ -1047,7 +1095,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructFlux()
   case INPAR::POROFLUIDMULTIPHASE::gradreco_l2:
     flux_ =  DRT::UTILS::ComputeNodalL2Projection(
                     discret_,
-                    "phinp",
+                    "phinp_fluid",
                     numvec,
                     eleparams,
                     fluxreconsolvernum_);
@@ -1188,7 +1236,7 @@ inline void POROFLUIDMULTIPHASE::TimIntImpl::PrintConvergenceFinishLine()
 void POROFLUIDMULTIPHASE::TimIntImpl::OutputState()
 {
   // solution
-  output_->WriteVector("phinp", phinp_);
+  output_->WriteVector("phinp_fluid", phinp_);
   // time derivative of solution
   // output_->WriteVector("phidtnp", phidtnp_);
   // pressures
@@ -1306,7 +1354,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::EvaluateErrorComparedToAnalyticalSol()
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("phinp",phinp_);
+  discret_->SetState("phinp_fluid",phinp_);
 
   // get (squared) error values
   Teuchos::RCP<Epetra_SerialDenseVector> errors
@@ -1619,6 +1667,20 @@ void POROFLUIDMULTIPHASE::TimIntImpl::CalcInitialTimeDerivative()
 
   // finalize assembly of system matrix
   sysmat_->Complete();
+  bool matlab = false;
+  if (matlab)
+  {
+    std::cout << residual_->MyLength() << std::endl;
+    Teuchos::RCP<const LINALG::SparseMatrix> sparse_matrix =
+        Teuchos::rcp_dynamic_cast<const LINALG::SparseMatrix>( sysmat_, true );
+    std::cout << sparse_matrix->ColMap().NumMyElements() << std::endl;
+    std::cout << sparse_matrix->RowMap().NumMyElements() << std::endl;
+
+    //sparse_matrix
+    std::string filename = "../o/mymatrix.dat";
+    LINALG::PrintMatrixInMatlabFormat(filename, *sparse_matrix->EpetraMatrix());// *sysmat_->EpetraOperator());
+    dserror("exit");
+  }
 
   // solve global system of equations for initial time derivative of state variables
   solver_->Solve(sysmat_->EpetraOperator(),phidtnp_,residual_,true,true);

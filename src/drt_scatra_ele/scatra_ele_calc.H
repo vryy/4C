@@ -840,7 +840,7 @@ namespace ELEMENTS
     );
 
     //! calculation of mass element matrix (standard shape functions)
-    void CalcMatMass(
+    virtual void CalcMatMass(
       Epetra_SerialDenseMatrix &     emat,        //!< element matrix to be filled
       const int &                    k,           //!< index of current scalar
       const double &                 fac,         //!< domain-integration factor
@@ -1015,7 +1015,7 @@ namespace ELEMENTS
     );
 
     //! calculation of convective element matrix in convective form (off diagonal term fluid)
-    void CalcMatConvODFluid(
+    virtual void CalcMatConvODFluid(
       Epetra_SerialDenseMatrix&     emat,             //!< element matrix to be filled
       const int                     k,                //!< index of current scalar
       const int                     ndofpernodefluid, //!< number of dofs per node of fluid element
@@ -1025,7 +1025,7 @@ namespace ELEMENTS
     );
 
     //! calculation of convective element matrix: add conservative contributions (off diagonal term fluid)
-    void CalcMatConvAddConsODFluid(
+    virtual void CalcMatConvAddConsODFluid(
       Epetra_SerialDenseMatrix&     emat,             //!< element matrix to be filled
       const int                     k,                //!< index of current scalar
       const int                     ndofpernodefluid, //!< number of dofs per node of fluid element
@@ -1035,7 +1035,7 @@ namespace ELEMENTS
     );
 
     //! calculation of linearized mass (off diagonal/shapederivative term mesh)
-    void CalcLinMassODMesh(
+    virtual void CalcLinMassODMesh(
       Epetra_SerialDenseMatrix&          emat,              //!< element matrix to be filled
       const int                          k,                 //!< index of current scalar
       const int                          ndofpernodemesh,   //!< number of dofs per node of ale element
@@ -1050,18 +1050,19 @@ namespace ELEMENTS
     );
 
     //! standard Galerkin transient, old part of rhs and source term (off diagonal/shapederivative term mesh)
-    void CalcHistAndSourceODMesh(
+    virtual void CalcHistAndSourceODMesh(
       Epetra_SerialDenseMatrix&          emat,             //!< element current to be filled
       const int                          k,                //!< index of current scalar
       const int                          ndofpernodemesh,  //!< number of dofs per node of ale element
       const double                       fac,              //!< domain-integration factor
       const double                       rhsint,           //!< rhs at Gauss point
       const double                       J,                //!< determinant of Jacobian det(dx/ds)
-      const LINALG::Matrix<1,nsd_*nen_>& dJ_dmesh          //!< derivative of det(dx/ds) w.r.t. mesh displacement
+      const LINALG::Matrix<1,nsd_*nen_>& dJ_dmesh,         //!< derivative of det(dx/ds) w.r.t. mesh displacement
+      const double                       densnp
     );
 
-    //! standard Galerkin convective term (off diagonal/shapederivative term mesh)
-    void CalcConvODMesh(
+    //! standard Galerkin convective term (off diagonal)
+    virtual void CalcConvODMesh(
         Epetra_SerialDenseMatrix&       emat,             //!< element current to be filled
         const int                       k,                //!< index of current scalar
         const int                       ndofpernodemesh,  //!< number of dofs per node of ale element
@@ -1073,8 +1074,19 @@ namespace ELEMENTS
         const LINALG::Matrix<nsd_,1>&   convelint         //!< convective velocity
     );
 
+    //! standard Galerkin convective term (only shapederivative term mesh)
+    void ApplyShapeDerivsConv(
+        Epetra_SerialDenseMatrix&       emat,
+        const int                       k,
+        const double                    rhsfac,
+        const double                    densnp,
+        const double                    J,
+        const LINALG::Matrix<nsd_,1>&   gradphi,
+        const LINALG::Matrix<nsd_,1>&   convelint
+    );
+
     //! standard Galerkin diffusive term (off diagonal/shapederivative term mesh)
-    void CalcDiffODMesh(
+    virtual void CalcDiffODMesh(
         Epetra_SerialDenseMatrix&           emat,             //!< element current to be filled
         const int                           k,                //!< index of current scalar
         const int                           ndofpernodemesh,  //!< number of dofs per node of ale element
@@ -1087,7 +1099,7 @@ namespace ELEMENTS
     );
 
     //! reactive terms (standard Galerkin) (off diagonal/shapederivative term mesh)
-    void CalcReactODMesh(
+    virtual void CalcReactODMesh(
         Epetra_SerialDenseMatrix&           emat,             //!< element current to be filled
         const int                           k,                //!< index of current scalar
         const int                           ndofpernodemesh,  //!< number of dofs per node of ale element
@@ -1095,6 +1107,47 @@ namespace ELEMENTS
         const double                        rea_phi,          //!< reactive term
         const double                        J,                //!< determinant of Jacobian det(dx/ds)
         const LINALG::Matrix<1,nsd_*nen_>&  dJ_dmesh          //!< derivative of det(dx/ds) w.r.t. mesh displacement
+    );
+
+    //! calculation of linearized mass (off diagonal terms fluid)
+    virtual void CalcLinMassODFluid(
+      Epetra_SerialDenseMatrix&          emat,              //!< element matrix to be filled
+      const int                          k,                 //!< index of current scalar
+      const int                          ndofpernodemesh,   //!< number of dofs per node of ale element
+      const double                       rhsfac,            //!< time-integration factor for rhs times domain-integration factor
+      const double                       fac,               //!< domain-integration factor
+      const double                       densam,            //!< density at time_(n+am)
+      const double                       densnp,            //!< density at time_(n+1)
+      const double                       phinp,             //!< scalar at time_(n+1)
+      const double                       hist               //!< history of time integartion
+    );
+
+    //! standard Galerkin transient, old part of rhs and source term (off diagonal terms fluid)
+    virtual void CalcHistAndSourceODFluid(
+      Epetra_SerialDenseMatrix&          emat,             //!< element current to be filled
+      const int                          k,                //!< index of current scalar
+      const int                          ndofpernodemesh,  //!< number of dofs per node of ale element
+      const double                       fac,              //!< domain-integration factor
+      const double                       rhsint,           //!< rhs at Gauss point
+      const double                       densnp            //!< density
+    );
+
+    //! standard Galerkin reactive term (off diagonal terms fluid)
+    virtual void CalcReactODFluid(
+      Epetra_SerialDenseMatrix&          emat,             //!< element current to be filled
+      const int                          k,                //!< index of current scalar
+      const int                          ndofpernodemesh,  //!< number of dofs per node of ale element
+      const double                       rhsfac,           //!< time-integration factor for rhs times domain-integration factor
+      const double                       rea_phi           //!< reactive term
+    );
+
+    //! standard Galerkin diffusive term (off diagonal terms fluid)
+    virtual void CalcDiffODFluid(
+        Epetra_SerialDenseMatrix&           emat,             //!< element current to be filled
+        const int                           k,                //!< index of current scalar
+        const int                           ndofpernodemesh,  //!< number of dofs per node of ale element
+        const double                        rhsfac,           //!< time-integration factor for rhs times domain-integration factor
+        const LINALG::Matrix<nsd_,1>&       gradphi           //!< scalar gradient at Gauss point
     );
 
     /*========================================================================*/

@@ -42,6 +42,10 @@ void INPAR::POROMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLi
   // convergence tolerance of outer iteration loop
   DoubleParameter("CONVTOL",1e-6,"tolerance for convergence check of outer iteration",&poromultiphasedyn);
 
+  // convergence tolerances for monolithic coupling
+  DoubleParameter("TOLRES_GLOBAL",1e-8,"tolerance in the residual norm for the Newton iteration",&poromultiphasedyn);
+  DoubleParameter("TOLINC_GLOBAL",1e-8,"tolerance in the increment norm for the Newton iteration",&poromultiphasedyn);
+
   // number of linear solver used for poroelasticity
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for poroelasticity problems",&poromultiphasedyn);
 
@@ -73,6 +77,40 @@ void INPAR::POROMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLi
                                         fdcheck_none,
                                         fdcheck_global),
                                     &poromultiphasedyn);
+
+  setStringToIntegralParameter<int>("VECTORNORM_RESF","L2",
+                                "type of norm to be applied to residuals",
+                                tuple<std::string>(
+                                  "L1",
+                                  "L1_Scaled",
+                                  "L2",
+                                  "Rms",
+                                  "Inf"),
+                                tuple<int>(
+                                  INPAR::POROMULTIPHASE::norm_l1,
+                                  INPAR::POROMULTIPHASE::norm_l1_scaled,
+                                  INPAR::POROMULTIPHASE::norm_l2,
+                                  INPAR::POROMULTIPHASE::norm_rms,
+                                  INPAR::POROMULTIPHASE::norm_inf),
+                                &poromultiphasedyn
+                                );
+
+  setStringToIntegralParameter<int>("VECTORNORM_INC","L2",
+                              "type of norm to be applied to residuals",
+                              tuple<std::string>(
+                                "L1",
+                                "L1_Scaled",
+                                "L2",
+                                "Rms",
+                                "Inf"),
+                              tuple<int>(
+                                INPAR::POROMULTIPHASE::norm_l1,
+                                INPAR::POROMULTIPHASE::norm_l1_scaled,
+                                INPAR::POROMULTIPHASE::norm_l2,
+                                INPAR::POROMULTIPHASE::norm_rms,
+                                INPAR::POROMULTIPHASE::norm_inf),
+                              &poromultiphasedyn
+                              );
 
 }
 

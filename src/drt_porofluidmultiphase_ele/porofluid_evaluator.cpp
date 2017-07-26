@@ -47,7 +47,8 @@ DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<nsd,nen>::CreateEvaluator(
   // calculate true pressures and saturation
   case POROFLUIDMULTIPHASE::calc_initial_time_deriv:
   case POROFLUIDMULTIPHASE::calc_mat_and_rhs:
-  case POROFLUIDMULTIPHASE::calc_fluid_coupl_mat:
+  case POROFLUIDMULTIPHASE::calc_fluid_struct_coupl_mat:
+  case POROFLUIDMULTIPHASE::calc_fluid_scatra_coupl_mat:
   {
     // initialize the evaluator for the multi phase element
     Teuchos::RCP<MultiEvaluator<nsd, nen> > evaluator_multiphase
@@ -359,7 +360,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorConv<nsd,nen>::EvaluateVectorAn
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorConv<nsd,nen>::EvaluateMatrixODAndAssemble(
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorConv<nsd,nen>::EvaluateMatrixODStructAndAssemble(
     std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
     const LINALG::Matrix<nen,1>&                                funct,
     const LINALG::Matrix<nsd,nen>&                              deriv,
@@ -373,6 +374,27 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorConv<nsd,nen>::EvaluateMatrixOD
     double                                                      timefacfac,
     double                                                      fac,
     double                                                      det
+  )
+{
+  //nothing to do
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorConv<nsd,nen>::EvaluateMatrixODScatraAndAssemble(
+    std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
+    const LINALG::Matrix<nen,1>&                                funct,
+    const LINALG::Matrix<nsd,nen>&                              derxy,
+    int                                                         curphase,
+    int                                                         phasetoadd,
+    int                                                         numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,
+    double                                                      timefacfac,
+    double                                                      fac
   )
 {
   //nothing to do
@@ -441,7 +463,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDivVel<nsd,nen>::EvaluateVector
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDivVel<nsd,nen>::EvaluateMatrixODAndAssemble(
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDivVel<nsd,nen>::EvaluateMatrixODStructAndAssemble(
     std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
     const LINALG::Matrix<nen,1>&                                funct,
     const LINALG::Matrix<nsd,nen>&                              deriv,
@@ -600,6 +622,27 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDivVel<nsd,nen>::EvaluateMatrix
 }
 
 /*----------------------------------------------------------------------*
+ | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDivVel<nsd,nen>::EvaluateMatrixODScatraAndAssemble(
+    std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
+    const LINALG::Matrix<nen,1>&                                funct,
+    const LINALG::Matrix<nsd,nen>&                              derxy,
+    int                                                         curphase,
+    int                                                         phasetoadd,
+    int                                                         numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,
+    double                                                      timefacfac,
+    double                                                      fac
+  )
+{
+  //nothing to do
+  return;
+}
+
+/*----------------------------------------------------------------------*
  * **********************************************************************
  *----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
@@ -699,7 +742,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSatDivVel<nsd,nen>::EvaluateVec
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSatDivVel<nsd,nen>::EvaluateMatrixODAndAssemble(
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSatDivVel<nsd,nen>::EvaluateMatrixODStructAndAssemble(
     std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
     const LINALG::Matrix<nen,1>&                                funct,
     const LINALG::Matrix<nsd,nen>&                              deriv,
@@ -716,7 +759,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSatDivVel<nsd,nen>::EvaluateMat
   )
 {
   // call base class with scaled factors
-  EvaluatorDivVel<nsd,nen>::EvaluateMatrixODAndAssemble(
+  EvaluatorDivVel<nsd,nen>::EvaluateMatrixODStructAndAssemble(
       elemat,
       funct,
       deriv,
@@ -731,6 +774,27 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSatDivVel<nsd,nen>::EvaluateMat
       phasemanager.Saturation(curphase)*fac,
       det);
 
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSatDivVel<nsd,nen>::EvaluateMatrixODScatraAndAssemble(
+    std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
+    const LINALG::Matrix<nen,1>&                                funct,
+    const LINALG::Matrix<nsd,nen>&                              derxy,
+    int                                                         curphase,
+    int                                                         phasetoadd,
+    int                                                         numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,
+    double                                                      timefacfac,
+    double                                                      fac
+  )
+{
+  //nothing to do
   return;
 }
 
@@ -787,7 +851,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBiotStab<nsd,nen>::EvaluateVect
  | evaluate off-diagonal coupling matrix with structure kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBiotStab<nsd,nen>::EvaluateMatrixODAndAssemble(
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBiotStab<nsd,nen>::EvaluateMatrixODStructAndAssemble(
     std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
     const LINALG::Matrix<nen,1>&                                funct,
     const LINALG::Matrix<nsd,nen>&                              deriv,
@@ -804,6 +868,27 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBiotStab<nsd,nen>::EvaluateMatr
   )
 {
   dserror("Biot stabilization is still missing");
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBiotStab<nsd,nen>::EvaluateMatrixODScatraAndAssemble(
+    std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
+    const LINALG::Matrix<nen,1>&                                funct,
+    const LINALG::Matrix<nsd,nen>&                              derxy,
+    int                                                         curphase,
+    int                                                         phasetoadd,
+    int                                                         numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,
+    double                                                      timefacfac,
+    double                                                      fac
+  )
+{
+  //nothing to do
   return;
 }
 
@@ -936,6 +1021,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd,nen>::EvaluateMatrixAn
             // d abspressgrad / d phi = d abspressgrad / d gradp * d gradp / d phi =
             //                        = d abspressgrad / d gradp * d / d phi( d p / d phi * d phi / d x) =
             //                        = d abspressgrad / d gradp * derxy * d p / d phi
+            // Note: FD-Check might fail here due to kink in formulation of cell-adherence model-law
             mymat(fvi,fui) += timefacfac*laplawf*phasemanager.PressureDeriv(curphase,idof)*gradpderxy;
           }
         }
@@ -1008,7 +1094,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd,nen>::EvaluateVectorAn
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd,nen>::EvaluateMatrixODAndAssemble(
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd,nen>::EvaluateMatrixODStructAndAssemble(
     std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
     const LINALG::Matrix<nen,1>&                                funct,
     const LINALG::Matrix<nsd,nen>&                              deriv,
@@ -1273,6 +1359,28 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd,nen>::EvaluateMatrixOD
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd,nen>::EvaluateMatrixODScatraAndAssemble(
+    std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
+    const LINALG::Matrix<nen,1>&                                funct,
+    const LINALG::Matrix<nsd,nen>&                              derxy,
+    int                                                         curphase,
+    int                                                         phasetoadd,
+    int                                                         numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,
+    double                                                      timefacfac,
+    double                                                      fac
+  )
+{
+  //nothing to do
+  return;
+}
+
 /*----------------------------------------------------------------------*
  * **********************************************************************
  *----------------------------------------------------------------------*/
@@ -1368,7 +1476,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorReac<nsd,nen>::EvaluateVectorAn
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorReac<nsd,nen>::EvaluateMatrixODAndAssemble(
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorReac<nsd,nen>::EvaluateMatrixODStructAndAssemble(
     std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
     const LINALG::Matrix<nen,1>&                                funct,
     const LINALG::Matrix<nsd,nen>&                              deriv,
@@ -1390,14 +1498,42 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorReac<nsd,nen>::EvaluateMatrixOD
   if(not phasemanager.IsReactive(curphase))
     return;
 
+  double scale = 1.0/phasemanager.Density(curphase);
+  double vrhs = 0.0;
+
+  // linearization of porosity (may appear in reaction term)
+  //-------------dreac/dd = dreac/dporosity * dporosity/dd = dreac/dporosity * dporosity/dJ * dJ/dd = dreac/dporosity * dporosity/dJ * J * N_x
+  // J denotes the determinant of the deformation gradient, i.e. det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
+
+  if(phasemanager.PorosityDependsOnStruct())
+  {
+    vrhs = timefacfac*scale*phasemanager.ReacDerivPorosity(curphase)*phasemanager.JacobianDefGrad()
+        *phasemanager.PorosityDerivWrtJacobianDefGrad();
+
+    for (int vi=0; vi<nen; ++vi)
+    {
+      const int fvi = vi*numdofpernode+phasetoadd;
+      const double v = funct(vi)*vrhs;
+
+      for (int ui=0; ui<nen; ++ui)
+      {
+        for (int idim=0; idim<nsd; ++idim)
+        {
+          const int fui = ui*nsd+idim;
+
+          mymat(fvi,fui) += v*derxy(idim,ui);
+        }
+      }
+    }
+  }
+
   // linearization of mesh motion
   //------------------------------------------------dJ/dd = dJ/dF : dF/dd = J * F^-T . N_{\psi} = J * N_x
   // J denotes the determinant of the Jacobian of the mapping between current and parameter space, i.e. det(dx/ds)
   // in our case: timefacfac = J * dt * theta --> d(timefacfac)/dd = timefacfac * N_x
   // TODO a constant density is assumed here
-  double scale = 1.0/phasemanager.Density(curphase);
 
-  double vrhs = scale*timefacfac*phasemanager.ReacTerm(curphase);
+  vrhs = scale*timefacfac*phasemanager.ReacTerm(curphase);
 
   for (int vi=0; vi<nen; ++vi)
   {
@@ -1410,6 +1546,53 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorReac<nsd,nen>::EvaluateMatrixOD
       {
         const int fui = ui*nsd+idim;
         mymat(fvi,fui) += v*derxy(idim,ui);
+      }
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorReac<nsd,nen>::EvaluateMatrixODScatraAndAssemble(
+    std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
+    const LINALG::Matrix<nen,1>&                                funct,
+    const LINALG::Matrix<nsd,nen>&                              derxy,
+    int                                                         curphase,
+    int                                                         phasetoadd,
+    int                                                         numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,
+    double                                                      timefacfac,
+    double                                                      fac
+  )
+{
+  // get matrix to fill
+  Epetra_SerialDenseMatrix& mymat = *elemat[0];
+
+  if(not phasemanager.IsReactive(curphase))
+    return;
+
+  const int numscal = phasemanager.NumScal();
+
+  double vrhs = 1.0/phasemanager.Density(curphase)*timefacfac;
+
+  // linearization of reaction term w.r.t scalars
+  for (int vi=0; vi<nen; ++vi)
+  {
+    const int fvi = vi*numdofpernode+phasetoadd;
+    const double v = vrhs*funct(vi);
+
+    for (int ui=0; ui<nen; ++ui)
+    {
+      const double vfunct = v*funct(ui);
+      for (int iscal=0; iscal<numscal; ++iscal)
+      {
+        const int fui = ui*numscal+iscal;
+        mymat(fvi,fui) += vfunct*phasemanager.ReacDerivScalar(curphase,iscal);
       }
     }
   }
@@ -1518,6 +1701,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd,nen>::Evaluate
     //----------------------------------------------------------------
     // linearization of porosity w.r.t. dof
     //----------------------------------------------------------------
+    if(phasemanager.PorosityDependsOnFluid())
     {
       const std::vector<double>& phinp = *variablemanager.Phinp();
       double hist=0.0;
@@ -1610,7 +1794,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd,nen>::Evaluate
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd,nen>::EvaluateMatrixODAndAssemble(
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd,nen>::EvaluateMatrixODStructAndAssemble(
     std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
     const LINALG::Matrix<nen,1>&                                funct,
     const LINALG::Matrix<nsd,nen>&                              deriv,
@@ -1666,27 +1850,52 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd,nen>::Evaluate
   }
 
   // linearization of porosity
-  //------------------------------------------------dporosity/dp = dporosity/dJ * dJ/dd = dporosity/dJ * J * N_x
-  // J denotes the determinant of the Jacobian of the mapping between current and parameter space, i.e. det(dx/ds)
+  //------------------------------------------------dporosity/dd = dporosity/dJ * dJ/dd = dporosity/dJ * J * N_x
+  // J denotes the determinant of the deformation gradient, i.e. det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
   // in our case: vtrans is scaled with porosity in GetRhsTrans --> scale it with 1.0/porosity here
-  vtrans *= 1.0/phasemanager.Porosity()*phasemanager.Jacobian()*phasemanager.PorosityDerivWrtJacobian();
 
-  for (int vi=0; vi<nen; ++vi)
+  if(phasemanager.PorosityDependsOnStruct())
   {
-    const int fvi = vi*numdofpernode+phasetoadd;
-    const double v = funct(vi)*vtrans;
+    vtrans *= 1.0/phasemanager.Porosity()*phasemanager.JacobianDefGrad()*phasemanager.PorosityDerivWrtJacobianDefGrad();
 
-    for (int ui=0; ui<nen; ++ui)
+    for (int vi=0; vi<nen; ++vi)
     {
-      for (int idim=0; idim<nsd; ++idim)
-      {
-        const int fui = ui*nsd+idim;
+      const int fvi = vi*numdofpernode+phasetoadd;
+      const double v = funct(vi)*vtrans;
 
-        mymat(fvi,fui) += v*derxy(idim,ui);
+      for (int ui=0; ui<nen; ++ui)
+      {
+        for (int idim=0; idim<nsd; ++idim)
+        {
+          const int fui = ui*nsd+idim;
+
+          mymat(fvi,fui) += v*derxy(idim,ui);
+        }
       }
     }
   }
 
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd,nen>::EvaluateMatrixODScatraAndAssemble(
+    std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
+    const LINALG::Matrix<nen,1>&                                funct,
+    const LINALG::Matrix<nsd,nen>&                              derxy,
+    int                                                         curphase,
+    int                                                         phasetoadd,
+    int                                                         numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,
+    double                                                      timefacfac,
+    double                                                      fac
+  )
+{
+  //nothing to do
   return;
 }
 
@@ -1838,6 +2047,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressure<nsd,nen>::Eva
     //----------------------------------------------------------------
     // linearization of porosity w.r.t. dof
     //----------------------------------------------------------------
+    if(phasemanager.PorosityDependsOnFluid())
     {
       const std::vector<double>& phinp = *variablemanager.Phinp();
       const std::vector<double>& phidtnp = *variablemanager.Phidtnp();
@@ -1934,7 +2144,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressure<nsd,nen>::Eva
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressure<nsd,nen>::EvaluateMatrixODAndAssemble(
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressure<nsd,nen>::EvaluateMatrixODStructAndAssemble(
     std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
     const LINALG::Matrix<nen,1>&                                funct,
     const LINALG::Matrix<nsd,nen>&                              deriv,
@@ -1990,27 +2200,52 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressure<nsd,nen>::Eva
   }
 
   // linearization of porosity
-  //------------------------------------------------dporosity/dp = dporosity/dJ * dJ/dd = dporosity/dJ * J * N_x
-  // J denotes the determinant of the Jacobian of the mapping between current and parameter space, i.e. det(dx/ds)
+  //------------------------------------------------dporosity/dd = dporosity/dJ * dJ/dd = dporosity/dJ * J * N_x
+  // J denotes the determinant of the deformation gradient, i.e. det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
   // in our case: vtrans is scaled with (1.0-porosity) in GetRhsTrans --> scale it with 1.0/(1.0-porosity) here
-  vtrans *= -1.0/(1.0-phasemanager.Porosity())*phasemanager.Jacobian()*phasemanager.PorosityDerivWrtJacobian();
 
-  for (int vi=0; vi<nen; ++vi)
+  if(phasemanager.PorosityDependsOnStruct())
   {
-    const int fvi = vi*numdofpernode+phasetoadd;
-    const double v = funct(vi)*vtrans;
+    vtrans *= -1.0/(1.0-phasemanager.Porosity())*phasemanager.JacobianDefGrad()*phasemanager.PorosityDerivWrtJacobianDefGrad();
 
-    for (int ui=0; ui<nen; ++ui)
+    for (int vi=0; vi<nen; ++vi)
     {
-      for (int idim=0; idim<nsd; ++idim)
-      {
-        const int fui = ui*nsd+idim;
+      const int fvi = vi*numdofpernode+phasetoadd;
+      const double v = funct(vi)*vtrans;
 
-        mymat(fvi,fui) += v*derxy(idim,ui);
+      for (int ui=0; ui<nen; ++ui)
+      {
+        for (int idim=0; idim<nsd; ++idim)
+        {
+          const int fui = ui*nsd+idim;
+
+          mymat(fvi,fui) += v*derxy(idim,ui);
+        }
       }
     }
   }
 
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressure<nsd,nen>::EvaluateMatrixODScatraAndAssemble(
+    std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
+    const LINALG::Matrix<nen,1>&                                funct,
+    const LINALG::Matrix<nsd,nen>&                              derxy,
+    int                                                         curphase,
+    int                                                         phasetoadd,
+    int                                                         numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,
+    double                                                      timefacfac,
+    double                                                      fac
+  )
+{
+  //nothing to do
   return;
 }
 
@@ -2186,7 +2421,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressureSat<nsd,nen>::
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressureSat<nsd,nen>::EvaluateMatrixODAndAssemble(
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressureSat<nsd,nen>::EvaluateMatrixODStructAndAssemble(
     std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
     const LINALG::Matrix<nen,1>&                                funct,
     const LINALG::Matrix<nsd,nen>&                              deriv,
@@ -2203,7 +2438,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressureSat<nsd,nen>::
   )
 {
   // call base class with scaled factors
-  EvaluatorMassSolidPressure<nsd,nen>::EvaluateMatrixODAndAssemble(
+  EvaluatorMassSolidPressure<nsd,nen>::EvaluateMatrixODStructAndAssemble(
       elemat,
       funct,
       deriv,
@@ -2218,6 +2453,27 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressureSat<nsd,nen>::
       phasemanager.Saturation(curphase)*fac,
       det);
 
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressureSat<nsd,nen>::EvaluateMatrixODScatraAndAssemble(
+    std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
+    const LINALG::Matrix<nen,1>&                                funct,
+    const LINALG::Matrix<nsd,nen>&                              derxy,
+    int                                                         curphase,
+    int                                                         phasetoadd,
+    int                                                         numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,
+    double                                                      timefacfac,
+    double                                                      fac
+  )
+{
+  //nothing to do
   return;
 }
 
@@ -2275,6 +2531,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSaturation<nsd,nen>::Evalua
     //----------------------------------------------------------------
     // linearization of porosity w.r.t. dof
     //----------------------------------------------------------------
+    if(phasemanager.PorosityDependsOnFluid())
     {
       // read data from manager
       double hist = 0.0;
@@ -2417,7 +2674,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSaturation<nsd,nen>::Evalua
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSaturation<nsd,nen>::EvaluateMatrixODAndAssemble(
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSaturation<nsd,nen>::EvaluateMatrixODStructAndAssemble(
     std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
     const LINALG::Matrix<nen,1>&                                funct,
     const LINALG::Matrix<nsd,nen>&                              deriv,
@@ -2469,27 +2726,52 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSaturation<nsd,nen>::Evalua
   }
 
   // linearization of porosity
-  //------------------------------------------------dporosity/dp = dporosity/dJ * dJ/dd = dporosity/dJ * J * N_x
-  // J denotes the determinant of the Jacobian of the mapping between current and parameter space, i.e. det(dx/ds)
+  //------------------------------------------------dporosity/dd = dporosity/dJ * dJ/dd = dporosity/dJ * J * N_x
+  // J denotes the determinant of the deformation gradient, i.e. det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
   // in our case: vtrans is scaled with porosity in GetRhsTrans --> scale it with 1.0/porosity here
-  vtrans *= 1.0/phasemanager.Porosity()*phasemanager.Jacobian()*phasemanager.PorosityDerivWrtJacobian();
 
-  for (int vi=0; vi<nen; ++vi)
+  if(phasemanager.PorosityDependsOnStruct())
   {
-    const int fvi = vi*numdofpernode+phasetoadd;
-    const double v = funct(vi)*vtrans;
+    vtrans *= 1.0/phasemanager.Porosity()*phasemanager.JacobianDefGrad()*phasemanager.PorosityDerivWrtJacobianDefGrad();
 
-    for (int ui=0; ui<nen; ++ui)
+    for (int vi=0; vi<nen; ++vi)
     {
-      for (int idim=0; idim<nsd; ++idim)
-      {
-        const int fui = ui*nsd+idim;
+      const int fvi = vi*numdofpernode+phasetoadd;
+      const double v = funct(vi)*vtrans;
 
-        mymat(fvi,fui) += v*derxy(idim,ui);
+      for (int ui=0; ui<nen; ++ui)
+      {
+        for (int idim=0; idim<nsd; ++idim)
+        {
+          const int fui = ui*nsd+idim;
+
+          mymat(fvi,fui) += v*derxy(idim,ui);
+        }
       }
     }
   }
 
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSaturation<nsd,nen>::EvaluateMatrixODScatraAndAssemble(
+    std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
+    const LINALG::Matrix<nen,1>&                                funct,
+    const LINALG::Matrix<nsd,nen>&                              derxy,
+    int                                                         curphase,
+    int                                                         phasetoadd,
+    int                                                         numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,
+    double                                                      timefacfac,
+    double                                                      fac
+  )
+{
+  //nothing to do
   return;
 }
 
@@ -2597,7 +2879,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPressureAndSaturation<nsd,nen>:
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPressureAndSaturation<nsd,nen>::EvaluateMatrixODAndAssemble(
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPressureAndSaturation<nsd,nen>::EvaluateMatrixODStructAndAssemble(
     std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
     const LINALG::Matrix<nen,1>&                                funct,
     const LINALG::Matrix<nsd,nen>&                              deriv,
@@ -2611,6 +2893,27 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPressureAndSaturation<nsd,nen>:
     double                                                      timefacfac,
     double                                                      fac,
     double                                                      det
+  )
+{
+  //nothing to do
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPressureAndSaturation<nsd,nen>::EvaluateMatrixODScatraAndAssemble(
+    std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
+    const LINALG::Matrix<nen,1>&                                funct,
+    const LINALG::Matrix<nsd,nen>&                              derxy,
+    int                                                         curphase,
+    int                                                         phasetoadd,
+    int                                                         numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,
+    double                                                      timefacfac,
+    double                                                      fac
   )
 {
   //nothing to do
@@ -2677,7 +2980,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSolidPressure<nsd,nen>::Evaluat
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSolidPressure<nsd,nen>::EvaluateMatrixODAndAssemble(
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSolidPressure<nsd,nen>::EvaluateMatrixODStructAndAssemble(
     std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
     const LINALG::Matrix<nen,1>&                                funct,
     const LINALG::Matrix<nsd,nen>&                              deriv,
@@ -2691,6 +2994,27 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSolidPressure<nsd,nen>::Evaluat
     double                                                      timefacfac,
     double                                                      fac,
     double                                                      det
+  )
+{
+  //nothing to do
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSolidPressure<nsd,nen>::EvaluateMatrixODScatraAndAssemble(
+    std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
+    const LINALG::Matrix<nen,1>&                                funct,
+    const LINALG::Matrix<nsd,nen>&                              derxy,
+    int                                                         curphase,
+    int                                                         phasetoadd,
+    int                                                         numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,
+    double                                                      timefacfac,
+    double                                                      fac
   )
 {
   //nothing to do
@@ -2757,7 +3081,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPorosity<nsd,nen>::EvaluateVect
  | evaluate off-diagonal coupling matrix with structure kremheller 04/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPorosity<nsd,nen>::EvaluateMatrixODAndAssemble(
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPorosity<nsd,nen>::EvaluateMatrixODStructAndAssemble(
     std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
     const LINALG::Matrix<nen,1>&                                funct,
     const LINALG::Matrix<nsd,nen>&                              deriv,
@@ -2771,6 +3095,27 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPorosity<nsd,nen>::EvaluateMatr
     double                                                      timefacfac,
     double                                                      fac,
     double                                                      det
+  )
+{
+  //nothing to do
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPorosity<nsd,nen>::EvaluateMatrixODScatraAndAssemble(
+    std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
+    const LINALG::Matrix<nen,1>&                                funct,
+    const LINALG::Matrix<nsd,nen>&                              derxy,
+    int                                                         curphase,
+    int                                                         phasetoadd,
+    int                                                         numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,
+    double                                                      timefacfac,
+    double                                                      fac
   )
 {
   //nothing to do
@@ -2838,7 +3183,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::ReconstructFluxLinearization<nsd,nen>::E
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::ReconstructFluxLinearization<nsd,nen>::EvaluateMatrixODAndAssemble(
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::ReconstructFluxLinearization<nsd,nen>::EvaluateMatrixODStructAndAssemble(
     std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
     const LINALG::Matrix<nen,1>&                                funct,
     const LINALG::Matrix<nsd,nen>&                              deriv,
@@ -2852,6 +3197,27 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::ReconstructFluxLinearization<nsd,nen>::E
     double                                                      timefacfac,
     double                                                      fac,
     double                                                      det
+  )
+{
+  //nothing to do
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::ReconstructFluxLinearization<nsd,nen>::EvaluateMatrixODScatraAndAssemble(
+    std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
+    const LINALG::Matrix<nen,1>&                                funct,
+    const LINALG::Matrix<nsd,nen>&                              derxy,
+    int                                                         curphase,
+    int                                                         phasetoadd,
+    int                                                         numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,
+    double                                                      timefacfac,
+    double                                                      fac
   )
 {
   //nothing to do
@@ -2943,7 +3309,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::ReconstructFluxRHS<nsd,nen>::EvaluateVec
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::ReconstructFluxRHS<nsd,nen>::EvaluateMatrixODAndAssemble(
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::ReconstructFluxRHS<nsd,nen>::EvaluateMatrixODStructAndAssemble(
     std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
     const LINALG::Matrix<nen,1>&                                funct,
     const LINALG::Matrix<nsd,nen>&                              deriv,
@@ -2957,6 +3323,27 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::ReconstructFluxRHS<nsd,nen>::EvaluateMat
     double                                                      timefacfac,
     double                                                      fac,
     double                                                      det
+  )
+{
+  //nothing to do
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::ReconstructFluxRHS<nsd,nen>::EvaluateMatrixODScatraAndAssemble(
+    std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
+    const LINALG::Matrix<nen,1>&                                funct,
+    const LINALG::Matrix<nsd,nen>&                              derxy,
+    int                                                         curphase,
+    int                                                         phasetoadd,
+    int                                                         numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,
+    double                                                      timefacfac,
+    double                                                      fac
   )
 {
   //nothing to do
