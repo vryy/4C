@@ -136,7 +136,7 @@ ScalarT DRT::UTILS::LinearInterpolationVariable::Value(const ScalarT& t)
   }
   else
   {
-    while(t_temp<=t-1.0e-13)
+    while(t_temp<=t-1.0e-14)
     {
       index++;
       t_temp=times_[index];
