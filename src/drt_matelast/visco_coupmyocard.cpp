@@ -61,10 +61,10 @@ void MAT::ELASTIC::CoupMyocard::AddCoefficientsViscoPrincipal(
   const double dt = params.get<double>("delta time");
 
   // contribution: \dot{C}
-  mu(2) = .5 * eta / dt;
+  mu(2) = .5 * eta;
 
   // contribution: id4sharp_{ijkl} = 1/2 (\delta_{ik}\delta_{jl} + \delta_{il}\delta_{jk})
-  xi(2) = eta / (dt*dt);
+  xi(2) = eta / dt;
 
   return;
 }
