@@ -617,8 +617,6 @@ void TWOPHASEFLOW::Algorithm::Restart(int step, const bool restartscatrainput)
     if (Comm().MyPID()==0)
       std::cout << "done" << std::endl;
 
-    // Gmsh post processing files, can be added for debugging.
-    // See combust_algorithm.cpp (COMBUST::Algorithm::Restart(*))
   }
 
   // set time in scalar transport time integration scheme

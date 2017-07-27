@@ -21,9 +21,9 @@
 #include "drt_globalproblem.H"
 #include "standardtypes_cpp.H"
 #include "drt_linedefinition.H"
-#include "../drt_combust/combust_functions.H"
 #include "../drt_fluid/fluid_functions.H"
 #include "../drt_fluid_xfluid/xfluid_functions.H"
+#include "../drt_fluid_xfluid/xfluid_functions_combust.H"
 #include "../drt_io/io.H"
 
 /*----------------------------------------------------------------------*/
@@ -291,7 +291,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(nodenormal);
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  COMBUST::CombustValidFunctionLines(lines);
+  DRT::UTILS::CombustValidFunctionLines(lines);
   DRT::UTILS::XfluidValidFunctionLines(lines);
 
   return lines;
@@ -431,51 +431,51 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
       }
       else if (function->HaveNamed("ZALESAKSDISK"))
       {
-        functions_.push_back(Teuchos::rcp(new COMBUST::ZalesaksDiskFunction()));
+        functions_.push_back(Teuchos::rcp(new ZalesaksDiskFunction()));
       }
       else if (function->HaveNamed("CIRCULARFLAME2"))
       {
-        functions_.push_back(Teuchos::rcp(new COMBUST::CircularFlame2Function()));
+        functions_.push_back(Teuchos::rcp(new DRT::UTILS::CircularFlame2Function()));
       }
       else if (function->HaveNamed("CIRCULARFLAME3"))
       {
-        functions_.push_back(Teuchos::rcp(new COMBUST::CircularFlame3Function()));
+        functions_.push_back(Teuchos::rcp(new DRT::UTILS::CircularFlame3Function()));
       }
       else if (function->HaveNamed("CIRCULARFLAME4"))
       {
-        functions_.push_back(Teuchos::rcp(new COMBUST::CircularFlame4Function()));
+        functions_.push_back(Teuchos::rcp(new DRT::UTILS::CircularFlame4Function()));
       }
       else if (function->HaveNamed("DAMBREAKOBSTACLE"))
       {
-        functions_.push_back(Teuchos::rcp(new COMBUST::DamBreakObstacle()));
+        functions_.push_back(Teuchos::rcp(new DRT::UTILS::DamBreakObstacle()));
       }
       else if (function->HaveNamed("COLLAPSINGWATERCOLUMN"))
       {
-        functions_.push_back(Teuchos::rcp(new COMBUST::CollapsingWaterColumnFunction()));
+        functions_.push_back(Teuchos::rcp(new DRT::UTILS::CollapsingWaterColumnFunction()));
       }
       else if (function->HaveNamed("COLLAPSINGWATERCOLUMNCOARSE"))
       {
-        functions_.push_back(Teuchos::rcp(new COMBUST::CollapsingWaterColumnFunctionCoarse()));
+        functions_.push_back(Teuchos::rcp(new DRT::UTILS::CollapsingWaterColumnFunctionCoarse()));
       }
       else if (function->HaveNamed("IMPACTDROP"))
       {
-        functions_.push_back(Teuchos::rcp(new COMBUST::ImpactFunction()));
+        functions_.push_back(Teuchos::rcp(new DRT::UTILS::ImpactFunction()));
       }
       else if (function->HaveNamed("BUBBLES"))
       {
-        functions_.push_back(Teuchos::rcp(new COMBUST::BubbleFunction()));
+        functions_.push_back(Teuchos::rcp(new DRT::UTILS::BubbleFunction()));
       }
       else if (function->HaveNamed("ORACLESGFUNC"))
       {
-        functions_.push_back(Teuchos::rcp(new COMBUST::ORACLESGFunction()));
+        functions_.push_back(Teuchos::rcp(new DRT::UTILS::ORACLESGFunction()));
       }
       else if (function->HaveNamed("ROTATINGCONE"))
       {
-        functions_.push_back(Teuchos::rcp(new COMBUST::RotatingConeFunction()));
+        functions_.push_back(Teuchos::rcp(new DRT::UTILS::RotatingConeFunction()));
       }
       else if (function->HaveNamed("LEVELSETCUTTEST"))
       {
-        functions_.push_back(Teuchos::rcp(new COMBUST::LevelSetCutTestFunction()));
+        functions_.push_back(Teuchos::rcp(new DRT::UTILS::LevelSetCutTestFunction()));
       }
       else if (function->HaveNamed("FORWARDFACINGSTEP"))
       {
@@ -574,7 +574,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         vecfunc->AddExpr(component,constants);
         functions_.push_back(vecfunc);
       }
-      else if (COMBUST::CombustFunctionHaveNamed(function, &functions_))
+      else if (DRT::UTILS::CombustFunctionHaveNamed(function, &functions_))
       {
       }
       else if (DRT::UTILS::XfluidFunctionHaveNamed(function, &functions_))

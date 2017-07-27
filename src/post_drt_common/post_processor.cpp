@@ -616,28 +616,6 @@ void runEnsightVtuFilter(PostProblem    &problem)
         dserror("number of fields does not match: got %d",numfield);
       break;
     }
-    case prb_combust:
-    {
-        std::string basename = problem.outname();
-
-        PostField* fluidfield = problem.get_discretization(0);
-        XFluidFilter fluidwriter(fluidfield, basename);
-        fluidwriter.WriteFiles();
-
-        PostField* scatrafield = problem.get_discretization(1);
-        ScaTraFilter scatrawriter(scatrafield, basename);
-        scatrawriter.WriteFiles();
-
-        // check if we have a particle field
-        int numfield = problem.num_discr();
-        if(numfield==3)
-        {
-          PostField* particlefield = problem.get_discretization(2);
-          ParticleFilter particlewriter(particlefield, basename);
-          particlewriter.WriteFiles();
-        }
-        break;
-    }
     case prb_art_net:
     {
       std::string basename = problem.outname();

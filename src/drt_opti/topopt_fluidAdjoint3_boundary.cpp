@@ -3,8 +3,10 @@
 
 \brief boundary element implementation of fluid adjoint equations for topology optimization
 
+\level 2
+
 <pre>
-Maintainer: Martin Winklmaier
+\maintainer Martin Winklmaier
             winklmaier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
@@ -352,7 +354,7 @@ void DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::GetMaterialParams(
 )
 {
 // initially set density and density factor for Neumann boundary conditions to 1.0
-// (the latter only changed for low-Mach-number flow/combustion problems)
+// (the latter only changed for low-Mach-number flow problems)
 if (material->MaterialType() == INPAR::MAT::m_fluid)
 {
   const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());

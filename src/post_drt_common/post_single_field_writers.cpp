@@ -216,9 +216,6 @@ void FluidFilter::WriteAllResults(PostField* field)
   //additional output for biofilm problems
   writer_->WriteResult("fld_growth_displ", "fld_growth_displ", dofbased, field->problem()->num_dim());
 
-  //additional output for combust fluid
-  writer_->WriteResult("phinp", "phinp", nodebased, 1);
-
   // additional output for HDG
   writer_->WriteResult("velnp_hdg", "velocity", nodebased, field->problem()->num_dim());
   writer_->WriteResult("pressure_hdg", "pressure", nodebased, 1);

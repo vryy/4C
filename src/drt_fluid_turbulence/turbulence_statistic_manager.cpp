@@ -23,7 +23,6 @@ overhead as possible from the time integration method.
 #include "../drt_fluid/fluidimplicitintegration.H"
 #include "../drt_fluid/fluid_timint_hdg.H"
 #include "../drt_fluid/fluid_xwall.H"
-#include "../drt_combust/combust_fluidimplicitintegration.H"
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_fluid/fluid_utils.H" // for LiftDrag
 #include "../drt_lib/drt_dofset_independent_pbc.H"
@@ -31,11 +30,9 @@ overhead as possible from the time integration method.
 #include "../drt_fluid_turbulence/turbulence_statistics_mean_general.H"
 #include "../drt_fluid_turbulence/turbulence_statistics_ccy.H"
 #include "../drt_fluid_turbulence/turbulence_statistics_cha.H"
-#include "../drt_fluid_turbulence/turbulence_statistics_bcf.H"
 #include "../drt_fluid_turbulence/turbulence_statistics_ldc.H"
 #include "../drt_fluid_turbulence/turbulence_statistics_bfs.H"
 #include "../drt_fluid_turbulence/turbulence_statistics_bfda.H"
-#include "../drt_fluid_turbulence/turbulence_statistics_oracles.H"
 #include "../drt_fluid_turbulence/turbulence_statistics_sqc.H"
 #include "../drt_fluid_turbulence/turbulence_statistics_hit.H"
 #include "../drt_fluid_turbulence/turbulence_statistics_tgv.H"
@@ -82,13 +79,11 @@ namespace FLD
     statistics_outfilename_(fluid.statistics_outfilename_),
     statistics_general_mean_(Teuchos::null ),
     statistics_channel_(Teuchos::null      ),
-    statistics_channel_multiphase_(Teuchos::null),
     statistics_ccy_(Teuchos::null          ),
     statistics_ldc_(Teuchos::null          ),
     statistics_bfs_(Teuchos::null          ),
     statistics_ph_(Teuchos::null          ),
     statistics_bfda_(Teuchos::null          ),
-    statistics_oracles_(Teuchos::null      ),
     statistics_sqc_(Teuchos::null          ),
     statistics_hit_(Teuchos::null          ),
     statistics_tgv_(Teuchos::null          )
@@ -322,41 +317,6 @@ namespace FLD
         }
       }
     }
-    else if(fluid.special_flow_=="combust_oracles")
-    {
-      flow_=combust_oracles;
-
-      if(discret_->Comm().MyPID()==0)
-        std::cout << "---  setting up turbulence statistics manager for ORACLES ..." << std::flush;
-
-      // do the time integration independent setup
-      Setup();
-
-      // allocate one instance of the averaging procedure for
-      // the flow under consideration
-      statistics_oracles_ = Teuchos::rcp(new COMBUST::TurbulenceStatisticsORACLES(discret_,*params_,statistics_outfilename_,"geometry_ORACLES",false));
-
-      // build statistics manager for inflow channel flow
-      if (inflow_)
-      {
-        if(params_->sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
-        {
-          // do not write any dissipation rates for inflow channels
-          subgrid_dissipation_ = false;
-          // allocate one instance of the averaging procedure for the flow under consideration
-          statistics_channel_=Teuchos::rcp(new TurbulenceStatisticsCha(discret_,
-                                                              alefluid_,
-                                                              mydispnp_,
-                                                              *params_,
-                                                              statistics_outfilename_,
-                                                              subgrid_dissipation_,
-                                                              Teuchos::null));
-        }
-      }
-
-      if(discret_->Comm().MyPID()==0)
-        std::cout << " done" << std::endl;
-    }
     else if(fluid.special_flow_=="square_cylinder")
     {
       flow_=square_cylinder;
@@ -462,141 +422,6 @@ namespace FLD
       }
     }
     else statistics_general_mean_=Teuchos::null;
-
-    return;
-
-  }
-
-
-  /*----------------------------------------------------------------------
-
-    Standard Constructor for combustion One-Step-Theta time integration (public)
-
-  ----------------------------------------------------------------------*/
-  TurbulenceStatisticManager::TurbulenceStatisticManager(CombustFluidImplicitTimeInt& timeint)
-    :
-    dt_              (timeint.dta_           ),
-    discret_         (timeint.discret_     ),
-    params_          (timeint.params_      ),
-    alefluid_        (false                ),
-    myaccnp_         (Teuchos::null        ), // size is not fixed as we deal with xfem problems
-    myaccn_          (Teuchos::null        ), // size is not fixed
-    myaccam_         (Teuchos::null        ), // size is not fixed
-    myveln_          (Teuchos::null        ), // size is not fixed
-    myvelaf_         (Teuchos::null        ), // size is not fixed
-    myhist_          (Teuchos::null        ), // size is not fixed
-    myscaaf_         (Teuchos::null        ),
-    myscaam_         (Teuchos::null        ),
-    mydispnp_        (Teuchos::null        ),
-    mydispn_         (Teuchos::null        ),
-    mygridvelaf_     (Teuchos::null        ),
-    myfsvelaf_       (Teuchos::null        ),
-    myfsscaaf_       (Teuchos::null        ),
-    myxwall_         (Teuchos::null        ),
-    flow_            (no_special_flow      ),
-    withscatra_      (false                ),
-    turbmodel_      (INPAR::FLUID::no_model),
-    subgrid_dissipation_(false             ),
-    inflow_(false                          ),
-    statistics_outfilename_(timeint.params_->sublist("TURBULENCE MODEL").get<std::string>("statistics outfile")),
-    statistics_general_mean_(Teuchos::null ),
-    statistics_channel_(Teuchos::null      ),
-    statistics_channel_multiphase_(Teuchos::null),
-    statistics_ccy_(Teuchos::null          ),
-    statistics_ldc_(Teuchos::null          ),
-    statistics_bfs_(Teuchos::null          ),
-    statistics_ph_(Teuchos::null          ),
-    statistics_bfda_(Teuchos::null          ),
-    statistics_oracles_(Teuchos::null      ),
-    statistics_sqc_(Teuchos::null          ),
-    statistics_hit_(Teuchos::null          ),
-    statistics_tgv_(Teuchos::null          )
-  {
-
-    // subgrid dissipation
-    subgrid_dissipation_ = false;
-    // boolean for statistics of transported scalar
-    withscatra_ = false;
-    // toogle statistics output for turbulent inflow
-    inflow_ = DRT::INPUT::IntegralValue<int>(params_->sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true;
-    // toogle output of mean velocity for paraview
-    out_mean_ = DRT::INPUT::IntegralValue<int>(params_->sublist("TURBULENCE MODEL"),"OUTMEAN")==true;
-
-    // the flow parameter will control for which geometry the
-    // sampling is done
-    if(timeint.special_flow_=="bubbly_channel_flow")
-    {
-      flow_=bubbly_channel_flow;
-
-      // do the time integration independent setup
-      Setup();
-
-      // allocate one instance of the averaging procedure for
-      // the flow under consideration
-      statistics_channel_multiphase_ = Teuchos::rcp(new COMBUST::TurbulenceStatisticsBcf(discret_, *params_, statistics_outfilename_));
-    }
-    else if(timeint.special_flow_=="combust_oracles")
-    {
-      flow_=combust_oracles;
-      // statistics for transported scalar (G-function)
-      withscatra_ = true;
-
-      if(discret_->Comm().MyPID()==0)
-        std::cout << "---  setting up turbulence statistics manager for ORACLES ..." << std::flush;
-
-      // do the time integration independent setup
-      Setup();
-
-      // allocate one instance of the averaging procedure for
-      // the flow under consideration
-      statistics_oracles_ = Teuchos::rcp(new COMBUST::TurbulenceStatisticsORACLES(discret_,*params_,statistics_outfilename_,"geometry_ORACLES",withscatra_));
-
-      // build statistics manager for inflow channel flow
-      if (inflow_)
-      {
-        if(params_->sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
-        {
-          // do not write any dissipation rates for inflow channels
-          subgrid_dissipation_ = false;
-          // allocate one instance of the averaging procedure for the flow under consideration
-          statistics_channel_=Teuchos::rcp(new TurbulenceStatisticsCha(discret_,
-                                                              alefluid_,
-                                                              mydispnp_,
-                                                              *params_,
-                                                              statistics_outfilename_,
-                                                              subgrid_dissipation_,
-                                                              Teuchos::null));
-        }
-      }
-
-      if(discret_->Comm().MyPID()==0)
-        std::cout << " done" << std::endl;
-    }
-    else
-    {
-      flow_=no_special_flow;
-
-      // do the time integration independent setup
-      Setup();
-    }
-
-    statistics_general_mean_ = Teuchos::null;
-    // allocate one instance of the flow independent averaging procedure
-    // providing colorful output for paraview
-    if (out_mean_)
-    {
-      Teuchos::ParameterList *  modelparams =&(params_->sublist("TURBULENCE MODEL"));
-
-      std::string homdir = modelparams->get<std::string>("HOMDIR","not_specified");
-
-      statistics_general_mean_ = Teuchos::rcp(new TurbulenceStatisticsGeneralMean(
-          discret_,
-          timeint.standarddofset_,
-          homdir,
-          *timeint.velpressplitterForOutput_,
-          withscatra_ // statistics for transported scalar
-      ));
-    }
 
     return;
 
@@ -726,23 +551,6 @@ namespace FLD
 
         std::cout << std::endl;
         std::cout << std::endl;
-      }
-    }
-
-    if(discret_->Comm().MyPID()==0)
-    {
-      if (flow_ == combust_oracles)
-      {
-        std::cout << "######### Check this before you use it! #######" << std::endl;
-        // is setting for myrank=0 only really correct?
-        samstart_  = modelparams->get<int>("SAMPLING_START",1);
-        samstop_   = modelparams->get<int>("SAMPLING_STOP", 1000000000);
-        dumperiod_ = 0; // used as switch for the multi-record statistic output
-
-        std::string homdir = modelparams->get<std::string>("HOMDIR","not_specified");
-        if(homdir!="not_specified")
-          dserror("there is no homogeneous direction for the ORACLES problem\n");
-
       }
     }
 
@@ -969,25 +777,6 @@ namespace FLD
           dserror("need statistics_bfda_ to do a time sample for a blood fda flow");
 
         statistics_bfda_->DoTimeSample(myvelnp_);
-        break;
-      }
-      case combust_oracles:
-      {
-        subgrid_dissipation_ = false;
-
-        if(statistics_oracles_==Teuchos::null)
-          dserror("need statistics_oracles_ to do a time sample for an ORACLES flow step");
-
-        statistics_oracles_->DoTimeSample(myvelnp_,myforce_,Teuchos::null,Teuchos::null);
-
-        // build statistics manager for inflow channel flow
-        if (inflow_)
-        {
-          if(params_->sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
-            statistics_channel_->DoTimeSample(myvelnp_,myforce_);
-          else
-            dserror("loma_channel_flow_of_height_2 expected!");
-        }
         break;
       }
       case square_cylinder:
@@ -1269,37 +1058,6 @@ namespace FLD
       // pressure, boundary forces etc.
       switch(flow_)
       {
-      case bubbly_channel_flow:
-      {
-        if(statistics_channel_multiphase_ == Teuchos::null)
-          dserror("need statistics_channel_multiphase_ to do a time sample for a turbulent channel flow");
-
-        if (velnp == Teuchos::null        or force == Teuchos::null
-            or stddofset == Teuchos::null or phi == Teuchos::null)
-            dserror("The multi phase channel statistics need a current velnp, force, stddofset, discretmatchingvelnp, phinp.");
-
-        statistics_channel_multiphase_->DoTimeSample(velnp, force, stddofset, phi);
-        break;
-      }
-      case combust_oracles:
-      {
-        subgrid_dissipation_ = false;
-
-        if(statistics_oracles_==Teuchos::null)
-          dserror("need statistics_oracles_ to do a time sample for an ORACLES flow step");
-
-        statistics_oracles_->DoTimeSample(velnp,force,phi,stddofset);
-
-        // build statistics manager for inflow channel flow
-        if (inflow_)
-        {
-          if(params_->sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
-          {
-            statistics_channel_->DoTimeSample(velnp,force);
-          }
-        }
-        break;
-      }
       default:
       {
         dserror("called wrong DoTimeSample() for this kind of special flow");
@@ -1423,21 +1181,6 @@ namespace FLD
 
         if(outputformat == write_single_record)
           statistics_channel_->DumpScatraStatistics(step);
-        break;
-      }
-      case bubbly_channel_flow:
-      {
-        if(statistics_channel_multiphase_==Teuchos::null)
-          dserror("need statistics_channel_multiphase_ to do a time sample for a turbulent channel flow");
-
-        if(outputformat == write_multiple_records)
-        {
-          statistics_channel_multiphase_->TimeAverageMeansAndOutputOfStatistics(step);
-          statistics_channel_multiphase_->ClearStatistics();
-        }
-
-        if(outputformat == write_single_record)
-          statistics_channel_multiphase_->DumpStatistics(step);
         break;
       }
       case decaying_homogeneous_isotropic_turbulence:
@@ -1620,31 +1363,6 @@ namespace FLD
 
          break;
        }
-      case combust_oracles:
-      {
-        if(statistics_oracles_==Teuchos::null)
-          dserror("need statistics_oracles_ to do a time sample for an ORACLES flow step");
-        if(outputformat == write_multiple_records)
-        {
-          statistics_oracles_->TimeAverageStatistics();
-          statistics_oracles_->OutputStatistics(step);
-          statistics_oracles_->ClearStatistics();
-        }
-
-        // build statistics manager for inflow channel flow
-        if (inflow_)
-        {
-          if(params_->sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
-          {
-            if(outputformat == write_multiple_records)
-            {
-              statistics_channel_->TimeAverageMeansAndOutputOfStatistics(step);
-              statistics_channel_->ClearStatistics();
-            }
-          }
-        }
-        break;
-      }
       case square_cylinder:
       {
         if(statistics_sqc_==Teuchos::null)

@@ -528,7 +528,6 @@ void IO::GMSH::VectorFieldNodeBasedToGmsh(
 #ifdef PARALLEL
   // tranform solution vector from NodeRowMap to NodeColMap
   // remark: DRT::UTILS::GetColVersionOfRowVector() does only work for Epetra_Vectors on DofRowMap
-  //         something similar is done in COMBUST::FlameFront::ProcessFlameFront, although not for Epetra_MultiVectors
   const Teuchos::RCP<Epetra_MultiVector> vectorfield = Teuchos::rcp(new Epetra_MultiVector(*discret->NodeColMap(),3,true));
   LINALG::Export(*vectorfield_row,*vectorfield);
 #else

@@ -25,7 +25,6 @@
 #include "../drt_io/io_pstream.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
 #include "../drt_scatra_ele/scatra_ele_calc_utils.H"
-#include "../drt_xfem/xfem_utils_combust.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
 
@@ -608,7 +607,7 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
              if (doflid < 0)
                dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",myrank_,dofgid);
 
-             if (XFEM::plusDomain((*phinpcol)[doflid]) == false)
+             if (plusDomain((*phinpcol)[doflid]) == false)
                gotnegativephi = true;
              else
                gotpositivephi = true;

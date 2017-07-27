@@ -17,7 +17,6 @@
 #include "../drt_acou/acou_dyn.H"
 #include "../drt_ale/ale_dyn.H"
 #include "../drt_art_net/art_net_dyn_drt.H"
-#include "../drt_combust/combust_dyn.H"
 #include "../drt_contact_xcontact/xcontact_dyn.H"
 #include "../drt_ehl/ehl_dyn.H"
 #include "../drt_elch/elch_dyn.H"
@@ -138,10 +137,6 @@ void ntacal()
 
     case prb_elch:
       elch_dyn(restart);
-      break;
-
-    case prb_combust:
-      combust_dyn();
       break;
 
     case prb_fluid_topopt:

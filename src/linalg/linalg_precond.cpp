@@ -25,7 +25,6 @@
 #include "../drt_lib/drt_discret.H"
 
 #include "../drt_fluid_ele/fluid_ele.H"
-#include "../drt_combust/combust3.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -240,8 +239,7 @@ void LINALG::Preconditioner::EnrichFluidNullSpace(
   const DRT::ElementType & eot = ele->ElementType();
   bool is3d = false;
 #ifdef D_FLUID3
-  if ( eot==DRT::ELEMENTS::FluidType::Instance() or
-       eot==DRT::ELEMENTS::Combust3Type::Instance() )
+  if ( eot==DRT::ELEMENTS::FluidType::Instance() )
   {
     // number of space dimensions is always one less than the number of dof's,
     // since there is the additional pressure dof

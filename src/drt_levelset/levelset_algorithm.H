@@ -132,6 +132,16 @@ namespace SCATRA
         const Teuchos::RCP<const DRT::Discretization> & scatradis,
         double& volumedomainminus) const;
 
+    //! identify interface side due to phivalue value
+    inline bool plusDomain(double phiValue)
+    {
+      double TOL = 1.0e-14;
+      if (phiValue<-TOL)
+        return false;
+      else
+        return true;
+    };
+
     /// update state vectors
     virtual void UpdateState() = 0;
 

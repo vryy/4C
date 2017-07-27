@@ -1,9 +1,7 @@
 /*!-----------------------------------------------------------------------------------------------*
- \file combust_functions.cpp
+ \file xfluid_functions_combust.cpp
 
  \brief Managing and evaluating of spatial functions for combustion and two-phase flow problems
-
-  detailed description in header file combust_interface.H
 
 \level 2
 
@@ -15,10 +13,10 @@
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#include "combust_functions.H"
+#include "xfluid_functions_combust.H"
+
 #include "../drt_lib/drt_discret_interface.H"
 #include "../drt_lib/standardtypes_cpp.H"
-
 
 #include "../drt_lib/drt_linedefinition.H"
 
@@ -26,7 +24,7 @@
 /*----------------------------------------------------------------------*
  | constructor                                          rasthofer 01/14 |
  *----------------------------------------------------------------------*/
-COMBUST::BubbleFunction::BubbleFunction() :
+DRT::UTILS::BubbleFunction::BubbleFunction() :
 Function()
 {
 }
@@ -35,7 +33,7 @@ Function()
 /*----------------------------------------------------------------------*
  | initial level-set field for two merging bubbles      rasthofer 01/14 |
  *----------------------------------------------------------------------*/
-double COMBUST::BubbleFunction::Evaluate(int index, const double* xp,
+double DRT::UTILS::BubbleFunction::Evaluate(int index, const double* xp,
     double t)
 {
   //here calculation of distance (sign is already taken in consideration)
@@ -75,7 +73,7 @@ double COMBUST::BubbleFunction::Evaluate(int index, const double* xp,
 /*----------------------------------------------------------------------*
  | constructor                                              henke 05/09 |
  *----------------------------------------------------------------------*/
-COMBUST::ZalesaksDiskFunction::ZalesaksDiskFunction() :
+DRT::UTILS::ZalesaksDiskFunction::ZalesaksDiskFunction() :
 Function()
 {
 }
@@ -84,7 +82,7 @@ Function()
 /*----------------------------------------------------------------------*
  | evaluation of level set test function "Zalesak's disk"  schott 06/11 |
  *----------------------------------------------------------------------*/
-double COMBUST::ZalesaksDiskFunction::Evaluate(int index, const double* xp,
+double DRT::UTILS::ZalesaksDiskFunction::Evaluate(int index, const double* xp,
     double t)
 {
   // the disk consists of 3 lines and a part of a circle and four points
@@ -155,7 +153,7 @@ double COMBUST::ZalesaksDiskFunction::Evaluate(int index, const double* xp,
 /*----------------------------------------------------------------------*
  | constructor                                              henke 01/12 |
  *----------------------------------------------------------------------*/
-COMBUST::CircularFlame2Function::CircularFlame2Function() :
+DRT::UTILS::CircularFlame2Function::CircularFlame2Function() :
 Function()
 {
 }
@@ -163,7 +161,7 @@ Function()
 /*----------------------------------------------------------------------*
  | evaluation of circular flame test function henke               01/12 |
  *----------------------------------------------------------------------*/
-double COMBUST::CircularFlame2Function::Evaluate(int index,
+double DRT::UTILS::CircularFlame2Function::Evaluate(int index,
     const double* xp, double t)
 {
   const double visc_minus = 0.001;
@@ -184,7 +182,7 @@ double COMBUST::CircularFlame2Function::Evaluate(int index,
 /*----------------------------------------------------------------------*
  | constructor                                              henke 01/12 |
  *----------------------------------------------------------------------*/
-COMBUST::CircularFlame3Function::CircularFlame3Function() :
+DRT::UTILS::CircularFlame3Function::CircularFlame3Function() :
 Function()
 {
 }
@@ -192,7 +190,7 @@ Function()
 /*----------------------------------------------------------------------*
  | evaluation of circular flame test function henke               01/12 |
  *----------------------------------------------------------------------*/
-double COMBUST::CircularFlame3Function::Evaluate(int index,
+double DRT::UTILS::CircularFlame3Function::Evaluate(int index,
     const double* xp, double t)
 {
   const double visc_minus = 0.001;
@@ -213,7 +211,7 @@ double COMBUST::CircularFlame3Function::Evaluate(int index,
 /*----------------------------------------------------------------------*
  | constructor                                              henke 01/12 |
  *----------------------------------------------------------------------*/
-COMBUST::CircularFlame4Function::CircularFlame4Function() :
+DRT::UTILS::CircularFlame4Function::CircularFlame4Function() :
 Function()
 {
 }
@@ -221,7 +219,7 @@ Function()
 /*----------------------------------------------------------------------*
  | evaluation of circular flame test function henke               01/12 |
  *----------------------------------------------------------------------*/
-double COMBUST::CircularFlame4Function::Evaluate(int index, const double* xp,
+double DRT::UTILS::CircularFlame4Function::Evaluate(int index, const double* xp,
     double t)
 {
   const double visc_minus = 0.001;
@@ -240,7 +238,7 @@ double COMBUST::CircularFlame4Function::Evaluate(int index, const double* xp,
 /*----------------------------------------------------------------------*
  | constructor                                          rasthofer 01/14 |
  *----------------------------------------------------------------------*/
-COMBUST::DamBreakObstacle::DamBreakObstacle() :
+DRT::UTILS::DamBreakObstacle::DamBreakObstacle() :
 Function()
 {
 }
@@ -248,7 +246,7 @@ Function()
 /*----------------------------------------------------------------------*
  | 3D dam break with obstacle                           rasthofer 01/14 |
  *----------------------------------------------------------------------*/
-double COMBUST::DamBreakObstacle::Evaluate(int index, const double* xp,
+double DRT::UTILS::DamBreakObstacle::Evaluate(int index, const double* xp,
     double t)
 {
   // here calculation of distance (sign is already taken in consideration)
@@ -294,7 +292,7 @@ double COMBUST::DamBreakObstacle::Evaluate(int index, const double* xp,
 /*----------------------------------------------------------------------*
  | constructor                                          rasthofer 04/10 |
  *----------------------------------------------------------------------*/
-COMBUST::CollapsingWaterColumnFunction::CollapsingWaterColumnFunction() :
+DRT::UTILS::CollapsingWaterColumnFunction::CollapsingWaterColumnFunction() :
 Function()
 {
 }
@@ -302,7 +300,7 @@ Function()
 /*----------------------------------------------------------------------*
  | evaluation of two-phase flow test case               rasthofer 04/10 |
  *----------------------------------------------------------------------*/
-double COMBUST::CollapsingWaterColumnFunction::Evaluate(int index,
+double DRT::UTILS::CollapsingWaterColumnFunction::Evaluate(int index,
     const double* xp, double t)
 {
   //here calculation of distance (sign is already taken in consideration)
@@ -349,7 +347,7 @@ double COMBUST::CollapsingWaterColumnFunction::Evaluate(int index,
 /*----------------------------------------------------------------------*
  | constructor                                          rasthofer 04/10 |
  *----------------------------------------------------------------------*/
-COMBUST::CollapsingWaterColumnFunctionCoarse::CollapsingWaterColumnFunctionCoarse() :
+DRT::UTILS::CollapsingWaterColumnFunctionCoarse::CollapsingWaterColumnFunctionCoarse() :
 Function()
 {
 }
@@ -357,7 +355,7 @@ Function()
 /*----------------------------------------------------------------------*
  | evaluation of two-phase flow test case               rasthofer 04/10 |
  *----------------------------------------------------------------------*/
-double COMBUST::CollapsingWaterColumnFunctionCoarse::Evaluate(int index,
+double DRT::UTILS::CollapsingWaterColumnFunctionCoarse::Evaluate(int index,
     const double* xp, double t)
 {
   double xp_corner[2];
@@ -416,7 +414,7 @@ double COMBUST::CollapsingWaterColumnFunctionCoarse::Evaluate(int index,
 /*----------------------------------------------------------------------*
  | constructor                                              henke 10/11 |
  *----------------------------------------------------------------------*/
-COMBUST::ORACLESGFunction::ORACLESGFunction() :
+DRT::UTILS::ORACLESGFunction::ORACLESGFunction() :
 Function()
 {
 }
@@ -424,7 +422,7 @@ Function()
 /*----------------------------------------------------------------------*
  | evaluation of level set test function "Zalesak's disk"   henke 05/09 |
  *----------------------------------------------------------------------*/
-double COMBUST::ORACLESGFunction::Evaluate(int index, const double* xp,
+double DRT::UTILS::ORACLESGFunction::Evaluate(int index, const double* xp,
     double t)
 {
 
@@ -470,7 +468,7 @@ double COMBUST::ORACLESGFunction::Evaluate(int index, const double* xp,
 /*----------------------------------------------------------------------*
  | constructor                                             schott 05/11 |
  *----------------------------------------------------------------------*/
-COMBUST::RotatingConeFunction::RotatingConeFunction() :
+DRT::UTILS::RotatingConeFunction::RotatingConeFunction() :
 Function()
 {
 }
@@ -478,7 +476,7 @@ Function()
 /*----------------------------------------------------------------------*
  | evaluation of level set test function "Rotating Cone "  schott 05/11 |
  *----------------------------------------------------------------------*/
-double COMBUST::RotatingConeFunction::Evaluate(int index, const double* xp,
+double DRT::UTILS::RotatingConeFunction::Evaluate(int index, const double* xp,
     double t)
 {
   //here calculation of distance (sign is already taken in consideration)
@@ -506,7 +504,7 @@ double COMBUST::RotatingConeFunction::Evaluate(int index, const double* xp,
 /*----------------------------------------------------------------------*
  | constructor                                              henke 05/11 |
  *----------------------------------------------------------------------*/
-COMBUST::LevelSetCutTestFunction::LevelSetCutTestFunction() :
+DRT::UTILS::LevelSetCutTestFunction::LevelSetCutTestFunction() :
 Function()
 {
 }
@@ -514,7 +512,7 @@ Function()
 /*----------------------------------------------------------------------*
  | evaluation of level set test function "Zalesak's disk"   henke 05/11 |
  *----------------------------------------------------------------------*/
-double COMBUST::LevelSetCutTestFunction::Evaluate(int index, const double* xp,
+double DRT::UTILS::LevelSetCutTestFunction::Evaluate(int index, const double* xp,
     double t)
 {
   //here calculation of phi (sign is already taken in consideration)
@@ -587,7 +585,7 @@ double COMBUST::LevelSetCutTestFunction::Evaluate(int index, const double* xp,
 /*----------------------------------------------------------------------*
  | constructor                                          rasthofer 08/14 |
  *----------------------------------------------------------------------*/
-COMBUST::ImpactFunction::ImpactFunction() :
+DRT::UTILS::ImpactFunction::ImpactFunction() :
 Function()
 {
 }
@@ -596,7 +594,7 @@ Function()
 /*-----------------------------------------------------------------------*
  | initial level-set field for impact of drop on surface rasthofer 08/14 |
  *-----------------------------------------------------------------------*/
-double COMBUST::ImpactFunction::Evaluate(int index, const double* xp,
+double DRT::UTILS::ImpactFunction::Evaluate(int index, const double* xp,
     double t)
 {
   //here calculation of distance (sign is already taken in consideration)
@@ -635,7 +633,7 @@ double COMBUST::ImpactFunction::Evaluate(int index, const double* xp,
   return distance;
 }
 
-void COMBUST::CombustValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
+void DRT::UTILS::CombustValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
 {
 
   DRT::INPUT::LineDefinition zalesaksdisk;
@@ -713,58 +711,58 @@ void COMBUST::CombustValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
 
 }
 
-bool COMBUST::CombustFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinition> function,
+bool DRT::UTILS::CombustFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinition> function,
                                          std::vector<Teuchos::RCP<DRT::UTILS::Function> >* functions_)
 {
   bool found_combust_name=true;
 
   if (function->HaveNamed("ZALESAKSDISK"))
   {
-    functions_->push_back(Teuchos::rcp(new COMBUST::ZalesaksDiskFunction()));
+    functions_->push_back(Teuchos::rcp(new DRT::UTILS::ZalesaksDiskFunction()));
   }
   else if (function->HaveNamed("CIRCULARFLAME2"))
   {
-    functions_->push_back(Teuchos::rcp(new COMBUST::CircularFlame2Function()));
+    functions_->push_back(Teuchos::rcp(new DRT::UTILS::CircularFlame2Function()));
   }
   else if (function->HaveNamed("CIRCULARFLAME3"))
   {
-    functions_->push_back(Teuchos::rcp(new COMBUST::CircularFlame3Function()));
+    functions_->push_back(Teuchos::rcp(new DRT::UTILS::CircularFlame3Function()));
   }
   else if (function->HaveNamed("CIRCULARFLAME4"))
   {
-    functions_->push_back(Teuchos::rcp(new COMBUST::CircularFlame4Function()));
+    functions_->push_back(Teuchos::rcp(new DRT::UTILS::CircularFlame4Function()));
   }
   else if (function->HaveNamed("DAMBREAKOBSTACLE"))
   {
-    functions_->push_back(Teuchos::rcp(new COMBUST::DamBreakObstacle()));
+    functions_->push_back(Teuchos::rcp(new DRT::UTILS::DamBreakObstacle()));
   }
   else if (function->HaveNamed("COLLAPSINGWATERCOLUMN"))
   {
-    functions_->push_back(Teuchos::rcp(new COMBUST::CollapsingWaterColumnFunction()));
+    functions_->push_back(Teuchos::rcp(new DRT::UTILS::CollapsingWaterColumnFunction()));
   }
   else if (function->HaveNamed("COLLAPSINGWATERCOLUMNCOARSE"))
   {
-    functions_->push_back(Teuchos::rcp(new COMBUST::CollapsingWaterColumnFunctionCoarse()));
+    functions_->push_back(Teuchos::rcp(new DRT::UTILS::CollapsingWaterColumnFunctionCoarse()));
   }
   else if (function->HaveNamed("IMPACTDROP"))
   {
-    functions_->push_back(Teuchos::rcp(new COMBUST::ImpactFunction()));
+    functions_->push_back(Teuchos::rcp(new DRT::UTILS::ImpactFunction()));
   }
   else if (function->HaveNamed("BUBBLES"))
   {
-    functions_->push_back(Teuchos::rcp(new COMBUST::BubbleFunction()));
+    functions_->push_back(Teuchos::rcp(new DRT::UTILS::BubbleFunction()));
   }
   else if (function->HaveNamed("ORACLESGFUNC"))
   {
-    functions_->push_back(Teuchos::rcp(new COMBUST::ORACLESGFunction()));
+    functions_->push_back(Teuchos::rcp(new DRT::UTILS::ORACLESGFunction()));
   }
   else if (function->HaveNamed("ROTATINGCONE"))
   {
-    functions_->push_back(Teuchos::rcp(new COMBUST::RotatingConeFunction()));
+    functions_->push_back(Teuchos::rcp(new DRT::UTILS::RotatingConeFunction()));
   }
   else if (function->HaveNamed("LEVELSETCUTTEST"))
   {
-    functions_->push_back(Teuchos::rcp(new COMBUST::LevelSetCutTestFunction()));
+    functions_->push_back(Teuchos::rcp(new DRT::UTILS::LevelSetCutTestFunction()));
   }
   else
   {

@@ -23,7 +23,6 @@
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_periodicbc.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
-#include "../drt_lib/drt_discret_combust.H"
 #include "../drt_lib/drt_dofset_independent.H"
 #include "../drt_rigidsphere/rigidsphere.H"
 #include "../drt_inpar/inpar_problemtype.H"
@@ -612,26 +611,10 @@ void PostProblem::read_meshes()
         }
       }
 
-      if (currfield.problem()->Problemtype() == prb_combust)
-      {
-        std::cout << "Name = " << currfield.discretization()->Name();
-        if (currfield.discretization()->Name() == "fluid")
-        {
-          std::cout << " ->set output mode for xfem elements" << std::endl;
-          currfield.discretization()->FillComplete(false,false,false);
-          Teuchos::ParameterList eleparams;
-          eleparams.set("action","set_standard_mode");
-          eleparams.set("standard_mode",true);
-          currfield.discretization()->Evaluate(eleparams);
-        }
-        std::cout << std::endl;
-      }
-
       if ((currfield.problem()->Problemtype()==prb_particle
           or currfield.problem()->Problemtype()==prb_cavitation
           or currfield.problem()->Problemtype()==prb_pasi
           or currfield.problem()->Problemtype()==prb_level_set
-          or currfield.problem()->Problemtype()==prb_combust
           or currfield.problem()->Problemtype()==prb_two_phase_flow
           or currfield.problem()->Problemtype()==prb_fluid_xfem_ls)
           and currfield.discretization()->Name() == "particle")
@@ -970,21 +953,6 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
       }
     }
 
-    if (currfield.problem()->Problemtype() == prb_combust)
-    {
-      std::cout << "Name = " << currfield.discretization()->Name();
-      if (currfield.discretization()->Name() == "fluid")
-      {
-        std::cout << " ->set output mode for xfem elements" << std::endl;
-        currfield.discretization()->FillComplete(false,false,false);
-        Teuchos::ParameterList eleparams;
-        eleparams.set("action","set_standard_mode");
-        eleparams.set("standard_mode",true);
-        currfield.discretization()->Evaluate(eleparams);
-      }
-      std::cout << std::endl;
-    }
-
     // read knot vectors for nurbs discretisations
     if(spatial_approx_=="Nurbs")
     {
@@ -1112,14 +1080,7 @@ PostField PostProblem::getfield(MAP* field_info)
 
   if(spatial_approx_=="Polynomial" or spatial_approx_=="Meshfree" or spatial_approx_=="HDG")
   {
-    if(problemtype_==prb_combust)
-    {
-      dis=Teuchos::rcp(new DRT::DiscretizationCombust(field_name,comm_));
-    }
-    else
-    {
-      dis=Teuchos::rcp(new DRT::Discretization(field_name,comm_));
-    }
+    dis=Teuchos::rcp(new DRT::Discretization(field_name,comm_));
   }
   else if(spatial_approx_=="Nurbs")
   {

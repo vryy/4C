@@ -28,7 +28,6 @@ std::map<std::string,PROBLEM_TYP> DRT::StringToProblemTypeMap()
     string2prbtype["Biofilm_Fluid_Structure_Interaction"]              = prb_biofilm_fsi;
     string2prbtype["Cardiac_Monodomain"]                               = prb_cardiac_monodomain;
     string2prbtype["Cavitation"]                                       = prb_cavitation;
-    string2prbtype["Combustion"]                                       = prb_combust;
     string2prbtype["Elastohydrodynamic_Lubrication"]                   = prb_ehl;
     string2prbtype["Electrochemistry"]                                 = prb_elch;
     string2prbtype["Fluid"]                                            = prb_fluid;

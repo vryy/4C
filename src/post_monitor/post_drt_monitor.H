@@ -258,47 +258,6 @@ private:
 }; // end of class FluidMonWriter
 
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-class CombustMonWriter : public FieldMonWriter
-{
-public:
-  //! constructor
-  CombustMonWriter(
-    PostProblem& problem,
-    std::string& infieldtype,
-    int node)
-    : FieldMonWriter(problem,infieldtype,node)
-  {}
-
-  //! destructor
-  virtual ~CombustMonWriter()
-  {}
-
-protected:
-
-  virtual void CheckInfieldType(std::string& infieldtype);
-
-  void FieldError(int node);
-
-  virtual void WriteHeader(std::ofstream& outfile);
-
-  void WriteTableHead(std::ofstream& outfile, int dim);
-
-  virtual void WriteResult(
-    std::ofstream& outfile,
-    PostResult& result,
-    std::vector<int>& gdof,
-    int dim
-    );
-
-private:
-}; // end of class CombustMonWriter
-
-
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

@@ -28,7 +28,6 @@
 #include "../drt_inpar/inpar_solver.H"
 #include "../drt_inpar/inpar_elch.H"
 #include "../drt_inpar/inpar_fsi.H"
-#include "../drt_inpar/inpar_combust.H"
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_inpar/inpar_poroelast.H"
 #include "../drt_inpar/inpar_topopt.H"
@@ -55,7 +54,6 @@
 #include "../drt_fluid/fluid_timint_hdg.H"
 #include "../drt_fluid_xfluid/xfluid.H"
 #include "../drt_fluid_xfluid/xfluidfluid.H"
-#include "../drt_combust/combust_fluidimplicitintegration.H"
 #include "../linalg/linalg_solver.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
@@ -126,8 +124,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
-  if((probtype != prb_fsi) and
-     (probtype != prb_combust))
+  if(probtype != prb_fsi)
   {
     PeriodicBoundaryConditions pbc(actdis);
     pbc.UpdateDofsForPeriodicBoundaryConditions();
@@ -140,7 +137,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
   {
     if (probtype == prb_fsi_xfem or
         probtype == prb_fluid_xfem or
-        probtype == prb_combust or
         (probtype == prb_fpsi_xfem and disname == "fluid")or
         probtype == prb_fluid_xfem_ls)
     {
@@ -156,10 +152,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
   // context for output and restart
   // -------------------------------------------------------------------
   Teuchos::RCP<IO::DiscretizationWriter> output = actdis->Writer();
-  if (probtype != prb_combust)
-  {
-    output->WriteMesh(0,0.0);
-  }
+  output->WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------
   // set some pointers and variables
@@ -304,7 +297,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       probtype != prb_fpsi_xfem and
       probtype != prb_fluid_xfem and
       probtype != prb_fluid_xfem_ls and
-      probtype != prb_combust and
       !(probtype == prb_fsi and DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->XFluidDynamicParams().sublist("GENERAL"),"XFLUIDFLUID")))
   {
     switch(DRT::INPUT::IntegralValue<int>(fdyn,"MESHTYING"))
@@ -430,15 +422,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
     fluidtimeparams->sublist("SURFACE TENSION")=prbdyn.sublist("SURFACE TENSION");
   }
 
-  // sublist for combustion-specific fluid parameters
-  /* This sublist COMBUSTION FLUID contains parameters for the fluid field
-   * which are only relevant for a combustion problem.                 07/08 henke */
-  if (probtype == prb_combust)
-  {
-    fluidtimeparams->sublist("COMBUSTION FLUID")=prbdyn.sublist("COMBUSTION FLUID");
-    // parameter COMBUSTTYPE from sublist COMBUSTION FLUID is also added to sublist XFEM
-    fluidtimeparams->sublist("XFEM").set<int>("combusttype", DRT::INPUT::IntegralValue<INPAR::COMBUST::CombustionType>(prbdyn.sublist("COMBUSTION FLUID"),"COMBUSTTYPE"));
-  }
 
   if (probtype == prb_fluid_topopt)
     fluidtimeparams->set<int>("opti testcase",DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(prbdyn.sublist("TOPOLOGY OPTIMIZER"),"TESTCASE"));
@@ -856,11 +839,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       fluid_ = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, scatradis, solver, fluidtimeparams, output));
     }
     break;
-    case prb_combust:
-    {
-      fluid_ = Teuchos::rcp(new FLD::CombustFluidImplicitTimeInt(actdis, solver, fluidtimeparams, output));
-    }
-    break;
     case prb_fsi:
     case prb_immersed_fsi:
     case prb_immersed_ale_fsi:
@@ -1137,7 +1115,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
 
   // the inflow computation can only deal with standard fluid problems so far
-  // extensions for xfluid, fsi or combust problems have to be added if necessary
+  // extensions for xfluid, fsi problems have to be added if necessary
   // they should not pose any additional problem
   // meshtying or xfem related parameters are not supported, yet
   if (probtype != prb_fluid)
@@ -1319,9 +1297,6 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
   fluidtimeparams->set<std::string>     ("predictor"                 ,fdyn.get<std::string>("PREDICTOR"));
   // set linearisation scheme
   fluidtimeparams->set<int>("Linearisation", DRT::INPUT::IntegralValue<INPAR::FLUID::LinearisationAction>(fdyn,"NONLINITER"));
-  // set bool flag "Newton true or false" for combustion formulation and XFEM
-  //fluidtimeparams->set<bool>("Use reaction terms for linearisation",
-  //                           DRT::INPUT::IntegralValue<INPAR::FLUID::LinearisationAction>(fdyn,"NONLINITER")== INPAR::FLUID::Newton);
   // maximum number of nonlinear iteration steps
   fluidtimeparams->set<int>             ("max nonlin iter steps"     ,fdyn.get<int>("ITEMAX"));
   // maximum number of nonlinear iteration steps for initial stationary solution

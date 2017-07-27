@@ -75,7 +75,6 @@
 #include "../drt_adapter/ad_fld_fluid_xfsi.H"
 #include "../drt_adapter/ad_ale_fsi.H"
 
-#include "../drt_lib/drt_discret_combust.H"
 #include "../drt_lib/drt_discret_xfem.H"
 
 #include "../drt_binstrategy/binning_strategy.H"

@@ -163,9 +163,7 @@ namespace INPAR
       face_type_std,
       face_type_ghost_penalty,
       face_type_ghost,
-      face_type_boundary_ghost_penalty,
-      face_type_double_plus, // combustion only
-      face_type_double_minus // combustion only
+      face_type_boundary_ghost_penalty
     };
 
 

@@ -464,9 +464,7 @@ set(OBJS_DRT_LIB
   src/drt_lib/drt_discret_faces.cpp
   src/drt_lib/drt_discret_hdg.cpp
   src/drt_lib/drt_discret_xwall.cpp
-  src/drt_lib/drt_discret_combust.cpp
   src/drt_lib/drt_discret_xfem.cpp
-  src/drt_lib/drt_discret_combust_evaluate.cpp
   src/drt_lib/drt_discret_conditions.cpp
   src/drt_lib/drt_discret_evaluate.cpp
   src/drt_lib/drt_discret_fillcomplete.cpp
@@ -775,7 +773,6 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_cavitation.cpp
   src/drt_inpar/inpar_pasi.cpp
   src/drt_inpar/inpar_cell.cpp
-  src/drt_inpar/inpar_combust.cpp
   src/drt_inpar/inpar_contact.cpp
   src/drt_inpar/inpar_ehl.cpp
   src/drt_inpar/inpar_elch.cpp
@@ -826,26 +823,6 @@ set(OBJS_DRT_ARTNET
 )
 
 
-set(OBJS_DRT_XFEM_COMBUST
-  src/drt_xfem/dof_distribution_switcher.cpp
-  src/drt_xfem/dofkey.cpp
-  src/drt_xfem/dof_management.cpp
-  src/drt_xfem/dof_management_element.cpp
-  src/drt_xfem/enrichment.cpp
-  src/drt_xfem/enrichment_utils.cpp
-  src/drt_xfem/field_enriched.cpp
-  src/drt_xfem/physics.cpp
-  src/drt_xfem/timeInt.cpp
-  src/drt_xfem/timeInt_enr.cpp
-  src/drt_xfem/timeInt_std_extrapolation.cpp
-  src/drt_xfem/timeInt_std_SemiLagrange.cpp
-  src/drt_xfem/xdofmapcreation_combust.cpp
-  src/drt_xfem/xdofmapcreation_parallel_utils.cpp
-  src/drt_combust/combust_interface.cpp
-  src/drt_combust/combust_flamefront.cpp
-  src/drt_combust/combust_flamefront_utils.cpp
-)
-
 set(OBJS_DRT_XFEM
   src/drt_xfem/xfem_edgestab.cpp
   src/drt_xfem/xfem_discretization_utils.cpp
@@ -887,13 +864,6 @@ set(OBJS_DRT_ARTNET_LIB
   src/drt_art_net/artery_input.cpp
   src/drt_art_net/artery_lin_exp.cpp
   src/drt_art_net/artery_resulttest.cpp
-)
-set(OBJS_DRT_COMBUST
-  src/drt_combust/combust_algorithm.cpp
-  src/drt_combust/combust_dyn.cpp
-  src/drt_combust/combust_fluidimplicitintegration.cpp
-  src/drt_combust/combust_fluidresulttest.cpp
-  src/drt_combust/combust_utils_time_integration.cpp
 )
 set(OBJS_FILTER_COMMON
   src/filter_common/filter_evaluation.cpp
@@ -1090,8 +1060,8 @@ set(OBJS_DRT_UTILS
   src/drt_fem_general/largerotations.cpp
   src/drt_fluid/fluid_functions.cpp
   src/drt_fluid/fluid_rotsym_periodicbc_utils.cpp
-  src/drt_combust/combust_functions.cpp
   src/drt_fluid_xfluid/xfluid_functions.cpp
+  src/drt_fluid_xfluid/xfluid_functions_combust.cpp
   src/drt_geometry/integrationcell.cpp
   src/drt_geometry/intersection_interfacepoint.cpp
   src/drt_geometry/intersection_math.cpp
@@ -1100,7 +1070,6 @@ set(OBJS_DRT_UTILS
   src/drt_geometry/searchtree.cpp
   src/drt_geometry/searchtree_geometry_service.cpp
   src/drt_geometry/searchtree_nearestobject.cpp
-  src/drt_geometry/tetrahedradecomposition.cpp
   src/drt_lib/drt_condition_selector.cpp
   src/drt_lib/drt_condition_utils.cpp
   src/drt_lib/drt_dirichletextractor.cpp
@@ -1406,21 +1375,6 @@ set(OBJS_DRT_STI
   src/drt_sti/sti_dyn.cpp
   src/drt_sti/sti_resulttest.cpp
 )
-set(OBJS_DRT_COMBUST3_LIB
-  src/drt_combust/combust_refinementcell.cpp
-  src/drt_combust/combust3.cpp
-  src/drt_combust/combust3_evaluate.cpp
-  src/drt_combust/combust3_elementface.cpp
-  src/drt_combust/combust3_elementface_evaluate.cpp
-  src/drt_combust/combust3_input.cpp
-  src/drt_combust/combust3_line.cpp
-  src/drt_combust/combust3_line_evaluate.cpp
-  src/drt_combust/combust3_stabilization.cpp
-  src/drt_combust/combust3_surface.cpp
-  src/drt_combust/combust3_surface_evaluate.cpp
-  src/drt_combust/combust3_sysmat.cpp
-  src/drt_combust/combust_time_integration_element.cpp
-)
 set(OBJS_DRT_THERMO
   src/drt_thermo/thr_aux.cpp
   src/drt_thermo/thr_dyn.cpp
@@ -1490,14 +1444,14 @@ set(OBJS_DRT_FLUID_TURBULENCE
   src/drt_fluid_turbulence/turbulence_statistics_bfs.cpp
   src/drt_fluid_turbulence/turbulence_statistics_ph.cpp
   src/drt_fluid_turbulence/turbulence_statistics_bfda.cpp
-  src/drt_fluid_turbulence/turbulence_statistics_bcf.cpp
+#  src/drt_fluid_turbulence/turbulence_statistics_bcf.cpp
   src/drt_fluid_turbulence/turbulence_statistics_ccy.cpp
   src/drt_fluid_turbulence/turbulence_statistics_cha.cpp
   src/drt_fluid_turbulence/turbulence_statistics_hit.cpp
   src/drt_fluid_turbulence/turbulence_statistics_tgv.cpp
   src/drt_fluid_turbulence/turbulence_statistics_ldc.cpp
   src/drt_fluid_turbulence/turbulence_statistics_mean_general.cpp
-  src/drt_fluid_turbulence/turbulence_statistics_oracles.cpp
+#  src/drt_fluid_turbulence/turbulence_statistics_oracles.cpp
   src/drt_fluid_turbulence/turbulence_statistics_sqc.cpp
 )
 set(OBJS_DRT_FLUID_XFLUID
@@ -2546,7 +2500,6 @@ add_library(ele_ale ${OBJS_DRT_ALE_LIB})
 add_library(ele_b3 ${OBJS_DRT_B3_LIB})
 add_library(ele_rigidsphere ${OBJS_DRT_RIGIDSPHERE_LIB})
 add_library(ele_bele3 ${OBJS_DRT_BELE3_LIB})
-add_library(ele_combust3 ${OBJS_DRT_COMBUST3_LIB})
 add_library(ele_opti ${OBJS_DRT_TOPOPT_LIB})
 add_library(ele_s8 ${OBJS_DRT_S8_LIB})
 add_library(ele_membrane ${OBJS_DRT_MEMBRANE_LIB})
@@ -2568,7 +2521,6 @@ set(ELEMENT_LIBRARIES
   ele_b3
   ele_rigidsphere
   ele_bele3
-  ele_combust3
   ele_discsh3
   ele_fluid
   ele_opti
@@ -2636,7 +2588,6 @@ add_library(drt_adapter ${OBJS_DRT_ADAPT})
 # algorithm libraries the adapters depend uo
 add_library(alg_ale ${OBJS_DRT_ALEALG})
 add_library(alg_artnet ${OBJS_DRT_ARTNET})
-add_library(alg_combust ${OBJS_DRT_COMBUST})
 #add_library(alg_contact SHARED ${OBJS_DRT_CONTACT})
 add_library(alg_contact ${OBJS_DRT_CONTACT})
 add_library(alg_contact_aug ${OBJS_DRT_CONTACT_AUG})
@@ -2663,7 +2614,6 @@ add_library(alg_tutorial ${OBJS_DRT_TUTORIAL})
 set(SINGLEFIELD_LIBRARIES
   alg_ale
   alg_artnet
-  alg_combust
   alg_fluid
   alg_fluid_turbulence
   alg_fluid
@@ -2712,7 +2662,6 @@ add_library(drt_lib_constraint ${OBJS_DRT_CONSTRAINT_LIB})
 add_library(drt_lib_contact ${OBJS_DRT_CONTACT_LIB} ${OBJS_DRT_BEAMCONTACT_LIB})
 add_library(drt_lib_beaminteraction ${OBJS_DRT_BEAMINTERACTION_LIB})
 add_library(drt_lib_xfem ${OBJS_DRT_XFEM})
-add_library(drt_lib_xfem_combust ${OBJS_DRT_XFEM_COMBUST})
 add_library(drt_lib_io ${OBJS_DRT_IO_LIB})
 #add_library(drt_lib_fluid ${OBJS_DRT_FLUID_LIB})
 add_library(drt_lib_mortar ${OBJS_DRT_MORTAR_LIB})
@@ -2741,7 +2690,6 @@ set(SUPPORT_LIBRARIES
   # Libraries needed by elements
   drt_lib_surfstress
   drt_lib_xfem
-  drt_lib_xfem_combust
   drt_lib_cut
   drt_lib_inpar
   drt_lib_io

@@ -29,7 +29,6 @@ Maintainer: Martin Kronbichler
 #include "inpar_solver_nonlin.H"
 #include "inpar_fluid.H"
 #include "inpar_cut.H"
-#include "inpar_combust.H"
 #include "inpar_twophase.H"
 #include "inpar_mortar.H"
 #include "inpar_contact.H"
@@ -660,7 +659,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::TWOPHASE::SetValidParameters(list);
   INPAR::LOMA::SetValidParameters(list);
   INPAR::TOPOPT::SetValidParameters(list);
-  INPAR::COMBUST::SetValidParameters(list);
   INPAR::XFEM::SetValidParameters(list);
 
   INPAR::LUBRICATION::SetValidParameters(list);

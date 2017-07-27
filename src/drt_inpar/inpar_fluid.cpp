@@ -1811,29 +1811,6 @@ void INPAR::FLUID::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condi
 
    condlist.push_back(turbulentinflowgeneration);
 
-  /*--------------------------------------------------------------------*/
-  // volume condition to blend material parameters smoothly for turbulent combustion and two-phase flow
-
-  std::vector<Teuchos::RCP<ConditionComponent> > blendmaterialcomponents;
-
-  blendmaterialcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("onoff",1)));
-  blendmaterialcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve",1,true,true)));
-  blendmaterialcomponents.push_back(Teuchos::rcp(new StringConditionComponent("domain","plus",
-              Teuchos::tuple<std::string>("plus","minus"),
-              Teuchos::tuple<std::string>("plus","minus"))));
-
-  Teuchos::RCP<ConditionDefinition> blendmaterial =
-    Teuchos::rcp(new ConditionDefinition("COMBUST BLEND MATERIAL VOLUME",
-                                         "BlendMaterial",
-                                         "BlendMaterial",
-                                         DRT::Condition::BlendMaterial,
-                                         true,
-                                         DRT::Condition::Volume));
-
-  for (unsigned i=0; i<blendmaterialcomponents.size(); ++i)
-    blendmaterial->AddComponent(blendmaterialcomponents[i]);
-
-  condlist.push_back(blendmaterial);
 
    /*--------------------------------------------------------------------*/
   // flow-dependent pressure conditions

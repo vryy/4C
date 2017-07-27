@@ -240,7 +240,6 @@ public:
   virtual void LiftDrag() const = 0;
   virtual double EvalTime() const { dserror("Not implemented in the base class, may be overridden by a subclass."); return 0.0; }
   virtual void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
-  virtual void TransferVectorsToNewDistribution(Teuchos::RCP<COMBUST::FlameFront> flamefront) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
 
   virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces() { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForcesRobin() { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }

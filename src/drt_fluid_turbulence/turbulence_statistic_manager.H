@@ -8,8 +8,10 @@ cylinder, flow in a lid driven cavity etc.
 The manager is intended to remove as much of the averaging
 overhead as possible from the time integration method.
 
+\level 3
+
 <pre>
-Maintainer: Benjamin Krank
+\maintainer Benjamin Krank
             krank@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15252
@@ -39,12 +41,6 @@ namespace IO
   class DiscretizationWriter;
 }
 
-namespace COMBUST
-{
-  class TurbulenceStatisticsORACLES;
-  class TurbulenceStatisticsBcf;
-}
-
 namespace SCATRA
 {
   class ScaTraTimIntImpl;
@@ -55,7 +51,6 @@ namespace FLD
 // forward declarations
 class FluidImplicitTimeInt;
 class XWall;
-class CombustFluidImplicitTimeInt;
 class TurbulenceStatisticsCha;
 class TurbulenceStatisticsCcy;
 class TurbulenceStatisticsLdc;
@@ -82,11 +77,6 @@ public:
   */
   TurbulenceStatisticManager(FluidImplicitTimeInt& timeint);
 
-  /*!
-  \brief Combustion Constructor (public)
-
-  */
-  TurbulenceStatisticManager(CombustFluidImplicitTimeInt& timeint);
 
   /*!
   \brief Destructor
@@ -142,7 +132,7 @@ public:
                     const double thermpressdtam = 0.0);
 
   /*!
-  \brief function called by the combustion time integration
+  \brief ???
 
   */
   void DoTimeSample(int                             step,
@@ -290,7 +280,6 @@ private:
     backward_facing_step            ,
     loma_backward_facing_step       ,
     backward_facing_step2           ,
-    combust_oracles                 ,
     square_cylinder                 ,
     square_cylinder_nurbs           ,
     bubbly_channel_flow             ,
@@ -331,9 +320,6 @@ private:
   //! turbulence statistics for turbulent channel flow
   Teuchos::RCP<TurbulenceStatisticsCha>         statistics_channel_;
 
-  //! turbulence statistics for turbulent multi phase channel flow
-  Teuchos::RCP<COMBUST::TurbulenceStatisticsBcf> statistics_channel_multiphase_;
-
   //! turbulence statistics for a rotating circular cylinder
   Teuchos::RCP<TurbulenceStatisticsCcy>         statistics_ccy_;
 
@@ -348,9 +334,6 @@ private:
 
   //! turbulence statistics for blood fda flow
   Teuchos::RCP<TurbulenceStatisticsBfda>         statistics_bfda_;
-
-  //! turbulence statistics for ORACLES
-  Teuchos::RCP<COMBUST::TurbulenceStatisticsORACLES> statistics_oracles_;
 
   //! turbulence statistics for square cylinder
   Teuchos::RCP<TurbulenceStatisticsSqc>         statistics_sqc_;

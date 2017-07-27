@@ -35,7 +35,6 @@
 #include "drt_discret_faces.H"
 #include "drt_discret_xwall.H"
 #include "drt_discret_hdg.H"
-#include "drt_discret_combust.H"
 #include "drt_discret_xfem.H"
 #include "drt_linedefinition.H"
 #include "../drt_mat/material.H"
@@ -294,9 +293,6 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--TWO PHASE FLOW", *list);
   reader.ReadGidSection("--TWO PHASE FLOW/SURFACE TENSION", *list);
   reader.ReadGidSection("--TWO PHASE FLOW/SMEARED", *list);
-  reader.ReadGidSection("--COMBUSTION CONTROL", *list);
-  reader.ReadGidSection("--COMBUSTION CONTROL/COMBUSTION FLUID", *list);
-  reader.ReadGidSection("--COMBUSTION CONTROL/COMBUSTION GFUNCTION", *list);
   reader.ReadGidSection("--LUBRICATION DYNAMIC", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/NONLINEAR", *list);
@@ -1632,28 +1628,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     break;
   }
-
-  case prb_combust:
-  {
-    // create empty discretizations
-    fluiddis = Teuchos::rcp(new DRT::DiscretizationCombust("fluid",reader.Comm()));
-    scatradis = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));
-    particledis = Teuchos::rcp(new DRT::Discretization("particle",reader.Comm()));
-
-    // create discretization writer - in constructor set into and owned by corresponding discret
-    fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
-    scatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatradis)));
-    particledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(particledis)));
-
-    AddDis("fluid", fluiddis);
-    AddDis("scatra", scatradis);
-    AddDis("particle", particledis);
-
-    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
-    nodereader.AddParticleReader(particledis, reader, "PARTICLE");
-    break;
-  }
-
   case prb_art_net: // _1D_ARTERY_
   {
     // create empty discretizations

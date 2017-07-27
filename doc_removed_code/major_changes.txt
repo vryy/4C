@@ -1,5 +1,14 @@
 List of major features that were removed from BACI, including date and revision where code was removed
 
+
+xfem combust module (by Flo Henke, Ursula Rasthofer, Benedikt Schott)
+- removed in revision 23268 on 2017-07-27
+- reasons: most of the functionality has been shifted to the current CutFEM framework (see drt_fluid_xfluid and drt_xfem)
+- if you need it: Check revision 23268
+- what has not been shifted to the new framework so far: load balancing, some combustion tests, periodic boundary conditions
+- mainly deleted src/drt_combust and some outdated files in src/drt_xfem, files in Input/combust*.dat
+- removed by B. Schott
+
 interface to aero code (by Georg Hammerl)
 - removed in revision 23256 on 2017-07-13
 - reasons: it is unlikely that we use that particular coupling scenario in the coming years, thus reduce code complexity by not carrying it around

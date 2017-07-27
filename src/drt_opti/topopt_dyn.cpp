@@ -42,7 +42,7 @@ void fluid_topopt_dyn()
 #endif
 
   //------------------------------------------------------------------------------------------------
-  // print COMBUST-Logo on screen
+  // print Logo on screen
   //------------------------------------------------------------------------------------------------
   if (comm.MyPID()==0) TOPOPT::printTopOptLogo();
 
@@ -78,7 +78,7 @@ void fluid_topopt_dyn()
   //------------------------------------------------------------------------------------------------
   // get the topology optimization parameter list
   Teuchos::ParameterList topoptdyn = problem->OptimizationControlParams();
-  // create a COMBUST::Algorithm instance
+  // create a Algorithm instance
   Teuchos::RCP<TOPOPT::Algorithm> topopt_ = Teuchos::rcp(new TOPOPT::Algorithm(comm,topoptdyn));
 
   //------------------------------------------------------------------------------------------------

@@ -2,7 +2,7 @@
 /*!
 \file inpar_twophase.cpp
 
-\brief Input parameters for combustion
+\brief Input parameters for twophaseflow
 
 \level 2
 

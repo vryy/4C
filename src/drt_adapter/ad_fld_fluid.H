@@ -57,11 +57,6 @@ namespace FLD
   }
 }
 
-namespace COMBUST
-{
-  class InterfaceHandleCombust;
-  class FlameFront;
-}
 
 
 /// Algorithm adapter classes for use in multi-field problems
@@ -420,8 +415,6 @@ namespace ADAPTER {
     /// redistribute the fluid discretization and vectors according to nodegraph in std. mode
     virtual void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph) = 0;
 
-    /// rewrite vectors to the new dofmaps after redistributing the discretization
-    virtual void TransferVectorsToNewDistribution(Teuchos::RCP<COMBUST::FlameFront> flamefront) = 0;
 
     //@}
 

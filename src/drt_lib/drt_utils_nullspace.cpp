@@ -331,10 +331,6 @@ void DRT::UTILS::ComputeXFluidDNullSpace( DRT::Discretization & dis, std::vector
   p   |    0       0       0       1
   */
 
-//   else if (ele->Type() == DRT::Element::element_xfluid3 ||
-//            ele->Type() == DRT::Element::element_combust3 ||
-//            ele->Type() == DRT::Element::element_smoothrod ||
-//            ele->Type() == DRT::Element::element_sosh8p8)
   {
     for (int i=0; i<dis.NumMyRowNodes(); ++i)
     {

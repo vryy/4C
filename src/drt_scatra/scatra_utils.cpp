@@ -34,7 +34,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::SCATRAUTILS::ComputeGradientAtNodesMean
     const int scatra_dofid
     )
 {
-  // number space dimensions for 3d combustion element
+  // number space dimensions
   const size_t nsd = dim;
   //const int scatra_dofid = 0; //<  this is the first DoFSet (i.e. the scalar one!!)
 

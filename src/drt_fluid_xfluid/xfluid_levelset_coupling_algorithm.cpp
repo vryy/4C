@@ -711,32 +711,6 @@ bool XFLUIDLEVELSET::Algorithm::ConvergenceCheck(int itnum)
     printf("\n|+---------------------------------------------------------------------------------+|\n");
 
 
-//  // In combust the velocity and pressure component are not separated. To compare values the following output is made.
-//  bool compare_with_combust = true;
-//  if(compare_with_combust)
-//  {
-//    double velnormL2 = 1.0;
-//    Teuchos::RCP<Epetra_Vector> velnpip = FluidField()->StdVelnp(); //Contains Fluid and Pressure
-//    velnpip->Norm2(&velnormL2);
-//    if (velnormL2 < 1e-5) velnormL2 = 1.0;
-//
-//    double fgvelnormL2 = 1.0;
-//
-//    // compute increment and L2-norm of increment
-//    Teuchos::RCP<Epetra_Vector> incvel = Teuchos::rcp(new Epetra_Vector(velnpip->Map()),true);
-//    incvel->Update(1.0,*velnpip,-1.0,*velnpi_,0.0);
-//    incvel->Norm2(&fgvelnormL2);
-//
-//    if (Comm().MyPID()==0)
-//    {
-//      printf("\n|+------------------------ FGI ------------------------+|");
-//      printf("\n|iter/itermax|----tol-[Norm]--|-fluid inc--|-g-func inc (i+1)-|");
-//      printf("\n|   %2d/%2d    | %10.3E[L2] | %10.3E | %10.3E |",
-//          itnum,itmax_,ittol_,fgvelnormL2/velnormL2,fsphinormL2/phinormL2);
-//      printf("\n|+-----------------------------------------------------+|\n");
-//    } // end if processor 0 for output
-//  }
-
   if ((fsvelincnorm <= ittol_) and (fspressincnorm <= ittol_) and itnum > 1)
     fluidstopnonliniter = true;
 

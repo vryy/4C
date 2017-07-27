@@ -2,7 +2,7 @@
 /*!
 \file inpar_structure.cpp
 
-\brief Input parameters for combustion
+\brief Input parameters for structure
 
 \maintainer Alexander Seitz
 

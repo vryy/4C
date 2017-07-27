@@ -35,7 +35,7 @@ namespace ADAPTER
     Derives from FluidBaseAlgorithm and ScaTraBaseAlgorithm.
     There are different subclasses that implement different coupling schemes
     (one-way coupling for the transport of passive scalars and
-     fully coupled schemes for other multiphysics applications like combustion or electrochemistry).
+     fully coupled schemes for other multiphysics applications like electrochemistry).
 
     \author gjb
     \date 07/08

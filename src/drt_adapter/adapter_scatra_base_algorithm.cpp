@@ -272,9 +272,8 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
     }
   }
 
-  // levelset, combustion, and two phase flow
+  // levelset and two phase flow
   else if (probtype == prb_level_set      or
-           probtype == prb_combust        or
            probtype == prb_two_phase_flow or
            probtype == prb_fluid_xfem_ls  or
            probtype == prb_xcontact)
@@ -359,13 +358,6 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
       {
         switch ( probtype )
         {
-          case prb_combust:
-          {
-            std::cout << "\n\n\n WARNING: Level set algorithm does not yet support gen-alpha. You thus get a standard Scatra!\n\n\n" << std::endl;
-            // create instance of time integration class (call the constructor)
-            scatra_ = Teuchos::rcp(new SCATRA::TimIntGenAlpha(discret, solver, scatratimeparams,extraparams, output));
-            break;
-          }
           case prb_two_phase_flow:
           {
             std::cout << "\n\n\n WARNING: Level set algorithm does not yet support gen-alpha. You thus get a standard Scatra!\n\n\n" << std::endl;

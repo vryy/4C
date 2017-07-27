@@ -19,7 +19,6 @@
 #define INTEGRATIONCELL_COORDTRAFO_H
 
 
-#include "../drt_xfem/xfem_utils_combust.H"
 #include "element_coordtrafo.H"
 #include "integrationcell.H"
 
@@ -30,7 +29,6 @@ namespace GEO
   /////////////////////  Domain Integration Cell ////////////////////////////////
 
   //! map position from eta to xi space
-  template<XFEM::AssemblyType ASSTYPE>
   inline void mapEtaToXi3D(
       const GEO::DomainIntCell&   cell,
       const LINALG::Matrix<3,1>&  pos_eta_domain,
@@ -39,18 +37,6 @@ namespace GEO
     // get cell node coordinates
     const LINALG::SerialDenseMatrix& xyze_cell(cell.CellNodalPosXiDomain());
     GEO::elementToCurrentCoordinates(cell.Shape(), xyze_cell, pos_eta_domain, pos_xsi_domain);
-    return;
-  }
-
-
-  //! map position from eta to xi space
-  template<>
-  inline void mapEtaToXi3D<XFEM::standard_assembly>(
-      const GEO::DomainIntCell&,
-      const LINALG::Matrix<3,1>&  pos_eta_domain,
-      LINALG::Matrix<3,1>&        pos_xsi_domain)
-  {
-    pos_xsi_domain = pos_eta_domain;
     return;
   }
 
@@ -81,7 +67,6 @@ namespace GEO
 
 
   //! get determinant between eta and xi space
-  template<XFEM::AssemblyType ASSTYPE>
     inline double detEtaToXi3D(
         const GEO::DomainIntCell&   cell,
         const LINALG::Matrix<3,1>&  pos_eta_domain)
@@ -105,24 +90,12 @@ namespace GEO
     return -1.0;
   }
 
-
   //! get determinant between eta and xi space
-  template<>
-    inline double detEtaToXi3D<XFEM::standard_assembly>(
-      const GEO::DomainIntCell&,
-      const LINALG::Matrix<3,1>&)
-  {
-    return 1.0;
-  }
-
-
-  //! get determinant between eta and xi space
-  template<XFEM::AssemblyType ASSTYPE>
     inline double detXiD_over_EtaD(
         const GEO::DomainIntCell&   cell,
         const LINALG::Matrix<3,1>&  pos_eta_domain)
   {
-    return GEO::detEtaToXi3D<ASSTYPE>(cell, pos_eta_domain);
+    return GEO::detEtaToXi3D(cell, pos_eta_domain);
   }
 
   /////////////////////  Boundary Integration Cell ////////////////////////////////
