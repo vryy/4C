@@ -588,6 +588,13 @@ void AcouFilter::WriteAllResults(PostField* field)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void ElemagFilter::WriteAllResults(PostField* field)
+{
+  WriteElementResults(field);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void InvanaFilter::WriteAllResults(PostField* field)
 {
   // see comments in the INVANA::Writer::WriteNamedVectors function

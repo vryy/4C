@@ -775,6 +775,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_cell.cpp
   src/drt_inpar/inpar_contact.cpp
   src/drt_inpar/inpar_ehl.cpp
+  src/drt_inpar/inpar_elemag.cpp
   src/drt_inpar/inpar_elch.cpp
   src/drt_inpar/inpar_fluid.cpp
   src/drt_inpar/inpar_fpsi.cpp
@@ -1823,6 +1824,10 @@ set(OBJS_DRT_ACOU_LIB
   src/drt_acou/acou_sol_ele_calc.cpp
   src/drt_acou/acou_sol_ele.cpp
 )
+set(OBJS_DRT_ELEMAG
+  src/drt_elemag/elemag_dyn.cpp
+  src/drt_elemag/elemag_timeint.cpp
+)
 set(OBJS_LINALG
   src/linalg/linalg_ana.cpp
   src/linalg/linalg_blocksparsematrix.cpp
@@ -2610,6 +2615,7 @@ add_library(alg_fluid_adjoint ${OBJS_DRT_TOPOPT_ADJOINT})
 add_library(alg_opti ${OBJS_OPTI})
 add_library(alg_particle ${OBJS_DRT_PARTICLE})
 add_library(alg_acou ${OBJS_DRT_ACOU})
+add_library(alg_elemag ${OBJS_DRT_ELEMAG})
 add_library(alg_tutorial ${OBJS_DRT_TUTORIAL})
 
 set(SINGLEFIELD_LIBRARIES
@@ -2636,6 +2642,7 @@ set(SINGLEFIELD_LIBRARIES
   alg_opti
   alg_particle
   alg_acou
+  alg_elemag
   alg_tutorial
   )
 

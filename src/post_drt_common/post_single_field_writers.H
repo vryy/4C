@@ -334,6 +334,27 @@ protected:
 };
 
 /*!
+ \brief Writer for electromagnetic problems
+
+ \author gravemeier
+ \date 06/17
+ */
+class ElemagFilter : public PostFilterBase
+{
+public:
+  ElemagFilter(
+            PostField* field,
+            std::string name) :
+        PostFilterBase (field, name)
+  {
+  }
+
+protected:
+
+  virtual void WriteAllResults(PostField* field);
+};
+
+/*!
  \brief Writer for inverse analysis
 
  \author ghamm

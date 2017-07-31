@@ -355,6 +355,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--SEMI-SMOOTH PLASTICITY", *list);
   reader.ReadGidSection("--ACOUSTIC DYNAMIC", *list);
   reader.ReadGidSection("--ACOUSTIC DYNAMIC/PA IMAGE RECONSTRUCTION", *list);
+  reader.ReadGidSection("--ELECTROMAGNETIC DYNAMIC", *list);
   reader.ReadGidSection("--VOLMORTAR COUPLING", *list);
   reader.ReadGidSection("--NONLINEAR SOLVER", *list);
   reader.ReadGidSection("--TUTORIAL DYNAMIC", *list);
@@ -1038,6 +1039,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   Teuchos::RCP<DRT::Discretization> particledis     = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> porofluiddis    = Teuchos::null; // fpsi, poroelast
   Teuchos::RCP<DRT::Discretization> acoudis         = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> elemagdis       = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> celldis         = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> renderingdis    = Teuchos::null; // simple and general rendering discretization for particleMeshFree simulations
   Teuchos::RCP<DRT::Discretization> pboxdis         = Teuchos::null;
@@ -2087,6 +2089,23 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(acoudis, reader, "--ACOUSTIC ELEMENTS",acouelementtypes)));
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
+
+    break;
+  }
+  case prb_elemag:
+  {
+    // create empty discretizations
+    elemagdis = Teuchos::rcp(new DRT::DiscretizationHDG("elemag",reader.Comm()));
+
+    // create discretization writer - in constructor set into and owned by corresponding discret
+    elemagdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(elemagdis)));
+
+    AddDis("elemag", elemagdis);
+
+    std::set<std::string> elemagelementtypes;
+    elemagelementtypes.insert("ELECTROMAGNETIC");
+
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(elemagdis, reader, "--ELECTROMAGNETIC ELEMENTS",elemagelementtypes)));
 
     break;
   }

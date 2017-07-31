@@ -33,6 +33,7 @@ typedef enum _PROBLEM_TYP
   prb_cavitation,           // cavitation problem
   prb_ehl,                  // elastohydrodynamic lubrication problem (or lubrication structure interaction)
   prb_elch,                 // electrochemical problem
+  prb_elemag,               // electromagnetic problem
   prb_fluid,                // fluid problem
   prb_fluid_ale,            // fluid on an ale mesh (no structure)
   prb_fluid_redmodels,      // fluid_redairways problem

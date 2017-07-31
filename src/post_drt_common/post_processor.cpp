@@ -866,6 +866,13 @@ void runEnsightVtuFilter(PostProblem    &problem)
       }
       break;
     }
+    case prb_elemag:
+    {
+      PostField* field = problem.get_discretization(0);
+      ElemagFilter writer(field, problem.outname());
+      writer.WriteFiles();
+      break;
+    }
     case prb_uq:
     {
       for (int i=0;i<problem.num_discr();i++)

@@ -20,6 +20,7 @@
 #include "../drt_contact_xcontact/xcontact_dyn.H"
 #include "../drt_ehl/ehl_dyn.H"
 #include "../drt_elch/elch_dyn.H"
+#include "../drt_elemag/elemag_dyn.H"
 #include "../drt_fluid/fluid_dyn_nln_drt.H"
 #include "../drt_fpsi/fpsi_dyn.H"
 #include "../drt_fs3i/fs3i_dyn.H"
@@ -206,6 +207,10 @@ void ntacal()
 
     case prb_acou:
       acoustics_drt();
+      break;
+
+    case prb_elemag:
+      electromagnetics_drt();
       break;
 
     case prb_two_phase_flow:
