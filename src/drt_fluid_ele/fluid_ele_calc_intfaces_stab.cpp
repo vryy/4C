@@ -3579,7 +3579,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Comput
     // in this case, the higher order terms definitely require the full velocity (not only the normal part)
     // the mixed tangential parts can be controlled via applying an inverse estimate, such that also the original 1st order CIP terms now require the crosswind part
     // ( see discussion in Massing, Schott and Wall (2017) on Oseen equations
-    require_cross_stab = false; // TODO: true now!
+    require_cross_stab = true;
   }
 
   // the final velocity scaling used in the for the streamline/crosswind CIP and related higher order GP terms
@@ -3791,7 +3791,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Comput
     else dserror("no valid dimension");
 
     gamma_u   = gamma_p;
-    gamma_div = gamma_p*0.05; //TODO: needs to be changed to gamma_div = gamma_p*0.001;
+    gamma_div = gamma_p*0.001;
 
     // Braack et al. 2006: r_min_conv and r_min_visc (see also in Burman 2007 hp work for advection-diffusion)
     double regime_scaling = r_min_visc * kinvisc_ + r_min_conv * p_hk_ * 10.0*max_vel_L2_norm ;
@@ -4130,15 +4130,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Comput
     tau_div_GP2_             = tau_div_                 * p_hk_squared_ * gamma_ghost_penalty_u_2nd;
     tau_p_GP2_               = tau_p_                   * p_hk_squared_ * gamma_ghost_penalty_p_2nd;
 
-#if(1) // TODO: additional contribution to second order gps + tau_u_GP2_ + tau_div_GP2_;
-    // REMARK:
-    // at the moment the 2nd order derivatives in velocity are stabilized just with the viscous ghost penalty part
-    // for the moment there is no "streamline convective" or "divergence" part for the 2nd order u-derivatives
-    // (this could be changed similar to the first order gradients!)
-    tau_vel_2nd_final_ = is_ghost_penalty_reconstruct ? p_hk_squared_ : tau_u_GP2_visc_reaction_;
-#else
     tau_vel_2nd_final_ = is_ghost_penalty_reconstruct ? p_hk_squared_ : tau_u_GP2_visc_reaction_ + tau_u_GP2_ + tau_div_GP2_;
-#endif
     tau_pre_2nd_final_ = is_ghost_penalty_reconstruct ? p_hk_squared_ : tau_p_GP2_;
   }
 
