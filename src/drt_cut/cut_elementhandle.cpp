@@ -25,6 +25,8 @@
 #include "cut_node.H"
 #include "cut_volumecell.H"
 #include "cut_mesh.H"
+#include "cut_tolerance.H"
+#include "quadrature_compression.H"
 
 
 #include "../drt_inpar/inpar_xfem.H"
@@ -115,7 +117,29 @@ void GEO::CUT::ElementHandle::VolumeCellGaussPoints(
       }
     }
 
+#ifdef QUADCOMP
+    if( gpc->NumPoints() > 56 )
+    {
+      QuadratureCompression qc;
+      bool quad_comp_success = qc.PerformCompressionOfQuadrature( *gpc, vc );
+      if( quad_comp_success  )
+      {
+        intpoints.push_back( DRT::UTILS::GaussIntegration( qc.GetCompressedQuadrature() ) );
+
+        // reset the Gauss points for the volumecell so that the compression need not be performed for
+        // each iteration within the Newton loop
+        vc->SetGaussRule( qc.GetCompressedQuadrature() );
+      }
+      else
+        intpoints.push_back( DRT::UTILS::GaussIntegration( gpc ) );
+    }
+    else
+    {
+      intpoints.push_back( DRT::UTILS::GaussIntegration( gpc ) );
+    }
+#else
     intpoints.push_back( DRT::UTILS::GaussIntegration( gpc ) );
+#endif
   }
 }
 

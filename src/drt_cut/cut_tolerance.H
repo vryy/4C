@@ -91,4 +91,8 @@
 // Construct the integration rules directly on the local coordinate system of the element
 #define LOCAL
 
+// utilized quadrature compression (for Details see paper by Sudhakar et al.)
+//#define QUADCOMP
+
+
 #endif

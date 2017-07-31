@@ -272,6 +272,11 @@ public:
   Teuchos::RCP<DRT::UTILS::GaussPoints> GetGaussRule(){return gp_;}
 
   /*!
+  \brief replace the integration rule for this volumecell when MomentFitting or DirectDivergence is used
+   */
+  void SetGaussRule(Teuchos::RCP<DRT::UTILS::GaussPoints> gps){gp_=gps;}
+
+  /*!
   \brief Set the volume of this cell
    */
   void SetVolume(const double vol){volume_=vol;}

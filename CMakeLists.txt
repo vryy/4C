@@ -2240,6 +2240,7 @@ set(OBJS_DRT_CUT
   src/drt_cut/boundarycell_integration.cpp
   src/drt_cut/volume_integration.cpp
   src/drt_cut/least_squares.cpp
+  src/drt_cut/quadrature_compression.cpp
   src/drt_cut/cut_cutwizard.cpp
   src/drt_cut/cut_pointgraph_simple.cpp
   src/drt_cut/cut_facetgraph_simple.cpp
