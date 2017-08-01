@@ -82,6 +82,10 @@ void DRT::Problem::Done()
   for ( std::vector<Problem* >::iterator i=instances_.begin(); i!=instances_.end(); ++i )
   {
     Problem * p = *i;
+
+    // skip null pointers arising from non-consecutive numbering of problem instances
+    if(!p) continue;
+
     for (std::vector<DRT::SingletonDestruction *>::iterator j=p->sds_.begin(); j!=p->sds_.end(); ++j)
     {
       DRT::SingletonDestruction * sd = *j;
