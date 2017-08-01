@@ -1,13 +1,19 @@
-/*!----------------------------------------------------------------------
-\file scatra.cpp
+/*----------------------------------------------------------------------*/
+/*!
+\file scatra_mat.cpp
+
+\brief scalar transport material
+
+\level 1
 
 <pre>
-Maintainer: Volker Gravemeier
+\maintainer Volker Gravemeier
             vgravem@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15245
 </pre>
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 
 #include <vector>
@@ -24,7 +30,10 @@ MAT::PAR::ScatraMat::ScatraMat(
   )
 : Parameter(matdata)
 {
-  Epetra_Map dummy_map(1,1,0,*(DRT::Problem::Instance()->GetNPGroup()->LocalComm()));
+  // extract relevant communicator
+  const Epetra_Comm& comm = DRT::Problem::Instance()->Materials()->GetReadFromProblem() == 0 ? *DRT::Problem::Instance()->GetNPGroup()->LocalComm() : *DRT::Problem::Instance()->GetNPGroup()->SubComm();
+
+  Epetra_Map dummy_map(1,1,0,comm);
   for(int i=first ; i<=last; i++)
   {
     matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map,true)));
