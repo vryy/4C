@@ -39,7 +39,7 @@ namespace CROSSLINKING {
 }
 namespace BEAMINTERACTION {
 class CrosslinkingParams;
-class BeamLinkRigidJointed;
+class BeamLink;
 
 namespace SUBMODELEVALUATOR {
 
@@ -456,7 +456,7 @@ private:
     /// according to Bell's equation (Howard, eq 5.10, p.89)
     void CalcBellsForceDependentUnbindProbability(
         CROSSLINKING::CrosslinkerNode* linker,
-        Teuchos::RCP< BEAMINTERACTION::BeamLinkRigidJointed > const& elepairptr,
+        Teuchos::RCP< BEAMINTERACTION::BeamLink > const& elepairptr,
         std::vector< double >& punlinkforcedependent
     ) const;
 
@@ -493,7 +493,7 @@ private:
     /// send double bonds to new owner if crosslinker ownership change
     /// in the course of redistribution
     virtual void CommunicateBeamLinkAfterRedistribution(
-        std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::BeamLinkRigidJointed> > >& dbondcltosend
+        std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::BeamLink> > >& dbondcltosend
     );
 
     /// send data T to rank= mapkey
@@ -581,7 +581,7 @@ private:
     std::vector<BeamData> beam_data_;
 
     //! double bonded crosslinker that exert forces on network (map key is crosslinker gid)
-    std::map<int, Teuchos::RCP<BEAMINTERACTION::BeamLinkRigidJointed> > doublebondcl_;
+    std::map<int, Teuchos::RCP<BEAMINTERACTION::BeamLink> > doublebondcl_;
 
     //! particle, i.e. crosslinker molecule discretization runtime vtp writer
     Teuchos::RCP<DiscretizationRuntimeVtpWriter> vtp_writer_ptr_;

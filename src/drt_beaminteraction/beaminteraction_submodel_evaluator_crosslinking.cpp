@@ -42,6 +42,7 @@
 
 #include "beam_link.H"
 #include "beam_link_beam3r_lin2_rigidjointed.H"
+#include "beam_link_beam3r_lin2_pinjointed.H"
 #include "../drt_binstrategy/drt_meshfree_multibin.H"
 
 #include "beaminteraction_calc_utils.H"
@@ -411,7 +412,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetAllPossibleInitialDoub
   if ( crosslinking_params_ptr_->TotalNumInitCrosslinker() == 0 )
     return false;
 
-  // id is unique pairing id of elegid and locbspot id
+  // id is unique pairing id of elegid and locbspot id of binding spot
   // built up two std::vectors instead of one std::vector< std::pair< int, int > > to ease
   // communication later on
   std::vector<int> myfirstbspotids, mysecondbspotids, mylinkertype;
@@ -427,7 +428,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetAllPossibleInitialDoub
 
     BeamData const & beamdata_i = beam_data[ beamele->LID() ];
 
-    // loop over all binding spots
+    // loop over all binding spots of current element
     unsigned int numbspots = beamele->GetNumberOfBindingSpots();
     for ( unsigned int locbspot_i = 0; locbspot_i < numbspots; ++locbspot_i )
     {
@@ -610,20 +611,20 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetAllPossibleInitialDoub
       nb_elegid = nb_bspotids.first;
       nb_locbspotid = nb_bspotids.second;
 
+      // check if maximal number of crosslinker for current type is already exceeded
+      ++numpertype[nbiter.second];
+      if ( numpertype[nbiter.second] > crosslinking_params_ptr_->NumInitCrosslinkerPerCrosslinkerMatId(nbiter.second) )
+        continue;
+
       // check if binding spot has already been occupied
       if ( occupied.find( nb_bspotgid ) != occupied.end() )
         continue;
       else
         occupied.insert( nb_bspotgid );
 
-      // check if maximal number of crosslinker for current type is already exceeded
-      ++numpertype[nbiter.second];
-      if ( numpertype[nbiter.second] > crosslinking_params_ptr_->NumInitCrosslinkerPerCrosslinkerMatId(nbiter.second) )
-        continue;
-
       // check ownership
       if ( Discret().ElementRowMap()->LID( elegid ) == -1 )
-        continue;
+        break;
 
        // store data of new crosslinker
        CrosslinkerData cldata;
@@ -670,7 +671,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetAllPossibleInitialDoub
   std::map< int, NewDoubleBonds > mynewdbondcl;
   for( auto const & iter : newlinker )
   {
-    for ( int dim = 0; dim < 3; ++dim )
+    for ( unsigned int dim = 0; dim < 3; ++dim )
       X[dim] = iter.clpos(dim);
 
     Teuchos::RCP<CROSSLINKING::CrosslinkerNode> newcrosslinker =
@@ -771,9 +772,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::Reset()
   // reset crosslinker pairs
   for ( auto const & iter : doublebondcl_ )
   {
-    Teuchos::RCP<BEAMINTERACTION::BeamLinkRigidJointed> elepairptr = iter.second;
+    Teuchos::RCP<BEAMINTERACTION::BeamLink> elepairptr = iter.second;
 
-    CROSSLINKING::CrosslinkerNode *cl_i = dynamic_cast< CROSSLINKING::CrosslinkerNode* >( BinDiscretPtr()->gNode( elepairptr->Id() ) );
+    CROSSLINKING::CrosslinkerNode *cl_i =
+        dynamic_cast< CROSSLINKING::CrosslinkerNode* >( BinDiscretPtr()->gNode( elepairptr->Id() ) );
 
     if ( cl_i->ClData()->GetNumberOfBonds() != 2 )
       dserror("Cl with gid %i Owner %i on myrank %i and numbonds %i",elepairptr->Id(),cl_i->Owner(),
@@ -806,6 +808,21 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::Reset()
     // condition, i.e. have been shifted before
     PeriodicBoundingBoxPtr()->UnShift3D( pos[1], pos[0] );
 
+    // safety check until code is better tested for potential problems with periodic boundary conditions
+    // **************************** DEBUG ****************************************
+    LINALG::Matrix<3,1> dist ( true );
+    dist.Update( 1.0, pos[0], -1.0, pos[1] );
+    for ( unsigned int i = 0; i < 3; ++i )
+    {
+      if ( std::abs(dist(i)) > 0.5 * PeriodicBoundingBoxPtr()->EdgeLength(i) )
+      {
+        dserror("You are trying to set the binding spot positions of this crosslinker "
+            "in at least one direction at a distance larger than %f, which is "
+            " half of the period length in the respective direction)", 0.5 * PeriodicBoundingBoxPtr()->EdgeLength(i));
+      }
+    }
+    // ********************** END DEBUG ****************************************
+
     // finally reset state
     elepairptr->ResetState( pos, triad );
   }
@@ -830,7 +847,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::EvaluateForce()
 
   for ( auto const & iter : doublebondcl_ )
   {
-    Teuchos::RCP<BEAMINTERACTION::BeamLinkRigidJointed> elepairptr = iter.second;
+    Teuchos::RCP<BEAMINTERACTION::BeamLink> elepairptr = iter.second;
 
     for ( int i = 0; i < 2; ++i )
     {
@@ -880,7 +897,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::EvaluateStiff()
 
   for ( auto const & iter : doublebondcl_ )
   {
-    Teuchos::RCP<BEAMINTERACTION::BeamLinkRigidJointed> elepairptr = iter.second;
+    Teuchos::RCP<BEAMINTERACTION::BeamLink> elepairptr = iter.second;
 
     for ( int i = 0; i < 2; ++i )
     {
@@ -937,7 +954,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::EvaluateForceStiff()
 
   for ( auto const & iter : doublebondcl_ )
   {
-    Teuchos::RCP<BEAMINTERACTION::BeamLinkRigidJointed> elepairptr = iter.second;
+    Teuchos::RCP<BEAMINTERACTION::BeamLink> elepairptr = iter.second;
     for ( int i = 0; i < 2; ++i )
     {
       elegids[i] = elepairptr->GetEleGid(i);
@@ -1227,7 +1244,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::FillStateDataVectorsForOu
   CheckInitSetup();
   DRT::Discretization const& bindis = BinDiscret();
 
-  std::map< int, Teuchos::RCP< BEAMINTERACTION::BeamLinkRigidJointed > >::const_iterator it;
+  std::map< int, Teuchos::RCP< BEAMINTERACTION::BeamLink > >::const_iterator it;
   //todo: this is of course not nice, this needs to be done somewhere else
   for ( int i = 0; i < bindis.NumMyRowNodes(); ++i )
   {
@@ -1285,13 +1302,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::WriteRestart(
   DRT::PackBuffer buffer;
   for ( auto const & iter : doublebondcl_ )
   {
-    Teuchos::RCP< BEAMINTERACTION::BeamLinkRigidJointed > btbl = iter.second;
+    Teuchos::RCP< BEAMINTERACTION::BeamLink > btbl = iter.second;
     btbl->Pack(buffer);
   }
   buffer.StartPacking();
   for ( auto const & iter : doublebondcl_ )
   {
-    Teuchos::RCP< BEAMINTERACTION::BeamLinkRigidJointed > btbl = iter.second;
+    Teuchos::RCP< BEAMINTERACTION::BeamLink > btbl = iter.second;
     btbl->Pack(buffer);
   }
 
@@ -1299,7 +1316,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::WriteRestart(
   std::swap( *block, buffer() );
 
   // write data
-  BinDiscret().Writer()->WriteCharVector( "BeamLinkRigidJointed", block );
+  BinDiscret().Writer()->WriteCharVector( "BeamLink", block );
 }
 
 /*----------------------------------------------------------------------------*
@@ -1325,7 +1342,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ReadRestart(
   // 2) read list of double bonded crosslinker on each proc
   // -------------------------------------------------------------------------
   Teuchos::RCP< std::vector< char > > charvec;
-  reader.ReadCharVector( charvec, "BeamLinkRigidJointed" );
+  reader.ReadCharVector( charvec, "BeamLink" );
 
   std::vector<char>::size_type index = 0;
   while ( index < charvec->size() )
@@ -1333,8 +1350,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ReadRestart(
     std::vector<char> data;
     DRT::ParObject::ExtractfromPack( index, *charvec, data );
     Teuchos::RCP< DRT::ParObject > object = Teuchos::rcp( DRT::UTILS::Factory(data), true );
-    Teuchos::RCP< BEAMINTERACTION::BeamLinkRigidJointed > beamtobeamlink =
-        Teuchos::rcp_dynamic_cast< BEAMINTERACTION::BeamLinkRigidJointed >(object);
+    Teuchos::RCP< BEAMINTERACTION::BeamLink > beamtobeamlink =
+        Teuchos::rcp_dynamic_cast< BEAMINTERACTION::BeamLink >(object);
     if ( beamtobeamlink == Teuchos::null )
       dserror("Failed to build a node from the node data");
 
@@ -2563,23 +2580,21 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CreateNewDoubleBondedCros
   std::map< int, NewDoubleBonds >::const_iterator iter;
   for ( iter = mynewdbondcl.begin(); iter != mynewdbondcl.end(); ++iter )
   {
-    // init positions and triads
-    std::vector< LINALG::Matrix<3,1> > pos(2);
-    std::vector< LINALG::Matrix<3,3> > triad(2);
-
     NewDoubleBonds const& newdoublebond_i = iter->second;
+    CROSSLINKING::CrosslinkerNode* cl_node = dynamic_cast<CROSSLINKING::CrosslinkerNode*>(
+            BinDiscretPtr()->gNode(iter->first) );
 
     // create and initialize objects of beam-to-beam connections
-    // Todo introduce enum for type of linkage (only linear Beam3r element possible so far)
-    //      and introduce corresponding input parameter or even condition for mechanical
-    //      links between beams in general
-    Teuchos::RCP<BEAMINTERACTION::BeamLinkRigidJointed> linkelepairptr =
-      BEAMINTERACTION::BeamLinkRigidJointed::Create();
+    // Todo move this inside the create routines (or one create routine in BeamLink class)
+    Teuchos::RCP<BEAMINTERACTION::BeamLink> linkelepairptr;
+    if ( cl_node->GetMaterial()->JointType() == INPAR::BEAMINTERACTION::beam3r_lin2_rigid )
+      linkelepairptr = BEAMINTERACTION::BeamLinkRigidJointed::Create();
+    else if ( cl_node->GetMaterial()->JointType() == INPAR::BEAMINTERACTION::beam3r_lin2_pin )
+      linkelepairptr = BEAMINTERACTION::BeamLinkPinJointed::Create();
 
     // finally initialize and setup object
     linkelepairptr->Init( iter->first, newdoublebond_i.eleids, newdoublebond_i.bspotposs, newdoublebond_i.bspottriads );
-    linkelepairptr->Setup( dynamic_cast<CROSSLINKING::CrosslinkerNode*>(
-        BinDiscretPtr()->gNode(iter->first) )->GetMaterial()->BeamElastHyperMatNum() );
+    linkelepairptr->Setup( cl_node->GetMaterial()->BeamElastHyperMatNum() );
 
     // add to my double bonds
     doublebondcl_[linkelepairptr->Id()] = linkelepairptr;
@@ -2781,7 +2796,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UnBindCrosslinker()
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CalcBellsForceDependentUnbindProbability(
     CROSSLINKING::CrosslinkerNode* linker,
-    Teuchos::RCP< BEAMINTERACTION::BeamLinkRigidJointed > const& elepairptr,
+    Teuchos::RCP< BEAMINTERACTION::BeamLink > const& elepairptr,
     std::vector< double >& punlinkforcedependent) const
 {
   CheckInitSetup();
@@ -2879,11 +2894,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UpdateMyDoubleBondsAfterR
 {
   CheckInit();
 
-  std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::BeamLinkRigidJointed> > > dbcltosend;
+  std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::BeamLink> > > dbcltosend;
   std::set<int> dbtoerase;
 
   // loop over all double bonds on myrank
-  std::map<int, Teuchos::RCP<BEAMINTERACTION::BeamLinkRigidJointed> >::iterator iter;
+  std::map<int, Teuchos::RCP<BEAMINTERACTION::BeamLink> >::iterator iter;
   for ( iter = doublebondcl_.begin(); iter != doublebondcl_.end(); ++iter )
   {
     const int clgid = iter->first;
@@ -2923,7 +2938,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UpdateMyDoubleBondsRemote
   // loop over all double bonded crosslinker that were read during restart and
   // get the ones that do not belong to myrank
   std::set<int> notonmyrank;
-  std::map<int, Teuchos::RCP<BEAMINTERACTION::BeamLinkRigidJointed> >::iterator iter;
+  std::map<int, Teuchos::RCP<BEAMINTERACTION::BeamLink> >::iterator iter;
   for ( iter = doublebondcl_.begin(); iter != doublebondcl_.end(); ++iter )
   {
     // double bonded crosslinker gid
@@ -2949,7 +2964,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UpdateMyDoubleBondsRemote
   int err = BinDiscretPtr()->NodeRowMap()->RemoteIDList( size, unique_clgidlist.data(), unique_pidlist.data(), NULL );
   if (err < 0) dserror("Epetra_BlockMap::RemoteIDList returned err=%d",err);
 
-  std::map< int, std::vector< Teuchos::RCP<BEAMINTERACTION::BeamLinkRigidJointed > > > dbcltosend;
+  std::map< int, std::vector< Teuchos::RCP<BEAMINTERACTION::BeamLink > > > dbcltosend;
   for ( unsigned int i = 0; i < static_cast<unsigned int>( unique_clgidlist.size() ); ++i )
     dbcltosend[ unique_pidlist[i] ].push_back( doublebondcl_[ unique_clgidlist[i] ] );
 
@@ -3469,7 +3484,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DecideBindingInParallel(
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CommunicateBeamLinkAfterRedistribution(
-    std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::BeamLinkRigidJointed> > >& dbondcltosend)
+    std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::BeamLink> > >& dbondcltosend)
 {
   CheckInit();
 
@@ -3483,10 +3498,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CommunicateBeamLinkAfterR
   // ---- pack data for sending -----
   std::map<int, std::vector<char> > sdata;
   std::vector<int> targetprocs( numproc, 0 );
-  std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::BeamLinkRigidJointed> > >::const_iterator p;
+  std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::BeamLink> > >::const_iterator p;
   for ( p = dbondcltosend.begin(); p != dbondcltosend.end(); ++p )
   {
-    std::vector< Teuchos::RCP< BEAMINTERACTION::BeamLinkRigidJointed > >::const_iterator iter;
+    std::vector< Teuchos::RCP< BEAMINTERACTION::BeamLink > >::const_iterator iter;
     for ( iter = p->second.begin(); iter != p->second.end(); ++iter )
     {
      DRT::PackBuffer data;
@@ -3535,8 +3550,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CommunicateBeamLinkAfterR
       DRT::ParObject::ExtractfromPack( position, rdata, data );
       // this Teuchos::rcp holds the memory
       Teuchos::RCP<DRT::ParObject> object = Teuchos::rcp( DRT::UTILS::Factory(data), true );
-      Teuchos::RCP<BEAMINTERACTION::BeamLinkRigidJointed> beamtobeamlink =
-          Teuchos::rcp_dynamic_cast<BEAMINTERACTION::BeamLinkRigidJointed>(object);
+      Teuchos::RCP<BEAMINTERACTION::BeamLink> beamtobeamlink =
+          Teuchos::rcp_dynamic_cast<BEAMINTERACTION::BeamLink>(object);
       if ( beamtobeamlink == Teuchos::null )
         dserror("Received object is not a beam to beam linkage");
 

@@ -49,7 +49,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Init(
 {
   issetup_ = false;
 
-  BeamLink::Init( id, eleids, initpos );
+  BeamLink::Init( id, eleids, initpos, inittriad );
 
   // *** initialization of the two triads of the connecting element ***
 
@@ -254,7 +254,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::ResetState(
 {
   CheckInitSetup();
 
-  BeamLink::ResetState(bspotpos);
+  BeamLink::ResetState( bspotpos, bspottriad );
 
   /* the two orientations, i.e. triads of the linkage element are defined via a
    * constant relative rotation based on the triads at the binding spots of the
@@ -269,21 +269,6 @@ void BEAMINTERACTION::BeamLinkRigidJointed::ResetState(
   currenttriad.Multiply(bspottriad[1],Lambdarel2_);
   LARGEROTATIONS::triadtoquaternion<double>(currenttriad,bspottriad2_);
 
-  // safety check until code is better tested for potential problems with periodic boundary conditions
-  // **************************** DEBUG ****************************************
-  LINALG::Matrix<3,1> dist ( true );
-  dist.Update(1.0,bspotpos[0],-1.0,bspotpos[1]);
-  for (unsigned int i=0; i<3; ++i)
-  {
-    if (std::abs(dist(i)) > 5.0)
-    {
-      this->Print(std::cout);
-      dserror("You are trying to set the binding spot positions of this crosslinker "
-          "in at least one direction at a distance larger than 5.0 (which is "
-          "hard-coded here as half of the period length)");
-    }
-  }
-  // ********************** END DEBUG ****************************************
 }
 
 /*----------------------------------------------------------------------------*
@@ -301,16 +286,8 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Print( std::ostream & out ) const
 {
   CheckInit();
 
-  out << "\nBeamLinkRigidJointed (ID " << Id() << "):";
-  out << "\nbspotIds_[0] = ";
-  out << "EleGID " << GetEleGid(0) << " locbspotnum " << GetLocBSpotNum(0);
-  out << "\nbspotIds_[1] = ";
-  out << "EleGID " << GetEleGid(1)  << " locbspotnum " << GetLocBSpotNum(1);
-  out << "\n";
-  out << "\nbspotpos1_ = ";
-  GetBindSpotPos1().Print(out);
-  out << "\nbspotpos2_ = ";
-  GetBindSpotPos1().Print(out);
+  BeamLink::Print( out );
+
   out << "\nbspottriad1_ = ";
   LINALG::TMatrix<double,3,3> triad;
   LARGEROTATIONS::quaterniontotriad(bspottriad1_,triad);

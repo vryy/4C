@@ -69,7 +69,8 @@ public:
   virtual void Init(
       const int id,
       const std::vector<std::pair<int, int> >& eleids,
-      const std::vector<LINALG::Matrix<3,1> >& initpos);
+      const std::vector<LINALG::Matrix<3,1> >& initpos,
+      const std::vector<LINALG::Matrix<3,3> >& inittriad);
 
   //! Setup
   virtual void Setup( const int matnum);
@@ -135,8 +136,9 @@ public:
   /*
   \brief Update position and triad of both connection sites (a.k.a. binding spots)
   */
-  void ResetState(
-      std::vector<LINALG::Matrix<3,1> >& bspotpos);
+  virtual void ResetState(
+      std::vector<LINALG::Matrix<3,1> >& bspotpos,
+      std::vector<LINALG::Matrix<3,3> >& bspottriad);
 
   /*!
   \brief Evaluate forces
@@ -164,6 +166,9 @@ public:
       LINALG::SerialDenseMatrix& stiffmat12,
       LINALG::SerialDenseMatrix& stiffmat21,
       LINALG::SerialDenseMatrix& stiffmat22) = 0;
+
+
+  void Print( std::ostream& out ) const;
 
   //@}
 

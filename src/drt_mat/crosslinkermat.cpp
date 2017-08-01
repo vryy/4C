@@ -27,6 +27,7 @@ MAT::PAR::CrosslinkerMat::CrosslinkerMat(
   ) :
     Parameter(matdata),
     beamelasthypermatnum_( matdata->GetDouble("MATNUM") ),
+    jointtype_( INPAR::BEAMINTERACTION::String2JointType( *(matdata->Get<std::string>("JOINTTYPE") ) ) ),
     linkinglength_( matdata->GetDouble("LINKINGLENGTH") ),
     linkinglengthtol_( matdata->GetDouble("LINKINGLENGTHTOL") ),
     linkingangle_( matdata->GetDouble("LINKINGANGLE") ),

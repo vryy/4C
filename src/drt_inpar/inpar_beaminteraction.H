@@ -51,6 +51,13 @@ namespace INPAR
     bstr_penalty      ///< penalty method
   };
 
+  /// type of linker
+  enum JointType
+  {
+    beam3r_lin2_rigid,        ///< rigid joint
+    beam3r_lin2_pin,          ///< pin joint
+  };
+
   /// type of filament
   enum FilamentType
   {
@@ -65,6 +72,20 @@ namespace INPAR
     linkertype_arbitrary,        ///< binds to all filament
     linkertype_actin,           ///< only binds to actin filaments
     linkertype_collagen         ///< only binds to collagen filaments
+  };
+
+  //! Map type std::string to enum
+  inline enum JointType String2JointType(const std::string& name)
+  {
+    JointType type = beam3r_lin2_rigid;
+    if ( boost::iequals( name, "beam3rlin2rigid" ) )
+      type = beam3r_lin2_rigid;
+    else if ( boost::iequals( name, "beam3rlin2pin" ) )
+      type = beam3r_lin2_pin;
+    else
+      dserror("invalid filament type std::string ");
+
+    return type;
   };
 
   //! Map type std::string to enum

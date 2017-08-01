@@ -56,11 +56,12 @@ BEAMINTERACTION::BeamLinkBeam3rLin2PinJointed::BeamLinkBeam3rLin2PinJointed() :
 void BEAMINTERACTION::BeamLinkBeam3rLin2PinJointed::Init(
     int id,
     const std::vector<std::pair<int, int> >& eleids,
-    const std::vector<LINALG::Matrix<3,1> >& initpos)
+    const std::vector<LINALG::Matrix<3,1> >& initpos,
+    const std::vector<LINALG::Matrix<3,3> >& inittriad)
 {
   issetup_ = false;
 
-  BeamLinkPinJointed::Init( id, eleids, initpos );
+  BeamLinkPinJointed::Init( id, eleids, initpos, inittriad );
 
   // *** initialization of the two triads of the connecting element ***
   /* they are determined such that:
@@ -407,11 +408,12 @@ bool BEAMINTERACTION::BeamLinkBeam3rLin2PinJointed::EvaluateForceStiff(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamLinkBeam3rLin2PinJointed::ResetState(
-    std::vector<LINALG::Matrix<3,1> >& bspotpos)
+    std::vector<LINALG::Matrix<3,1> >& bspotpos,
+    std::vector<LINALG::Matrix<3,3> >& bspottriad)
 {
   CheckInitSetup();
 
-  BeamLinkPinJointed::ResetState(bspotpos);
+  BeamLinkPinJointed::ResetState( bspotpos, bspottriad );
 
   // *** initialization of the two triads of the connecting element ***
 

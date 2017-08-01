@@ -46,6 +46,9 @@ namespace MAT
       /// number of beam elasthyper material
       int const beamelasthypermatnum_;
 
+      /// type of joint
+      INPAR::BEAMINTERACTION::JointType jointtype_;
+
       /// distance between the two binding domains of a linker
       double const linkinglength_;
 
@@ -155,6 +158,9 @@ private:
 
     /// number of beam elasthyper material
     virtual double BeamElastHyperMatNum() const { return params_->beamelasthypermatnum_; }
+
+    /// force depedent off rate according to bells equation
+    virtual INPAR::BEAMINTERACTION::JointType JointType() const { return params_->jointtype_; };
 
     /// distance between the two binding domains of a linker
     virtual double LinkingLength() const { return params_->linkinglength_; }

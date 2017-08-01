@@ -42,7 +42,8 @@ BEAMINTERACTION::BeamLink::BeamLink() :
 void BEAMINTERACTION::BeamLink::Init(
     const int id,
     const std::vector<std::pair<int, int> >& eleids,
-    const std::vector<LINALG::Matrix<3,1> >& initpos)
+    const std::vector<LINALG::Matrix<3,1> >& initpos,
+    const std::vector<LINALG::Matrix<3,3> >& inittriad)
 {
   issetup_ = false;
 
@@ -123,7 +124,9 @@ void BEAMINTERACTION::BeamLink::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLink::ResetState( std::vector<LINALG::Matrix<3,1> >& bspotpos )
+void BEAMINTERACTION::BeamLink::ResetState(
+    std::vector<LINALG::Matrix<3,1> >& bspotpos,
+    std::vector<LINALG::Matrix<3,3> >& bspottriad)
 {
   CheckInitSetup();
 
@@ -131,4 +134,24 @@ void BEAMINTERACTION::BeamLink::ResetState( std::vector<LINALG::Matrix<3,1> >& b
    * binding spots on the parent elements */
   bspotpos1_ = bspotpos[0];
   bspotpos2_ = bspotpos[1];
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void BEAMINTERACTION::BeamLink::Print( std::ostream & out ) const
+{
+  CheckInit();
+
+  out << "\nBeamLinkRigidJointed (ID " << Id() << "):";
+  out << "\nbspotIds_[0] = ";
+  out << "EleGID " << GetEleGid(0) << " locbspotnum " << GetLocBSpotNum(0);
+  out << "\nbspotIds_[1] = ";
+  out << "EleGID " << GetEleGid(1)  << " locbspotnum " << GetLocBSpotNum(1);
+  out << "\n";
+  out << "\nbspotpos1_ = ";
+  GetBindSpotPos1().Print(out);
+  out << "\nbspotpos2_ = ";
+  GetBindSpotPos2().Print(out);
+
+  out << "\n";
 }

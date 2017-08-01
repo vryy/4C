@@ -41,11 +41,12 @@ BEAMINTERACTION::BeamLinkPinJointed::BeamLinkPinJointed() :
 void BEAMINTERACTION::BeamLinkPinJointed::Init(
     int id,
     const std::vector<std::pair<int, int> >& eleids,
-    const std::vector<LINALG::Matrix<3,1> >& initpos)
+    const std::vector<LINALG::Matrix<3,1> >& initpos,
+    const std::vector<LINALG::Matrix<3,3> >& inittriad)
 {
   issetup_ = false;
 
-  BeamLink::Init( id, eleids, initpos );
+  BeamLink::Init( id, eleids, initpos, inittriad );
 
   issetup_ = true;
 }
@@ -99,11 +100,12 @@ void BEAMINTERACTION::BeamLinkPinJointed::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamLinkPinJointed::ResetState(
-    std::vector<LINALG::Matrix<3,1> >& bspotpos)
+    std::vector<LINALG::Matrix<3,1> >& bspotpos,
+    std::vector<LINALG::Matrix<3,3> >& bspottriad)
 {
   CheckInitSetup();
 
-  BeamLink::ResetState(bspotpos);
+  BeamLink::ResetState( bspotpos, bspottriad );
 
 }
 
@@ -122,15 +124,7 @@ void BEAMINTERACTION::BeamLinkPinJointed::Print(std::ostream& out) const
 {
   CheckInit();
 
-  out << "\nBeamLinkPinJointed (ID " << Id() << "):";
-  out << "\nbspotIds_[0] = ";
-  out << "EleGID " << GetEleGid(0) << " locbspotnum " << GetLocBSpotNum(0);
-  out << "\nbspotIds_[1] = ";
-  out << "EleGID " << GetEleGid(1)  << " locbspotnum " << GetLocBSpotNum(1);
-  out << "\n";
-  out << "\nbspotpos1_ = ";
-  GetBindSpotPos1().Print(out);
-  out << "\nbspotpos2_ = ";
-  GetBindSpotPos1().Print(out);
+  BeamLink::Print( out );
+
   out << "\n";
 }

@@ -73,7 +73,8 @@ public:
   virtual void Init(
       int id,
       const std::vector<std::pair<int, int> >& eleids,
-      const std::vector<LINALG::Matrix<3,1> >& initpos);
+      const std::vector<LINALG::Matrix<3,1> >& initpos,
+      const std::vector<LINALG::Matrix<3,3> >& inittriad);
 
   //! Setup [derived]
   virtual void Setup( const int matnum );
@@ -142,7 +143,8 @@ public:
   \brief Update position and triad of both connection sites (a.k.a. binding spots)
   */
   void ResetState(
-      std::vector<LINALG::Matrix<3,1> >& bspotpos);
+      std::vector<LINALG::Matrix<3,1> >& bspotpos,
+      std::vector<LINALG::Matrix<3,3> >& bspottriad);
 
   //@}
 

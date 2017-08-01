@@ -127,8 +127,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::ContractileCells::Reset()
     // condition, i.e. have been shifted before
     PeriodicBoundingBoxPtr()->UnShift3D( pos[1], pos[0] );
 
+    // dummy triad
+    std::vector< LINALG::Matrix< 3, 3 > > dummy_triad( 2, LINALG::Matrix< 3, 3>(true) );
+
     // finally reset state
-    elepairptr->ResetState( pos );
+    elepairptr->ResetState( pos, dummy_triad );
   }
 }
 
@@ -609,7 +612,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::ContractileCells::CheckFeasibilityOfNew
       // 5. criterion:
 
       // check if bspot will be bonded this step
-      int bpspotgid = BEAMINTERACTION::UTILS::CantorPairing(bspotpair);
+      int bpspotgid = BEAMINTERACTION::UTILS::CantorPairing( bspotpair, true);
 
       if ( tobebonded.find(bpspotgid) != tobebonded.end() )
         continue;
@@ -679,10 +682,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::ContractileCells::CreateBeamToSphereJoi
         BEAMINTERACTION::BeamLinkPinJointed::Create();
 
       // unique linker id is bspot elegid and locspot id paired
-      int id = BEAMINTERACTION::UTILS::CantorPairing( eleids[1] );
+      int id = BEAMINTERACTION::UTILS::CantorPairing( eleids[1], true );
+
+      // dummy triad
+      std::vector< LINALG::Matrix< 3, 3 > > dummy_triad( 2, LINALG::Matrix< 3, 3>(true) );
 
       // finally initialize and setup object
-      linkelepairptr->Init( id, eleids, pos );
+      linkelepairptr->Init( id, eleids, pos, dummy_triad );
       // fixme
       linkelepairptr->Setup( 4 );
 
