@@ -1,8 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_mat_multiscale.cpp
+\file newman_multiscale.cpp
 
-\brief material for macro-scale elements in multi-scale simulations of scalar transport problems
+\brief material for macro-scale elements in multi-scale simulations of electrochemistry problems
 
 \level 2
 
@@ -14,62 +14,64 @@
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#include "scatra_mat_multiscale.H"
+#include "newman_multiscale.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_mat/matpar_bundle.H"
 
 /*--------------------------------------------------------------------*
- | constructor                                             fang 11/15 |
+ | constructor                                             fang 07/17 |
  *--------------------------------------------------------------------*/
-MAT::PAR::ScatraMatMultiScale::ScatraMatMultiScale(
+MAT::PAR::NewmanMultiScale::NewmanMultiScale(
     Teuchos::RCP<MAT::PAR::Material> matdata
     ) :
-ScatraMat(matdata),
+Newman(matdata),
 ScatraMultiScale(matdata),
-porosity_(matdata->GetDouble("POROSITY")),
-tortuosity_(matdata->GetDouble("TORTUOSITY"))
+sigma_(matdata->GetDouble("SIGMA"))
 {
   return;
 }
 
 
 /*--------------------------------------------------------------------*
- | create material                                         fang 11/15 |
+ | create instance of Newman multi-scale material          fang 07/17 |
  *--------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::ScatraMatMultiScale::CreateMaterial()
+Teuchos::RCP<MAT::Material> MAT::PAR::NewmanMultiScale::CreateMaterial()
 {
-  return Teuchos::rcp(new MAT::ScatraMatMultiScale(this));
+  return Teuchos::rcp(new MAT::NewmanMultiScale(this));
 }
 
 
-MAT::ScatraMatMultiScaleType MAT::ScatraMatMultiScaleType::instance_;
+MAT::NewmanMultiScaleType MAT::NewmanMultiScaleType::instance_;
 
 
-DRT::ParObject* MAT::ScatraMatMultiScaleType::Create(const std::vector<char>& data)
+/*--------------------------------------------------------------------*
+ | unpack instance of Newman multi-scale material          fang 07/17 |
+ *--------------------------------------------------------------------*/
+DRT::ParObject* MAT::NewmanMultiScaleType::Create(const std::vector<char>& data)
 {
-  MAT::ScatraMatMultiScale* ScatraMatMultiScale = new MAT::ScatraMatMultiScale();
-  ScatraMatMultiScale->Unpack(data);
-  return ScatraMatMultiScale;
+  MAT::NewmanMultiScale* NewmanMultiScale = new MAT::NewmanMultiScale();
+  NewmanMultiScale->Unpack(data);
+  return NewmanMultiScale;
 }
 
 
 /*--------------------------------------------------------------------*
- | construct empty material                                fang 11/15 |
+ | construct empty Newman multi-scale material             fang 07/17 |
  *--------------------------------------------------------------------*/
-MAT::ScatraMatMultiScale::ScatraMatMultiScale() :
+MAT::NewmanMultiScale::NewmanMultiScale() :
   params_(NULL)
 {
   return;
 }
 
 
-/*--------------------------------------------------------------------*
- | construct material with specific material parameters    fang 11/15 |
- *--------------------------------------------------------------------*/
-MAT::ScatraMatMultiScale::ScatraMatMultiScale(MAT::PAR::ScatraMatMultiScale* params) :
-  ScatraMat(params),
+/*--------------------------------------------------------------------------------------*
+ | construct Newman multi-scale material with specific material parameters   fang 07/17 |
+ *--------------------------------------------------------------------------------------*/
+MAT::NewmanMultiScale::NewmanMultiScale(MAT::PAR::NewmanMultiScale* params) :
+  Newman(params),
   params_(params)
 {
   return;
@@ -77,9 +79,9 @@ MAT::ScatraMatMultiScale::ScatraMatMultiScale(MAT::PAR::ScatraMatMultiScale* par
 
 
 /*--------------------------------------------------------------------*
- | pack material for communication purposes                fang 11/15 |
+ | pack material for communication purposes                fang 07/17 |
  *--------------------------------------------------------------------*/
-void MAT::ScatraMatMultiScale::Pack(DRT::PackBuffer& data) const
+void MAT::NewmanMultiScale::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -94,16 +96,16 @@ void MAT::ScatraMatMultiScale::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,matid);
 
   // pack base class material
-  ScatraMat::Pack(data);
+  Newman::Pack(data);
 
   return;
 }
 
 
 /*--------------------------------------------------------------------*
- | unpack data from a char vector                          fang 11/15 |
+ | unpack data from a char vector                          fang 07/17 |
  *--------------------------------------------------------------------*/
-void MAT::ScatraMatMultiScale::Unpack(const std::vector<char>& data)
+void MAT::NewmanMultiScale::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -123,15 +125,15 @@ void MAT::ScatraMatMultiScale::Unpack(const std::vector<char>& data)
       const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
       MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if(mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::ScatraMatMultiScale*>(mat);
+        params_ = static_cast<MAT::PAR::NewmanMultiScale*>(mat);
       else
-        dserror("Type of parameter material %d does not match calling type %d!", mat->Type(), MaterialType());
+        dserror("Type of parameter material %d does not match calling type %d!",mat->Type(),MaterialType());
     }
 
   // extract base class material
   std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
-  ScatraMat::Unpack(basedata);
+  Newman::Unpack(basedata);
 
   // final safety check
   if(position != data.size())

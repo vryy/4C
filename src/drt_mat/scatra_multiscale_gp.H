@@ -1,6 +1,6 @@
 /*!---------------------------------------------------------------------*/
 /*!
-\file scatra_mat_multiscale_gp.H
+\file scatra_multiscale_gp.H
 
 \brief submaterial associated with macro-scale Gauss point in multi-scale simulations of scalar transport problems
 
@@ -35,34 +35,37 @@ namespace IO
 namespace MAT
 {
   //! class implementation
-  class ScatraMatMultiScaleGP
+  class ScatraMultiScaleGP
   {
     public:
 
       //! constructor
-      ScatraMatMultiScaleGP(
+      ScatraMultiScaleGP(
           const int   ele_id,       //!< macro-scale element ID
           const int   gp_id,        //!< macro-scale Gauss point ID
           const int   microdisnum   //!< number of micro-scale discretization
           );
 
       //! destructor
-      ~ScatraMatMultiScaleGP();
+      ~ScatraMultiScaleGP();
 
       //! perform initializations
       void Init();
 
       //! prepare time step
       void PrepareTimeStep(
-          const double   phinp_macro   //!< macro-scale state variable
+          const std::vector<double>&   phinp_macro   //!< macro-scale state variables
           );
 
       //! evaluate micro scale
       void Evaluate(
-          const double   phinp_macro,    //!< macro-scale state variable
-          double&        q_micro,        //!< micro-scale coupling flux
-          double&        dq_dphi_micro   //!< derivative of micro-scale coupling flux w.r.t. macro-scale state variable
+          const std::vector<double>&   phinp_macro,    //!< macro-scale state variables
+          double&                      q_micro,        //!< micro-scale coupling flux
+          std::vector<double>&         dq_dphi_micro   //!< derivatives of micro-scale coupling flux w.r.t. macro-scale state variables
           );
+
+      //! evaluate mean concentration on micro scale
+      double EvaluateMeanConcentration() const;
 
       //! update micro-scale time integrator at the end of each time step
       void Update();
@@ -119,6 +122,6 @@ namespace MAT
 
       //! file name prefix for restart
       std::string restartname_;
-  }; // class MAT::ScatraMatMultiScaleGP
+  }; // class MAT::ScatraMultiScaleGP
 } // namespace MAT
 #endif

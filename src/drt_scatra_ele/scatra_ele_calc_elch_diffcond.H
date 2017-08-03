@@ -295,7 +295,7 @@ protected:
   /*========================================================================*/
 
   //! evaluate action
-  int EvaluateAction(
+  virtual int EvaluateAction(
       DRT::Element*                 ele,
       Teuchos::ParameterList&       params,
       DRT::Discretization&          discretization,
@@ -601,7 +601,7 @@ class ScaTraEleDiffManagerElchDiffCond : public ScaTraEleDiffManagerElchElectrod
     /*========================================================================*/
 
     //! Output of transport parameter (to screen)
-    void OutputTransportParams(const int numscal)
+    virtual void OutputTransportParams(const int numscal)
     {
       // call base class routine
       dmelectrode::OutputTransportParams(numscal);

@@ -128,6 +128,14 @@ void INPAR::ELCH::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condit
   // electrode state of charge
   {
     // definition of electrode state of charge surface and volume conditions
+    Teuchos::RCP<ConditionDefinition> electrodesocline =
+        Teuchos::rcp(new ConditionDefinition("DESIGN ELECTRODE STATE OF CHARGE LINE CONDITIONS",
+                                             "ElectrodeSOC",
+                                             "electrode state of charge line condition",
+                                             DRT::Condition::ElectrodeSOC,
+                                             true,
+                                             DRT::Condition::Line));
+
     Teuchos::RCP<ConditionDefinition> electrodesocsurf =
         Teuchos::rcp(new ConditionDefinition("DESIGN ELECTRODE STATE OF CHARGE SURF CONDITIONS",
                                              "ElectrodeSOC",
@@ -158,11 +166,13 @@ void INPAR::ELCH::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condit
     // insert input file line components into condition definitions
     for (unsigned i=0; i<electrodesoccomponents.size(); ++i)
     {
+      electrodesocline->AddComponent(electrodesoccomponents[i]);
       electrodesocsurf->AddComponent(electrodesoccomponents[i]);
       electrodesocvol->AddComponent(electrodesoccomponents[i]);
     }
 
     // insert condition definitions into global list of valid condition definitions
+    condlist.push_back(electrodesocline);
     condlist.push_back(electrodesocsurf);
     condlist.push_back(electrodesocvol);
   }
@@ -170,7 +180,15 @@ void INPAR::ELCH::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condit
   /*--------------------------------------------------------------------*/
   // cell voltage
   {
-    // definition of cell voltage line and surface conditions
+    // definition of cell voltage point, line, and surface conditions
+    Teuchos::RCP<ConditionDefinition> cellvoltagepoint =
+        Teuchos::rcp(new ConditionDefinition("DESIGN CELL VOLTAGE POINT CONDITIONS",
+                                             "CellVoltagePoint",
+                                             "cell voltage point condition",
+                                             DRT::Condition::CellVoltage,
+                                             false,
+                                             DRT::Condition::Point));
+
     Teuchos::RCP<ConditionDefinition> cellvoltageline =
         Teuchos::rcp(new ConditionDefinition("DESIGN CELL VOLTAGE LINE CONDITIONS",
                                              "CellVoltage",
@@ -198,11 +216,13 @@ void INPAR::ELCH::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condit
     // insert input file line components into condition definitions
     for (unsigned i=0; i<cellvoltagecomponents.size(); ++i)
     {
+      cellvoltagepoint->AddComponent(cellvoltagecomponents[i]);
       cellvoltageline->AddComponent(cellvoltagecomponents[i]);
       cellvoltagesurf->AddComponent(cellvoltagecomponents[i]);
     }
 
     // insert condition definitions into global list of valid condition definitions
+    condlist.push_back(cellvoltagepoint);
     condlist.push_back(cellvoltageline);
     condlist.push_back(cellvoltagesurf);
   }

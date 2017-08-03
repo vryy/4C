@@ -161,6 +161,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
   switch(impltype_)
   {
   case INPAR::SCATRA::impltype_elch_diffcond:
+  case INPAR::SCATRA::impltype_elch_diffcond_multiscale:
   case INPAR::SCATRA::impltype_elch_diffcond_thermo:
   case INPAR::SCATRA::impltype_elch_electrode:
   case INPAR::SCATRA::impltype_elch_electrode_growth:

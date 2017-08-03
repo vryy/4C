@@ -1,8 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_mat_multiscale.H
+\file newman_multiscale.H
 
-\brief material for macro-scale elements in multi-scale simulations of scalar transport problems
+\brief material for macro-scale elements in multi-scale simulations of electrochemistry problems
 
 \level 2
 
@@ -14,83 +14,74 @@
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifndef SCATRA_MAT_MULTISCALE_H
-#define SCATRA_MAT_MULTISCALE_H
+#ifndef NEWMAN_MULTISCALE_H
+#define NEWMAN_MULTISCALE_H
 
-#include "scatra_mat.H"
+#include "newman.H"
 #include "scatra_multiscale.H"
 
 namespace MAT
 {
-  // forward declaration
-  class ScatraMultiScaleGP;
-
   namespace PAR
   {
     //! material parameters
-    class ScatraMatMultiScale : public ScatraMat, public ScatraMultiScale
+    class NewmanMultiScale : public Newman, public ScatraMultiScale
     {
       public:
 
         //! constructor
-        ScatraMatMultiScale(
+        NewmanMultiScale(
             Teuchos::RCP<MAT::PAR::Material> matdata
             );
 
         //! destructor
-        virtual ~ScatraMatMultiScale() { return; };
+        virtual ~NewmanMultiScale(){return;};
 
-        //! create material
-        virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+        //! create instance of Newman multi-scale material
+        Teuchos::RCP<MAT::Material> CreateMaterial();
 
-        //! return porosity
-        double Porosity() const { return porosity_; };
-
-        //! return tortuosity
-        double Tortuosity() const { return tortuosity_; };
+        //! return electronic conductivity
+        double Sigma() const {return sigma_;};
 
       private:
 
-        //! @name material parameters
+        //! @name parameters for Newman multi-scale material
         //@{
-        //! porosity
-        const double porosity_;
-
-        //! tortuosity
-        const double tortuosity_;
+        //! electronic conductivity
+        const double sigma_;
         //@}
-    };  // class MAT::PAR::ScatraMatMultiScale
+    }; // class MAT::PAR::NewmanMultiScale
   } // namespace PAR
 
 
   /*----------------------------------------------------------------------*/
-  class ScatraMatMultiScaleType : public DRT::ParObjectType
+  class NewmanMultiScaleType : public DRT::ParObjectType
   {
     public:
 
-      std::string Name() const { return "ScatraMatMultiScaleType"; };
+      std::string Name() const {return "NewmanMultiScaleType";};
 
-      static ScatraMatMultiScaleType& Instance() { return instance_; };
+      static NewmanMultiScaleType& Instance(){return instance_;};
 
       DRT::ParObject* Create(const std::vector<char>& data);
 
     private:
 
-      static ScatraMatMultiScaleType instance_;
+      static NewmanMultiScaleType instance_;
   };
 
 
   /*----------------------------------------------------------------------*/
-  //! material wrapper
-  class ScatraMatMultiScale : public ScatraMat, public ScatraMultiScale
+  //! wrapper for Newman multi-scale material
+  class NewmanMultiScale : public Newman, public ScatraMultiScale
   {
     public:
 
-      //! construct empty material
-      ScatraMatMultiScale();
+      //! construct empty Newman multi-scale material
+      NewmanMultiScale();
 
-      //! construct material with specific material parameters
-      explicit ScatraMatMultiScale(MAT::PAR::ScatraMatMultiScale* params);
+      //! construct Newman multi-scale material with specific material parameters
+      explicit NewmanMultiScale(MAT::PAR::NewmanMultiScale* params);
 
       //! @name packing and unpacking
       /*!
@@ -99,7 +90,7 @@ namespace MAT
         Every class implementing ParObject needs a unique id defined at the
         top of drt_parobject.H (this file) and should return it in this method.
       */
-      int UniqueParObjectId() const { return ScatraMatMultiScaleType::Instance().UniqueParObjectId(); };
+      int UniqueParObjectId() const { return NewmanMultiScaleType::Instance().UniqueParObjectId(); };
 
       /*!
         \brief Pack this class so it can be communicated
@@ -128,16 +119,13 @@ namespace MAT
       //@}
 
       //! return material type
-      INPAR::MAT::MaterialType MaterialType() const {return INPAR::MAT::m_scatra_multiscale;};
+      INPAR::MAT::MaterialType MaterialType() const {return INPAR::MAT::m_newman_multiscale;};
 
-      //! clone material
-      Teuchos::RCP<Material> Clone() const {return Teuchos::rcp(new ScatraMatMultiScale(*this));};
+      //! clone Newman multi-scale material
+      Teuchos::RCP<Material> Clone() const {return Teuchos::rcp(new NewmanMultiScale(*this));};
 
-      //! return porosity
-      double Porosity() const { return params_->Porosity(); };
-
-      //! return tortuosity
-      double Tortuosity() const { return params_->Tortuosity(); };
+      //! return electronic conductivity
+      double Sigma() const {return params_->Sigma();};
 
     private:
 
@@ -145,7 +133,7 @@ namespace MAT
       const MAT::PAR::ScatraMultiScale* Params() const {return params_;};
 
       //! material parameters
-      MAT::PAR::ScatraMatMultiScale* params_;
-  };
-}
+      MAT::PAR::NewmanMultiScale* params_;
+  }; // wrapper for Newman multi-scale material
+} // namespace MAT
 #endif

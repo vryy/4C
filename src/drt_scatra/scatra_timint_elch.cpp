@@ -67,7 +67,8 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(
     cc_             (false),
     condid_cccv_    (-1),
     nhalfcycles_    (-1),
-    ihalfcycle_     (-1)
+    ihalfcycle_     (-1),
+    splitter_macro_ (Teuchos::null)
 {
   // safety check
   if(frt_ <= 0.)
@@ -95,9 +96,12 @@ void SCATRA::ScaTraTimIntElch::Init()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::Setup()
 {
-  // set up the concentration-el.potential splitter
-  splitter_ = Teuchos::rcp(new LINALG::MapExtractor);
-  FLD::UTILS::SetupFluidSplit(*discret_,NumScal(),*splitter_);
+  // set up concentration-potential splitter
+  SetupConcPotSplit();
+
+  // set up concentration-potential-potential splitter for macro scale in multi-scale simulations
+  if(macro_scale_)
+    SetupConcPotPotSplit();
 
   // initialize time-dependent electrode kinetics variables (galvanostatic mode or double layer contribution)
   ComputeTimeDerivPot0(true);
@@ -217,6 +221,78 @@ void SCATRA::ScaTraTimIntElch::Setup()
       break;
     }
   }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | set up concentration-potential splitter                   fang 08/17 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::SetupConcPotSplit()
+{
+  // prepare sets for concentration and potential dofs
+  std::set<int> conddofset;
+  std::set<int> otherdofset;
+
+  // fill sets
+  for(int inode=0; inode<discret_->NumMyRowNodes(); ++inode)
+  {
+    std::vector<int> dofs = discret_->Dof(0,discret_->lRowNode(inode));
+    for(unsigned idof=0; idof<dofs.size(); ++idof)
+      if(idof < (unsigned) NumScal())
+        otherdofset.insert(dofs[idof]);
+      else
+        conddofset.insert(dofs[idof]);
+  }
+
+  // transform sets to maps
+  std::vector<int> conddofmapvec(conddofset.begin(),conddofset.end());
+  const Teuchos::RCP<const Epetra_Map> conddofmap = Teuchos::rcp(new Epetra_Map(-1,conddofmapvec.size(),&conddofmapvec[0],0,discret_->Comm()));
+  std::vector<int> otherdofmapvec(otherdofset.begin(),otherdofset.end());
+  const Teuchos::RCP<const Epetra_Map> otherdofmap = Teuchos::rcp(new Epetra_Map(-1,otherdofmapvec.size(),&otherdofmapvec[0],0,discret_->Comm()));
+
+  // set up concentration-potential splitter
+  splitter_ = Teuchos::rcp(new LINALG::MapExtractor(*discret_->DofRowMap(),conddofmap,otherdofmap));
+
+  return;
+}
+
+
+/*-----------------------------------------------------------------------------------------------------------*
+ | set up concentration-potential-potential splitter for macro scale in multi-scale simulations   fang 08/17 |
+ *-----------------------------------------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::SetupConcPotPotSplit()
+{
+  // prepare sets for dofs associated with electrolyte concentration, electrolyte potential, and electrode potential
+  std::set<int> dofset_conc_el;
+  std::set<int> dofset_pot_el;
+  std::set<int> dofset_pot_ed;
+
+  // fill sets
+  for(int inode=0; inode<discret_->NumMyRowNodes(); ++inode)
+  {
+    std::vector<int> dofs = discret_->Dof(0,discret_->lRowNode(inode));
+    for(unsigned idof=0; idof<dofs.size(); ++idof)
+      if(idof < (unsigned) NumScal())
+        dofset_conc_el.insert(dofs[idof]);
+      else if(idof == (unsigned) NumScal())
+        dofset_pot_el.insert(dofs[idof]);
+      else
+        dofset_pot_ed.insert(dofs[idof]);
+  }
+
+  // transform sets to maps
+  std::vector<Teuchos::RCP<const Epetra_Map> > maps(3,Teuchos::null);
+  std::vector<int> dofmapvec_conc_el(dofset_conc_el.begin(),dofset_conc_el.end());
+  maps[0] = Teuchos::rcp(new Epetra_Map(-1,dofmapvec_conc_el.size(),&dofmapvec_conc_el[0],0,discret_->Comm()));
+  std::vector<int> dofmapvec_pot_el(dofset_pot_el.begin(),dofset_pot_el.end());
+  maps[1] = Teuchos::rcp(new Epetra_Map(-1,dofmapvec_pot_el.size(),&dofmapvec_pot_el[0],0,discret_->Comm()));
+  std::vector<int> dofmapvec_pot_ed(dofset_pot_ed.begin(),dofset_pot_ed.end());
+  maps[2] = Teuchos::rcp(new Epetra_Map(-1,dofmapvec_pot_ed.size(),&dofmapvec_pot_ed[0],0,discret_->Comm()));
+
+  // set up concentration-potential-potential splitter
+  splitter_macro_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*discret_->DofRowMap(),maps));
 
   return;
 }
@@ -589,9 +665,15 @@ void SCATRA::ScaTraTimIntElch::ReadRestartProblemSpecific(const int step,IO::Dis
   if(isale_)
     reader.ReadVector(trueresidual_, "trueresidual");
 
-  // read states of charge of resolved electrodes if applicable, needed for correct evaluation of cell C rate at the beginning of the first time step after restart
+  // read restart data associated with electrode state of charge conditions if applicable, needed for correct evaluation of cell C rate at the beginning of the first time step after restart
   if(discret_->GetCondition("ElectrodeSOC"))
+  {
+    // read states of charge of resolved electrodes
     reader.ReadRedundantDoubleVector(electrodesoc_,"electrodesoc");
+
+    // read time step when states of charge of resolved electrodes were computed the last time
+    lastsocstep_ = reader.ReadInt("lastsocstep");
+  }
 
   // extract constant-current constant-voltage (CCCV) cell cycling boundary condition if available
   const DRT::Condition* const cccvcyclingcondition = discret_->GetCondition("CCCVCycling");
@@ -1166,6 +1248,12 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
   // extract conditions for cell voltage
   std::vector<DRT::Condition*> conditions;
   discret_->GetCondition("CellVoltage",conditions);
+  std::vector<DRT::Condition*> conditionspoint;
+  discret_->GetCondition("CellVoltagePoint",conditionspoint);
+  if(conditions.size() and conditionspoint.size())
+    dserror("Cannot have cell voltage line/surface conditions and cell voltage point conditions at the same time!");
+  else if(conditionspoint.size())
+    conditions = conditionspoint;
 
   // perform all following operations only if there is at least one condition for cell voltage
   if(conditions.size() > 0)
@@ -1191,30 +1279,74 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
       // extract condition ID
       const int condid = conditions[icond]->GetInt("ConditionID");
 
-      // add state vector to discretization
-      discret_->ClearState();
-      discret_->SetState("phinp",phinp_);
+      // process line and surface conditions
+      if(conditionspoint.size() == 0)
+      {
+        // add state vector to discretization
+        discret_->ClearState();
+        discret_->SetState("phinp",phinp_);
 
-      // create parameter list
-      Teuchos::ParameterList condparams;
+        // create parameter list
+        Teuchos::ParameterList condparams;
 
-      // action for elements
-      condparams.set<int>("action",SCATRA::bd_calc_elch_cell_voltage);
+        // action for elements
+        condparams.set<int>("action",SCATRA::bd_calc_elch_cell_voltage);
 
-      // initialize result vector
-      // first component = electric potential integral, second component = domain integral
-      Teuchos::RCP<Epetra_SerialDenseVector> scalars = Teuchos::rcp(new Epetra_SerialDenseVector(2));
+        // initialize result vector
+        // first component = electric potential integral, second component = domain integral
+        Teuchos::RCP<Epetra_SerialDenseVector> scalars = Teuchos::rcp(new Epetra_SerialDenseVector(2));
 
-      // evaluate current condition for electrode state of charge
-      discret_->EvaluateScalars(condparams,scalars,"CellVoltage",condid);
-      discret_->ClearState();
+        // evaluate current condition for electrode state of charge
+        discret_->EvaluateScalars(condparams,scalars,"CellVoltage",condid);
+        discret_->ClearState();
 
-      // extract concentration and domain integrals
-      double intpotential = (*scalars)(0);
-      double intdomain = (*scalars)(1);
+        // extract concentration and domain integrals
+        double intpotential = (*scalars)(0);
+        double intdomain = (*scalars)(1);
 
-      // compute mean electric potential of current electrode
-      potentials[condid] = intpotential/intdomain;
+        // compute mean electric potential of current electrode
+        potentials[condid] = intpotential/intdomain;
+      }
+
+      // process point conditions
+      else
+      {
+        // initialize local variable for electric potential of current electrode
+        double potential(0.);
+
+        // extract nodal cloud
+        const std::vector<int>* const nodeids = conditions[icond]->Nodes();
+        if(nodeids == NULL)
+          dserror("Cell voltage point condition does not have nodal cloud!");
+        if(nodeids->size() != 1)
+          dserror("Nodal cloud of cell voltage point condition must have exactly one node!");
+
+        // extract node ID
+        const int nodeid = (*nodeids)[0];
+
+        // process row nodes only
+        if(discret_->NodeRowMap()->MyGID(nodeid))
+        {
+          // extract node
+          DRT::Node* node = discret_->gNode(nodeid);
+          if(node == NULL)
+            dserror("Cannot extract node with global ID %d from scalar transport discretization!",nodeid);
+
+          // extract degrees of freedom from node
+          const std::vector<int> dofs = discret_->Dof(0,node);
+
+          // extract local ID of degree of freedom associated with electrode potential
+          const int lid = discret_->DofRowMap()->LID(*dofs.rbegin());
+          if(lid < 0)
+            dserror("Cannot extract degree of freedom with global ID %d!",*dofs.rbegin());
+
+          // extract electrode potential
+          potential = (*phinp_)[lid];
+        }
+
+        // communicate electrode potential
+        discret_->Comm().SumAll(&potential,&potentials[condid],1);
+      }
 
       // print mean electric potential of current electrode to screen
       if(myrank_ == 0)
@@ -1262,9 +1394,15 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::OutputRestart() const
 {
-  // output states of charge of resolved electrodes if applicable, needed for correct evaluation of cell C rate at the beginning of the first time step after restart
+  // output restart data associated with electrode state of charge conditions if applicable, needed for correct evaluation of cell C rate at the beginning of the first time step after restart
   if(discret_->GetCondition("ElectrodeSOC"))
+  {
+    // output states of charge of resolved electrodes
     output_->WriteRedundantDoubleVector("electrodesoc",electrodesoc_);
+
+    // output time step when states of charge of resolved electrodes were computed the last time
+    output_->WriteInt("lastsocstep",lastsocstep_);
+  }
 
   // output restart data associated with constant-current constant-voltage (CCCV) cell cycling if applicable
   if(discret_->GetCondition("CCCVCycling"))
@@ -2723,34 +2861,37 @@ void SCATRA::ScalarHandlerElch::Setup(const ScaTraTimIntImpl* const scatratimint
   //call base class
   ScalarHandler::Setup(scatratimint);
 
-  // for now only equal dof numbers are supported
-  if(not equalnumdof_)
-    dserror("Different number of DOFs per node within ScaTra discretization! This is not supported for Elch!");
-
-  // cast to ElCh time integrator
-  const ScaTraTimIntElch* const elchtimint =dynamic_cast<const ScaTraTimIntElch* const> (scatratimint);
+  // cast to electrochemistry time integrator
+  const ScaTraTimIntElch* const elchtimint = dynamic_cast<const ScaTraTimIntElch* const>(scatratimint);
   if(elchtimint == NULL)
     dserror("cast to ScaTraTimIntElch failed!");
 
   // adapt number of transported scalars if necessary
-  if (NumDofPerNode() > 1) // we have at least two ion species + el. potential
+  // current is a solution variable
+  if(DRT::INPUT::IntegralValue<int>(elchtimint->ElchParameterList()->sublist("DIFFCOND"),"CURRENT_SOLUTION_VAR"))
   {
-    // current is a solution variable
-    if(DRT::INPUT::IntegralValue<int>(elchtimint->ElchParameterList()->sublist("DIFFCOND"),"CURRENT_SOLUTION_VAR"))
-    {
-      // shape of local row element(0) -> number of space dimensions
-      // int dim = problem_->NDim();
-      int dim = DRT::UTILS::getDimension(elchtimint->Discretization()->lRowElement(0)->Shape());
-      // number of concentrations transported is numdof-1-nsd
-      numscal_.clear();
-      numscal_.insert(NumDofPerNode()-1-dim);
-    }
-    else
-    {
-      // number of concentrations transported is numdof-1
-      numscal_.clear();
-      numscal_.insert(NumDofPerNode()-1);
-    }
+    // shape of local row element(0) -> number of space dimensions
+    // int dim = problem_->NDim();
+    int dim = DRT::UTILS::getDimension(elchtimint->Discretization()->lRowElement(0)->Shape());
+    // number of concentrations transported is numdof-1-nsd
+    numscal_.clear();
+    numscal_.insert(NumDofPerNode()-1-dim);
+  }
+
+  // multi-scale case
+  else if(elchtimint->MacroScale())
+  {
+    // number of transported scalars is 1
+    numscal_.clear();
+    numscal_.insert(1);
+  }
+
+  // standard case
+  else
+  {
+    // number of transported scalars is numdof-1 (last dof = electric potential)
+    numscal_.clear();
+    numscal_.insert(NumDofPerNode()-1);
   }
 
   return;

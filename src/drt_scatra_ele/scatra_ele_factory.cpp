@@ -21,6 +21,7 @@
 #include "scatra_ele_calc_lsreinit.H"
 #include "scatra_ele_calc_elch_NP.H"
 #include "scatra_ele_calc_elch_diffcond.H"
+#include "scatra_ele_calc_elch_diffcond_multiscale.H"
 #include "scatra_ele_calc_loma.H"
 #include "scatra_ele_calc_poro.H"
 #include "scatra_ele_calc_advanced_reaction.H"
@@ -435,6 +436,11 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
   case INPAR::SCATRA::impltype_elch_diffcond:
   {
     return DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::Instance(numdofpernode,numscal,disname);
+    break;
+  }
+  case INPAR::SCATRA::impltype_elch_diffcond_multiscale:
+  {
+    return DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::Instance(numdofpernode,numscal,disname);
     break;
   }
   case INPAR::SCATRA::impltype_elch_diffcond_thermo:

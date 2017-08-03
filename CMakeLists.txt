@@ -559,6 +559,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/myocard_tools.cpp
   src/drt_mat/neohooke.cpp
   src/drt_mat/newman.cpp
+  src/drt_mat/newman_multiscale.cpp
   src/drt_mat/newtonianfluid.cpp
   src/drt_mat/optimization_density.cpp
   src/drt_mat/permeablefluid.cpp
@@ -576,6 +577,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/scatra_mat_multiscale.cpp
   src/drt_mat/scatra_mat_poro_ecm.cpp
   src/drt_mat/scatra_mat_multiporo.cpp
+  src/drt_mat/scatra_multiscale.cpp
   src/drt_mat/scatra_reaction_mat.cpp
   src/drt_mat/scatra_bondreac_mat.cpp
   src/drt_mat/scatra_reaction_coupling.cpp
@@ -1323,6 +1325,7 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_calc_chemo_reac.cpp
   src/drt_scatra_ele/scatra_ele_calc_elch.cpp
   src/drt_scatra_ele/scatra_ele_calc_elch_diffcond.cpp
+  src/drt_scatra_ele/scatra_ele_calc_elch_diffcond_multiscale.cpp
   src/drt_scatra_ele/scatra_ele_calc_elch_diffcond_sti_thermo.cpp
   src/drt_scatra_ele/scatra_ele_calc_elch_electrode.cpp
   src/drt_scatra_ele/scatra_ele_calc_elch_electrode_sti_thermo.cpp
@@ -1344,6 +1347,7 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_calc_service_elch_NP.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_elch_electrode.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_elch_diffcond.cpp
+  src/drt_scatra_ele/scatra_ele_calc_service_elch_diffcond_multiscale.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_elch.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_cardiac_monodomain.cpp
   src/drt_scatra_ele/scatra_ele_calc_std.cpp
@@ -1630,8 +1634,8 @@ set(OBJS_DRT_MAT
   src/drt_mat/micromaterialgp_static.cpp
 )
 set(OBJS_DRT_MAT_SCATRA_MULTI
-  src/drt_mat/scatra_mat_multiscale_evaluate.cpp
-  src/drt_mat/scatra_mat_multiscale_gp.cpp
+  src/drt_mat/scatra_multiscale_evaluate.cpp
+  src/drt_mat/scatra_multiscale_gp.cpp
 )
 set(OBJS_BACI_MAIN
   src/global_full/global_init_control.cpp

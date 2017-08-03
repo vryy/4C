@@ -54,9 +54,9 @@ namespace MAT
       // pointer to vectors containing parameter for predefined curves
       // -> faster than saving the actual vector
 
-      /// number of parameter needed  for implemented concentration dependence
+      /// number of parameter needed for implemented concentration dependence
       const int transnrparanum_;
-      /// parameter needed  for implemented concentration dependence
+      /// parameter needed for implemented concentration dependence
       const std::vector<double> transnrpara_;
 
       /// number of parameter needed for implemented concentration dependence

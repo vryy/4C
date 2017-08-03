@@ -439,6 +439,11 @@ namespace ELEMENTS
         double&                                   densam      //!< density at time t_(n+alpha_m)
         ) const;
 
+    //! evaluate electrode material
+    void MatElectrode(
+        const Teuchos::RCP<const MAT::Material>   material   //!< electrode material
+        );
+
     /*========================================================================*/
     //! @name stabilization and related functions
     /*========================================================================*/
@@ -1004,7 +1009,7 @@ namespace ELEMENTS
     );
 
     //! macro-scale matrix and vector contributions arising from macro-micro coupling in multi-scale simulations
-    void CalcMatAndRhsMultiScale(
+    virtual void CalcMatAndRhsMultiScale(
         const DRT::Element* const   ele,          //!< element
         Epetra_SerialDenseMatrix&   emat,         //!< element matrix
         Epetra_SerialDenseVector&   erhs,         //!< element right-hand side vector

@@ -68,6 +68,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CheckElchElementParamete
       int numdofpernode = 0;
       if (diffcondparams_->CurSolVar())
         numdofpernode = nummat+DRT::Problem::Instance()->NDim()+numphase;
+      else if(actphase->MatById(actphase->MatID(0))->MaterialType() == INPAR::MAT::m_newman_multiscale)
+        numdofpernode = 3;
       else
         numdofpernode = nummat+numphase;
 
@@ -121,34 +123,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcInitialTimeDerivativ
       discretization,
       la
       );
-
-  // dummy mass matrix for the electric current dofs
-  if(diffcondparams_->CurSolVar())
-  {
-    // integration points and weights
-    const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
-
-    for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
-    {
-      const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
-
-      for (unsigned idim=0;idim<my::nsd_;++idim)
-      {
-        for (unsigned vi=0; vi<my::nen_; ++vi)
-        {
-          const double v = fac*my::funct_(vi); // no density required here
-          const int fvi = vi*my::numdofpernode_+my::numscal_+1+idim;
-
-          for (unsigned ui=0; ui<my::nen_; ++ui)
-          {
-            const int fui = ui*my::numdofpernode_+my::numscal_+1+idim;
-
-            emat(fvi,fui) += v*my::funct_(ui);
-          }
-        }
-      }
-    }
-  }
 
   // In the moment the diffusion manager contains the porosity at the last Gauss point (previous call my::CalcInitialTimeDerivative())
   // Since the whole approach is valid only for constant porosities, we do not fill the diffusion manager again at the element center

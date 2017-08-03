@@ -30,7 +30,7 @@ MAT::PAR::ElchPhase::ElchPhase(
   tortuosity_(matdata->GetDouble("TORTUOSITY")),
   nummat_(matdata->GetInt("NUMMAT")),
   matids_(*matdata->Get<std::vector<int> >("MATIDS")),
-  local_(false)
+  local_(matdata->GetInt("LOCAL"))
 {
   if (nummat_ != (int)matids_.size())
       dserror("number of phases %d does not fit to size of phase vector %d", nummat_, matids_.size());

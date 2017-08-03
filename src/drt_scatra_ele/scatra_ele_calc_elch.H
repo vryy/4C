@@ -85,7 +85,7 @@ protected:
   /*========================================================================*/
 
   //! Prepare everything what is needed in CallMatAndRhs() to calculate the sysmat and the rhs
-  void Sysmat(
+  virtual void Sysmat(
     DRT::Element*                         ele,       //!< the element we are dealing with
     Epetra_SerialDenseMatrix&             emat,      //!< element matrix to calculate
     Epetra_SerialDenseVector&             erhs,      //!< element rhs to calculate
@@ -257,16 +257,6 @@ protected:
     bool                              effCond,    //!< flag if effective conductivity should be calculated
     bool                              specresist      //!< flag if inverse of conductivity should be calculated -> specific resistance
   );
-
-  //! calculate element mass matrix and element residual for initial time derivative
-  virtual void CalcInitialTimeDerivative(
-      DRT::Element*                 ele,              //!< current element
-      Epetra_SerialDenseMatrix&     emat,             //!< element matrix
-      Epetra_SerialDenseVector&     erhs,             //!< element residual
-      Teuchos::ParameterList&       params,           //!< parameter list
-      DRT::Discretization&          discretization,   //!< discretization
-      DRT::Element::LocationArray&  la                //!< location vector
-      );
 
   // Get conductivity from material
   virtual void GetConductivity(

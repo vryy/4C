@@ -163,6 +163,9 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   //! return cell voltage
   const double& CellVoltage() const {return cellvoltage_;};
 
+  //! return map extractor for macro scale in multi-scale simulations
+  const Teuchos::RCP<const LINALG::MultiMapExtractor>& SplitterMacro() const {return splitter_macro_;};
+
   protected:
 
   /*========================================================================*/
@@ -204,6 +207,12 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
 
   //! initialize meshtying strategy (including standard case without meshtying)
   void CreateMeshtyingStrategy();
+
+  //! set up concentration-potential splitter
+  void SetupConcPotSplit();
+
+  //! set up concentration-potential-potential splitter for macro scale in multi-scale simulations
+  void SetupConcPotPotSplit();
 
   /*--- calculate and update -----------------------------------------------*/
 
@@ -297,7 +306,7 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   bool dlcapexists_;
 
   //! time step when states of charge of resolved electrodes were computed the last time
-  unsigned lastsocstep_;
+  int lastsocstep_;
 
   //! electro-kinetics toggle
   //! Toggle which defines dof's with Nernst-BC or Dirichlet condition
@@ -342,6 +351,9 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
 
   //! number of current charge or discharge half-cycle
   int ihalfcycle_;
+
+  //! map extractor for macro scale in multi-scale simulations
+  Teuchos::RCP<const LINALG::MultiMapExtractor> splitter_macro_;
 }; // class ScaTraTimIntElch
 
 /*========================================================================*/

@@ -337,7 +337,8 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
      mat->MaterialType() == INPAR::MAT::m_thermostvenant or
      mat->MaterialType() == INPAR::MAT::m_yoghurt or
      mat->MaterialType() == INPAR::MAT::m_soret or
-     mat->MaterialType() == INPAR::MAT::m_scatra_multiporo
+     mat->MaterialType() == INPAR::MAT::m_scatra_multiporo or
+     (mat->MaterialType() == INPAR::MAT::m_electrode and impltype_ == INPAR::SCATRA::impltype_std)
      )
     numdofpernode_ = 1; // we only have a single scalar
   else if(mat->MaterialType() == INPAR::MAT::m_electrode)

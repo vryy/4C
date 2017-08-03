@@ -358,64 +358,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateConductivity(
 } //ScaTraEleCalcElch()
 
 
-/*---------------------------------------------------------------------------------------------*
- | calculate element mass matrix and element residual for initial time derivative   fang 03/15 |
- *---------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalcInitialTimeDerivative(
-    DRT::Element*                 ele,              //!< current element
-    Epetra_SerialDenseMatrix&     emat,             //!< element matrix
-    Epetra_SerialDenseVector&     erhs,             //!< element residual
-    Teuchos::ParameterList&       params,           //!< parameter list
-    DRT::Discretization&          discretization,   //!< discretization
-    DRT::Element::LocationArray&  la                //!< location array
-    )
-{
-  // call base class routine
-  my::CalcInitialTimeDerivative(
-      ele,
-      emat,
-      erhs,
-      params,
-      discretization,
-      la
-      );
-
-  // do another loop over the integration points for the potential:
-  // At this point time is not so critical since the CalcInitialTimeDerivative()
-  // is called once in the beginning of the simulation!
-
-  // we put a dummy mass matrix for the electric potential dofs
-  // here in order to have a regular matrix in the lower right block of the whole system-matrix
-  // An identity matrix would cause problems with ML solver in the SIMPLE
-  // schemes since ML needs to have off-diagonal entries for the aggregation!
-
-  // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
-
-  // element integration loop
-  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
-  {
-    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
-
-    for (unsigned vi=0; vi<my::nen_; ++vi)
-    {
-      const double v = fac*my::funct_(vi); // no density required here
-      const int fvi = vi*my::numdofpernode_+my::numscal_;
-
-      for (unsigned ui=0; ui<my::nen_; ++ui)
-      {
-        const int fui = ui*my::numdofpernode_+my::numscal_;
-
-        emat(fvi,fui) += v*my::funct_(ui);
-      }
-    }
-  }
-
-  return;
-}
-
-
 /*----------------------------------------------------------------------*
  | process an electrode boundary kinetics point condition    fang 08/15 |
  *----------------------------------------------------------------------*/

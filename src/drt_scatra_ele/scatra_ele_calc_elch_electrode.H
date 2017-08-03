@@ -137,21 +137,21 @@ namespace DRT
 
         //! CalcMat: potential equation div i with inserted current - ohmic overpotential
         void CalcMatPotEquDiviOhm(
-          Epetra_SerialDenseMatrix&                          emat,         //!< element matrix to be filled
-          const double                                       timefacfac,   //!< domain-integration factor times time-integration factor
-          const double                                       invf,         //!< 1/F
-          const LINALG::Matrix<my::nsd_,1>&                  gradpot,      //!< gradient of potenial at GP
-          const double                                       scalar        //!< scaling factor for element matrix contributions
-        );
+            Epetra_SerialDenseMatrix&           emat,         //!< element matrix to be filled
+            const double                        timefacfac,   //!< domain-integration factor times time-integration factor
+            const double                        invf,         //!< 1/F
+            const LINALG::Matrix<my::nsd_,1>&   gradpot,      //!< gradient of potential at GP
+            const double                        scalar        //!< scaling factor for element matrix contributions
+            );
 
         //! CalcRhs: potential equation div i with inserted current - ohmic overpotential
         void CalcRhsPotEquDiviOhm(
-          Epetra_SerialDenseVector&                          erhs,      //!< element vector to be filled
-          const double                                       rhsfac,    //!< time-integration factor for rhs times domain-integration factor
-          const double                                       invf,      //!< 1./F
-          const LINALG::Matrix<my::nsd_,1>&                  gradpot,   //!< gradient of potenial at GP
-          const double                                       scalar     //!< scaling factor for element residual contributions
-        );
+            Epetra_SerialDenseVector&           erhs,      //!< element vector to be filled
+            const double                        rhsfac,    //!< time-integration factor for rhs times domain-integration factor
+            const double                        invf,      //!< 1./F
+            const LINALG::Matrix<my::nsd_,1>&   gradpot,   //!< gradient of potential at GP
+            const double                        scalar     //!< scaling factor for element residual contributions
+            );
 
         //! calculate weighted current density
         virtual void CalculateCurrent(
@@ -178,7 +178,7 @@ namespace DRT
         );
 
         //! calculate electrode state of charge
-        void CalculateElectrodeSOC(
+        virtual void CalculateElectrodeSOC(
             const DRT::Element*               ele,              //!< the element we are dealing with
             Teuchos::ParameterList&           params,           //!< parameter list
             DRT::Discretization&              discretization,   //!< discretization

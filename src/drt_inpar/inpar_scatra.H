@@ -183,6 +183,7 @@ namespace INPAR
       impltype_elch_electrode_growth,
       impltype_elch_electrode_thermo,
       impltype_elch_diffcond,
+      impltype_elch_diffcond_multiscale,
       impltype_elch_diffcond_thermo,
       impltype_thermo_elch_electrode,
       impltype_thermo_elch_diffcond,

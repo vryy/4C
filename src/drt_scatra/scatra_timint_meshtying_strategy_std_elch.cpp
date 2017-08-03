@@ -3,8 +3,10 @@
 
 \brief Standard solution strategy for electrochemistry problems (without meshtying)
 
+\level 2
+
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089 - 289-15251
@@ -69,7 +71,10 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyStdElch::InitSyste
  *------------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyStdElch::InitConvCheckStrategy()
 {
-  convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStdElch(scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
+  if(ElchTimInt()->MacroScale())
+    convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStdMacroScaleElch(scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
+  else
+    convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStdElch(scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
 
   return;
 } // SCATRA::MeshtyingStrategyStdElch::InitConvCheckStrategy

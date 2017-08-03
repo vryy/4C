@@ -11,6 +11,8 @@ or electrochemistry problems with or without scatra-scatra interface coupling in
 multipliers) computes, checks, and outputs different relevant vector norms and is implemented
 in a subclass derived from an abstract, purely virtual interface class.
 
+\level 1
+
 <pre>
 \maintainer Rui Fang
             fang@lnm.mw.tum.de
@@ -20,6 +22,7 @@ in a subclass derived from an abstract, purely virtual interface class.
  */
 /*----------------------------------------------------------------------*/
 #include "scatra_timint_convcheck_strategies.H"
+#include "scatra_timint_elch.H"
 #include "scatra_timint_implicit.H"
 #include "scatra_timint_meshtying_strategy_s2i.H"
 
@@ -668,3 +671,178 @@ bool SCATRA::ConvCheckStrategyS2ILMElch::AbortNonlinIter(
   // proceed with next iteration step
   return false;
 } // SCATRA::ConvCheckStrategyS2ILMElch::AbortNonlinIter()
+
+
+/*----------------------------------------------------------------------*
+ | perform convergence check for Newton-Raphson iteration    fang 08/17 |
+ *----------------------------------------------------------------------*/
+bool SCATRA::ConvCheckStrategyStdMacroScaleElch::AbortNonlinIter(
+    const ScaTraTimIntImpl&   scatratimint,   //!< scalar transport time integrator
+    double&                   actresidual     //!< return maximum current residual value
+    ) const
+{
+  // cast scalar transport time integrator
+  const ScaTraTimIntElch* const elchtimint = dynamic_cast<const ScaTraTimIntElch*>(&scatratimint);
+  if(elchtimint == NULL)
+    dserror("Cast of scalar transport time integrator failed!");
+
+  // extract processor ID
+  const int mypid = scatratimint.Discretization()->Comm().MyPID();
+
+  // extract current Newton-Raphson iteration step
+  const int itnum = scatratimint.IterNum();
+
+  // compute L2 norm of state vector associated with electrolyte concentration
+  const Teuchos::RCP<Epetra_Vector> vector_conc_el = elchtimint->SplitterMacro()->ExtractVector(scatratimint.Phinp(),0);
+  double L2_state_conc_el(0.);
+  vector_conc_el->Norm2(&L2_state_conc_el);
+
+  // compute L2 norm of residual vector associated with electrolyte concentration
+  elchtimint->SplitterMacro()->ExtractVector(scatratimint.Residual(),0,vector_conc_el);
+  double L2_res_conc_el(0.);
+  vector_conc_el->Norm2(&L2_res_conc_el);
+
+  // compute infinity norm of residual vector associated with electrolyte concentration
+  double inf_res_conc_el(0.);
+  vector_conc_el->NormInf(&inf_res_conc_el);
+
+  // compute L2 norm of increment vector associated with electrolyte concentration
+  elchtimint->SplitterMacro()->ExtractVector(scatratimint.Increment(),0,vector_conc_el);
+  double L2_inc_conc_el(0.);
+  vector_conc_el->Norm2(&L2_inc_conc_el);
+
+  // compute L2 norm of state vector associated with electrolyte potential
+  const Teuchos::RCP<Epetra_Vector> vector_pot_el = elchtimint->SplitterMacro()->ExtractVector(scatratimint.Phinp(),1);
+  double L2_state_pot_el(0.);
+  vector_pot_el->Norm2(&L2_state_pot_el);
+
+  // compute L2 norm of residual vector associated with electrolyte potential
+  elchtimint->SplitterMacro()->ExtractVector(scatratimint.Residual(),1,vector_pot_el);
+  double L2_res_pot_el(0.);
+  vector_pot_el->Norm2(&L2_res_pot_el);
+
+  // compute L2 norm of increment vector associated with electrolyte potential
+  elchtimint->SplitterMacro()->ExtractVector(scatratimint.Increment(),1,vector_pot_el);
+  double L2_inc_pot_el(0.);
+  vector_pot_el->Norm2(&L2_inc_pot_el);
+
+  // compute L2 norm of state vector associated with electrode potential
+  const Teuchos::RCP<Epetra_Vector> vector_pot_ed = elchtimint->SplitterMacro()->ExtractVector(scatratimint.Phinp(),2);
+  double L2_state_pot_ed(0.);
+  vector_pot_ed->Norm2(&L2_state_pot_ed);
+
+  // compute L2 norm of residual vector associated with electrode potential
+  elchtimint->SplitterMacro()->ExtractVector(scatratimint.Residual(),2,vector_pot_ed);
+  double L2_res_pot_ed(0.);
+  vector_pot_ed->Norm2(&L2_res_pot_ed);
+
+  // compute L2 norm of increment vector associated with electrode potential
+  elchtimint->SplitterMacro()->ExtractVector(scatratimint.Increment(),2,vector_pot_ed);
+  double L2_inc_pot_ed(0.);
+  vector_pot_ed->Norm2(&L2_inc_pot_ed);
+
+  // safety checks
+  if(std::isnan(L2_state_conc_el) or std::isnan(L2_res_conc_el) or std::isnan(L2_inc_conc_el))
+    dserror("Calculated vector norm for electrolyte concentration is not a number!");
+  if(std::isinf(L2_state_conc_el) or std::isinf(L2_res_conc_el) or std::isinf(L2_inc_conc_el))
+    dserror("Calculated vector norm for electrolyte concentration is infinity!");
+  if(std::isnan(L2_state_pot_el) or std::isnan(L2_res_pot_el) or std::isnan(L2_inc_pot_el))
+    dserror("Calculated vector norm for electrolyte potential is not a number!");
+  if(std::isinf(L2_state_pot_el) or std::isinf(L2_res_pot_el) or std::isinf(L2_inc_pot_el))
+    dserror("Calculated vector norm for electrolyte potential is infinity!");
+  if(std::isnan(L2_state_pot_ed) or std::isnan(L2_res_pot_ed) or std::isnan(L2_inc_pot_ed))
+    dserror("Calculated vector norm for electrode potential is not a number!");
+  if(std::isinf(L2_state_pot_ed) or std::isinf(L2_res_pot_ed) or std::isinf(L2_inc_pot_ed))
+    dserror("Calculated vector norm for electrode potential is infinity!");
+
+  // care for the case that nothing really happens in the electrolyte concentration, electrolyte potential, or electrode potential fields
+  if(L2_state_conc_el < 1.e-5)
+    L2_state_conc_el = 1.;
+  if(L2_state_pot_el < 1.e-5)
+    L2_state_pot_el = 1.;
+  if(L2_state_pot_ed < 1.e-5)
+    L2_state_pot_ed = 1.;
+
+  // special case: very first iteration step --> solution increment is not yet available
+  if(itnum == 1)
+  {
+    if(mypid == 0)
+    {
+      // print header of convergence table to screen
+      std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+------------------+" << std::endl;
+      std::cout << "|- step/max -|- tol      [norm] -|-- con-res ---|- pot-el-res -|- pot-ed-res -|-- con-inc ---|- pot-el-inc -|- pot-ed-inc -|-- con-res-inf ---|" << std::endl;
+
+      // print first line of convergence table to screen
+      std::cout << "|  " << std::setw(3) << itnum << "/" << std::setw(3) << itmax_ << "   | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << ittol_ << "[L_2 ]  | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << L2_res_conc_el << "   | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << L2_res_pot_el << "   | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << L2_res_pot_ed << "   |      --      |      --      |      --      | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << inf_res_conc_el << "       | (      --     ,te="
+                << std::setw(10) << std::setprecision(3) << std::scientific << scatratimint.DtEle() << ")" << std::endl;
+    }
+  }
+
+  // ordinary case: later iteration steps --> solution increment can be printed and convergence check should be done
+  else
+  {
+    if(mypid == 0)
+      // print current line of convergence table to screen
+      std::cout << "|  " << std::setw(3) << itnum << "/" << std::setw(3) << itmax_ << "   | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << ittol_ << "[L_2 ]  | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << L2_res_conc_el << "   | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << L2_res_pot_el << "   | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << L2_res_pot_ed << "   | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << L2_inc_conc_el/L2_state_conc_el << "   | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << L2_inc_pot_el/L2_state_pot_el << "   | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << L2_inc_pot_ed/L2_state_pot_ed << "   | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << inf_res_conc_el << "       | (ts="
+                << std::setw(10) << std::setprecision(3) << std::scientific << scatratimint.DtSolve() << ",te="
+                << std::setw(10) << std::setprecision(3) << std::scientific << scatratimint.DtEle() << ")" << std::endl;
+
+    // convergence check
+    if(L2_res_conc_el <= ittol_ and L2_inc_conc_el/L2_state_conc_el <= ittol_ and L2_res_pot_el <= ittol_ and L2_inc_pot_el/L2_state_pot_el <= ittol_ and L2_res_pot_ed <= ittol_ and L2_inc_pot_ed/L2_state_pot_ed <= ittol_)
+    {
+      if(mypid == 0)
+        // print finish line of convergence table to screen
+        std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+------------------+" << std::endl << std::endl;
+
+      return true;
+    }
+  }
+
+  // abort iteration when there is nothing more to do --> better robustness
+  // absolute tolerance determines whether residual is already zero
+  // prevents additional solver calls that will not improve the solution anymore
+  if(L2_res_conc_el < abstolres_ and L2_res_pot_el < abstolres_ and L2_res_pot_ed < abstolres_)
+  {
+    if(mypid == 0)
+      // print finish line of convergence table to screen
+      std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+------------------+" << std::endl << std::endl;
+
+    return true;
+  }
+
+  // output warning in case maximum number of iteration steps is reached without convergence, and proceed to next time step
+  if(itnum == itmax_)
+  {
+    if (mypid == 0)
+    {
+      std::cout << "+---------------------------------------------------------------+" << std::endl;
+      std::cout << "|       >>>>>> Newton-Raphson iteration did not converge!       |" << std::endl;
+      std::cout << "+---------------------------------------------------------------+" << std::endl << std::endl;
+    }
+
+    return true;
+  }
+
+  // return maximum residual value for adaptivity of linear solver tolerance
+  actresidual = std::max(L2_res_conc_el,L2_inc_conc_el/L2_state_conc_el);
+  actresidual = std::max(actresidual,L2_res_pot_el);
+  actresidual = std::max(actresidual,L2_inc_pot_el/L2_state_pot_el);
+  actresidual = std::max(actresidual,L2_res_pot_ed);
+  actresidual = std::max(actresidual,L2_inc_pot_ed/L2_state_pot_ed);
+
+  // proceed with next iteration step
+  return false;
+} // SCATRA::ConvCheckStrategyStdMacroScaleElch::AbortNonlinIter

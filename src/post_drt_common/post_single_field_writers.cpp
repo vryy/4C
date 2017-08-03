@@ -428,12 +428,52 @@ void ScaTraFilter::WriteAllResults(PostField* field)
 
 
 /*----------------------------------------------------------------------*
-|                                                             gjb 09/08 |
-\*----------------------------------------------------------------------*/
+ | write results of electrochemistry simulation              fang 08/17 |
+ *----------------------------------------------------------------------*/
 void ElchFilter::WriteAllResults(PostField* field)
 {
-  // compute number of dofs per node (ask the first node)
-  int numdofpernode = field->discretization()->NumDof(field->discretization()->lRowNode(0));
+  // extract numbers of dofs per node on scatra discretization
+  const DRT::Discretization& discret = *field->discretization();
+  std::set<int> mynumdofpernodeset;
+  for(int inode=0; inode<discret.NumMyRowNodes(); ++inode)
+    mynumdofpernodeset.insert(discret.NumDof(discret.lRowNode(inode)));
+  int mysize(mynumdofpernodeset.size()), maxsize(-1);
+  discret.Comm().MaxAll(&mysize,&maxsize,1);
+  std::vector<int> mynumdofpernodevec(mynumdofpernodeset.begin(),mynumdofpernodeset.end());
+  mynumdofpernodevec.resize(maxsize,-1);
+  std::vector<int> numdofpernodevec(maxsize*discret.Comm().NumProc(),-1);
+  discret.Comm().GatherAll(&mynumdofpernodevec[0],&numdofpernodevec[0],mynumdofpernodevec.size());
+  std::set<int> numdofpernodeset;
+  for(unsigned i=0; i<numdofpernodevec.size(); ++i)
+    if(numdofpernodevec[i] > 0)
+      numdofpernodeset.insert(numdofpernodevec[i]);
+
+  // safety check
+  switch(numdofpernodeset.size())
+  {
+    case 1:
+    {
+      // do nothing
+      break;
+    }
+
+    case 2:
+    {
+      // check numbers
+      if(*numdofpernodeset.begin() != 2 or *numdofpernodeset.rbegin() != 3)
+        dserror("Invalid numbers of dofs per node!");
+      break;
+    }
+
+    default:
+    {
+      dserror("Invalid numbers of dofs per node!");
+      break;
+    }
+  }
+
+  // extract minimum number of dofs per node
+  const int numdofpernode = *numdofpernodeset.begin();
 
   // write results for each transported scalar
   for(int k = 1; k < numdofpernode; k++)
@@ -449,8 +489,10 @@ void ElchFilter::WriteAllResults(PostField* field)
     // temporal mean field from turbulent statistics (if present)
     writer_->WriteResult("averaged_phinp", "averaged_"+name, dofbased, 1, k-1);
   }
-  // finally, handle the electric potential
+  // finally, handle the electric potentials
   writer_->WriteResult("phinp", "phi", dofbased, 1,numdofpernode-1);
+  if(numdofpernodeset.size() == 2)
+    writer_->WriteResult("phinp", "phi_ed", dofbased, 1, 2, true);
 
   // write flux vectors (always 3D)
   std::ostringstream temp;
@@ -627,5 +669,3 @@ void AnyFilter::WriteAllResults(PostField* field)
   WriteNodeResults(field);
   WriteElementResults(field);
 }
-
-

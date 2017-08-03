@@ -29,11 +29,6 @@ bool DRT::ELEMENTS::Transport::ReadElement(
     DRT::INPUT::LineDefinition* linedef
     )
 {
-  // read number of material model
-  int material = 0;
-  linedef->ExtractInt("MAT",material);
-  SetMaterial(material);
-
   // read implementation type
   std::string impltype;
   linedef->ExtractString("TYPE",impltype);
@@ -53,6 +48,8 @@ bool DRT::ELEMENTS::Transport::ReadElement(
     impltype_ = INPAR::SCATRA::impltype_cardiac_monodomain;
   else if(impltype == "ElchDiffCond")
     impltype_ = INPAR::SCATRA::impltype_elch_diffcond;
+  else if(impltype == "ElchDiffCondMultiScale")
+    impltype_ = INPAR::SCATRA::impltype_elch_diffcond_multiscale;
   else if(impltype == "ElchDiffCondThermo")
     impltype_ = INPAR::SCATRA::impltype_elch_diffcond_thermo;
   else if(impltype == "ElchElectrode")
@@ -83,6 +80,11 @@ bool DRT::ELEMENTS::Transport::ReadElement(
     impltype_ = INPAR::SCATRA::impltype_bondreac;
   else
     dserror("Transport element received invalid implementation type!");
+
+  // read number of material model
+  int material = 0;
+  linedef->ExtractInt("MAT",material);
+  SetMaterial(material);
 
   // set discretization type
   SetDisType(DRT::StringToDistype(distype));

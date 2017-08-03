@@ -4,8 +4,10 @@
 
 \brief utility class supporting element evaluation for concentrated electrolytes
 
+\level 2
+
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -67,9 +69,16 @@ namespace DRT
             INPAR::ELCH::DiffCondMat&                               diffcondmat       //!< ion type
             );
 
-        //! evaluate Newman material
+        //! evaluate standard Newman material
         void MatNewman(
             const Teuchos::RCP<const MAT::Material>&                material,        //!< Newman material
+            const double&                                           concentration,   //!< local concentration value
+            const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&   diffmanager      //!< diffusion manager
+            );
+
+        //! evaluate multi-scale Newman material
+        void MatNewmanMultiScale(
+            const Teuchos::RCP<const MAT::Material>&                material,        //!< Newman Multi-Scale material
             const double&                                           concentration,   //!< local concentration value
             const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&   diffmanager      //!< diffusion manager
             );

@@ -161,7 +161,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhs(
   //
   //               |     diffusion term      | |     conduction term    |
   //               |                         | |                        |
-  //      dc_k/dt - nabla dot (D_k nabla c_k) + nabla dot (t_k i/(z_k F)
+  //      dc_k/dt - nabla dot (D_k nabla c_k) + nabla dot (t_k i/(z_k F))
   //
   //    equation for current (based on Newman):
   //
@@ -223,7 +223,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhs(
   //
   //               |     diffusion term      | |     conduction term    |
   //               |                         | |                        |
-  //      dc_k/dt - nabla dot (D_k nabla c_k) + nabla dot (t_k i/(z_k F)
+  //      dc_k/dt - nabla dot (D_k nabla c_k) + nabla dot (t_k i/(z_k F))
   //
   // equation for current:
   //
@@ -285,7 +285,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhsOutsideScal
   if (not diffcondparams_->CurSolVar())
   {
     // equation for current is inserted in the mass transport equation
-    // 3a)  nabla dot i = 0
+    // 3a)  nabla cdot i = 0
     if(myelch::elchparams_->EquPot()==INPAR::ELCH::equpot_divi)
     {
       //  i)  ohmic overpotential (implemented after the scalar loop)
@@ -295,7 +295,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhsOutsideScal
       //
       myelectrode::CalcRhsPotEquDiviOhm(erhs,rhsfac,VarManager()->InvF(),VarManager()->GradPot(),DiffManager()->GetPhasePoroTort(0));
 
-      //  i)  concentration  overpotential
+      //  ii)  concentration overpotential
       //      (w_k, RT/F kappa (thermfactor) f(t_k) nabla ln c_k)
       for (int k=0;k<my::numscal_;++k)
       {

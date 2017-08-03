@@ -63,6 +63,7 @@
 #include "elchphase.H"
 #include "ion.H"
 #include "newman.H"
+#include "newman_multiscale.H"
 #include "electrode.H"
 #include "compogden.H"
 #include "elasthyper.H"
@@ -660,6 +661,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::Newman(curmat));
     MAT::PAR::Newman* params = static_cast<MAT::PAR::Newman*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_newman_multiscale:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::NewmanMultiScale(curmat));
+    MAT::PAR::NewmanMultiScale* params = static_cast<MAT::PAR::NewmanMultiScale*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_compogden:

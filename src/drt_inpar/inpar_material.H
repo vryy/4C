@@ -107,6 +107,7 @@ namespace INPAR
       m_myocard,                               ///< anisotropic electrophysical model of heart tissue
       m_neohooke,                              ///< Neo-Hooke material
       m_newman,                                ///< properties of an ion species in an electrolyte solution
+      m_newman_multiscale,                     ///< properties of an ion species in an electrolyte solution for multi-scale approach
       m_opti_dens,                             ///< density field for topology optimization
       m_particlemat,                           ///< particle material
       m_extparticlemat,                        ///< particle/meshfree material, support for thermodynamics, can be meshfree or particle depending on the contact laws

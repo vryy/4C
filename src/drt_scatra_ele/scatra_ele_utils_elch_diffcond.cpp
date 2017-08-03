@@ -4,8 +4,10 @@
 
 \brief utility class supporting element evaluation for concentrated electrolytes
 
+\level 2
+
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -14,10 +16,12 @@ Maintainer: Rui Fang
 /*----------------------------------------------------------------------*/
 #include "scatra_ele_utils_elch_diffcond.H"
 #include "scatra_ele_calc_elch_diffcond.H"
+#include "scatra_ele_calc_elch_diffcond_multiscale.H"
 
 #include "../drt_mat/elchmat.H"
 #include "../drt_mat/elchphase.H"
 #include "../drt_mat/newman.H"
+#include "../drt_mat/newman_multiscale.H"
 
 
 /*----------------------------------------------------------------------*
@@ -146,6 +150,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatElchPhase(
     switch(material->MaterialType())
     {
       case INPAR::MAT::m_newman:
+      case INPAR::MAT::m_newman_multiscale:
       {
         // safety check
         if(matelchphase->NumMat() != 1)
@@ -154,8 +159,13 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatElchPhase(
         // set ion type
         diffcondmat = INPAR::ELCH::diffcondmat_newman;
 
-        // evaluate Newman material
-        MatNewman(material,concentrations[0],diffmanager);
+        // evaluate standard Newman material
+        if(material->MaterialType() == INPAR::MAT::m_newman)
+          MatNewman(material,concentrations[0],diffmanager);
+
+        // evaluate multi-scale Newman material
+        else
+          MatNewmanMultiScale(material,concentrations[0],diffmanager);
 
         break;
       }
@@ -190,7 +200,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatElchPhase(
 
 
 /*----------------------------------------------------------------------*
- | evaluate Newman material                                  fang 07/15 |
+ | evaluate standard Newman material                         fang 07/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatNewman(
@@ -226,6 +236,33 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatNewman(
   diffmanager->SetCond(matnewman->ComputeConductivity(concentration));
   // derivative of conductivity with respect to concentrations
   diffmanager->SetDerivCond(matnewman->ComputeFirstDerivCond(concentration),0);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate multi-scale Newman material                      fang 07/17 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatNewmanMultiScale(
+    const Teuchos::RCP<const MAT::Material>&                material,        //!< Newman material
+    const double&                                           concentration,   //!< local concentration value
+    const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&   diffmanager      //!< diffusion manager
+    )
+{
+  // evaluate standard Newman material
+  MatNewman(material,concentration,diffmanager);
+
+  // cast material and diffusion manager
+  const Teuchos::RCP<const MAT::NewmanMultiScale> newmanmultiscale = Teuchos::rcp_dynamic_cast<const MAT::NewmanMultiScale>(material);
+  if(newmanmultiscale == Teuchos::null)
+    dserror("Invalid material!");
+  const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCondMultiScale> diffmanagermultiscale = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElchDiffCondMultiScale>(diffmanager);
+  if(diffmanagermultiscale == Teuchos::null)
+    dserror("Invalid diffusion manager!");
+
+  // set electronic conductivity
+  diffmanagermultiscale->SetSigma(newmanmultiscale->Sigma());
 
   return;
 }

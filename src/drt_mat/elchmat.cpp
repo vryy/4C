@@ -2,6 +2,8 @@
 /*!
 \file elchmat.cpp
 
+\level 2
+
 <pre>
 \maintainer Rui Fang
             fang@lnm.mw.tum.de
@@ -27,7 +29,7 @@ MAT::PAR::ElchMat::ElchMat(
   numscal_((matdata->GetInt("NUMSCAL"))),
   numphase_(matdata->GetInt("NUMPHASE")),
   phaseids_(*matdata->Get<std::vector<int> >("PHASEIDS")),
-  local_(false)
+  local_(matdata->GetInt("LOCAL"))
 {
   if (numphase_ != (int)phaseids_.size())
     dserror("number of phases %d does not fit to size of phase vector %d", numphase_, phaseids_.size());

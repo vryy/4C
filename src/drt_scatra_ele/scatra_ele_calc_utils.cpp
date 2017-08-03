@@ -155,6 +155,11 @@ const std::string ImplTypeToString(const INPAR::SCATRA::ImplType impltype)
     impltypestring = "Electrochemistry for diffusion-conduction formulation";
     break;
   }
+  case INPAR::SCATRA::impltype_elch_diffcond_multiscale:
+  {
+    impltypestring = "Electrochemistry for diffusion-conduction formulation within a multi-scale framework";
+    break;
+  }
   case INPAR::SCATRA::impltype_elch_diffcond_thermo:
   {
     impltypestring = "Electrochemistry for diffusion-conduction formulation with thermal effects";

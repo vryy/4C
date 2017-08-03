@@ -733,7 +733,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
         SetInternalVariablesForMatAndRHS();
 
         // prepare time step on micro scale
-        Teuchos::rcp_static_cast<MAT::ScatraMatMultiScale>(ele->Material())->PrepareTimeStep(iquad,scatravarmanager_->Phinp(0));
+        Teuchos::rcp_static_cast<MAT::ScatraMatMultiScale>(ele->Material())->PrepareTimeStep(iquad,std::vector<double>(1,scatravarmanager_->Phinp(0)));
       }
     }
 

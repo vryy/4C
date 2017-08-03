@@ -566,6 +566,37 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
+  // material parameters for ion species in electrolyte solution for multi-scale approach (fang 07/17)
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_newman_multiscale",
+                                            "material parameters for ion species in electrolyte solution for multi-scale approach",
+                                            INPAR::MAT::m_newman_multiscale));
+
+    AddNamedReal(m,"VALENCE","valence (= charge number)");
+    AddNamedInt(m,"DIFFCOEF","curve number for diffusion coefficient");
+    AddNamedInt(m,"TRANSNR","curve number for transference number");
+    AddNamedInt(m,"THERMFAC","curve number for thermodynamic factor");
+    AddNamedInt(m,"COND","curve number for ionic conductivity");
+    AddNamedReal(m,"SIGMA","electronic conductivity");
+    AddNamedReal(m,"A_s","specific micro-scale surface area");
+    AddNamedString(m,"MICROFILE","input file for micro scale","filename.dat");
+    AddNamedInt(m,"MICRODIS_NUM","number of micro-scale discretization");
+    // optional parameters for implemented concentration-depending functions
+    AddNamedInt(m,"DIFF_PARA_NUM","number of parameters for diffusion coefficient",0,true);
+    AddNamedRealVector(m,"DIFF_PARA","parameters for diffusion coefficient","DIFF_PARA_NUM",0.0,true);
+    AddNamedInt(m,"TRANS_PARA_NUM","number of parameters for transference number",0,true);
+    AddNamedRealVector(m,"TRANS_PARA","parameters for transference number","TRANS_PARA_NUM",0.0,true);
+    AddNamedInt(m,"THERM_PARA_NUM","number of parameters for thermodynamic factor",0,true);
+    AddNamedRealVector(m,"THERM_PARA","parameters for thermodynamic factor","THERM_PARA_NUM",0.0,true);
+    AddNamedInt(m,"COND_PARA_NUM","number of parameters for ionic conductivity",0,true);
+    AddNamedRealVector(m,"COND_PARA","parameters for ionic conductivity","COND_PARA_NUM",0.0,true);
+    AddNamedSeparator(m,"END","indicating end of line");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // electrode material (fang 02/15)
   {
     Teuchos::RCP<MaterialDefinition> matelectrode = Teuchos::rcp(new MaterialDefinition("MAT_electrode","electrode material",INPAR::MAT::m_electrode));
@@ -698,6 +729,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             "specific list/collection of species and phases for elch applications",
                                             INPAR::MAT::m_elchmat));
 
+    AddNamedBool(m,"LOCAL","individual materials allocated per element or only at global scope",false,true);
     AddNamedInt(m,"NUMDOF","number of dof's per node");
     AddNamedInt(m,"NUMSCAL","number of transported scalars per node");
     AddNamedInt(m,"NUMPHASE","number of phases in electrolyte");
@@ -715,6 +747,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             "material parameters for ion species in electrolyte solution",
                                             INPAR::MAT::m_elchphase));
 
+    AddNamedBool(m,"LOCAL","individual materials allocated per element or only at global scope",false,true);
     AddNamedReal(m,"EPSILON","phase porosity");
     AddNamedReal(m,"TORTUOSITY","inverse (!) of phase tortuosity");
     AddNamedInt(m,"NUMMAT","number of materials in electrolyte");

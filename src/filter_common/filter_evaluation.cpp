@@ -4,6 +4,8 @@
 
 \brief compatibility definitions
 
+\level 2
+
 <pre>
 \maintainer Rui Fang
             fang@lnm.mw.tum.de
@@ -17,14 +19,7 @@ filter. But to link the filter, stubs of these functions are needed.
 */
 /*----------------------------------------------------------------------*/
 #include "../drt_mat/micromaterial.H"
-#include "../drt_mat/scatra_mat_multiscale.H"
-
-// forward declarations
-namespace MAT
-{
-  class MicroMaterialGP;
-  class ScatraMatMultiScaleGP;
-}
+#include "../drt_mat/scatra_multiscale.H"
 
 void MAT::MicroMaterial::Evaluate(const LINALG::Matrix<3,3>* defgrd,
                                           const LINALG::Matrix<6,1>* glstrain,
@@ -71,87 +66,95 @@ void MAT::MicroMaterial::InvAnaInit(bool eleowner, int eleID)
 /*--------------------------------------------------------------------*
  | initialize multi-scale scalar transport material        fang 02/16 |
  *--------------------------------------------------------------------*/
-void MAT::ScatraMatMultiScale::Initialize(
+void MAT::ScatraMultiScale::Initialize(
     const int   ele_id,   //!< macro-scale element ID
     const int   gp_id     //!< macro-scale Gauss point ID
     )
 {
   // this function should never be called
-  dserror("MAT::ScatraMatMultiScale::Initialize not available!");
+  dserror("MAT::ScatraMultiScale::Initialize not available!");
 
   return;
 }
-
 
 /*--------------------------------------------------------------------*
  | prepare time step on micro scale                        fang 02/16 |
  *--------------------------------------------------------------------*/
-void MAT::ScatraMatMultiScale::PrepareTimeStep(
-    const int      gp_id,        //!< macro-scale Gauss point ID
-    const double   phinp_macro   //!< macro-scale state variable
+void MAT::ScatraMultiScale::PrepareTimeStep(
+    const int                    gp_id,        //!< macro-scale Gauss point ID
+    const std::vector<double>&   phinp_macro   //!< macro-scale state variables
     ) const
 {
   // this function should never be called
-  dserror("MAT::ScatraMatMultiScale::PrepareTimeStep not available!");
+  dserror("MAT::ScatraMultiScale::PrepareTimeStep not available!");
 
   return;
 }
-
 
 /*--------------------------------------------------------------------*
  | evaluate multi-scale scalar transport material          fang 11/15 |
  *--------------------------------------------------------------------*/
-void MAT::ScatraMatMultiScale::Evaluate(
-    const int      gp_id,          //!< macro-scale Gauss point ID
-    const double   phinp_macro,    //!< macro-scale state variable
-    double&        q_micro,        //!< micro-scale flux
-    double&        dq_dphi_micro   //!< derivative of micro-scale flux w.r.t. macro-scale state variable
+void MAT::ScatraMultiScale::Evaluate(
+    const int                    gp_id,          //!< macro-scale Gauss point ID
+    const std::vector<double>&   phinp_macro,    //!< macro-scale state variables
+    double&                      q_micro,        //!< micro-scale flux
+    std::vector<double>&         dq_dphi_micro   //!< derivatives of micro-scale flux w.r.t. macro-scale state variables
     ) const
 {
   // this function should never be called
-  dserror("MAT::ScatraMatMultiScale::Evaluate not available!");
+  dserror("MAT::ScatraMultiScale::Evaluate not available!");
 
   return;
 }
 
+/*--------------------------------------------------------------------*
+ | evaluate mean concentration on micro scale              fang 08/17 |
+ *--------------------------------------------------------------------*/
+double MAT::ScatraMultiScale::EvaluateMeanConcentration(
+    const int   gp_id   //!< macro-scale Gauss point ID
+    ) const
+{
+  // this function should never be called
+  dserror("MAT::ScatraMultiScale::EvaluateMeanConcentration not available!");
+
+  return NAN;
+}
 
 /*--------------------------------------------------------------------*
  | update multi-scale scalar transport material            fang 11/15 |
  *--------------------------------------------------------------------*/
-void MAT::ScatraMatMultiScale::Update(
+void MAT::ScatraMultiScale::Update(
     const int   gp_id   //!< macro-scale Gauss point ID
     ) const
 {
   // this function should never be called
-  dserror("MAT::ScatraMatMultiScale::Update not available!");
+  dserror("MAT::ScatraMultiScale::Update not available!");
 
   return;
 }
-
 
 /*--------------------------------------------------------------------*
  | create output on micro scale                            fang 02/16 |
  *--------------------------------------------------------------------*/
-void MAT::ScatraMatMultiScale::Output(
+void MAT::ScatraMultiScale::Output(
     const int   gp_id   //!< macro-scale Gauss point ID
     ) const
 {
   // this function should never be called
-  dserror("MAT::ScatraMatMultiScale::Output not available!");
+  dserror("MAT::ScatraMultiScale::Output not available!");
 
   return;
 }
 
-
 /*--------------------------------------------------------------------*
  | read restart on micro scale                             fang 03/16 |
  *--------------------------------------------------------------------*/
-void MAT::ScatraMatMultiScale::ReadRestart(
+void MAT::ScatraMultiScale::ReadRestart(
     const int   gp_id   //!< macro-scale Gauss point ID
     ) const
 {
   // this function should never be called
-  dserror("MAT::ScatraMatMultiScale::ReadRestart not available!");
+  dserror("MAT::ScatraMultiScale::ReadRestart not available!");
 
   return;
 }

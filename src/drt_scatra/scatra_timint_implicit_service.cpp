@@ -635,6 +635,12 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialTimeDerivative()
   // finalize assembly of global mass matrix
   sysmat_->Complete();
 
+  // apply artificial Dirichlet boundary conditions to system of equations to hold initial values of
+  // auxiliary degrees of freedom (= non-transported scalars) constant when solving for initial time
+  // derivatives of primary degrees of freedom (= transported scalars)
+  if(splitter_ != Teuchos::null)
+    LINALG::ApplyDirichlettoSystem(sysmat_,phidtnp_,residual_,zeros_,*(splitter_->CondMap()));
+
   // solve global system of equations for initial time derivative of state variables
   solver_->Solve(sysmat_->EpetraOperator(),phidtnp_,residual_,true,true);
 

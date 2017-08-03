@@ -593,7 +593,7 @@ public:
   const double& Q() const {return q_;};
 
   //! derivative of micro-scale coupling flux w.r.t. macro-scale state variable for macro-micro coupling in multi-scale simulations
-  const double& DqDphi() const {return dq_dphi_;};
+  const std::vector<double>& DqDphi() const {return dq_dphi_;};
 
   //! return rcp ptr to neumann loads vector
   virtual Teuchos::RCP<Epetra_Vector> GetNeumannLoadsPtr(){return neumann_loads_;};
@@ -1269,14 +1269,14 @@ protected:
   //! flag for potential boundary condition due to convective heat transfer
   bool convheatrans_;
 
-  //! macro-scale state variable for macro-micro coupling in multi-scale simulations
-  double phinp_macro_;
+  //! macro-scale state variables for macro-micro coupling in multi-scale simulations
+  std::vector<double> phinp_macro_;
 
   //! micro-scale coupling flux for macro-micro coupling in multi-scale simulations
   double q_;
 
-  //! derivative of micro-scale coupling flux w.r.t. macro-scale state variable for macro-micro coupling in multi-scale simulations
-  double dq_dphi_;
+  //! derivatives of micro-scale coupling flux w.r.t. macro-scale state variables for macro-micro coupling in multi-scale simulations
+  std::vector<double> dq_dphi_;
 
   /*========================================================================*/
 

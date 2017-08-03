@@ -477,7 +477,7 @@ void SCATRA::TimIntOneStepTheta::SetState(
     Teuchos::RCP<Epetra_Vector>              phidtnp,       //!< time derivative of micro-scale state vector at new time step
     Teuchos::RCP<Epetra_Vector>              hist,          //!< micro-scale history vector
     Teuchos::RCP<IO::DiscretizationWriter>   output,        //!< micro-scale discretization writer
-    const double                             phinp_macro,   //!< value of state variable at macro-scale Gauss point
+    const std::vector<double>&               phinp_macro,   //!< values of state variables at macro-scale Gauss point
     const int                                step,          //!< time step
     const double                             time           //!< time
     )
@@ -489,6 +489,7 @@ void SCATRA::TimIntOneStepTheta::SetState(
   hist_        = hist;
   output_      = output;
   phinp_macro_ = phinp_macro;
+  dq_dphi_.resize(phinp_macro_.size(),0.);
   step_        = step;
   time_        = time;
 
@@ -507,7 +508,8 @@ void SCATRA::TimIntOneStepTheta::ClearState()
   phidtnp_     = Teuchos::null;
   hist_        = Teuchos::null;
   output_      = Teuchos::null;
-  phinp_macro_ = 0.;
+  phinp_macro_.clear();
+  dq_dphi_.clear();
   step_        = -1;
   time_        = 0.;
 

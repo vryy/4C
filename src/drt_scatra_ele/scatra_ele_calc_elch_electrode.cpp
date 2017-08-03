@@ -219,12 +219,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalcMatDiffCoeffLin(
  *--------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalcMatPotEquDiviOhm(
-    Epetra_SerialDenseMatrix&                          emat,         //!< element matrix to be filled
-    const double                                       timefacfac,   //!< domain-integration factor times time-integration factor
-    const double                                       invf,         //!< 1/F
-    const LINALG::Matrix<my::nsd_,1>&                  gradpot,      //!< gradient of potenial at GP
-    const double                                       scalar        //!< scaling factor for element matrix contributions
-)
+    Epetra_SerialDenseMatrix&           emat,         //!< element matrix to be filled
+    const double                        timefacfac,   //!< domain-integration factor times time-integration factor
+    const double                        invf,         //!< 1/F
+    const LINALG::Matrix<my::nsd_,1>&   gradpot,      //!< gradient of potential at GP
+    const double                        scalar        //!< scaling factor for element matrix contributions
+    )
 {
   for (unsigned vi=0; vi<my::nen_; ++vi)
   {
@@ -262,12 +262,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalcMatPotEquDiviOhm(
  *--------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalcRhsPotEquDiviOhm(
-    Epetra_SerialDenseVector&                          erhs,      //!< element vector to be filled
-    const double                                       rhsfac,    //!< time-integration factor for rhs times domain-integration factor
-    const double                                       invf,      //!< 1./F
-    const LINALG::Matrix<my::nsd_,1>&                  gradpot,   //!< gradient of potenial at GP
-    const double                                       scalar     //!< scaling factor for element residual contributions
-  )
+    Epetra_SerialDenseVector&           erhs,      //!< element vector to be filled
+    const double                        rhsfac,    //!< time-integration factor for rhs times domain-integration factor
+    const double                        invf,      //!< 1./F
+    const LINALG::Matrix<my::nsd_,1>&   gradpot,   //!< gradient of potential at GP
+    const double                        scalar     //!< scaling factor for element residual contributions
+    )
 {
   for (unsigned vi=0; vi<my::nen_; ++vi)
   {

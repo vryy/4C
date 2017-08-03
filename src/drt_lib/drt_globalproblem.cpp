@@ -44,7 +44,10 @@
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/drt_validmaterials.H"
 #include "../drt_inpar/inpar.H"
+#include "../drt_mat/elchmat.H"
+#include "../drt_mat/elchphase.H"
 #include "../drt_mat/micromaterial.H"
+#include "../drt_mat/newman_multiscale.H"
 #include "../drt_mat/scatra_mat_multiscale.H"
 #include "../drt_lib/drt_utils_parmetis.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
@@ -2226,6 +2229,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     // care for special applications
     switch (ProblemType())
     {
+    case prb_elch:
     case prb_fsi:
     case prb_fsi_redmodels:
     case prb_fsi_lung:
@@ -2269,14 +2273,15 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
   // check whether micro material is specified
   const int id_struct = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_struct_multiscale);
   const int id_scatra = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_scatra_multiscale);
+  const int id_elch = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_newman_multiscale);
 
   // return if no multiscale material is used
-  if(id_struct == -1 and id_scatra == -1)
+  if(id_struct == -1 and id_scatra == -1 and id_elch == -1)
     return;
 
   // safety check
-  if(id_struct != -1 and id_scatra != -1)
-    dserror("Cannot have multi-scale material for both structure and scalar transport!");
+  if((id_struct != -1 and id_scatra != -1) or (id_struct != -1 and id_elch != -1) or (id_scatra != -1 and id_elch != -1))
+    dserror("Cannot have more than one multi-scale material!");
 
   // store name of macro-scale discretization in string
   std::string macro_dis_name("");
@@ -2307,8 +2312,17 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
     DRT::Element* actele = macro_dis->lColElement(i);
     Teuchos::RCP<MAT::Material> actmat = actele->Material();
 
+    if(id_elch != -1)
+    {
+      // extract wrapped material
+      const Teuchos::RCP<const MAT::ElchMat> elchmat = Teuchos::rcp_dynamic_cast<const MAT::ElchMat>(actmat);
+      const Teuchos::RCP<const MAT::ElchPhase> elchphase = Teuchos::rcp_dynamic_cast<const MAT::ElchPhase>(elchmat->PhaseById(elchmat->PhaseID(0)));
+      actmat = elchphase->MatById(elchphase->MatID(0));
+    }
+
     if((actmat->MaterialType() == INPAR::MAT::m_struct_multiscale and macro_dis_name == "structure")
-    or (actmat->MaterialType() == INPAR::MAT::m_scatra_multiscale and macro_dis_name == "scatra"))
+    or (actmat->MaterialType() == INPAR::MAT::m_scatra_multiscale and macro_dis_name == "scatra")
+    or (actmat->MaterialType() == INPAR::MAT::m_newman_multiscale and macro_dis_name == "scatra"))
     {
       MAT::PAR::Parameter* actparams = actmat->Parameter();
       my_multimat_IDs.insert(actparams->Id());
@@ -2418,7 +2432,13 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
         else
         {
           // access multi-scale scalar transport material
-          MAT::ScatraMatMultiScale* micromat = static_cast<MAT::ScatraMatMultiScale*>(mat.get());
+          MAT::ScatraMultiScale* micromat = NULL;
+          if(id_scatra != -1)
+            micromat = dynamic_cast<MAT::ScatraMatMultiScale*>(mat.get());
+          else if(id_elch != -1)
+            micromat = dynamic_cast<MAT::NewmanMultiScale*>(mat.get());
+          else
+            dserror("How the heck did you get here?!");
 
           // extract and broadcast number of micro-scale discretization
           microdisnum = micromat->MicroDisNum();
@@ -2676,7 +2696,7 @@ void DRT::Problem::AddDis(const std::string name, Teuchos::RCP<Discretization> d
   std::map<std::string,Teuchos::RCP<Discretization> >::iterator iter;
   for (iter = discretizationmap_.begin(); iter != discretizationmap_.end(); ++iter)
   {
-    cout<<"key : "<<iter->first<<"    "<<"discret.name = "<<iter->second->Name()<<endl<<endl;
+    std::cout << "key : " << iter->first << "    " << "discret.name = " << iter->second->Name() << std::endl << std::endl;
   }
   */
 }

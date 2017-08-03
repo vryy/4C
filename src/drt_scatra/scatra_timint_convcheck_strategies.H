@@ -11,6 +11,8 @@ or electrochemistry problems with or without scatra-scatra interface coupling in
 multipliers) computes, checks, and outputs different relevant vector norms and is implemented
 in a subclass derived from an abstract, purely virtual interface class.
 
+\level 1
+
 <pre>
 \maintainer Rui Fang
             fang@lnm.mw.tum.de
@@ -233,5 +235,37 @@ namespace SCATRA
       //! copy constructor
       ConvCheckStrategyS2ILMElch(const ConvCheckStrategyS2ILMElch& old);
   }; // class ConvCheckStrategyS2ILMElch
+
+  /*!
+  \brief specific strategy for Newton-Raphson convergence check for macro scale in multi-scale simulations of electrochemistry problems
+
+  \author fang (fang@lnm.mw.tum.de)
+  */
+
+  class ConvCheckStrategyStdMacroScaleElch : public ConvCheckStrategyBase
+  {
+    public:
+
+      //! constructor
+      ConvCheckStrategyStdMacroScaleElch(
+          const Teuchos::ParameterList&   parameters   //!< parameter list for Newton-Raphson iteration
+          ) :
+      ConvCheckStrategyBase(parameters)
+      {return;};
+
+      //! destructor
+      virtual ~ConvCheckStrategyStdMacroScaleElch(){return;};
+
+      //! perform convergence check for Newton-Raphson iteration
+      bool AbortNonlinIter(
+          const ScaTraTimIntImpl&   scatratimint,   //!< scalar transport time integrator
+          double&                   actresidual     //!< return maximum current residual value
+          ) const;
+
+    private:
+
+      //! copy constructor
+      ConvCheckStrategyStdMacroScaleElch(const ConvCheckStrategyStdMacroScaleElch& old);
+  }; // class ConvCheckStrategyStdMacroScaleElch
 } // namespace SCATRA
 #endif // #ifndef SCATRA_TIMINT_CONVCHECK_STRATEGIES_H

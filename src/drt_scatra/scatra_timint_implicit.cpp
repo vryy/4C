@@ -30,29 +30,32 @@
 #include "turbulence_hit_initial_scalar_field.H"
 #include "turbulence_hit_scalar_forcing.H"
 
-#include "../drt_scatra_ele/scatra_ele_action.H"
-#include "../drt_scatra_ele/scatra_ele_parameter_timint.H"
+#include "../drt_fluid/fluid_rotsym_periodicbc_utils.H"
 
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_krylov_projector.H"
+#include "../drt_fluid_turbulence/dyn_vreman.H"
+
+#include "../drt_inpar/drt_validparameters.H"
+#include "../drt_inpar/inpar_elch.H"
+
+#include "../drt_io/io.H"
 
 #include "../drt_lib/drt_condition_selector.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_periodicbc.H"
 
-#include "../drt_inpar/drt_validparameters.H"
-
+#include "../drt_mat/electrode.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/scatra_mat.H"
 
-#include "../drt_lib/drt_periodicbc.H"
-#include "../drt_fluid/fluid_rotsym_periodicbc_utils.H"
-#include "../drt_fluid_turbulence/dyn_vreman.H"
-
 #include "../drt_nurbs_discret/drt_apply_nurbs_initial_condition.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 
-#include "../drt_io/io.H"
+#include "../drt_scatra_ele/scatra_ele_action.H"
+#include "../drt_scatra_ele/scatra_ele_parameter_timint.H"
+
+#include "../linalg/linalg_krylov_projector.H"
+#include "../linalg/linalg_solver.H"
 
 // for the condition writer output
 /*
@@ -122,7 +125,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   turbmodel_(INPAR::FLUID::no_model),
   s2icoupling_(actdis->GetCondition("S2ICoupling") != NULL),
   heteroreaccoupling_(actdis->GetCondition("ScatraHeteroReactionSlave") != NULL),
-  macro_scale_(problem_->Materials()->FirstIdByType(INPAR::MAT::m_scatra_multiscale) != -1),
+  macro_scale_(problem_->Materials()->FirstIdByType(INPAR::MAT::m_scatra_multiscale) != -1 or problem_->Materials()->FirstIdByType(INPAR::MAT::m_newman_multiscale) != -1),
   micro_scale_(probnum != 0),
   calcflux_domain_(DRT::INPUT::IntegralValue<INPAR::SCATRA::FluxType>(*params,"CALCFLUX_DOMAIN")),
   calcflux_domain_lumped_(DRT::INPUT::IntegralValue<bool>(*params,"CALCFLUX_DOMAIN_LUMPED")),
@@ -205,9 +208,9 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   uprestart_(params->get<int>("RESTARTEVRY")),
   neumanninflow_(DRT::INPUT::IntegralValue<int>(*params,"NEUMANNINFLOW")),
   convheatrans_(DRT::INPUT::IntegralValue<int>(*params,"CONV_HEAT_TRANS")),
-  phinp_macro_(0.0),
+  phinp_macro_(0,0.),
   q_(0.0),
-  dq_dphi_(0.0),
+  dq_dphi_(0,0.),
   // Initialization of Biofilm specific stuff
   scfldgrdisp_(Teuchos::null),
   scstrgrdisp_(Teuchos::null),
@@ -1734,7 +1737,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
     }
 
     if(numdofpernode.empty())
-      dserror("No DOFs defined on initial field condtion!");
+      dserror("No DOFs defined on initial field condition!");
 
     const int maxnumdofpernode = *(numdofpernode.rbegin());
 
@@ -3236,6 +3239,10 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
         if(node == NULL)
           dserror("Cannot extract node with global ID %d from micro-scale discretization!",(*nodeids)[inode]);
 
+        // safety check
+        if(node->NumElement() != 1)
+          dserror("Number of 1D elements adjacent to the boundary node must be 1!");
+
         // compute domain integration factor
         double fac(1.);
         if(DRT::INPUT::IntegralValue<bool>(*params_,"SPHERICALCOORDS"))
@@ -3266,16 +3273,94 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
                 dserror("Number of permeabilities does not match number of scalars!");
 
               // compute and store micro-scale coupling flux
-              q_ = (*permeabilities)[0]*((*phinp_)[lid]-phinp_macro_);
+              q_ = (*permeabilities)[0]*((*phinp_)[lid]-phinp_macro_[0]);
 
               // compute and store derivative of micro-scale coupling flux w.r.t. macro-scale state variable
-              dq_dphi_ = -(*permeabilities)[0];
+              dq_dphi_[0] = -(*permeabilities)[0];
 
               // assemble contribution from macro-micro coupling into global residual vector
               (*residual_)[lid] -= DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(discret_->Name())->TimeFacRhs()*q_*fac;
 
               // assemble contribution from macro-micro coupling into global system matrix
               sysmat_->Assemble(DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(discret_->Name())->TimeFac()*(*permeabilities)[0]*fac,gid,gid);
+
+              break;
+            }
+
+            case INPAR::S2I::kinetics_butlervolmer:
+            {
+              // access material of electrode
+              Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const MAT::Electrode>(node->Elements()[0]->Material());
+              if(matelectrode == Teuchos::null)
+                dserror("Invalid electrode material for multi-scale coupling!");
+
+              // access input parameters associated with current condition
+              const int nume = conditions[icond]->GetInt("e-");
+              if(nume != 1)
+                dserror("Invalid number of electrons involved in charge transfer at electrode-electrolyte interface!");
+              const std::vector<int>* stoichiometries = conditions[icond]->GetMutable<std::vector<int> >("stoichiometries");
+              if(stoichiometries == NULL)
+                dserror("Cannot access vector of stoichiometric coefficients for multi-scale coupling!");
+              if(stoichiometries->size() != 1)
+                dserror("Number of stoichiometric coefficients does not match number of scalars!");
+              if((*stoichiometries)[0] != -1)
+                dserror("Invalid stoichiometric coefficient!");
+              const double faraday = INPAR::ELCH::faraday_const;
+              const double frt = faraday/(INPAR::ELCH::gas_const*(DRT::Problem::Instance(0)->ELCHControlParams().get<double>("TEMPERATURE")));
+              const double alphaa = conditions[icond]->GetDouble("alpha_a");   // anodic transfer coefficient
+              const double alphac = conditions[icond]->GetDouble("alpha_c");   // cathodic transfer coefficient
+              const double kr = conditions[icond]->GetDouble("k_r");           // rate constant of charge transfer reaction
+              if(kr < 0.)
+                dserror("Charge transfer constant k_r is negative!");
+
+              // extract saturation value of intercalated lithium concentration from electrode material
+              const double cmax = matelectrode->CMax();
+              if(cmax < 1.e-12)
+                dserror("Saturation value c_max of intercalated lithium concentration is too small!");
+
+              // extract electrode-side and electrolyte-side concentration values at multi-scale coupling point
+              const double conc_ed = (*phinp_)[lid];
+              const double conc_el = phinp_macro_[0];
+
+              // evaluate overall integration factors
+              const double timefacfac = DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(discret_->Name())->TimeFac()*fac;
+              const double timefacrhsfac = DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(discret_->Name())->TimeFacRhs()*fac;
+              if (timefacfac < 0. or timefacrhsfac < 0.)
+                dserror("Integration factor is negative!");
+
+              // equilibrium electric potential difference and its derivative w.r.t. concentration at electrode surface
+              const double epd = matelectrode->ComputeOpenCircuitPotential(conc_ed,faraday,frt);
+              const double epdderiv = matelectrode->ComputeFirstDerivOpenCircuitPotential(conc_ed,faraday,frt);
+
+              // electrode-electrolyte overpotential at multi-scale coupling point
+              const double eta = phinp_macro_[2]-phinp_macro_[1]-epd;
+
+              // Butler-Volmer exchange mass flux density
+              const double j0 = kr*pow(conc_el,alphaa)*pow(cmax-conc_ed,alphaa)*pow(conc_ed,alphac);
+
+              // exponential Butler-Volmer terms
+              const double expterm1 = exp(alphaa*frt*eta);
+              const double expterm2 = exp(-alphac*frt*eta);
+              const double expterm = expterm1-expterm2;
+
+              // safety check
+              if(abs(expterm)>1.e5)
+                dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",expterm);
+
+              // core residual term associated with Butler-Volmer mass flux density
+              q_ = j0*expterm;
+
+              // core linearizations associated with Butler-Volmer mass flux density
+              const double dj_dc_ed = kr*pow(conc_el,alphaa)*pow(cmax-conc_ed,alphaa-1.)*pow(conc_ed,alphac-1.)*(-alphaa*conc_ed+alphac*(cmax-conc_ed))*expterm+j0*(-alphaa*frt*epdderiv*expterm1-alphac*frt*epdderiv*expterm2);
+              dq_dphi_[0] = j0*alphaa/conc_el*expterm;                       // dj_dc_el
+              dq_dphi_[1] = -j0*(alphaa*frt*expterm1+alphac*frt*expterm2);   // dj_dpot_el
+              dq_dphi_[2] = -dq_dphi_[1];                                    // dj_dpot_ed
+
+              // assemble contribution from macro-micro coupling into global residual vector
+              (*residual_)[lid] -= timefacrhsfac*q_;
+
+              // assemble contribution from macro-micro coupling into micro global system matrix
+              sysmat_->Assemble(timefacfac*dj_dc_ed,gid,gid);
 
               break;
             }

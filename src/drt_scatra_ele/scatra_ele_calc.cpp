@@ -31,6 +31,7 @@
 #include "../drt_geometry/position_array.H"
 #include "../drt_lib/drt_condition_utils.H"
 
+#include "../drt_mat/electrode.H"
 #include "../drt_mat/scatra_mat.H"
 #include "../drt_mat/scatra_mat_multiscale.H"
 #include "../drt_mat/matlist.H"
@@ -1159,7 +1160,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvalShapeFuncAndDerivsInPa
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::GetMaterialParams(
-  const DRT::Element* ele,       //!< the element we are dealing with
+  const DRT::Element*  ele,       //!< the element we are dealing with
   std::vector<double>& densn,     //!< density at t_(n)
   std::vector<double>& densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
   std::vector<double>& densam,    //!< density at t_(n+alpha_M)
@@ -1201,13 +1202,23 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Materials(
   double&                                 densn,    //!< density at t_(n)
   double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
   double&                                 densam,   //!< density at t_(n+alpha_M)
-  double&                                 visc,         //!< fluid viscosity
-  const int                               iquad         //!< id of current gauss point
+  double&                                 visc,     //!< fluid viscosity
+  const int                               iquad     //!< id of current gauss point
 
   )
 {
   switch(material->MaterialType())
   {
+    case INPAR::MAT::m_electrode:
+    {
+      // safety check
+      if(k != 0)
+        dserror("Invalid species ID!");
+
+      MatElectrode(material);
+      break;
+    }
+
     case INPAR::MAT::m_scatra:
     {
       MatScaTra(material,k,densn,densnp,densam,visc,iquad);
@@ -1242,10 +1253,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::MatScaTra(
   double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
   double&                                 densam,   //!< density at t_(n+alpha_M)
   double&                                 visc,     //!< fluid viscosity
-  const int                               iquad   //!< id of current gauss point (default = -1)
+  const int                               iquad     //!< id of current gauss point (default = -1)
   )
 {
-
   int geleid = -1;
   if(DRT::Problem::Instance()->ProblemType()==prb_acou)
     geleid = eid_;
@@ -1322,6 +1332,21 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::MatScaTraMultiScale(
 
   return;
 } // DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::MatScaTraMultiScale
+
+
+/*----------------------------------------------------------------------*
+ | evaluate electrode material                               fang 07/17 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::MatElectrode(
+    const Teuchos::RCP<const MAT::Material>   material   //!< electrode material
+    )
+{
+  // set constant diffusivity
+  diffmanager_->SetIsotropicDiff(Teuchos::rcp_static_cast<const MAT::Electrode>(material)->ComputeDiffusionCoefficient(scatravarmanager_->Phinp(0)),0);
+
+  return;
+} // DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::MatElectrode
 
 
 /*---------------------------------------------------------------------------------------*
@@ -2251,13 +2276,14 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatAndRhsMultiScale(
   const MAT::ScatraMatMultiScale* const matmultiscale = static_cast<const MAT::ScatraMatMultiScale* const>(ele->Material().get());
 
   // initialize variables for micro-scale coupling flux and derivative of micro-scale coupling flux w.r.t. macro-scale state variable
-  double q_micro(0.), dq_dphi_micro(0.0);
+  double q_micro(0.);
+  std::vector<double> dq_dphi_micro(1,0.);
 
   // evaluate multi-scale scalar transport material
-  matmultiscale->Evaluate(iquad,scatravarmanager_->Phinp(k),q_micro,dq_dphi_micro);
+  matmultiscale->Evaluate(iquad,std::vector<double>(1,scatravarmanager_->Phinp(k)),q_micro,dq_dphi_micro);
 
   // macro-scale matrix contribution
-  const double matrixterm = timefacfac*dq_dphi_micro*matmultiscale->A_s();
+  const double matrixterm = timefacfac*dq_dphi_micro[0]*matmultiscale->A_s();
   for(unsigned vi=0; vi<nen_; ++vi)
   {
     const double v = funct_(vi)*matrixterm;
