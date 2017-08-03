@@ -22,6 +22,7 @@
 #include <Epetra_Comm.h>
 
 #include "drt_conditiondefinition.H"
+#include "drt_dofset_independent.H"
 #include "drt_materialdefinition.H"
 #include "drt_function.H"
 #include "drt_singletondestruction.H"
@@ -2455,6 +2456,11 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
         DRT::INPUT::DatFileReader micro_reader(micro_inputfile_name, subgroupcomm, 1);
 
         Teuchos::RCP<DRT::Discretization> dis_micro = Teuchos::rcp(new DRT::Discretization(micro_dis_name,micro_reader.Comm()));
+
+        // replace standard dofset inside micro discretization by independent dofset
+        // to avoid inconsistent dof numbering in non-nested parallel settings with more than one micro discretization
+        if(npgroup_->NpType() == no_nested_parallelism)
+          dis_micro->ReplaceDofSet(Teuchos::rcp(new DRT::IndependentDofSet()));
 
         // create discretization writer - in constructor set into and owned by corresponding discret
         dis_micro->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(dis_micro)));
