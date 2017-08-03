@@ -56,6 +56,7 @@ namespace INPAR
   {
     beam3r_lin2_rigid,        ///< rigid joint
     beam3r_lin2_pin,          ///< pin joint
+    truss                     ///< truss
   };
 
   /// type of filament
@@ -82,6 +83,8 @@ namespace INPAR
       type = beam3r_lin2_rigid;
     else if ( boost::iequals( name, "beam3rlin2pin" ) )
       type = beam3r_lin2_pin;
+    else if ( boost::iequals( name, "truss" ) )
+      type = truss;
     else
       dserror("invalid filament type std::string ");
 

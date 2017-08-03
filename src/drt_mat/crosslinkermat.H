@@ -43,8 +43,8 @@ namespace MAT
       /// destructor
       virtual ~CrosslinkerMat() { ; }
 
-      /// number of beam elasthyper material
-      int const beamelasthypermatnum_;
+      /// number of material for underlying linker element
+      int const link_element_matnum_;
 
       /// type of joint
       INPAR::BEAMINTERACTION::JointType jointtype_;
@@ -157,7 +157,7 @@ private:
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new CrosslinkerMat( *this ) ); }
 
     /// number of beam elasthyper material
-    virtual double BeamElastHyperMatNum() const { return params_->beamelasthypermatnum_; }
+    virtual double BeamElastHyperMatNum() const { return params_->link_element_matnum_; }
 
     /// force depedent off rate according to bells equation
     virtual INPAR::BEAMINTERACTION::JointType JointType() const { return params_->jointtype_; };

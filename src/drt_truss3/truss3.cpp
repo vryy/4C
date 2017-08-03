@@ -40,7 +40,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Truss3Type::Create( const std::string 
                                                               const std::string eledistype,
                                                               const int         id,
                                                               const int         owner )
-  {
+{
   if ( eletype=="TRUSS3" )
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Truss3(id,owner));

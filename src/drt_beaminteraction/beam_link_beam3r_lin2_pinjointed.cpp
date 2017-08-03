@@ -309,8 +309,8 @@ bool BEAMINTERACTION::BeamLinkBeam3rLin2PinJointed::EvaluateForce(
 
   // Todo maybe we can avoid this copy by setting up 'force' as a view on the
   //      two separate force vectors ?
-  std::copy( &force(0), &force(0) + 6, &forcevec1(0) );
-  std::copy( &force(0) + 6, &force(0) + 12, &forcevec2(0) );
+  std::copy( &force(0), &force(0) + 3, &forcevec1(0) );
+  std::copy( &force(0) + 6, &force(0) + 9, &forcevec2(0) );
 
   return true;
 }
@@ -341,6 +341,13 @@ bool BEAMINTERACTION::BeamLinkBeam3rLin2PinJointed::EvaluateStiff(
       NULL,
       NULL,
       NULL);
+
+  // Todo the linearization is incomplete yet. fix this or delete related code and
+  // resort to truss linker element
+  dserror("we miss stiffness contributions from rotation of the nodal triads here! "
+      "implement the transformation matrices that describe the dependency of triad "
+      "rotation on current position of binding spots, i.e. nodal positions and "
+      "tangents!");
 
   // Todo can we use std::copy here or even set up 'stiffmat' as a view on the
   //      four individual sub-matrices ?
@@ -388,8 +395,15 @@ bool BEAMINTERACTION::BeamLinkBeam3rLin2PinJointed::EvaluateForceStiff(
       &force,
       NULL);
 
-  std::copy( &force(0), &force(0) + 6, &forcevec1(0) );
-  std::copy( &force(0) + 6, &force(0) + 12, &forcevec2(0) );
+  std::copy( &force(0), &force(0) + 3, &forcevec1(0) );
+  std::copy( &force(0) + 6, &force(0) + 9, &forcevec2(0) );
+
+  // Todo the linearization is incomplete yet. fix this or delete related code and
+  // resort to truss linker element
+  dserror("we miss stiffness contributions from rotation of the nodal triads here! "
+      "implement the transformation matrices that describe the dependency of triad "
+      "rotation on current position of binding spots, i.e. nodal positions and "
+      "tangents!");
 
   for ( unsigned int i = 0; i < 3; ++i )
   {
@@ -415,7 +429,18 @@ void BEAMINTERACTION::BeamLinkBeam3rLin2PinJointed::ResetState(
 
   BeamLinkPinJointed::ResetState( bspotpos, bspottriad );
 
-  // *** initialization of the two triads of the connecting element ***
+  // *** re-initialization of the two triads of the connecting element ***
+
+  /* the idea is that for this pin jointed linker element the underlying linear
+   * Reissner beam element is used as a truss model only; that means, it only
+   * reacts with an axial force - no moments and no transverse forces;
+   * this shall be achieved by rotating the nodal triads according to the beam
+   * axis in every new configuration given here from outside;
+   * to keep the Reisner element shear-, bending- and torsion-free, we use the
+   * same strategy to determine the nodal triads as for initialization of any
+   * linker (see Init() ) */
+
+
 
   /* they are determined such that:
    * - the first base vector points in the direction of the distance vector

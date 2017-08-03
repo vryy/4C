@@ -2589,8 +2589,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CreateNewDoubleBondedCros
     Teuchos::RCP<BEAMINTERACTION::BeamLink> linkelepairptr;
     if ( cl_node->GetMaterial()->JointType() == INPAR::BEAMINTERACTION::beam3r_lin2_rigid )
       linkelepairptr = BEAMINTERACTION::BeamLinkRigidJointed::Create();
-    else if ( cl_node->GetMaterial()->JointType() == INPAR::BEAMINTERACTION::beam3r_lin2_pin )
-      linkelepairptr = BEAMINTERACTION::BeamLinkPinJointed::Create();
+    else if ( cl_node->GetMaterial()->JointType() == INPAR::BEAMINTERACTION::beam3r_lin2_pin
+        or cl_node->GetMaterial()->JointType() == INPAR::BEAMINTERACTION::truss )
+      linkelepairptr = BEAMINTERACTION::BeamLinkPinJointed::Create( cl_node->GetMaterial()->JointType() );
 
     // finally initialize and setup object
     linkelepairptr->Init( iter->first, newdoublebond_i.eleids, newdoublebond_i.bspotposs, newdoublebond_i.bspottriads );

@@ -378,6 +378,16 @@ public:
    *  \date 04/16 */
   virtual Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr();
 
+  /*! \brief calculate internal force vector and stiffness matrix based
+   *         on absolute nodal positions (using kinematic type tr3_totlag)
+   *
+   *  \author grill
+   *  \date 08/17 */
+  void CalcInternalForceStiffTotLag(
+      const LINALG::Matrix<6,1>& nodal_positions_totlag,
+      Epetra_SerialDenseVector& forcevec,
+      Epetra_SerialDenseMatrix& stiffmat);
+
 protected:
   /** \brief get access to the interface
    *

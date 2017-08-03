@@ -15,6 +15,7 @@
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/drt_parobjectfactory.H"
+#include "../drt_inpar/inpar_beaminteraction.H"
 #include "beam_link.H"
 
 //#include <Teuchos_RCP.hpp>
@@ -147,7 +148,9 @@ public:
       std::vector<LINALG::Matrix<3,3> >& bspottriad);
 
   //! return appropriate instance of the desired class (acts as a simple factory)
-  static Teuchos::RCP<BeamLinkPinJointed> Create();
+  static Teuchos::RCP<BeamLinkPinJointed> Create(
+      INPAR::BEAMINTERACTION::JointType type);
+
   void Print(std::ostream& out) const;
   //@}
 

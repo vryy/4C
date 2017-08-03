@@ -17,11 +17,14 @@
 
 #include "../drt_lib/drt_dserror.H"
 
+#include "../drt_inpar/inpar_beaminteraction.H"
+
 #include <Teuchos_RCP.hpp>
 
 #include "beam_link.H"
 
 #include "beam_link_pinjointed.H"
+#include "beam_link_truss.H"
 
 #include "beam_link_beam3r_lin2_pinjointed.H"
 
@@ -112,10 +115,18 @@ void BEAMINTERACTION::BeamLinkPinJointed::ResetState(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed>
-BEAMINTERACTION::BeamLinkPinJointed::Create()
+BEAMINTERACTION::BeamLinkPinJointed::Create(
+    INPAR::BEAMINTERACTION::JointType type)
 {
-  // for now, we always use a 2-noded linear Reissner element
-  return Teuchos::rcp( new BEAMINTERACTION::BeamLinkBeam3rLin2PinJointed() );
+  if ( type == INPAR::BEAMINTERACTION::beam3r_lin2_pin )
+    return Teuchos::rcp( new BEAMINTERACTION::BeamLinkBeam3rLin2PinJointed() );
+  else if ( type == INPAR::BEAMINTERACTION::truss )
+    return Teuchos::rcp( new BEAMINTERACTION::BeamLinkTruss() );
+  else
+    dserror("instantiation of new BeamLinkPinJointed object failed due to "
+        "unknown type of linker");
+
+  return Teuchos::null;
 }
 
 /*----------------------------------------------------------------------------*

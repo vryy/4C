@@ -29,6 +29,8 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_dserror.H"
 
+#include "../drt_inpar/inpar_beaminteraction.H"
+
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
 
@@ -679,7 +681,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::ContractileCells::CreateBeamToSphereJoi
       // Todo introduce enum for type of linkage (only linear Beam3r element possible so far)
       //      and introduce corresponding input parameter
       Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> linkelepairptr =
-        BEAMINTERACTION::BeamLinkPinJointed::Create();
+        BEAMINTERACTION::BeamLinkPinJointed::Create( INPAR::BEAMINTERACTION::beam3r_lin2_pin );
 
       // unique linker id is bspot elegid and locspot id paired
       int id = BEAMINTERACTION::UTILS::CantorPairing( eleids[1], true );

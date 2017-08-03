@@ -26,7 +26,7 @@ MAT::PAR::CrosslinkerMat::CrosslinkerMat(
   Teuchos::RCP<MAT::PAR::Material> matdata
   ) :
     Parameter(matdata),
-    beamelasthypermatnum_( matdata->GetDouble("MATNUM") ),
+    link_element_matnum_( matdata->GetDouble("MATNUM") ),
     jointtype_( INPAR::BEAMINTERACTION::String2JointType( *(matdata->Get<std::string>("JOINTTYPE") ) ) ),
     linkinglength_( matdata->GetDouble("LINKINGLENGTH") ),
     linkinglengthtol_( matdata->GetDouble("LINKINGLENGTHTOL") ),
@@ -37,8 +37,8 @@ MAT::PAR::CrosslinkerMat::CrosslinkerMat(
     deltabelleq_( matdata->GetDouble("DELTABELLEQ") ),
     linkertype_( INPAR::BEAMINTERACTION::String2CrosslinkerType( *(matdata->Get<std::string>("TYPE") ) ) )
 {
-  if ( beamelasthypermatnum_ < 0 )
-    dserror("Material number defining beam elasthyper material for crosslinker"
+  if ( link_element_matnum_ < 0 )
+    dserror("Material number for underlying linker element of this crosslinker"
         "must be greater than zero");
   if ( linkinglength_ < 1e-08 )
     dserror("Linking length (distance of two binding spots of a linker) must be\n"

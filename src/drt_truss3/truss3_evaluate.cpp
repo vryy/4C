@@ -651,20 +651,6 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag(LINALG::Matrix<1,6>&      Dum
   //current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
   LINALG::Matrix<6,1> xcurr;
 
-  /*current nodal displacement (first entries 0 .. 2 for first node, 3 ..5 for second node) compared
-   * to reference configuration; note: in general this is not equal to the values in disp since the
-   * latter one refers to a nodal displacement compared to a reference configuration before the first
-   * time step whereas the following variable refers to the displacement with respect to a reference
-   * configuration which may have been set up at any point of time during the simulation (usually this
-   * is only important if an element has been added to the discretization after the start of the simulation)*/
-  LINALG::Matrix<6,1> ucurr;
-
-  //Green-Lagrange strain
-  double epsilon;
-
-  //auxiliary vector for both internal force and stiffness matrix: N^T_(,xi)*N_(,xi)*xcurr
-  LINALG::Matrix<6,1> aux;
-
   //current nodal position
   for (int j=0; j<3; ++j)
   {
@@ -672,34 +658,15 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag(LINALG::Matrix<1,6>&      Dum
     xcurr(j+3)   = Nodes()[1]->X()[j] + DummyDisp(3+j); //second node
   }
 
-  //current displacement = current position - reference position
-  ucurr  = xcurr;
-  ucurr -= X_;
+  // calculate force vector and stiffness matrix
+  CalcInternalForceStiffTotLag(
+      xcurr,
+      DummyForce,
+      DummyStiffMatrix);
 
-  //computing auxiliary vector aux = N^T_{,xi} * N_{,xi} * xcurr
-  aux(0) = (xcurr(0) - xcurr(3));
-  aux(1) = (xcurr(1) - xcurr(4));
-  aux(2) = (xcurr(2) - xcurr(5));
-  aux(3) = (xcurr(3) - xcurr(0));
-  aux(4) = (xcurr(4) - xcurr(1));
-  aux(5) = (xcurr(5) - xcurr(2));
-
-  lcurr_ = sqrt(pow(aux(0),2)+pow(aux(1),2)+pow(aux(2),2));
-
-  //calculating strain epsilon from node position by scalar product:
-  //epsilon = (xrefe + 0.5*ucurr)^T * N_{,s}^T * N_{,s} * d
-  epsilon = 0;
-  epsilon += (X_(0) + 0.5*ucurr(0)) * (ucurr(0) - ucurr(3));
-  epsilon += (X_(1) + 0.5*ucurr(1)) * (ucurr(1) - ucurr(4));
-  epsilon += (X_(2) + 0.5*ucurr(2)) * (ucurr(2) - ucurr(5));
-  epsilon += (X_(3) + 0.5*ucurr(3)) * (ucurr(3) - ucurr(0));
-  epsilon += (X_(4) + 0.5*ucurr(4)) * (ucurr(4) - ucurr(1));
-  epsilon += (X_(5) + 0.5*ucurr(5)) * (ucurr(5) - ucurr(2));
-  epsilon /= lrefe_*lrefe_;
 
   // get the material law
   Teuchos::RCP<const MAT::Material> currmat = Material();
-  double ym = 0;
   double density = 0;
 
   //assignment of material parameters; only St.Venant material is accepted for this truss
@@ -708,7 +675,6 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag(LINALG::Matrix<1,6>&      Dum
   case INPAR::MAT::m_stvenant:// only linear elastic material supported
   {
     const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
-    ym = actmat->Youngs();
     density = actmat->Density();
   }
   break;
@@ -716,26 +682,6 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag(LINALG::Matrix<1,6>&      Dum
     dserror("unknown or improper type of material law");
     break;
   }
-
-  //computing global internal forces
-  for (int i=0; i<6; ++i)
-    DummyForce(i) = (ym*crosssec_*epsilon/lrefe_) * aux(i);
-
-  //computing linear stiffness matrix
-  for (int i=0; i<3; ++i)
-  {
-    //stiffness entries for first node
-    DummyStiffMatrix(i,i)     =  (ym*crosssec_*epsilon/lrefe_);
-    DummyStiffMatrix(i,3+i)   = -(ym*crosssec_*epsilon/lrefe_);
-    //stiffness entries for second node
-    DummyStiffMatrix(i+3,i+3) =  (ym*crosssec_*epsilon/lrefe_);
-    DummyStiffMatrix(i+3,i )  = -(ym*crosssec_*epsilon/lrefe_);
-  }
-
-  for (int i=0; i<6; ++i)
-    for (int j=0; j<6; ++j)
-      DummyStiffMatrix(i,j) += (ym*crosssec_/pow(lrefe_,3))*aux(i)*aux(j);
-
 
   //calculating mass matrix
   if (massmatrix != NULL)
@@ -849,6 +795,95 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_engstr(const LINALG::Matrix<1,6>&   
   return;
 } // DRT::ELEMENTS::Truss3::bt_nlnstiffmass3
 
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Truss3::CalcInternalForceStiffTotLag(
+    const LINALG::Matrix<6,1>& nodal_positions_totlag,
+    Epetra_SerialDenseVector& forcevec,
+    Epetra_SerialDenseMatrix& stiffmat)
+{
+
+  //Green-Lagrange strain
+  double epsilon;
+
+  //auxiliary vector for both internal force and stiffness matrix: N^T_(,xi)*N_(,xi)*xcurr
+  LINALG::Matrix<6,1> aux;
+
+  /*current nodal displacement (first entries 0 .. 2 for first node, 3 ..5 for second node) compared
+   * to reference configuration; note: in general this is not equal to the values in disp since the
+   * latter one refers to a nodal displacement compared to a reference configuration before the first
+   * time step whereas the following variable refers to the displacement with respect to a reference
+   * configuration which may have been set up at any point of time during the simulation (usually this
+   * is only important if an element has been added to the discretization after the start of the simulation)*/
+  LINALG::Matrix<6,1> ucurr;
+
+  //current displacement = current position - reference position
+  ucurr  = nodal_positions_totlag;
+  ucurr -= X_;
+
+  //computing auxiliary vector aux = N^T_{,xi} * N_{,xi} * nodal_positions_totlag
+  aux(0) = (nodal_positions_totlag(0) - nodal_positions_totlag(3));
+  aux(1) = (nodal_positions_totlag(1) - nodal_positions_totlag(4));
+  aux(2) = (nodal_positions_totlag(2) - nodal_positions_totlag(5));
+  aux(3) = (nodal_positions_totlag(3) - nodal_positions_totlag(0));
+  aux(4) = (nodal_positions_totlag(4) - nodal_positions_totlag(1));
+  aux(5) = (nodal_positions_totlag(5) - nodal_positions_totlag(2));
+
+  lcurr_ = sqrt(pow(aux(0),2)+pow(aux(1),2)+pow(aux(2),2));
+
+  //calculating strain epsilon from node position by scalar product:
+  //epsilon = (xrefe + 0.5*ucurr)^T * N_{,s}^T * N_{,s} * d
+  epsilon = 0;
+  epsilon += (X_(0) + 0.5*ucurr(0)) * (ucurr(0) - ucurr(3));
+  epsilon += (X_(1) + 0.5*ucurr(1)) * (ucurr(1) - ucurr(4));
+  epsilon += (X_(2) + 0.5*ucurr(2)) * (ucurr(2) - ucurr(5));
+  epsilon += (X_(3) + 0.5*ucurr(3)) * (ucurr(3) - ucurr(0));
+  epsilon += (X_(4) + 0.5*ucurr(4)) * (ucurr(4) - ucurr(1));
+  epsilon += (X_(5) + 0.5*ucurr(5)) * (ucurr(5) - ucurr(2));
+  epsilon /= lrefe_*lrefe_;
+
+  // get the material law
+  Teuchos::RCP<const MAT::Material> currmat = Material();
+  double ym = 0;
+
+  //assignment of material parameters; only St.Venant material is accepted for this truss
+  switch(currmat->MaterialType())
+  {
+    case INPAR::MAT::m_stvenant:// only linear elastic material supported
+    {
+      const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
+      ym = actmat->Youngs();
+      break;
+    }
+
+    default:
+    {
+      dserror("unknown or improper type of material law");
+      break;
+    }
+  }
+
+  //computing global internal forces
+  for (unsigned int i=0; i<6; ++i)
+    forcevec(i) = (ym*crosssec_*epsilon/lrefe_) * aux(i);
+
+  //computing linear stiffness matrix
+  for (unsigned int i=0; i<3; ++i)
+  {
+    //stiffness entries for first node
+    stiffmat(i,i)     =  (ym*crosssec_*epsilon/lrefe_);
+    stiffmat(i,3+i)   = -(ym*crosssec_*epsilon/lrefe_);
+    //stiffness entries for second node
+    stiffmat(i+3,i+3) =  (ym*crosssec_*epsilon/lrefe_);
+    stiffmat(i+3,i )  = -(ym*crosssec_*epsilon/lrefe_);
+  }
+
+  for (int i=0; i<6; ++i)
+    for (int j=0; j<6; ++j)
+      stiffmat(i,j) += (ym*crosssec_/pow(lrefe_,3))*aux(i)*aux(j);
+
+}
 
 // lump mass matrix
 void DRT::ELEMENTS::Truss3::t3_lumpmass(Epetra_SerialDenseMatrix* emass)

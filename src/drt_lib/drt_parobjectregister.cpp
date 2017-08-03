@@ -150,6 +150,7 @@
 #include "../drt_acou/acou_sol_ele.H"
 #include "../drt_beaminteraction/beam_link_beam3r_lin2_pinjointed.H"
 #include "../drt_beaminteraction/beam_link_beam3r_lin2_rigidjointed.H"
+#include "../drt_beaminteraction/beam_link_truss.H"
 #include "../drt_mat/activefiber.H"
 #include "../drt_mat/biochemo_mechano_cell_activefiber.H"
 #include "../drt_mat/biochemo_mechano_cell_passivefiber.H"
@@ -356,6 +357,7 @@ std::string DRT::ParObjectList()
     << INVANA::ParticleDataType::Instance().Name() << " "
     << BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointedType::Instance().Name() << " "
     << BEAMINTERACTION::BeamLinkBeam3rLin2PinJointedType::Instance().Name() << " "
+    << BEAMINTERACTION::BeamLinkTrussType::Instance().Name() << " "
     ;
 
   std::cout << s.str() << std::endl;
