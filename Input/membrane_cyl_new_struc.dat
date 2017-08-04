@@ -222,15 +222,15 @@ SIMPLE_DAMPING                  1
 AMGNXN_TYPE                     AMG(BGS)
 AMGNXN_XML_FILE                 none
 ----------------------------------------------------------MATERIALS
-MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 2 3 DENS 1.0
-MAT 2 ELAST_CoupNeoHooke YOUNG 100.0 NUE 0.49
+MAT 1 MAT_Membrane_ElastHyper NUMMAT 2 MATIDS 2 3 DENS 1.0
+MAT 2 ELAST_IsoNeoHooke MUE 40.0
 MAT 3 ELAST_CoupAnisoExpo K1 100.0 K2 2.0 K1COMP 1.0 K2COMP 1.0 GAMMA 0.0 INIT 1
 -----------------------------------------------CLONING MATERIAL MAP
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 1000 VALUES 0 1 1
 -------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 21 QUANTITY dispz VALUE 2.48539402165821732 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 21 QUANTITY dispz VALUE 2.14876994921447562e+00 TOLERANCE 1e-8
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 3
 NDLINE  2

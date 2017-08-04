@@ -14,10 +14,11 @@
 \brief Nonlinear Membrane Finite Element Type
 
 *----------------------------------------------------------------------*/
-
 #include "membrane.H"
 #include "membrane_eletypes.H"
-#include "../drt_lib/drt_discret.H"
+
+#include "../drt_lib/drt_utils_nullspace.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 
 /*----------------------------------------------------------------------*

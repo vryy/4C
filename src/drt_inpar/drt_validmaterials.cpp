@@ -1931,6 +1931,22 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
+  // collection of hyperelastic materials for membranes
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_Membrane_ElastHyper",
+                                            "list/collection of hyperelastic materials for membranes, i.e. material IDs",
+                                            INPAR::MAT::m_membrane_elasthyper));
+
+    AddNamedInt(m,"NUMMAT","number of materials/potentials in list");
+    AddNamedIntVector(m,"MATIDS","the list material/potential IDs","NUMMAT");
+    AddNamedReal(m,"DENS","material mass density");
+    AddNamedInt(m,"POLYCONVEX","1.0 if polyconvexity of system is checked",0.,true);
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
    // growth and remodeling (homogenized constrained mixture model)
    {
      Teuchos::RCP<MaterialDefinition> m

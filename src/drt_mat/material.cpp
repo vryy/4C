@@ -73,6 +73,7 @@
 #include "cnst_1d_art.H"
 #include "fourieriso.H"
 #include "soret.H"
+#include "membrane_elasthyper.H"
 #include "growthremodel_elasthyper.H"
 #include "scalardepinterp.H"
 #include "scatra_reaction_mat.H"
@@ -852,6 +853,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::Soret(curmat));
     MAT::PAR::Soret* params = static_cast<MAT::PAR::Soret*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_membrane_elasthyper:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::Membrane_ElastHyper(curmat));
+    MAT::PAR::Membrane_ElastHyper* params = static_cast<MAT::PAR::Membrane_ElastHyper*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_growthremodel_elasthyper:

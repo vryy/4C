@@ -547,6 +547,14 @@ namespace MAT
         return;  // do nothing
       };
 
+      /// Set fiber directions
+      virtual void SetFiberVecs(
+          const LINALG::Matrix<3,1> fibervec ///< new fiber vector
+      )
+      {
+        dserror("Not implemented yet for this type of anisotropic material;");
+      };
+
       /// Get fiber directions
       virtual void GetFiberVecs(
           std::vector<LINALG::Matrix<3,1> >& fibervecs ///< vector of all fiber vectors

@@ -219,6 +219,11 @@ namespace ELASTIC
         const LINALG::Matrix<3,3> defgrd   ///< deformation gradient
     );
 
+    /// Set fiber directions
+    virtual void SetFiberVecs(
+        const LINALG::Matrix<3,1> fibervec ///< new fiber vector
+    );
+
     /// Get fiber directions
     virtual void GetFiberVecs(
         std::vector<LINALG::Matrix<3,1> >& fibervecs ///< vector of all fiber vectors

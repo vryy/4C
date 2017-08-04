@@ -93,6 +93,7 @@ namespace INPAR
       m_growth_const,                          ///< grwoth factor given as material parameter via input
       m_growth_volumetric,                     ///< volumetric growth base material
       m_sc_dep_interp,                         ///< integration point based and scalar dependent interpolation between to materials
+      m_membrane_elasthyper,                   ///< collection of hyperelastic materials for membranes
       m_growthremodel_elasthyper,              ///< growth and remodeling
       m_herschelbulkley,                       ///< fluid with nonlinear viscosity according to Herschel-Bulkley
       m_ion,                                   ///< properties of an ion species in an electrolyte solution

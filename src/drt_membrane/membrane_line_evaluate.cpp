@@ -14,17 +14,10 @@
 \brief Nonlinear Membrane Finite Element line evaluation
 
 *----------------------------------------------------------------------*/
-
 #include "membrane.H"
-#include "../linalg/linalg_utils.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
+
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-
-#include "../drt_lib/standardtypes_cpp.H"
-
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 
 

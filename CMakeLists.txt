@@ -533,6 +533,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/fluidporo_relpermeability_law.cpp
   src/drt_mat/fluidporo_viscosity_law.cpp
   src/drt_mat/fourieriso.cpp
+  src/drt_mat/membrane_elasthyper.cpp
   src/drt_mat/growthremodel_elasthyper.cpp
   src/drt_mat/growth.cpp
   src/drt_mat/growth_law.cpp

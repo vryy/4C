@@ -294,6 +294,19 @@ void MAT::ELASTIC::CoupAnisoExpo::SetFiberVecs(
   SetupStructuralTensor(a_,A_);
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::CoupAnisoExpo::SetFiberVecs(
+    const LINALG::Matrix<3,1> fibervec
+)
+{
+  a_.Update(1.0/fibervec.Norm2(),fibervec);
+
+  SetupStructuralTensor(a_,A_);
+
+  return;
+}
+
 
 // explicit instantiation of template functions
 template void MAT::ELASTIC::CoupAnisoExpo::GetDerivativesAniso<double>(LINALG::TMatrix<double,2,1>&,

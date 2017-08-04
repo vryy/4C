@@ -23,22 +23,29 @@ MAT x KINEM nonlinear THICK x STRESS_STRAIN [plane_stress/plane_strain]
 #include "Teuchos_RCP.hpp"
 #include "Epetra_Vector.h"
 
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_parobjectfactory.H"
-#include "../drt_lib/drt_node.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_lib/drt_utils_nullspace.H"
-#include "../drt_so3/so_base.H"
-#include "../drt_inpar/inpar_structure.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-
 #include "membrane_eletypes.H"
 
-// include header because number of Gauss points are determined
-// dependent on distype
-#include "../drt_fem_general/drt_utils_gausspoints.H"
+#include "../drt_lib/drt_element.H"
+#include "../drt_inpar/inpar_structure.H"
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+
+// include header because number of Gauss points are determined dependent on distype
 #include "../drt_thermo/thermo_ele_impl_utils.H"
+
+// forward declaration
+namespace STR
+{
+namespace ELEMENTS
+{
+class ParamsInterface;
+} // namespace ELEMENTS
+} // namespace STR
+
+// forward declaration
+namespace MAT
+{
+class So3Material;
+} // namespace MAT
 
 namespace DRT
 {
@@ -55,7 +62,7 @@ class MembraneLine;
 \brief A C++ wrapper for the membrane element
 */
 template<DRT::Element::DiscretizationType distype>
-class Membrane : public So_base
+class Membrane : public DRT::Element
 {
 
 public:
@@ -197,6 +204,16 @@ public:
 
   //! @name Acess methods
 
+  /*!
+  \brief Return the material of this element
+
+  Note: The input parameter nummat is not the material number from input file
+        as in SetMaterial(int matnum), but the number of the material within
+        the vector of materials the element holds
+
+  \param nummat (in): number of requested material
+  */
+  virtual Teuchos::RCP<MAT::So3Material> SolidMaterial(int nummat=0) const;
 
   /*!
   \brief Get number of degrees of freedom of a certain node
@@ -391,7 +408,52 @@ protected:
         Teuchos::ParameterList& params,     // algorithmic parameters e.g. time
         Teuchos::RCP<MAT::Material> mat);   // material
 
+public:
+
+  /** \brief set the parameter interface ptr for the solid elements
+   *
+   *  \param p (in): Parameter list coming from the time integrator.
+   *
+   *  \author hiermeier
+   *  \date 04/16 */
+  virtual void SetParamsInterfacePtr(const Teuchos::ParameterList& p);
+
+  /** \brief returns true if the parameter interface is defined and initialized, otherwise false
+   *
+   *  \author hiermeier
+   *  \date 04/16 */
+  virtual inline bool IsParamsInterface() const
+  { return (not interface_ptr_.is_null()); }
+
+  /** \brief get access to the parameter interface pointer
+   *
+   *  \author hiermeier
+   *  \date 04/16 */
+  virtual Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr();
+
+protected:
+
+  /** \brief get access to the interface
+   *
+   *  \author hiermeier
+   *  \date 04/16 */
+  inline DRT::ELEMENTS::ParamsInterface& ParamsInterface()
+  { if (not IsParamsInterface())
+      dserror("The interface ptr is not set!");
+    return *interface_ptr_; }
+
+  /** \brief get access to the structure interface
+   *
+   *  \author vuong
+   *  \date 11/16 */
+  STR::ELEMENTS::ParamsInterface& StrParamsInterface();
+
 private:
+
+  /** \brief interface ptr
+   *
+   *  data exchange between the element and the time integrator. */
+  Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> interface_ptr_;
 
   /// type of 2D dimension reduction
   enum DimensionalReduction
@@ -470,18 +532,6 @@ private:
   void mem_globaltolocal(const LINALG::Matrix<noddof_,noddof_>&    Q_trafo,
                          const LINALG::Matrix<noddof_,noddof_>&    global,
                          LINALG::Matrix<noddof_,noddof_>&          local);
-
-  // evaluate 3D Material law and reduce to plane stress state
-  void mem_Material3dPlane(const LINALG::Matrix<noddof_,1>&          dXds1,
-                           const LINALG::Matrix<noddof_,1>&          dXds2,
-                           const LINALG::Matrix<noddof_,1>&          dxds1,
-                           const LINALG::Matrix<noddof_,1>&          dxds2,
-                           LINALG::Matrix<noddof_,noddof_>&          defgrd,
-                           LINALG::Matrix<noddof_,noddof_>&          cauchygreen_local,
-                           LINALG::Matrix<3,1>&                      pkstress,
-                           LINALG::Matrix<3,3>&                      cmat,
-                           const LINALG::Matrix<noddof_,noddof_>&    Q_trafo,
-                           Teuchos::ParameterList&                   params);
 
   // transformation matrix for material tangent tensor
   void mem_cmat_trafo(const LINALG::Matrix<noddof_,noddof_>&    Q_trafo,

@@ -16,14 +16,9 @@
 *----------------------------------------------------------------------*/
 #include "membrane.H"
 
-#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_factory.H"
-#include "../drt_lib/drt_utils_nullspace.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_globalproblem.H"
-
-#include "../drt_lib/drt_element_integration_select.H"
+#include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "../drt_mat/so3_material.H"
 
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_line2Type::Create( const int id, const int owner )
@@ -38,14 +33,13 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_line3Type::Create( const int 
   return Teuchos::null;
 }
 
-
 /*-----------------------------------------------------------------------------*
  |  constructor (public)                                          fbraeu 06/16 |
  |  id          (in)  this element's global id                                 |
  *-----------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::Membrane<distype>::Membrane(int id, int owner) :
-So_base(id,owner),
+DRT::Element(id,owner),
 thickness_(0.0),
 cur_thickness_(0),
 data_(),
@@ -96,7 +90,7 @@ intpoints_(DRT::UTILS::intrule_tri_3point)
  *-----------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::Membrane<distype>::Membrane(const DRT::ELEMENTS::Membrane<distype>& old) :
-So_base(old),
+DRT::Element(old),
 thickness_(old.thickness_),
 cur_thickness_(old.cur_thickness_),
 data_(old.data_),
@@ -198,7 +192,6 @@ void DRT::ELEMENTS::Membrane<distype>::Unpack(const std::vector<char>& data)
   return;
 }
 
-
 /*----------------------------------------------------------------------*
  |  destructor (public)                                    fbraeu 06/16 |
  *----------------------------------------------------------------------*/
@@ -208,6 +201,44 @@ DRT::ELEMENTS::Membrane<distype>::~Membrane()
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  return solid material (public)                         sfuchs 05/17 |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+Teuchos::RCP<MAT::So3Material> DRT::ELEMENTS::Membrane<distype>::SolidMaterial(int nummat) const
+{
+  return Teuchos::rcp_dynamic_cast<MAT::So3Material>(DRT::Element::Material(nummat),true);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Membrane<distype>::SetParamsInterfacePtr(const Teuchos::ParameterList& p)
+{
+  if (p.isParameter("interface"))
+    interface_ptr_ =
+        p.get<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> >("interface");
+  else
+    interface_ptr_ = Teuchos::null;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> DRT::ELEMENTS::Membrane<distype>::ParamsInterfacePtr()
+{
+  return interface_ptr_;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+STR::ELEMENTS::ParamsInterface& DRT::ELEMENTS::Membrane<distype>::StrParamsInterface()
+{
+  if (not IsParamsInterface())
+    dserror("The interface ptr is not set!");
+  return *(Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(interface_ptr_,true));
+}
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                            fbraeu 06/16 |

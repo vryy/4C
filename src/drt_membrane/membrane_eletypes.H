@@ -17,7 +17,6 @@
 #define MEMBRANE_ELETYPES_H
 
 #include "../drt_lib/drt_elementtype.H"
-#include "../drt_lib/drt_linedefinition.H"
 
 
 namespace DRT

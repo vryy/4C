@@ -15,21 +15,14 @@
 
 *----------------------------------------------------------------------*/
 #include "membrane.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_exporter.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_utils.H"
-#include "../linalg/linalg_utils.H"
+
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_mat/material.H"
-#include "../drt_mat/stvenantkirchhoff.H"
-#include "../drt_mat/compogden.H"
-#include "../drt_mat/growthremodel_elasthyper.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_contact/contact_analytical.H"
-#include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "../linalg/linalg_fixedsizematrix.H"
+
+#include "../drt_mat/material.H"
+#include "../drt_mat/membrane_elasthyper.H"
+#include "../drt_mat/growthremodel_elasthyper.H"
 
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_immersed_problem/immersed_base.H"
@@ -78,7 +71,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList&   params,
     else if (action=="postprocess_stress")                          act = ELEMENTS::struct_postprocess_stress;
     else if (action=="calc_fluid_traction")                         act = ELEMENTS::struct_calc_fluid_traction;
     else if (action=="calc_cur_normal_at_point")                    act = ELEMENTS::struct_calc_cur_normal_at_point;
-    else {dserror("Unknown type of action for Membrane");}
+    else {dserror("Unknown type of action for Membrane: %s", action.c_str());}
   }
 
   switch(act)
@@ -828,21 +821,21 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
     // material tangent matrix for plane stress
     LINALG::Matrix<3,3> cmatred_loc(true);
 
-    if(Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
+    // standard evalutation (incompressible, plane stress)
+    if (Material()->MaterialType() == INPAR::MAT::m_membrane_elasthyper)
     {
-      if (IsParamsInterface())
-        dserror("Material m_growthremodel_elasthyper not valid with new structure time integration. Set INT_STRATEGY to Old in STRUCTURAL DYNAMIC");
-
+      Teuchos::rcp_dynamic_cast<MAT::Membrane_ElastHyper>(DRT::Element::Material(),true)->Evaluate(cauchygreen_loc, params, Q_trafo, &pk2red_loc, &cmatred_loc, Id());
+    }
+    // growth remodel elasthyper evaluation
+    else if (Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
+    {
       // set current gauss point
       params.set<int>("gp",gp);
 
       // Gauß-point coordinates in reference configuration
-      // gp reference coordinates
-      LINALG::Matrix<numnod_,1> funct(true);
-      funct = shapefcts;
-      LINALG::Matrix<1,noddof_> point(true);
-      point.MultiplyTN(funct,xrefe);
-      params.set("gprefecoord",point);
+      LINALG::Matrix<1,noddof_> gprefecoord(true);
+      gprefecoord.MultiplyTN(shapefcts,xrefe);
+      params.set("gprefecoord",gprefecoord);
 
       // center of element in reference configuration
       LINALG::Matrix<numnod_,1> funct_center;
@@ -854,7 +847,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
       LINALG::Matrix<3,3> pk2M_glob(true);
       LINALG::Matrix<6,6> cmat_glob(true);
       double rcg33 = 0.0;
-      static_cast <MAT::GrowthRemodel_ElastHyper*>(Material().get())->EvaluateMembrane(defgrd_glob,rcg33,params,pk2M_glob,cmat_glob,Id());
+      Teuchos::rcp_dynamic_cast<MAT::GrowthRemodel_ElastHyper>(Material(),true)->EvaluateMembrane(defgrd_glob,rcg33,params,pk2M_glob,cmat_glob,Id());
 
       LINALG::Matrix<3,3> pk2M_loc(true);
       mem_globaltolocal(Q_trafo,pk2M_glob,pk2M_loc);
@@ -878,27 +871,18 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
 
       // update principle stretch in thickness direction
       lambda3 = std::sqrt(rcg33);
+
+      // update surface deformation gradient in 3 dimensions in global coordinates
+      mem_defgrd_global(dXds1,dXds2,dxds1,dxds2,lambda3,defgrd_glob);
+
+      // update surface deformation gradient in 3 dimensions in local coordinates
+      mem_globaltolocal(Q_trafo,defgrd_glob,defgrd_loc);
+
+      // update three dimensional right cauchy-green strain tensor in orthonormal base
+      cauchygreen_loc.MultiplyTN(1.0,defgrd_loc,defgrd_loc,0.0);
     }
     else
-    {
-      /*===============================================================================*
-       | standard evaluation                                                           |
-       *===============================================================================*/
-      // call 3 dimensional material law and reduce to a plane stress state
-      // no incompressibility fulfilled here (use \nue close to 0.5 or volumetric strain energy function)
-      mem_Material3dPlane(dXds1,dXds2,dxds1,dxds2,defgrd_glob,cauchygreen_loc,pk2red_loc,cmatred_loc,Q_trafo,params);
-
-      // update principle stretch in thickness direction as cauchygreen_local(2,2) changes in the material evaluation
-      lambda3 = std::sqrt(cauchygreen_loc(2,2));
-    }
-
-    // update surface deformation gradient in 3 dimensions in global coordinates
-    mem_defgrd_global(dXds1,dXds2,dxds1,dxds2,lambda3,defgrd_glob);
-
-    // calculate three dimensional right cauchy-green strain tensor in global coordinate base and orthonormal base
-    LINALG::Matrix<noddof_,noddof_> cauchygreen_glob(true);
-    cauchygreen_glob.MultiplyTN(1.0,defgrd_glob,defgrd_glob,0.0);
-    mem_globaltolocal(Q_trafo,cauchygreen_glob,cauchygreen_loc);
+      dserror("Type of material not implemented for membranes!");
 
     /*===============================================================================*
      | update current thickness at gp                                                |
@@ -959,7 +943,10 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
 
         for (int j=0; j<numnod_; ++j)
         {
-          g_ij = pk2red_loc(0)*derivs_ortho(0,i)*derivs_ortho(0,j) + pk2red_loc(1)*derivs_ortho(1,i)*derivs_ortho(1,j) + pk2red_loc(2)*(derivs_ortho(0,i)*derivs_ortho(1,j)+derivs_ortho(1,i)*derivs_ortho(0,j));
+          g_ij = pk2red_loc(0) * derivs_ortho(0,i)*derivs_ortho(0,j)
+               + pk2red_loc(1) * derivs_ortho(1,i)*derivs_ortho(1,j)
+               + pk2red_loc(2) * (derivs_ortho(0,i)*derivs_ortho(1,j)+derivs_ortho(1,i)*derivs_ortho(0,j));
+
           G_matrix(noddof_*i+0,noddof_*j+0) = g_ij;
           G_matrix(noddof_*i+1,noddof_*j+1) = g_ij;
           G_matrix(noddof_*i+2,noddof_*j+2) = g_ij;
@@ -1519,212 +1506,6 @@ void DRT::ELEMENTS::Membrane<distype>::mem_globaltolocal(const LINALG::Matrix<no
 } // DRT::ELEMENTS::Membrane::mem_globaltolocal
 
 /*-------------------------------------------------------------------------------------------------*
- |  evaluate 3D Material law and reduce to plane stress state                         fbraeu 06/16 |
- *-------------------------------------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Membrane<distype>::mem_Material3dPlane(const LINALG::Matrix<noddof_,1>&          dXds1,
-                                                           const LINALG::Matrix<noddof_,1>&          dXds2,
-                                                           const LINALG::Matrix<noddof_,1>&          dxds1,
-                                                           const LINALG::Matrix<noddof_,1>&          dxds2,
-                                                           LINALG::Matrix<noddof_,noddof_>&          defgrd_glob,
-                                                           LINALG::Matrix<noddof_,noddof_>&          cauchygreen_loc,
-                                                           LINALG::Matrix<3,1>&                      pkstress,
-                                                           LINALG::Matrix<3,3>&                      cmat,
-                                                           const LINALG::Matrix<noddof_,noddof_>&    Q_trafo,
-                                                           Teuchos::ParameterList&                   params)
-{
-  /*===============================================================================*
-   | the material law is called in global coords                                   |
-   | for anisotropic materials the fiber is given in global coords                 |
-   | the reduction to a plane stress state is fulfilled in local coords            |
-   | in between the quantities are transformed                                     |
-   *===============================================================================*/
-
-  /*===============================================================================*
-   | Transformation:  local --> global                                             |
-   *===============================================================================*/
-
-  // transform local cauchygreen to global coordinates
-  LINALG::Matrix<noddof_,noddof_> cauchygreen_glob(true);
-  mem_localtoglobal(Q_trafo,cauchygreen_loc,cauchygreen_glob);
-
-  // green-lagrange strain vector in global coordinates
-  LINALG::Matrix<6,1> gl_glob(true);
-  gl_glob(0) = 0.5*(cauchygreen_glob(0,0)-1.0);
-  gl_glob(1) = 0.5*(cauchygreen_glob(1,1)-1.0);
-  gl_glob(2) = 0.5*(cauchygreen_glob(2,2)-1.0);
-  gl_glob(3) = cauchygreen_glob(0,1);
-  gl_glob(4) = cauchygreen_glob(1,2);
-  gl_glob(5) = cauchygreen_glob(0,2);
-
-  // call 3 dimensional material law in global coordinates
-  LINALG::Matrix<6,6> cmat_glob(true);
-  LINALG::Matrix<6,1> pk_glob(true);
-  SolidMaterial()->Evaluate(&defgrd_glob,&gl_glob,params,&pk_glob,&cmat_glob,Id());
-
-  // 2nd piola kirchhoff stress tensor in global coordinates in matrix notation
-  LINALG::Matrix<noddof_,noddof_> pkstress_glob(true);
-  mem_voigttomatrix(pk_glob,pkstress_glob);
-
-  /*===============================================================================*
-   | Transformation:  global --> local                                             |
-   *===============================================================================*/
-
-  // transform global 2nd piola kirchhoff stress tensor to local coordinates
-  LINALG::Matrix<noddof_,noddof_> pkstressM_loc(true);
-  mem_globaltolocal(Q_trafo,pkstress_glob,pkstressM_loc);
-
-  // 2nd piola kirchhoff stress vector in local coordinates in "stress-like" Voigt notation
-  LINALG::Matrix<6,1> pk_loc(true);
-  mem_matrixtovoigt(pkstressM_loc,pk_loc);
-
-  // determine transformation matrix cmat_trafo
-  LINALG::Matrix<6,6> cmat_trafo(true);
-  mem_cmat_trafo(Q_trafo,cmat_trafo);
-
-  // transform global material tangent tensor to local coordinates
-  LINALG::Matrix<6,6> cmat_loc(true);
-  mem_cmat_globaltolocal(cmat_trafo,cmat_glob,cmat_loc);
-
-
-  // cauchygreen_local bears final values on:    C_{11},C_{22},C_{12}
-  // cauchygreen_local bears initial guesses on: C_{33},C_{23},C_{31}
-  // initial plane stress error
-  double pserr = std::sqrt(pk_loc(2)*pk_loc(2) + pk_loc(4)*pk_loc(4) + pk_loc(5)*pk_loc(5));
-
-  // make Newton-Raphson iteration to identify
-  // C_{33},C_{23},C_{31} which satisfy S_{33}=S_{23}=S_{31}=0
-  int i = 0;
-  const double tol = 1.0E-10;
-  const int n = 50;
-
-  // working arrays
-  LINALG::Matrix<3,3> crr(true);  // LHS // constitutive matrix of restraint components
-                                         // this matrix needs to be zeroed out for further usage
-                                         // in case the following while loop is entirely skipped during runtime
-  LINALG::Matrix<3,1> rr(true);   // RHS // stress residual of restraint components
-  LINALG::Matrix<3,1> ir(true);   // SOL // restraint strain components
-  double lambda3 = 1.0;
-
-  // the Newton-Raphson loop
-  while ( (pserr > tol) and (i < n) )
-  {
-    // build sub-system crr.ir=rr to solve
-    crr(0,0) = cmat_loc(2,2);  crr(0,1) = cmat_loc(2,4);  crr(0,2) = cmat_loc(2,5);
-    crr(1,0) = cmat_loc(4,2);  crr(1,1) = cmat_loc(4,4);  crr(1,2) = cmat_loc(4,5);
-    crr(2,0) = cmat_loc(5,2);  crr(2,1) = cmat_loc(5,4);  crr(2,2) = cmat_loc(5,5);
-
-    rr(0) = -pk_loc(2);
-    rr(1) = -pk_loc(4);
-    rr(2) = -pk_loc(5);
-
-    // solution: an in-plane inversion is used
-    crr.Invert();
-    ir.Multiply(1.0,crr,rr,0.0);
-
-    // ir updates the glstrain_local vector but can be directly added to the right cauchy-green tensor as below
-
-    // update right cauchy-green strain tensor
-    cauchygreen_loc(2,2) += 2.0*ir(0);
-    cauchygreen_loc(0,2) += 2.0*ir(2);
-    cauchygreen_loc(1,2) += 2.0*ir(1);
-    cauchygreen_loc(2,0) += 2.0*ir(2);
-    cauchygreen_loc(2,1) += 2.0*ir(1);
-
-    /*===============================================================================*
-     | Transformation:  local --> global                                             |
-     *===============================================================================*/
-
-    // principle stretch in thickness direction
-    lambda3 = std::sqrt(cauchygreen_loc(2,2));
-
-    // update global surface deformation gradient
-    mem_defgrd_global(dXds1,dXds2,dxds1,dxds2,lambda3,defgrd_glob);
-
-    // transform local cauchygreen to global coordinates
-    mem_localtoglobal(Q_trafo,cauchygreen_loc,cauchygreen_glob);
-
-    // Green-Lagrange strains in global coordinates in "stress-like" voigt notation
-    gl_glob(0) = 0.5*(cauchygreen_glob(0,0)-1.0);
-    gl_glob(1) = 0.5*(cauchygreen_glob(1,1)-1.0);
-    gl_glob(2) = 0.5*(cauchygreen_glob(2,2)-1.0);
-    gl_glob(3) = cauchygreen_glob(0,1);
-    gl_glob(4) = cauchygreen_glob(1,2);
-    gl_glob(5) = cauchygreen_glob(0,2);
-
-    // call for new 3d stress response
-    pk_glob.Clear();        // must be blanked!!
-    cmat_glob.Clear();      // must be blanked!!
-    SolidMaterial()->Evaluate(&defgrd_glob,&gl_glob,params,&pk_glob,&cmat_glob,Id());
-
-    // 2nd piola kirchhoff stress tensor in global coordinates in matrix notation
-    mem_voigttomatrix(pk_glob,pkstress_glob);
-
-    /*===============================================================================*
-     | Transformation:  global --> local                                             |
-     *===============================================================================*/
-
-    // transform global 2nd piola kirchhoff stress tensor to local coordinates
-    mem_globaltolocal(Q_trafo,pkstress_glob,pkstressM_loc);
-
-    // 2nd piola kirchhoff stress vector in local coordinates
-    mem_matrixtovoigt(pkstressM_loc,pk_loc);
-
-    // current plane stress error
-    pserr = std::sqrt(pk_loc(2)*pk_loc(2) + pk_loc(4)*pk_loc(4) + pk_loc(5)*pk_loc(5));
-
-    // transform global material tangent tensor to local coordinates
-    mem_cmat_globaltolocal(cmat_trafo,cmat_glob,cmat_loc);
-
-    // increment loop index
-    i += 1;
-  }
-
-  // check if convergence was reached or the maximum number of iterations
-  if ( (i >= n) and (pserr > tol) )
-  {
-    dserror("Failed to identify plane stress solution for Membrane after %d iterations",i);
-  }
-  else
-  {
-    // static condensation
-    // The restraint strains E_{33},E_{23},E_{31} have been made
-    // dependent on free strains E_{11},E_{22},E_{12}
-    // --- with an implicit function.
-    // Thus the effect of the linearization w.r.t. the
-    // dependent strains must be added onto the free strains.
-    LINALG::Matrix<3,3> cfr(true);
-    cfr(0,0) = cmat_loc(0,2);  cfr(0,1) = cmat_loc(0,4);  cfr(0,2) = cmat_loc(0,5);
-    cfr(1,0) = cmat_loc(1,2);  cfr(1,1) = cmat_loc(1,4);  cfr(1,2) = cmat_loc(1,5);
-    cfr(2,0) = cmat_loc(3,2);  cfr(2,1) = cmat_loc(3,4);  cfr(2,2) = cmat_loc(3,5);
-
-    LINALG::Matrix<3,3> crrrf(true);
-    crrrf.MultiplyNT(crr,cfr);
-
-    LINALG::Matrix<3,3> cfrrrrf(true);
-    cfrrrrf.MultiplyNN(cfr,crrrf);
-
-    // update constitutive matrix of free components
-    cmat_loc(0,0) -= cfrrrrf(0,0);  cmat_loc(0,1) -= cfrrrrf(0,1);  cmat_loc(0,3) -= cfrrrrf(0,2);
-    cmat_loc(1,0) -= cfrrrrf(1,0);  cmat_loc(1,1) -= cfrrrrf(1,1);  cmat_loc(1,3) -= cfrrrrf(1,2);
-    cmat_loc(3,0) -= cfrrrrf(2,0);  cmat_loc(3,1) -= cfrrrrf(2,1);  cmat_loc(3,3) -= cfrrrrf(2,2);
-  }
-
-  // write 2nd Piola--Kirchhoff stress in 2d stress vector
-  pkstress(0) = pk_loc(0);
-  pkstress(1) = pk_loc(1);
-  pkstress(2) = pk_loc(3);
-
-  // write material tangent matrix as 2d matrix
-  cmat(0,0) = cmat_loc(0,0); cmat(0,1) = cmat_loc(0,1); cmat(0,2) = cmat_loc(0,3);
-  cmat(1,0) = cmat_loc(1,0); cmat(1,1) = cmat_loc(1,1); cmat(1,2) = cmat_loc(1,3);
-  cmat(2,0) = cmat_loc(3,0); cmat(2,1) = cmat_loc(3,1); cmat(2,2) = cmat_loc(3,3);
-
-  return;
-
-} // DRT::ELEMENTS::Membrane::mem_Material3dPlane
-
-/*-------------------------------------------------------------------------------------------------*
  |  transformation matrix for material tangent tensor                                 fbraeu 06/16 |
  *-------------------------------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
@@ -1933,7 +1714,7 @@ void DRT::ELEMENTS::Membrane<distype>::Update_element(std::vector<double>& disp,
       mem_defgrd_global(dXds1,dXds2,dxds1,dxds2,lambda3,defgrd_glob);
 
       // call material update of m_growthremodel_elasthyper (calculate and update inelastic deformation gradient)
-      static_cast <MAT::GrowthRemodel_ElastHyper*>(mat.get())->Update(defgrd_glob,gp,params,Id());
+      Teuchos::rcp_dynamic_cast<MAT::GrowthRemodel_ElastHyper>(mat,true)->Update(defgrd_glob,gp,params,Id());
     }
   }
 
