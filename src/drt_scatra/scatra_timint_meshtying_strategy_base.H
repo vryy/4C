@@ -84,6 +84,17 @@ class MeshtyingStrategyBase
       return convcheckstrategy_->AbortNonlinIter(scatratimint,actresidual);
     }
 
+    //! perform convergence check for outer iteration in partitioned coupling schemes
+    bool AbortOuterIter(
+        const ScaTraTimIntImpl&   scatratimint   //!< scalar transport time integrator
+        ) const
+    {
+      if(convcheckstrategy_ == Teuchos::null)
+        dserror("Strategy for outer convergence check has not been instantiated!");
+
+      return convcheckstrategy_->AbortOuterIter(scatratimint);
+    }
+
     //! provide global state vectors for element evaluation
     virtual void AddTimeIntegrationSpecificVectors() const {return;};
 
@@ -96,9 +107,6 @@ class MeshtyingStrategyBase
         const Teuchos::RCP<Epetra_Vector>&            residual,                  //!< residual vector
         const bool                                    calcinittimederiv = false  //!< flag for calculation of initial time derivative
         ) const {return;};
-
-    //! return strategy for Newton-Raphson convergence check called by scalar transport time integrator
-    const Teuchos::RCP<SCATRA::ConvCheckStrategyBase>& ConvCheckStrategy() const {return convcheckstrategy_;};
 
     /*!
     \brief Evaluate a given condition

@@ -16,6 +16,7 @@
 /*--------------------------------------------------------------------------*/
 #include "scatra_ele_calc_elch_diffcond_multiscale.H"
 
+#include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 
 #include "../drt_mat/elchmat.H"
@@ -119,7 +120,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::CalcMatAndRhsM
   phinp[2] = my::funct_.Dot(my::ephinp_[2]);
 
   // evaluate multi-scale Newman material
-  newmanmultiscale->Evaluate(iquad,phinp,q_micro,dq_dphi_micro);
+  newmanmultiscale->Evaluate(iquad,phinp,q_micro,dq_dphi_micro,not DRT::ELEMENTS::ScaTraEleParameterStd::Instance("scatra")->PartitionedMultiScale());
 
   // calculate gradient of electric potential inside electrode
   LINALG::Matrix<my::nsd_,1> gradpot_ed(true);

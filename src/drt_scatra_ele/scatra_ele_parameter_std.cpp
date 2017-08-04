@@ -91,6 +91,7 @@ DRT::ELEMENTS::ScaTraEleParameterStd::ScaTraEleParameterStd(
     semiimplicit_(false),
     intlayergrowth_convtol_(0.),
     intlayergrowth_itemax_(0),
+    partitioned_multiscale_(false),
     stabtype_(INPAR::SCATRA::stabtype_no_stabilization),
     whichtau_(INPAR::SCATRA::tau_zero),
     charelelength_(INPAR::SCATRA::streamlength),
@@ -235,6 +236,9 @@ void DRT::ELEMENTS::ScaTraEleParameterStd::SetParameters(
 
   // set maximum number of local Newton-Raphson iterations for scatra-scatra interface coupling involving interface layer growth
   intlayergrowth_itemax_ = parameters.get<unsigned>("intlayergrowth_itemax",0);
+
+  // set flag for truly partitioned multi-scale simulation
+  partitioned_multiscale_ = parameters.get<bool>("partitioned_multiscale",false);
 
   return;
 }

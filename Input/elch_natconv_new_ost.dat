@@ -73,11 +73,11 @@ OUTPUTSCALARS                   entire_domain
 RESULTSEVRY                     1
 MATID                           5
 NATURAL_CONVECTION              Yes
-NATCONVITEMAX                   10
-NATCONVCONVTOL                  5e-6
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-09
 ITEMAX                          15
+CONVTOL_OUTER                   5e-6
+ITEMAX_OUTER                    10
 EXPLPREDICT                     no
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1

@@ -1136,7 +1136,7 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
     // print header to screen
     if(myrank_ == 0)
     {
-      std::cout << "Electrode state of charge and related:" << std::endl;
+      std::cout << std::endl << "Electrode state of charge and related:" << std::endl;
       std::cout << "+----+-----------------+----------------+----------------+" << std::endl;
       std::cout << "| ID | state of charge |     C rate     | operation mode |" << std::endl;
     }
@@ -1230,7 +1230,7 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
 
     // print finish line to screen
     if(myrank_ == 0)
-      std::cout << "+----+-----------------+----------------+----------------+" << std::endl << std::endl;
+      std::cout << "+----+-----------------+----------------+----------------+" << std::endl;
 
     // update time step when states of charge of resolved electrodes were computed the last time
     lastsocstep_ = step_;
@@ -1265,7 +1265,7 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
     // print header
     if(myrank_ == 0)
     {
-      std::cout << "Electrode potentials and cell voltage:" << std::endl;
+      std::cout << std::endl << "Electrode potentials and cell voltage:" << std::endl;
       std::cout << "+----+-------------------------+" << std::endl;
       std::cout << "| ID | mean electric potential |" << std::endl;
     }
@@ -1362,7 +1362,7 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
       // print cell voltage to screen
       std::cout << "+----+-------------------------+" << std::endl;
       std::cout << "| cell voltage: " << std::setw(6) << cellvoltage_ << "         |" << std::endl;
-      std::cout << "+----+-------------------------+" << std::endl << std::endl;
+      std::cout << "+----+-------------------------+" << std::endl;
 
       // set file name
       const std::string filename(problem_->OutputControlFile()->FileName()+".cell_voltage.csv");
@@ -1514,7 +1514,8 @@ void SCATRA::ScaTraTimIntElch::ValidParameterDiffCond()
     if(DRT::INPUT::IntegralValue<int>(*params_,"NATURAL_CONVECTION"))
       dserror("Natural convection is not supported in the ELCH diffusion-conduction framework!!");
 
-    if((DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params_,"SOLVERTYPE"))!= INPAR::SCATRA::solvertype_nonlinear)
+    if(DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params_,"SOLVERTYPE") != INPAR::SCATRA::solvertype_nonlinear and
+       DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params_,"SOLVERTYPE") != INPAR::SCATRA::solvertype_nonlinear_multiscale)
       dserror("The only solvertype supported by the ELCH diffusion-conduction framework is the non-linear solver!!");
 
     if((DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(*params_,"CONVFORM"))!= INPAR::SCATRA::convform_convective)

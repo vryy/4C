@@ -239,9 +239,10 @@ void MAT::ScatraMultiScaleGP::PrepareTimeStep(
  | evaluate micro scale                                    fang 11/15 |
  *--------------------------------------------------------------------*/
 void MAT::ScatraMultiScaleGP::Evaluate(
-    const std::vector<double>&   phinp_macro,    //!< macro-scale state variables
-    double&                      q_micro,        //!< micro-scale coupling flux
-    std::vector<double>&         dq_dphi_micro   //!< derivatives of micro-scale coupling flux w.r.t. macro-scale state variables
+    const std::vector<double>&   phinp_macro,     //!< macro-scale state variables
+    double&                      q_micro,         //!< micro-scale coupling flux
+    std::vector<double>&         dq_dphi_micro,   //!< derivatives of micro-scale coupling flux w.r.t. macro-scale state variables
+    const bool                   solve            //!< flag indicating whether micro-scale problem should be solved
     )
 {
   // extract micro-scale time integrator
@@ -250,8 +251,9 @@ void MAT::ScatraMultiScaleGP::Evaluate(
   // set current state in micro-scale time integrator
   microtimint->SetState(phin_,phinp_,phidtn_,phidtnp_,hist_,micro_output_,phinp_macro,step_,DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->Time());
 
-  if(step_ == 0)
-    // when calculating the initial time derivative of the macro-scale state vector, we only need to evaluate the micro-scale coupling quantities without solving the entire micro-scale problem
+  if(step_ == 0 or !solve)
+    // only evaluate the micro-scale coupling quantities without solving the entire micro-scale problem
+    // relevant for truly partitioned multi-scale simulations or for calculation of initial time derivative of macro-scale state vector
     microtimint->EvaluateMacroMicroCoupling();
   else
     // solve micro-scale problem

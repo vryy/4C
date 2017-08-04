@@ -114,6 +114,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::EvaluateAction(
     }
 
     case SCATRA::micro_scale_prepare_time_step:
+    case SCATRA::micro_scale_solve:
     {
       // extract state variables at element nodes
       DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*discretization.GetState("phinp"),my::ephinp_,la[0].lm_);
@@ -135,8 +136,15 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::EvaluateAction(
         phinp[1] = my::funct_.Dot(my::ephinp_[1]);
         phinp[2] = my::funct_.Dot(my::ephinp_[2]);
 
-        // prepare time step on micro scale
-        newmanmultiscale->PrepareTimeStep(iquad,phinp);
+        if(action == SCATRA::micro_scale_prepare_time_step)
+          // prepare time step on micro scale
+          newmanmultiscale->PrepareTimeStep(iquad,phinp);
+        else
+        {
+          // solve micro scale
+          std::vector<double> dummy(3,0.);
+          newmanmultiscale->Evaluate(iquad,phinp,dummy[0],dummy);
+        }
       }
 
       break;

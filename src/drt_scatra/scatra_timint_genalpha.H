@@ -44,7 +44,7 @@ public:
   virtual void PrintTimeStepInfo()
   {
     if (myrank_==0)
-        printf("TIME: %11.4E/%11.4E  DT = %11.4E  %s(a_F=%3.2f | a_M=%3.2f | gamma=%3.2f) STEP = %4d/%4d\n",
+        printf("\nTIME: %11.4E/%11.4E  DT = %11.4E  %s(a_F=%3.2f | a_M=%3.2f | gamma=%3.2f) STEP = %4d/%4d\n",
                time_,maxtime_,dta_,MethodTitle().c_str(),alphaF_,alphaM_,gamma_,step_,stepmax_);
     return;
   }

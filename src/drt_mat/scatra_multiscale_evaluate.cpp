@@ -83,10 +83,11 @@ void MAT::ScatraMultiScale::PrepareTimeStep(
  | evaluate multi-scale scalar transport material          fang 11/15 |
  *--------------------------------------------------------------------*/
 void MAT::ScatraMultiScale::Evaluate(
-    const int                    gp_id,          //!< macro-scale Gauss point ID
-    const std::vector<double>&   phinp_macro,    //!< macro-scale state variables
-    double&                      q_micro,        //!< micro-scale flux
-    std::vector<double>&         dq_dphi_micro   //!< derivatives of micro-scale flux w.r.t. macro-scale state variables
+    const int                    gp_id,           //!< macro-scale Gauss point ID
+    const std::vector<double>&   phinp_macro,     //!< macro-scale state variables
+    double&                      q_micro,         //!< micro-scale flux
+    std::vector<double>&         dq_dphi_micro,   //!< derivatives of micro-scale flux w.r.t. macro-scale state variables
+    const bool                   solve            //!< flag indicating whether micro-scale problem should be solved
     ) const
 {
   // safety check
@@ -94,7 +95,7 @@ void MAT::ScatraMultiScale::Evaluate(
     dserror("Invalid macro-scale Gauss point ID!");
 
   // evaluate multi-scale scalar transport submaterial at macro-scale Gauss point
-  matgp_.at(gp_id)->Evaluate(phinp_macro,q_micro,dq_dphi_micro);
+  matgp_.at(gp_id)->Evaluate(phinp_macro,q_micro,dq_dphi_micro,solve);
 
   return;
 }

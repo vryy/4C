@@ -24,6 +24,8 @@ in a subclass derived from an abstract, purely virtual interface class.
 #ifndef SCATRA_TIMINT_CONVCHECK_STRATEGIES_H
 #define SCATRA_TIMINT_CONVCHECK_STRATEGIES_H
 
+#include "../drt_lib/drt_dserror.H"
+
 // forward declaration
 namespace Teuchos
 {
@@ -59,6 +61,15 @@ namespace SCATRA
           double&                   actresidual     //!< return maximum current residual value
           ) const = 0;
 
+      //! perform convergence check for outer iteration in partitioned coupling schemes
+      virtual bool AbortOuterIter(
+          const ScaTraTimIntImpl&   scatratimint   //!< scalar transport time integrator
+          ) const
+      {
+        dserror("Not implemented in base class!");
+        return false;
+      }
+
     protected:
 
       //! maximum number of Newton-Raphson iteration steps
@@ -69,6 +80,12 @@ namespace SCATRA
 
       //! absolute tolerance for residuals
       const double abstolres_;
+
+      //! maximum number of outer iteration steps in partitioned coupling schemes
+      const int itmax_outer_;
+
+      //! relative tolerance for outer iteration in partitioned coupling schemes
+      const double ittol_outer_;
 
     private:
 
@@ -100,6 +117,11 @@ namespace SCATRA
       bool AbortNonlinIter(
           const ScaTraTimIntImpl&   scatratimint,   //!< scalar transport time integrator
           double&                   actresidual     //!< return maximum current residual value
+          ) const;
+
+      //! perform convergence check for outer iteration in partitioned coupling schemes
+      bool AbortOuterIter(
+          const ScaTraTimIntImpl&   scatratimint   //!< scalar transport time integrator
           ) const;
 
     private:
@@ -260,6 +282,11 @@ namespace SCATRA
       bool AbortNonlinIter(
           const ScaTraTimIntImpl&   scatratimint,   //!< scalar transport time integrator
           double&                   actresidual     //!< return maximum current residual value
+          ) const;
+
+      //! perform convergence check for outer iteration in partitioned coupling schemes
+      bool AbortOuterIter(
+          const ScaTraTimIntImpl&   scatratimint   //!< scalar transport time integrator
           ) const;
 
     private:

@@ -153,6 +153,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   dtele_(0.0),
   dtsolve_(0.0),
   iternum_(0),
+  iternum_outer_(0),
   timealgo_(DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(*params,"TIMEINTEGR")),
   nsd_(problem_->NDim()),
   scalarhandler_(Teuchos::null),
@@ -160,6 +161,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // Initialization of degrees of freedom variables
   phin_(Teuchos::null),
   phinp_(Teuchos::null),
+  phinp_inc_(Teuchos::null),
   phidtn_(Teuchos::null),
   phidtnp_(Teuchos::null),
   hist_(Teuchos::null),
@@ -255,6 +257,7 @@ void SCATRA::ScaTraTimIntImpl::Init()
   switch(solvtype_)
   {
   case INPAR::SCATRA::solvertype_nonlinear:
+  case INPAR::SCATRA::solvertype_nonlinear_multiscale:
   case INPAR::SCATRA::solvertype_linear_incremental:
   {
     incremental_ = true;
@@ -344,6 +347,8 @@ void SCATRA::ScaTraTimIntImpl::Setup()
   // solutions at time n+1 and n
   phinp_ = LINALG::CreateVector(*dofrowmap,true);
   phin_  = LINALG::CreateVector(*dofrowmap,true);
+  if(solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale)
+    phinp_inc_ = LINALG::CreateVector(*dofrowmap,true);
 
   // temporal solution derivative at time n+1
   phidtnp_ = LINALG::CreateVector(*dofrowmap,true);
@@ -875,6 +880,9 @@ void SCATRA::ScaTraTimIntImpl::SetElementGeneralParameters(bool calcinitialtimed
 
   // flag for spherical coordinates
   eleparams.set<bool>("sphericalcoords",DRT::INPUT::IntegralValue<bool>(*params_,"SPHERICALCOORDS"));
+
+  // flag for truly partitioned multi-scale simulation
+  eleparams.set<bool>("partitioned_multiscale",solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale);
 
   // add parameters associated with meshtying strategy
   strategy_->SetElementGeneralParameters(eleparams);
@@ -1430,6 +1438,8 @@ void SCATRA::ScaTraTimIntImpl::Solve()
   // -----------------------------------------------------------------
   if (solvtype_==INPAR::SCATRA::solvertype_nonlinear)
     NonlinearSolve();
+  else if (solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale)
+    NonlinearMultiScaleSolve();
   else
     LinearSolve();
   //that's all
@@ -1482,13 +1492,12 @@ void SCATRA::ScaTraTimIntImpl::ApplyMeshMovement(
 
 
 /*----------------------------------------------------------------------*
- |  print information about current time step to screen        mr. x    |
+ | print information about current time step to screen       fang 08/17 |
  *----------------------------------------------------------------------*/
 inline void SCATRA::ScaTraTimIntImpl::PrintTimeStepInfo()
 {
-  if (myrank_==0)
-    printf("TIME: %11.4E/%11.4E  DT = %11.4E  %s  STEP = %4d/%4d \n",
-           time_,maxtime_,dta_,MethodTitle().c_str(),step_,stepmax_);
+  if(myrank_ == 0)
+    std::cout << std::endl << "TIME: " << std::setw(11) << std::setprecision(4) << time_ << "/" << maxtime_ << "  DT = " << dta_ << "  " << MethodTitle() << std::setw(4) << "  STEP = " << step_ << "/" << stepmax_ << std::endl;
 } // SCATRA::ScaTraTimIntImpl::PrintTimeStepInfo
 
 
@@ -2874,6 +2883,46 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
 
   return;
 } // ScaTraTimIntImpl::NonlinearSolve
+
+
+/*--------------------------------------------------------------------------------------------------*
+ | contains the nonlinear iteration loop for truly partitioned multi-scale simulations   fang 08/17 |
+ *--------------------------------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::NonlinearMultiScaleSolve()
+{
+  // reset number of outer iterations
+  iternum_outer_ = 0;
+
+  // begin outer iteration loop
+  while(true)
+  {
+    // increment iteration number
+    iternum_outer_++;
+
+    // store current state vector on macro scale
+    phinp_inc_->Update(1.,*phinp_,0.);
+
+    // solve macro-scale problem
+    NonlinearSolve();
+
+    // solve micro-scale problems
+    discret_->ClearState();
+    Teuchos::ParameterList eleparams;
+    eleparams.set<int>("action",SCATRA::micro_scale_solve);
+    AddTimeIntegrationSpecificVectors();
+    discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+    discret_->ClearState();
+
+    // compute increment of macro-scale state vector
+    phinp_inc_->Update(1.,*phinp_,-1.);
+
+    // convergence check
+    if(strategy_->AbortOuterIter(*this))
+      break;
+  }
+
+  return;
+} // SCATRA::ScaTraTimIntImpl::NonlinearMultiScaleSolve
 
 
 /*--------------------------------------------------------------------------*

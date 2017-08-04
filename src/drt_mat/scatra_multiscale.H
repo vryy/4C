@@ -89,10 +89,11 @@ namespace MAT
 
       //! evaluate multi-scale scalar transport material
       void Evaluate(
-          const int                    gp_id,          //!< macro-scale Gauss point ID
-          const std::vector<double>&   phinp_macro,    //!< macro-scale state variables
-          double&                      q_micro,        //!< micro-scale flux
-          std::vector<double>&         dq_dphi_micro   //!< derivatives of micro-scale flux w.r.t. macro-scale state variables
+          const int                    gp_id,           //!< macro-scale Gauss point ID
+          const std::vector<double>&   phinp_macro,     //!< macro-scale state variables
+          double&                      q_micro,         //!< micro-scale flux
+          std::vector<double>&         dq_dphi_micro,   //!< derivatives of micro-scale flux w.r.t. macro-scale state variables
+          const bool                   solve = true     //!< flag indicating whether micro-scale problem should be solved
           ) const;
 
       //! evaluate mean concentration on micro scale

@@ -464,6 +464,9 @@ public:
   //! return number of newton iterations in last timestep
   const int& IterNum() const { return iternum_; }
 
+  //! return number of outer iterations in truly partitioned multi-scale simulations
+  const unsigned& IterNumOuter() const { return iternum_outer_; };
+
   //! return time step size
   double Dt() const { return dta_; }
 
@@ -534,6 +537,9 @@ public:
 
   //! return scalar field phi at time n+1
   Teuchos::RCP<Epetra_Vector> Phinp() const { return phinp_; }
+
+  //! return increment of scalar field phi at time n+1 for truly partitioned multi-scale simulations
+  const Teuchos::RCP<const Epetra_Vector> PhinpInc() const { return phinp_inc_; };
 
   //! return time derivative of scalar field phi at time n
   Teuchos::RCP<Epetra_Vector> Phidtn() { return phidtn_; }
@@ -768,6 +774,9 @@ protected:
 
   //! contains the nonlinear iteration loop
   virtual void NonlinearSolve();
+
+  //! contains the nonlinear iteration loop for truly partitioned multi-scale simulations
+  void NonlinearMultiScaleSolve();
 
   //! Calculate the reconstructed nodal gradient of phi by means of L2-projection
   Teuchos::RCP<Epetra_MultiVector> ComputeNodalL2Projection(
@@ -1087,6 +1096,9 @@ protected:
   //! number of newton iterations in actual timestep
   int iternum_;
 
+  //! number of outer iterations in truly partitioned multi-scale simulations
+  unsigned iternum_outer_;
+
   //! used time integration scheme
   INPAR::SCATRA::TimeIntegrationScheme timealgo_;
 
@@ -1107,6 +1119,8 @@ protected:
   Teuchos::RCP<Epetra_Vector> phin_;
   //! phi at time n+1
   Teuchos::RCP<Epetra_Vector> phinp_;
+  //! increment of phi at time n+1 for truly partitioned multi-scale simulations
+  Teuchos::RCP<Epetra_Vector> phinp_inc_;
 
   //! time derivative of phi at time n
   Teuchos::RCP<Epetra_Vector> phidtn_;

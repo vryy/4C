@@ -69,6 +69,7 @@ namespace DRT
         bool SemiImplicit() const {return semiimplicit_;};
         double IntLayerGrowthConvTol() const {return intlayergrowth_convtol_;};
         unsigned IntLayerGrowthIteMax() const {return intlayergrowth_itemax_;};
+        bool PartitionedMultiScale() const {return partitioned_multiscale_;};
         //! @}
 
         //! @name return stabilization parameters
@@ -132,6 +133,9 @@ namespace DRT
 
         //! maximum number of local Newton-Raphson iterations for scatra-scatra interface coupling involving interface layer growth
         unsigned intlayergrowth_itemax_;
+
+        // flag for truly partitioned multi-scale simulation
+        bool partitioned_multiscale_;
         //! @}
 
         //! @name stabilization parameters

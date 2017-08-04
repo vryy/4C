@@ -268,6 +268,10 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
   if(quantity == "numiterlastnewton")
     result = (double) scatratimint_->IterNum();
 
+  // number of outer coupling iterations in last time step
+  else if(quantity == "numiterlastouter")
+    result = (double) scatratimint_->IterNumOuter();
+
   // total values, mean values, relative L2 errors, or relative H1 errors of scalar fields in subdomain or entire domain
   else if(!quantity.compare(0,8,"totalphi") or !quantity.compare(0,7,"meanphi") or !quantity.compare(0,7,"L2error") or !quantity.compare(0,7,"H1error"))
   {

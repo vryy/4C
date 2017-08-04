@@ -585,10 +585,8 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for scalar transport/elch...",&cellscatradyn);
   //IntParameter("SIMPLER_SOLVER",-1,"number of linear solver used for ELCH (solved with SIMPLER)...",&cellscatradyn);
 
-  // parameters for natural convection effects
+  // flag for natural convection effects
   BoolParameter("NATURAL_CONVECTION","No","Include natural convection effects",&cellscatradyn);
-  IntParameter("NATCONVITEMAX",10,"Maximum number of outer iterations for natural convection",&cellscatradyn);
-  DoubleParameter("NATCONVCONVTOL",1e-6,"Convergence check tolerance for outer loop for natural convection",&cellscatradyn);
 
   // parameters for finite difference check
   setStringToIntegralParameter<int>("FDCHECK", "none", "flag for finite difference check: none, local, or global",
@@ -645,6 +643,8 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   IntParameter("ITEMAX",10,"max. number of nonlin. iterations",&cellscatra_nonlin);
   DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&cellscatra_nonlin);
+  IntParameter("ITEMAX_OUTER",10,"Maximum number of outer iterations in partitioned coupling schemes (natural convection, multi-scale simulations etc.)",&cellscatra_nonlin);
+  DoubleParameter("CONVTOL_OUTER",1e-6,"Convergence check tolerance for outer loop in partitioned coupling schemes (natural convection, multi-scale simulations etc.)",&cellscatra_nonlin);
   BoolParameter("EXPLPREDICT","no","do an explicit predictor step before starting nonlinear iteration",&cellscatra_nonlin);
   DoubleParameter("ABSTOLRES",1e-14,"Absolute tolerance for deciding if residual of nonlinear problem is already zero",&cellscatra_nonlin);
 

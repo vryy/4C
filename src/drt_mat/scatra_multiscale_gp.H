@@ -59,9 +59,10 @@ namespace MAT
 
       //! evaluate micro scale
       void Evaluate(
-          const std::vector<double>&   phinp_macro,    //!< macro-scale state variables
-          double&                      q_micro,        //!< micro-scale coupling flux
-          std::vector<double>&         dq_dphi_micro   //!< derivatives of micro-scale coupling flux w.r.t. macro-scale state variables
+          const std::vector<double>&   phinp_macro,     //!< macro-scale state variables
+          double&                      q_micro,         //!< micro-scale coupling flux
+          std::vector<double>&         dq_dphi_micro,   //!< derivatives of micro-scale coupling flux w.r.t. macro-scale state variables
+          const bool                   solve = true     //!< flag indicating whether micro-scale problem should be solved
           );
 
       //! evaluate mean concentration on micro scale

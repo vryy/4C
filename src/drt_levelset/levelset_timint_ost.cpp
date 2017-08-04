@@ -98,10 +98,10 @@ void SCATRA::LevelSetTimIntOneStepTheta::PrintTimeStepInfo()
     else
     {
       if (reinitaction_ == INPAR::SCATRA::reinitaction_sussman)
-        printf("PSEUDOTIMESTEP: %11.4E      %s          THETA = %11.4E   PSEUDOSTEP = %4d/%4d \n",
+        printf("\nPSEUDOTIMESTEP: %11.4E      %s          THETA = %11.4E   PSEUDOSTEP = %4d/%4d \n",
                   dtau_,MethodTitle().c_str(),thetareinit_,pseudostep_,pseudostepmax_);
       else if (reinitaction_ == INPAR::SCATRA::reinitaction_ellipticeq)
-        printf("REINIT ELLIPTIC:\n");
+        printf("\nREINIT ELLIPTIC:\n");
     }
   }
   return;

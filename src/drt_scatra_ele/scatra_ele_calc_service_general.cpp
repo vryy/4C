@@ -715,6 +715,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
   }
 
   case SCATRA::micro_scale_prepare_time_step:
+  case SCATRA::micro_scale_solve:
   {
     if(ele->Material()->MaterialType() == INPAR::MAT::m_scatra_multiscale)
     {
@@ -732,8 +733,15 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
         // evaluate state variables at Gauss point
         SetInternalVariablesForMatAndRHS();
 
-        // prepare time step on micro scale
-        Teuchos::rcp_static_cast<MAT::ScatraMatMultiScale>(ele->Material())->PrepareTimeStep(iquad,std::vector<double>(1,scatravarmanager_->Phinp(0)));
+        if(action == SCATRA::micro_scale_prepare_time_step)
+          // prepare time step on micro scale
+          Teuchos::rcp_static_cast<MAT::ScatraMatMultiScale>(ele->Material())->PrepareTimeStep(iquad,std::vector<double>(1,scatravarmanager_->Phinp(0)));
+        else
+        {
+          // solve micro scale
+          std::vector<double> dummy(1,0.);
+          Teuchos::rcp_static_cast<MAT::ScatraMatMultiScale>(ele->Material())->Evaluate(iquad,std::vector<double>(1,scatravarmanager_->Phinp(0)),dummy[0],dummy);
+        }
       }
     }
 

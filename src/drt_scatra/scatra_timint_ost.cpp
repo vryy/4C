@@ -180,7 +180,7 @@ void SCATRA::TimIntOneStepTheta::PrintTimeStepInfo()
 {
   if (myrank_ == 0 and not micro_scale_)
   {
-    std::cout << "TIME: "
+    std::cout << std::endl << "TIME: "
               << std::setw(11) << std::setprecision(4) << std::scientific << time_ << "/"
               << std::setw(11) << std::setprecision(4) << std::scientific << maxtime_ << "  DT = "
               << std::setw(11) << std::setprecision(4) << std::scientific << dta_ << "  "

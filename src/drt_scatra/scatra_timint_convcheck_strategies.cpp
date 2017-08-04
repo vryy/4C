@@ -40,7 +40,9 @@ SCATRA::ConvCheckStrategyBase::ConvCheckStrategyBase(
     ) :
 itmax_(parameters.get<int>("ITEMAX")),
 ittol_(parameters.get<double>("CONVTOL")),
-abstolres_(parameters.get<double>("ABSTOLRES"))
+abstolres_(parameters.get<double>("ABSTOLRES")),
+itmax_outer_(parameters.get<int>("ITEMAX_OUTER")),
+ittol_outer_(parameters.get<double>("CONVTOL_OUTER"))
 {
   return;
 }
@@ -122,7 +124,7 @@ bool SCATRA::ConvCheckStrategyStd::AbortNonlinIter(
     {
       if(mypid == 0)
         // print finish line of convergence table to screen
-        std::cout << "+------------+-------------------+--------------+--------------+------------------+" << std::endl << std::endl;
+        std::cout << "+------------+-------------------+--------------+--------------+------------------+" << std::endl;
 
       return true;
     }
@@ -135,7 +137,7 @@ bool SCATRA::ConvCheckStrategyStd::AbortNonlinIter(
   {
     if(mypid == 0)
       // print finish line of convergence table to screen
-      std::cout << "+------------+-------------------+--------------+--------------+------------------+" << std::endl << std::endl;
+      std::cout << "+------------+-------------------+--------------+--------------+------------------+" << std::endl;
 
     return true;
   }
@@ -147,7 +149,7 @@ bool SCATRA::ConvCheckStrategyStd::AbortNonlinIter(
     {
       std::cout << "+---------------------------------------------------------------+" << std::endl;
       std::cout << "|       >>>>>> Newton-Raphson iteration did not converge!       |" << std::endl;
-      std::cout << "+---------------------------------------------------------------+" << std::endl << std::endl;
+      std::cout << "+---------------------------------------------------------------+" << std::endl;
     }
 
     return true;
@@ -159,6 +161,71 @@ bool SCATRA::ConvCheckStrategyStd::AbortNonlinIter(
   // proceed with next iteration step
   return false;
 } // SCATRA::ConvCheckStrategyStd::AbortNonlinIter()
+
+
+/*--------------------------------------------------------------------------------------------*
+ | perform convergence check for outer iteration in partitioned coupling schemes   fang 08/17 |
+ *--------------------------------------------------------------------------------------------*/
+bool SCATRA::ConvCheckStrategyStd::AbortOuterIter(
+    const ScaTraTimIntImpl&   scatratimint   //!< scalar transport time integrator
+    ) const
+{
+  // extract processor ID
+  const int mypid = scatratimint.Discretization()->Comm().MyPID();
+
+  // extract current outer iteration step
+  const int itnum = scatratimint.IterNumOuter();
+
+  // compute vector norms
+  double L2_phinp(0.);
+  double L2_phinp_inc(0.);
+  scatratimint.Phinp()->Norm2(&L2_phinp);
+  scatratimint.PhinpInc()->Norm2(&L2_phinp_inc);
+  if(L2_phinp < 1.e-10)
+    L2_phinp = 1.;
+
+  // print convergence status
+  if(mypid == 0)
+  {
+    std::cout << "|                                  OUTER ITERATION                                |" << std::endl;
+    std::cout << "+------------+-------------------+--------------+--------------+------------------+" << std::endl;
+    std::cout << "|  " << std::setw(3) << itnum << "/" << std::setw(3) << itmax_outer_ << "   | "
+              << std::setw(10) << std::setprecision(3) << std::scientific << ittol_outer_ << "[L_2 ]  |      --      | "
+              << std::setw(10) << std::setprecision(3) << std::scientific << L2_phinp_inc/L2_phinp << "   |        --        |" << std::endl;
+    std::cout << "+------------+-------------------+--------------+--------------+------------------+" << std::endl;
+  }
+
+  // convergence check
+  if(L2_phinp_inc/L2_phinp <= ittol_outer_)
+  {
+    if(mypid == 0)
+    {
+      std::cout << "|            OUTER ITERATION LOOP CONVERGED AFTER ITERATION"
+                << std::setw(4) << itnum << "/"
+                << std::setw(4) << itmax_outer_ << " !            |" << std::endl;
+      std::cout << "+------------+-------------------+--------------+--------------+------------------+" << std::endl;
+    }
+
+    return true;
+  }
+
+  // throw error in case maximum number of iteration steps is reached without convergence
+  else if(itnum == itmax_outer_)
+  {
+    if(mypid == 0)
+    {
+      std::cout << "|         >>>>>> not converged within maximum number of iteration steps!          |" << std::endl;
+      std::cout << "+------------+-------------------+--------------+--------------+------------------+" << std::endl;
+    }
+
+    dserror("Outer iteration did not converge within maximum number of iteration steps!");
+
+    return true;
+  }
+
+  // proceed with next outer iteration step
+  return false;
+} // SCATRA::ConvCheckStrategyStd::AbortOuterIter
 
 
 /*----------------------------------------------------------------------*
@@ -317,7 +384,7 @@ bool SCATRA::ConvCheckStrategyStdElch::AbortNonlinIter(
     {
       if(mypid == 0)
         // print finish line of convergence table to screen
-        std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+------------------+" << std::endl << std::endl;
+        std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+------------------+" << std::endl;
 
       return true;
     }
@@ -330,7 +397,7 @@ bool SCATRA::ConvCheckStrategyStdElch::AbortNonlinIter(
   {
     if(mypid == 0)
       // print finish line of convergence table to screen
-      std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+------------------+" << std::endl << std::endl;
+      std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+------------------+" << std::endl;
 
     return true;
   }
@@ -342,7 +409,7 @@ bool SCATRA::ConvCheckStrategyStdElch::AbortNonlinIter(
     {
       std::cout << "+---------------------------------------------------------------+" << std::endl;
       std::cout << "|       >>>>>> Newton-Raphson iteration did not converge!       |" << std::endl;
-      std::cout << "+---------------------------------------------------------------+" << std::endl << std::endl;
+      std::cout << "+---------------------------------------------------------------+" << std::endl;
     }
 
     return true;
@@ -460,7 +527,7 @@ bool SCATRA::ConvCheckStrategyS2ILM::AbortNonlinIter(
     {
       if(mypid == 0)
         // print finish line of convergence table to screen
-        std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+------------------+" << std::endl << std::endl;
+        std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+------------------+" << std::endl;
 
       return true;
     }
@@ -473,7 +540,7 @@ bool SCATRA::ConvCheckStrategyS2ILM::AbortNonlinIter(
   {
     if(mypid == 0)
       // print finish line of convergence table to screen
-      std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+------------------+" << std::endl << std::endl;
+      std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+------------------+" << std::endl;
 
     return true;
   }
@@ -485,7 +552,7 @@ bool SCATRA::ConvCheckStrategyS2ILM::AbortNonlinIter(
     {
       std::cout << "+---------------------------------------------------------------+" << std::endl;
       std::cout << "|       >>>>>> Newton-Raphson iteration did not converge!       |" << std::endl;
-      std::cout << "+---------------------------------------------------------------+" << std::endl << std::endl;
+      std::cout << "+---------------------------------------------------------------+" << std::endl;
     }
 
     return true;
@@ -630,7 +697,7 @@ bool SCATRA::ConvCheckStrategyS2ILMElch::AbortNonlinIter(
     {
       if(mypid == 0)
         // print finish line of convergence table to screen
-        std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+------------------+" << std::endl << std::endl;
+        std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+------------------+" << std::endl;
 
       return true;
     }
@@ -643,7 +710,7 @@ bool SCATRA::ConvCheckStrategyS2ILMElch::AbortNonlinIter(
   {
     if(mypid == 0)
       // print finish line of convergence table to screen
-      std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+------------------+" << std::endl << std::endl;
+      std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+------------------+" << std::endl;
 
     return true;
   }
@@ -655,7 +722,7 @@ bool SCATRA::ConvCheckStrategyS2ILMElch::AbortNonlinIter(
     {
       std::cout << "+---------------------------------------------------------------+" << std::endl;
       std::cout << "|       >>>>>> Newton-Raphson iteration did not converge!       |" << std::endl;
-      std::cout << "+---------------------------------------------------------------+" << std::endl << std::endl;
+      std::cout << "+---------------------------------------------------------------+" << std::endl;
     }
 
     return true;
@@ -805,7 +872,7 @@ bool SCATRA::ConvCheckStrategyStdMacroScaleElch::AbortNonlinIter(
     {
       if(mypid == 0)
         // print finish line of convergence table to screen
-        std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+------------------+" << std::endl << std::endl;
+        std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+------------------+" << std::endl;
 
       return true;
     }
@@ -818,7 +885,7 @@ bool SCATRA::ConvCheckStrategyStdMacroScaleElch::AbortNonlinIter(
   {
     if(mypid == 0)
       // print finish line of convergence table to screen
-      std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+------------------+" << std::endl << std::endl;
+      std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+------------------+" << std::endl;
 
     return true;
   }
@@ -830,7 +897,7 @@ bool SCATRA::ConvCheckStrategyStdMacroScaleElch::AbortNonlinIter(
     {
       std::cout << "+---------------------------------------------------------------+" << std::endl;
       std::cout << "|       >>>>>> Newton-Raphson iteration did not converge!       |" << std::endl;
-      std::cout << "+---------------------------------------------------------------+" << std::endl << std::endl;
+      std::cout << "+---------------------------------------------------------------+" << std::endl;
     }
 
     return true;
@@ -846,3 +913,93 @@ bool SCATRA::ConvCheckStrategyStdMacroScaleElch::AbortNonlinIter(
   // proceed with next iteration step
   return false;
 } // SCATRA::ConvCheckStrategyStdMacroScaleElch::AbortNonlinIter
+
+
+/*--------------------------------------------------------------------------------------------*
+ | perform convergence check for outer iteration in partitioned coupling schemes   fang 08/17 |
+ *--------------------------------------------------------------------------------------------*/
+bool SCATRA::ConvCheckStrategyStdMacroScaleElch::AbortOuterIter(
+    const ScaTraTimIntImpl&   scatratimint   //!< scalar transport time integrator
+    ) const
+{
+  // cast scalar transport time integrator
+  const ScaTraTimIntElch* const elchtimint = dynamic_cast<const ScaTraTimIntElch*>(&scatratimint);
+  if(elchtimint == NULL)
+    dserror("Cast of scalar transport time integrator failed!");
+
+  // extract processor ID
+  const int mypid = scatratimint.Discretization()->Comm().MyPID();
+
+  // extract current outer iteration step
+  const int itnum = scatratimint.IterNumOuter();
+
+  // compute vector norms
+  const Teuchos::RCP<Epetra_Vector> vector_conc_el = elchtimint->SplitterMacro()->ExtractVector(scatratimint.Phinp(),0);
+  double L2_state_conc_el(0.);
+  vector_conc_el->Norm2(&L2_state_conc_el);
+  elchtimint->SplitterMacro()->ExtractVector(scatratimint.PhinpInc(),0,vector_conc_el);
+  double L2_inc_conc_el(0.);
+  vector_conc_el->Norm2(&L2_inc_conc_el);
+  const Teuchos::RCP<Epetra_Vector> vector_pot_el = elchtimint->SplitterMacro()->ExtractVector(scatratimint.Phinp(),1);
+  double L2_state_pot_el(0.);
+  vector_pot_el->Norm2(&L2_state_pot_el);
+  elchtimint->SplitterMacro()->ExtractVector(scatratimint.PhinpInc(),1,vector_pot_el);
+  double L2_inc_pot_el(0.);
+  vector_pot_el->Norm2(&L2_inc_pot_el);
+  const Teuchos::RCP<Epetra_Vector> vector_pot_ed = elchtimint->SplitterMacro()->ExtractVector(scatratimint.Phinp(),2);
+  double L2_state_pot_ed(0.);
+  vector_pot_ed->Norm2(&L2_state_pot_ed);
+  elchtimint->SplitterMacro()->ExtractVector(scatratimint.PhinpInc(),2,vector_pot_ed);
+  double L2_inc_pot_ed(0.);
+  vector_pot_ed->Norm2(&L2_inc_pot_ed);
+  if(L2_state_conc_el < 1.e-10)
+    L2_state_conc_el = 1.;
+  if(L2_state_pot_el < 1.e-10)
+    L2_state_pot_el = 1.;
+  if(L2_state_pot_ed < 1.e-10)
+    L2_state_pot_ed = 1.;
+
+  // print convergence status
+  if(mypid == 0)
+  {
+    std::cout << "|                                                               OUTER ITERATION                                                               |" << std::endl;
+    std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+------------------+" << std::endl;
+    std::cout << "|  " << std::setw(3) << itnum << "/" << std::setw(3) << itmax_outer_ << "   | "
+              << std::setw(10) << std::setprecision(3) << std::scientific << ittol_outer_ << "[L_2 ]  |      --      |      --      |      --      | "
+              << std::setw(10) << std::setprecision(3) << std::scientific << L2_inc_conc_el/L2_state_conc_el << "   | "
+              << std::setw(10) << std::setprecision(3) << std::scientific << L2_inc_pot_el/L2_state_pot_el << "   | "
+              << std::setw(10) << std::setprecision(3) << std::scientific << L2_inc_pot_ed/L2_state_pot_ed << "   |        --        |" << std::endl;
+    std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+------------------+" << std::endl;
+  }
+
+  // convergence check
+  if(L2_inc_conc_el/L2_state_conc_el <= ittol_outer_ and L2_inc_pot_el/L2_state_pot_el <= ittol_outer_ and L2_inc_pot_ed/L2_state_pot_ed <= ittol_outer_)
+  {
+    if(mypid == 0)
+    {
+      std::cout << "|                                          OUTER ITERATION LOOP CONVERGED AFTER ITERATION"
+                << std::setw(4) << itnum << "/"
+                << std::setw(4) << itmax_outer_ << " !                                          |" << std::endl;
+      std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+------------------+" << std::endl;
+    }
+
+    return true;
+  }
+
+  // throw error in case maximum number of iteration steps is reached without convergence
+  else if(itnum == itmax_outer_)
+  {
+    if(mypid == 0)
+    {
+      std::cout << "|                                       >>>>>> not converged within maximum number of iteration steps!                                        |" << std::endl;
+      std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+------------------+" << std::endl;
+    }
+
+    dserror("Outer iteration did not converge within maximum number of iteration steps!");
+
+    return true;
+  }
+
+  // proceed with next outer iteration step
+  return false;
+} // SCATRA::ConvCheckStrategyStdMacroScaleElch::AbortOuterIter

@@ -37,12 +37,14 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
                                tuple<std::string>(
                                  "linear_full",
                                  "linear_incremental",
-                                 "nonlinear"
+                                 "nonlinear",
+                                 "nonlinear_multiscale"
                                  ),
                                tuple<int>(
                                    solvertype_linear_full,
                                    solvertype_linear_incremental,
-                                   solvertype_nonlinear),
+                                   solvertype_nonlinear,
+                                   solvertype_nonlinear_multiscale),
                                &scatradyn);
 
   setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
@@ -271,10 +273,8 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   IntParameter("L2_PROJ_LINEAR_SOLVER",-1,"number of linear solver used for l2-projection sub-problems",&scatradyn);
   //IntParameter("SIMPLER_SOLVER",-1,"number of linear solver used for ELCH (solved with SIMPLER)...",&scatradyn);
 
-  // parameters for natural convection effects
+  // flag for natural convection effects
   BoolParameter("NATURAL_CONVECTION","No","Include natural convection effects",&scatradyn);
-  IntParameter("NATCONVITEMAX",10,"Maximum number of outer iterations for natural convection",&scatradyn);
-  DoubleParameter("NATCONVCONVTOL",1e-6,"Convergence check tolerance for outer loop for natural convection",&scatradyn);
 
   // parameters for finite difference check
   setStringToIntegralParameter<int>("FDCHECK", "none", "flag for finite difference check: none, local, or global",
@@ -330,6 +330,8 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   IntParameter("ITEMAX",10,"max. number of nonlin. iterations",&scatra_nonlin);
   DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&scatra_nonlin);
+  IntParameter("ITEMAX_OUTER",10,"Maximum number of outer iterations in partitioned coupling schemes (natural convection, multi-scale simulations etc.)",&scatra_nonlin);
+  DoubleParameter("CONVTOL_OUTER",1e-6,"Convergence check tolerance for outer loop in partitioned coupling schemes (natural convection, multi-scale simulations etc.)",&scatra_nonlin);
   BoolParameter("EXPLPREDICT","no","do an explicit predictor step before starting nonlinear iteration",&scatra_nonlin);
   DoubleParameter("ABSTOLRES",1e-14,"Absolute tolerance for deciding if residual of nonlinear problem is already zero",&scatra_nonlin);
 

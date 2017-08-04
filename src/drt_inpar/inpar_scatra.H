@@ -42,7 +42,8 @@ namespace INPAR
     {
       solvertype_linear_full,
       solvertype_linear_incremental,
-      solvertype_nonlinear
+      solvertype_nonlinear,
+      solvertype_nonlinear_multiscale
     };
 
     /// type of convective velocity field

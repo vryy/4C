@@ -299,6 +299,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
     case SCATRA::calc_elch_boundary_kinetics_point:
     case SCATRA::micro_scale_initialize:
     case SCATRA::micro_scale_prepare_time_step:
+    case SCATRA::micro_scale_solve:
     case SCATRA::micro_scale_update:
     case SCATRA::micro_scale_output:
     case SCATRA::micro_scale_read_restart:

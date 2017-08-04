@@ -29,8 +29,8 @@ SCATRA::ScaTraAlgorithm::ScaTraAlgorithm(
 )
   :  ScaTraFluidCouplingAlgorithm(comm,scatradyn,false,scatra_disname,solverparams),
      natconv_(DRT::INPUT::IntegralValue<int>(scatradyn,"NATURAL_CONVECTION")),
-     natconvitmax_(scatradyn.get<int>("NATCONVITEMAX")),
-     natconvittol_(scatradyn.get<double>("NATCONVCONVTOL")),
+     natconvitmax_(scatradyn.sublist("NONLINEAR").get<int>("ITEMAX_OUTER")),
+     natconvittol_(scatradyn.sublist("NONLINEAR").get<double>("CONVTOL_OUTER")),
      velincnp_ (Teuchos::null),
      phiincnp_ (Teuchos::null),
      samstart_(fdyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_START")),
