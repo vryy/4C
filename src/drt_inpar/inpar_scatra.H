@@ -43,7 +43,9 @@ namespace INPAR
       solvertype_linear_full,
       solvertype_linear_incremental,
       solvertype_nonlinear,
-      solvertype_nonlinear_multiscale
+      solvertype_nonlinear_multiscale_macrotomicro,
+      solvertype_nonlinear_multiscale_macrotomicro_aitken,
+      solvertype_nonlinear_multiscale_microtomacro
     };
 
     /// type of convective velocity field

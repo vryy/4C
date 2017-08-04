@@ -778,6 +778,9 @@ protected:
   //! contains the nonlinear iteration loop for truly partitioned multi-scale simulations
   void NonlinearMultiScaleSolve();
 
+  //! solve micro scale in truly partitioned multi-scale simulations
+  void NonlinearMicroScaleSolve();
+
   //! Calculate the reconstructed nodal gradient of phi by means of L2-projection
   Teuchos::RCP<Epetra_MultiVector> ComputeNodalL2Projection(
     const Teuchos::RCP<const Epetra_Vector> & state,
@@ -1121,6 +1124,10 @@ protected:
   Teuchos::RCP<Epetra_Vector> phinp_;
   //! increment of phi at time n+1 for truly partitioned multi-scale simulations
   Teuchos::RCP<Epetra_Vector> phinp_inc_;
+  //! increment of phi at time n+1 from previous outer iteration step for truly partitioned multi-scale simulations
+  Teuchos::RCP<Epetra_Vector> phinp_inc_old_;
+  //! relaxation parameter
+  double omega_;
 
   //! time derivative of phi at time n
   Teuchos::RCP<Epetra_Vector> phidtn_;

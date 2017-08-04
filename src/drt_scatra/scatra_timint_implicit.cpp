@@ -162,6 +162,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   phin_(Teuchos::null),
   phinp_(Teuchos::null),
   phinp_inc_(Teuchos::null),
+  phinp_inc_old_(Teuchos::null),
+  omega_(1.),
   phidtn_(Teuchos::null),
   phidtnp_(Teuchos::null),
   hist_(Teuchos::null),
@@ -257,7 +259,9 @@ void SCATRA::ScaTraTimIntImpl::Init()
   switch(solvtype_)
   {
   case INPAR::SCATRA::solvertype_nonlinear:
-  case INPAR::SCATRA::solvertype_nonlinear_multiscale:
+  case INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro:
+  case INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro_aitken:
+  case INPAR::SCATRA::solvertype_nonlinear_multiscale_microtomacro:
   case INPAR::SCATRA::solvertype_linear_incremental:
   {
     incremental_ = true;
@@ -347,8 +351,12 @@ void SCATRA::ScaTraTimIntImpl::Setup()
   // solutions at time n+1 and n
   phinp_ = LINALG::CreateVector(*dofrowmap,true);
   phin_  = LINALG::CreateVector(*dofrowmap,true);
-  if(solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale)
+  if(solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro or
+     solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro_aitken or
+     solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale_microtomacro)
     phinp_inc_ = LINALG::CreateVector(*dofrowmap,true);
+  if(solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro_aitken)
+    phinp_inc_old_ = LINALG::CreateVector(*dofrowmap,true);
 
   // temporal solution derivative at time n+1
   phidtnp_ = LINALG::CreateVector(*dofrowmap,true);
@@ -882,7 +890,9 @@ void SCATRA::ScaTraTimIntImpl::SetElementGeneralParameters(bool calcinitialtimed
   eleparams.set<bool>("sphericalcoords",DRT::INPUT::IntegralValue<bool>(*params_,"SPHERICALCOORDS"));
 
   // flag for truly partitioned multi-scale simulation
-  eleparams.set<bool>("partitioned_multiscale",solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale);
+  eleparams.set<bool>("partitioned_multiscale",solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro or
+                                               solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro_aitken or
+                                               solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale_microtomacro);
 
   // add parameters associated with meshtying strategy
   strategy_->SetElementGeneralParameters(eleparams);
@@ -1436,13 +1446,36 @@ void SCATRA::ScaTraTimIntImpl::Solve()
   // -----------------------------------------------------------------
   //                     solve (non-)linear equation
   // -----------------------------------------------------------------
-  if (solvtype_==INPAR::SCATRA::solvertype_nonlinear)
-    NonlinearSolve();
-  else if (solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale)
-    NonlinearMultiScaleSolve();
-  else
-    LinearSolve();
-  //that's all
+  switch(solvtype_)
+  {
+    case INPAR::SCATRA::solvertype_linear_incremental:
+    case INPAR::SCATRA::solvertype_linear_full:
+    {
+      LinearSolve();
+      break;
+    }
+
+    case INPAR::SCATRA::solvertype_nonlinear:
+    {
+      NonlinearSolve();
+      break;
+    }
+
+    case INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro:
+    case INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro_aitken:
+    case INPAR::SCATRA::solvertype_nonlinear_multiscale_microtomacro:
+    {
+      NonlinearMultiScaleSolve();
+      break;
+    }
+
+    default:
+    {
+      dserror("Unknown solver type!");
+      break;
+    }
+  }
+  // that's all
 
   return;
 }
@@ -2893,6 +2926,9 @@ void SCATRA::ScaTraTimIntImpl::NonlinearMultiScaleSolve()
   // reset number of outer iterations
   iternum_outer_ = 0;
 
+  // initialize relaxed macro-scale state vector
+  const Teuchos::RCP<Epetra_Vector> phinp_relaxed = Teuchos::rcp(new Epetra_Vector(*phinp_));
+
   // begin outer iteration loop
   while(true)
   {
@@ -2900,18 +2936,37 @@ void SCATRA::ScaTraTimIntImpl::NonlinearMultiScaleSolve()
     iternum_outer_++;
 
     // store current state vector on macro scale
-    phinp_inc_->Update(1.,*phinp_,0.);
+    phinp_inc_->Update(1.,*phinp_relaxed,0.);
 
-    // solve macro-scale problem
-    NonlinearSolve();
+    // solve micro scale first and macro scale second
+    if(solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro or
+       solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro_aitken)
+    {
+      // backup macro-scale state vector
+      const Teuchos::RCP<Epetra_Vector> phinp = phinp_;
 
-    // solve micro-scale problems
-    discret_->ClearState();
-    Teuchos::ParameterList eleparams;
-    eleparams.set<int>("action",SCATRA::micro_scale_solve);
-    AddTimeIntegrationSpecificVectors();
-    discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-    discret_->ClearState();
+      // replace macro-scale state vector by relaxed macro-scale state vector as input for micro scale
+      phinp_ = phinp_relaxed;
+
+      // solve micro-scale problems
+      NonlinearMicroScaleSolve();
+
+      // undo state vector replacement
+      phinp_ = phinp;
+
+      // solve macro-scale problem
+      NonlinearSolve();
+    }
+
+    // solve macro scale first and micro scale second
+    else if(solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale_microtomacro)
+    {
+      // solve macro-scale problem
+      NonlinearSolve();
+
+      // solve micro-scale problems
+      NonlinearMicroScaleSolve();
+    }
 
     // compute increment of macro-scale state vector
     phinp_inc_->Update(1.,*phinp_,-1.);
@@ -2919,10 +2974,63 @@ void SCATRA::ScaTraTimIntImpl::NonlinearMultiScaleSolve()
     // convergence check
     if(strategy_->AbortOuterIter(*this))
       break;
+
+    if(solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro_aitken)
+    {
+      // compute difference between current and previous increments of macro-scale state vector
+      Epetra_Vector phinp_inc_diff(*phinp_inc_);
+      phinp_inc_diff.Update(-1.,*phinp_inc_old_,1.);
+
+      // compute L2 norm of difference between current and previous increments of macro-scale state vector
+      double phinp_inc_diff_L2(0.);
+      phinp_inc_diff.Norm2(&phinp_inc_diff_L2);
+
+      // compute dot product between increment of macro-scale state vector and difference between current and previous increments of macro-scale state vector
+      double phinp_inc_dot_phinp_inc_diff(0.);
+      if(phinp_inc_diff.Dot(*phinp_inc_,&phinp_inc_dot_phinp_inc_diff))
+        dserror("Couldn't compute dot product!");
+
+      // compute Aitken relaxation factor
+      if(iternum_outer_ > 1 and phinp_inc_diff_L2 > 1.e-12)
+        omega_ *= 1 - phinp_inc_dot_phinp_inc_diff/(phinp_inc_diff_L2*phinp_inc_diff_L2);
+
+      // update increment of macro-scale state vector
+      phinp_inc_old_->Update(1.,*phinp_inc_,0.);
+    }
+
+    // perform relaxation
+    phinp_relaxed->Update(omega_,*phinp_inc_,1.);
   }
 
   return;
 } // SCATRA::ScaTraTimIntImpl::NonlinearMultiScaleSolve
+
+
+/*-----------------------------------------------------------------------------*
+ | solve micro scale in truly partitioned multi-scale simulations   fang 08/17 |
+ *-----------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::NonlinearMicroScaleSolve()
+{
+  // clear macro-scale discretization
+  discret_->ClearState();
+
+  // initialize parameter list for evaluation of macro-scale elements
+  Teuchos::ParameterList eleparams;
+
+  // set action for macro-scale elements
+  eleparams.set<int>("action",SCATRA::micro_scale_solve);
+
+  // set state vectors
+  AddTimeIntegrationSpecificVectors();
+
+  // evaluate macro-scale elements
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+  // clear macro-scale discretization
+  discret_->ClearState();
+
+  return;
+} // SCATRA::ScaTraTimIntImpl::NonlinearMicroScaleSolve
 
 
 /*--------------------------------------------------------------------------*

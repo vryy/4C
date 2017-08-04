@@ -24,7 +24,7 @@ DIM           1
 --------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Scalar_Transport
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
-SOLVERTYPE                      nonlinear_multiscale
+SOLVERTYPE                      nonlinear_multiscale_macrotomicro
 TIMEINTEGR                      One_Step_Theta
 NUMSTEP                         250
 TIMESTEP                        0.1

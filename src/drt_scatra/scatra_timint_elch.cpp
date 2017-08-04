@@ -1515,7 +1515,9 @@ void SCATRA::ScaTraTimIntElch::ValidParameterDiffCond()
       dserror("Natural convection is not supported in the ELCH diffusion-conduction framework!!");
 
     if(DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params_,"SOLVERTYPE") != INPAR::SCATRA::solvertype_nonlinear and
-       DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params_,"SOLVERTYPE") != INPAR::SCATRA::solvertype_nonlinear_multiscale)
+       DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params_,"SOLVERTYPE") != INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro and
+       DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params_,"SOLVERTYPE") != INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro_aitken and
+       DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params_,"SOLVERTYPE") != INPAR::SCATRA::solvertype_nonlinear_multiscale_microtomacro)
       dserror("The only solvertype supported by the ELCH diffusion-conduction framework is the non-linear solver!!");
 
     if((DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(*params_,"CONVFORM"))!= INPAR::SCATRA::convform_convective)

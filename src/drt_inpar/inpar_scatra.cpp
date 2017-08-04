@@ -38,13 +38,18 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
                                  "linear_full",
                                  "linear_incremental",
                                  "nonlinear",
-                                 "nonlinear_multiscale"
+                                 "nonlinear_multiscale_macrotomicro",
+                                 "nonlinear_multiscale_macrotomicro_aitken",
+                                 "nonlinear_multiscale_microtomacro"
                                  ),
                                tuple<int>(
                                    solvertype_linear_full,
                                    solvertype_linear_incremental,
                                    solvertype_nonlinear,
-                                   solvertype_nonlinear_multiscale),
+                                   solvertype_nonlinear_multiscale_macrotomicro,
+                                   solvertype_nonlinear_multiscale_macrotomicro_aitken,
+                                   solvertype_nonlinear_multiscale_microtomacro
+                                   ),
                                &scatradyn);
 
   setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
