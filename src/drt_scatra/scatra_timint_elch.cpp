@@ -1517,6 +1517,7 @@ void SCATRA::ScaTraTimIntElch::ValidParameterDiffCond()
     if(DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params_,"SOLVERTYPE") != INPAR::SCATRA::solvertype_nonlinear and
        DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params_,"SOLVERTYPE") != INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro and
        DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params_,"SOLVERTYPE") != INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro_aitken and
+       DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params_,"SOLVERTYPE") != INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro_aitken_dofsplit and
        DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params_,"SOLVERTYPE") != INPAR::SCATRA::solvertype_nonlinear_multiscale_microtomacro)
       dserror("The only solvertype supported by the ELCH diffusion-conduction framework is the non-linear solver!!");
 
@@ -2809,6 +2810,53 @@ bool SCATRA::ScaTraTimIntElch::NotFinished()
   }
 
   return notfinished;
+}
+
+
+/*---------------------------------------------------------------------------*
+ | perform Aitken relaxation                                      fang 08/17 |
+ *---------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::PerformAitkenRelaxation(
+    Epetra_Vector&         phinp,           //!< state vector to be relaxed
+    const Epetra_Vector&   phinp_inc_diff   //!< difference between current and previous state vector increments
+    )
+{
+  if(solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro_aitken_dofsplit)
+  {
+    // safety checks
+    if(splitter_macro_ == Teuchos::null)
+      dserror("Map extractor for macro scale has not been initialized yet!");
+
+    // loop over all degrees of freedom
+    for(int idof=0; idof<splitter_macro_->NumMaps(); ++idof)
+    {
+      // extract subvectors associated with current degree of freedom
+      const Teuchos::RCP<const Epetra_Vector> phinp_inc_dof = splitter_macro_->ExtractVector(*phinp_inc_,idof);
+      const Teuchos::RCP<const Epetra_Vector> phinp_inc_diff_dof = splitter_macro_->ExtractVector(phinp_inc_diff,idof);
+
+      // compute L2 norm of difference between current and previous increments of current degree of freedom
+      double phinp_inc_diff_L2(0.);
+      phinp_inc_diff_dof->Norm2(&phinp_inc_diff_L2);
+
+      // compute dot product between increment of current degree of freedom and difference between current and previous increments of current degree of freedom
+      double phinp_inc_dot_phinp_inc_diff(0.);
+      if(phinp_inc_diff_dof->Dot(*phinp_inc_dof,&phinp_inc_dot_phinp_inc_diff))
+        dserror("Couldn't compute dot product!");
+
+      // compute Aitken relaxation factor for current degree of freedom
+      if(iternum_outer_ > 1 and phinp_inc_diff_L2 > 1.e-12)
+        omega_[idof] *= 1 - phinp_inc_dot_phinp_inc_diff/(phinp_inc_diff_L2*phinp_inc_diff_L2);
+
+      // perform Aitken relaxation for current degree of freedom
+      splitter_macro_->AddVector(*phinp_inc_dof,idof,phinp,omega_[idof]);
+    }
+  }
+
+  else
+    // call base class routine
+    ScaTraTimIntImpl::PerformAitkenRelaxation(phinp,phinp_inc_diff);
+
+  return;
 }
 
 

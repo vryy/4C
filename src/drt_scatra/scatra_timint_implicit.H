@@ -817,6 +817,12 @@ protected:
     Teuchos::RCP<Epetra_Vector>          rhs                //!< rhs vector
   );
 
+  //! perform Aitken relaxation
+  virtual void PerformAitkenRelaxation(
+      Epetra_Vector&         phinp,           //!< state vector to be relaxed
+      const Epetra_Vector&   phinp_inc_diff   //!< difference between current and previous state vector increments
+      );
+
   /*--- query and output ---------------------------------------------------*/
 
   //! returns true if \ref Setup() was called and is still valid
@@ -1126,8 +1132,8 @@ protected:
   Teuchos::RCP<Epetra_Vector> phinp_inc_;
   //! increment of phi at time n+1 from previous outer iteration step for truly partitioned multi-scale simulations
   Teuchos::RCP<Epetra_Vector> phinp_inc_old_;
-  //! relaxation parameter
-  double omega_;
+  //! relaxation parameters
+  std::vector<double> omega_;
 
   //! time derivative of phi at time n
   Teuchos::RCP<Epetra_Vector> phidtn_;

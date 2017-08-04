@@ -2617,6 +2617,40 @@ void SCATRA::ScaTraTimIntImpl::ExplicitPredictor() const
 }
 
 
+/*--------------------------------------------------------------------------*
+ | perform Aitken relaxation                                     fang 08/17 |
+ *--------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::PerformAitkenRelaxation(
+    Epetra_Vector&         phinp,           //!< state vector to be relaxed
+    const Epetra_Vector&   phinp_inc_diff   //!< difference between current and previous state vector increments
+    )
+{
+  if(solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro_aitken)
+  {
+    // compute L2 norm of difference between current and previous increments of macro-scale state vector
+    double phinp_inc_diff_L2(0.);
+    phinp_inc_diff.Norm2(&phinp_inc_diff_L2);
+
+    // compute dot product between increment of macro-scale state vector and difference between current and previous increments of macro-scale state vector
+    double phinp_inc_dot_phinp_inc_diff(0.);
+    if(phinp_inc_diff.Dot(*phinp_inc_,&phinp_inc_dot_phinp_inc_diff))
+      dserror("Couldn't compute dot product!");
+
+    // compute Aitken relaxation factor
+    if(iternum_outer_ > 1 and phinp_inc_diff_L2 > 1.e-12)
+      omega_[0] *= 1 - phinp_inc_dot_phinp_inc_diff/(phinp_inc_diff_L2*phinp_inc_diff_L2);
+
+    // perform Aitken relaxation
+    phinp.Update(omega_[0],*phinp_inc_,1.);
+  }
+
+  else
+    dserror("Invalid Aitken method!");
+
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
  |  Prepare evaluation of mean scalars                      vuong   04/16|
  *----------------------------------------------------------------------*/

@@ -270,6 +270,12 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   //! determine whether there are still time steps to be evaluated
   bool NotFinished();
 
+  //! perform Aitken relaxation
+  void PerformAitkenRelaxation(
+      Epetra_Vector&         phinp,           //!< state vector to be relaxed
+      const Epetra_Vector&   phinp_inc_diff   //!< difference between current and previous state vector increments
+      );
+
   /*--- query and output ---------------------------------------------------*/
 
   //! check for negative values of concentrations (ELCH)
@@ -375,17 +381,28 @@ public:
   virtual ~ScalarHandlerElch(){};
 
   //! initialize time integration
-  virtual void Setup(const ScaTraTimIntImpl* const scatratimint);
+  void Setup(const ScaTraTimIntImpl* const scatratimint);
 
   /*========================================================================*/
   //! @name Access and Query methods
   /*========================================================================*/
 
-  //! return maximum number of transported scalars per node (not including potential and current density)
-  virtual int NumScal() const { CheckIsSetup(); return *(numscal_.rbegin()); }
+  //! return maximum number of dofs per node
+  int NumDofPerNode() const
+  {
+    CheckIsSetup();
+    return *(numdofpernode_.rbegin());
+  };
 
   //! return maximum number of transported scalars per node (not including potential and current density)
-  virtual int NumScalInCondition(
+  int NumScal() const
+  {
+    CheckIsSetup();
+    return *(numscal_.rbegin());
+  }
+
+  //! return maximum number of transported scalars per node (not including potential and current density)
+  int NumScalInCondition(
       const DRT::Condition& condition,
       const Teuchos::RCP<const DRT::Discretization>& discret) const;
 

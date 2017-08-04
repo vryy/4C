@@ -40,6 +40,7 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
                                  "nonlinear",
                                  "nonlinear_multiscale_macrotomicro",
                                  "nonlinear_multiscale_macrotomicro_aitken",
+                                 "nonlinear_multiscale_macrotomicro_aitken_dofsplit",
                                  "nonlinear_multiscale_microtomacro"
                                  ),
                                tuple<int>(
@@ -48,6 +49,7 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
                                    solvertype_nonlinear,
                                    solvertype_nonlinear_multiscale_macrotomicro,
                                    solvertype_nonlinear_multiscale_macrotomicro_aitken,
+                                   solvertype_nonlinear_multiscale_macrotomicro_aitken_dofsplit,
                                    solvertype_nonlinear_multiscale_microtomacro
                                    ),
                                &scatradyn);
