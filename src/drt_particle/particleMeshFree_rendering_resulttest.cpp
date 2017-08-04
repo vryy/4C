@@ -35,6 +35,7 @@ ParticleMeshfreeRenderingResultTest::ParticleMeshfreeRenderingResultTest(PARTICL
 
   vel_ = rendering.GetRenderingVelocity();
   acc_ = rendering.GetRenderingAcceleration();
+  velmod_ = rendering.GetRenderingVelocityMod();
   density_ = rendering.GetRenderingDensity();
   specEnthalpy_ = rendering.GetRenderingSpecEnthalpy();
   temperature_ = rendering.GetRenderingTemperature();
@@ -121,6 +122,28 @@ void ParticleMeshfreeRenderingResultTest::TestNode(DRT::INPUT::LineDefinition& r
           if (lid < 0)
             dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx, actnode->Id());
           result = (*acc_)[lid];
+        }
+      }
+
+      // test modified velocities
+      if (velmod_ != Teuchos::null)
+      {
+        const Epetra_BlockMap& velmodnpmap = velmod_->Map();
+        int idx = -1;
+        if (position == "velmodx")
+          idx = 0;
+        else if (position == "velmody")
+          idx = 1;
+        else if (position == "velmodz")
+          idx = 2;
+
+        if (idx >= 0)
+        {
+          unknownpos = false;
+          int lid = velmodnpmap.LID(discret_->Dof(0,actnode,idx));
+          if (lid < 0)
+            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx, actnode->Id());
+          result = (*velmod_)[lid];
         }
       }
 

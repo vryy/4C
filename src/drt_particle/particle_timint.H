@@ -275,6 +275,9 @@ namespace PARTICLE
     //! Read-only accelerations \f$A_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Accn() { return (*acc_)(0); }
 
+    //! Read-only modified velocities \f$Vm_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Velmodn() { return (*velmod_)(0); }
+
     //! Read-only modified accelerations \f$Am_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Accmodn() { return (*accmod_)(0); }
 
@@ -307,6 +310,9 @@ namespace PARTICLE
 
     //! Read-only accelerations \f$A_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Accnp() { return accn_; }
+
+    //! Read-only modified velocities \f$Vm_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Velmodnp() { return velmodn_; }
 
     //! Read-only modified accelerations \f$Am_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Accmodnp() { return accmodn_; }
@@ -386,6 +392,9 @@ namespace PARTICLE
 
     //! Extract accelerations \f$A_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessAccnp() { return accn_; }
+
+    //! Extract modified velocities \f$Vm_{n+1}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelmodnp() { return velmodn_; }
 
     //! Extract modified accelerations \f$Am_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessAccmodnp() { return accmodn_; }
@@ -593,6 +602,8 @@ namespace PARTICLE
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > vel_;
     //! Accelerations \f${A}_{n}, A_{n-1}, ...\f$
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > acc_;
+    //! Modified velocities \f${Vm}_{n}, Vm_{n-1}, ...\f$ resembling particle convection velocities
+    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > velmod_;
     //! Modified accelerations \f${Am}_{n}, Am_{n-1}, ...\f$ allowing to distinguish physical velocities and particle convection velocities
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > accmod_;
     //! Angular-velocities \f${angV}_{n}, angV_{n-1}, ...\f$
@@ -616,6 +627,8 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> veln_;
     //! Accelerations \f${A}_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> accn_;
+    //! Modified velocities \f${Vm}_{n+1}\f$ resembling particle convection velocities
+    Teuchos::RCP<Epetra_Vector> velmodn_;
     //! Modified accelerations \f${Am}_{n+1}\f$ allowing to distinguish physical velocities and particle convection velocities
     Teuchos::RCP<Epetra_Vector> accmodn_;
     //! Angular-velocities \f${angV}_{n+1}\f$

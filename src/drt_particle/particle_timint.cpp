@@ -90,6 +90,7 @@ PARTICLE::TimInt::TimInt
   dis_(Teuchos::null),
   vel_(Teuchos::null),
   acc_(Teuchos::null),
+  velmod_(Teuchos::null),
   accmod_(Teuchos::null),
   angVel_(Teuchos::null),
   angAcc_(Teuchos::null),
@@ -102,6 +103,7 @@ PARTICLE::TimInt::TimInt
   disn_(Teuchos::null),
   veln_(Teuchos::null),
   accn_(Teuchos::null),
+  velmodn_(Teuchos::null),
   accmodn_(Teuchos::null),
   angVeln_(Teuchos::null),
   angAccn_(Teuchos::null),
@@ -221,6 +223,8 @@ void PARTICLE::TimInt::Init()
 
   if (DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")>0.0)
   {
+    velmod_ =  Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+    velmodn_ = Teuchos::rcp(new Epetra_Vector(*(*velmod_)(0)));
     accmod_ =  Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
     accmodn_ = Teuchos::rcp(new Epetra_Vector(*(*accmod_)(0)));
   }
@@ -594,14 +598,13 @@ void PARTICLE::TimInt::DetermineMassDampConsistAccel()
     {
       if (DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")>0.0)
       {
-        //Initially, the convection velocity velConv is set equal to the initial velocity veln_
-        Teuchos::RCP<Epetra_Vector> velConv = Teuchos::rcp(new Epetra_Vector(*veln_));
-        velConv->Update(1.0,*veln_,0.0);
-        //Initialize veln_ and velConv since required for (*acc_)(0) and (*accmod_)(0)
+        //Initially, the convection velocity velmodn_ is set equal to the initial velocity veln_
+        velmodn_->Update(1.0,*veln_,0.0);
+        //Initialize veln_ and velmodn_ since required for (*acc_)(0) and (*accmod_)(0)
         ApplyDirichletBC(0.0, Teuchos::null, veln_, Teuchos::null, false);
-        ApplyDirichletBC(0.0, Teuchos::null, velConv, Teuchos::null, false);
+        ApplyDirichletBC(0.0, Teuchos::null, velmodn_, Teuchos::null, false);
 
-        DetermineMeshfreeDensAndAcc((*acc_)(0),(*accmod_)(0),velConv,0.0);
+        DetermineMeshfreeDensAndAcc((*acc_)(0),(*accmod_)(0),velmodn_,0.0);
       }
       else
         DetermineMeshfreeDensAndAcc((*acc_)(0),Teuchos::null,Teuchos::null,0.0);
@@ -762,6 +765,7 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
   UpdateStateVectorMap(dis_);
   UpdateStateVectorMap(vel_);
   UpdateStateVectorMap(acc_);
+  UpdateStateVectorMap(velmod_);
   UpdateStateVectorMap(accmod_);
   UpdateStateVectorMap(angVel_);
   UpdateStateVectorMap(angAcc_);
@@ -773,6 +777,7 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
   UpdateStateVectorMap(disn_);
   UpdateStateVectorMap(veln_);
   UpdateStateVectorMap(accn_);
+  UpdateStateVectorMap(velmodn_);
   UpdateStateVectorMap(accmodn_);
   UpdateStateVectorMap(angVeln_);
   UpdateStateVectorMap(angAccn_);
@@ -845,6 +850,8 @@ void PARTICLE::TimInt::ReadRestartState()
 
   if (DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")>0.0)
   {
+    reader.ReadVector(velmodn_, "modified_velocity");
+    velmod_->UpdateSteps(*velmodn_);
     reader.ReadVector(accmodn_, "modified_acceleration");
     accmod_->UpdateSteps(*accmodn_);
   }
@@ -929,17 +936,24 @@ void PARTICLE::TimInt::OutputStep(bool forced_writerestart)
   }
 
   // output meshfree rendering
-  int mod = (step_-restart_)%writerenderingevery_;
-  int range = (mod == 0) ? writerenderingevery_ : mod; // gives the range from first averaging step to output step
-  if ( writerenderingevery_ and (range > (writerenderingevery_-avrgrenderingsteps_)) and (range <= writerenderingevery_) )
+  if (writerenderingevery_)
   {
-    // clear rendering states before first averaging step
-    bool clearstate = (range == (writerenderingevery_-avrgrenderingsteps_+1));
+    int renderOutputMod = (step_-restart_)%writerenderingevery_;
+    int averageRenderingEvery=writerenderingevery_/avrgrenderingsteps_;
+    int renderAverageMod = (step_-restart_)%averageRenderingEvery;
+    if (renderAverageMod==0)
+    {
+      // If the last output has been writen at t_n, the next averaging steps are:
+      // t_n+1*averageRenderingEvery, t_n+2*averageRenderingEvery, ..., t_n+avrgrenderingsteps_*averageRenderingEvery=t_n+writerenderingevery_.
+      // At the first of these averaging steps, the rendering states have to be cleared initially.
+      // If avrgrenderingsteps_==1, the vectors have to be cleared in every step!
+      bool clearstate = ((renderOutputMod == averageRenderingEvery) or (avrgrenderingsteps_==1));
 
-    // write rendering states at output step
-    bool writeoutput = (range == writerenderingevery_);
+      // write rendering states at output step
+      bool writeoutput = (renderOutputMod==0);
 
-    PerformMeshfreeRendering(clearstate, writeoutput);
+      PerformMeshfreeRendering(clearstate, writeoutput);
+    }
   }
 
   // output particle statistics
@@ -968,7 +982,10 @@ void PARTICLE::TimInt::OutputRestart
   WriteVector("acceleration", acc_);
 
   if (DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")>0.0)
+  {
+    WriteVector("modified_velocity", velmod_);
     WriteVector("modified_acceleration", accmod_);
+  }
 
   WriteVector("radius", radius_, false);
   WriteVector("mass", mass_, false);
@@ -1049,6 +1066,8 @@ void PARTICLE::TimInt::OutputState
   WriteVector("density", density_, false);
   WriteVector("specEnthalpy", specEnthalpy_, false);
   WriteVector("temperature", temperature_, false);
+
+  WriteVector("modified_velocity", velmod_);
 
   if(collhandler_ != Teuchos::null and writeorientation_)
     WriteVector("orientation", orient_);
@@ -1220,14 +1239,24 @@ void PARTICLE::TimInt::PerformMeshfreeRendering(bool clearstate, bool writeoutpu
     {
       // clear the (averaged) rendering vectors
       if (clearstate)
+      {
+        std::cout << "Clear rendering state vectors before first averaging step!" << std::endl;
         rendering->ClearState();
+      }
 
       // determine the (averaged) rendering vectors
-      rendering->UpdateRenderingVectors(discret_, (*dis_)(0), (*vel_)(0), (*acc_)(0), (*density_)(0), (*specEnthalpy_)(0), temperature_, (*radius_)(0), pressure_, mass_);
+      std::cout << "Update (averaged) rendering vectors!" << std::endl;
+      if (DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")>0.0)
+        rendering->UpdateRenderingVectors(discret_, (*dis_)(0), (*vel_)(0), (*acc_)(0), (*velmod_)(0), (*density_)(0), (*specEnthalpy_)(0), temperature_, (*radius_)(0), pressure_, mass_);
+      else
+        rendering->UpdateRenderingVectors(discret_, (*dis_)(0), (*vel_)(0), (*acc_)(0), Teuchos::null, (*density_)(0), (*specEnthalpy_)(0), temperature_, (*radius_)(0), pressure_, mass_);
 
       // write the (averaged) rendering vectors
       if (writeoutput)
+      {
+        std::cout << "Write rendering output!" << std::endl;
         rendering->OutputState();
+      }
     }
   }
 
@@ -1539,7 +1568,10 @@ void PARTICLE::TimInt::UpdateStepState()
   UpdateStateVector(specEnthalpyDot_, specEnthalpyDotn_);
 
   if (DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")>0.0)
+  {
+    UpdateStateVector(velmod_, velmodn_);
     UpdateStateVector(accmod_, accmodn_);
+  }
 
   if( particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::Normal_DEM_thermo or
      (particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::MeshFree and

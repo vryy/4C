@@ -66,6 +66,7 @@ public:
       Teuchos::RCP<const Epetra_Vector> pDis,
       Teuchos::RCP<const Epetra_Vector> pVel,
       Teuchos::RCP<const Epetra_Vector> pAcc,
+      Teuchos::RCP<const Epetra_Vector> pVelMod,
       Teuchos::RCP<const Epetra_Vector> pDensity,
       Teuchos::RCP<const Epetra_Vector> pSpecEnthalpy,
       Teuchos::RCP<const Epetra_Vector> pTemperature,
@@ -88,6 +89,9 @@ public:
 
   //! read-only rendering acceleration
   virtual Teuchos::RCP<const Epetra_Vector> GetRenderingAcceleration() { return acc_; }
+
+  //! read-only rendering modified velocity
+  virtual Teuchos::RCP<const Epetra_Vector> GetRenderingVelocityMod() { return velmod_; }
 
   //! read-only rendering density
   virtual Teuchos::RCP<const Epetra_Vector> GetRenderingDensity() { return density_; }
@@ -140,6 +144,8 @@ private:
   Teuchos::RCP<Epetra_Vector> vel_; //! rendering velocity
 
   Teuchos::RCP<Epetra_Vector> acc_; //! rendering acceleration
+
+  Teuchos::RCP<Epetra_Vector> velmod_; //! rendering modified velocity
 
   Teuchos::RCP<Epetra_Vector> density_; //! rendering density
 

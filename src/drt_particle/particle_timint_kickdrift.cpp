@@ -113,16 +113,22 @@ int PARTICLE::TimIntKickDrift::IntegrateStep()
 
   //v_{n+1/2}=v_{n}+dt/2*a_{n-1/2}, with *(*acc_)(0)=a_{n-1/2}
   veln_->Update(dthalf, *(*acc_)(0), 1.0);
-  //\tilde{v}_{n+1/2}=v_{n+1/2}+dt/2*\tilde{a}_{n-1/2}, with \tilde{a}_{n-1/2}=*(*accmod_)(0), \tilde{v}_{n+1/2}=velConv
-  Teuchos::RCP<Epetra_Vector> velConv = Teuchos::rcp(new Epetra_Vector(*veln_));
-  velConv->Update(1.0,*veln_,0.0);
 
   //Apply modified convection velocity if required
   if (DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")>0.0)
-    velConv->Update(dthalf,*(*accmod_)(0),1.0);
+  {
+    //\tilde{v}_{n+1/2}=v_{n+1/2}+dt/2*\tilde{a}_{n-1/2}, with \tilde{a}_{n-1/2}=*(*accmod_)(0), \tilde{v}_{n+1/2}=velmodn_
+    velmodn_->Update(1.0, *veln_, 0.0);
+    velmodn_->Update(dthalf,*(*accmod_)(0),1.0);
 
-  //r_{n+1}=r_{n}+dt*\tilde{v}_{n+1/2}=r_{n}+dt*\tilde{v}_{n+1/2}, with \tilde{v}_{n+1/2}=velConv
-  disn_->Update(dt, *velConv, 1.0);
+    //r_{n+1}=r_{n}+dt*\tilde{v}_{n+1/2}, with \tilde{v}_{n+1/2}=velmodn_
+    disn_->Update(dt, *velmodn_, 1.0);
+  }
+  else
+  {
+    //r_{n+1}=r_{n}+dt*v_{n+1/2}, with v_{n+1/2}=veln_
+    disn_->Update(dt, *veln_, 1.0);
+  }
 
   //Apply Dirichlet BCs
   //(Accelerations accn_ at Dirichlet DoFs are required for boundary particles due to pressure averaging as suggested in Adami2012)
@@ -130,14 +136,14 @@ int PARTICLE::TimIntKickDrift::IntegrateStep()
   ApplyDirichletBC(timen_-dthalf, Teuchos::null, veln_, Teuchos::null, false);
 
   if (DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")>0.0)
-    ApplyDirichletBC(timen_-dthalf, Teuchos::null, velConv, Teuchos::null, false);
+    ApplyDirichletBC(timen_-dthalf, Teuchos::null, velmodn_, Teuchos::null, false);
 
   //Transfer particles and heat sources into their correct bins
   particle_algorithm_->UpdateConnectivity();
 
   //Determine density as well as physical and modified accelerations a_{n+1/2}=a(r_{n+1},v_{n+1/2})
   //and \tilde{a}_{n+1/2}=\tilde{a}(r_{n+1},v_{n+1/2}) based on r_{n+1} and v_{n+1/2} as well as external forces at t_{n+1}
-  DetermineMeshfreeDensAndAcc(accn_,accmodn_,velConv,timen_);
+  DetermineMeshfreeDensAndAcc(accn_,accmodn_,velmodn_,timen_);
 
   //Update of end-velocities v_{n+1}=v_{n+1/2}+dt/2*a_{n+1/2}
   veln_->Update(dthalf, *accn_, 1.0);

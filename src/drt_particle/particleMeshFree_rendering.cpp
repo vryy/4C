@@ -44,6 +44,7 @@ PARTICLE::Rendering::Rendering(
     weightFunctionHandler_(weightFunctionHandler),
     vel_(Teuchos::null),
     acc_(Teuchos::null),
+    velmod_(Teuchos::null),
     density_(Teuchos::null),
     specEnthalpy_(Teuchos::null),
     temperature_(Teuchos::null),
@@ -61,8 +62,14 @@ PARTICLE::Rendering::Rendering(
   renderingBdryParticle_ = DRT::INPUT::IntegralValue<INPAR::PARTICLE::RenderingBdryPart>(particle_params,"RENDERING_BDRYPARTICLE");
   avrgRendering_ = particle_params.get<int>("AVRG_REND_STEPS");
 
+  if ( avrgRendering_ < 1 or  particle_params.get<int>("RESEVRYREND") < 1 )
+    dserror("RESEVRYREND and AVRG_REND_STEPS have to be integer >=1!");
+
   if ( avrgRendering_ > particle_params.get<int>("RESEVRYREND") )
     dserror("Averaging of rendering results just possible over a maximum of RESEVRYREND steps!");
+
+  if ( particle_params.get<int>("RESEVRYREND") % avrgRendering_ != 0 )
+    dserror("AVRG_REND_STEPS has to be a divisor of RESEVRYREND (RESEVRYREND modulo AVRG_REND_STEPS = 0)!!!");
 
   // get rendering discretization
   discret_ = problem->GetDis("rendering");
@@ -102,6 +109,7 @@ PARTICLE::Rendering::Rendering(
   // initialize the dof-based rendering vectors
   vel_ = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(), true));
   acc_ = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(), true));
+  velmod_ = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(), true));
 
   // initialize the node-based rendering vectors
   density_ = Teuchos::rcp(new Epetra_Vector(*discret_->NodeRowMap(), true));
@@ -165,6 +173,7 @@ void PARTICLE::Rendering::UpdateRenderingVectors(
     Teuchos::RCP<const Epetra_Vector> pDis,
     Teuchos::RCP<const Epetra_Vector> pVel,
     Teuchos::RCP<const Epetra_Vector> pAcc,
+    Teuchos::RCP<const Epetra_Vector> pVelMod,
     Teuchos::RCP<const Epetra_Vector> pDensity,
     Teuchos::RCP<const Epetra_Vector> pSpecEnthalpy,
     Teuchos::RCP<const Epetra_Vector> pTemperature,
@@ -177,6 +186,7 @@ void PARTICLE::Rendering::UpdateRenderingVectors(
   // create the dof-based rendering vectors
   Teuchos::RCP<Epetra_FEVector> vel = Teuchos::rcp(new Epetra_FEVector(*discret_->DofRowMap(), true));
   Teuchos::RCP<Epetra_FEVector> acc = Teuchos::rcp(new Epetra_FEVector(*discret_->DofRowMap(), true));
+  Teuchos::RCP<Epetra_FEVector> velmod = Teuchos::rcp(new Epetra_FEVector(*discret_->DofRowMap(), true));
 
   // create the node-based rendering vectors
   Teuchos::RCP<Epetra_FEVector> density = Teuchos::rcp(new Epetra_FEVector(*discret_->NodeRowMap(), true));
@@ -246,11 +256,15 @@ void PARTICLE::Rendering::UpdateRenderingVectors(
       LINALG::Matrix<3,1> dis_i(true);
       LINALG::Matrix<3,1> vel_i(true);
       LINALG::Matrix<3,1> acc_i(true);
+      LINALG::Matrix<3,1> velmod_i(true);
       for (int dim=0;dim<3;++dim)
       {
         dis_i(dim) = (*pDis)[3*lidRowNode_i + dim];
         vel_i(dim) = (*pVel)[3*lidRowNode_i + dim];
         acc_i(dim) = (*pAcc)[3*lidRowNode_i + dim];
+
+        if ( pVelMod!=Teuchos::null )
+          velmod_i(dim) = (*pVelMod)[3*lidRowNode_i + dim];
       }
 
       const double mass_i = (*pMass)[lidRowNode_i];
@@ -286,9 +300,6 @@ void PARTICLE::Rendering::UpdateRenderingVectors(
         if (rRelNorm2 > radius_i)
           continue;
 
-        // rendering currently via Monaghan 2005, equation (2.8)
-        // using the same kernel as in the simulation
-
         // determine weight function
         const double weight_ik = weightFunctionHandler_->W(rRelNorm2, radius_i);
         const double massOverDensityWeight_ik = massOverDensity_i*weight_ik;
@@ -298,6 +309,10 @@ void PARTICLE::Rendering::UpdateRenderingVectors(
         LINALG::Matrix<3,1> acc_ik(acc_i);
         vel_ik.Scale(massOverDensityWeight_ik);
         acc_ik.Scale(massOverDensityWeight_ik);
+
+        LINALG::Matrix<3,1> velmod_ik(velmod_i);
+        if ( pVelMod!=Teuchos::null )
+          velmod_ik.Scale(massOverDensityWeight_ik);
 
         double density_ik = density_i * massOverDensityWeight_ik; // = mass_i * weight_ik;
         double specEnthalpy_ik = specEnthalpy_i * massOverDensityWeight_ik;
@@ -316,6 +331,9 @@ void PARTICLE::Rendering::UpdateRenderingVectors(
         vel->SumIntoGlobalValues(3, &lmRdgNode_k[0], &vel_ik(0));
         acc->SumIntoGlobalValues(3, &lmRdgNode_k[0], &acc_ik(0));
 
+        if ( pVelMod!=Teuchos::null )
+          velmod->SumIntoGlobalValues(3, &lmRdgNode_k[0], &velmod_ik(0));
+
         density->SumIntoGlobalValues(1, &gidRdgNode_k, &density_ik);
         specEnthalpy->SumIntoGlobalValues(1, &gidRdgNode_k, &specEnthalpy_ik);
         temperature->SumIntoGlobalValues(1, &gidRdgNode_k, &temperature_ik);
@@ -332,17 +350,24 @@ void PARTICLE::Rendering::UpdateRenderingVectors(
 
   // assemble rendering vectors
   int err = 0;
+
   err += vel->GlobalAssemble(Add, true);
   err += acc->GlobalAssemble(Add, true);
+
+  if ( pVelMod!=Teuchos::null )
+    err += velmod->GlobalAssemble(Add, true);
+
   err += density->GlobalAssemble(Add, true);
   err += specEnthalpy->GlobalAssemble(Add, true);
   err += temperature->GlobalAssemble(Add, true);
   err += pressure->GlobalAssemble(Add, true);
+
   if (renderingType_ == INPAR::PARTICLE::NormalizedRendering)
   {
     err += sumkWikDof->GlobalAssemble(Add, true);
     err += sumkWikNode->GlobalAssemble(Add, true);
   }
+
   if (err!=0)
     dserror("global assemble of rendering vectors failed!");
 
@@ -355,6 +380,9 @@ void PARTICLE::Rendering::UpdateRenderingVectors(
     vel->Multiply(1.0, *sumkWikDof, *vel, 0.0);
     acc->Multiply(1.0, *sumkWikDof, *acc, 0.0);
 
+    if ( pVelMod!=Teuchos::null )
+      velmod->Multiply(1.0, *sumkWikDof, *velmod, 0.0);
+
     density->Multiply(1.0, *sumkWikNode, *density, 0.0);
     specEnthalpy->Multiply(1.0, *sumkWikNode, *specEnthalpy, 0.0);
     temperature->Multiply(1.0, *sumkWikNode, *temperature, 0.0);
@@ -364,6 +392,9 @@ void PARTICLE::Rendering::UpdateRenderingVectors(
   // average rendering vectors over time steps
   vel_->Update(1.0/avrgRendering_, *vel, 1.0);
   acc_->Update(1.0/avrgRendering_, *acc, 1.0);
+
+  if ( pVelMod!=Teuchos::null )
+    velmod_->Update(1.0/avrgRendering_, *velmod, 1.0);
 
   density_->Update(1.0/avrgRendering_, *density, 1.0);
   specEnthalpy_->Update(1.0/avrgRendering_, *specEnthalpy, 1.0);
@@ -418,6 +449,7 @@ void PARTICLE::Rendering::OutputState()
     // write dof-based vectors
     output->WriteVector("velocity", vel_, IO::dofvector);
     output->WriteVector("acceleration", acc_, IO::dofvector);
+    output->WriteVector("modified_velocity", velmod_, IO::dofvector);
 
     // write node-based vectors
     output->WriteVector("density", density_, IO::nodevector);
@@ -440,6 +472,11 @@ void PARTICLE::Rendering::OutputState()
     std::ostringstream filename_acc;
     filename_acc << outname << "_rendering_acceleration_t" << time << ".m";
     LINALG::PrintVectorInMatlabFormat(filename_acc.str(), *acc_);
+
+    // modified velocity
+    std::ostringstream filename_velmod;
+    filename_velmod << outname << "_rendering_modified_velocity_t" << time << ".m";
+    LINALG::PrintVectorInMatlabFormat(filename_velmod.str(), *velmod_);
 
     // density
     std::ostringstream filename_dens;
@@ -473,6 +510,7 @@ void PARTICLE::Rendering::ClearState()
   // clear dof-based vectors
   vel_->Scale(0.0);
   acc_->Scale(0.0);
+  velmod_->Scale(0.0);
 
   // clear node-based vectors
   density_->Scale(0.0);

@@ -68,6 +68,8 @@ private:
 
   Teuchos::RCP<const Epetra_Vector> acc_; //! rendering acceleration
 
+  Teuchos::RCP<const Epetra_Vector> velmod_; //! rendering modified velocity
+
   Teuchos::RCP<const Epetra_Vector> density_; //! rendering density
 
   Teuchos::RCP<const Epetra_Vector> specEnthalpy_; //! rendering specific enthalpy
