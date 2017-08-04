@@ -38,6 +38,8 @@ MAX_VELOCITY                    1.0
 NORMAL_STIFF_WALL               98646.0
 COEFF_RESTITUTION               0.8
 COEFF_RESTITUTION_WALL          0.8
+YOUNG_WALL                      210.0e9
+NUE_WALL                        0.3
 RADIUS_DISTRIBUTION             LogNormal
 RADIUS_DISTRIBUTION_SIGMA       0.4
 --------------------------------------------------------------------SOLVER 1

@@ -136,11 +136,14 @@ protected:
   //! particle force increment of the outer loop
   Teuchos::RCP<Epetra_Vector> forceincnp_;
 
+  //! maximum iteration steps
+  int itmax_;
+
   //! convergence tolerance
   double ittol_;
 
-  //! maximum iteration steps
-  int itmax_;
+  //! ignore convergence check and proceed simulation
+  bool ignoreconvcheck_;
 
   //! write restart every n steps
   int writerestartevery_;

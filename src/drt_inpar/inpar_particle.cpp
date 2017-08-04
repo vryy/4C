@@ -49,17 +49,6 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                 ),
                                 &particledyn);
 
-   setStringToIntegralParameter<int>("TIMESTEPTYPE","Auto_CFL",
-                                "type of time step choice",
-                                tuple<std::string>(
-                                  "Manual",
-                                  "Auto_CFL"),
-                                tuple<int>(
-                                  INPAR::PARTICLE::Manual,
-                                  INPAR::PARTICLE::Auto_CFL
-                                ),
-                                &particledyn);
-
    // Output type
    IntParameter("RESULTSEVRY",1,"save displacements and contact forces every RESULTSEVRY steps",&particledyn);
    IntParameter("RESEVRYERGY",0,"write system energies every requested step",&particledyn);
@@ -223,6 +212,8 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    DoubleParameter("NORMAL_DAMP_WALL",-1.0,"damping coefficient for normal contact force (wall)",&particledyn);
    DoubleParameter("TANG_DAMP",-1.0,"damping coefficient for tangential contact force",&particledyn);
    DoubleParameter("TANG_DAMP_WALL",-1.0,"damping coefficient for tangential contact force (wall)",&particledyn);
+   DoubleParameter("YOUNG_WALL",-1.0,"Young's modulus of wall",&particledyn);
+   DoubleParameter("NUE_WALL",-1.0,"Possion's ratio of wall",&particledyn);
    BoolParameter("TENSION_CUTOFF","no","switch on/off tension cutoff",&particledyn);
    BoolParameter("MOVING_WALLS","no","switch on/off moving walls",&particledyn);
    IntParameter("TRANSFER_EVERY",1,"transfer particles every TRANSFER_EVERY steps",&particledyn);

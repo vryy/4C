@@ -36,6 +36,8 @@ FRICT_COEFF                     0.2
 FRICT_COEFF_WALL                0.2
 COEFF_RESTITUTION               0.8
 COEFF_RESTITUTION_WALL          0.8
+YOUNG_WALL                      120.0
+NUE_WALL                        0.3
 MOVING_WALLS                    Yes
 ----------------------------------------------------------------PASI DYNAMIC
 RESULTSEVRY                     1
@@ -90,7 +92,6 @@ E 1 - 1
 MAT 1 MAT_Membrane_ElastHyper NUMMAT 1 MATIDS 11 DENS 1.0
 MAT 11 ELAST_IsoNeoHooke MUE 40
 MAT 2 MAT_Particle DENSITY 1.0 INITRADIUS 0.5 NUE 0.3 YOUNG 120.0
-MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 120.0e0 NUE 0.3 DENS 1.0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    1 DNODE 1
 NODE    2 DNODE 1

@@ -46,6 +46,8 @@ RADIUS_CHANGE_FUNCT             1
 REL_PENETRATION                 0.01
 REL_PENETRATION_WALL            0.01
 MAX_VELOCITY                    0.1
+YOUNG_WALL                      210.0e9
+NUE_WALL                        0.3
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 --------------------------------------------------------------------SOLVER 1

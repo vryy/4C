@@ -101,14 +101,13 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
   nue_ = particleMat->poissonRatio_;
   young_ = particleMat->youngModulus_;
 
-  // extract input parameters
-  const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
-
   if(particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::None)
   {
     // safety checks for particle-particle contact
     if(r_min_<0.0 or r_max_<0.0 or v_max_<0.0 or young_<0.0)
       dserror("Invalid input parameter (MIN_RADIUS, MAX_RADIUS, MAX_VELOCITY, YOUNG's modulus have to be larger than zero)");
+    if(nue_<=-1.0 or nue_>0.5)
+      dserror("Invalid input parameter (NUE has to be in the range ]-1.0;0.5])");
     if(not((c_ <= 0. and k_normal_ > 0.) or (c_ > 0. and v_max_ > 0. and k_normal_ <= 0.)))
       dserror("For particle-particle contact, you must correctly specify either the relative penetration (along with the maximum velocity), or the normal stiffness, but neither both nor none of them!");
     if(r_min_>r_max_)
@@ -142,14 +141,13 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
       if(e_wall_<0.0 and (normal_contact_ == INPAR::PARTICLE::LinSpringDamp or particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::Normal_MD))
         dserror("Invalid input parameter COEFF_RESTITUTION_WALL for this kind of contact law!");
 
-      // wall material properties are always taken from the first available St. Venant Kirchhoff material
-      int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_stvenant);
-      if (id==-1)
-        dserror("Could not find wall material which is assumed to be the first St. Venant Kirchhoff material");
-      Teuchos::RCP<MAT::StVenantKirchhoff> wallmat = Teuchos::rcp_dynamic_cast<MAT::StVenantKirchhoff>(MAT::Material::Factory(id));
+      // wall material properties: young's modulus, poisson's ratio and shear modulus
+      const double young_wall = particledynparams.get<double>("YOUNG_WALL");
+      const double nue_wall = particledynparams.get<double>("NUE_WALL");
+      if ( young_wall<0.0 or nue_wall<=-1.0 or nue_wall>0.5 )
+        dserror("Invalid input parameter (YOUNG_WALL has to be larger than zero, NUE_WALL has to be in the range ]-1.0;0.5])");
+      const double G_wall = 0.5*young_wall/(1.0+nue_wall);
 
-      const double G_wall = wallmat->ShearMod();
-      const double nue_wall = wallmat->PoissonRatio();
       if(G_wall<0.0)
         dserror("Wall shear modulus has to be larger than zero");
 
@@ -223,12 +221,12 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
 
     if(normal_contact_ == INPAR::PARTICLE::LinSpringDamp)
     {
-      double user_normal_damping = particleparams.get<double>("NORMAL_DAMP");
+      double user_normal_damping = particledynparams.get<double>("NORMAL_DAMP");
       if(user_normal_damping >= 0.0)
       {
         dserror("Invalid input parameter NORMAL_DAMP for this kind of contact law");
       }
-      double user_tang_damping = particleparams.get<double>("TANG_DAMP");
+      double user_tang_damping = particledynparams.get<double>("TANG_DAMP");
       if(user_tang_damping >= 0.0)
       {
         dserror("Invalid input parameter TANG_DAMP for this kind of contact law");
@@ -238,7 +236,7 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
     if(normal_contact_ == INPAR::PARTICLE::LeeHerrmann || normal_contact_ == INPAR::PARTICLE::KuwabaraKono ||
         normal_contact_ == INPAR::PARTICLE::Tsuji)
     {
-      double user_normal_damping = particleparams.get<double>("NORMAL_DAMP");
+      double user_normal_damping = particledynparams.get<double>("NORMAL_DAMP");
       if(user_normal_damping >= 0.0)
       {
         // user has to specify normal damping coefficient
@@ -248,7 +246,7 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
       {
         dserror("For this kind of contact law the input parameter NORMAL_DAMP is invalid");
       }
-      double user_tang_damping = particleparams.get<double>("TANG_DAMP");
+      double user_tang_damping = particledynparams.get<double>("TANG_DAMP");
       if(user_tang_damping >= 0.0)
       {
         // user has to specify tangential damping coefficient
@@ -268,12 +266,12 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
 
       if(normal_contact_ == INPAR::PARTICLE::LinSpringDamp)
       {
-        double user_normal_damping = particleparams.get<double>("NORMAL_DAMP_WALL");
+        double user_normal_damping = particledynparams.get<double>("NORMAL_DAMP_WALL");
         if(user_normal_damping >= 0.0)
         {
           dserror("Invalid input parameter NORMAL_DAMP_WALL for this kind of contact law");
         }
-        double user_tang_damping = particleparams.get<double>("TANG_DAMP_WALL");
+        double user_tang_damping = particledynparams.get<double>("TANG_DAMP_WALL");
         if(user_tang_damping >= 0.0)
         {
           dserror("Invalid input parameter TANG_DAMP_WALL for this kind of contact law");
@@ -283,7 +281,7 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
       if(normal_contact_ == INPAR::PARTICLE::LeeHerrmann || normal_contact_ == INPAR::PARTICLE::KuwabaraKono ||
           normal_contact_ == INPAR::PARTICLE::Tsuji)
       {
-        double user_normal_damping = particleparams.get<double>("NORMAL_DAMP_WALL");
+        double user_normal_damping = particledynparams.get<double>("NORMAL_DAMP_WALL");
         if(user_normal_damping >= 0.0)
         {
           // user has to specify normal damping coefficient
@@ -293,7 +291,7 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
         {
           dserror("For this kind of contact law the input parameter NORMAL_DAMP_WALL is invalid");
         }
-        double user_tang_damping = particleparams.get<double>("TANG_DAMP_WALL");
+        double user_tang_damping = particledynparams.get<double>("TANG_DAMP_WALL");
         if(user_tang_damping >= 0.0)
         {
           // user has to specify tangential damping coefficient
@@ -320,7 +318,7 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
     // calculate critical time step for DEM like contact
     dt_krit_ = safety * factor * sqrt( mass_min / k_tkrit );
 
-    double dt = particleparams.get<double>("TIMESTEP");
+    double dt = particledynparams.get<double>("TIMESTEP");
     if(dt>dt_krit_ and myrank_==0)
     {
       std::cout << "\n\nW A R N I N G : time step larger than critical time step!" << std::endl;
@@ -1074,7 +1072,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
   // evaluate contact between particle_i and entries of surfaces
   std::map<int, PARTICLE::Collision>& history_wall = static_cast<PARTICLE::ParticleNode*>(particle_i)->Get_history_wall();
   if(history_wall.size() > 3)
-    dserror("Contact with more than 3 wall elements. Check whether history is deleted correctly.");
+    std::cout << "ATTENTION: Contact of particle " << particle_i->Id() << " with " << history_wall.size() << " wall elements." << std::endl;
 
   for(size_t s=0; s<surfaces.size(); ++s)
   {

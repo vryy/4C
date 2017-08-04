@@ -150,13 +150,6 @@ namespace INPAR
       NoBdryParticle
     };
 
-    /// time step choice
-    enum TimeStepType
-    {
-      Manual,      /// dt is the prescribed time step
-      Auto_CFL     /// Replace the prescribed dt with the  CFL condition if it is more strict. Courant-Friedrich-Levy condition: dt = 0.49 * radius_min / str::abs(vel_max)
-    };
-
     enum MidAverageEnum
     {
       midavg_vague,

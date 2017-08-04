@@ -72,6 +72,9 @@ void INPAR::PASI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   // convergence tolerance of outer iteration loop
   DoubleParameter("CONVTOL",1e-6,"tolerance for convergence check of outer iteration within partitioned PASI",&pasidynpart);
 
+  // ignore convergence check and proceed simulation
+  BoolParameter("IGNORE_CONV_CHECK","no","ignore convergence check and proceed simulation",&pasidynpart);
+
   // parameters for relaxation of partitioned PASI
   DoubleParameter("STARTOMEGA",1.0,"fixed relaxation parameter",&pasidynpart);
   DoubleParameter("MAXOMEGA",10.0,"largest omega allowed for Aitken relaxation",&pasidynpart);

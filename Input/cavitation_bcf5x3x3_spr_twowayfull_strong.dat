@@ -47,6 +47,8 @@ MAX_VELOCITY                    5.0
 COEFF_RESTITUTION               0.33
 COEFF_RESTITUTION_WALL          0.25
 TENSION_CUTOFF                  Yes
+YOUNG_WALL                      210.0e9
+NUE_WALL                        0.3
 MOVING_WALLS                    No
 RANDOM_AMPLITUDE                0.0
 ----------------------------------------------------------CAVITATION DYNAMIC
@@ -133,7 +135,6 @@ SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_cavitation DYNVISCOSITY 3.73 DENSITY 0.970 GAMMA 0.0 PVAPOR 0.0
 MAT 2 MAT_Particle DENSITY 1.120 INITRADIUS 0.75 NUE 0.0 YOUNG 1.0
-MAT 3 MAT_Struct_StVenantKirchhoff   YOUNG 210.0E9 NUE 0.3 DENS 7.8E3
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 0.0
 COMPONENT 1 FUNCTION 0.0

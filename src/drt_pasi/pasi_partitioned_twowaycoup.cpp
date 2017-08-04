@@ -45,8 +45,9 @@ PASI::PASI_PartTwoWayCoup::PASI_PartTwoWayCoup(
     forcenp_(Teuchos::null),
     dispincnp_(Teuchos::null),
     forceincnp_(Teuchos::null),
-    ittol_(-1.0),
     itmax_(-1),
+    ittol_(-1.0),
+    ignoreconvcheck_(false),
     writerestartevery_(-1)
 {
 
@@ -78,6 +79,7 @@ void PASI::PASI_PartTwoWayCoup::Init(
   // get the parameters for the ConvergenceCheck
   itmax_ = pasi_params.get<int>("ITEMAX");
   ittol_ = pasi_params_part.get<double>("CONVTOL");
+  ignoreconvcheck_ = (bool)DRT::INPUT::IntegralValue<int>(pasi_params_part,"IGNORE_CONV_CHECK");
 
   // write restart every n steps
   writerestartevery_ = pasi_params.get<int>("RESTARTEVRY");
@@ -176,9 +178,9 @@ void PASI::PASI_PartTwoWayCoup::Outerloop()
 
   if (Comm().MyPID() == 0)
   {
-    std::cout << "======================================================================" << std::endl;
-    std::cout << "                ITERATION LOOP BETWEEN COUPLED FIELDS                 " << std::endl;
-    std::cout << "======================================================================" << std::endl;
+    printf("+-------------------------------------------------------------------------------------------------------+\n");
+    printf("|  ITERATION LOOP BETWEEN COUPLED FIELDS                                                                |\n");
+    printf("+-------------------------------------------------------------------------------------------------------+\n");
   }
 
   while (stopnonliniter == false)
@@ -370,57 +372,61 @@ bool PASI::PASI_PartTwoWayCoup::ConvergenceCheck(
   if (dispnorm_L2 < 1e-6) dispnorm_L2 = 1.0;
   if (forcenorm_L2 < 1e-6) forcenorm_L2 = 1.0;
 
-  // length scaled square norm of the displacement increment
-  double disp_inc = dispincnorm_L2/sqrt(dispincnp_->GlobalLength());
-
-  // relative displacement increment
+  // absolute and relative displacement increment
+  double abs_disp_inc = dispincnorm_L2;
   double rel_disp_inc = dispincnorm_L2/dispnorm_L2;
 
-  // length scaled square norm of the force increment
-  double force_inc = forceincnorm_L2/sqrt(forceincnp_->GlobalLength());
-
-  // relative force increment
+  // absolute and relative force increment
+  double abs_force_inc = forceincnorm_L2;
   double rel_force_inc = forceincnorm_L2/forcenorm_L2;
 
   // print the incremental based convergence check to the screen
   if (Comm().MyPID()==0 )
   {
-    std::cout << "======================================================================" << std::endl;
-    std::cout << "  ITERATION STEP" << std::endl;
-    std::cout << "======================================================================" << std::endl;
-    printf("+--------------+---------------------+----------------+------------------+----------------+------------------+\n");
-    printf("|-  step/max  -|-  tol      [norm]  -|-  disp-inc    -|-  disp-rel-inc  -|-  force-inc   -|-  force-rel-inc -|\n");
-    printf("|    %3d/%3d   |  %10.3E[L_2 ]   |  %10.3E    |  %10.3E      |  %10.3E    |  %10.3E      |",
-        itnum, itmax_, ittol_, disp_inc, rel_disp_inc, force_inc, rel_force_inc);
+    printf("+------------+--------------------+----------------+----------------+-----------------+-----------------+\n");
+    printf("|- step/max -|- tol       [norm] -|- abs-disp-inc -|- rel-disp-inc -|- abs-force-inc -|- rel-force-inc -|\n");
+    printf("|   %3d/%3d  | %10.3E [L_2 ]  |    %10.3E  |    %10.3E  |     %10.3E  |     %10.3E  |",
+        itnum, itmax_, ittol_, abs_disp_inc, rel_disp_inc, abs_force_inc, rel_force_inc);
     printf("\n");
-    printf("+--------------+---------------------+----------------+------------------+----------------+------------------+\n");
+    printf("+------------+--------------------+----------------+----------------+-----------------+-----------------+\n");
   }
 
   // converged
-  if ( disp_inc <= ittol_ and rel_disp_inc <= ittol_ and force_inc <= ittol_ and rel_force_inc <= ittol_ )
+  if ( abs_disp_inc <= ittol_ and rel_disp_inc <= ittol_ and abs_force_inc <= ittol_ and rel_force_inc <= ittol_ )
   {
     stopnonliniter = true;
 
-    if (Comm().MyPID()==0 )
+    if ( Comm().MyPID()==0 )
     {
-      printf("|  Outer Iteration loop converged after iteration %3d/%3d !                                                  |\n", itnum,itmax_);
-      printf("+--------------+---------------------+----------------+------------------+----------------+------------------+\n");
+      printf("|  Outer Iteration loop converged after iteration %3d/%3d !                                             |\n", itnum,itmax_);
+      printf("+-------------------------------------------------------------------------------------------------------+\n");
     }
   }
 
   // stop if itemax is reached without convergence
-  if ( (itnum == itmax_) and ( disp_inc > ittol_ or rel_disp_inc > ittol_ or force_inc > ittol_ or rel_force_inc > ittol_ ) )
+  if ( ( itnum == itmax_ ) and ( abs_disp_inc > ittol_ or rel_disp_inc > ittol_ or abs_force_inc > ittol_ or rel_force_inc > ittol_ ) )
   {
     stopnonliniter = true;
 
-    if ((Comm().MyPID()==0) )
+    // ignore convergence check and proceed simulation
+    if ( ignoreconvcheck_ )
     {
-      printf("|     >>>>>> not converged in itemax steps!                                                                  |\n");
-      printf("+--------------+---------------------+----------------+------------------+----------------+------------------+\n");
-      printf("\n");
-      printf("\n");
+      if ( Comm().MyPID()==0 )
+      {
+        printf("|  ATTENTION: Outer Iteration loop not converged in itemax steps!                                       |\n");
+        printf("+-------------------------------------------------------------------------------------------------------+\n");
+      }
     }
-    dserror("The partitioned PASI solver did not converge in ITEMAX steps!");
+    // abort the simulation
+    else
+    {
+      if ( Comm().MyPID()==0 )
+      {
+        printf("|  STOP: Outer Iteration loop not converged in itemax steps!                                            |\n");
+        printf("+-------------------------------------------------------------------------------------------------------+\n");
+      }
+      dserror("The partitioned PASI solver did not converge in ITEMAX steps!");
+    }
   }
 
   return stopnonliniter;
@@ -506,9 +512,9 @@ void PASI::PASI_PartTwoWayCoup_ForceRelax::Outerloop()
 
   if (Comm().MyPID() == 0)
   {
-    std::cout << "======================================================================" << std::endl;
-    std::cout << "      ITERATION LOOP BETWEEN COUPLED FIELDS WITH RELAXED FORCES       " << std::endl;
-    std::cout << "======================================================================" << std::endl;
+    printf("+-------------------------------------------------------------------------------------------------------+\n");
+    printf("|  ITERATION LOOP BETWEEN COUPLED FIELDS WITH RELAXED FORCES                                            |\n");
+    printf("+-------------------------------------------------------------------------------------------------------+\n");
   }
 
   // init the relaxed input

@@ -39,6 +39,8 @@ MAX_RADIUS                      0.12
 REL_PENETRATION                 0.05
 REL_PENETRATION_WALL            0.05
 MAX_VELOCITY                    1.0
+YOUNG_WALL                      210.0e9
+NUE_WALL                        0.3
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 --------------------------------------------------------------------SOLVER 1
