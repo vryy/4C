@@ -664,7 +664,7 @@ void UTILS::Cardiovascular0DManager::PrintPresFlux(bool init) const
     {
       if (cardvasc0d_4elementwindkessel_->HaveCardiovascular0D())
       {
-        printf("Cardiovascular0D output id%2d:\n",currentID_[3*i]);
+        printf("Cardiovascular0D output id%2d:\n",currentID_[i]);
         printf("%2d p: %10.16e \n",currentID_[i],(*cv0ddof_m_red)[3*i]);
         printf("%2d V: %10.16e \n",currentID_[i],(*v_m_red)[3*i]);
       }
