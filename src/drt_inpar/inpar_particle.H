@@ -115,6 +115,7 @@ namespace INPAR
     {
       StandardGhosting,
       BdryParticleGhosting,
+      WallElementGhosting,
       AddLayerGhosting
     };
 

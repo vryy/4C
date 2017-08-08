@@ -740,10 +740,7 @@ void CAVITATION::Algorithm::ResetParticleData()
     BinStrategy()->BinDiscret()->ExtendedGhosting(*BinColMap(),true,false,true,false);
 
     // reconstruct element -> bin pointers for fixed particle wall elements and fluid elements
-    bool rebuildwallpointer = true;
-    if(moving_walls_)
-      rebuildwallpointer = false;
-    BuildElementToBinPointers(rebuildwallpointer);
+    BuildElementToBinPointers(not moving_walls_);
 
     // state vectors are updated to the old layout
     particles_->UpdateStatesAfterParticleTransfer();
@@ -848,9 +845,11 @@ void CAVITATION::Algorithm::InitCavitation()
     if( fluiddis_->ElementColMap()->MyGID(fluidelecolmapold->GID(i)) == false)
       dserror("extended ghosting does not include standard ghosting");
 
-  // assign wall elements based on the fluid discretization to bins initially once
+  // construct particle wall discretization based on fluid discretization
   SetupParticleWalls(fluiddis_,"BELE3_4");
-  AssignWallElesToBins();
+  // assign wall elements to bins initially once
+  RelateWallGidsToBinIds();
+  AssignWallElesAndGidsToBins();
 
   // read out bubble inflow condition and set bubble inflows in corresponding row bins
   BuildBubbleInflowCondition();

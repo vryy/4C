@@ -159,11 +159,13 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                   tuple<std::string>(
                                     "StandardGhosting",
                                     "BdryParticleGhosting",
+                                    "WallElementGhosting",
                                     "AddLayerGhosting"
                                     ),
                                   tuple<int>(
                                     INPAR::PARTICLE::StandardGhosting,
                                     INPAR::PARTICLE::BdryParticleGhosting,
+                                    INPAR::PARTICLE::WallElementGhosting,
                                     INPAR::PARTICLE::AddLayerGhosting
                                     ),
                                   &particledyn);

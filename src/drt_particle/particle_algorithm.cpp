@@ -297,10 +297,7 @@ void PARTICLE::Algorithm::Init(bool restarted)
   else
   {
     // reconstruct element -> bin pointers for fixed particle wall elements and fluid elements
-    bool rebuildwallpointer = true;
-    if(moving_walls_)
-      rebuildwallpointer = false;
-    BuildElementToBinPointers(rebuildwallpointer);
+    BuildElementToBinPointers(not moving_walls_);
   }
 
   // some output
@@ -334,6 +331,30 @@ void PARTICLE::Algorithm::BuildElementToBinPointers(bool wallpointer)
         wallelements[iwall] = particlewalldis_->gElement(wallid);
       }
       actbin->BuildElePointers(bin_wallcontent_,&wallelements[0]);
+    }
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | assign wall elements and gids to bins                   sfuchs 08/17 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::AssignWallElesAndGidsToBins()
+{
+  // loop over wall elements
+  for ( std::map<int, std::set<int> >::iterator eleiter = relwallgidtobinids_.begin(); eleiter!=relwallgidtobinids_.end(); ++eleiter )
+  {
+    // global id of current wall element
+    int wallgid = eleiter->first;
+
+    // bins related to current wall element
+    std::set<int> binIds = eleiter->second;
+
+    // assign wall element to bins
+    for ( std::set<int>::const_iterator biniter = binIds.begin(); biniter != binIds.end(); ++biniter )
+    {
+      if ( BinStrategy()->BinDiscret()->HaveGlobalElement(*biniter) )
+        dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(BinStrategy()->BinDiscret()->gElement(*biniter))->AddAssociatedEle(bin_wallcontent_, wallgid, particlewalldis_->gElement(wallgid));
     }
   }
   return;
@@ -637,10 +658,7 @@ Teuchos::RCP<std::list<int> > PARTICLE::Algorithm::TransferParticles(const bool 
     BinStrategy()->BinDiscret()->FillComplete(true, false, true);
 
   // reconstruct element -> bin pointers for fixed particle wall elements and fluid elements
-  bool rebuildwallpointer = true;
-  if(moving_walls_)
-    rebuildwallpointer = false;
-  BuildElementToBinPointers(rebuildwallpointer);
+  BuildElementToBinPointers(not moving_walls_);
 
   // update state vectors in time integrator to the new layout
   if(updatestates)
@@ -671,6 +689,10 @@ Teuchos::RCP<Epetra_Map> PARTICLE::Algorithm::ExtendedBinColMap()
   // insert bins in the proximity of ghosted boundary particles
   if ( extendedGhosting_ == INPAR::PARTICLE::BdryParticleGhosting )
     BdryParticleGhosting(colbins);
+
+  // insert bins in proximity of ghosted wall elements
+  if ( extendedGhosting_ == INPAR::PARTICLE::WallElementGhosting )
+    WallElementGhosting(colbins);
 
   std::vector<int> colbinsvec(colbins.begin(),colbins.end());
 
@@ -825,6 +847,29 @@ void PARTICLE::Algorithm::BdryParticleGhosting(
 }
 
 /*----------------------------------------------------------------------*
+ | ghosting of bins in proximity of wall elements          sfuchs 08/17 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::WallElementGhosting(
+    std::set<int>& colbins
+    )
+{
+  // insert bins that are touched by a relevant wall element
+  std::map<int, std::set<int> >::const_iterator iter;
+  for( iter = relwallgidtobinids_.begin(); iter != relwallgidtobinids_.end(); ++iter )
+  {
+    std::set<int>::const_iterator biniter;
+    std::vector<int> binvec(27);
+    for( biniter = iter->second.begin(); biniter != iter->second.end(); ++biniter )
+    {
+      binvec.clear();
+      BinStrategy()->GetNeighborAndOwnBinIds( *biniter, binvec );
+      colbins.insert( binvec.begin(), binvec.end() );
+    }
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
  | set wall states                                         sfuchs 02/17 |
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::SetWallStates(
@@ -877,8 +922,11 @@ void PARTICLE::Algorithm::AccessStructure()
     SetupParticleWalls(structdis,"BELE3_3");
 
     // assign wall elements to bins initially once for fixed walls (additionally rebuild pointers after ghosting)
-    if(!moving_walls_)
-      AssignWallElesToBins();
+    if ( not moving_walls_ )
+    {
+      RelateWallGidsToBinIds();
+      AssignWallElesAndGidsToBins();
+    }
   }
 
   // safety check
@@ -1017,10 +1065,13 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> b
 
 
 /*----------------------------------------------------------------------*
- | particle walls are added from the structural discret     ghamm 03/13 |
+ | relate wall gids to bin ids                              ghamm 03/13 |
  *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::AssignWallElesToBins()
+void PARTICLE::Algorithm::RelateWallGidsToBinIds()
 {
+  // clear map relating wall gids to bin ids
+  relwallgidtobinids_.clear();
+
   // remove assigned wall elements
   BinStrategy()->RemoveSpecificElesFromBins(bin_wallcontent_);
 
@@ -1060,6 +1111,7 @@ void PARTICLE::Algorithm::AssignWallElesToBins()
     }
   }
 
+  // circumcircle of bin
   double bincircumcircle = 0.0;
   for(int dim=0; dim<3; ++dim)
   {
@@ -1079,6 +1131,7 @@ void PARTICLE::Algorithm::AssignWallElesToBins()
     DRT::Element* wallele = particlewalldis_->lColElement(lid);
     const int *nodeids = wallele->NodeIds();
     const int numnode = wallele->NumNode();
+
     // variable to store bin ids in which this wall element is located
     std::set<int> binIds;
 
@@ -1107,17 +1160,17 @@ void PARTICLE::Algorithm::AssignWallElesToBins()
       }
 
       // get corresponding bin ids in ijk range and fill them into binIds
-      BinStrategy()->GidsInijkRange(&ijk_range[0], binIds, true);
-    }
+      BinStrategy()->GidsInijkRange(&ijk_range[0], binIds, false);
+    } // do a positive search
 
     // if no bins on this proc were found, next wall element can be processed
-    if(binIds.empty())
+    if ( binIds.empty() )
       continue;
 
     // do a negative search and remove bins that are too far away from the wall element
     {
       std::set<int> binfaraway;
-      for(std::set<int>::const_iterator biniter=binIds.begin(); biniter!=binIds.end(); ++biniter)
+      for ( std::set<int>::const_iterator biniter = binIds.begin(); biniter != binIds.end(); ++biniter )
       {
         const LINALG::Matrix<3,1> bincentroid = BinStrategy()->GetBinCentroid(*biniter);
 
@@ -1169,15 +1222,28 @@ void PARTICLE::Algorithm::AssignWallElesToBins()
             binfaraway.insert(*biniter);
         }
       }
-      for(std::set<int>::const_iterator biniter=binfaraway.begin(); biniter!=binfaraway.end(); ++biniter)
+
+      // erase bins that are far away from a wall element
+      for ( std::set<int>::const_iterator biniter = binfaraway.begin(); biniter != binfaraway.end(); ++biniter )
         binIds.erase(*biniter);
+    } // do a negative search
+
+    // if none of found bins is in BinColMap, next wall element can be processed
+    {
+      bool noBinInBinColMap = true;
+      for ( std::set<int>::const_iterator biniter = binIds.begin(); biniter != binIds.end(); ++biniter )
+        if ( BinColMap()->LID(*biniter) >= 0 )
+        {
+          noBinInBinColMap = false;
+          continue;
+        }
+
+      if ( noBinInBinColMap )
+        continue;
     }
 
-    // assign wall element to remaining bins
-    {
-      for(std::set<int>::const_iterator biniter=binIds.begin(); biniter!=binIds.end(); ++biniter)
-        dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(BinStrategy()->BinDiscret()->gElement(*biniter))->AddAssociatedEle(bin_wallcontent_,wallele->Id(), wallele);
-    }
+    // insert found bins into map relating wall gids to bin ids
+    relwallgidtobinids_[wallele->Id()].insert(binIds.begin(), binIds.end() );
 
   } // end lid
 
@@ -1237,7 +1303,7 @@ void PARTICLE::Algorithm::Output(bool forced_writerestart /*= false*/)
 
   if (writeresultsevery_ and (Step()%writeresultsevery_ == 0))
   {
-    // visualize bins according to specification in input file ( MESHFREE -> WRITEBINS "" )
+    // visualize bins according to specification in input file
     BinStrategy()->WriteBinOutput(Step(), Time());
 
     // write moving walls to file
@@ -1367,16 +1433,17 @@ void PARTICLE::Algorithm::UpdateHeatSourcesConnectivity(bool trg_forceRestart)
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::UpdateConnectivity()
 {
+  // relate wall gids to bins ids
+  if ( moving_walls_ )
+    RelateWallGidsToBinIds();
 
-  if(Step()%transfer_every_ == 0)
-  {
-    // transfer particles into their correct bins
+  // transfer particles into their correct bins
+  if ( Step()%transfer_every_ == 0 )
     TransferParticles(true);
-  }
 
-  // assign wall elements dynamically to bins
-  if(moving_walls_)
-    AssignWallElesToBins();
+  // assign wall elements and gids to bins (after ghosting)
+  if ( moving_walls_ )
+    AssignWallElesAndGidsToBins();
 
   // in case of thermal SPH problems: update heat sources
   UpdateHeatSourcesConnectivity(false);

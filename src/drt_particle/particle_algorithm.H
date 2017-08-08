@@ -224,8 +224,13 @@ namespace PARTICLE
         std::set<int>& colbins
         );
 
-    /// ghosting of bins in proximity of boundary particles
+    /// ghosting of bins in proximity of ghosted boundary particles
     virtual void BdryParticleGhosting(
+        std::set<int>& colbins
+        );
+
+    /// ghosting of bins in proximity of ghosted wall elements
+    virtual void WallElementGhosting(
         std::set<int>& colbins
         );
 
@@ -233,6 +238,9 @@ namespace PARTICLE
     virtual void BuildElementToBinPointers(
       bool wallpointer   ///< bool whether wall element pointer need rebuild
       );
+
+    /// assign wall elements and gids to bins
+    virtual void AssignWallElesAndGidsToBins();
 
     /// rough safety check for proper bin size
     virtual void BinSizeSafetyCheck(const double dt);
@@ -246,8 +254,8 @@ namespace PARTICLE
       const std::string elename
       );
 
-    /// assign wall elements to bins
-    virtual void AssignWallElesToBins();
+    /// relate wall gids to bin ids
+    virtual void RelateWallGidsToBinIds();
 
     /// set up heat sources
     virtual void SetUpHeatSources();
@@ -317,7 +325,9 @@ namespace PARTICLE
 
     BINSTRATEGY::UTILS::BinContentType bin_wallcontent_;
 
-    Teuchos::RCP<Rendering> rendering_; /// handler of the rendering discretization (used for meshFree dynamics)
+    Teuchos::RCP<Rendering> rendering_; ///< handler of the rendering discretization (used for meshFree dynamics)
+
+    std::map<int, std::set<int> > relwallgidtobinids_; ///< map relating wall gids to bin ids
 
     //@}
 
