@@ -750,11 +750,11 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
         ++i )
   {
     std::vector<int> & dofs = i->second;
-    std::vector<int> & duplicatedofs = nodeduplicatedofset[i->first];
     std::vector<int> cleandofs;
     for (unsigned j=0; j<dofs.size(); ++j)
     {
-      if (duplicatedofs[j]==0) cleandofs.push_back(dofs[j]);
+      if ( std::find( localcoldofs.begin(), localcoldofs.end(), dofs[j] ) == localcoldofs.end() )
+        cleandofs.push_back(dofs[j]);
     }
     std::copy( cleandofs.begin(), cleandofs.end(), std::back_inserter( localcoldofs ) );
     std::copy( dofs.begin(), dofs.end(), std::back_inserter( allnodelocalcoldofs ) );

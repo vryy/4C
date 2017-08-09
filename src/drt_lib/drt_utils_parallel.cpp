@@ -102,6 +102,11 @@ void DRT::UTILS::RedistributeDiscretizationsByBinning(
             stdelecolmap,
             stdnodecolmap);
   } // if more than 1 proc
+  else
+  {
+    for ( int i = 0; i < static_cast<int>( vector_of_discretizations.size() ); ++i )
+      vector_of_discretizations[i]->FillComplete();
+  }
   return;
 } // DRT::UTILS::RedistributeDiscretizationsByBinning
 

@@ -41,6 +41,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_condition.H"
+#include "../drt_lib/drt_utils_parallel.H"
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
@@ -181,8 +182,16 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   // Here we read the discretization at the current
   // time step from restart files
   // ---------------------------------------------------------------------------
-  if (not actdis_->Filled() || not actdis_->HaveDofs())
+  if ( actdis_->GetCondition("PointCoupling") != NULL )
+  {
+    std::vector<Teuchos::RCP<DRT::Discretization> > actdis_vec (1, Teuchos::rcp_dynamic_cast<DRT::Discretization>( actdis_, true ));
+    actdis_vec[0]->FillComplete( false, false, false );
+    DRT::UTILS::RedistributeDiscretizationsByBinning( actdis_vec, true );
+  }
+  else if ( not actdis_->Filled() || not actdis_->HaveDofs() )
+  {
     actdis_->FillComplete();
+  }
 
   // ---------------------------------------------------------------------------
   // Setup a model type set by checking

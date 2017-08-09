@@ -789,7 +789,7 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::WeightedPartitioning(
   // nodes, that are owned by a proc, are distributed to the bins of this proc
   std::vector<std::map<int, std::vector<int> > > nodesinbin(discret.size());
   // default weight 10.0
-  double const weight = 10.0;
+  double const weight = 1.0;
   Teuchos::RCP<Epetra_Map> newrowbins =
       WeightedDistributionOfBinsToProcs( discret, dummy2, nodesinbin, weight );
 

@@ -904,9 +904,6 @@ DRT::Condition* XSTR::MultiDiscretizationWrapper::GetCondition(
     break;
   }
 
-  if (cond==NULL)
-    dserror("There is no condition with the given name \"%s\"!",name.c_str());
-
   return cond;
 }
 
