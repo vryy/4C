@@ -679,6 +679,10 @@ namespace STR
       Teuchos::RCP<std::vector<char> > nodedata  //!< restart element data
     );
 
+    //! Set the state of the nox group and the global state data container (implicit only)
+    virtual void SetState(const Teuchos::RCP<Epetra_Vector> & x)
+    { dserror("new structural time integration only..."); }
+
     //! Read and set restart state
     virtual void ReadRestartState();
 

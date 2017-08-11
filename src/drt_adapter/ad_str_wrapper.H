@@ -349,6 +349,10 @@ namespace ADAPTER
     )
     { structure_->SetRestart(step,time,disn,veln,accn,elementdata,nodedata); return; }
 
+    /// set the state of the nox group and the global state data container (implicit only)
+    virtual void SetState(const Teuchos::RCP<Epetra_Vector> & x)
+    { structure_->SetState(x); }
+
     /// set evaluation action
     virtual void SetActionType(const DRT::ELEMENTS::ActionType& action)
     { structure_->SetActionType(action); }

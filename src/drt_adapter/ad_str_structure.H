@@ -411,6 +411,9 @@ namespace ADAPTER {
       Teuchos::RCP<std::vector<char> > nodedata
     ) = 0;
 
+    /// set the state of the nox group and the global state data container (implicit only)
+    virtual void SetState(const Teuchos::RCP<Epetra_Vector> & x) = 0;
+
     /// wrapper for things that should be done before PrepareTimeStep is called
     virtual void PrePredict() = 0;
 
