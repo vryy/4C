@@ -100,7 +100,34 @@ namespace Solver {
     {
       scale_op_identity,       //!< Use the identity matrix (see [2])
       scale_op_cfl_diagonal,   //!< Use a diagonal matrix based on the local Courant-Friedrichs-Lewy (CFL) number (see [1]).
-      scale_op_lumped_mass     //!< Use the lumped mass matrix as diagonal scaling operator (not well tested!)
+      scale_op_lumped_mass,     //!< Use the lumped mass matrix as diagonal scaling operator (not well tested!)
+      scale_op_element_based,
+      scale_op_element_based_constant
+    };
+
+    enum BuildOpType
+    {
+      build_op_everyiter,
+      build_op_everytimestep
+    };
+
+    //! Map build operator type stl_string to enum
+    inline enum BuildOpType String2BuildOpType(const std::string& name)
+    {
+      BuildOpType type = build_op_everyiter;
+      if (boost::iequals(name,"every iter"))
+        type = build_op_everyiter;
+      else if (boost::iequals(name,"every timestep"))
+        type = build_op_everytimestep;
+      else
+      {
+        std::ostringstream msg;
+        msg << "Unknown conversion from STL_STRING to BuildOperatorType enum for "
+            << name << "." << std::endl;
+        throwError("String2BuildOpType",msg.str());
+      }
+
+      return type;
     };
 
     //! Map scaling operator type stl_string to enum
@@ -113,6 +140,8 @@ namespace Solver {
         type = scale_op_cfl_diagonal;
       else if (boost::iequals(name,"lumped mass"))
         type = scale_op_lumped_mass;
+      else if (boost::iequals(name,"element based"))
+        type = scale_op_element_based;
       else
       {
         std::ostringstream msg;
@@ -155,6 +184,9 @@ namespace Solver {
 
     //! Returns the inverse pseudo time step
     const double& getInversePseudoTimeStep() const;
+
+    //! Returns the scaling factor
+    const double& getScalingFactor() const;
 
     //! Returns the scaling operator type
     const enum ScaleOpType& getScalingOperatorType() const;
@@ -272,7 +304,10 @@ namespace Solver {
      *  to modify the right-hand-side directly from the non-linear solver. */
     Teuchos::RCP<NOX::NLN::Abstract::PrePostOperator> prePostGroupPtr_;
 
+    //! Pointer to the scaling Operator (Identity scaling)
     Teuchos::RCP<Epetra_Vector> scalingDiagOpPtr_;
+    //! Pointer to the scaling Operator (Element based scaling)
+    Teuchos::RCP<LINALG::SparseMatrix> scalingMatrixOpPtr_;
 
     //! @name Special pseudo transient continuation parameters
     //@{
@@ -290,6 +325,11 @@ namespace Solver {
     double deltaOld_;
     //! Pseudo-transient time.
     double pseudoTime_;
+    //! Exponent for SER.
+    double SER_alpha_;
+    //! Scaling factor for modified Jacobian, i.e. the scaling operator.
+    double scaleFactor_;
+
     //! solution time derivative used for scaling operator V in pseudo-transient paper.
     Teuchos::RCP<NOX::Abstract::Vector> xDot_;
 
@@ -320,6 +360,9 @@ namespace Solver {
     //! scaling operator type
     enum ScaleOpType scaleOpType_;
 
+    //! scaling operator type
+    enum BuildOpType build_scaling_op_;
+
     //! vector norm type (necessary for the time step control)
     enum NOX::Abstract::Vector::NormType normType_;
 
@@ -343,7 +386,8 @@ namespace PrePostOp {
   public:
     //! constructor
     PseudoTransient(Teuchos::RCP<Epetra_Vector>& scalingDiagOp,
-        const NOX::NLN::Solver::PseudoTransient& ptcsolver);
+            Teuchos::RCP<LINALG::SparseMatrix>& scalingMatrixOpPtr,
+            const NOX::NLN::Solver::PseudoTransient& ptcsolver);
 
     //! destructor
     virtual ~PseudoTransient() { };
@@ -371,6 +415,10 @@ namespace PrePostOp {
 
     //! reference to the scaling diagonal operator
     Teuchos::RCP<Epetra_Vector>& scalingDiagOpPtr_;
+
+    //! reference to the scaling diagonal operator matrix
+    Teuchos::RCP<LINALG::SparseMatrix>& scalingMatrixOpPtr_;
+
   }; // class PseudoTransient
 } // namespace PrePostOp
 } // namespace LinSystem
@@ -386,6 +434,7 @@ namespace PrePostOp {
   public:
     //! constructor
     PseudoTransient(Teuchos::RCP<Epetra_Vector>& scalingDiagOpPtr,
+        Teuchos::RCP<LINALG::SparseMatrix>& scalingMatrixOpPtr,
         const NOX::NLN::Solver::PseudoTransient& ptcsolver);
 
     //! destructor
@@ -409,6 +458,9 @@ namespace PrePostOp {
 
     //! reference to the scaling diagonal operator
     Teuchos::RCP<Epetra_Vector>& scalingDiagOpPtr_;
+
+    //! reference to the scaling diagonal operator matrix
+    Teuchos::RCP<LINALG::SparseMatrix>& scalingMatrixOpPtr_;
 
     //! reference to the flag which indicates, if the current right-hand-side is the transient right-hand-side
     bool isPseudoTransientResidual_;

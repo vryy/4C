@@ -99,6 +99,7 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
         "Quadratic Model Min",
         "F 2-Norm",
         "None");
+
     Teuchos::setStringToIntegralParameter<int>(
         "Scaling Type","None","",
         scalingtype,Teuchos::tuple<int>( 0, 1, 2, 3 ),
@@ -116,6 +117,8 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
         "from the Newton iteration resulting in a full Newton solve.",&ptc);
     DoubleParameter("deltaMin",1.0e-5,"Minimum step size.",&ptc);
     IntParameter("Max Number of PTC Iterations",std::numeric_limits<int>::max(),"",&ptc);
+    DoubleParameter("SER_alpha",1.0,"Exponent of SER.",&ptc);
+    DoubleParameter("ScalingFactor",1.0,"Scaling Factor for ptc matrix.",&ptc);
     Teuchos::Array<std::string> time_step_control = Teuchos::tuple<std::string>(
         "SER",
         "Switched Evolution Relaxation",
@@ -138,10 +141,20 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
     Teuchos::Array<std::string> scaling_op = Teuchos::tuple<std::string>(
         "Identity",
         "CFL Diagonal",
-        "Lumped Mass");
+        "Lumped Mass",
+        "Element based");
     Teuchos::setStringToIntegralParameter<int>(
         "Scaling Type","Identity","Type of the scaling matrix for the PTC method.",
-        scaling_op,Teuchos::tuple<int>( 0, 1, 2 ),
+        scaling_op,Teuchos::tuple<int>( 0, 1, 2, 3 ),
+        &ptc);
+    // Build scaling Operator every iteration or every timestep
+    Teuchos::Array<std::string> build_scale_op = Teuchos::tuple<std::string>(
+        "every iter",
+        "every timestep"
+        );
+    Teuchos::setStringToIntegralParameter<int>(
+        "Build scaling operator","every timestep","Build scaling operator in every iteration or timestep",
+        build_scale_op,Teuchos::tuple<int>( 0, 1),
         &ptc);
   }
 

@@ -33,6 +33,7 @@ namespace NLN {
 } // namespace NOX
 namespace LINALG {
   class SparseOperator;
+  class SparseMatrix;
 } // namespace LINALG
 namespace IO {
   class DiscretizationWriter;
@@ -174,6 +175,11 @@ namespace MODELEVALUATOR {
       AssembleForce( ok, me_vec, timefac_np, f );
       return ok;
     }
+    // assemble element contributions to global PTC scaling operator
+    void AssembleJacobianContributionsFromElementLevelForPTC(
+        const Vector& me_vec,
+        const double timefac_np,
+        Teuchos::RCP<LINALG::SparseMatrix>& modjac );
 
     /** \brief Assembly of a sub-set of stiffness contributions
      *
@@ -283,6 +289,9 @@ namespace MODELEVALUATOR {
         const bool isdefaultstep ) const;
 
     //! @}
+
+    //! computes element based scaling contributions for PTC
+    void ComputeJacobianContributionsFromElementLevelForPTC(Teuchos::RCP<LINALG::SparseMatrix>& scalingMatrixOpPtr);
 
   protected:
     //! Returns the init flag.

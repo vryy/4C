@@ -613,6 +613,13 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
       break;
     }
 
+    // element based PTC scaling
+    case ELEMENTS::struct_calc_addjacPTC:
+    {
+      CalcStiffContributionsPTC(elemat1);
+      break;
+    }
+
     default:
       std::cout << "\ncalled element with action type " << ActionType2String(act);
       dserror("This action type is not implemented for Beam3r");
@@ -2110,15 +2117,23 @@ void DRT::ELEMENTS::Beam3r::CalcBrownianForcesAndStiff(Teuchos::ParameterList&  
 
   /****** compute and assemble force and stiffness contributions from viscous damping and stochastic forces *****/
 
-  // add stiffness and forces due to translational damping effects
-  EvaluateTranslationalDamping<nnodecl,vpernode,3>(params, vel_centerline, disp_totlag_centerline, stiffmatrix, force);
-
   // add stiffness and forces (i.e. moments) due to rotational damping effects
   EvaluateRotationalDamping<nnodetriad,nnodecl,vpernode,3>(params, Q_i, stiffmatrix, force);
 
+  if ( stiffmatrix != NULL )
+    stiff_ptc_ = *stiffmatrix;
+
+  // add stiffness and forces due to translational damping effects
+  EvaluateTranslationalDamping<nnodecl,vpernode,3>(params, vel_centerline, disp_totlag_centerline, stiffmatrix, force);
+
+
   // add stochastic forces and (if required) resulting stiffness
   EvaluateStochasticForces<nnodecl,vpernode,3,3>(params, disp_totlag_centerline, stiffmatrix, force);
+}
 
+void DRT::ELEMENTS::Beam3r::CalcStiffContributionsPTC(Epetra_SerialDenseMatrix& elemat1)
+{
+  elemat1 = stiff_ptc_;
 }
 
 /*------------------------------------------------------------------------------------------------------------*
@@ -2308,7 +2323,6 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(
     // extract rotation vector from quaternion
     LINALG::Matrix<3,1> deltatheta;
     LARGEROTATIONS::quaterniontoangle(deltaQ, deltatheta);
-
 
     // angular velocity at this Gauss point according to backward Euler scheme
     LINALG::Matrix<3,1> omega(true);
@@ -2678,7 +2692,6 @@ void DRT::ELEMENTS::Beam3r::EvaluateStochasticForces(
           }
         }
     }
-
 
     if (stiffmatrix != NULL)
     {

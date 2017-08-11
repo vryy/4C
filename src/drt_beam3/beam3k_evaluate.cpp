@@ -25,7 +25,6 @@
 #include "../drt_structure_new/str_model_evaluator_data.H"
 #include "../drt_structure_new/str_timint_basedatasdyn.H"
 
-
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -234,12 +233,21 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
       break;
     }
 
+    // element based PTC scaling
+    case ELEMENTS::struct_calc_addjacPTC:
+    {
+      CalcStiffContributionsPTC(elemat1);
+      break;
+    }
+
     default:
     {
       std::cout << "\ncalled element with action type " << ActionType2String(act);
       dserror("This action type is not implemented for Beam3k");
      break;
     }
+
+
 
   }
 
@@ -2780,6 +2788,16 @@ inline void DRT::ELEMENTS::Beam3k::CalcBrownianForcesAndStiff(
 
     // Evaluation of force vectors and stiffness matrices
 
+    // add stiffness and forces (i.e. moments) due to rotational damping effects
+    EvaluateRotationalDamping<double,nnode,vpernode,ndim>(
+        disp_totlag_centerline,
+        triad_mat_cp,
+        stiffmatrix,
+        force_brownian);
+
+    if ( stiffmatrix != NULL )
+        stiff_ptc_ = *stiffmatrix;
+
     // add stiffness and forces due to translational damping effects
     EvaluateTranslationalDamping<double,nnode,vpernode,ndim>(
         params,
@@ -2794,12 +2812,7 @@ inline void DRT::ELEMENTS::Beam3k::CalcBrownianForcesAndStiff(
         stiffmatrix,
         force_brownian);
 
-    // add stiffness and forces (i.e. moments) due to rotational damping effects
-    EvaluateRotationalDamping<double,nnode,vpernode,ndim>(
-        disp_totlag_centerline,
-        triad_mat_cp,
-        stiffmatrix,
-        force_brownian);
+
 
   }
   // automatic linearization of residual contributions via FAD
@@ -3877,6 +3890,14 @@ void DRT::ELEMENTS::Beam3k::straintostress(
   M(0) = Cm(0,0) * Omega(0);
   M(1) = Cm(1,1) * Omega(1);
   M(2) = Cm(2,2) * Omega(2);
+}
+
+
+void DRT::ELEMENTS::Beam3k::CalcStiffContributionsPTC(Epetra_SerialDenseMatrix& elemat1)
+{
+  elemat1 = stiff_ptc_;
+
+
 }
 
 //      //*******************************Begin: FD-CHECK************************************************************

@@ -20,6 +20,11 @@
 #include <NOX_Epetra_Interface_Jacobian.H>    // base class
 #include <NOX_Epetra_Interface_Required.H>
 
+// forward declaration
+namespace LINALG{
+  class SparseMatrix;
+}
+
 namespace NOX {
 namespace NLN {
 namespace Interface{
@@ -41,6 +46,8 @@ public:
       const Epetra_Vector& x,
       Epetra_Vector& rhs,
       Epetra_Operator& jac) = 0;
+
+  virtual Teuchos::RCP<LINALG::SparseMatrix> CalcJacobianContributionsFromElementLevelForPTC() = 0;
 };
 } // end namespace Interface
 } // end namespace NLN

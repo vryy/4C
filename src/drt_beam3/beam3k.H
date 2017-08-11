@@ -539,6 +539,9 @@ public:
   //!sets up from current nodal position all geometric parameters (considering current position as reference configuration)
   void SetUpReferenceGeometry(const std::vector<LINALG::Matrix<3,1> >& xrefe,const bool secondinit = false);
 
+  //!computes the artifical damping contributions for element based PTC
+  void CalcStiffContributionsPTC(Epetra_SerialDenseMatrix& elemat1);
+
   /*!
   \brief get (non-unit) tangent vectors at the two boundary nodes in the initial configuration
   */
@@ -1665,6 +1668,9 @@ private:
   double Eint_;
   //! kinetic energy
   double Ekin_;
+  //! temporarily storing the rot_damp_stiffness matrix for use in the PTC scaling operator
+  Epetra_SerialDenseMatrix stiff_ptc_;
+
 
   //******************************Begin: Class variables required for time integration**************************************************//
   //! triads at Gauss points for exact integration in quaternion at the end of the preceeding time step (required for computation of angular velocity)

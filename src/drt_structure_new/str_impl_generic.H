@@ -24,6 +24,7 @@
 // forward declaration ...
 namespace LINALG {
   class SparseOperator;
+  class SparseMatrix;
 } // namespace LINALG
 namespace STR {
 namespace IMPLICIT {
@@ -152,6 +153,9 @@ namespace IMPLICIT {
 
     //! Get the predictor state flag
     const bool& IsPredictorState() const;
+
+    //! compute the scaling operator for element based scaling using PTC
+    virtual void ComputeJacobianContributionsFromElementLevelForPTC(Teuchos::RCP<LINALG::SparseMatrix>& scalingMatrixOpPtr);
 
     /** \brief Print jacbian into text file for later use in MATLAB
      *

@@ -33,6 +33,7 @@ namespace NLN {
 } // namespace NOX
 namespace LINALG {
   class SparseOperator;
+  class SparseMatrix;
 } // namespace LINALG
 namespace Teuchos {
   class ParameterList;
@@ -216,6 +217,11 @@ namespace MODELEVALUATOR {
 
 
     virtual void UpdateStepState(const double& timefac_n) = 0;
+
+    // compute the element contributions for element based scaling using PTC
+    virtual void EvaluateJacobianContributionsFromElementLevelForPTC(){return;};
+    // assemble the element contributions
+    virtual void AssembleJacobianContributionsFromElementLevelForPTC(Teuchos::RCP<LINALG::SparseMatrix>& modjac,const double& timefac_n ) {return;};
 
     virtual void UpdateStepElement() = 0;
 

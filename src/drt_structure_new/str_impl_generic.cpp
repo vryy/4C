@@ -25,6 +25,7 @@
 
 #include "../drt_io/io_pstream.H"
 
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::IMPLICIT::Generic::Generic()
@@ -197,4 +198,11 @@ void NOX::NLN::Solver::PrePostOp::IMPLICIT::Generic::runPostIterate(
   }
 
   impl_.ModelEval().RunPostIterate( solver, step, isdefaultstep );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::IMPLICIT::Generic::ComputeJacobianContributionsFromElementLevelForPTC(Teuchos::RCP<LINALG::SparseMatrix>& scalingMatrixOpPtr)
+{
+  ModelEval().ComputeJacobianContributionsFromElementLevelForPTC(scalingMatrixOpPtr);
 }

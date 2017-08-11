@@ -31,6 +31,8 @@
 
 #include <boost/algorithm/string/predicate.hpp>  // case insensitive string compare
 
+#include "../linalg/linalg_sparsematrix.H"
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::TIMINT::NoxInterface::NoxInterface()
@@ -561,4 +563,17 @@ double STR::TIMINT::NoxInterface::CalcRefNormForce()
   const NOX::Epetra::Vector::NormType& nox_normtype =
       timint_ptr_->GetDataSDyn().GetNoxNormType();
   return implint_ptr_->CalcRefNormForce(nox_normtype);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix>
+STR::TIMINT::NoxInterface::CalcJacobianContributionsFromElementLevelForPTC()
+{
+  CheckInitSetup();
+  Teuchos::RCP<LINALG::SparseMatrix> scalingMatrixOpPtr =
+      Teuchos::rcp(new LINALG::SparseMatrix(*gstate_ptr_->DofRowMap(),81,true,true));
+  implint_ptr_->ComputeJacobianContributionsFromElementLevelForPTC(scalingMatrixOpPtr);
+
+  return scalingMatrixOpPtr;
 }

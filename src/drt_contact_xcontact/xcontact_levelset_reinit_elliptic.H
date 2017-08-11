@@ -152,6 +152,8 @@ namespace REINIT {
     virtual bool computeFandJacobian(const Epetra_Vector& x,
         Epetra_Vector& F, Epetra_Operator& jac);
 
+    virtual Teuchos::RCP<LINALG::SparseMatrix> CalcJacobianContributionsFromElementLevelForPTC(){return Teuchos::null;};
+
     /// @}
 
     void SetElementParameters( Teuchos::ParameterList & eleparams );

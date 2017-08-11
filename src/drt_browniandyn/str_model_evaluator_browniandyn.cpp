@@ -13,7 +13,6 @@
 
 */
 /*-----------------------------------------------------------*/
-
 #include "str_model_evaluator_browniandyn.H"
 
 #include "../drt_structure_new/str_model_evaluator_data.H"
@@ -684,6 +683,9 @@ void STR::MODELEVALUATOR::BrownianDyn::GenerateGaussianRandomNumbers()
 
   // initialize mean value 0 and and standard deviation (2KT / dt)^0.5
   double meanvalue = 0.0;
+
+  // generate gaussian random numbers for parallel use with mean value 0 and
+  // standard deviation (2KT / dt)^0.5
   double standarddeviation = pow( 2.0 * eval_browniandyn_ptr_->KT() /
       brown_dyn_state_data_.browndyn_dt, 0.5 );
 
@@ -707,7 +709,9 @@ void STR::MODELEVALUATOR::BrownianDyn::GenerateGaussianRandomNumbers()
   {
     for ( int i = 0; i < numele; ++i )
       for ( int j = 0; j < numperele; ++j )
+      {
         (*randomnumbersrow)[j][i] = randvec[i*numperele+j];
+      }
   }
   else
   {

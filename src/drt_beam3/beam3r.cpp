@@ -275,6 +275,7 @@ int DRT::ELEMENTS::Beam3rType::Initialize(DRT::Discretization& dis)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3r::Beam3r(int id, int owner) :
 DRT::ELEMENTS::Beam3Base(id,owner),
+stiff_ptc_(true),
 useFAD_(false),
 centerline_hermite_(false),
 isinit_(false),

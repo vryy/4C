@@ -23,6 +23,10 @@
 #include <NOX_Epetra_Interface_Preconditioner.H>             // (3) base class: preconditioner stuff
 
 // forward declaration ...
+namespace LINALG {
+  class SparseOperator;
+  class SparseMatrix;
+} // namespace LINALG
 namespace INPAR {
 namespace STR {
   enum ModelType : int;
@@ -128,6 +132,9 @@ namespace TIMINT {
      *  (derived from NOX::NLN::Interface::Required) */
     virtual double CalcRefNormForce();
     //!@}
+
+    // Get element based scaling operator
+    virtual Teuchos::RCP<LINALG::SparseMatrix> CalcJacobianContributionsFromElementLevelForPTC();
 
     //! Access the implicit integrator
     STR::IMPLICIT::Generic& ImplInt();

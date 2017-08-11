@@ -84,7 +84,7 @@ void STR::NLN::SOLVER::PseudoTransient::SetPseudoTransientParams()
    * solver which is equivalent to the old BACI implementation.
    *
    * If you are keen on using the new features, please use the corresponding
-   * input section "STUCT NOX/Pseudo Transient" in your input file. */
+   * input section "STRUCT NOX/Pseudo Transient" in your input file. */
   Teuchos::ParameterList& pptc = pnox.sublist("Pseudo Transient");
 
   pptc.set<double>("deltaInit",DataSDyn().GetInitialPTCPseudoTimeStep());
@@ -93,7 +93,10 @@ void STR::NLN::SOLVER::PseudoTransient::SetPseudoTransientParams()
   pptc.set<int>("Maximum Number of Pseudo-Transient Iterations",
       (DataSDyn().GetIterMax()+1));
   pptc.set<std::string>("Time Step Control","SER");
+  pptc.set<double>("SER_alpha",1.0);
+  pptc.set<double>("ScalingFactor",1.0);
   pptc.set<std::string>("Norm Type for TSC","Max Norm");
+  pptc.set<std::string>("Build scaling operator","every timestep");
   pptc.set<std::string>("Scaling Type","Identity");
 
   // ---------------------------------------------------------------------------

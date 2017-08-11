@@ -256,6 +256,17 @@ void STR::ModelEvaluator::AssembleJacobian(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::ModelEvaluator::AssembleJacobianContributionsFromElementLevelForPTC(
+    const Vector& me_vec,
+    const double timefac_np,
+    Teuchos::RCP<LINALG::SparseMatrix>& modjac )
+{
+  for ( Vector::const_iterator cit = me_vec.begin(); cit != me_vec.end(); ++cit)
+    (*cit)->AssembleJacobianContributionsFromElementLevelForPTC(modjac,timefac_np);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::EvaluateForce( bool& ok, const Vector& me_vec ) const
 {
   if ( not ok )
@@ -649,6 +660,21 @@ void STR::ModelEvaluator::UpdateStepState(const double& timefac_n)
   Vector::iterator me_iter;
   for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
     (*me_iter)->UpdateStepState(timefac_n);
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::ModelEvaluator::ComputeJacobianContributionsFromElementLevelForPTC(Teuchos::RCP<LINALG::SparseMatrix>& scalingMatrixOpPtr)
+{
+  // evaluate ptc contributions at t^n+1
+  double timefac_np = 1.0;
+  Vector::iterator me_iter;
+  for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
+      (*me_iter)->EvaluateJacobianContributionsFromElementLevelForPTC();
+
+  AssembleJacobianContributionsFromElementLevelForPTC(*me_vec_ptr_, timefac_np, scalingMatrixOpPtr );
+
 }
 
 /*----------------------------------------------------------------------------*

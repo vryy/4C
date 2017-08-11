@@ -45,6 +45,7 @@ STR::MODELEVALUATOR::Structure::Structure()
     : dt_ele_ptr_(NULL),
       masslin_type_(INPAR::STR::ml_none),
       stiff_ptr_(NULL),
+      stiff_ptc_ptr_(Teuchos::null),
       dis_incr_ptr_(Teuchos::null),
       vtu_writer_ptr_(Teuchos::null),
       beam_vtu_writer_ptr_(Teuchos::null)
@@ -69,6 +70,10 @@ void STR::MODELEVALUATOR::Structure::Setup()
   // displ-displ block
   stiff_ptr_ = dynamic_cast<LINALG::SparseMatrix*>(
       GState().CreateStructuralStiffnessMatrixBlock() );
+
+  // modified stiffness pointer for storing element based scaling operator (PTC)
+  stiff_ptc_ptr_ = Teuchos::rcp( new
+      LINALG::SparseMatrix( *GState().DofRowMapView(), 81, true, true ) );
 
   if ( stiff_ptr_ == NULL )
     dserror( "Dynamic cast to LINALG::SparseMatrix failed!" );
@@ -114,6 +119,10 @@ void STR::MODELEVALUATOR::Structure::Reset(const Epetra_Vector& x)
 
   // reset stiffness matrix
   Stiff().Zero();
+
+  // reset modified stiffness matrix
+  StiffPTC().Zero();
+
 
   // set evaluation time back to zero
   *dt_ele_ptr_ = 0.0;
@@ -877,6 +886,41 @@ void STR::MODELEVALUATOR::Structure::UpdateStepState(
   dis_incr_ptr_->Scale(0.0);
 }
 
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::EvaluateJacobianContributionsFromElementLevelForPTC()
+{
+
+  CheckInitSetup();
+  // currently a fixed number of matrix and vector pointers are supported
+  Teuchos::RCP<Epetra_Vector> eval_vec [3] =
+      {Teuchos::null,Teuchos::null,Teuchos::null};
+  Teuchos::RCP<LINALG::SparseOperator> eval_mat[2] =
+       {Teuchos::null,Teuchos::null};
+
+  EvalData().SetActionType(DRT::ELEMENTS::struct_calc_addjacPTC);
+
+  // set vector values needed by elements
+  Discret().ClearState();
+  Discret().SetState(0,"displacement", GState().GetDisNp());
+
+  eval_mat[0] = Teuchos::rcpFromRef(*stiff_ptc_ptr_);
+
+  // evaluate
+  EvaluateInternal(&eval_mat[0],&eval_vec[0]);
+
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::AssembleJacobianContributionsFromElementLevelForPTC(
+    Teuchos::RCP<LINALG::SparseMatrix>& modjac,
+    const double& timefac_n )
+{
+  GState().AssignModelBlock(*modjac,StiffPTC(),Type(),DRT::UTILS::block_displ_displ);
+}
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::UpdateStepElement()
@@ -1176,6 +1220,17 @@ LINALG::SparseMatrix & STR::MODELEVALUATOR::Structure::Stiff() const
     dserror( "NULL pointer!" );
 
   return *stiff_ptr_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+LINALG::SparseMatrix & STR::MODELEVALUATOR::Structure::StiffPTC() const
+{
+  CheckInit();
+  if ( stiff_ptc_ptr_ == Teuchos::null )
+    dserror( "NULL pointer!" );
+
+  return *stiff_ptc_ptr_;
 }
 
 /*----------------------------------------------------------------------------*

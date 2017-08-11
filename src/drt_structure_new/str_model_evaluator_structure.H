@@ -145,6 +145,12 @@ namespace MODELEVALUATOR{
     //! [derived]
     virtual void PostOutput();
 
+    //! [derived]
+    virtual void EvaluateJacobianContributionsFromElementLevelForPTC();
+
+    //! [derived]
+    virtual void AssembleJacobianContributionsFromElementLevelForPTC(Teuchos::RCP<LINALG::SparseMatrix>& modjac,const double& timefac_n );
+
     //! @}
 
   protected:
@@ -385,6 +391,9 @@ namespace MODELEVALUATOR{
     //! structural stiffness block
     LINALG::SparseMatrix & Stiff() const;
 
+    //! modified stiffness block
+    LINALG::SparseMatrix & StiffPTC() const;
+
     //! structural mass matrix
     LINALG::SparseOperator & Mass();
 
@@ -408,6 +417,9 @@ namespace MODELEVALUATOR{
     //! @name class only variables @{
     //! structural stiffness matrix
     LINALG::SparseMatrix * stiff_ptr_;
+
+    //! contains ptc stiffness contributions calculated on elements
+    Teuchos::RCP<LINALG::SparseMatrix> stiff_ptc_ptr_;
 
     /*! \brief displacement increment
      *  Necessary for the EAS reconstruction, incremental strain evaluation,

@@ -26,6 +26,9 @@
 
 // forward declarations
 class Epetra_BlockMap;
+namespace LINALG{
+  class SparseMatrix;
+}
 namespace NOX {
 namespace NLN {
 namespace Solver {
@@ -168,6 +171,9 @@ namespace GROUP {
 
     //! get the lumped mass matrix
     virtual Teuchos::RCP<const Epetra_Vector> GetLumpedMassMatrixPtr() const;
+
+    // Get element based scaling operator
+    virtual Teuchos::RCP<LINALG::SparseMatrix> GetContributionsFromElementLevel();
     //! @}
 
     //! @name XFEM related methods

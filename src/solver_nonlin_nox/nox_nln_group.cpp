@@ -16,6 +16,7 @@
 
 #include "nox_nln_group.H"
 #include "nox_nln_interface_required.H"
+#include "nox_nln_interface_jacobian.H"
 #include "nox_nln_linearsystem.H"
 #include "nox_nln_group_prepostoperator.H"
 #include "nox_nln_solver_ptc.H"
@@ -491,6 +492,14 @@ Teuchos::RCP<const Epetra_Vector> NOX::NLN::Group::GetLumpedMassMatrixPtr() cons
 {
   return Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Required>(
       userInterfacePtr)->GetLumpedMassMatrixPtr();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix> NOX::NLN::Group::GetContributionsFromElementLevel()
+{
+  return Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Jacobian>(
+      userInterfacePtr)->CalcJacobianContributionsFromElementLevelForPTC();
 }
 
 /*----------------------------------------------------------------------*

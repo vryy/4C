@@ -1065,8 +1065,12 @@ private:
       Epetra_SerialDenseVector*  force) const;//!< element internal force vector
 
   //@}
+  //! computes modified Jacobian for PTC
+  void CalcStiffContributionsPTC(Epetra_SerialDenseMatrix& elemat1);
 
 private:
+  //! storing temporary stiffness matrix for element based scaling operator in PTC method
+  Epetra_SerialDenseMatrix stiff_ptc_;
 
   //! bool storing whether automatic differentiation shall be used for this element evaluation
   bool useFAD_;

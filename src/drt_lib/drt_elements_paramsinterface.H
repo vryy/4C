@@ -26,6 +26,7 @@ namespace ELEMENTS {
    * ToDo Please add ALL your action types here! */
   enum ActionType
   {
+
     none,
     struct_calc_linstiff,
     struct_calc_nlnstiff,                   //!< evaluate the tangential stiffness matrix and the internal force vector
@@ -68,7 +69,8 @@ namespace ELEMENTS {
     struct_poro_calc_scatracoupling,        //!< calculate stiffness matrix related to scatra coupling within porous medium problem
     struct_poro_calc_prescoupling,          //!< calculate stiffness matrix related to pressure coupling within porous medium problem
     struct_calc_fluid_traction,             //!< calculate fluid traction on immersed boundary
-    struct_calc_cur_normal_at_point         //!< calculate normal on immersed boundary surface
+    struct_calc_cur_normal_at_point,         //!< calculate normal on immersed boundary surface
+    struct_calc_addjacPTC                   //!< calculate elment based PTC contributions
   };  // enum ActionType
 
   //! Map action type enum to std::string
