@@ -16,9 +16,13 @@
 
 
 #include "str_timint_basedataio.H"
-
 #include "str_timint_basedataio_runtime_vtk_output.H"
 #include "str_timint_basedataio_runtime_vtp_output.H"
+
+#include "../drt_io/every_iteration_writer.H"
+#include "../solver_nonlin_nox/nox_nln_aux.H"
+
+#include <NOX_Solver_Generic.H>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -26,6 +30,7 @@ STR::TIMINT::BaseDataIO::BaseDataIO()
     : isinit_(false),
       issetup_(false),
       output_(Teuchos::null),
+      writer_every_iter_(Teuchos::null),
       params_runtime_vtk_output_(Teuchos::null),
       params_runtime_vtp_output_(Teuchos::null),
       energyfile_(Teuchos::null),
@@ -41,7 +46,6 @@ STR::TIMINT::BaseDataIO::BaseDataIO()
       writejac2matlab_(false),
       firstoutputofrun_(false),
       printscreen_(-1),
-      oei_filecounter_(-1),
       outputcounter_(-1),
       writerestartevery_(-1),
       writereducedrestart_(-1),
@@ -81,8 +85,10 @@ void STR::TIMINT::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
     gmsh_out_ = (bool) DRT::INPUT::IntegralValue<int>(ioparams,"OUTPUT_GMSH");
     printerrfile_ = (true and errfile_);
     printiter_ = true;
-    outputeveryiter_ = (bool) DRT::INPUT::IntegralValue<int>(ioparams,"OUTPUT_EVERY_ITER");
-    oei_filecounter_ = ioparams.get<int>("OEI_FILE_COUNTER");
+    p_io_every_iteration_ = Teuchos::rcp( new Teuchos::ParameterList(
+        ioparams.sublist( "EVERY ITERATION" ) ) );
+    outputeveryiter_ = DRT::INPUT::IntegralValue<bool>( *p_io_every_iteration_,
+        "OUTPUT_EVERY_ITER" );
     writerestartevery_ = sdynparams.get<int>("RESTARTEVRY");
     writereducedrestart_ = xparams.get<int>("REDUCED_OUTPUT");
     writestate_ = (bool) DRT::INPUT::IntegralValue<int>(ioparams,"STRUCT_DISP");
@@ -130,10 +136,58 @@ void STR::TIMINT::BaseDataIO::Setup()
   if (!IsInit())
     dserror("Init() has not been called, yet!");
 
-  // Nothing to do here at the moment
+  if ( outputeveryiter_ )
+    writer_every_iter_ = Teuchos::rcp( new IO::EveryIterationWriter() );
 
   issetup_ = true;
 
   // Good bye
   return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::BaseDataIO::InitSetupEveryIterationWriter(
+    IO::EveryIterationWriterInterface* interface,
+    Teuchos::ParameterList& p_nox )
+{
+  if ( not outputeveryiter_ )
+    return;
+
+  writer_every_iter_->Init( output_.get(), interface, *p_io_every_iteration_ );
+  writer_every_iter_->Setup();
+
+  Teuchos::ParameterList& p_sol_opt = p_nox.sublist("Solver Options");
+
+  Teuchos::RCP<NOX::Abstract::PrePostOperator> prepost_solver_ptr =
+      Teuchos::rcp( new NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration(
+          *writer_every_iter_ ) );
+
+  NOX::NLN::AUX::AddToPrePostOpVector( p_sol_opt, prepost_solver_ptr );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration::WriteOutputEveryIteration(
+    IO::EveryIterationWriter& every_iter_writer )
+    : every_iter_writer_( every_iter_writer )
+{
+  /* empty */
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration::runPreSolve(
+    const NOX::Solver::Generic& solver )
+{
+  every_iter_writer_.InitNewtonIteration();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration::runPostIterate(
+    const NOX::Solver::Generic& solver )
+{
+  const int newton_iteration = solver.getNumIterations();
+  every_iter_writer_.AddNewtonIteration( newton_iteration );
 }

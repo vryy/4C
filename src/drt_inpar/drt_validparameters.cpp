@@ -621,6 +621,26 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
 
   /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& io_every_iter = io.sublist("EVERY ITERATION",false,"");
+
+  // Output every iteration (for debugging purposes)
+  BoolParameter("OUTPUT_EVERY_ITER", "No", "Do you wish output every Newton iteration?",
+      &io_every_iter);
+
+  IntParameter("RUN_NUMBER",-1,
+      "Create a new folder for different runs of the same simulation. "
+      "If equal -1, no folder is created.", &io_every_iter);
+
+  IntParameter("STEP_NP_NUMBER",-1,
+      "Give the number of the step (i.e. step_{n+1}) for which you want to write the "
+      "debug output. If a negative step number is provided, all steps will"
+      "be written.", &io_every_iter);
+
+  BoolParameter("WRITE_OWNER_EACH_NEWTON_ITER", "No", "If yes, the ownership "
+      "of elements and nodes are written each Newton step, instead of only once"
+      "per time/load step.", &io_every_iter );
+
+  /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& design = list->sublist("DESIGN DESCRIPTION",false,"number of nodal clouds");
 
   IntParameter("NDPOINT",0,"number of points",&design);

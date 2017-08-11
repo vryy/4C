@@ -239,6 +239,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--PROBLEM TYP", *list);
   reader.ReadGidSection("--BINNING STRATEGY", *list);
   reader.ReadGidSection("--IO", *list);
+  reader.ReadGidSection("--IO/EVERY ITERATION", *list);
   reader.ReadGidSection("--IO/RUNTIME VTK OUTPUT", *list);
   reader.ReadGidSection("--IO/RUNTIME VTK OUTPUT/STRUCTURE", *list);
   reader.ReadGidSection("--IO/RUNTIME VTK OUTPUT/BEAMS", *list);
@@ -258,6 +259,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--CONTACT DYNAMIC/AUGMENTED", *list);
   reader.ReadGidSection("--CONTACT DYNAMIC/AUGMENTED/COMBO", *list);
   reader.ReadGidSection("--CONTACT DYNAMIC/AUGMENTED/STEEPESTASCENT", *list);
+  reader.ReadGidSection("--CONTACT DYNAMIC/AUGMENTED/LAGRANGE_MULTIPLIER_FUNCTION", *list);
   reader.ReadGidSection("--CONTACT DYNAMIC/XCONTACT", *list);
   reader.ReadGidSection("--XCONTACT DYNAMIC", *list);
   reader.ReadGidSection("--CARDIOVASCULAR 0D-STRUCTURE COUPLING", *list);

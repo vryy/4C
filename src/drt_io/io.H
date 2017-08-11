@@ -56,6 +56,13 @@ namespace IO
     elementvector
   };
 
+  /// copy type
+  enum class CopyType : char
+  {
+    deep,   ///< copy everything.
+    shape   ///< copy only the shape and create everything else new.
+  };
+
 /*!
   \brief base class of baci restart
 
@@ -203,6 +210,18 @@ public:
   DiscretizationWriter(
     Teuchos::RCP<DRT::Discretization> dis);
 
+  /** \brief copy constructor
+   *
+   *  \param[in] writer  copy the writer of same type
+   *  \param[in] output  use this control object if provided
+   *  \parma[in] type    copy type
+   *
+   *  \author hiermeier \date 08/17 */
+  DiscretizationWriter(
+      const IO::DiscretizationWriter& writer,
+      const Teuchos::RCP<OutputControl>& output,
+      enum CopyType type );
+
   /// cleanup, close hdf5 files
   virtual ~DiscretizationWriter();
 
@@ -329,6 +348,9 @@ public:
 
   /// creating new result files for the mlmc
   virtual void NewResultFile(std::string name_appendix, int numb_run);
+
+  /// creating new result files using the provided name
+  virtual void NewResultFile(std::string name);
 
   //@}
 

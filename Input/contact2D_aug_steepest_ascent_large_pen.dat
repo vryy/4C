@@ -39,6 +39,11 @@ WRITE_TO_SCREEN                 Yes
 WRITE_TO_FILE                   No
 PREFIX_GROUP_ID                 No
 LIMIT_OUTP_TO_PROC              0
+-------------------------------------------------IO/EVERY ITERATION
+OUTPUT_EVERY_ITER               Yes
+RUN_NUMBER                      0
+STEP_NP_NUMBER                  -1
+WRITE_OWNER_EACH_NEWTON_ITER    No
 -------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 DYNAMICTYP                      Statics

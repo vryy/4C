@@ -519,6 +519,46 @@ IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<DRT::Discretization>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+IO::DiscretizationWriter::DiscretizationWriter(
+    const IO::DiscretizationWriter& writer,
+    const Teuchos::RCP<OutputControl>& control,
+    enum CopyType type )
+    : dis_( Teuchos::rcp( writer.dis_.get(), false ) ),
+      step_(-1),
+      time_(-1.0),
+      meshfile_(-1),
+      resultfile_(-1),
+      meshfilename_(),
+      resultfilename_(),
+      meshgroup_(-1),
+      resultgroup_(-1),
+      resultfile_changed_(-1),
+      meshfile_changed_(-1),
+      output_( Teuchos::null ),
+      binio_( false )
+{
+  output_ = ( control.is_null() ? writer.output_ : control );
+  if ( not output_.is_null() )
+    binio_ = output_->BinIO();
+
+  if ( type == CopyType::deep )
+  {
+    step_ = writer.step_;
+    time_ = writer.time_;
+    meshfile_ = writer.meshfile_;
+    resultfile_ = writer.resultfile_;
+    meshfilename_ = writer.resultfile_;
+    resultfilename_ = writer.resultfile_;
+    meshgroup_ = writer.resultfile_;
+    resultgroup_ = writer.resultfile_;
+    resultfile_changed_ = writer.resultfile_;
+    meshfile_changed_ = writer.resultfile_;
+  }
+
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 IO::DiscretizationWriter::~DiscretizationWriter()
 {
   if (meshfile_ != -1)
@@ -668,6 +708,17 @@ void IO::DiscretizationWriter::NewResultFile(std::string name_appendix,
   {
     CreateNewResultAndMeshFile();
     output_->NewResultFile(name_appendix, numb_run);
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IO::DiscretizationWriter::NewResultFile(std::string name)
+{
+  if(binio_)
+  {
+    CreateNewResultAndMeshFile();
+    output_->NewResultFile(name);
   }
 }
 

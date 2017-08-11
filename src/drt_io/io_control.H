@@ -55,6 +55,14 @@ namespace IO
                   int create_controlfile,
                   bool adaptname = true);
 
+    /// \brief copy constructor
+    /** \param[in] ocontrol   Copy this object of same type
+     *  \param[in] new_prefix Add the prefix to restart and file names (optional)
+     *
+     *  \author hiermeier \date 08/17 */
+    OutputControl( const OutputControl& ocontrol,
+        const char* new_prefix = NULL );
+
     /// output prefix we write to
     /*!
       In case of restart this will be different from the read prefix.
@@ -95,6 +103,12 @@ namespace IO
     void NewResultFile(int numb_run);
     /// creates new result files for the mlmc
     void NewResultFile(std::string name_appendix, int numb_run);
+
+    /// creates new result files
+    void NewResultFile(std::string name );
+
+    /// return my processor ID
+    inline int MyRank() const { return myrank_; };
 
   private:
     std::string problemtype_;

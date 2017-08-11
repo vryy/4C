@@ -2003,6 +2003,7 @@ set(OBJS_DRT_IO_LIB
   src/drt_io/io_control.cpp
   src/drt_io/io_hdf.cpp
   src/drt_io/io_gmsh.cpp
+  src/drt_io/every_iteration_writer.cpp
   src/drt_io/vtk_writer_base.cpp
   src/drt_io/vtu_writer.cpp
   src/drt_io/vtp_writer.cpp

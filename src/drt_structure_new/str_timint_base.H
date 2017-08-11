@@ -17,6 +17,7 @@
 #define STR_TIMINT_BASE_H_
 
 #include "../drt_adapter/ad_str_structure_new.H"
+#include "../drt_io/every_iteration_writer.H"
 
 // structural data containers
 #include "str_timint_basedataio.H"
@@ -46,7 +47,8 @@ namespace TIMINT {
   /** \brief Abstract class for all time integration strategies
    *
    *  \author Michael Hiermeier */
-  class Base : public ::ADAPTER::StructureNew
+  class Base : public ::ADAPTER::StructureNew,
+                      IO::EveryIterationWriterInterface
   {
   public:
     /// constructor
@@ -809,6 +811,12 @@ namespace TIMINT {
 
     /// output of the current state
     void OutputState();
+
+    /** \brief output of the current state
+     *
+     *  Derived from the base class. */
+    virtual void OutputState( IO::DiscretizationWriter& iowriter,
+        bool write_owner ) const;
 
     /// output during runtime
     void RuntimeOutputState();

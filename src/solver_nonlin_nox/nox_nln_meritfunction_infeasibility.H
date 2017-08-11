@@ -81,7 +81,7 @@ namespace MeritFunction {
     void SetType( const std::string& type_name );
 
   private:
-    const NOX::Utils& utils_;
+//    const NOX::Utils& utils_;
 
     enum Type infeasibility_type_;
 

@@ -582,6 +582,8 @@ void NOX::NLN::AUX::AddToPrePostOpVector(
     const Teuchos::RCP<NOX::Abstract::PrePostOperator>& ppo_ptr )
 {
 
+  // if there is already a pre/post operator, we will convert the pre/post op
+  // to a pre/post op vector and add the previous and new pre/post op
   if ( p_nox_opt.isType< Teuchos::RCP<NOX::Abstract::PrePostOperator> >(
           "User Defined Pre/Post Operator") )
   {
@@ -603,6 +605,7 @@ void NOX::NLN::AUX::AddToPrePostOpVector(
     p_nox_opt.set< Teuchos::RCP<NOX::Abstract::PrePostOperator> >(
         "User Defined Pre/Post Operator", user_ppo_vec );
   }
+  // if there is no pre/post operator, we will just add the new one
   else
     p_nox_opt.set< Teuchos::RCP<NOX::Abstract::PrePostOperator> >(
         "User Defined Pre/Post Operator", ppo_ptr);

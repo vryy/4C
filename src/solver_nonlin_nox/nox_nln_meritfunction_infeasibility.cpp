@@ -27,7 +27,7 @@
 NOX::NLN::MeritFunction::Infeasibility::Infeasibility(
     const Teuchos::ParameterList& params,
     const NOX::Utils& u )
-    : utils_( u ),
+    : /* utils_( u ), */
       infeasibility_type_( type_vague )
 {
   const std::string& type_name = params.get<std::string>( "Type" );

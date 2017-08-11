@@ -21,11 +21,15 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_inpar/inpar_structure.H"
 
+#include <NOX_Abstract_PrePostOperator.H>
+
 namespace Teuchos {
   class ParameterList;
 } // namespace Teuchos
 namespace IO {
   class DiscretizationWriter;
+  class EveryIterationWriterInterface;
+  class EveryIterationWriter;
 } // namespace IO
 namespace STR {
 namespace TIMINT {
@@ -192,13 +196,6 @@ namespace TIMINT {
       return printscreen_;
     };
 
-    /// Get the user defined filename counter (necessary for OutputEveryIter)
-    const int& GetOEI_FileCounter() const
-    {
-      CheckInitSetup();
-      return oei_filecounter_;
-    };
-
     /// Get the output counter for OutputEveryIter
     const int& GetOEI_OutputCounter() const
     {
@@ -291,6 +288,11 @@ namespace TIMINT {
       firstoutputofrun_ = firstoutputofrun;
     }
 
+    /// Initialize and setup the every iteration output writer
+    void InitSetupEveryIterationWriter(
+        IO::EveryIterationWriterInterface* interface,
+        Teuchos::ParameterList& p_nox );
+
   protected:
     /// @name variables for internal use only
     /// @{
@@ -306,6 +308,9 @@ namespace TIMINT {
 
     /// binary output
     Teuchos::RCP<IO::DiscretizationWriter> output_;
+
+    /// additional output writer for the Newton steps
+    Teuchos::RCP<IO::EveryIterationWriter> writer_every_iter_;
 
     /// data container for input parameters related to VTK output at runtime
     Teuchos::RCP<ParamsRuntimeVtkOutput> params_runtime_vtk_output_;
@@ -352,9 +357,6 @@ namespace TIMINT {
     /// print infos to standard out every n steps
     int printscreen_;
 
-    /// filename counter
-    int oei_filecounter_;
-
     /// output counter for OutputEveryIter
     int outputcounter_;
 
@@ -391,10 +393,50 @@ namespace TIMINT {
     /// plastic strain output type
     INPAR::STR::StrainType writeplstrain_;
 
+    Teuchos::RCP<Teuchos::ParameterList> p_io_every_iteration_;
+
     //@}
   };  // class BaseDataIO
 } // namespace TIMINT
 } // namespace STR
+
+namespace NOX {
+namespace NLN {
+namespace Solver {
+namespace PrePostOp {
+namespace TIMINT {
+  /*! \brief Helper class to write the output each Newton step
+   *
+   *  This class is an implementation of the NOX::Abstract::PrePostOperator
+   *  and is used to modify the step() routine of the given NOX::Solver::Generic
+   *  class.
+   *  It's called by the wrapper classes NOX::Solver::PrePostOperator and
+   *  NOX::PrePostOperatorVector.
+   *
+   *  \author Michael Hiermeier \date 03/17 */
+  class WriteOutputEveryIteration : public NOX::Abstract::PrePostOperator
+  {
+  public:
+    /// constructor
+    WriteOutputEveryIteration( IO::EveryIterationWriter& every_iter_writer );
+
+    ///destructor
+    virtual ~WriteOutputEveryIteration() {};
+
+    /// called at the very beginning of a Newton loop
+    virtual void runPreSolve( const NOX::Solver::Generic& solver );
+
+    /// called in the end of each Newton step
+    virtual void runPostIterate( const NOX::Solver::Generic& solver );
+
+  private:
+    IO::EveryIterationWriter& every_iter_writer_;
+  };
+} // namespace TIMINT
+} // namespace PrePostOp
+} // namespace Solver
+} // namespace NLN
+} // namespace NOX
 
 
 

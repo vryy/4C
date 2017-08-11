@@ -273,6 +273,49 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+IO::OutputControl::OutputControl( const OutputControl& ocontrol,
+    const char* new_prefix )
+    : problemtype_(ocontrol.problemtype_),
+      inputfile_(ocontrol.inputfile_),
+      ndim_(ocontrol.ndim_),
+      filename_(ocontrol.filename_),
+      restartname_(ocontrol.restartname_),
+      filesteps_(ocontrol.filesteps_),
+      create_controlfile_(ocontrol.create_controlfile_),
+      myrank_(ocontrol.myrank_)
+{
+  // replace file names if provided
+  if ( new_prefix )
+  {
+    // modify file name
+    {
+      std::string filename_path;
+      std::string filename_suffix;
+      size_t pos = filename_.rfind('/');
+
+      if (pos!=std::string::npos)
+        filename_path = filename_.substr(0,pos+1);
+
+      filename_suffix = filename_.substr( pos+1 );
+      filename_ = filename_path + new_prefix + filename_suffix;
+    }
+
+    // modify restart name
+    {
+      std::string restartname_path;
+      std::string restartname_suffix;
+      size_t pos = restartname_.rfind('/');
+
+      if (pos!=std::string::npos)
+        restartname_path = restartname_.substr(0,pos+1);
+
+      restartname_suffix = restartname_.substr( pos+1 );
+      restartname_ = restartname_path + new_prefix + restartname_suffix;
+    }
+  }
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -365,17 +408,26 @@ void IO::OutputControl::NewResultFile(std::string name_appendix, int numb_run)
   std::stringstream name;
   name  << name_appendix;
   name << "_run_"<< numb_run;
-  filename_ = name.str();
-  name << ".control";
+
+  NewResultFile( name.str() );
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IO::OutputControl::NewResultFile(std::string name)
+{
+  filename_ = name;
+  name += ".control";
 
   if (myrank_==0)
   {
     controlfile_.close();
     // bool b = controlfile_.fail();
     // IO::cout << b << IO::endl;
-    controlfile_.open(name.str().c_str(),std::ios_base::out);
+
+    controlfile_.open(name.c_str(),std::ios_base::out);
     if (not controlfile_)
-      dserror("could not open control file '%s' for writing", name.str().c_str());
+      dserror("could not open control file '%s' for writing", name.c_str());
 
     time_t time_value;
     time_value = time(NULL);

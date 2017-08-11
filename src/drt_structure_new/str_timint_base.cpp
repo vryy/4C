@@ -115,6 +115,9 @@ void STR::TIMINT::Base::Setup()
       Teuchos::rcp(this,false));
   int_ptr_->Setup();
 
+  // Initialize and Setup the input/output writer for every Newton iteration
+  dataio_->InitSetupEveryIterationWriter( this, DataSDyn().GetMutableNoxParams() );
+
   issetup_ = true;
 }
 
@@ -364,14 +367,6 @@ void STR::TIMINT::Base::Output(bool forced_writerestart)
 void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
 {
   CheckInitSetup();
-  // print iterations instead of steps
-  if (dataio_->IsOutputEveryIter())
-  {
-    dserror("OutputEveryIter is not yet implemented!");
-    // OutputEveryIter();
-    return;
-  }
-
   // special treatment is necessary when restart is forced
   if(forced_writerestart)
   {
@@ -495,11 +490,23 @@ void STR::TIMINT::Base::OutputState()
 {
   CheckInitSetup();
   IO::DiscretizationWriter& iowriter = *(dataio_->GetMutableOutputPtr());
-  // owner of elements is just written once because it does not change during simulation (so far)
-  iowriter.WriteElementData(dataio_->IsFirstOutputOfRun());
-  iowriter.WriteNodeData(dataio_->IsFirstOutputOfRun());
-  int_ptr_->OutputStepState(iowriter);
+
+  OutputState( iowriter, dataio_->IsFirstOutputOfRun() );
+
   dataio_->SetFirstOutputOfRun(false);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Base::OutputState( IO::DiscretizationWriter& iowriter,
+    bool write_owner ) const
+{
+  // owner of elements is just written once because it does not change during
+  // simulation (so far)
+  iowriter.WriteElementData( write_owner );
+  iowriter.WriteNodeData( write_owner );
+
+  int_ptr_->OutputStepState( iowriter );
 }
 
 /*----------------------------------------------------------------------------*
