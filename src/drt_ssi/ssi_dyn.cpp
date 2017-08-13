@@ -12,6 +12,7 @@
  *------------------------------------------------------------------------------------------------*/
 
 #include "ssi_dyn.H"
+#include "ssi_monolithic.H"
 #include "ssi_partitioned_1wc.H"
 #include "ssi_partitioned_2wc.H"
 #include "ssi_utils.H"
@@ -80,6 +81,9 @@ void ssi_drt()
         break;
   case INPAR::SSI::ssi_IterStaggAitken_SolidToScatra:
     ssi = Teuchos::rcp(new SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken(comm, ssiparams));
+    break;
+  case INPAR::SSI::ssi_Monolithic:
+    ssi = Teuchos::rcp(new SSI::SSI_Mono(comm, ssiparams));
     break;
   default:
     dserror("unknown coupling algorithm for SSI!");

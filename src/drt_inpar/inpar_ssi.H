@@ -42,9 +42,9 @@ namespace SSI
     ssi_IterStaggFixedRel_ScatraToSolid,
     ssi_IterStaggFixedRel_SolidToScatra,
     ssi_IterStaggAitken_ScatraToSolid,
-    ssi_IterStaggAitken_SolidToScatra
+    ssi_IterStaggAitken_SolidToScatra,
     //IterStaggAitkenIrons,
-    //Monolithic
+    ssi_Monolithic
   };
 
   /// Type of coupling strategy between the two fields of the SSI problems
@@ -56,6 +56,12 @@ namespace SSI
     coupling_volumeboundary_match
   };
 
+  //! type of global, monolithic system matrix in global system of equations
+  enum MatrixType
+  {
+    matrix_undefined,
+    matrix_sparse
+  };
 
   /// set the ssi parameters
   void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);

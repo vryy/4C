@@ -296,7 +296,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SysmatODMesh(
       //----------------------------------------------------------------
       // standard Galerkin terms - convective term
       //----------------------------------------------------------------
-      CalcConvODMesh(emat,k,ndofpernodemesh,fac,rhsfac,densnp[k],J,scatravarmanager_->GradPhi(k),scatravarmanager_->ConVel(k));
+      if(not scatrapara_->IsConservative())
+        CalcConvODMesh(emat,k,ndofpernodemesh,fac,rhsfac,densnp[k],J,scatravarmanager_->GradPhi(k),scatravarmanager_->ConVel(k));
+      else
+        CalcConvConsODMesh(emat,k,fac,scatraparatimint_->TimeFac()*fac,densnp[k],J);
 
       //----------------------------------------------------------------
       // standard Galerkin terms  --  diffusive term
@@ -633,6 +636,100 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcConvODMesh(
 
   return;
 }
+
+
+/*------------------------------------------------------------------------------ *
+ | standard Galerkin convective term in conservative form (OD mesh)   fang 08/17 |
+ *-------------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcConvConsODMesh(
+    Epetra_SerialDenseMatrix&   emat,         //!< element matrix
+    const int                   k,            //!< species index
+    const double                fac,          //!< domain-integration factor
+    const double                timefacfac,   //!< time-integration factor times domain-integration factor
+    const double                densnp,       //!< density
+    const double                J             //!< Jacobian determinant of mapping between spatial and parameter coordinates
+    ) const
+{
+  if(not scatraparatimint_->IsStationary())
+  {
+    // d (phi div v_s)
+    // --------------- = phi*derxy*(d_n+1)/theta/dt (plus shape derivatives, see below)
+    //    d (d_n+1)
+    //
+    // prefactor is fac, since timefacfac/theta/dt = fac
+    const double densfac = scatravarmanager_->Phinp(k)*fac*densnp;
+    for(unsigned vi=0; vi<nen_; ++vi)
+    {
+      const int fvi = vi*numdofpernode_+k;
+      const double v = densfac*funct_(vi);
+
+      for(unsigned ui=0; ui<nen_; ++ui)
+        for(unsigned idim=0; idim<nsd_; ++idim)
+          emat(fvi,ui*nsd_+idim) += v*derxy_(idim,ui);
+    }
+  }
+
+  // shape derivatives associated with divergence operator
+  LINALG::Matrix<nsd_,nsd_> gridvelderiv(true);
+  gridvelderiv.MultiplyNT(evelnp_,deriv_);
+
+  if(nsd_ == 3)
+  {
+    for(unsigned ui=0; ui<nen_; ++ui)
+    {
+      const double v0 = gridvelderiv(1,0)*(deriv_(2,ui)*xjm_(1,2)-deriv_(1,ui)*xjm_(2,2))
+                      + gridvelderiv(1,1)*(deriv_(0,ui)*xjm_(2,2)-deriv_(2,ui)*xjm_(0,2))
+                      + gridvelderiv(1,2)*(deriv_(1,ui)*xjm_(0,2)-deriv_(0,ui)*xjm_(1,2))
+                      + gridvelderiv(2,0)*(deriv_(1,ui)*xjm_(2,1)-deriv_(2,ui)*xjm_(1,1))
+                      + gridvelderiv(2,1)*(deriv_(2,ui)*xjm_(0,1)-deriv_(0,ui)*xjm_(2,1))
+                      + gridvelderiv(2,2)*(deriv_(0,ui)*xjm_(1,1)-deriv_(1,ui)*xjm_(0,1));
+      const double v1 = gridvelderiv(0,0)*(deriv_(1,ui)*xjm_(2,2)-deriv_(2,ui)*xjm_(1,2))
+                      + gridvelderiv(0,1)*(deriv_(2,ui)*xjm_(0,2)-deriv_(0,ui)*xjm_(2,2))
+                      + gridvelderiv(0,2)*(deriv_(0,ui)*xjm_(1,2)-deriv_(1,ui)*xjm_(0,2))
+                      + gridvelderiv(2,0)*(deriv_(2,ui)*xjm_(1,0)-deriv_(1,ui)*xjm_(2,0))
+                      + gridvelderiv(2,1)*(deriv_(0,ui)*xjm_(2,0)-deriv_(2,ui)*xjm_(0,0))
+                      + gridvelderiv(2,2)*(deriv_(1,ui)*xjm_(0,0)-deriv_(0,ui)*xjm_(1,0));
+      const double v2 = gridvelderiv(0,0)*(deriv_(2,ui)*xjm_(1,1)-deriv_(1,ui)*xjm_(2,1))
+                      + gridvelderiv(0,1)*(deriv_(0,ui)*xjm_(2,1)-deriv_(2,ui)*xjm_(0,1))
+                      + gridvelderiv(0,2)*(deriv_(1,ui)*xjm_(0,1)-deriv_(0,ui)*xjm_(1,1))
+                      + gridvelderiv(1,0)*(deriv_(1,ui)*xjm_(2,0)-deriv_(2,ui)*xjm_(1,0))
+                      + gridvelderiv(1,1)*(deriv_(2,ui)*xjm_(0,0)-deriv_(0,ui)*xjm_(2,0))
+                      + gridvelderiv(1,2)*(deriv_(0,ui)*xjm_(1,0)-deriv_(1,ui)*xjm_(0,0));
+
+      for(unsigned vi=0; vi<nen_; ++vi)
+      {
+        const int fvi = vi*numdofpernode_+k;
+        const double v = scatravarmanager_->Phinp(k)*timefacfac/J*funct_(vi);
+
+        emat(fvi,ui*3) += v*v0;
+        emat(fvi,ui*3+1) += v*v1;
+        emat(fvi,ui*3+2) += v*v2;
+      }
+    }
+  }
+
+  else if(nsd_ == 2)
+  {
+    for(unsigned vi=0; vi<nen_; ++vi)
+    {
+      const int fvi = vi*numdofpernode_+k;
+      const double v = scatravarmanager_->Phinp(k)*timefacfac/J*funct_(vi);
+
+      for(unsigned ui=0; ui<nen_; ++ui)
+      {
+        emat(fvi,ui*2) += v*(-gridvelderiv(1,0)*deriv_(1,ui)+gridvelderiv(1,1)*deriv_(0,ui));
+        emat(fvi,ui*2+1) += v*(gridvelderiv(0,0)*deriv_(1,ui)-gridvelderiv(0,1)*deriv_(0,ui));
+      }
+    }
+  }
+
+  else
+    dserror("Shape derivatives not implemented for 1D problems!");
+
+  return;
+}
+
 
 /*-------------------------------------------------------------------- *
  |  "shapederivatives" convective term (OD mesh)           vuong 08/14 |

@@ -289,6 +289,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--ELASTO HYDRO DYNAMIC/PARTITIONED", *list);
   reader.ReadGidSection("--ELASTO HYDRO DYNAMIC/MONOLITHIC", *list);
   reader.ReadGidSection("--SSI CONTROL", *list);
+  reader.ReadGidSection("--SSI CONTROL/MONOLITHIC", *list);
   reader.ReadGidSection("--SSI CONTROL/PARTITIONED", *list);
   reader.ReadGidSection("--FLUID DYNAMIC", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION", *list);

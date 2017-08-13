@@ -80,7 +80,8 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                 "ssi_IterStaggFixedRel_ScatraToSolid",
                                 "ssi_IterStaggFixedRel_SolidToScatra",
                                 "ssi_IterStaggAitken_ScatraToSolid",
-                                "ssi_IterStaggAitken_SolidToScatra"
+                                "ssi_IterStaggAitken_SolidToScatra",
+                                "ssi_Monolithic"
                                 ),
                               tuple<int>(
                                 ssi_OneWay_ScatraToSolid,
@@ -91,7 +92,8 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                 ssi_IterStaggFixedRel_ScatraToSolid,
                                 ssi_IterStaggFixedRel_SolidToScatra,
                                 ssi_IterStaggAitken_ScatraToSolid,
-                                ssi_IterStaggAitken_SolidToScatra
+                                ssi_IterStaggAitken_SolidToScatra,
+                                ssi_Monolithic
                                 ),
                               &ssidyn);
 
@@ -137,6 +139,38 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   // convergence tolerance of outer iteration loop
   DoubleParameter("CONVTOL",1e-6,"tolerance for convergence check of outer iteration within partitioned SSI",&ssidynpart);
+
+  /*----------------------------------------------------------------------*/
+  /* parameters for monolithic SSI */
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& ssidynmono = ssidyn.sublist(
+      "MONOLITHIC",false,
+      "Monolithic Structure Scalar Interaction\n"
+      "Control section for monolithic SSI"
+       );
+
+  // convergence tolerances of Newton-Raphson iteration loop
+  DoubleParameter("ABSTOLRES",1.e-14,"absolute tolerance for deciding if global residual of nonlinear problem is already zero",&ssidynmono);
+  DoubleParameter("CONVTOL",1.e-6,"tolerance for convergence check of Newton-Raphson iteration within monolithic SSI",&ssidynmono);
+
+  // ID of linear solver for global system of equations
+  IntParameter("LINEAR_SOLVER",-1,"ID of linear solver for global system of equations",&ssidynmono);
+
+  // type of global system matrix in global system of equations
+  setStringToIntegralParameter<int>(
+      "MATRIXTYPE",
+      "undefined",
+      "type of global system matrix in global system of equations",
+      tuple<std::string>(
+          "undefined",
+          "sparse"
+          ),
+      tuple<int>(
+          INPAR::SSI::matrix_undefined,
+          INPAR::SSI::matrix_sparse
+          ),
+      &ssidynmono
+      );
 }
 
 

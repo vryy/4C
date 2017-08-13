@@ -807,13 +807,13 @@ void runEnsightVtuFilter(PostProblem    &problem)
     {
       std::string basename = problem.outname();
 
-      PostField* structfield = problem.get_discretization(0);
-      StructureFilter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
-      structwriter.WriteFiles();
-
-      PostField* scatrafield = problem.get_discretization(1);
+      PostField* scatrafield = problem.get_discretization(0);   // remark: scalar transport discretization number is one for old structural time integration!
       ScaTraFilter scatrawriter(scatrafield, basename);
       scatrawriter.WriteFiles();
+
+      PostField* structfield = problem.get_discretization(1);   // remark: structure discretization number is zero for old structural time integration!
+      StructureFilter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
+      structwriter.WriteFiles();
 
       break;
     }

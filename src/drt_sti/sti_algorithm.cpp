@@ -1757,7 +1757,7 @@ void STI::Algorithm::Solve()
     AssembleMatAndRHS();
 
     // determine time needed for evaluating elements and assembling global system of equations,
-    // and take average over all processors via communication
+    // and take maximum over all processors via communication
     double mydtele = timer_->WallTime()-time;
     Comm().MaxAll(&mydtele,&dtele_,1);
 
@@ -1793,7 +1793,7 @@ void STI::Algorithm::Solve()
         );
 
     // determine time needed for solving global system of equations,
-    // and take average over all processors via communication
+    // and take maximum over all processors via communication
     double mydtsolve = timer_->WallTime()-time;
     Comm().MaxAll(&mydtsolve,&dtsolve_,1);
 

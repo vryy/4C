@@ -1090,6 +1090,16 @@ namespace ELEMENTS
         const LINALG::Matrix<nsd_,1>&   convelint
     );
 
+    //! standard Galerkin convective term in conservative form (off-diagonal)
+    void CalcConvConsODMesh(
+        Epetra_SerialDenseMatrix&   emat,         //!< element matrix
+        const int                   k,            //!< species index
+        const double                fac,          //!< domain-integration factor
+        const double                timefacfac,   //!< time-integration factor times domain-integration factor
+        const double                densnp,       //!< density
+        const double                J             //!< Jacobian determinant of mapping between spatial and parameter coordinates
+        ) const;
+
     //! standard Galerkin diffusive term (off diagonal/shapederivative term mesh)
     virtual void CalcDiffODMesh(
         Epetra_SerialDenseMatrix&           emat,             //!< element current to be filled

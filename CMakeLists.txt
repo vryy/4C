@@ -2380,6 +2380,7 @@ set(OBJS_DRT_SSI
 src/drt_ssi/ssi_dyn.cpp
 src/drt_ssi/ssi_base.cpp
 src/drt_ssi/ssi_coupling.cpp
+src/drt_ssi/ssi_monolithic.cpp
 src/drt_ssi/ssi_partitioned.cpp
 src/drt_ssi/ssi_partitioned_1wc.cpp
 src/drt_ssi/ssi_partitioned_2wc.cpp
