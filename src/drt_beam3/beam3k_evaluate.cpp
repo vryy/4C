@@ -3260,9 +3260,6 @@ void DRT::ELEMENTS::Beam3k::EvaluateRotationalDamping(
   std::vector<LINALG::TMatrix<T,ndim,ndim*vpernode*nnode+BEAM3K_COLLOCATION_POINTS> >
       lin_theta_cp(BEAM3K_COLLOCATION_POINTS);
 
-  //relative angle at collocation points
-  std::vector<LINALG::TMatrix<T,3,1> > theta_cp(BEAM3K_COLLOCATION_POINTS);
-
   // Interpolated material triad and local rotation vector evaluated at Gauss point
   LINALG::TMatrix<T,3,3> triad_mat(true);
   LINALG::TMatrix<T,3,1> theta(true);
@@ -3388,14 +3385,15 @@ void DRT::ELEMENTS::Beam3k::EvaluateRotationalDamping(
 
     // compute matrix Lambda*[gamma(2) 0 0 \\ 0 0 0 \\ 0 0 0]*Lambda^t = gamma(2) * g_1 \otimes g_1
     // where g_1 is first base vector, i.e. first column of Lambda
-    LINALG::TMatrix<T,3,3> g1g1gamma;
+    LINALG::TMatrix<T,3,3> g1g1gamma(true);
     for (unsigned int k=0; k<3; ++k)
       for (unsigned int j=0; j<3; ++j)
         g1g1gamma(k,j) = triad_mat(k,0) * triad_mat(j,0) * gamma(2);
 
     // compute vector gamma(2) * g_1 \otimes g_1 * \omega (viscous moment per unit length)
-    LINALG::TMatrix<T,3,1> m_visc;
+    LINALG::TMatrix<T,3,1> m_visc(true);
     m_visc.Multiply(g1g1gamma, omega);
+
 
     // residual contribution from viscous damping moment
     f_int_aux.Clear();

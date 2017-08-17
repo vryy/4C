@@ -2278,7 +2278,7 @@ void DRT::ELEMENTS::Beam3k::Calc_velocity(
   }
 
   // safety check
-  if (diff.NormInf() > 1e-10)
+  if (diff.NormInf() > 1e-11)
   {
     std::cout << "\nrnewmass = " << position;
     std::cout << "\nrconvmass_ = " << rconvmass_[gausspoint_index];
@@ -2286,7 +2286,7 @@ void DRT::ELEMENTS::Beam3k::Calc_velocity(
     std::cout << "\nvel_test = " << velocity_test;
     std::cout << "\nabs(diff) = " << diff.Norm2();
     std::cout << "\n*** SERIOUS WARNING: ***";
-    std::cout << "\nvelocity vector at GP computed locally in beam3k differs from OneStepTheta velocity vector (see values above)!";
+    std::cout << "\nvelocity vector at GP computed locally in beam3k differs from OneStepTheta velocity vector (see values above)!\n\n";
   }
 
 }
@@ -2687,7 +2687,7 @@ void DRT::ELEMENTS::Beam3k::Calc_lin_moment_viscous(
   LINALG::TMatrix<double,3,3> gamma_g1_g1_conv;
   for (unsigned int i=0; i<3; ++i)
     for (unsigned int j=0; j<3; ++j)
-      gamma_g1_g1_conv(i,j) = triad_mat(i,0) * triad_mat(j,0) * gamma_polar / dt;
+      gamma_g1_g1_conv(i,j) = triad_mat(i,0) * triad_mat_conv(j,0) * gamma_polar / dt;
 
   LINALG::TMatrix<double,3,3> Tmat_of_deltatheta = LARGEROTATIONS::Tmatrix(deltatheta);
 
