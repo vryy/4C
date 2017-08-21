@@ -73,7 +73,8 @@ VISCOSITY                       0.001
 KT                              0.0
 ----------------------------------------------------------BEAM INTERACTION/CROSSLINKING
 CROSSLINKER                     yes
-NUMCROSSLINKERPERTYPE           2000
+MAXNUMINITCROSSLINKERPERTYPE    1
+NUMCROSSLINKERPERTYPE           0
 MATCROSSLINKERPERTYPE           2
 FILAMENTBSPOTINTERVAL           0.8
 VISCOSITY                       0.001

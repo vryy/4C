@@ -10,6 +10,7 @@ beam3r_herm2lin3_backweuler_browndyn_crosslinking_beam3rlin2_belloffrate.dat
 DIM                             3
 -----------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Polymer_Network
+RESTART                         0
 RANDSEED                        1
 -----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0
@@ -49,16 +50,16 @@ LINEAR_SOLVER                   1
 INT_STRATEGY                    Standard
 DYNAMICTYP                      OneStepTheta
 RESULTSEVRY                     1
-RESTARTEVRY                     10
+RESTARTEVRY                     50
 NLNSOL                          fullnewton
 DIVERCONT                       stop
-TIMESTEP                        0.00005
+TIMESTEP                        0.0001
 NUMSTEP                         100
 MAXTIME                         10000
 PREDICT                         ConstDis
 TOLDISP                         1.0E-10
 TOLRES                          1.0E-08
-MAXITER                         25
+MAXITER                         15
 NEGLECTINERTIA                  yes
 MASSLIN                         rotations
 -----------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
@@ -75,7 +76,8 @@ VISCOSITY                       0.001
 KT                              0.0
 -----------------------------------------------------BEAM INTERACTION/CROSSLINKING
 CROSSLINKER                     yes
-NUMCROSSLINKERPERTYPE           2000
+MAXNUMINITCROSSLINKERPERTYPE    20
+NUMCROSSLINKERPERTYPE           0
 MATCROSSLINKERPERTYPE           2
 FILAMENTBSPOTINTERVAL           0.8
 VISCOSITY                       0.001
@@ -88,7 +90,7 @@ Outer Iteration                 = Yes
 Inner Iteration                 = No
 Outer Iteration StatusTest      = No
 -----------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 3
+NDPOINT 2
 NDLINE  2
 NDSURF  0
 NDVOL   0
@@ -96,13 +98,12 @@ NDVOL   0
 DPOINT                          1
 E 1 - NUMDOF 9 ONOFF 0 1 0 0 0 0 0 0 0 VAL 0.0 2.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 1 0 0 0 0 0 0 0
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT                          2
-E 2 - NUMDOF 9 ONOFF 1 0 0 0 0 0 0 0 0 VAL -30.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0 0 0 0 Live Mid
-E 3 - NUMDOF 9 ONOFF 1 0 0 0 0 0 0 0 0 VAL -30.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0 0 0 0 Live Mid
+DPOINT                          1
+E 2 - NUMDOF 9 ONOFF 1 0 1 0 0 0 0 0 0 VAL -30.0 0.0 -30.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 1 0 0 0 0 0 0 Live Mid
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE      16 DNODE 1
 NODE       1 DNODE 2
-NODE      12 DNODE 3
+NODE      12 DNODE 2
 --------------------------------------------------DESIGN LINE BEAM FILAMENT CONDITIONS
 DLINE 2
 E 1 - ID 0 TYPE arbitrary
@@ -166,13 +167,13 @@ NODE      22     COORD 1.250000000000000e+01     3.000000000000000e+00     2.500
 10 BEAM3R HERM2LIN3  20  22  21  MAT 1 TRIADS 0.0 0.0 0.0  0.0 0.0 0.0  0.0 0.0 0.0
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_BeamReissnerElastHyper YOUNG 1.3e+09 POISSONRATIO 0.3 DENS 1.384e-09 CROSSAREA 1.9e-07 SHEARCORR 1.0 MOMINPOL 5.7e-11 MOMIN2 2.85e-11 MOMIN3 2.85e-11
-MAT 2 MAT_Crosslinker MATNUM 3 JOINTTYPE beam3rlin2rigid LINKINGLENGTH 0.5 LINKINGLENGTHTOL 0.2 LINKINGANGLE 0.0 LINKINGANGLETOL 0.392699081698724 K_ON 1e+07 K_OFF 3.0 DELTABELLEQ 0.05
+MAT 2 MAT_Crosslinker MATNUM 3 JOINTTYPE beam3rlin2rigid LINKINGLENGTH 0.5 LINKINGLENGTHTOL 0.2 LINKINGANGLE 0.0 LINKINGANGLETOL 0.392699081698724 K_ON 1.0e+07 K_OFF 3.0 DELTABELLEQ 0.05
 MAT 3 MAT_BeamReissnerElastHyper YOUNG 1.3e+09 POISSONRATIO 0.3 DENS 1.384e-09 CROSSAREA 4.751658e-06 SHEARCORR 1.0 MOMINPOL 8.9836e-11 MOMIN2 4.4918e-11 MOMIN3 4.4918e-11
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 0.0001 0.01 10.0 VALUES 0.0 0.0 1.0 1.0
 ---------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -6.41108298999265247e-01 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 3 QUANTITY dispy VALUE  1.82753686157405559e-02 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 3 QUANTITY dispz VALUE  0.00000000000000000e+00 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -2.98612689696688260e+00 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispy VALUE  2.33261013978045745e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispz VALUE -3.53582349313419453e+00 TOLERANCE 1e-10
 ---------------------------------------------------------------END

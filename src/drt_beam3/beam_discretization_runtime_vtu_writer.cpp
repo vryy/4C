@@ -1199,6 +1199,107 @@ BeamDiscretizationRuntimeVtuWriter::AppendGaussPointSpatialCrossSectionStressRes
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void
+BeamDiscretizationRuntimeVtuWriter::AppendElementOrientationParamater(
+    Teuchos::RCP<const Epetra_Vector> const & displacement_state_vector)
+{
+  /*
+   * see
+   * [1] Chandran and Barocas, "Affine Versus Non_Affine Fibril Kinamtics in Collagen Networks:
+   * Theoretical Studies of Network Behavior", 2006.
+   * [2] D.L. Humphries et al., "Mechnanical Cell-Cell Communication in Fibrous Networks: The
+   * Importance of Network Geometry", 2017.
+   */
+
+  // determine number of row BEAM elements for each processor
+  // output is completely independent of the number of processors involved
+  unsigned int num_beam_row_elements = local_row_indices_beam_elements_.size();
+
+  // define variables
+  std::vector<double> local_orientation_parameter( 3, 0.0 );
+
+  std::vector<double> orientation_parameter_for_each_element;
+  orientation_parameter_for_each_element.reserve( num_beam_row_elements * 3 );
+  std::vector<double> orientation_parameter_for_global_network;
+  orientation_parameter_for_global_network.reserve( num_beam_row_elements * 3 );
+
+  double local_accumulated_ele_lengths = 0.0;
+
+  // loop over my elements and collect data about orientation and length of elements/filaments
+  //(assignment of elements to filaments not needed in case as parameter is calculated as sum over all elements)
+  for ( unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele )
+  {
+    const DRT::Element* ele = discretization_->lRowElement( local_row_indices_beam_elements_[ibeamele] );
+
+    // length of element is approximated linearly, as also the direction of a element is calculated linearly
+    // independent of centerline interpolation
+    LINALG::Matrix< 3, 1 > dirvec( true );
+
+    std::vector<double> pos( 2, 0.0 );
+    for ( int dim = 0; dim < 3; ++dim )
+    {
+      pos[0] = ele->Nodes()[0]->X()[dim] +
+          (*displacement_state_vector)[ displacement_state_vector->Map().LID( discretization_->Dof(ele->Nodes()[0])[dim] ) ];
+      pos[1] = ele->Nodes()[1]->X()[dim] +
+          (*displacement_state_vector)[ displacement_state_vector->Map().LID( discretization_->Dof(ele->Nodes()[1])[dim] ) ];
+      dirvec(dim) = pos[1] - pos[0];
+    }
+
+    // current element length (linear)
+    double curr_lin_ele_length = dirvec.Norm2();
+
+    // loop over all base vectors for orientation index x,y and z
+    LINALG::Matrix< 3, 1 > unit_base_vec (true);
+    std::vector<double> curr_ele_orientation_parameter( 3, 0.0 );
+    for ( int unsigned ibase = 0; ibase < 3; ++ibase )
+    {
+      // init current base vector
+      unit_base_vec.Clear();
+      unit_base_vec(ibase) = 1.0;
+
+      double cos_squared = dirvec.Dot(unit_base_vec) / curr_lin_ele_length;
+      cos_squared *= cos_squared;
+
+      curr_ele_orientation_parameter[ibase] = cos_squared;
+      local_orientation_parameter[ibase] += curr_lin_ele_length * cos_squared;
+    }
+
+    local_accumulated_ele_lengths += curr_lin_ele_length;
+
+  // in case of cut elements by a periodic boundary
+  for( int i = 0; i < num_cells_per_element_[ibeamele]; ++i )
+    InsertVectorValuesAtBackOfOtherVector( curr_ele_orientation_parameter, orientation_parameter_for_each_element );
+  }
+
+  // calculate length of all (linear) elements
+  double global_linear_filament_length = 0;
+  discretization_->Comm().SumAll( &local_accumulated_ele_lengths, &global_linear_filament_length, 1 );
+
+  //
+  for ( int unsigned i = 0; i < 3; ++i )
+    local_orientation_parameter[i] /= global_linear_filament_length;
+
+  // calculate global orientation parameter
+  std::vector<double> global_orientation_parameter( 3, 0.0 );
+  discretization_->Comm().SumAll( local_orientation_parameter.data(),
+      global_orientation_parameter.data(), 3);
+
+  // loop over my elements and collect the data about triads/base vectors
+  for ( unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele )
+    for( int i = 0; i < num_cells_per_element_[ibeamele]; ++i )
+      InsertVectorValuesAtBackOfOtherVector( global_orientation_parameter, orientation_parameter_for_global_network );
+
+  // append the solution vector to the visualization data of the vtu writer object
+  runtime_vtuwriter_->AppendVisualizationCellDataVector(
+      orientation_parameter_for_each_element, 3, "orientation_parameter_element" );
+
+  // append the solution vector to the visualization data of the vtu writer object
+  runtime_vtuwriter_->AppendVisualizationCellDataVector(
+      orientation_parameter_for_global_network, 3, "orientation_parameter" );
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+void
 BeamDiscretizationRuntimeVtuWriter::AppendPeriodicBoxCrossSectionStressResultants(
     Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector)
 {
@@ -1270,14 +1371,14 @@ BeamDiscretizationRuntimeVtuWriter::AppendPeriodicBoxCrossSectionStressResultant
   // loop over all my elements and build force sum of myrank's cut element
   for ( unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele )
   {
-    const DRT::Element* ele = discretization_->lRowElement( local_row_indices_beam_elements_[ibeamele] );
-
-    // cast to beam element
-    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
-
-    // Todo safety check for now, may be removed when better tested
-    if ( beamele == NULL )
-      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+//    const DRT::Element* ele = discretization_->lRowElement( local_row_indices_beam_elements_[ibeamele] );
+//
+//    // cast to beam element
+//    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+//
+//    // Todo safety check for now, may be removed when better tested
+//    if ( beamele == NULL )
+//      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
 
     for( int i = 0; i < num_cells_per_element_[ibeamele]; ++i )
       for ( int dim = 0; dim < 3; ++dim )

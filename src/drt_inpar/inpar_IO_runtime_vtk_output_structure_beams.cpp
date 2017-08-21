@@ -83,9 +83,13 @@ namespace BEAMS
         "write material cross-section stresses at the Gauss points",
         yesnotuple, yesnovalue, &sublist_IO_VTK_beams);
 
-
-    // write element filament numbers
+    // write element filament numbers and type
     setStringToIntegralParameter<int>("BEAMFILAMENTCONDITION","No",
+        "write element filament numbers",
+        yesnotuple, yesnovalue, &sublist_IO_VTK_beams);
+
+    // write element and network orientation parameter
+    setStringToIntegralParameter<int>("ORIENTATION_PARAMETER","No",
         "write element filament numbers",
         yesnotuple, yesnovalue, &sublist_IO_VTK_beams);
   }

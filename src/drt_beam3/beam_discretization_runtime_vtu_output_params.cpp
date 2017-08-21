@@ -66,9 +66,10 @@ void DRT::ELEMENTS::BeamRuntimeVtuOutputParams::Init(
       (bool) DRT::INPUT::IntegralValue<int>(
           IO_vtk_structure_beams_paramslist, "SPATIAL_FORCES_GAUSSPOINT");
 
-  write_filament_condition_ =
+  write_orientation_parameter_ =
       (bool) DRT::INPUT::IntegralValue<int>(
-          IO_vtk_structure_beams_paramslist, "BEAMFILAMENTCONDITION");
+          IO_vtk_structure_beams_paramslist, "ORIENTATION_PARAMETER");
+
 
   isinit_ = true;
 }

@@ -86,15 +86,16 @@ public:
  * class for comparing std::set< std::pair < int, int > >
  *  \author J. Eichinger March 2017
  -------------------------------------------------------------------------*/
-class SetOfPairComparator
+class StdPairComparatorOrderCounts
 {
 public:
 
   bool operator() (std::pair< int, int > const & lhs, std::pair< int, int > const & rhs) const
   {
-    return (lhs.first == rhs.first) ? (lhs.second < rhs.second) : (lhs.first < rhs.first);
+    return ( lhs.first == rhs.first ) ? ( lhs.second < rhs.second ) : ( lhs.first < rhs.first );
   }
 };
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

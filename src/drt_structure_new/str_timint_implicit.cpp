@@ -300,7 +300,10 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(INPAR::S
       // halve the time step size
       SetDeltaTime(GetDeltaTime()*0.5);
       // update the number of max time steps
-      SetStepEnd(GetStepEnd() + (GetStepEnd() - GetStepNp()) +1);
+      int endstep = GetStepEnd() + ( GetStepEnd() - GetStepNp() ) +1;
+      if ( endstep > std::numeric_limits<int>::max() )
+        dserror(" Your updated step number exceeds largest possible value for type int");
+      SetStepEnd(endstep);
       // reset timen_ because it is set in the constructor
       SetTimeNp(GetTimeN()+GetDeltaTime());
       // reset step (e.g. quantities on element level or model specific stuff)
@@ -322,7 +325,10 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(INPAR::S
       // halve the time step size
       SetDeltaTime(GetDeltaTime()*0.5);
       // update the number of max time steps
-      SetStepEnd(GetStepEnd() + (GetStepEnd() - GetStepNp()) +1);
+      int endstep = GetStepEnd() + ( GetStepEnd() - GetStepNp() ) + 1;
+      if ( endstep > std::numeric_limits<int>::max() )
+        dserror(" Your updated step number exceeds largest possible value for type int");
+      SetStepEnd(endstep);
       // reset timen_ because it is set in the constructor
       SetTimeNp(GetTimeN()+GetDeltaTime());
 
@@ -362,7 +368,10 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(INPAR::S
       // multiply time-step size by random number
       SetDeltaTime(GetDeltaTime()*GetRandomTimeStepFactor());
       // update maximum number of time steps
-      SetStepEnd((1.0/GetRandomTimeStepFactor())*GetStepEnd() + (1.0-(1.0/GetRandomTimeStepFactor()))*GetStepNp() + 1);
+      int endstep = ( 1.0 / GetRandomTimeStepFactor() ) * GetStepEnd() + ( 1.0 - ( 1.0 / GetRandomTimeStepFactor() ) ) * GetStepNp() + 1;
+      if ( endstep > std::numeric_limits<int>::max() )
+        dserror(" Your updated step number exceeds largest possible value for type int");
+      SetStepEnd(endstep);
       // reset timen_ because it is set in the constructor
       SetTimeNp(GetTimeN()+GetDeltaTime());
       // reset step (e.g. quantities on element level or model specific stuff)

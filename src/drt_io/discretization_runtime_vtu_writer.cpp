@@ -138,7 +138,6 @@ DiscretizationRuntimeVtuWriter::SetGeometryFromDiscretizationStandard()
       continue;
     }
 
-
     cell_types.push_back(
         DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType( ele->Shape() ).first );
 

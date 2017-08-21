@@ -25,7 +25,8 @@ BEAMINTERACTION::CrosslinkingParams::CrosslinkingParams()
     viscosity_(0.0),
     kt_(0.0),
     deltatime_(0.0),
-    filamentbspotinterval_(0.0)
+    filamentbspotinterval_(-1.0),
+    max_num_bonds_per_filament_bspot_(-1.0)
 {
   // empty constructor
 }
@@ -52,7 +53,7 @@ void BEAMINTERACTION::CrosslinkingParams::Init( STR::TIMINT::BaseDataGlobalState
 
     // safety check
     for( int i = 0; i < static_cast<int>( numcrosslinkerpertype_.size() ); ++i )
-      if( numcrosslinkerpertype_[i] < 0 )
+      if ( numcrosslinkerpertype_[i] < 0 )
         dserror(" negative number of crosslinker does not make sense.");
   }
 
@@ -68,7 +69,7 @@ void BEAMINTERACTION::CrosslinkingParams::Init( STR::TIMINT::BaseDataGlobalState
 
     // safety check
     for( int i = 0; i < static_cast<int>( matcrosslinkerpertype_.size() ); ++i )
-      if( matcrosslinkerpertype_[i] < 0 )
+      if ( matcrosslinkerpertype_[i] < 0 )
         dserror(" negative material number does not make sense.");
    }
 
@@ -91,7 +92,7 @@ void BEAMINTERACTION::CrosslinkingParams::Init( STR::TIMINT::BaseDataGlobalState
     {
       // safety checks
       for( int i = 0; i < static_cast<int>( maxnuminitcrosslinkerpertype.size() ); ++i )
-        if( maxnuminitcrosslinkerpertype[i] < 0 )
+        if ( maxnuminitcrosslinkerpertype[i] < 0 )
           dserror(" negative number of crosslinker does not make sense.");
       if ( maxnuminitcrosslinkerpertype.size() != numcrosslinkerpertype_.size() )
         dserror("number of initial set crosslinker types does not fit number of crosslinker types");
@@ -114,7 +115,7 @@ void BEAMINTERACTION::CrosslinkingParams::Init( STR::TIMINT::BaseDataGlobalState
 
   // safety check
   // todo: maybe make input of time step obligatory
-  if( deltatime_ < 0.0 )
+  if ( deltatime_ < 0.0 )
   {
     deltatime_ = (*gstate.GetDeltaTime())[0];
     if ( gstate.GetMyRank() == 0 )
@@ -124,9 +125,14 @@ void BEAMINTERACTION::CrosslinkingParams::Init( STR::TIMINT::BaseDataGlobalState
 
   // distance between the two binding spots on a filament
   filamentbspotinterval_ = crosslinking_params_list.get<double>("FILAMENTBSPOTINTERVAL");
-  if( not (filamentbspotinterval_ > 0.0) )
+  if ( not (filamentbspotinterval_ > 0.0) )
     dserror(" Choose realistic value for FILAMENTBSPOTINTERVAL (i.e. distance between "
         "two binding spots on a filament) in input file. ");
+
+  max_num_bonds_per_filament_bspot_ = crosslinking_params_list.get<int>("MAXNUMBONDSPERFILAMENTBSPOT");
+  if ( max_num_bonds_per_filament_bspot_ < 0 )
+    dserror( " Choose a number of bonds per filament binding spot >= 0. " );
+
 
   {
     // start and end arc parameter for binding spots on a filament

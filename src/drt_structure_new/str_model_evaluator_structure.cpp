@@ -586,11 +586,10 @@ void STR::MODELEVALUATOR::Structure::InitOutputRuntimeVtkStructure()
 
   // initialize the writer object
   vtu_writer_ptr_->Initialize(
-      Teuchos::rcp_dynamic_cast<DRT::Discretization>(
-        const_cast<STR::MODELEVALUATOR::Structure*>(this)->DiscretPtr(), true ),
-        num_timesteps_in_simulation_upper_bound,
-        GState().GetTimeN(),
-        vtu_output_params.WriteBinaryOutput() );
+      Teuchos::rcp_dynamic_cast<DRT::Discretization>( const_cast<STR::MODELEVALUATOR::Structure*>(this)->DiscretPtr(), true ),
+      num_timesteps_in_simulation_upper_bound,
+      GState().GetTimeN(),
+      vtu_output_params.WriteBinaryOutput() );
 }
 
 /*----------------------------------------------------------------------------*
@@ -644,20 +643,17 @@ void STR::MODELEVALUATOR::Structure::InitOutputRuntimeVtkBeams()
   LINALG::Export( *GState().GetDisN(), *disn_col );
 
   // get bounding box object only if periodic boundaries are active
-  Teuchos::RCP<GEO::MESHFREE::BoundingBox> bounding_box_ptr = Teuchos::null;
-
-  bounding_box_ptr = TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox();
+  Teuchos::RCP<GEO::MESHFREE::BoundingBox> bounding_box_ptr = TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox();
 
   // initialize the writer object with current displacement state
   beam_vtu_writer_ptr_->Initialize(
-      Teuchos::rcp_dynamic_cast<DRT::Discretization>(
-        const_cast<STR::MODELEVALUATOR::Structure*>(this)->DiscretPtr(), true ),
-        disn_col,
-        beam_vtu_output_params.UseAbsolutePositions(),
-        bounding_box_ptr,
-        num_timesteps_in_simulation_upper_bound,
-        GState().GetTimeN(),
-        GInOutput().GetRuntimeVtkOutputParams()->WriteBinaryOutput() );
+      Teuchos::rcp_dynamic_cast<DRT::Discretization>( const_cast<STR::MODELEVALUATOR::Structure*>(this)->DiscretPtr(), true ),
+      disn_col,
+      beam_vtu_output_params.UseAbsolutePositions(),
+      bounding_box_ptr,
+      num_timesteps_in_simulation_upper_bound,
+      GState().GetTimeN(),
+      GInOutput().GetRuntimeVtkOutputParams()->WriteBinaryOutput() );
 }
 
 /*----------------------------------------------------------------------------*
@@ -705,6 +701,10 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkBeams() const
   // append filament id and type if desired
   if ( beam_vtu_output_params.IsWriteElementFilamentCondition() )
     beam_vtu_writer_ptr_->AppendElementFilamentIdAndType();
+
+  // append filament id and type if desired
+  if ( beam_vtu_output_params.IsWriteOrientationParamter() )
+  beam_vtu_writer_ptr_->AppendElementOrientationParamater( disn_col );
 
 //  beam_vtu_writer_ptr_->AppendPeriodicBoxCrossSectionStressResultants( disn_col );
 

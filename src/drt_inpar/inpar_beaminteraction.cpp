@@ -38,7 +38,7 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
   setStringToIntegralParameter<int>("CROSSLINKER","No", "Crosslinker in problem", yesnotuple,yesnovalue,&crosslinking);
 
   // number of initial (are set right in the beginning) crosslinker of certain type
-  setNumericStringParameter("MAXNUMINITCROSSLINKERPERTYPE","0","number of crosslinker of certain type ",&crosslinking);
+  setNumericStringParameter("MAXNUMINITCROSSLINKERPERTYPE","0","number of initial crosslinker of certain type (additional to NUMCROSSLINKERPERTYPE) ",&crosslinking);
   // number of crosslinker of certain type
   setNumericStringParameter("NUMCROSSLINKERPERTYPE","0","number of crosslinker of certain type ",&crosslinking);
   // material number characterizing crosslinker type
@@ -51,6 +51,8 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
   DoubleParameter("KT",0.0,"thermal energy",&crosslinking);
   // distance between two binding spots on a filament
   DoubleParameter("FILAMENTBSPOTINTERVAL",-1.0 ,"distance between two binding spots on a filament",&crosslinking);
+  // maximal number of binding partner per filament binding spot
+  IntParameter("MAXNUMBONDSPERFILAMENTBSPOT", 1 ,"maximal number of bonds per filament binding spot",&crosslinking);
   // start and end for bspots on a filament
   setNumericStringParameter("FILAMENTBSPOTRANGE","-1.0 -1.0", "Lower and upper arc parameter bound for binding spots on a filament", &crosslinking);
 

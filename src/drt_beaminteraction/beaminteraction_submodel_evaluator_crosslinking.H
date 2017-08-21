@@ -174,7 +174,7 @@ private:
     struct BeamData {
         std::map<int, LINALG::Matrix<3,1> > bbspotpos;      // current position at bindingspots (xi) (key is local number of binding spot)
         std::map<int, LINALG::Matrix<3,3> > bbspottriad;    // current triad at bindingspots (xi) (key is local number of binding spot)
-        std::map<int, int> bbspotstatus;                    // key is locn of bspot, holds gid of crosslinker if binded, if free = -1
+        std::map<int, std::set<int> > bbspotstatus;         // key is locn of bspot, holds gid of crosslinker to which it is bonded
         int bowner;                                         // owner of current beam
         INPAR::BEAMINTERACTION::FilamentType filamenttype;  // type of filament
 //        int filnumber;
@@ -204,6 +204,7 @@ private:
     //! struct that stores unbinding event data that needs to be be communicated
     struct UnBindEventData {
       std::pair<int, int> eletoupdate;   // element gid (first) that needs to be updated at local binding (second)
+      int clgid;                         // crosslinker (gid) that is no longer bonded to above binding spot
     };
 
     //! @}
@@ -342,18 +343,18 @@ private:
         DRT::Element* bin,
         std::map<int, BindEventData >& mybonds,
         std::map<int, std::vector<BindEventData> >& undecidedbonds,
-        std::vector< std::set <int> >& intendedbeambonds,
+        std::vector< std::map< int, std::set<int> > >& intendedbeambonds,
         bool const checklinkingprop
     );
 
     /// search for binding events on each proc separately (i.e. pretending myran is alone)
     /// communication to ensure correct binding over all procs is done afterwards
     virtual void PrepareBinding(
-        DRT::Node*                                  crosslinker_i,
-        std::set<DRT::Element*> const&              neighboring_beams,
-        std::map<int, BindEventData >&              mybonds,
-        std::map<int, std::vector<BindEventData> >& undecidedbonds,
-        std::vector< std::set <int> >&              intendedbeambonds,
+        DRT::Node*                                     crosslinker_i,
+        std::set<DRT::Element*> const&                 neighboring_beams,
+        std::map<int, BindEventData >&                 mybonds,
+        std::map<int, std::vector<BindEventData> >&    undecidedbonds,
+        std::vector< std::map< int, std::set<int> > >& intendedbeambonds,
         bool const checklinkingprop
     );
 
@@ -364,8 +365,17 @@ private:
         CrosslinkerData const& cldata_i,
         BeamData const& beamdata_i,
         int locnbspot,
-        std::vector< std::set <int> >& intendedbeambonds,
+        std::vector< std::map< int, std::set<int> > >& intendedbeambonds,
         bool checklinkingprop
+    ) const;
+
+    // check if identical bond alread exists
+    virtual bool ReturnFalseIfIdenticalBondAlreadyExists(
+        CrosslinkerData const & cldata_i,
+        std::vector< std::map< int, std::set<int> > > & intendedbeambonds,
+        BeamData const & beamdata_i,
+        int locnbspot,
+        int potbeampartnerrowlid
     ) const;
 
     /// check if crosslinke and filament type are compatible

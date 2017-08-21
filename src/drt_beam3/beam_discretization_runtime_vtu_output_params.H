@@ -94,6 +94,13 @@ namespace ELEMENTS {
       return write_filament_condition_;
     };
 
+        /// whether to write element and network orientation paramter
+    bool IsWriteOrientationParamter() const
+    {
+      CheckInitSetup();
+      return write_orientation_parameter_;
+    };
+
   private:
     /// get the init indicator status
     const bool& IsInit() const { return isinit_; };
@@ -138,6 +145,9 @@ namespace ELEMENTS {
 
     /// whether to write beam filament condition (id, type)
     bool write_filament_condition_;
+
+    /// whether to write element and network orientation parameter
+    bool write_orientation_parameter_;
 
     //@}
   };

@@ -157,6 +157,13 @@ public:
    *  \date 03/17 */
   void AppendGaussPointSpatialCrossSectionStressResultants();
 
+  /** \brief append element Orientation parameter with respect to x,y,z axis
+   *
+   *  \author eichinger
+   *  \date 08/17 */
+  void AppendElementOrientationParamater(
+      Teuchos::RCP<const Epetra_Vector> const & displacement_state_vector);
+
   void AppendPeriodicBoxCrossSectionStressResultants(
       Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector);
 

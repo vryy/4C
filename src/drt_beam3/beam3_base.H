@@ -624,10 +624,10 @@ public:
       std::vector<double>&                            disp,
       const int&                                      bspotlocn) const;
 
-  const std::map<int, int>& GetBindingSpotStatus()
+  const std::map< int, std::set<int> >& GetBindingSpotStatus()
   {
     // safety check
-    if(bspotstatus_.size()!=bspotposxi_.size())
+    if( bspotstatus_.size() != bspotposxi_.size() )
       dserror("size miss match regarding binding spots on this element");
 
     return bspotstatus_;
@@ -640,7 +640,7 @@ public:
   unsigned int GetNumberOfBindingSpots() const
   {
     // safety check
-    if( bspotstatus_.size() != bspotposxi_.size() )
+    if ( bspotstatus_.size() != bspotposxi_.size() )
       dserror("size miss match regarding binding spots on this element");
 
     return bspotposxi_.size();
@@ -664,7 +664,7 @@ public:
    *  \date 03/17 */
   void SetBindingSpotPositionsAndStatus(
       std::vector<double> const& bspotposxi,
-      std::map<int, int> const&  bspotstatus)
+      std::map<int, std::set<int> > const&  bspotstatus)
   {
     bspotposxi_.clear();
     bspotstatus_.clear();
@@ -675,10 +675,12 @@ public:
    *
    *  \author eichinger
    *  \date 03/17 */
-  void SetBindingSpotStatus( std::map< int, int > bspotstatus )
+  void SetBindingSpotStatus( std::map< int, std::set<int> > bspotstatus )
   { bspotstatus_ = bspotstatus; }
-  void SetCertainBindingSpotStatus( std::pair< int, int > bspotstatus )
-  { bspotstatus_[bspotstatus.first] = bspotstatus.second; }
+  void EraseBondFromBindingSpot( int locbspotid, int clgid )
+  { bspotstatus_[locbspotid].erase( clgid ); }
+  void AddBondToBindingSpot( int locbspotid, int clgid )
+  { bspotstatus_[locbspotid].insert( clgid ); }
 
   /** \brief set/get type of filament the element is part of
    *
@@ -696,7 +698,7 @@ private:
   std::vector<double> bspotposxi_;
 
   //! key is locn of bspot, holds gid of crosslinker if binded, if free = -1
-  std::map<int, int> bspotstatus_;
+  std::map< int, std::set<int> > bspotstatus_;
 
   //! type of filament element belongs to
   INPAR::BEAMINTERACTION::FilamentType filamenttype_;

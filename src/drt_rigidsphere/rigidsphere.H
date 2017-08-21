@@ -359,7 +359,7 @@ public:
    *
    *  \author eichinger
    *  \date 06/17 */
-  std::set< std::pair< int, int > , BEAMINTERACTION::UTILS::SetOfPairComparator > const &
+  std::set< std::pair< int, int > , BEAMINTERACTION::UTILS::StdPairComparatorOrderCounts > const &
       GetBondStatus() const { return bondstatus_;}
 
   /** \brief check if bond exists
@@ -399,7 +399,7 @@ private:
   //! @name variables for biopolymer network simulations
 
   /// holds gids of (beam) elements to which sphere is bonded to (size equals number of bonds)
-  std::set< std::pair< int, int > , BEAMINTERACTION::UTILS::SetOfPairComparator > bondstatus_;
+  std::set< std::pair< int, int > , BEAMINTERACTION::UTILS::StdPairComparatorOrderCounts > bondstatus_;
 
   //@}
 

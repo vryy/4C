@@ -129,6 +129,13 @@ namespace BEAMINTERACTION {
       return filamentbspotinterval_;
     };
 
+    // distance between two binding spots on a filament
+    int MaxNumberOfBondsPerFilamentBspot() const
+    {
+      CheckInitSetup();
+      return max_num_bonds_per_filament_bspot_;
+    };
+
     // start and end arc parameter for binding spots on a filament
     std::vector<double> const & FilamentBspotRange() const
     {
@@ -156,6 +163,8 @@ namespace BEAMINTERACTION {
     double deltatime_;
     /// distance between two binding spots on a filament
     double filamentbspotinterval_;
+    /// maximal number of bonds per filament binding spot
+    int max_num_bonds_per_filament_bspot_;
     /// start and end arc parameter for binding spots on a filament
     std::vector<double> filamentbspotrange_;
 
