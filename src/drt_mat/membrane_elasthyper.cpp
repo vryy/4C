@@ -178,6 +178,45 @@ void MAT::Membrane_ElastHyper::Evaluate(
 } // MAT::Membrane_ElastHyper::Evaluate
 
 /*----------------------------------------------------------------------*
+ | evaluate strain energy function                       sfuchs 08/2017 |
+ *----------------------------------------------------------------------*/
+void MAT::Membrane_ElastHyper::StrainEnergy(
+    LINALG::Matrix<3,3>& cauchygreen,    ///< right Cauchy-Green tensor
+    double& psi,                         ///< Strain energy function
+    const int eleGID                     ///< Element GID
+    )
+{
+  // kinematic quantities and identity tensors
+  LINALG::Matrix<3,1> id2(true);
+  LINALG::Matrix<3,3> id4sharp(true);
+  LINALG::Matrix<3,1> rcg(true);
+  double rcg33;
+  LINALG::Matrix<3,1> icg(true);
+  EvaluateKinQuant(cauchygreen, id2, id4sharp, rcg, rcg33, icg);
+
+  // Green-Lagrange strains matrix E = 0.5 * (Cauchy-Green - Identity)
+  // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+  LINALG::Matrix<6,1> glstrain(true);
+  glstrain(0) = 0.5 * (rcg(0) - 1.0);
+  glstrain(1) = 0.5 * (rcg(1) - 1.0);
+  glstrain(2) = 0.5 * (rcg33 - 1.0);
+  glstrain(3) = rcg(2);
+
+  // principal isotropic invariants
+  LINALG::Matrix<3,1> prinv_iso(true);
+  InvariantsPrincipal(prinv_iso,rcg,rcg33);
+
+  // loop map of associated potential summands
+  for (unsigned int p=0; p<potsum_.size(); ++p)
+  {
+    // note that modified invariants equal the principal invariants as detF=J=1 (incompressibility)
+    potsum_[p]->AddStrainEnergy(psi, prinv_iso, prinv_iso, glstrain, eleGID);
+  }
+
+  return;
+} // MAT::Membrane_ElastHyper::StrainEnergy
+
+/*----------------------------------------------------------------------*
  | calculate kinematic quantities and identity tensors   sfuchs 08/2017 |
  *----------------------------------------------------------------------*/
 void MAT::Membrane_ElastHyper::EvaluateKinQuant(

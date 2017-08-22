@@ -173,6 +173,13 @@ public:
       const int eleGID                     ///< Element GID
       );
 
+  /// evaluate strain energy function
+  virtual void StrainEnergy(
+      LINALG::Matrix<3,3>& cauchygreen,    ///< right Cauchy-Green tensor
+      double& psi,                         ///< Strain energy function
+      const int eleGID                     ///< Element GID
+  );
+
 protected:
 
   /// calculates the kinematic quantities and tensors used afterwards

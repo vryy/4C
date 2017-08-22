@@ -68,6 +68,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList&   params,
     else if (action=="calc_struct_update_istep")                    act = ELEMENTS::struct_calc_update_istep;
     else if (action=="calc_struct_reset_istep")                     act = ELEMENTS::struct_calc_reset_istep;
     else if (action=="calc_struct_stress")                          act = ELEMENTS::struct_calc_stress;
+    else if (action=="calc_struct_energy")                          act = ELEMENTS::struct_calc_energy;
     else if (action=="postprocess_stress")                          act = ELEMENTS::struct_postprocess_stress;
     else if (action=="calc_fluid_traction")                         act = ELEMENTS::struct_calc_fluid_traction;
     else if (action=="calc_cur_normal_at_point")                    act = ELEMENTS::struct_calc_cur_normal_at_point;
@@ -211,6 +212,122 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList&   params,
           std::copy(data().begin(),data().end(),std::back_inserter(*straindata));
         }
       }
+    }
+    break;
+
+    /*===============================================================================*
+     | struct_calc_energy                                                            |
+     *===============================================================================*/
+    case ELEMENTS::struct_calc_energy:
+    {
+      // check length of elevec1
+      if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
+
+      // initialization of internal energy
+      double intenergy = 0.0;
+
+      // need current displacement
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+
+      // get reference configuration and determine current configuration
+      LINALG::Matrix<numnod_,noddof_> xrefe(true);
+      LINALG::Matrix<numnod_,noddof_> xcurr(true);
+
+      mem_configuration(mydisp,xrefe,xcurr);
+
+      /*===============================================================================*
+       | loop over the gauss points                                                    |
+       *===============================================================================*/
+
+      // allocate matrix for shape function derivatives at gp
+      LINALG::Matrix<numdim_, numnod_> derivs(true);
+
+      for (int gp=0; gp<intpoints_.nquad; ++gp)
+      {
+        // get gauss points from integration rule
+        double xi_gp = intpoints_.qxg[gp][0];
+        double eta_gp = intpoints_.qxg[gp][1];
+
+        // get gauss weight at current gp
+        double gpweight = intpoints_.qwgt[gp];
+
+        // get shape function derivatives in the plane of the element
+        DRT::UTILS::shape_function_2D_deriv1(derivs,xi_gp,eta_gp,Shape());
+
+        /*===============================================================================*
+         | orthonormal base (t1,t2,tn) in the undeformed configuration at current GP     |
+         *===============================================================================*/
+
+        LINALG::Matrix<numdim_,numnod_> derivs_ortho(true);
+        double G1G2_cn;
+        LINALG::Matrix<noddof_,1> dXds1(true);
+        LINALG::Matrix<noddof_,1> dXds2(true);
+        LINALG::Matrix<noddof_,1> dxds1(true);
+        LINALG::Matrix<noddof_,1> dxds2(true);
+        LINALG::Matrix<noddof_,noddof_> Q_trafo(true);
+
+        mem_orthonormalbase(xrefe,xcurr,derivs,derivs_ortho,G1G2_cn,dXds1,dXds2,dxds1,dxds2,Q_trafo);
+
+        /*===============================================================================*
+         | surface deformation gradient                                                  |
+         *===============================================================================*/
+
+        // surface deformation gradient in 3 dimensions in global coordinates
+        LINALG::Matrix<noddof_,noddof_> defgrd_glob(true);
+
+        // surface deformation gradient in 3 dimensions in local coordinates
+        LINALG::Matrix<noddof_,noddof_> defgrd_loc(true);
+
+        // principle stretch in thickness direction
+        double lambda3 = 1.0;
+
+        // standard evalutation (incompressible, plane stress)
+        if (Material()->MaterialType() == INPAR::MAT::m_membrane_elasthyper)
+        {
+          // incompressibility condition to get principle stretch in thickness direction
+          lambda3 = std::sqrt(1.0/(dxds1.Dot(dxds1)*dxds2.Dot(dxds2)-std::pow(dxds1.Dot(dxds2),2.0)));
+        }
+        else
+          dserror("Type of material not implemented for evaluation of strain energy for membranes!");
+
+        // surface deformation gradient in 3 dimensions in global coordinates
+        mem_defgrd_global(dXds1,dXds2,dxds1,dxds2,lambda3,defgrd_glob);
+
+        // surface deformation gradient in 3 dimensions in local coordinates
+        mem_globaltolocal(Q_trafo,defgrd_glob,defgrd_loc);
+
+        /*===============================================================================*
+         | right cauchygreen tensor in local coordinates                                 |
+         *===============================================================================*/
+
+        // calculate three dimensional right cauchy-green strain tensor in orthonormal base
+        LINALG::Matrix<noddof_,noddof_> cauchygreen_loc(true);
+        cauchygreen_loc.MultiplyTN(1.0,defgrd_loc,defgrd_loc,0.0);
+
+        /*===============================================================================*
+         | call material law for evalutation of strain energy                            |
+         *===============================================================================*/
+
+        double psi = 0.0;
+
+        // standard evalutation (incompressible, plane stress)
+        if (Material()->MaterialType() == INPAR::MAT::m_membrane_elasthyper)
+        {
+          Teuchos::rcp_dynamic_cast<MAT::Membrane_ElastHyper>(DRT::Element::Material(),true)->StrainEnergy(cauchygreen_loc, psi, Id());
+        }
+        else
+          dserror("Type of material not implemented for evaluation of strain energy for membranes!");
+
+        // add gauss point contribution to internal energy
+        double fac = gpweight*thickness_*G1G2_cn;
+        intenergy += fac*psi;
+      }
+
+      // return result
+      elevec1_epetra(0) = intenergy;
     }
     break;
 
@@ -780,7 +897,15 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
     // principle stretch in thickness direction
     double lambda3 = 1.0;
 
-    if(Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
+    // standard evalutation (incompressible, plane stress)
+    if (Material()->MaterialType() == INPAR::MAT::m_membrane_elasthyper)
+    {
+      // Remark:
+      // incompressibility condition to get principle stretch in thickness direction
+      lambda3 = std::sqrt(1.0/(dxds1.Dot(dxds1)*dxds2.Dot(dxds2)-std::pow(dxds1.Dot(dxds2),2.0)));
+    }
+    // growth remodel elasthyper evaluation
+    else if (Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
     {
       // Remark:
       // incompressibility is just valid for the elastic quantities, therefore
@@ -789,13 +914,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
       lambda3 = cur_thickness_[gp]/thickness_;
     }
     else
-    {
-      // Remark:
-      // incompressibility condition to get principle stretch in thickness direction
-      // can be considered as an initialization of the Newton-Raphson procedure in mem_Material3dPlane(...)
-      // where the full stress state is reduced to a plane stress by varying the entries of the Green-Lagrange strain tensor
-      lambda3 = std::sqrt(1.0/(dxds1.Dot(dxds1)*dxds2.Dot(dxds2)-std::pow(dxds1.Dot(dxds2),2.0)));
-    }
+      dserror("Type of material not implemented for membranes!");
 
     // surface deformation gradient in 3 dimensions in global coordinates
     mem_defgrd_global(dXds1,dXds2,dxds1,dxds2,lambda3,defgrd_glob);
