@@ -16,13 +16,7 @@
 #ifndef DOFSET_INDEPENDENT_H
 #define DOFSET_INDEPENDENT_H
 
-#include <vector>
-#include <map>
-
-#include <Epetra_IntVector.h>
 #include <Teuchos_RCP.hpp>
-#include <Epetra_Comm.h>
-#include <Epetra_Map.h>
 
 #include "../drt_lib/drt_dofset.H"
 
@@ -74,15 +68,22 @@ public:
     return Teuchos::rcp(new IndependentDofSet(*this));
   }
 
-  /// Assign dof numbers using all elements and nodes of the discretization.
-  virtual int AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsigned dspos, const int start);
+  /// Add Dof Set to list #static_dofsets_
+  virtual void AddDofSettoList();
 
 protected:
+
+  /// get first number to be used as Dof GID in AssignDegreesOfFreedom
+  virtual int GetFirstGIDNumberToBeUsed(const Discretization& dis) const;
+
+  /// get minimal node GID to be used in AssignDegreesOfFreedom
+  virtual int GetMinimalNodeGIDIfRelevant(const Discretization& dis) const;
+
   bool ignoreminnodegid_;   //< bool whether minnodegid is taken from the discretization or ignored
 
 private:
 
-}; // class StdDofSet
+};
 
 }
 

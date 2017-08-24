@@ -167,7 +167,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
   // try to understand what you do.
 
   // Get highest GID used so far and add one
-  int count = MaxGIDinList(dis.Comm()) + 1;
+  int count = GetFirstGIDNumberToBeUsed(dis);
 
   // Check if we have a face discretization which supports degrees of freedom on faces
   Teuchos::RCP<const DiscretizationHDG> facedis =
@@ -460,7 +460,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
       numdfrownodes[i] = NumDofPerNode(*actnode);
     }
 
-    int minnodegid = dis.NodeRowMap()->MinAllGID();
+    int minnodegid = GetMinimalNodeGIDIfRelevant(dis);
     maxnodenumdf = numdfrownodes.MaxValue();
     GetReservedMaxNumDofperNode(maxnodenumdf); //XFEM::XFEMDofSet set to const number!
 
@@ -734,7 +734,6 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
 
   Exporter nodeexporter( *dis.NodeRowMap(), *dis.NodeColMap(), dis.Comm() );
   nodeexporter.Export( nodedofset );
-  nodeexporter.Export( nodeduplicatedofset );
 
   Exporter elementexporter( *dis.ElementRowMap(), *dis.ElementColMap(), dis.Comm() );
   elementexporter.Export( elementdofset );
@@ -882,3 +881,18 @@ int DRT::DofSet::MinAllGID() const
   return dofrowmap_->MinAllGID();
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int DRT::DofSet::GetFirstGIDNumberToBeUsed(const Discretization& dis) const
+{
+  return MaxGIDinList(dis.Comm()) + 1;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int DRT::DofSet::GetMinimalNodeGIDIfRelevant(const Discretization& dis) const
+{
+  return dis.NodeRowMap()->MinAllGID();
+}

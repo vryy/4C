@@ -184,11 +184,7 @@ CreateMatchingDiscretization(const Teuchos::RCP<DRT::Discretization>& sourcedis,
   }
 
   // make auxiliary discretization have the same dofs as the coupling discretization
-  bool parallel = comm->NumProc() > 1;
-  Teuchos::RCP<DRT::DofSet> newdofset =
-      Teuchos::rcp(new DRT::TransparentIndependentDofSet(sourcedis,parallel));
-  // do not call this with true (no replacement in static dofsets intended)
-  targetdis->ReplaceDofSet( newdofset, false );
+  targetdis->ReplaceDofSet( Teuchos::rcp( new DRT::IndependentDofSet() ), false );
   targetdis->FillComplete( assigndegreesoffreedom, initelements, doboundaryconditions );
 
   // at the end, we do several checks to ensure that we really have generated
@@ -202,9 +198,9 @@ CreateMatchingDiscretization(const Teuchos::RCP<DRT::Discretization>& sourcedis,
   if (not sourcedis->ElementColMap()->SameAs(*(targetdis->ElementColMap())))
     dserror("ElementColMaps of source and target discretization are different!");
   if (not sourcedis->DofRowMap()->SameAs(*(targetdis->DofRowMap())))
-    dserror("ElementRowMaps of source and target discretization are different!");
+    dserror("DofRowMaps of source and target discretization are different!");
   if (not sourcedis->DofColMap()->SameAs(*(targetdis->DofColMap())))
-    dserror("ElementColMaps of source and target discretization are different!");
+    dserror("DofColMaps of source and target discretization are different!");
 
   // return identical dis
   return targetdis;

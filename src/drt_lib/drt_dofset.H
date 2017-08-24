@@ -362,6 +362,12 @@ protected:
   ///Get Reserved Max Number Dofs per Node
   virtual void GetReservedMaxNumDofperNode(int& maxnodenumdf){return;};
 
+  /// get first number to be used as Dof GID in AssignDegreesOfFreedom
+  virtual int GetFirstGIDNumberToBeUsed(const Discretization& dis) const;
+
+  /// get minimal node GID to be used in AssignDegreesOfFreedom
+  virtual int GetMinimalNodeGIDIfRelevant(const Discretization& dis) const;
+
   /// filled flag
   bool filled_;
 

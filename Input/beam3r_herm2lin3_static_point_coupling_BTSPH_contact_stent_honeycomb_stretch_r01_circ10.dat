@@ -25,12 +25,26 @@ OUTPUT_BIN             Yes
 STRUCT_DISP            Yes
 FILESTEPS              1000
 VERBOSITY              standard
+//----------------------------------------------------------IO/RUNTIME VTK OUTPUT
+//OUTPUT_DATA_FORMAT              binary
+//INTERVAL_STEPS                  1
+//EVERY_ITERATION                 No
+//----------------------------------------------------------IO/RUNTIME VTK OUTPUT/STRUCTURE
+//OUTPUT_STRUCTURE                Yes
+//DISPLACEMENT                    Yes
+//----------------------------------------------------------IO/RUNTIME VTK OUTPUT/BEAMS
+//OUTPUT_BEAMS                    Yes
+//DISPLACEMENT                    Yes
+//USE_ABSOLUTE_POSITIONS          Yes
+//TRIAD_VISUALIZATIONPOINT        Yes
+//STRAINS_GAUSSPOINT              Yes
+//MATERIAL_FORCES_GAUSSPOINT      Yes
 ------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1
-RESTARTEVRY                     10
+RESTARTEVRY                     20
 NLNSOL                          fullnewton
 TIMESTEP                        0.025
 NUMSTEP                         40
@@ -40,24 +54,58 @@ TOLDISP                         1.0E-10
 NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
-MAXITER                         50
+MAXITER                         15
 PREDICT                         TangDis
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
+----------------------------------------------------------------BEAM INTERACTION/BEAM TO SPHERE CONTACT
+STRATEGY                        penalty
+----------------------------------------------------------------BEAM CONTACT
+MODELEVALUATOR                  Standard
+BEAMS_STRATEGY                  Penalty
+BEAMS_BTSPH_PENALTYPARAM        1e1
+
+// needed only for beam-to-beam contact
+BEAMS_BTBPENALTYPARAM           0.0
+BEAMS_BTBLINEPENALTYPARAM       0.0
+BEAMS_PENALTYLAW                LinPen
+BEAMS_SEGCON                    Yes
+BEAMS_PERPSHIFTANGLE1           10
+BEAMS_PERPSHIFTANGLE2           15
+BEAMS_PARSHIFTANGLE1            10
+BEAMS_PARSHIFTANGLE2            15
+BEAMS_SEGANGLE                  1.0
+BEAMS_NUMINTEGRATIONINTERVAL    20
+
+// needed only for old beam_contact_manager
+BEAMS_DEBUG                     No
+BEAMS_MAXDELTADISSCALEFAC       -1   //10000
+BEAMS_OCTREE                    none //octree_spherical
+BEAMS_ADDITEXT                  Yes
+BEAMS_EXTVAL                    0.01
+BEAMS_BTSPH                     Yes
+--------------------------------------------------------------------BINNING STRATEGY
+DEFINEBINSPER                   cutoff
+CUTOFF_RADIUS                   20
+DEFINEXAABBPER                  input
+BOUNDINGBOX                     -100 -100 -100 100 100 100
 ------------------------------------------------STRUCT NOX/Printing
 Outer Iteration                 = Yes
 Inner Iteration                 = No
 Outer Iteration StatusTest      = No
 -------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 104
+NDPOINT 105
 NDLINE  3
 NDSURF  0
 NDVOL   0
+------------------------------------DESIGN POINT DIRICH CONDITIONS
+DPOINT 1
+E 105 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 -10.0 0.0 FUNCT 0 2 0
 ------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE 2
-E 1 - NUMDOF 9 ONOFF 1 1 1 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 0 0 0
-E 2 - NUMDOF 9 ONOFF 1 1 1 1 1 1 0 0 0 VAL 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 1 0 0 0 0 0 0
+E 1 - NUMDOF 9 ONOFF 1 1 1 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 0 0 0
+E 2 - NUMDOF 9 ONOFF 1 1 1 0 0 0 0 0 0 VAL 0.0 0.0 5.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 1 0 0 0 0 0 0
 ------------------------------------DESIGN POINT COUPLING CONDITIONS
 DPOINT 100
 E 5 - NUMDOF 9 ONOFF 1 1 1 1 1 1 0 0 0
@@ -456,6 +504,7 @@ NODE       67 DNODE 103
 NODE       74 DNODE 103
 NODE       76 DNODE 104
 NODE       83 DNODE 104
+NODE      451 DNODE 105
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE       2 DLINE 1
 NODE       4 DLINE 1
@@ -1388,6 +1437,7 @@ NODE            447    COORD 23.77641290737884 -7.725424859373691 68.01747615878
 NODE            448    COORD 22.27516310470919 -11.34976249348867 56.6812301323193
 NODE            449    COORD 24.69220851487845 -3.910861626005756 56.6812301323193
 NODE            450    COORD 23.77641290737884 -7.725424859373691 63.48297774819761
+NODE            451    COORD   0.0 35.0  35.0
 ------------------------------------------------STRUCTURE ELEMENTS
 1 BEAM3R  HERM2LIN3       1      2       7 MAT 1 TRIADS 0.3285640932572248 0.4522296776752488 -1.226217889578762 0.4103802407319165 0.4103802407319165 -1.53155990883386 0.3694989177284144 0.4326276475013668 -1.378988734304156
 2 BEAM3R  HERM2LIN3       3      4       8 MAT 1 TRIADS 1.579129823111639 2.173485738607702 -0.4231265608466649 1.206071571104715 2.367048735841215 -0.3231659034916436 1.395345562365053 2.27699701007308 -0.3738817165980662
@@ -1539,12 +1589,23 @@ NODE            450    COORD 23.77641290737884 -7.725424859373691 63.48297774819
 148 BEAM3R  HERM2LIN3       442      443       448 MAT 1 TRIADS 0.4919432227707822 0.3574176727069885 -1.835957101819734 0.5731584896628498 0.2920388370770114 -2.139056604211198 0.5326014327193618 0.3263785777348818 -1.987695607092635
 149 BEAM3R  HERM2LIN3       444      445       449 MAT 1 TRIADS 2.242408468158378 1.629205117276417 -0.600851538143748 1.926874507676449 1.926874507676449 -0.5163044682480216 2.089111030560776 1.784269380990638 -0.5597756135377108
 150 BEAM3R  HERM2LIN3       446      447       450 MAT 1 TRIADS -1.436751751072681 -1.043861249340474 -1.436751751072681 -1.436751751072681 -1.043861249340474 -1.436751751072681 -1.436751751072681 -1.043861249340474 -1.436751751072681
+151 RIGIDSPHERE POINT1      451  RADIUS 10.0 DENSITY 1.0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_BeamReissnerElastHyper YOUNG 2.07e2 POISSONRATIO 0.0 DENS 0.001 CROSSAREA 0.03141592653589793 SHEARCORR 1.1 MOMINPOL 0.0001570796326794897 MOMIN2 7.853981633974485e-05 MOMIN3 7.853981633974485e-05
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 100*t
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 0.2 1.0 VALUES 0.0 1.0 1.0
+-------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 0.2 1.0 VALUES 0.0 0.0 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 400 QUANTITY dispx VALUE  6.39016752475958771e+00 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 400 QUANTITY dispy VALUE -8.30791962522886510e-16 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 400 QUANTITY dispz VALUE  8.01819419880127668e+01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 199 QUANTITY dispx VALUE  0.00000000000000000e+00 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 199 QUANTITY dispy VALUE -1.00941681590389045e+01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 199 QUANTITY dispz VALUE  2.90922792397402263e+00 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 201 QUANTITY dispx VALUE  0.00000000000000000e+00 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 201 QUANTITY dispy VALUE -1.00941681590389045e+01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 201 QUANTITY dispz VALUE  2.90922792397402263e+00 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 203 QUANTITY dispx VALUE  0.00000000000000000e+00 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 203 QUANTITY dispy VALUE -1.00941681590389045e+01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 203 QUANTITY dispz VALUE  2.90922792397402263e+00 TOLERANCE 1e-10
 -------------------------------------------------------------------------END
