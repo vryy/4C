@@ -28,6 +28,9 @@ namespace LINALG {
   class Solver;
 } // namespace LINALG
 namespace NOX {
+namespace Epetra {
+ class Scaling;
+}
 namespace NLN {
 namespace CONSTRAINT {
 namespace Interface {
@@ -40,6 +43,10 @@ namespace Interface {
 
 namespace STR {
   class Integrator;
+namespace TIMINT {
+  class BaseDataSDyn;
+  class BaseDataGlobalState;
+}
 namespace NLN {
   //! Convert the structural vector types to a corresponding nox norm type
   enum NOX::Abstract::Vector::NormType Convert2NoxNormType(
@@ -109,6 +116,13 @@ namespace NLN {
       const enum NOX::NLN::StatusTest::QuantityType& qtype)
   { return ConvertQuantityType2ModelType(qtype,true); }
 
+  /*! \brief Convert the nox nln statustest quantity type enumerator to a structural model
+     *  type enumerator
+     *
+     *  \param qtype (in)    : Quantity type enumerator which has to be converted. */
+    enum INPAR::STR::EleTech ConvertQuantityType2EleTech(
+        const enum NOX::NLN::StatusTest::QuantityType& qtype);
+
   //! Returns the optimization type of the underlying structural problem
   enum NOX::NLN::OptimizationProblemType
       OptimizationType(const std::vector<enum NOX::NLN::SolutionType>& soltypes);
@@ -124,6 +138,12 @@ namespace NLN {
       std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Preconditioner> >& iconstr_prec,
       STR::Integrator& integrator,
       const std::vector<enum NOX::NLN::SolutionType>& soltypes);
+
+  //! Create object to scale linear system
+  void CreateScaling(
+      Teuchos::RCP<NOX::Epetra::Scaling>& iscale,
+      STR::TIMINT::BaseDataSDyn DataSDyn,
+      STR::TIMINT::BaseDataGlobalState GState);
 } // namespace NLN
 } // namespace STR
 

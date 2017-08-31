@@ -46,6 +46,7 @@ STR::TIMINT::BaseDataSDyn::BaseDataSDyn()
       coupling_model_ptr_(Teuchos::null),
       dyntype_(INPAR::STR::dyna_statics),
       stcscale_(INPAR::STR::stc_none),
+      stclayer_(-1),
       itermin_(-1),
       itermax_(-1),
       loadlin_(false),
@@ -138,6 +139,8 @@ void STR::TIMINT::BaseDataSDyn::Init(
 
     stcscale_ =
         DRT::INPUT::IntegralValue<INPAR::STR::STC_Scale>(sdynparams, "STC_SCALING");
+
+    stclayer_ = sdynparams.get<int>("STC_LAYER");
   }
   // ---------------------------------------------------------------------------
   // initialize the damping control parameters

@@ -534,7 +534,7 @@ void FLD::UTILS::StressManager::CalcSepEnr(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::UTILS::SetupFluidSplit(const DRT::Discretization& dis,
+void FLD::UTILS::SetupFluidSplit(const DRT::DiscretizationInterface& dis,
                                  int ndim,
                                  LINALG::MultiMapExtractor& extractor)
 {

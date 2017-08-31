@@ -46,7 +46,8 @@ NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
     const NOX::NLN::OptimizationProblemType& type,
     const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr,
     const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
-    const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec)
+    const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
+    const Teuchos::RCP<NOX::Epetra::Scaling>& iScale)
     : comm_(Teuchos::rcp(&comm,false)),
       nlnparams_(Teuchos::rcp(&noxParams,false)),
       optType_(type),
@@ -56,6 +57,7 @@ NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
       iPrecPtr_(iPrec),
       iConstr_(iConstr),
       iConstrPrec_(iConstrPrec),
+      iScale_(iScale),
       mrtFctPtr_(Teuchos::null),
       prePostOpPtr_(Teuchos::null),
       isConstrained_(type!=opt_unconstrained)
@@ -414,4 +416,11 @@ const NOX::NLN::CONSTRAINT::PrecInterfaceMap&
 const bool& NOX::NLN::GlobalData::GetIsConstrained() const
 {
   return isConstrained_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+const Teuchos::RCP<NOX::Epetra::Scaling>& NOX::NLN::GlobalData::GetScalingObject()
+{
+  return iScale_;
 }

@@ -108,6 +108,7 @@ void STR::ModelEvaluator::Setup()
     ++i;
   }
   gstate_ptr_->SetupMultiMapExtractor();
+  gstate_ptr_->SetupElementTechnologyMapExtractors();
 
   issetup_ = true;
 }

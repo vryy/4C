@@ -30,6 +30,7 @@
 #include <NOX_Epetra_Vector.H>
 #include <NOX_Abstract_Group.H>
 #include <NOX_Solver_Generic.H>
+#include <NOX_Epetra_Scaling.H>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -96,6 +97,10 @@ void STR::NLN::SOLVER::Nox::Setup()
   STR::NLN::CreateConstraintPreconditioner(iconstr_prec,
       Integrator(),soltypes);
 
+  // create object to scale linear system
+  Teuchos::RCP<NOX::Epetra::Scaling> iscale = Teuchos::null;
+  STR::NLN::CreateScaling(iscale, DataSDyn(), DataGlobalState());
+
   // build the global data container for the nox_nln_solver
   nlnglobaldata_ =
       Teuchos::rcp(new NOX::NLN::GlobalData(
@@ -107,7 +112,8 @@ void STR::NLN::SOLVER::Nox::Setup()
           opttype,
           iconstr,
           iprec,
-          iconstr_prec));
+          iconstr_prec,
+          iscale));
 
   // -------------------------------------------------------------------------
   // Create NOX control class: NoxProblem()

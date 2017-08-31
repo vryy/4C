@@ -21,7 +21,6 @@
 #include "str_impl_generic.H"
 
 #include "../solver_nonlin_nox/nox_nln_globaldata.H"
-
 #include "../loca_continuation/loca_nln_problem.H"
 
 #include <LOCA_MultiContinuation_AbstractGroup.H>
@@ -31,6 +30,7 @@
 
 #include <NOX_Epetra_Vector.H>
 #include <NOX_Epetra_LinearSystem.H>
+#include "str_nln_linearsystem_scaling.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -122,6 +122,10 @@ void STR::TIMINT::LOCAContinuation::Setup()
   STR::NLN::CreateConstraintPreconditioner(iconstr_prec,
       Integrator(),soltypes);
 
+  // create object to scale linear system
+  Teuchos::RCP<NOX::Epetra::Scaling> iscale = Teuchos::null;
+  STR::NLN::CreateScaling(iscale, DataSDyn(), DataGlobalState());
+
   Teuchos::RCP<NOX::NLN::GlobalData> nox_nln_global_data_ptr =
       Teuchos::rcp(new NOX::NLN::GlobalData(
           DataGlobalState().GetComm(),
@@ -132,7 +136,8 @@ void STR::TIMINT::LOCAContinuation::Setup()
           opttype,
           iconstr,
           loca_interface_ptr,
-          iconstr_prec));
+          iconstr_prec,
+          iscale));
 
   // ---------------------------------------------------------------------------
   // get initial solution vector and jacobian

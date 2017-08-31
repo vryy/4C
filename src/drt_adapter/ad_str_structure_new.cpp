@@ -290,11 +290,6 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   if (eletechs->find(INPAR::STR::eletech_rotvec) != eletechs->end())
   {
     // -------------------------------------------------------------------------
-    // setup the map extractor for split additive<->rotvec DOFs
-    // -------------------------------------------------------------------------
-    dataglobalstate->SetupRotVecMapExtractor();
-
-    // -------------------------------------------------------------------------
     // set the RotVecUpdater as new precomputeX operator for the nox nln group
     // -------------------------------------------------------------------------
     Teuchos::ParameterList& p_grp_opt =

@@ -1,131 +1,50 @@
-//
-// Maintainer: XXX YYY
-// XXX
-// XXX
-//
------------------------------------------------------------------------TITLE
-created by pre_exodus
+// Maintainer: Martin Pfaller
+// tests scaling of linear system with STC (scaled thickness conditioning) for solid shell elements
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        192
 NODES                           312
-DIM                             3
 MATERIALS                       2
 NUMDF                           6
---------------------------------------------------------------DISCRETISATION
-NUMALEDIS                       1
-NUMFLUIDDIS                     1
-NUMSTRUCDIS                     1
-NUMTHERMDIS                     1
-----------------------------------------------------------------ELCH CONTROL
 --------------------------------------------------------------------------IO
-FILESTEPS                       1000
-FLUID_SOL                       Yes
-FLUID_STRESS                    No
-FLUID_VIS                       No
 OUTPUT_BIN                      Yes
-STRUCT_DISP                     Yes
-STRUCT_STRAIN                   No
-STRUCT_STRESS                   No
-STRUCT_SURFACTANT               No
-THERM_HEATFLUX                  None
-THERM_TEMPERATURE               No
-THERM_TEMPGRAD                  None
-----------------------------------------------------------------LOMA CONTROL
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
-RESTART                         0
-SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
-CONTROLNODE                     -1 -1 -1
-CONTROLTYPE                     load
-DAMPING                         No
-DIVERCONT                       stop
-DYNAMICTYP                      GenAlpha
-ITERNORM                        L2
-K_DAMP                          0.5
-LOADLIN                         no
-MAXITER                         50
-MAXTIME                         1
 MINITER                         2
-M_DAMP                          0.5
-NLNSOL                          fullnewton
-NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFDISP              Or
-NORMCOMBI_RESFINCO              And
-NORM_DISP                       Abs
-NORM_INCO                       Abs
-NORM_PRES                       Abs
 NORM_RESF                       Rel
 NUMSTEP                         10
-PREDICT                         ConstDis
-RESULTSEVRY                     1
-RESEVRYERGY                     0
-RESTARTEVRY                     200
+TIMESTEP                        2.50E-5
+TOLDISP                         1e-06
+TOLRES                          1e-06
 STC_SCALING                     Symmetric
 STC_LAYER                       2
-TIMESTEP                        2.50E-5
-TOLCONSTR                       1e-08
-TOLDISP                         1e-06
-TOLINCO                         1e-08
-TOLPRE                          1e-08
-TOLRES                          1e-06
-UZAWAALGO                       direct
-UZAWAMAXITER                    50
-UZAWAPARAM                      1
-UZAWATOL                        1e-08
------------------------------------------------------STRUCTURAL DYNAMIC/GEMM
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-ALPHA_F                         0.5
-ALPHA_M                         0.5
-BETA                            0.25
-GAMMA                           0.5
-GENAVG                          TrLike
+---------------------------------------------------------STRUCT NOX/Printing
+Warning                         = No
+Inner Iteration                 = No
+Outer Iteration StatusTest      = No
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Aztec_MSR                     // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        0
-AZSOLVE                         GMRES                         // CG GMRES CGS BiCGKINEM nonlinear STAB LU TFQMR
-AZPREC                          ILU                           // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
 AZREUSE                         1                             // how often to recompute some preconditioners
-AZDROP                          0.0                           // drop tolerance for ILUT
-IFPACKFILL                      1.0                           // fill-in for ILUT
-IFPACKGFILL                     0                             // graph fill for ILU
 AZTOL                           1.0E-6                        // tolerance in unscaled residual
-AZCONV                          AZ_r0                         // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test
-AZITER                          1000                          // max iterations
 AZSUB                           100                           // size of krylov space for gmres
-AZOMEGA                         0.79                          // unused
-AZGRAPH                         1                             // unused
 AZPOLY                          5                             // polynomial order for Neumann
-IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
-AZSCAL                          none                          // none sym infnorm scaling of the system
-ML_PRINT                        0                             // ML print-out level (0-10)
 ML_MAXCOARSESIZE                1                             // ML stop coarsening when coarse ndof smaller then this
 ML_MAXLEVEL                     2                             // ML max number of levels
-ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
 ML_PROLONG_SMO                  1.33                          // damping factor for prolongator smoother (usually 0.0 or 1.33)
 ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 ILU                           // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  ILU                           // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               Umfpack                       // KLU Superlu Umfpack
 ML_SMOTIMES                     2 1                           // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     1.0                           // damping fine grid
-ML_DAMPMED                      1.0                           // damping med grids
-ML_DAMPCOARSE                   1.0                           // damping coarse grid
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 2.06E11 NUE 0.0 DENS 7.8E3
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 2e-3 500000.0 DESCRIPTION 2.0E5*t/(1.0E-4) 2.0E5*10.0
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          0
 NDSURF                          2
 NDVOL                           2
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
@@ -1085,15 +1004,9 @@ NODE 312 COORD 0.0000000000000e+00 4.6000000100000e-02 -2.2727273400000e-01
 190 SOLIDSH8P8 HEX8 40 24 28 42 302 307 311 308 MAT 1 KINEM nonlinear STAB NonAff ANS None LIN Sixth THICKDIR auto EAS none ISO Mat
 191 SOLIDSH8P8 HEX8 110 112 27 23 305 309 312 310 MAT 1 KINEM nonlinear STAB NonAff ANS None LIN Sixth THICKDIR auto EAS none ISO Mat
 192 SOLIDSH8P8 HEX8 24 23 27 28 307 310 312 311 MAT 1 KINEM nonlinear STAB NonAff ANS None LIN Sixth THICKDIR auto EAS none ISO Mat
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE -1.01353008864191931e-02 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 81 QUANTITY dispx VALUE 1.45103675543122662e-05 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 81 QUANTITY dispy VALUE 8.56833814321241068e-03 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 81 QUANTITY dispz VALUE -3.05689234555654287e-03 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
-//                              END
-//                              END

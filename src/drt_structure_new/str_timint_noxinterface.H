@@ -164,6 +164,12 @@ namespace TIMINT {
         const NOX::Abstract::Group* grp,
         std::vector<INPAR::STR::ModelType>& constraint_models ) const;
 
+    //! calculate norm in Get*Norms functions
+    double CalculateNorm(
+        Teuchos::RCP<Epetra_Vector> quantity,
+        const NOX::Abstract::Vector::NormType type,
+        const bool isscaled ) const;
+
   protected:
     //! init flag
     bool isinit_;

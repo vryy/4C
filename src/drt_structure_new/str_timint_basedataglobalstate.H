@@ -28,6 +28,7 @@
 #include "../drt_timestepping/timintmstep.H"
 
 #include "../solver_nonlin_nox/nox_nln_abstract_prepostoperator.H"
+#include "../solver_nonlin_nox/nox_nln_enum_lists.H"
 
 #include <Teuchos_RCP.hpp>
 
@@ -99,9 +100,18 @@ namespace TIMINT {
     /// setup the multi map extractor for saddle point problems
     void SetupMultiMapExtractor();
 
+    /// setup the map extractors for all active element technologies
+    void SetupElementTechnologyMapExtractors();
+
+    /// return map extractor for element technology
+    const LINALG::MultiMapExtractor& GetElementTechnologyMapExtractor(
+        const INPAR::STR::EleTech etech) const;
+
     /** setup the map extractor for translational <-> rotation pseudo-vector DoFs
      *                              (additive)    <->  (non-additive)      */
-    void SetupRotVecMapExtractor();
+    void SetupRotVecMapExtractor(LINALG::MultiMapExtractor& multimapext);
+
+    void SetupPressExtractor(LINALG::MultiMapExtractor& multimapext);
 
     /* \brief Extract the part of a vector which belongs to the displacement dofs.
      *
@@ -116,6 +126,19 @@ namespace TIMINT {
     Teuchos::RCP<Epetra_Vector> ExtractModelEntries(
         const INPAR::STR::ModelType& mt,
         const Epetra_Vector& source) const;
+
+    //! Remove DOFs that are specific to element technologies (e.g. pressure DOFs)
+    void RemoveElementTechnologies(Teuchos::RCP<Epetra_Vector>& rhs_ptr) const;
+
+    //! Get DOFs that are specific to element technologies (e.g. pressure DOFs)
+    void ExtractElementTechnologies(
+        const NOX::NLN::StatusTest::QuantityType checkquantity,
+        Teuchos::RCP<Epetra_Vector>& rhs_ptr) const;
+
+    //! Modify mass matrix and rhs according to element technologies
+    void ApplyElementTechnologyToAccelerationSystem(
+        LINALG::SparseOperator& mass,
+        Epetra_Vector& rhs) const;
 
     /* \brief Extract the part of a vector which belongs to the additive dofs.
      *
@@ -552,7 +575,6 @@ namespace TIMINT {
 
     const LINALG::MultiMapExtractor& BlockExtractor() const;
 
-    const LINALG::MultiMapExtractor& RotVecExtractor() const;
     /// @}
 
     /// @name Get mutable general control parameters (read and write access)
@@ -974,8 +996,14 @@ namespace TIMINT {
     /// multi map extractor
     LINALG::MultiMapExtractor blockextractor_;
 
+    // all active element technology map extractors
+    std::map<INPAR::STR::EleTech,LINALG::MultiMapExtractor> mapextractors_;
+
     /// map extractor for split of translational <-> rotational pseudo-vector DoFs
     LINALG::MultiMapExtractor rotvecextractor_;
+
+    /// map extractor for structure/pressure coupled problems
+    Teuchos::RCP<LINALG::MapExtractor> pressextractor_;
     /// @}
   };  // class BaseDataGlobalState
 } // namespace TIMINT

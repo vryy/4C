@@ -23,15 +23,18 @@
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/lagpenconstraint_noxinterface.H"
 
+#include "../drt_structure_new/str_timint_basedatasdyn.H"
+#include "../drt_inpar/inpar_structure.H"
+
 #include "../solver_nonlin_nox/nox_nln_constraint_interface_required.H"
 #include "../solver_nonlin_nox/nox_nln_constraint_interface_preconditioner.H"
 #include "../solver_nonlin_nox/nox_nln_aux.H"
-
 #include "../drt_lib/drt_dserror.H"
 
 #include "../linalg/linalg_utils.H"
 
 #include <Epetra_Vector.h>
+#include "str_nln_linearsystem_scaling.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -187,6 +190,32 @@ enum INPAR::STR::ModelType STR::NLN::ConvertQuantityType2ModelType(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+enum INPAR::STR::EleTech STR::NLN::ConvertQuantityType2EleTech(
+    const enum NOX::NLN::StatusTest::QuantityType& qtype)
+{
+  enum INPAR::STR::EleTech eletech = INPAR::STR::eletech_pressure;
+  switch(qtype)
+  {
+    case NOX::NLN::StatusTest::quantity_pressure:
+      eletech = INPAR::STR::eletech_pressure;
+      break;
+    case NOX::NLN::StatusTest::quantity_plasticity:
+      eletech = INPAR::STR::eletech_plasticity;
+      break;
+    case NOX::NLN::StatusTest::quantity_eas:
+      eletech = INPAR::STR::eletech_eas;
+      break;
+    default:
+      dserror("Cannot convert QuantityType %s to EleTech.",
+          NOX::NLN::StatusTest::QuantityType2String(qtype).c_str());
+      break;
+  }
+
+  return eletech;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 enum NOX::NLN::OptimizationProblemType STR::NLN::OptimizationType(
     const std::vector<enum NOX::NLN::SolutionType>& soltypes)
 {
@@ -316,3 +345,14 @@ void STR::NLN::CreateConstraintPreconditioner(
   }
 }
 
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::NLN::CreateScaling(
+    Teuchos::RCP<NOX::Epetra::Scaling>& iscale,
+    STR::TIMINT::BaseDataSDyn DataSDyn,
+    STR::TIMINT::BaseDataGlobalState GState)
+{
+  if(DataSDyn.GetSTCAlgoType() != INPAR::STR::stc_none)
+    iscale = Teuchos::rcp(new STR::NLN::LinSystem::StcScaling(DataSDyn, GState));
+}

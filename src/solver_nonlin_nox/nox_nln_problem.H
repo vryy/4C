@@ -43,7 +43,6 @@ namespace Abstract {
 namespace Epetra {
   class LinearSystem;
   class Vector;
-  class Scaling;
 namespace Interface {
     class Required;
     class Jacobian;
@@ -136,8 +135,6 @@ namespace StatusTest {
     const Teuchos::RCP<LINALG::SparseOperator> * jac_;
 
     Teuchos::RCP<LINALG::SparseOperator> precMat_;
-
-    Teuchos::RCP<NOX::Epetra::Scaling> scalingObject_;
 
   };
 } // namespace NLN

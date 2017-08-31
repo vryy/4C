@@ -50,6 +50,7 @@ namespace Solver {
 } // namespace Solver
 namespace LinSystem {
   class PrePostOperator;
+  class Scaling;
 } // namespace LinSystem
   class LinearSystem : public NOX::Epetra::LinearSystem
   {

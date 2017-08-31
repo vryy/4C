@@ -51,8 +51,7 @@ NOX::NLN::Problem::Problem(
       noxNlnGlobalData_(noxNlnGlobalData),
       xVector_(NULL),
       jac_(NULL),
-      precMat_(Teuchos::null),
-      scalingObject_(Teuchos::null)
+      precMat_(Teuchos::null)
 {
   /* intentionally left blank */
 }
@@ -67,8 +66,7 @@ NOX::NLN::Problem::Problem(
       noxNlnGlobalData_(noxNlnGlobalData),
       xVector_(NULL),
       jac_(NULL),
-      precMat_(Teuchos::null),
-      scalingObject_(Teuchos::null)
+      precMat_(Teuchos::null)
 {
   Initialize(x,A);
 }
@@ -103,10 +101,11 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> NOX::NLN::Problem::CreateLinearSystem()
 
   const NOX::NLN::LinSystem::LinearSystemType linsystype =
       NOX::NLN::AUX::GetLinearSystemType( noxNlnGlobalData_->GetLinSolvers() );
+  Teuchos::RCP<NOX::Epetra::Scaling> scalingObject = noxNlnGlobalData_->GetScalingObject();
 
   // build the linear system --> factory call
   return NOX::NLN::LinSystem::BuildLinearSystem(
-      linsystype,*noxNlnGlobalData_,*jac_,*xVector_,precMat_,scalingObject_);
+      linsystype,*noxNlnGlobalData_,*jac_,*xVector_,precMat_,scalingObject);
 }
 
 /*----------------------------------------------------------------------------*

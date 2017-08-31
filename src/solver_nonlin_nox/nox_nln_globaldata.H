@@ -41,6 +41,7 @@ namespace Abstract {
   class PrePostOperator;
 } // namespace Abstract
 namespace Epetra {
+  class Scaling;
 namespace Interface {
   class Required;
   class Jacobian;
@@ -62,7 +63,8 @@ namespace Interface {
   public:
     /*! CONSTRAINED OPTIMIZATION (standard constructor / most general case)
      *  inclusive the constraint interfaces map
-     *  inclusive the pre-conditioner interfaces */
+     *  inclusive the pre-conditioner interfaces
+     *  inclusive scaling object */
     GlobalData(const Epetra_Comm& comm,
         Teuchos::ParameterList& noxParams,
         const std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
@@ -71,7 +73,8 @@ namespace Interface {
         const OptimizationProblemType& type,
         const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr,
         const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
-        const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec );
+        const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
+        const Teuchos::RCP<NOX::Epetra::Scaling>& iscale);
 
     /*! CONSTRAINED OPTIMIZATION
      * inclusive the constraint interfaces map
@@ -145,6 +148,9 @@ namespace Interface {
     //! return the user-defined constraint preconditioner interface map
     const NOX::NLN::CONSTRAINT::PrecInterfaceMap& GetConstraintPrecInterfaces();
 
+    //! return linear system scaling object
+    const Teuchos::RCP<NOX::Epetra::Scaling>& GetScalingObject();
+
   private:
     //! setup the nln_utils class
     void Setup();
@@ -181,6 +187,8 @@ namespace Interface {
     NOX::NLN::CONSTRAINT::ReqInterfaceMap iConstr_;
 
     NOX::NLN::CONSTRAINT::PrecInterfaceMap iConstrPrec_;
+
+    Teuchos::RCP<NOX::Epetra::Scaling> iScale_;
 
     Teuchos::RCP<NOX::MeritFunction::Generic> mrtFctPtr_;
 

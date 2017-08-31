@@ -95,6 +95,7 @@ Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::ImplicitBase::GetSTCMat()
   /* See the scaling object in the NOX::NLN::Epetra::LinearSystem class.
    * The STC matrix has to be implemented as a scaling object or as a
    * preconditioner. Both are part of the linear system. */
+  //group->linearsystem->scalingobject
   return Teuchos::null;
 }
 

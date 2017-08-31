@@ -129,10 +129,18 @@ namespace TIMINT {
       return dyntype_;
     };
 
+    /// ToDo Add comment @Pfaller
     const enum INPAR::STR::STC_Scale& GetSTCAlgoType() const
     {
       CheckInitSetup();
       return stcscale_;
+    };
+
+    /// ToDo Add comment @Pfaller
+    const int& GetSTCLayer() const
+    {
+      CheckInitSetup();
+      return stclayer_;
     };
 
     /// Returns minimal non-linear iteration number
@@ -669,6 +677,9 @@ namespace TIMINT {
 
     /// scaled thickness conditioning type (necessary for shells)
     enum INPAR::STR::STC_Scale stcscale_;
+
+    /// number of layers for multilayered case
+    int stclayer_;
 
     ///@}
 

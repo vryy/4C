@@ -174,7 +174,6 @@ bool STR::TIMINT::NoxInterface::computePreconditioner(
 {
   CheckInitSetup();
   // currently not supported
-  // ToDo add the scaled thickness conditioning (STC) approach here
   return false;
 }
 
@@ -197,20 +196,28 @@ double STR::TIMINT::NoxInterface::GetPrimaryRHSNorms(
   {
     case NOX::NLN::StatusTest::quantity_structure:
     case NOX::NLN::StatusTest::quantity_cardiovascular0d:
+    {
+      // export the model specific solution if necessary
+      Teuchos::RCP<Epetra_Vector> rhs_ptr =
+          gstate_ptr_->ExtractModelEntries(mt,F);
+
+      // remove entries specific to element technology
+      gstate_ptr_->RemoveElementTechnologies(rhs_ptr);
+
+      rhsnorm = CalculateNorm(rhs_ptr,type,isscaled);
+
+      break;
+    }
     case NOX::NLN::StatusTest::quantity_pressure:
     {
       // export the model specific solution if necessary
       Teuchos::RCP<Epetra_Vector> rhs_ptr =
           gstate_ptr_->ExtractModelEntries(mt,F);
 
-      // transform to a NOX::Epetra::Vector
-      Teuchos::RCP<const NOX::Epetra::Vector> rhs_nox_ptr =
-          Teuchos::rcp(new NOX::Epetra::Vector(rhs_ptr,
-              NOX::Epetra::Vector::CreateView));
-      rhsnorm = rhs_nox_ptr->norm(type);
-      // do the scaling if desired
-      if (isscaled)
-        rhsnorm /= static_cast<double>(rhs_nox_ptr->length());
+      // extract entries specific to element technology
+      gstate_ptr_->ExtractElementTechnologies(NOX::NLN::StatusTest::quantity_pressure,rhs_ptr);
+
+      rhsnorm = CalculateNorm(rhs_ptr,type,isscaled);
 
       break;
     }
@@ -244,18 +251,38 @@ double STR::TIMINT::NoxInterface::GetPrimarySolutionUpdateRMS(
   {
     case NOX::NLN::StatusTest::quantity_structure:
     case NOX::NLN::StatusTest::quantity_cardiovascular0d:
-    case NOX::NLN::StatusTest::quantity_pressure:
     {
       // export the displacement solution if necessary
       Teuchos::RCP<Epetra_Vector> model_incr_ptr =
           Teuchos::rcp(new Epetra_Vector(*gstate_ptr_->ExtractModelEntries(mt,xold)));
-      Teuchos::RCP<const Epetra_Vector> model_xnew_ptr =
+      Teuchos::RCP<Epetra_Vector> model_xnew_ptr =
           gstate_ptr_->ExtractModelEntries(mt,xnew);
+
+      // remove entries specific to element technology
+      gstate_ptr_->RemoveElementTechnologies(model_incr_ptr);
+      gstate_ptr_->RemoveElementTechnologies(model_xnew_ptr);
 
       model_incr_ptr->Update(1.0,*model_xnew_ptr,-1.0);
       rms = NOX::NLN::AUX::RootMeanSquareNorm(atol,rtol,model_xnew_ptr,model_incr_ptr,
           disable_implicit_weighting);
 
+      break;
+    }
+    case NOX::NLN::StatusTest::quantity_pressure:
+    {
+      // export the displacement solution if necessary
+      Teuchos::RCP<Epetra_Vector> model_incr_ptr =
+          Teuchos::rcp(new Epetra_Vector(*gstate_ptr_->ExtractModelEntries(mt,xold)));
+      Teuchos::RCP<Epetra_Vector> model_xnew_ptr =
+          gstate_ptr_->ExtractModelEntries(mt,xnew);
+
+      // extract entries specific to element technology
+      gstate_ptr_->ExtractElementTechnologies(NOX::NLN::StatusTest::quantity_pressure,model_incr_ptr);
+      gstate_ptr_->ExtractElementTechnologies(NOX::NLN::StatusTest::quantity_pressure,model_xnew_ptr);
+
+      model_incr_ptr->Update(1.0,*model_xnew_ptr,-1.0);
+      rms = NOX::NLN::AUX::RootMeanSquareNorm(atol,rtol,model_xnew_ptr,model_incr_ptr,
+          disable_implicit_weighting);
       break;
     }
     case NOX::NLN::StatusTest::quantity_eas:
@@ -294,23 +321,36 @@ double STR::TIMINT::NoxInterface::GetPrimarySolutionUpdateNorms(
   {
     case NOX::NLN::StatusTest::quantity_structure:
     case NOX::NLN::StatusTest::quantity_cardiovascular0d:
+    {
+      // export the displacement solution if necessary
+      Teuchos::RCP<Epetra_Vector> model_incr_ptr =
+          gstate_ptr_->ExtractModelEntries(mt,xold);
+      Teuchos::RCP<Epetra_Vector> model_xnew_ptr =
+          gstate_ptr_->ExtractModelEntries(mt,xnew);
+
+      // remove entries specific to element technology
+      gstate_ptr_->RemoveElementTechnologies(model_incr_ptr);
+      gstate_ptr_->RemoveElementTechnologies(model_xnew_ptr);
+
+      model_incr_ptr->Update(1.0,*model_xnew_ptr,-1.0);
+      updatenorm = CalculateNorm(model_incr_ptr,type,isscaled);
+
+      break;
+    }
     case NOX::NLN::StatusTest::quantity_pressure:
     {
       // export the displacement solution if necessary
       Teuchos::RCP<Epetra_Vector> model_incr_ptr =
           gstate_ptr_->ExtractModelEntries(mt,xold);
-      Teuchos::RCP<const Epetra_Vector> model_xnew_ptr =
+      Teuchos::RCP<Epetra_Vector> model_xnew_ptr =
           gstate_ptr_->ExtractModelEntries(mt,xnew);
 
-      model_incr_ptr->Update(1.0,*model_xnew_ptr,-1.0);
-      Teuchos::RCP<const NOX::Epetra::Vector> model_incr_nox_ptr =
-          Teuchos::rcp(new NOX::Epetra::Vector(model_incr_ptr,
-              NOX::Epetra::Vector::CreateView));
+      // extract entries specific to element technology
+      gstate_ptr_->ExtractElementTechnologies(NOX::NLN::StatusTest::quantity_pressure,model_incr_ptr);
+      gstate_ptr_->ExtractElementTechnologies(NOX::NLN::StatusTest::quantity_pressure,model_xnew_ptr);
 
-      updatenorm = model_incr_nox_ptr->norm(type);
-      // do the scaling if desired
-      if (isscaled)
-        updatenorm /= static_cast<double>(model_incr_nox_ptr->length());
+      model_incr_ptr->Update(1.0,*model_xnew_ptr,-1.0);
+      updatenorm = CalculateNorm(model_incr_ptr,type,isscaled);
 
       break;
     }
@@ -358,20 +398,28 @@ double STR::TIMINT::NoxInterface::GetPreviousPrimarySolutionNorms(
   {
     case NOX::NLN::StatusTest::quantity_structure:
     case NOX::NLN::StatusTest::quantity_cardiovascular0d:
+    {
+      // export the displacement solution if necessary
+      Teuchos::RCP<Epetra_Vector> model_xold_ptr =
+          gstate_ptr_->ExtractModelEntries(mt,xold);
+
+      // remove entries specific to element technology
+      gstate_ptr_->RemoveElementTechnologies(model_xold_ptr);
+
+      xoldnorm = CalculateNorm(model_xold_ptr,type,isscaled);
+
+      break;
+    }
     case NOX::NLN::StatusTest::quantity_pressure:
     {
       // export the displacement solution if necessary
       Teuchos::RCP<Epetra_Vector> model_xold_ptr =
           gstate_ptr_->ExtractModelEntries(mt,xold);
 
-      Teuchos::RCP<const NOX::Epetra::Vector> model_xold_nox_ptr =
-          Teuchos::rcp(new NOX::Epetra::Vector(model_xold_ptr,
-              NOX::Epetra::Vector::CreateView));
+      // extract entries specific to element technology
+      gstate_ptr_->ExtractElementTechnologies(NOX::NLN::StatusTest::quantity_pressure,model_xold_ptr);
 
-      xoldnorm = model_xold_nox_ptr->norm(type);
-      // do the scaling if desired
-      if (isscaled)
-        xoldnorm /= static_cast<double>(model_xold_nox_ptr->length());
+      xoldnorm = CalculateNorm(model_xold_ptr,type,isscaled);
 
       break;
     }
@@ -396,6 +444,25 @@ double STR::TIMINT::NoxInterface::GetPreviousPrimarySolutionNorms(
   }
 
   return xoldnorm;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double STR::TIMINT::NoxInterface::CalculateNorm(
+    Teuchos::RCP<Epetra_Vector> quantity,
+    const NOX::Abstract::Vector::NormType type,
+    const bool isscaled ) const
+{
+  Teuchos::RCP<const NOX::Epetra::Vector> quantity_nox =
+      Teuchos::rcp(new NOX::Epetra::Vector(quantity,
+          NOX::Epetra::Vector::CreateView));
+
+  double norm = quantity_nox->norm(type);
+  // do the scaling if desired
+  if (isscaled)
+    norm /= static_cast<double>(quantity_nox->length());
+
+  return norm;
 }
 
 /*----------------------------------------------------------------------------*

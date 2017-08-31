@@ -444,7 +444,7 @@ private:
   \author u.kue
   \date 02/08
  */
-void SetupFluidSplit(const DRT::Discretization& dis,
+void SetupFluidSplit(const DRT::DiscretizationInterface& dis,
                      int ndim,
                      LINALG::MultiMapExtractor& extractor);
 

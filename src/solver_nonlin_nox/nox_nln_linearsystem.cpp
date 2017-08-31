@@ -19,7 +19,6 @@
 #include "nox_nln_linearsystem_prepostoperator.H"
 #include "nox_nln_solver_ptc.H"
 #include "nox_nln_aux.H"
-
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
 
@@ -30,6 +29,7 @@
 
 #include <NOX_Epetra_Scaling.H>
 #include <NOX_Epetra_Interface_Preconditioner.H>
+#include "../drt_structure_new/str_nln_linearsystem_scaling.H"
 
 
 /*----------------------------------------------------------------------*
@@ -125,7 +125,7 @@ NOX::NLN::LinearSystem::LinearSystem(
       precType_(NOX::NLN::LinSystem::LinalgSparseOperator),
       precPtr_(Teuchos::null),
       precMatrixSource_(SeparateMatrix),
-      scaling_(Teuchos::null),
+      scaling_(scalingObject),
       conditionNumberEstimate_(0.0),
       timer_(cloneVector.getEpetraVector().Comm()),
       timeCreatePreconditioner_(0.0),

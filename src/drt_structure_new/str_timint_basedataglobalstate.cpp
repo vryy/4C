@@ -25,6 +25,7 @@
 #include "../drt_beam3/beam3_base.H"
 #include "../drt_fem_general/largerotations.H"
 #include "../drt_structure_new/str_utils.H"
+#include "../drt_fluid/fluid_utils.H"
 
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
@@ -76,7 +77,8 @@ STR::TIMINT::BaseDataGlobalState::BaseDataGlobalState()
       dtsolve_(0.0),
       dtele_(0.0),
       max_block_num_(0),
-      gproblem_map_ptr_(Teuchos::null)
+      gproblem_map_ptr_(Teuchos::null),
+      pressextractor_(Teuchos::null)
 {
   // empty constructor
 }
@@ -402,7 +404,67 @@ void STR::TIMINT::BaseDataGlobalState::SetupMultiMapExtractor()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::BaseDataGlobalState::SetupRotVecMapExtractor()
+void STR::TIMINT::BaseDataGlobalState::SetupElementTechnologyMapExtractors()
+{
+  CheckInit();
+
+  // loop all active element technologies
+  const std::set<enum INPAR::STR::EleTech>& ele_techs =
+      datasdyn_->GetElementTechnologies();
+  for ( const enum INPAR::STR::EleTech et : ele_techs )
+  {
+    // mapextractor for element technology
+    LINALG::MultiMapExtractor mapext;
+
+    switch( et )
+    {
+      case(INPAR::STR::eletech_rotvec):
+      {
+        SetupRotVecMapExtractor(mapext);
+        break;
+      }
+      case(INPAR::STR::eletech_pressure):
+      {
+        SetupPressExtractor(mapext);
+        break;
+      }
+      // element technology doesn't require a map extractor: skip
+      default:
+        continue;
+    }
+
+    // sanity check
+    mapext.CheckForValidMapExtractor();
+
+    // insert into map
+    std::pair<decltype(mapextractors_)::iterator, bool> check =
+        mapextractors_.insert(std::pair<INPAR::STR::EleTech,
+            LINALG::MultiMapExtractor>(et,mapext));
+
+    if ( not check.second )
+      dserror( "Insert failed!" );
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+const LINALG::MultiMapExtractor& STR::TIMINT::BaseDataGlobalState::
+GetElementTechnologyMapExtractor( const enum INPAR::STR::EleTech etech) const
+{
+  if(mapextractors_.find(etech) == mapextractors_.end())
+    dserror("Could not find element technology \"%s\" in map extractors.",
+        INPAR::STR::EleTechString( etech ).c_str() );
+
+  return mapextractors_.at(etech);
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::BaseDataGlobalState::SetupRotVecMapExtractor(
+    LINALG::MultiMapExtractor& multimapext)
 {
   CheckInit();
 
@@ -480,7 +542,18 @@ void STR::TIMINT::BaseDataGlobalState::SetupRotVecMapExtractor()
   maps[0] = additdofmap;
   maps[1] = rotvecdofmap;
 
-  rotvecextractor_.Setup(*DofRowMapView(),maps);
+  multimapext.Setup(*DofRowMapView(),maps);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::BaseDataGlobalState::SetupPressExtractor(
+    LINALG::MultiMapExtractor& multimapext)
+{
+  CheckInit();
+
+  // identify pressure DOFs
+  FLD::UTILS::SetupFluidSplit(*discret_, 3, multimapext);
 }
 
 /*----------------------------------------------------------------------------*
@@ -491,16 +564,6 @@ const LINALG::MultiMapExtractor& STR::TIMINT::BaseDataGlobalState::
   // sanity check
   blockextractor_.CheckForValidMapExtractor();
   return blockextractor_;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-const LINALG::MultiMapExtractor& STR::TIMINT::BaseDataGlobalState::
-    RotVecExtractor() const
-{
-  // sanity check
-  rotvecextractor_.CheckForValidMapExtractor();
-  return rotvecextractor_;
 }
 
 /*----------------------------------------------------------------------------*
@@ -662,7 +725,7 @@ const Epetra_Map* STR::TIMINT::BaseDataGlobalState::DofRowMapView() const
 const Epetra_Map* STR::TIMINT::BaseDataGlobalState::AdditiveDofRowMapView() const
 {
   CheckInit();
-  return RotVecExtractor().Map(0).get();
+  return GetElementTechnologyMapExtractor(INPAR::STR::eletech_rotvec).Map(0).get();
 }
 
 /*----------------------------------------------------------------------------*
@@ -670,7 +733,7 @@ const Epetra_Map* STR::TIMINT::BaseDataGlobalState::AdditiveDofRowMapView() cons
 const Epetra_Map* STR::TIMINT::BaseDataGlobalState::RotVecDofRowMapView() const
 {
   CheckInit();
-  return RotVecExtractor().Map(1).get();
+  return GetElementTechnologyMapExtractor(INPAR::STR::eletech_rotvec).Map(1).get();
 }
 
 /*----------------------------------------------------------------------------*
@@ -714,10 +777,101 @@ Teuchos::RCP<Epetra_Vector> STR::TIMINT::BaseDataGlobalState::ExtractModelEntrie
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::TIMINT::BaseDataGlobalState::RemoveElementTechnologies(
+    Teuchos::RCP<Epetra_Vector>& rhs_ptr) const
+{
+  // loop all active element technologies
+  const std::set<enum INPAR::STR::EleTech> ele_techs =
+      datasdyn_->GetElementTechnologies();
+
+  for ( const INPAR::STR::EleTech et : ele_techs )
+  {
+    switch( et )
+    {
+      case(INPAR::STR::eletech_pressure):
+      {
+        rhs_ptr = GetElementTechnologyMapExtractor(et).ExtractVector(rhs_ptr,0);
+        break;
+      }
+      // element technology doesn't use extra DOFs: skip
+      default:
+        continue;
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::BaseDataGlobalState::ExtractElementTechnologies(
+    const NOX::NLN::StatusTest::QuantityType checkquantity,
+    Teuchos::RCP<Epetra_Vector>& rhs_ptr) const
+{
+  // convert the given quantity type to an element technology
+  enum INPAR::STR::EleTech eletech = STR::NLN::ConvertQuantityType2EleTech(checkquantity);
+  switch(eletech)
+  {
+    case INPAR::STR::eletech_pressure:
+    {
+      rhs_ptr = GetElementTechnologyMapExtractor(eletech).ExtractVector(rhs_ptr,1);
+      break;
+    }
+    default:
+    {
+      dserror("Element technology doesn't use any extra DOFs.");
+      exit( EXIT_FAILURE );
+  }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::BaseDataGlobalState::ApplyElementTechnologyToAccelerationSystem(
+    LINALG::SparseOperator& mass,
+    Epetra_Vector& rhs) const
+{
+  // loop all active element technologies
+  const std::set<enum INPAR::STR::EleTech>& ele_techs =
+      datasdyn_->GetElementTechnologies();
+
+  for ( const enum INPAR::STR::EleTech et : ele_techs )
+  {
+    switch( et )
+    {
+      case INPAR::STR::eletech_pressure:
+      {
+        // get map extractor
+        const LINALG::MultiMapExtractor& mapext =
+            GetElementTechnologyMapExtractor( et );
+
+        // set 1 on pressure DOFs in mass matrix
+        mass.ApplyDirichlet( *mapext.Map(1) );
+
+        // set 0 on pressure DOFs in rhs
+        const Epetra_Vector zeros( *mapext.Map(1), true );
+        mapext.InsertVector( zeros, 1, rhs );
+
+        break;
+      }
+      // element technology doesn't use extra DOFs: skip
+      default:
+        break;
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> STR::TIMINT::BaseDataGlobalState::ExtractAdditiveEntries(
     const Epetra_Vector& source) const
 {
-  Teuchos::RCP<Epetra_Vector> addit_ptr = RotVecExtractor().ExtractVector(source,0);
+  Teuchos::RCP<Epetra_Vector> addit_ptr = GetElementTechnologyMapExtractor(
+      INPAR::STR::eletech_rotvec).ExtractVector(source,0);
 
   return addit_ptr;
 }
@@ -727,7 +881,8 @@ Teuchos::RCP<Epetra_Vector> STR::TIMINT::BaseDataGlobalState::ExtractAdditiveEnt
 Teuchos::RCP<Epetra_Vector> STR::TIMINT::BaseDataGlobalState::ExtractRotVecEntries(
     const Epetra_Vector& source) const
 {
-  Teuchos::RCP<Epetra_Vector> addit_ptr = RotVecExtractor().ExtractVector(source,1);
+  Teuchos::RCP<Epetra_Vector> addit_ptr = GetElementTechnologyMapExtractor(
+      INPAR::STR::eletech_rotvec).ExtractVector(source,1);
 
   return addit_ptr;
 }
