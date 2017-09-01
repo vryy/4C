@@ -141,11 +141,16 @@ TSI::Monolithic::Monolithic(
     std::cout << "Merged TSI block matrix is used!\n" << std::endl;
 #endif
 
+  // get solver parameter list of linear TSI solver
+  const int linsolvernumber = tsidynmono_.get<int>("LINEAR_SOLVER");
+  const Teuchos::ParameterList& tsisolverparams
+    = DRT::Problem::Instance()->SolverParams(linsolvernumber);
+
     Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
-    solverparams->set("solver","umfpack");
+    *solverparams=tsisolverparams;
 
     solver_ = Teuchos::rcp(new LINALG::Solver(
-                                 solverparams,
+                                 *solverparams,
                                  Comm(),
                                  DRT::Problem::Instance()->ErrorFile()->Handle()
                                  )
