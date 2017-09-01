@@ -880,7 +880,7 @@ void CONTACT::CoIntegratorNitscheTsi::IntegrateAdjointTest(
     GEN::pairedvector<int,LINALG::SerialDenseVector>& deriv_adjoint_test_T
     )
 {
-  if (abs(theta_)<1.e-12) return;
+  if (abs(fac)<1.e-16) return;
 
   CONTACT::CoIntegratorNitsche::IntegrateAdjointTest<dim>(fac,jac,jacintcellmap,wgt,test,deriv_test_d,moEle,adjoint_test,deriv_adjoint_test_d);
 
@@ -960,7 +960,7 @@ void CONTACT::CoIntegratorNitscheTsi::IntegrateThermalAdjointTest(
         GEN::pairedvector<int,LINALG::SerialDenseVector>& deriv_adjoint_test_T
         )
 {
-  if (abs(theta_thermo_)<1.e-12)
+  if (abs(fac)<1.e-16)
     return;
 
   LINALG::SerialDenseVector(View,moEle.GetNitscheContainer().rhs_t(),moEle.ParentElement()->NumNode()).Update(fac*jac*wgt*test,adjoint_test,1.);

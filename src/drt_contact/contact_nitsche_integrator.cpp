@@ -617,7 +617,7 @@ void CONTACT::CoIntegratorNitsche::IntegrateAdjointTest(
         GEN::pairedvector<int,LINALG::SerialDenseVector>& deriv_adjoint_test
         )
 {
-  if (abs(theta_)<1.e-12) return;
+  if (abs(fac)<1.e-16) return;
 
   LINALG::SerialDenseVector(View,moEle.GetNitscheContainer().rhs(),moEle.MoData().ParentDof().size()).Update(fac*jac*wgt*test,adjoint_test,1.);
 
