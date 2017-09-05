@@ -267,6 +267,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
     case SCATRA::check_scatra_element_parameter:
     case SCATRA::calc_initial_time_deriv:
     case SCATRA::integrate_shape_functions:
+    case SCATRA:: integrate_weighted_scalar:
     case SCATRA::calc_flux_domain:
     case SCATRA::calc_total_and_mean_scalars:
     case SCATRA::calc_domain_and_bodyforce:

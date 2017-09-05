@@ -381,8 +381,20 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   Teuchos::ParameterList& endoexocytosisdyn = celldyn.sublist("ENDOEXOCYTOSIS MODULE",false,
                                                   "Control the models for endo-/exocytosis");
 
-  DoubleParameter("ENDOEXO_DELAY",600.0,"Time delay between internalization and begin of externalization",&endoexocytosisdyn);
+  IntParameter("ENDOEXO_DELAY",1,"Number of steps delay between internalization and begin of externalization",&endoexocytosisdyn);
+  IntParameter("EXO_DOF",0,"Dof number of exocytosed species (starting with 0)",&endoexocytosisdyn);
+  DoubleParameter("THETA",1.0,"THETA use endo-/exocytosis",&endoexocytosisdyn);
 
+  setStringToIntegralParameter<int>("EXODOMAIN","surface",
+                               "exotysosis in surface of volume",
+                               tuple<std::string>(
+                                 "surface",
+                                 "volume"
+                                 ),
+                               tuple<int>(
+                                   exo_surface,
+                                   exo_volume),
+                               &endoexocytosisdyn);
 
 
   /* CELL SCATRA PARAMS */
@@ -1376,6 +1388,14 @@ void INPAR::CELL::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condit
                                            true,
                                            DRT::Condition::Surface));
 
+  Teuchos::RCP<ConditionDefinition> volexternalization =
+      Teuchos::rcp(new ConditionDefinition("SCATRA CELL EXTERNALIZATION VOL CONDITIONS",
+                                           "ScaTraCellExt",
+                                           "Scalar Transport Cell Externalization Calculation",
+                                           DRT::Condition::ScaTraCellExtCalc,
+                                           true,
+                                           DRT::Condition::Volume));
+
   externalizationcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ScalarID")));
   externalizationcomponents.push_back(Teuchos::rcp(new IntConditionComponent("ScalarID")));
 
@@ -1383,10 +1403,11 @@ void INPAR::CELL::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condit
   {
     lineexternalization->AddComponent(externalizationcomponents[i]);
     surfexternalization->AddComponent(externalizationcomponents[i]);
+    volexternalization ->AddComponent(externalizationcomponents[i]);
   }
 
   condlist.push_back(lineexternalization);
   condlist.push_back(surfexternalization);
-
+  condlist.push_back(volexternalization);
 
 }

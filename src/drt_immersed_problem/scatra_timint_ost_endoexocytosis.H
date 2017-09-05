@@ -101,16 +101,17 @@ private:
 
   //! @name various scalar members
   //@{
-  double endoexo_delay_;      //!< Time delay between internalization and begin of exocytotic transport
-  int internalization_steps_; //!< length of vector internalization_vec_ = Number of steps stored in internalization_vec_
-  double exo_surface_area_;   //!< Area of source surface where exocytotic transport starts
-  double delta_phi_;          //!< concentration difference of internalized scalar
+  int endoexo_delay_steps_;           //!< Steps delay between internalization and begin of exocytotic transport
+  int exo_domain_;                    //!< surface or volume exocytosis
+  int exo_dof_;                       //!< dof number of exocytosed species
+  double endo_theta_;                 //!< theta used in this module (read from ---CELL DYNAMIC/ENDOEXOCYTOSIS MODULE)
+  double exo_domain_integral_value_;  //!< Area of source surface where exocytotic transport starts (volume of domain in case of volumetric exocytosis)
   //@}
 
   //! @name various 'std::vector' members
   //@{
-  std::vector<double> Delta_phi_;    //!< Internalized scalars
-  std::vector<double> mean_scalars_; //!< Vector containing mean scalar values and the domain volume at the last entry
+  std::vector<double> Delta_phi_;           //!< Internalized scalars with size internalization_steps_
+  std::vector<double> total_scalars_;       //!< Vector containing total scalar values and the domain volume at the last entry
   std::vector<double> internalization_vec_; //<! Vector containing the endoexo_delay_/dta_ step values of internalized molecules
   //@}
 
@@ -118,9 +119,6 @@ private:
   //@{
   Teuchos::RCP<Epetra_Vector> source_; //!< Source at externalization surface
   //@}
-
-  //! flag indicating if this class was initialized
-  bool isinit_;
 
 };//class TimIntOneStepThetaEndoExocytosis
 

@@ -313,6 +313,15 @@ namespace ELEMENTS
       const Epetra_IntSerialDenseVector& dofids  //!< index of current scalar
     );
 
+    //! integrate "scalar" (provided in params) over domain.
+    //! multiply by "user defined prefac" (provided in params)
+    //! save result in elevec1 at pos. "ScalarID" (provided in params).
+    void IntegrateWeightedScalar(
+      Teuchos::ParameterList&         params,
+      const DRT::Element*             ele,
+      Epetra_SerialDenseVector&       elevec1
+    );
+
     //!  calculate weighted mass flux (no reactive flux so far)
     virtual void CalculateFlux(
       LINALG::Matrix<3,nen_>&         flux,      //!< flux to be computed

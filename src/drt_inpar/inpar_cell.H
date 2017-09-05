@@ -84,6 +84,12 @@ typedef enum _GROWTH_COUP_TYPE
   coup_growth_ssi=2
 } GROWTH_COUP_TYPE;
 
+typedef enum _EXOCYTOSIS_TYPE
+{
+  exo_surface=0,
+  exo_volume=1
+} EXOCYTOSIS_TYPE;
+
 /// set the cell parameters
 void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 

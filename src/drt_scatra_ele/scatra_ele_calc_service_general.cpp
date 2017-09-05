@@ -104,6 +104,14 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
     break;
   }
 
+  case SCATRA::integrate_weighted_scalar:
+  {
+    // calculate integral of scalar
+    IntegrateWeightedScalar(params,ele,elevec1_epetra);
+
+    break;
+  }
+
   case SCATRA::calc_flux_domain:
   {
     // get number of dofset associated with velocity related dofs
@@ -1859,16 +1867,54 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::IntegrateShapeFunctions(
 
 } //ScaTraEleCalc::IntegrateShapeFunction
 
+/*----------------------------------------------------------------------*
+ |  Integrate weighted scalar                               rauch 09/17 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::IntegrateWeightedScalar(
+    Teuchos::ParameterList&         params,
+    const DRT::Element*             ele,
+    Epetra_SerialDenseVector&       elevec1
+)
+{
+  // extract values from parameter list.
+  // these values are set in scatra_timint_ost_endoexocytosis.
+  const int scalarid  = params.get<int>("ScalarID");               //!< dof id of integrated scalar (position in result vector)
+  const double scalar = params.get<double>("scalar");              //!< scalar value to be integrated
+  const double prefac = params.get<double>("user defined prefac"); //!< user defined factor to integral
+
+  // get integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  //////////////////////////////////////
+  // loop over integration points
+  //////////////////////////////////////
+  for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
+  {
+    // evaluate values of shape functions and domain integration factor at current integration point
+    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,gpid);
+
+    // evaluate element right-hand side vector
+    for (unsigned vi=0; vi<nen_; ++vi)
+    {
+      const int fvi = vi*numscal_+scalarid;
+      elevec1[fvi] -= fac*prefac*funct_(vi)*scalar;
+    } // loop over nodes
+
+  } // loop over integration points
+
+  return;
+} // ScatraEleCalc::IntegrateWeightedScalar
 
 /*----------------------------------------------------------------------*
   |  calculate weighted mass flux (no reactive flux so far)     gjb 06/08|
-  *----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalculateFlux(
-LINALG::Matrix<3,nen_>&         flux,
-const DRT::Element*             ele,
-const INPAR::SCATRA::FluxType   fluxtype,
-const int                       k
+    LINALG::Matrix<3,nen_>&         flux,
+    const DRT::Element*             ele,
+    const INPAR::SCATRA::FluxType   fluxtype,
+    const int                       k
 )
 {
   /*

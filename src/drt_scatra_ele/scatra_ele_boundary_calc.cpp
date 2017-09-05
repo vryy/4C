@@ -1343,9 +1343,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::IntegrateWeightedScalar(
 {
   // extract values from parameter list.
   // these values are set in scatra_timint_ost_endoexocytosis.
-  const double scalarid  = params.get<int>("ScalarID");            //!< dof id of integrated scalar
-  const double scalar = params.get<double>("scalar");              //!< scalar to be integrated
-  const double prefac = params.get<double>("user defined prefac"); //!< user defined factor to integral
+  const int scalarid  = params.get<int>("ScalarID");               //!< dof id of integrated scalar (position in result vector)
+  const double scalar    = params.get<double>("scalar");              //!< scalar value to be integrated
+  const double prefac    = params.get<double>("user defined prefac"); //!< user defined factor to integral
 
   // get integration points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -1357,13 +1357,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::IntegrateWeightedScalar(
   {
     // evaluate values of shape functions and domain integration factor at current integration point
     const double fac = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvalShapeFuncAndIntFac(intpoints,gpid);
-    const double timefacrhsfac = scatraparamstimint_->TimeFacRhs()*fac;
 
     // evaluate element right-hand side vector
     for (int vi=0; vi<nen_; ++vi)
     {
       const int fvi = vi*numscal_+scalarid;
-      result[fvi] -= timefacrhsfac*prefac*funct_(vi)*scalar;
+      result[fvi] -= fac*prefac*funct_(vi)*scalar;
     } // loop over nodes
 
   } // loop over integration points
