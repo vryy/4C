@@ -32,6 +32,7 @@
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_sparsematrix.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -2422,7 +2423,8 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(bool output)
     {
       FILE* MyFile = NULL;
       std::ostringstream filename;
-      filename << "interface.txt";
+      const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      filename << filebase << ".interface";
       MyFile = fopen(filename.str().c_str(), "at+");
 
       if (MyFile)
