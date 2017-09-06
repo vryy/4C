@@ -2,10 +2,10 @@
 \file fluid_ele_intfaces_calc.cpp
 \brief Integrate internal faces (stabilization) terms on an internal face element
 
-\maintainer Benedikt Schott
-            schott@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15241
+\maintainer  Ager Christoph
+             ager@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15249
 
 \level 2
 

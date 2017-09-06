@@ -7,10 +7,10 @@
 \level 3
 
 <pre>
-\maintainer Benedikt Schott
-            schott@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15241
+\maintainer  Ager Christoph
+             ager@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15249
 </pre>
 
 */

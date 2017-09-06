@@ -4,10 +4,10 @@
 \brief provides the basic functionality for cutting a mesh with a level set function
 
 <pre>
-\maintainer Benedikt Schott and Magnus Winter
-            schott@lnm.mw.tum.de, winter@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15241
+\maintainer  Ager Christoph
+             ager@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15249
 </pre>
 
 \level 2

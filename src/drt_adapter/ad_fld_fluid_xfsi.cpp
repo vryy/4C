@@ -6,13 +6,14 @@
 
 Can only be used in conjunction with XFluid!
 
-<pre>
 \level 1
-\maintainer  Benedikt Schott
-             schott@lnm.mw.tum.de
+
+<pre>
+\maintainer  Ager Christoph
+             ager@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
-             089 - 289-15241
-</pre>
+             089 - 289-15249
+ </pre>
 */
 /*----------------------------------------------------------------------*/
 

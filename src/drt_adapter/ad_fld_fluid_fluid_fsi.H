@@ -8,11 +8,11 @@ Fluid field adapter for embedded (ALE-)fluid-fluid problems using XFEM
 \level 2
 
 <pre>
-\maintainer  Benedikt Schott
-             schott@lnm.mw.tum.de
+\maintainer  Ager Christoph
+             ager@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
-             089 - 289-15241
-</pre>
+             089 - 289-15249
+ </pre>
 */
 /*----------------------------------------------------------------------*/
 #ifndef ADAPTER_FLUID_FLUID_FSI_H

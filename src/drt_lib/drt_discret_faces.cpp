@@ -6,9 +6,7 @@
 <pre>
 \level 1
 
-\maintainer Benedikt Schott, Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15241
+\maintainer Martin Kronbichler
 </pre>
 
 *----------------------------------------------------------------------*/

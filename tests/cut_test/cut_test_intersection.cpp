@@ -6,7 +6,7 @@
 
 \level 1
 
-\maintainer Benedikt Schott, Christoph Ager
+\maintainer Christoph Ager
 
 */
 /*---------------------------------------------------------------------------*/

@@ -4,12 +4,14 @@
 
 \brief Fluid field adapter for xfem-fluids with moving boundaries
 
+\level 1
+
 <pre>
-Maintainer:  Benedikt Schott
-             schott@lnm.mw.tum.de
+\maintainer  Ager Christoph
+             ager@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
-             089 - 289-15241
-</pre>
+             089 - 289-15249
+ </pre>
 */
 /*----------------------------------------------------------------------*/
 #include "../drt_lib/drt_globalproblem.H"

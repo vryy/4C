@@ -3,12 +3,12 @@
 
 \brief class that provides the common functionality for a mesh cut based on a level set field or on surface meshes
 
-<pre>
 \level 3
-\maintainer Benedikt Schott
-            schott@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15241
+<pre>
+\maintainer  Ager Christoph
+             ager@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15249
 </pre>
  *------------------------------------------------------------------------------------------------*/
 #include <Teuchos_TimeMonitor.hpp>
