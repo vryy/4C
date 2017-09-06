@@ -179,8 +179,10 @@ public:
   performed on the level of the contact algorithm, for short: here's the right place.
 
   */
-  void DoReadRestart(IO::DiscretizationReader& reader,
-      Teuchos::RCP<const Epetra_Vector> dis);
+  void DoReadRestart(
+      IO::DiscretizationReader& reader,
+      Teuchos::RCP<const Epetra_Vector> dis,
+      Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr);
 
   void SetCoupling(Teuchos::RCP<ADAPTER::Coupling> coupST){coupST_=coupST;};
 

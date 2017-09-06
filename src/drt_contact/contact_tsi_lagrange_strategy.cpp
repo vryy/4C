@@ -999,15 +999,20 @@ void CONTACT::CoTSILagrangeStrategy::DoWriteRestart(
  *----------------------------------------------------------------------*/
 void CONTACT::CoTSILagrangeStrategy::DoReadRestart(
     IO::DiscretizationReader& reader,
-    Teuchos::RCP<const Epetra_Vector> dis)
+    Teuchos::RCP<const Epetra_Vector> dis,
+    Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr)
 {
-  CONTACT::CoAbstractStrategy::DoReadRestart(reader,dis);
+  bool restartwithcontact = DRT::INPUT::IntegralValue<int>(Params(),
+    "RESTART_WITH_CONTACT");
 
+  CONTACT::CoAbstractStrategy::DoReadRestart(reader,dis);
   fscn_ = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
-  reader.ReadVector(fscn_, "last_contact_force");
+  if (!restartwithcontact)
+    reader.ReadVector(fscn_, "last_contact_force");
 
   Teuchos::RCP<Epetra_Vector> tmp = Teuchos::rcp(new Epetra_Vector(*coupST_->MasterDofMap()));
-  reader.ReadVector(tmp,"last_thermo_force");
+  if (!restartwithcontact)
+    reader.ReadVector(tmp,"last_thermo_force");
   ftcn_=coupST_->MasterToSlave(tmp);
   tmp = Teuchos::rcp(new Epetra_Vector(*coupST_->MasterToSlaveMap(gsmdofrowmap_)));
   LINALG::Export(*ftcn_,*tmp);
