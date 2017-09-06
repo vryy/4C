@@ -13,6 +13,7 @@
 #include "../drt_scatra_ele/scatra_ele_action.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_cell.H"
+#include "../drt_io/io.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                    rauch 08/16 |
@@ -32,9 +33,10 @@ SCATRA::TimIntOneStepThetaEndoExocytosis::TimIntOneStepThetaEndoExocytosis(
    exo_dof_(0),
    endo_theta_(-1.0),
    exo_domain_integral_value_(0.0),
-   Delta_phi_(0.0),
+   Delta_phi_(Teuchos::null),
    total_scalars_(0,0.0),
-   internalization_vec_(0),
+   internalization_vec_(Teuchos::null),
+   initial_exocytosis_(0.0),
    source_(Teuchos::null)
 {
   // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)
@@ -68,12 +70,16 @@ void SCATRA::TimIntOneStepThetaEndoExocytosis::Setup()
                                                      .get<int>("ENDOEXO_DELAY");
 
   // initialize internalization vector
-  internalization_vec_.resize(endoexo_delay_steps_,0.0);
+  internalization_vec_ =
+      Teuchos::rcp(new std::vector<double>);
+  internalization_vec_->resize(endoexo_delay_steps_,0.0);
 
 
   // initialize vector in which the deltas (n -> n+1) are stored
   // entry 0 contains the difference at t-T
-  Delta_phi_.resize(endoexo_delay_steps_,0.0);
+  Delta_phi_=
+      Teuchos::rcp(new std::vector<double>);
+  Delta_phi_->resize(endoexo_delay_steps_,0.0);
 
   exo_domain_ = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CellMigrationParams().
       sublist("ENDOEXOCYTOSIS MODULE"),
@@ -107,10 +113,10 @@ void SCATRA::TimIntOneStepThetaEndoExocytosis::PreSolve()
   {
     // Member step_ is incremented before Solve. Thus, it starts with 1 for the first time step.
     int entry =((step_-1)-endoexo_delay_steps_)%(endoexo_delay_steps_);
-    delta_phi = Delta_phi_[entry];
+    delta_phi = Delta_phi_->at(entry);
   }
   else
-    delta_phi = 0.0;
+    delta_phi = initial_exocytosis_;
 
   /////////////////////////////////////////////////////////////////////////////////////
   // Calc area of exocytotic domain (surface or volume).
@@ -252,35 +258,78 @@ void SCATRA::TimIntOneStepThetaEndoExocytosis::PostSolve()
   // in case we write to the first vector entry, the previous value is the last vector entry
   double previousvectorentry=-1234.0;
   if (entry==0)
-    previousvectorentry=internalization_vec_[endoexo_delay_steps_-1];
+    previousvectorentry=internalization_vec_->at(endoexo_delay_steps_-1);
   else
-    previousvectorentry=internalization_vec_[entry-1];
+    previousvectorentry=internalization_vec_->at(entry-1);
 
   // save current amount of internalized scalar at correct position in vector belonging to time-delay
-  internalization_vec_[entry] = total_scalars_[dof_id_internalized_scalar];
+  internalization_vec_->at(entry) = total_scalars_[dof_id_internalized_scalar];
 
   // Do in first time step
   if(step_ == 1)
   {
     // The first delta equals the amount of internalized biomolecules, since
     // initially we assume zero internalized biomolcules.
-    Delta_phi_[0]=internalization_vec_[0];
+    Delta_phi_->at(0)=internalization_vec_->at(0);
   }
   else
   {
     // calc the difference between the internalized biomolecules in the current and the previous step
-    Delta_phi_[entry] = ( internalization_vec_[entry] - previousvectorentry );
+    Delta_phi_->at(entry) = ( internalization_vec_->at(entry) - previousvectorentry );
   }
 
   if(discret_->Comm().MyPID()==0)
   {
     std::cout<<"########################################################"<<std::endl;
-    std::cout<<"# Internalized "<<std::setprecision(7)<<Delta_phi_[entry]<<" molecules of membrane species "<< dof_id_internalized_scalar<<std::endl;
+    std::cout<<"# Internalized "<<std::setprecision(7)<<Delta_phi_->at(entry)<<" molecules of membrane species "<< dof_id_internalized_scalar<<std::endl;
     std::cout<<"########################################################"<<std::endl;
   }
 
   return;
 
+}
+
+
+/*----------------------------------------------------------------------*
+ | write additional data required for restart               rauch 09/17 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepThetaEndoExocytosis::OutputRestart() const
+{
+  // call base class routine
+  TimIntOneStepTheta::OutputRestart();
+
+  // additional state vectors that are needed for endo-/exocytosis restart
+  output_->WriteVector("exo_source", source_);
+  output_->WriteRedundantDoubleVector("Delta_phi",Delta_phi_);
+  output_->WriteRedundantDoubleVector("internalization_vec",internalization_vec_);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |                                                          rauch 09/17 |
+ -----------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepThetaEndoExocytosis::ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input)
+{
+  // call base class routine
+  TimIntOneStepTheta::ReadRestart(step,input);
+
+  Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
+  if(input == Teuchos::null)
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,step));
+  else
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,input,step));
+
+  if (myrank_==0)
+    std::cout<<"Reading Endo-/Exocytosis restart data (time="<<time_<<" ; step="<<step_<<")"<<std::endl;
+
+  // read state vectors that are needed for endo-/exocytosis restart
+  reader->ReadVector(source_, "exo_source");
+  reader->ReadRedundantDoubleVector(Delta_phi_,"Delta_phi");
+  reader->ReadRedundantDoubleVector(internalization_vec_,"internalization_vec");
+
+  return;
 }
 
 

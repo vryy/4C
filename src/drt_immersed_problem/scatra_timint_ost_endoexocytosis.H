@@ -83,6 +83,9 @@ public:
       const int                                probnum = 0    //!< global problem number
       );
 
+  //! read restart data
+  virtual void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
+
   //! Destructor
   virtual ~TimIntOneStepThetaEndoExocytosis();
 
@@ -97,6 +100,10 @@ protected:
   //! Post Solve Operator
   virtual void PostSolve();
 
+  //! write additional data required for restart
+  virtual void OutputRestart() const;
+
+
 private:
 
   //! @name various scalar members
@@ -110,10 +117,13 @@ private:
 
   //! @name various 'std::vector' members
   //@{
-  std::vector<double> Delta_phi_;           //!< Internalized scalars with size internalization_steps_
+  Teuchos::RCP<std::vector<double> > Delta_phi_;           //!< Internalized scalars with size internalization_steps_
   std::vector<double> total_scalars_;       //!< Vector containing total scalar values and the domain volume at the last entry
-  std::vector<double> internalization_vec_; //<! Vector containing the endoexo_delay_/dta_ step values of internalized molecules
+  Teuchos::RCP<std::vector<double> > internalization_vec_; //<! Vector containing the endoexo_delay_/dta_ step values of internalized molecules
   //@}
+
+  //! initially exocytosed number of molecules (if required)
+  double initial_exocytosis_;
 
   //! @name various global vector
   //@{
