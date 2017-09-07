@@ -22,6 +22,7 @@
 #include "../drt_mortar/mortar_node.H"
 #include "../drt_mortar/mortar_element.H"
 #include "../drt_mortar/mortar_defines.H"
+#include "../drt_mortar/mortar_utils.H"
 
 #include "../drt_io/io.H"
 
@@ -248,7 +249,7 @@ discret_(discret)
         // get nurbs weight!
         if(nurbs)
         {
-          ManagerBase::PrepareNURBSNode(
+          MORTAR::UTILS::PrepareNURBSNode(
                           node,
                           mtnode);
         }
@@ -327,7 +328,7 @@ discret_(discret)
         // get knotvector, normal factor and zero-size information for nurbs
         if(nurbs)
         {
-          ManagerBase::PrepareNURBSElement(
+          MORTAR::UTILS::PrepareNURBSElement(
               discret,
               ele,
               mtele,

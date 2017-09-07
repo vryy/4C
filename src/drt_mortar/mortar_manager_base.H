@@ -1,12 +1,12 @@
 /*!----------------------------------------------------------------------
 \file mortar_manager_base.H
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\maintainer Alexander Seitz
+
+\level 2
+
+\brief Base class for contact and meshtying managers (structural problems only)
+       all other problem types use mortar adapters
 
 *----------------------------------------------------------------------*/
 #ifndef MORTAR_MANAGER_BASE_H
@@ -96,28 +96,6 @@ public:
 
   */
   MORTAR::StrategyBase& GetStrategy() { return *strategy_;}
-
-  /*!
-  \brief Prepare mortar element for nurbs case
-
-
-  store knot vector, zerosized information and normal factor
-  */
-  void PrepareNURBSElement(
-      DRT::Discretization& discret,
-      Teuchos::RCP<DRT::Element> ele,
-      Teuchos::RCP<MORTAR::MortarElement> cele,
-      int dim);
-
-  /*!
-  \brief Prepare mortar node for nurbs case
-
-  store control point weight
-
-  */
-  void PrepareNURBSNode(
-      DRT::Node* node,
-      Teuchos::RCP<MORTAR::MortarNode> mnode);
 
   //@}
 

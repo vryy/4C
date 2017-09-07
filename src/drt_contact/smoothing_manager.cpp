@@ -436,7 +436,7 @@ CONTACT::SmoothingManager::SmoothingManager(
           // get nurbs weight!
           if (nurbs)
           {
-            MORTAR::ManagerBase::PrepareNURBSNode(
+            MORTAR::UTILS::PrepareNURBSNode(
                 node,
                 cnode);
           }
@@ -480,7 +480,7 @@ CONTACT::SmoothingManager::SmoothingManager(
           // get nurbs weight!
           if (nurbs)
           {
-            MORTAR::ManagerBase::PrepareNURBSNode(
+            MORTAR::UTILS::PrepareNURBSNode(
                 node,
                 cnode);
           }
@@ -553,7 +553,7 @@ CONTACT::SmoothingManager::SmoothingManager(
         // get knotvector, normal factor and zero-size information for nurbs
         if (nurbs)
         {
-          MORTAR::ManagerBase::PrepareNURBSElement(
+          MORTAR::UTILS::PrepareNURBSElement(
               discret,
               ele,
               cele,
@@ -755,7 +755,7 @@ CONTACT::SmoothingManager::SmoothingManager(
         // get nurbs weight!
         if(nurbs)
         {
-          ManagerBase::PrepareNURBSNode(
+          MORTAR::UTILS::PrepareNURBSNode(
                           node,
                           mtnode);
         }
@@ -814,7 +814,7 @@ CONTACT::SmoothingManager::SmoothingManager(
         // get knotvector, normal factor and zero-size information for nurbs
         if(nurbs)
         {
-          ManagerBase::PrepareNURBSElement(
+          MORTAR::UTILS::PrepareNURBSElement(
               discret,
               ele,
               mtele,

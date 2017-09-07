@@ -174,6 +174,29 @@ namespace UTILS
       bool check_on_in=true,
       bool check_on_exit=true
       );
+
+
+  /*!
+  \brief Prepare mortar element for nurbs case
+
+
+  store knot vector, zerosized information and normal factor
+  */
+  void PrepareNURBSElement(
+      DRT::Discretization& discret,
+      Teuchos::RCP<DRT::Element> ele,
+      Teuchos::RCP<MORTAR::MortarElement> cele,
+      int dim);
+
+  /*!
+  \brief Prepare mortar node for nurbs case
+
+  store control point weight
+
+  */
+  void PrepareNURBSNode(
+      DRT::Node* node,
+      Teuchos::RCP<MORTAR::MortarNode> mnode);
 }
 } // namespace MORTAR
 

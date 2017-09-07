@@ -32,6 +32,7 @@
 #include "../drt_contact_aug/contact_augmented_interface.H"
 
 #include "../drt_mortar/mortar_defines.H"
+#include "../drt_mortar/mortar_utils.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -450,7 +451,7 @@ CONTACT::CoManager::CoManager(
           // get nurbs weight!
           if (nurbs)
           {
-            MORTAR::ManagerBase::PrepareNURBSNode(
+            MORTAR::UTILS::PrepareNURBSNode(
                 node,
                 cnode);
           }
@@ -514,7 +515,7 @@ CONTACT::CoManager::CoManager(
           // get nurbs weight!
           if (nurbs)
           {
-            MORTAR::ManagerBase::PrepareNURBSNode(
+            MORTAR::UTILS::PrepareNURBSNode(
                 node,
                 cnode);
           }
@@ -617,7 +618,7 @@ CONTACT::CoManager::CoManager(
         // get knotvector, normal factor and zero-size information for nurbs
         if (nurbs)
         {
-          MORTAR::ManagerBase::PrepareNURBSElement(
+          MORTAR::UTILS::PrepareNURBSElement(
               discret,
               ele,
               cele,
