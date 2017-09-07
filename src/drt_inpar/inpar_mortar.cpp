@@ -59,12 +59,12 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
        tuple<std::string>("undefined",
                           "quad", "quadratic",
                           "pwlin", "piecewiselinear",
-                          "lin","linear"),
+                          "lin","linear","const"),
        tuple<int>(
                   lagmult_undefined,
                   lagmult_quad, lagmult_quad,
                   lagmult_pwlin, lagmult_pwlin,
-                  lagmult_lin, lagmult_lin),
+                  lagmult_lin, lagmult_lin, lagmult_const),
        &mortar);
 
   setStringToIntegralParameter<int>("CROSSPOINTS","No","If chosen, multipliers are removed from crosspoints / edge nodes",

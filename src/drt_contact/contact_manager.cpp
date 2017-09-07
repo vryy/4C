@@ -946,7 +946,8 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
       dserror("Petrov-Galerkin approach for LM only with Lagrange multiplier strategy");
 
     if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") == INPAR::CONTACT::solution_lagmult
-        && DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN")   == INPAR::MORTAR::shape_standard
+        && ( DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") == INPAR::MORTAR::shape_standard
+            && DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LM_QUAD") != INPAR::MORTAR::lagmult_const)
         && DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(contact,
             "SYSTEM") == INPAR::CONTACT::system_condensed)
       dserror("Condensation of linear system only possible for dual Lagrange multipliers");

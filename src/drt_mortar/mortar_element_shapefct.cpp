@@ -2693,6 +2693,21 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(
 }
 
 /*----------------------------------------------------------------------*
+ |  Evaluate Lagrange multiplier shape functions             seitz 09/17|
+ |  THIS IS A SPECIAL VERSION FOR 3D QUADRATIC MORTAR WITH CONST LM!    |
+ *----------------------------------------------------------------------*/
+bool MORTAR::MortarElement::EvaluateShapeLagMultConst(
+    const INPAR::MORTAR::ShapeFcn& lmtype, const double* xi,
+    LINALG::SerialDenseVector& val, LINALG::SerialDenseMatrix& deriv,
+    const int valdim)
+{
+  MORTAR::UTILS::EvaluateShape_LM_Const(lmtype,xi,val,*this,valdim);
+  deriv.Scale(0.);
+
+  return true;
+}
+
+/*----------------------------------------------------------------------*
  |  Evaluate Lagrange multiplier shape functions              popp 12/07|
  |  THIS IS A SPECIAL VERSION FOR 3D QUADRATIC MORTAR WITH LIN LM!      |
  *----------------------------------------------------------------------*/

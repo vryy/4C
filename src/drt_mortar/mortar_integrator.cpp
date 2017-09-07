@@ -817,7 +817,9 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased2D(
     double dsxideta = -0.5*sxia + 0.5*sxib;
 
     // evaluate Lagrange multiplier shape functions (on slave element)
-    if (linlm)
+    if (lmquadtype_ == INPAR::MORTAR::lagmult_const)
+      UTILS::EvaluateShape_LM_Const(shapefcn_, sxi, lmval, sele, nrow);
+    else if (linlm)
       UTILS::EvaluateShape_LM_Lin(shapefcn_,sxi,lmval,sele,nrow);
     else
       UTILS::EvaluateShape_LM(shapefcn_,sxi,lmval,sele,nrow);
@@ -994,7 +996,9 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
     }
 
     // evaluate Lagrange multiplier shape functions (on slave element)
-    if (linlm)
+    if (lmtype == INPAR::MORTAR::lagmult_const)
+      UTILS::EvaluateShape_LM_Const(shapefcn_, sxi, lmval, sele, nrow);
+    else if (linlm)
       UTILS::EvaluateShape_LM_Lin(shapefcn_, sxi, lmval, sele, nrow);
     else
       UTILS::EvaluateShape_LM(shapefcn_, sxi, lmval, sele, nrow);
@@ -1334,7 +1338,8 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
   // CASE 5: Dual LM shape functions and linear interpolation
   // (here, we must NOT ignore the small off-diagonal terms for accurate convergence)
   else if (shapefcn_ == INPAR::MORTAR::shape_dual
-      && lmquadtype_ == INPAR::MORTAR::lagmult_lin)
+      && (   lmquadtype_ == INPAR::MORTAR::lagmult_lin
+          || lmquadtype_ == INPAR::MORTAR::lagmult_const ) )
   {
     // compute all mseg and dseg matrix entries
     // loop over Lagrange multiplier dofs j
@@ -1636,6 +1641,9 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased3D(
     double jacslave = sele.Jacobian(sxi);
 
     // evaluate Lagrange mutliplier shape functions (on slave element)
+    if (lmquadtype_ == INPAR::MORTAR::lagmult_const)
+      UTILS::EvaluateShape_LM_Const(shapefcn_, sxi, lmval, sele, nrow);
+    else
     UTILS::EvaluateShape_LM(shapefcn_,sxi,lmval,sele,nrow);
 
     // evaluate trace space shape functions (on both elements)
@@ -2121,7 +2129,9 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
 //      sintele.EvaluateShapeLagMult(shapefcn_, sxi, lmintval, lmintderiv, nintrow);
 //    }
 
-    if(bound)
+    if (lmtype == INPAR::MORTAR::lagmult_const)
+      UTILS::EvaluateShape_LM_Const(shapefcn_, psxi, lmval, sele, nrow);
+    else if(bound)
     {
       sele.EvaluateShapeLagMult(shapefcn_, psxi, lmval, lmderiv, nrow);
     }

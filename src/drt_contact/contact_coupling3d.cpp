@@ -97,6 +97,9 @@ bool CONTACT::CoCoupling3d::IntegrateCells(
   /* the current integration cell of the slave / master element pair    */
   /**********************************************************************/
 
+  static const INPAR::MORTAR::AlgorithmType algo =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
+
   // do nothing if there are no cells
   if (Cells().size() == 0)
     return false;
@@ -152,9 +155,11 @@ bool CONTACT::CoCoupling3d::IntegrateCells(
     // *******************************************************************
     // cases (2) and (3)
     // *******************************************************************
-    else if (Quad()                                       and
+    else if ((Quad()                                       and
              (lmtype==INPAR::MORTAR::lagmult_quad         or
-              lmtype==INPAR::MORTAR::lagmult_lin))
+                 lmtype==INPAR::MORTAR::lagmult_lin         or
+                 lmtype==INPAR::MORTAR::lagmult_const))
+             or algo == INPAR::MORTAR::algorithm_gpts)
     {
       // check for dual shape functions and linear LM interpolation
       if ((ShapeFcn() == INPAR::MORTAR::shape_dual
@@ -1576,6 +1581,11 @@ bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling(
  *----------------------------------------------------------------------*/
 void CONTACT::CoCoupling3dManager::ConsistDualShape()
 {
+  static const INPAR::MORTAR::AlgorithmType algo =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
+  if (algo!=INPAR::MORTAR::algorithm_mortar)
+    return;
+
   // For standard shape functions no modification is necessary
   // A switch earlier in the process improves computational efficiency
   if (ShapeFcn() != INPAR::MORTAR::shape_dual && ShapeFcn() != INPAR::MORTAR::shape_petrovgalerkin)

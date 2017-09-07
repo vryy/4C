@@ -3713,7 +3713,8 @@ bool MORTAR::Coupling3d::IntegrateCells(
     // *******************************************************************
     else if (Quad()
         && (lmtype == INPAR::MORTAR::lagmult_quad
-            || lmtype == INPAR::MORTAR::lagmult_lin))
+            || lmtype == INPAR::MORTAR::lagmult_lin
+            || lmtype == INPAR::MORTAR::lagmult_const))
     {
       // dynamic_cast to make sure to pass in IntElement&
       MORTAR::IntElement& sintref =

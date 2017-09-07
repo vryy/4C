@@ -757,6 +757,15 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
               std::cout << "===== (Saddle point formulation) ===============================" << std::endl;
               std::cout << "================================================================\n" << std::endl;
             }
+            else if (soltype == INPAR::CONTACT::solution_lagmult
+                &&
+                DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(smortar,"LM_QUAD")==INPAR::MORTAR::lagmult_const)
+            {
+              std::cout << "================================================================" << std::endl;
+              std::cout << "===== const Lagrange multiplier strategy =======================" << std::endl;
+              std::cout << "===== (Saddle point formulation) ===============================" << std::endl;
+              std::cout << "================================================================\n" << std::endl;
+            }
             else if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_petrovgalerkin)
             {
               std::cout << "================================================================" << std::endl;
@@ -816,6 +825,15 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
             {
               std::cout << "================================================================" << std::endl;
               std::cout << "===== Petrov-Galerkin Lagrange multiplier strategy =============" << std::endl;
+              std::cout << "===== (Condensed formulation) ==================================" << std::endl;
+              std::cout << "================================================================\n" << std::endl;
+            }
+            else if (soltype == INPAR::CONTACT::solution_lagmult
+                &&
+                DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(smortar,"LM_QUAD")==INPAR::MORTAR::lagmult_const)
+            {
+              std::cout << "================================================================" << std::endl;
+              std::cout << "===== const Lagrange multiplier strategy =======================" << std::endl;
               std::cout << "===== (Condensed formulation) ==================================" << std::endl;
               std::cout << "================================================================\n" << std::endl;
             }

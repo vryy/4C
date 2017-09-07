@@ -1996,7 +1996,10 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
   if (systype_ == INPAR::CONTACT::system_condensed)
   {
     // double-check if this is a dual LM system
-    if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
+    if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin
+        &&
+        DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(),"LM_QUAD")!=INPAR::MORTAR::lagmult_const
+        )
       dserror("Condensation only for dual LM");
 
     /**********************************************************************/
@@ -4888,7 +4891,9 @@ void CONTACT::CoLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
   if (SystemType() == INPAR::CONTACT::system_condensed)
   {
     // double-check if this is a dual LM system
-    if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
+    if ((shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
+        &&
+        DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(),"LM_QUAD")!=INPAR::MORTAR::lagmult_const)
       dserror("Condensation only for dual LM");
 
     // extract slave displacements from disi

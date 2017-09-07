@@ -891,7 +891,8 @@ bool MORTAR::Coupling2d::IntegrateOverlap(
   // cases (1), (2) and (3)
   // *******************************************************************
   if (!Quad() || (Quad() && lmtype == INPAR::MORTAR::lagmult_quad)
-      || (Quad() && lmtype == INPAR::MORTAR::lagmult_lin))
+      || (Quad() && lmtype == INPAR::MORTAR::lagmult_lin)
+      || (Quad() && lmtype == INPAR::MORTAR::lagmult_const))
   {
     // do the overlap integration (integrate and linearize both M and gap)
     MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(), IParams())->IntegrateSegment2D(

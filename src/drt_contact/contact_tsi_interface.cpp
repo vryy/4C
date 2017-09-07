@@ -377,47 +377,70 @@ void CONTACT::CoTSIInterface::AssembleDualMassLumped(
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node)
       dserror("ERROR: Cannot find node with gid %", gid);
-      CONTACT::CoNode* conode = dynamic_cast<CONTACT::CoNode*>(node);
+    CONTACT::CoNode* conode = dynamic_cast<CONTACT::CoNode*>(node);
 
-      if (conode->Owner() != Comm().MyPID())
+    if (conode->Owner() != Comm().MyPID())
       dserror("ERROR: AssembleDualMass: Node ownership inconsistency!");
 
-      double thermo_lm = conode->CoTSIData().ThermoLM();
-      std::map<int,std:: map<int,double> >& derivDualMass = conode->CoData().GetDerivD();
+    double thermo_lm = conode->CoTSIData().ThermoLM();
+    std::map<int,std:: map<int,double> >& derivDualMass = conode->CoData().GetDerivD();
 
-    /**********************************************dual mass matrix ******/
-    if (conode->MoData().GetD().size() > 0)
+    if (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(IParams(),"LM_QUAD" )!= INPAR::MORTAR::lagmult_const)
     {
-      const GEN::pairedvector<int, double>& dualMassmap =conode->MoData().GetD();
-      GEN::pairedvector<int, double>::const_iterator colcurr;
-
-      for (colcurr = dualMassmap.begin(); colcurr != dualMassmap.end(); ++colcurr)
+      /**********************************************dual mass matrix ******/
+      if (conode->MoData().GetD().size() > 0)
       {
-        DRT::Node* knode = Discret().gNode(colcurr->first);
-        if (!knode) dserror("node not found");
-        CoNode*  kcnode = dynamic_cast<CoNode*>(knode);
-        if (!kcnode) dserror("node not found");
+        const GEN::pairedvector<int, double>& dualMassmap =conode->MoData().GetD();
+        GEN::pairedvector<int, double>::const_iterator colcurr;
 
-        // create the mass matrix
-        dualMassGlobal.FEAssemble(colcurr->second, conode->Dofs()[0],
-            kcnode->Dofs()[0]);
+        for (colcurr = dualMassmap.begin(); colcurr != dualMassmap.end(); ++colcurr)
+        {
+          DRT::Node* knode = Discret().gNode(colcurr->first);
+          if (!knode) dserror("node not found");
+          CoNode*  kcnode = dynamic_cast<CoNode*>(knode);
+          if (!kcnode) dserror("node not found");
+
+          // create the mass matrix
+          dualMassGlobal.FEAssemble(colcurr->second, conode->Dofs()[0],
+              kcnode->Dofs()[0]);
+        }
+      }
+
+      for (std::map<int, std::map<int, double> >::const_iterator a =
+          derivDualMass.begin(); a != derivDualMass.end(); ++a)
+      {
+        int sgid = a->first;
+        DRT::Node* snode = idiscret_->gNode(sgid);
+        if (!snode)
+          dserror("ERROR: Cannot find node with gid %", sgid);
+        CoNode* csnode = dynamic_cast<CoNode*>(snode);
+
+        for (std::map<int, double>::const_iterator b = a->second.begin();
+            b != a->second.end(); ++b)
+          // val               row                col
+          linDualMassGlobal.FEAssemble(b->second * thermo_lm, csnode->Dofs()[0],
+              b->first);
       }
     }
 
-    for (std::map<int, std::map<int, double> >::const_iterator a =
-        derivDualMass.begin(); a != derivDualMass.end(); ++a)
+    else // INPAR::MORTAR::lagmult_const
     {
-      int sgid = a->first;
-      DRT::Node* snode = idiscret_->gNode(sgid);
-      if (!snode)
-        dserror("ERROR: Cannot find node with gid %", sgid);
-      CoNode* csnode = dynamic_cast<CoNode*>(snode);
+      if (conode->NumElement()!=1)
+        dserror("some inconsistency: for lagmult_const every slave node may only have one element attached (it's the center-node!)");
 
-      for (std::map<int, double>::const_iterator b = a->second.begin();
-          b != a->second.end(); ++b)
-        // val               row                col
-        linDualMassGlobal.FEAssemble(b->second * thermo_lm, csnode->Dofs()[0],
-            b->first);
+      CONTACT::CoElement* coele = dynamic_cast<CONTACT::CoElement*>(conode->Elements()[0]);
+      if (!coele)
+        dserror("this should be a contact element");
+
+      GEN::pairedvector<int,double> derivArea(coele->NumNode()*Dim());
+      double area=coele->ComputeAreaDeriv(derivArea);
+
+      dualMassGlobal.FEAssemble(area, conode->Dofs()[0],
+          conode->Dofs()[0]);
+
+      for (GEN::pairedvector<int,double>::const_iterator p=derivArea.begin();p!=derivArea.end();++p)
+        linDualMassGlobal.FEAssemble(p->second * thermo_lm, conode->Dofs()[0],
+            p->first);
     }
   }
   return;
@@ -828,8 +851,6 @@ void CONTACT::CoTSIInterface::AssembleDM_LMn(const double fac, LINALG::SparseMat
     const LINALG::Matrix<3,1> n(cnode->MoData().n(),true);
     const LINALG::Matrix<3,1> lm(cnode->MoData().lm(),true);
     const double lm_n = lm.Dot(n);
-
-    cnode->MoData().GetD();
 
     for (_cip k=cnode->MoData().GetD().begin();k!=cnode->MoData().GetD().end();++k)
       if (abs(k->second)>1.e-12)

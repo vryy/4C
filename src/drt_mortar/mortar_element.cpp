@@ -1147,6 +1147,90 @@ double MORTAR::MortarElement::ComputeArea()
   return area;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  Compute length / area of the element                     seitz 09/17|
+ *----------------------------------------------------------------------*/
+double MORTAR::MortarElement::ComputeAreaDeriv(GEN::pairedvector<int,double>& area_deriv)
+{
+  double area = 0.0;
+  DRT::Element::DiscretizationType dt = Shape();
+
+  // 2D linear case (2noded line element)
+  if (dt==line2 and !IsHermite())
+  {
+    // no integration necessary (constant Jacobian)
+    LINALG::SerialDenseMatrix coord(3,NumPoint());
+    GetNodalCoords(coord);
+
+    // build vector between the two nodes
+    double tang[3] = {0.0, 0.0, 0.0};
+    for (int k=0;k<3;++k)
+    {
+      tang[k]=coord(k,1)-coord(k,0);
+    }
+    area=sqrt(tang[0]*tang[0]+tang[1]*tang[1]+tang[2]*tang[2]);
+  }
+
+  // 3D linear case (3noded triangular element)
+  else if (dt==tri3)
+  {
+    // no integration necessary (constant Jacobian)
+    LINALG::SerialDenseMatrix coord(3,NumPoint());
+    GetNodalCoords(coord);
+
+    // build vectors between the three nodes
+    double t1[3] = {0.0, 0.0, 0.0};
+    double t2[3] = {0.0, 0.0, 0.0};
+    for (int k=0;k<3;++k)
+    {
+      t1[k]=coord(k,1)-coord(k,0);
+      t2[k]=coord(k,2)-coord(k,0);
+    }
+
+    // cross product of t1 and t2
+    double t1xt2[3] = {0.0, 0.0, 0.0};
+    t1xt2[0] = t1[1]*t2[2]-t1[2]*t2[1];
+    t1xt2[1] = t1[2]*t2[0]-t1[0]*t2[2];
+    t1xt2[2] = t1[0]*t2[1]-t1[1]*t2[0];
+    area=0.5*sqrt(t1xt2[0]*t1xt2[0]+t1xt2[1]*t1xt2[1]+t1xt2[2]*t1xt2[2]);
+  }
+
+  // 2D quadratic case   (3noded line element)
+  // 3D bilinear case    (4noded quadrilateral element)
+  // 3D quadratic case   (6noded triangular element)
+  // 3D serendipity case (8noded quadrilateral element)
+  // 3D biquadratic case (9noded quadrilateral element)
+  else if (dt==line3  || dt==quad4  || dt==tri6     || dt==quad8  ||
+           dt==quad9  || dt==nurbs2 || dt== nurbs3  || dt==nurbs4 ||
+           dt==nurbs8 || dt==nurbs9 || (dt==line2 and IsHermite()))
+  {
+    // Gauss quadrature with correct NumGP and Dim
+    MORTAR::ElementIntegrator integrator(dt);
+    double detg = 0.0;
+
+    // loop over all Gauss points, build Jacobian and compute area
+    for (int j=0;j<integrator.nGP();++j)
+    {
+      double gpc[2] = {integrator.Coordinate(j,0), integrator.Coordinate(j,1)};
+      detg = Jacobian(gpc);
+      area+= integrator.Weight(j)*detg;
+
+      GEN::pairedvector<int,double> derivjac(NumNode()*Dim());
+      DerivJacobian(gpc,derivjac);
+      for (GEN::pairedvector<int,double>::const_iterator p=derivjac.begin();p!=derivjac.end();++p)
+        area_deriv[p->first]+=integrator.Weight(j)*p->second;
+    }
+  }
+
+  // other cases not implemented yet
+  else
+    dserror("ERROR: Area computation not implemented for this type of MortarElement");
+
+  return area;
+}
+
+
 /*----------------------------------------------------------------------*
  |  Get global coords for given local coords                  popp 01/08|
  *----------------------------------------------------------------------*/

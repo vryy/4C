@@ -44,7 +44,8 @@ namespace INPAR
       lagmult_undefined,   ///< undefined
       lagmult_quad,        ///< quadratic interpolation
       lagmult_pwlin,       ///< piecewise linear interpolation
-      lagmult_lin          ///< linear interpolation
+      lagmult_lin,         ///< linear interpolation
+      lagmult_const        ///< element-wise constant interpolation (only for quadratic FE)
     };
 
     /// Type of mortar coupling search algorithm

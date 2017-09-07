@@ -384,6 +384,31 @@ void EvaluateShape_LM(const INPAR::MORTAR::ShapeFcn& lmtype,
 }
 
 /*----------------------------------------------------------------------*
+ |  Evaluate Lagrange multiplier shape functions             seitz 09/17|
+ |  THIS IS A SPECIAL VERSION FOR 3D QUADRATIC MORTAR WITH CONST LM!    |
+ *----------------------------------------------------------------------*/
+template<class V>
+void EvaluateShape_LM_Const(const INPAR::MORTAR::ShapeFcn& lmtype,
+                          const double* xi, V& val,
+                          MORTAR::MortarElement& ele, const int& valdim)
+{
+
+  switch (ele.Shape())
+  {
+  case DRT::Element::line3:
+    val(0,0)=val(1,0)=0.;
+    val(2,0)=1.;
+    break;
+  case DRT::Element::quad9:
+    val(0,0)=val(1,0)=val(2,0)=val(3,0)=val(4,0)=val(5,0)=val(6,0)=val(7,0)=0.;
+    val(8,0)=1.;
+    break;
+  default:
+    dserror("shape not supported");
+  }
+}
+
+/*----------------------------------------------------------------------*
  |  Evaluate Lagrange multiplier shape functions              popp 12/07|
  |  THIS IS A SPECIAL VERSION FOR 3D QUADRATIC MORTAR WITH LIN LM!      |
  *----------------------------------------------------------------------*/

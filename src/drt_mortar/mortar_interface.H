@@ -1487,6 +1487,12 @@ private:
   */
   void InitializeLagMultLin();
 
+  /*!
+  \brief check and init for const lm interpolation for 2nd order FE
+
+  */
+  void InitializeLagMultConst();
+
 private:
   /// pointer to the interface data object
   Teuchos::RCP<IDataContainer> idata_ptr_;

@@ -725,6 +725,11 @@ public:
   virtual double ComputeArea();
 
   /*!
+  \brief Compute length/area of the element and its derivative
+  */
+  virtual double ComputeAreaDeriv(GEN::pairedvector<int,double>& area_deriv);
+
+  /*!
   \brief A repository for all kinds of 1D/2D shape functions
   */
   virtual void ShapeFunctions(MortarElement::ShapeType shape,
@@ -797,6 +802,14 @@ public:
   (special version for 3D quadratic mortar with linear Lagrange multipliers)
   */
   virtual bool EvaluateShapeLagMultLin(const INPAR::MORTAR::ShapeFcn& lmtype,
+                                       const double* xi, LINALG::SerialDenseVector& val,
+                                       LINALG::SerialDenseMatrix& deriv, const int valdim);
+
+  /*!
+  \brief Evaluate Lagrange multiplier shape functions and derivatives
+  (special version for quadratic mortar with element-wise constant Lagrange multipliers)
+  */
+  virtual bool EvaluateShapeLagMultConst(const INPAR::MORTAR::ShapeFcn& lmtype,
                                        const double* xi, LINALG::SerialDenseVector& val,
                                        LINALG::SerialDenseMatrix& deriv, const int valdim);
 

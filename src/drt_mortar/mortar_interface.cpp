@@ -542,7 +542,8 @@ void MORTAR::MortarInterface::FillComplete(int maxdof, bool newghosting)
   // check whether crosspoints / edge nodes shall be considered or not
   InitializeCrossPoints();
 
-  // check for linear interpolation of 2D/3D quadratic Lagrange multipliers
+  // check for const/linear interpolation of 2D/3D quadratic Lagrange multipliers
+  InitializeLagMultConst();
   InitializeLagMultLin();
 
   // check/init corner/edge modification
@@ -901,6 +902,82 @@ void MORTAR::MortarInterface::InitializeLagMultLin()
 
           break;
         }
+
+          // other cases
+        default:
+        {
+          dserror(
+              "ERROR: Lin/Lin interpolation of LM only for line3/tri6/quad8/quad9 mortar elements");
+          break;
+        }
+        } // switch(Shape)
+      } // if (IsSlave())
+    } // for-loop
+  }
+
+  return;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  Check and initialize for const lagmult interpolation     seitz 09/17|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::InitializeLagMultConst()
+{
+  if ((DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(
+      IParams(), "LM_QUAD") == INPAR::MORTAR::lagmult_const))
+  {
+    // modified treatment slave side nodes:
+    // only the center-node carries LM
+
+    // loop over all elements
+    for (int i = 0; i < Discret().NodeRowMap()->NumMyElements(); ++i)
+    {
+      // get node and cast to cnode
+      MORTAR::MortarNode* node =
+          dynamic_cast<MORTAR::MortarNode*>(idiscret_->lRowNode(i));
+
+      // candidates are slave nodes with shape line3 (2D), tri6 and quad8/9 (3D)
+      if (node->IsSlave())
+      {
+        //search the first adjacent element
+        MORTAR::MortarElement::DiscretizationType shape =
+            (node->Elements()[0])->Shape();
+
+        // which discretization type
+        switch (shape)
+        {
+        // line3 contact elements (= quad8/9 or tri6 discretizations)
+        case MORTAR::MortarElement::line3:
+        {
+          // case1: vertex nodes must be set to MASTER
+          if (node->Id() == (node->Elements()[0])->NodeIds()[0]
+              || node->Id() == (node->Elements()[0])->NodeIds()[1])
+          {
+            node->SetBound() = true;
+            node->SetSlave() = false;
+          }
+
+          // case2: middle nodes remain SLAVE
+          else
+          {
+            // do nothing
+          }
+
+          break;
+        }
+        case MORTAR::MortarElement::quad9:
+          if (node->Id() == (node->Elements()[0])->NodeIds()[8])
+          {
+            // do nothing
+          }
+          else
+          {
+            node->SetBound() = true;
+            node->SetSlave() = false;
+          }
+          break;
 
           // other cases
         default:
