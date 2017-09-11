@@ -5,12 +5,8 @@
 \brief basis of all monolithic EHL algorithms that perform a coupling between
        the structure field equation and lubrication field equations
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15270
-</pre>
+\level 3
+\maintainer Alexander Seitz
 */
 /*--------------------------------------------------------------------------*/
 
@@ -2118,9 +2114,17 @@ void EHL::Monolithic::ApplyStructCouplingState(Teuchos::RCP<const Epetra_Vector>
                                               Teuchos::RCP<const Epetra_Vector> vel)
 {
 
-    if (disp != Teuchos::null)
-      lubrication_->LubricationField()->Discretization()->SetState(1, "displacement", disp);
-    if (vel != Teuchos::null)
-      lubrication_->LubricationField()->Discretization()->SetState(1, "velocity", vel);
+  Teuchos::RCP<Epetra_Vector> vec_lub = Teuchos::rcp(new Epetra_Vector(
+      *lubrication_->LubricationField()->Discretization()->DofRowMap(1)));
+  if (disp != Teuchos::null)
+  {
+    LINALG::Export(*disp,*vec_lub);
+    lubrication_->LubricationField()->Discretization()->SetState(1, "displacement", vec_lub);
+  }
+  if (vel != Teuchos::null)
+  {
+    LINALG::Export(*vel,*vec_lub);
+    lubrication_->LubricationField()->Discretization()->SetState(1, "velocity", vec_lub);
+  }
 
 }  // ApplyStructCouplingState()
