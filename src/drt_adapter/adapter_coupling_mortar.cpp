@@ -26,9 +26,6 @@
 #include "../linalg/linalg_solver.H"
 #include "../drt_inpar/inpar_fluid.H"
 
-#define ALLDOF
-
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 ADAPTER::CouplingMortar::CouplingMortar() :
