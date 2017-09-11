@@ -672,7 +672,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(
   {
     const int curvenum = (tmp_funct) ? (*tmp_funct)[i] : -1;
     if (curvenum>=0)
-      functfacs[i] = DRT::Problem::Instance()->Funct(curvenum).EvaluateTime(time);
+      functfacs[i] = DRT::Problem::Instance()->Funct(curvenum-1).EvaluateTime(time);
   }
 
   /*------------------------------------------------------------------*/
