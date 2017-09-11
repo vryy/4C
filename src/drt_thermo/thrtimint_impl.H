@@ -24,6 +24,9 @@
 #include "thr_aux.H"
 #include <Epetra_Time.h>
 
+// forward declaration
+namespace ADAPTER{class CouplingMortar;}
+
 /*----------------------------------------------------------------------*
  | belongs to thermal dynamics namespace                    bborn 08/09 |
  *----------------------------------------------------------------------*/
@@ -382,6 +385,7 @@ namespace THR
     Teuchos::RCP<Epetra_Vector> tempinc_;  //!< sum of temperature vectors already applied,
                                            //!< i.e. the incremental temperature
     Epetra_Time timer_;  //!< timer for solution technique
+    Teuchos::RCP<ADAPTER::CouplingMortar> adaptermeshtying_;//!< mortar coupling adapter
     //@}
 
     //! @name Various global forces

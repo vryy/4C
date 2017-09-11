@@ -1483,7 +1483,10 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   }
   case prb_thermo:
   {
-    thermdis = Teuchos::rcp(new DRT::Discretization("thermo",reader.Comm()));
+    if(distype == "Nurbs")
+      thermdis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("thermo",reader.Comm()));
+    else
+      thermdis = Teuchos::rcp(new DRT::Discretization("thermo",reader.Comm()));
 
     // create discretization writer - in constructor set into and owned by corresponding discret
     thermdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(thermdis)));

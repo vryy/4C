@@ -118,6 +118,9 @@ namespace ADAPTER
         std::vector<Teuchos::RCP<MORTAR::IntCell> >&   intcells   //!< vector of mortar integration cells
         );
 
+    /// filling matrices by using mortar interface using reference configuration
+    void Evaluate();
+
     /// filling matrices
     void Evaluate(Teuchos::RCP<Epetra_Vector> idisp);
 
@@ -246,6 +249,26 @@ namespace ADAPTER
 
     //@}
 
+    /** \name Condensation methods */
+    //@{
+
+    /// do condensation of Lagrange multiplier and slave-sided dofs
+    void MortarCondensation(
+        Teuchos::RCP<LINALG::SparseMatrix>& k,    ///< in:  tangent matrix w/o condensation
+                                                  ///< out: tangent matrix w/  condensation
+        Teuchos::RCP<Epetra_Vector>& rhs          ///< in:  rhs vector     w/o condensation
+                                                  ///< out: rhs vector     w/  condensation
+        ) const ;
+
+    /// recover slave-sided dofs
+    void MortarRecover(
+        Teuchos::RCP<LINALG::SparseMatrix>& k,    ///< in: tangent matrix
+        Teuchos::RCP<Epetra_Vector>& inc          ///< in:  solution vector     w/o condensation
+                                                  ///< out: solution vector     w/  condensation
+        ) const ;
+
+    //@}
+
   protected:
 
     // create projection operator Dinv*M
@@ -271,9 +294,6 @@ namespace ADAPTER
     }
 
   private:
-
-    /// filling matrices by using mortar interface
-    void Evaluate();
 
     /// perform mesh relocation
     void MeshRelocation(

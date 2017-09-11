@@ -75,6 +75,7 @@ DRT::NURBS::NurbsDiscretization::SetKnotVector
   }
 
   knots_=knots;
+  filled_=false;
   return;
 }
 

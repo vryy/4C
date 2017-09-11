@@ -179,6 +179,11 @@ void DRT::ELEMENTS::ThermoType::SetupElementDefinition(
     .AddNamedInt("MAT")
     ;
 
+  defs["NURBS27"]
+    .AddIntVector("NURBS27",27)
+    .AddNamedInt("MAT")
+    ;
+
   defs["QUAD4"]
     .AddIntVector("QUAD4",4)
     .AddNamedInt("MAT")

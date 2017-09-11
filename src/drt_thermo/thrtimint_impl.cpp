@@ -21,6 +21,7 @@
 #include "thrtimint_impl.H"
 #include "thr_aux.H"
 #include "thermo_ele_action.H"
+#include "../drt_adapter/adapter_coupling_mortar.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                              bborn 08/09 |
@@ -77,6 +78,28 @@ THR::TimIntImpl::TimIntImpl(
   // incremental temperature increments IncT_{n+1}
   tempinc_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
 
+  // setup mortar coupling
+  DRT::Condition* mrtrcond = actdis->GetCondition("Mortar");
+  if (mrtrcond!=NULL)
+  {
+    adaptermeshtying_ =
+        Teuchos::rcp(new ADAPTER::CouplingMortar());
+
+    std::vector<int> coupleddof(1, 1);
+    adaptermeshtying_->Setup(
+        actdis,
+        actdis,
+        Teuchos::null,
+        coupleddof,
+        "Mortar",
+        actdis->Comm(),
+        false,
+        false,
+        0,
+        0
+        );
+    adaptermeshtying_->Evaluate();
+  }
   // done so far
   return;
 }
@@ -482,6 +505,10 @@ void THR::TimIntImpl::NewtonFull()
   // normtempi_ was already set in predictor; this is strictly >0
   timer_.ResetStartTime();
 
+  // Do mortar condensation
+  if (adaptermeshtying_!=Teuchos::null)
+    adaptermeshtying_->MortarCondensation(tang_,fres_);
+
   // equilibrium iteration loop
   while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
   {
@@ -509,6 +536,10 @@ void THR::TimIntImpl::NewtonFull()
     solver_->Solve(tang_->EpetraMatrix(), tempi_, fres_, true, iter_==1);
     solver_->ResetTolerance();
 
+    // recover condensed variables
+    if (adaptermeshtying_!=Teuchos::null)
+      adaptermeshtying_->MortarRecover(tang_,tempi_);
+
     // update end-point temperatures etc
     UpdateIter(iter_);
 
@@ -526,6 +557,10 @@ void THR::TimIntImpl::NewtonFull()
     // blank residual at DOFs on Dirichlet BC
     // DBC node do not enter the residual, because values are known at the nodes
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
+
+    // do mortar condensation
+    if (adaptermeshtying_!=Teuchos::null)
+      adaptermeshtying_->MortarCondensation(tang_,fres_);
 
     // build residual force norm
     normfres_ = THR::AUX::CalculateVectorNorm(iternorm_, fres_);

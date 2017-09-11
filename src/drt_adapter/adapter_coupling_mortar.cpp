@@ -299,14 +299,12 @@ void ADAPTER::CouplingMortar::SetupInterface(
 
   // is this a nurbs problem?
   std::string distype = DRT::Problem::Instance()->SpatialApproximation();
+  bool nurbs;
   if(distype=="Nurbs")
-  {
-    // ***
-    dserror("nurbs for fsi mortar not supported!");
-    input.set<bool>("NURBS",true);
-  }
+    nurbs=true;
   else
-    input.set<bool>("NURBS",false);
+    nurbs=false;
+  input.set<bool>("NURBS",nurbs);
 
   // set valid parameter values
   input.set<std::string>("LM_SHAPEFCN","dual");
@@ -382,6 +380,7 @@ void ADAPTER::CouplingMortar::SetupInterface(
                 new MORTAR::MortarNode(node->Id(), node->X(), node->Owner(),
                     numcoupleddof, dofids, false));
 
+    if (nurbs) MORTAR::UTILS::PrepareNURBSNode(node,mrtrnode);
     interface_->AddMortarNode(mrtrnode);
   }
 
@@ -407,6 +406,7 @@ void ADAPTER::CouplingMortar::SetupInterface(
                 new MORTAR::MortarNode(node->Id()+nodeoffset, node->X(), node->Owner(),
                     numcoupleddof, dofids, true));
 
+    if (nurbs) MORTAR::UTILS::PrepareNURBSNode(node,mrtrnode);
     interface_->AddMortarNode(mrtrnode);
   }
 
@@ -434,8 +434,9 @@ void ADAPTER::CouplingMortar::SetupInterface(
     Teuchos::RCP<DRT::Element> ele = elemiter->second;
     Teuchos::RCP<MORTAR::MortarElement> mrtrele = Teuchos::rcp(
                 new MORTAR::MortarElement(ele->Id(), ele->Owner(), ele->Shape(),
-                    ele->NumNode(), ele->NodeIds(), false));
+                    ele->NumNode(), ele->NodeIds(), false, nurbs));
 
+    if (nurbs) MORTAR::UTILS::PrepareNURBSElement(*masterdis,ele,mrtrele,DRT::Problem::Instance()->NDim());
     interface_->AddMortarElement(mrtrele);
   }
 
@@ -451,8 +452,9 @@ void ADAPTER::CouplingMortar::SetupInterface(
     {
       Teuchos::RCP<MORTAR::MortarElement> mrtrele = Teuchos::rcp(
                   new MORTAR::MortarElement(ele->Id() + eleoffset, ele->Owner(), ele->Shape(),
-                      ele->NumNode(), ele->NodeIds(), true));
+                      ele->NumNode(), ele->NodeIds(), true, nurbs));
 
+      if (nurbs) MORTAR::UTILS::PrepareNURBSElement(*slavedis,ele,mrtrele,DRT::Problem::Instance()->NDim());
       interface_->AddMortarElement(mrtrele);
     }
     else
@@ -465,7 +467,7 @@ void ADAPTER::CouplingMortar::SetupInterface(
 
       Teuchos::RCP<MORTAR::MortarElement> mrtrele = Teuchos::rcp(
                   new MORTAR::MortarElement(ele->Id() + eleoffset, ele->Owner(), ele->Shape(),
-                      ele->NumNode(), &(nidsoff[0]), true));
+                      ele->NumNode(), &(nidsoff[0]), true, nurbs));
 
       interface_->AddMortarElement(mrtrele);
     }
@@ -1645,4 +1647,134 @@ Teuchos::RCP<Epetra_MultiVector> ADAPTER::CouplingMortar::SlaveToMaster
     dserror( "M^{T}*sv multiplication failed" );
 
   return mv;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+
+void ADAPTER::CouplingMortar::MortarCondensation(
+        Teuchos::RCP<LINALG::SparseMatrix>& k,
+        Teuchos::RCP<Epetra_Vector>& rhs
+        ) const
+{
+  if(DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(interface_->IParams(),"PARALLEL_REDIST")
+      !=INPAR::MORTAR::parredist_none )
+    dserror("redistribution of mortar interface not yet implemented here");
+
+  // prepare maps
+  Teuchos::RCP<Epetra_Map> gsdofrowmap = Teuchos::rcp_const_cast<Epetra_Map>(slavedofrowmap_);
+  Teuchos::RCP<Epetra_Map> gmdofrowmap = Teuchos::rcp_const_cast<Epetra_Map>(masterdofrowmap_);
+  Teuchos::RCP<Epetra_Map> gsmdofrowmap = LINALG::MergeMap(gsdofrowmap,gmdofrowmap,false);
+  Teuchos::RCP<Epetra_Map> gndofrowmap= LINALG::SplitMap(k->RowMap(),*gsmdofrowmap);
+
+
+  /**********************************************************************/
+  /* Split kteff into 3x3 block matrix                                  */
+  /**********************************************************************/
+  // we want to split k into 3 groups s,m,n = 9 blocks
+  Teuchos::RCP<LINALG::SparseMatrix> kss,
+  ksm, ksn, kms, kmm, kmn, kns, knm, knn;
+
+  // temporarily we need the blocks ksmsm, ksmn, knsm
+  // (FIXME: because a direct SplitMatrix3x3 is still missing!)
+  Teuchos::RCP<LINALG::SparseMatrix> ksmsm, ksmn, knsm;
+
+  // some temporary Teuchos::RCPs
+  Teuchos::RCP<Epetra_Map> tempmap;
+  Teuchos::RCP<LINALG::SparseMatrix> tempmtx1;
+  Teuchos::RCP<LINALG::SparseMatrix> tempmtx2;
+  Teuchos::RCP<LINALG::SparseMatrix> tempmtx3;
+
+  // split into slave/master part + structure part
+  Teuchos::RCP<LINALG::SparseMatrix> kteffmatrix = k;
+
+  // split
+    LINALG::SplitMatrix2x2(kteffmatrix, gsmdofrowmap, gndofrowmap,
+        gsmdofrowmap, gndofrowmap, ksmsm, ksmn, knsm, knn);
+  LINALG::SplitMatrix2x2(ksmsm, gsdofrowmap, gmdofrowmap, gsdofrowmap,
+      gmdofrowmap, kss, ksm, kms, kmm);
+  LINALG::SplitMatrix2x2(ksmn, gsdofrowmap, gmdofrowmap, gndofrowmap,
+      tempmap, ksn, tempmtx1, kmn, tempmtx2);
+  LINALG::SplitMatrix2x2(knsm, gndofrowmap, tempmap, gsdofrowmap,
+      gmdofrowmap, kns, knm, tempmtx1, tempmtx2);
+
+  /**********************************************************************/
+  /* Split feff into 3 subvectors                                       */
+  /**********************************************************************/
+  // we want to split f into 3 groups s.m,n
+  Teuchos::RCP<Epetra_Vector> fs, fm, fn;
+
+  // temporarily we need the group sm
+  Teuchos::RCP<Epetra_Vector> fsm;
+
+  // do the vector splitting smn -> sm+n
+  LINALG::SplitVector(k->RowMap(), *rhs, gsmdofrowmap, fsm, gndofrowmap,fn);
+
+  // we want to split fsm into 2 groups s,m
+  fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap));
+  fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap));
+
+  // do the vector splitting sm -> s+m
+  LINALG::SplitVector(*gsmdofrowmap, *fsm, gsdofrowmap, fs, gmdofrowmap,fm);
+
+
+  Teuchos::RCP<LINALG::SparseMatrix> kteffnew = Teuchos::rcp(
+      new LINALG::SparseMatrix(k->RowMap(), 81, true, false,
+          kteffmatrix->GetMatrixtype()));
+  Teuchos::RCP<Epetra_Vector> feffnew = LINALG::CreateVector(k->RowMap());
+
+  // build new stiffness matrix
+  kteffnew->Add(*knn, false, 1.0, 1.0);
+  kteffnew->Add(*knm, false, 1.0, 1.0);
+  kteffnew->Add(*kmn, false, 1.0, 1.0);
+  kteffnew->Add(*kmm, false, 1.0, 1.0);
+  kteffnew->Add(*LINALG::MLMultiply(*kns,false,*P_,false,true,false,true),false,1.,1.);
+  kteffnew->Add(*LINALG::MLMultiply(*P_,true,*ksn,false,true,false,true),false,1.,1.);
+  kteffnew->Add(*LINALG::MLMultiply(*P_,true,*LINALG::MLMultiply(*kss,false,*P_,false,true,false,true),false,true,false,true),false,1.,1.);
+  kteffnew->Add(*LINALG::Eye(*gsdofrowmap),false,1.,1.);
+  kteffnew->Complete();
+
+  // build new RHS
+  Teuchos::RCP<Epetra_Vector> tmp = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap));
+  if (P_->Multiply(true,*fs,*tmp)) dserror("multiply failed");
+  if(fm->Update(1.,*tmp,1.)) dserror("update failed");
+  tmp = Teuchos::rcp(new Epetra_Vector(k->RowMap()));
+  LINALG::Export(*fm,*tmp);
+  if(feffnew->Update(1.,*tmp,0.)) dserror("update failed");
+  tmp = Teuchos::rcp(new Epetra_Vector(k->RowMap()));
+  LINALG::Export(*fn,*tmp);
+  feffnew->Update(1.,*tmp,1.);
+
+  // return new matrix and rhs
+  k=kteffnew;
+  rhs=feffnew;
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ADAPTER::CouplingMortar::MortarRecover(
+    Teuchos::RCP<LINALG::SparseMatrix>& k,
+    Teuchos::RCP<Epetra_Vector>& inc
+    ) const
+{
+  // get the maps
+  Teuchos::RCP<const Epetra_Map> full_map =    Teuchos::rcpFromRef<const Epetra_Map>(k->RowMap());
+
+  // extract the master-sided increment
+  Teuchos::RCP<Epetra_Vector> m_inc = Teuchos::rcp(new Epetra_Vector(*masterdofrowmap_));
+  LINALG::Export(*inc,*m_inc);
+
+  // compute the slave-sided increment according to mortar coupling
+  Teuchos::RCP<Epetra_Vector> s_inc = Teuchos::rcp(new Epetra_Vector(*slavedofrowmap_));
+  if(P_->Multiply(false,*m_inc,*s_inc)) dserror("multiply failed");
+
+  // add the slave-sided increment to global increment vector
+  Teuchos::RCP<Epetra_Vector> tmp = Teuchos::rcp(new Epetra_Vector(*full_map));
+  LINALG::Export(*s_inc,*tmp);
+  if(inc->Update(1.,*tmp,1.)) dserror("update failed");
+
+  return;
 }
