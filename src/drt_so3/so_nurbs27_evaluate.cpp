@@ -63,6 +63,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
   else if (action=="calc_struct_energy"        ) act = So_nurbs27::calc_struct_energy        ;
   else if (action=="calc_struct_nlnstifflmass" ) act = So_nurbs27::calc_struct_nlnstifflmass ;
   else if (action=="calc_struct_recover") return 0;
+  else if (action=="calc_struct_predict") return 0;
   else dserror("Unknown type of action '%s' for So_nurbs27",action.c_str());
   // what should the element do
   switch(act)
