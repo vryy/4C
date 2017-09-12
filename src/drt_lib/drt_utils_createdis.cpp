@@ -244,6 +244,7 @@ void DRT::UTILS::DiscretizationCreatorBase::Finalize(
     knots->FinishKnots(smallest_gid_in_dis);
 
     targetnurbsdis_ptr->SetKnotVector(knots);
+    targetnurbsdis_ptr->FillComplete();
   }
 
   // at the end, we do several checks to ensure that we really have identical
