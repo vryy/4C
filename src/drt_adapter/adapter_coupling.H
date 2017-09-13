@@ -50,7 +50,7 @@ namespace ADAPTER
    *  can be used.
    *
    *  For non-matching sets of nodes at an interface, the ADAPTER::CouplingMortar
-   *  can be used (does not (yet?) inherit from this interface).
+   *  can be used.
    */
   class CouplingBase
   {
