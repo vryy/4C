@@ -98,6 +98,7 @@ public:
     VolumeInitfield,
     PointCoupling,
     Mortar,
+    MortarMulti,
     Contact,
     AleWear,
     LineMrtrSym,

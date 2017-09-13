@@ -30,6 +30,7 @@
 namespace LINALG
 {
   class SparseMatrix;
+  class BlockSparseMatrixBase;
 }
 
 /*!
@@ -197,6 +198,31 @@ namespace UTILS
   void PrepareNURBSNode(
       DRT::Node* node,
       Teuchos::RCP<MORTAR::MortarNode> mnode);
+
+  void MortarMatrixCondensation(
+        Teuchos::RCP<LINALG::BlockSparseMatrixBase>& k,
+        const std::vector<Teuchos::RCP<LINALG::SparseMatrix> >& p);
+
+  void MortarMatrixCondensation(
+        Teuchos::RCP<LINALG::SparseMatrix>& k,
+        const Teuchos::RCP<LINALG::SparseMatrix>& p_row,
+        const Teuchos::RCP<LINALG::SparseMatrix>& p_col);
+
+  void MortarRhsCondensation(
+        Teuchos::RCP<Epetra_Vector>& rhs,
+        const Teuchos::RCP<LINALG::SparseMatrix>& p);
+
+  void MortarRhsCondensation(
+        Teuchos::RCP<Epetra_Vector>& rhs,
+        const std::vector<Teuchos::RCP<LINALG::SparseMatrix> >& p);
+
+  void MortarRecover(
+        Teuchos::RCP<Epetra_Vector>& inc,
+        const Teuchos::RCP<LINALG::SparseMatrix>& p);
+
+  void MortarRecover(
+        Teuchos::RCP<Epetra_Vector>& inc,
+        const std::vector<Teuchos::RCP<LINALG::SparseMatrix> >& p);
 }
 } // namespace MORTAR
 

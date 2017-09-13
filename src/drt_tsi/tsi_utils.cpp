@@ -65,6 +65,9 @@ std::map<std::string,std::string> TSI::UTILS::ThermoStructureCloneStrategy::Cond
   /// initial field
   conditions_to_copy.insert(std::pair<std::string,std::string>("ThermoInitfield","Initfield"));
 
+  /// mortar coupling
+  conditions_to_copy.insert(std::pair<std::string,std::string>("MortarMulti","MortarMulti"));
+
   return conditions_to_copy;
 }  // ConditionsToCopy()
 

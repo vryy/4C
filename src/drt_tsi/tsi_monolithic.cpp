@@ -56,6 +56,8 @@
 #include "../drt_structure_new/str_model_evaluator_data.H"
 #include "../drt_lib/drt_elements_paramsminimal.H"
 
+#include "../drt_mortar/mortar_multifield_coupling.H"
+
 //! Note: The order of calling the two BaseAlgorithm-constructors is
 //! important here! In here control file entries are written. And these entries
 //! define the order in which the filters handle the Discretizations, which in
@@ -1335,6 +1337,10 @@ void TSI::Monolithic::SetupSystemMatrix()
   // done. make sure all blocks are filled.
   systemmatrix_->Complete();
 
+  // apply mortar coupling
+  if (mortar_coupling_!=Teuchos::null)
+    mortar_coupling_->CondenseMatrix(systemmatrix_);
+
 }  // SetupSystemMatrix()
 
 
@@ -1365,6 +1371,10 @@ void TSI::Monolithic::SetupRHS()
   // insert vectors to tsi rhs
   Extractor()->InsertVector(*str_rhs,0,*rhs_);
   Extractor()->InsertVector(*ThermoField()->RHS(),1,*rhs_);
+
+  // apply mortar coupling
+  if (mortar_coupling_!=Teuchos::null)
+    mortar_coupling_->CondenseRhs(rhs_);
 
 }  // SetupRHS()
 
@@ -1447,6 +1457,10 @@ void TSI::Monolithic::LinearSolve()
     if (Comm().MyPID() == 0) { std::cout << " Solved" <<  std::endl; }
   #endif  // TFSI
 #endif  // TSI_DEBUG
+
+    // apply mortar coupling
+    if (mortar_coupling_!=Teuchos::null)
+      mortar_coupling_->RecoverIncr(iterinc_);
 
 }  // LinearSolve()
 

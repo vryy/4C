@@ -26,6 +26,7 @@
 #include "../drt_adapter/ad_str_structure_new.H"
 #include "../drt_adapter/ad_str_factory.H"
 #include "../drt_adapter/ad_str_wrapper.H"
+#include "../drt_adapter/adapter_coupling_mortar.H"
 #include "../drt_inpar/inpar_tsi.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
@@ -45,6 +46,7 @@
 
 #include "../drt_structure_new/str_model_evaluator_contact.H"
 #include "../drt_structure_new/str_model_evaluator_structure.H"
+#include "../drt_mortar/mortar_multifield_coupling.H"
 
 //! Note: The order of calling the two BaseAlgorithm-constructors is
 //! important here! In here control file entries are written. And these entries
@@ -135,6 +137,18 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
         *ThermoField()   ->Discretization()->NodeRowMap(),
         1,
         true);
+  }
+
+  // setup mortar coupling
+  if (DRT::Problem::Instance()->ProblemType()==prb_tsi)
+  {
+    DRT::Condition* mrtrcond = StructureField()->Discretization()->GetCondition("MortarMulti");
+    if (mrtrcond!=NULL)
+    {
+      mortar_coupling_ = Teuchos::rcp(new MORTAR::MultiFieldCoupling());
+      mortar_coupling_->PushBackCoupling(StructureField()->Discretization(),0,std::vector<int>(3,1));
+      mortar_coupling_->PushBackCoupling(ThermoField()   ->Discretization(),0,std::vector<int>(1,1));
+    }
   }
 
   //reset states

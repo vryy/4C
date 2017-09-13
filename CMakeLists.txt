@@ -1673,6 +1673,7 @@ set(OBJS_DRT_MORTAR
   src/drt_mortar/mortar_strategy_factory.cpp
   src/drt_mortar/mortar_projector.cpp
   src/drt_mortar/mortar_strategy_base.cpp
+  src/drt_mortar/mortar_multifield_coupling.cpp
 )
 set(OBJS_DRT_MORTAR_LIB
   src/drt_mortar/mortar_element.cpp

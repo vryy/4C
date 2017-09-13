@@ -79,27 +79,31 @@ THR::TimIntImpl::TimIntImpl(
   tempinc_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
 
   // setup mortar coupling
-  DRT::Condition* mrtrcond = actdis->GetCondition("Mortar");
-  if (mrtrcond!=NULL)
+  if (DRT::Problem::Instance()->ProblemType()==prb_thermo)
   {
-    adaptermeshtying_ =
-        Teuchos::rcp(new ADAPTER::CouplingMortar());
+    DRT::Condition* mrtrcond = actdis->GetCondition("Mortar");
+    if (mrtrcond!=NULL)
+    {
+      adaptermeshtying_ =
+          Teuchos::rcp(new ADAPTER::CouplingMortar());
 
-    std::vector<int> coupleddof(1, 1);
-    adaptermeshtying_->Setup(
-        actdis,
-        actdis,
-        Teuchos::null,
-        coupleddof,
-        "Mortar",
-        actdis->Comm(),
-        false,
-        false,
-        0,
-        0
-        );
-    adaptermeshtying_->Evaluate();
+      std::vector<int> coupleddof(1, 1);
+      adaptermeshtying_->Setup(
+          actdis,
+          actdis,
+          Teuchos::null,
+          coupleddof,
+          "Mortar",
+          actdis->Comm(),
+          false,
+          false,
+          0,
+          0
+      );
+      adaptermeshtying_->Evaluate();
+    }
   }
+
   // done so far
   return;
 }

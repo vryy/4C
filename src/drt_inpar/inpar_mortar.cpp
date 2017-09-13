@@ -338,5 +338,50 @@ void INPAR::MORTAR::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Cond
 
   condlist.push_back(edgemrtr);
   condlist.push_back(cornermrtr);
+
+
+  {
+    /*--------------------------------------------------------------------*/
+    // mortar coupling (for ALL kinds of interface problems except contact)
+    std::vector<Teuchos::RCP<ConditionComponent> > mortarcomponents;
+
+    mortarcomponents.push_back(Teuchos::rcp(new IntConditionComponent("Interface ID")));
+    mortarcomponents.push_back(
+        Teuchos::rcp(
+            new StringConditionComponent(
+                "Side","Master",
+                Teuchos::tuple<std::string>("Master","Slave"),
+                Teuchos::tuple<std::string>("Master","Slave"))));
+    mortarcomponents.push_back(
+        Teuchos::rcp(
+            new StringConditionComponent(
+                "Initialization","Inactive",
+                Teuchos::tuple<std::string>("Inactive","Active"),
+                Teuchos::tuple<std::string>("Inactive","Active"),true)));
+
+    Teuchos::RCP<ConditionDefinition> linemortar =
+        Teuchos::rcp(new ConditionDefinition("DESIGN LINE MORTAR MULTI-COUPLING CONDITIONS 2D",
+            "MortarMulti",
+            "Line Mortar Multi-Coupling",
+            DRT::Condition::MortarMulti,
+            true,
+            DRT::Condition::Line));
+    Teuchos::RCP<ConditionDefinition> surfmortar =
+        Teuchos::rcp(new ConditionDefinition("DESIGN SURF MORTAR MULTI-COUPLING CONDITIONS 3D",
+            "MortarMulti",
+            "Surface Mortar Multi-Coupling",
+            DRT::Condition::MortarMulti,
+            true,
+            DRT::Condition::Surface));
+
+    for (unsigned i=0; i<mortarcomponents.size(); ++i)
+    {
+      linemortar->AddComponent(mortarcomponents[i]);
+      surfmortar->AddComponent(mortarcomponents[i]);
+    }
+
+    condlist.push_back(linemortar);
+    condlist.push_back(surfmortar);
+  }
 }
 

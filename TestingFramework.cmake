@@ -1366,6 +1366,7 @@ baci_test(tsi_geonln_simplrocketnozzle_monolithic 2 "")
 baci_test(tsi_plastic_ssn_necking_eas 2 50)
 baci_test(tsi_plastic_ssn_necking_fbar 2 "")
 baci_test(tsi_plastic_ssn_necking_fbar_TQ 2 "")
+baci_test(tsi_meshtying_nurbs 2 "")
 baci_test(uq_art_aorta_2D_lognorm_field 1 "")
 baci_test(uq_art_aorta_3D_lognorm_field_FFT 1 "")
 # some uq test cases using Gaussian random numbers from Boost Random libraries

@@ -15,6 +15,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_multiply.H"
 
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_nurbs_discret/drt_control_point.H"
@@ -782,4 +783,181 @@ void MORTAR::UTILS::PrepareNURBSNode(
   mnode->NurbsW() = cp->W();
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MORTAR::UTILS::MortarMatrixCondensation(
+    Teuchos::RCP<LINALG::SparseMatrix>& k,
+    const Teuchos::RCP<LINALG::SparseMatrix>& p_row,
+    const Teuchos::RCP<LINALG::SparseMatrix>& p_col)
+{
+  // prepare maps
+  Teuchos::RCP<Epetra_Map> gsrow = Teuchos::rcp_const_cast<Epetra_Map>(
+      Teuchos::rcpFromRef<const Epetra_Map>(p_row->RangeMap()));
+  Teuchos::RCP<Epetra_Map> gmrow = Teuchos::rcp_const_cast<Epetra_Map>(
+      Teuchos::rcpFromRef<const Epetra_Map>(p_row->DomainMap()));
+  Teuchos::RCP<Epetra_Map> gsmrow = LINALG::MergeMap(gsrow,gmrow,false);
+  Teuchos::RCP<Epetra_Map> gnrow= LINALG::SplitMap(k->RangeMap(),*gsmrow);
+
+  Teuchos::RCP<Epetra_Map> gscol = Teuchos::rcp_const_cast<Epetra_Map>(
+      Teuchos::rcpFromRef<const Epetra_Map>(p_col->RangeMap()));
+  Teuchos::RCP<Epetra_Map> gmcol = Teuchos::rcp_const_cast<Epetra_Map>(
+      Teuchos::rcpFromRef<const Epetra_Map>(p_col->DomainMap()));
+  Teuchos::RCP<Epetra_Map> gsmcol = LINALG::MergeMap(gscol,gmcol,false);
+  Teuchos::RCP<Epetra_Map> gncol= LINALG::SplitMap(k->DomainMap(),*gsmcol);
+
+  /**********************************************************************/
+  /* Split kteff into 3x3 block matrix                                  */
+  /**********************************************************************/
+  // we want to split k into 3 groups s,m,n = 9 blocks
+  Teuchos::RCP<LINALG::SparseMatrix> kss,
+  ksm, ksn, kms, kmm, kmn, kns, knm, knn;
+
+  // temporarily we need the blocks ksmsm, ksmn, knsm
+  // (FIXME: because a direct SplitMatrix3x3 is still missing!)
+  Teuchos::RCP<LINALG::SparseMatrix> ksmsm, ksmn, knsm;
+
+  // some temporary Teuchos::RCPs
+  Teuchos::RCP<Epetra_Map> tempmap;
+  Teuchos::RCP<LINALG::SparseMatrix> tempmtx1;
+  Teuchos::RCP<LINALG::SparseMatrix> tempmtx2;
+  Teuchos::RCP<LINALG::SparseMatrix> tempmtx3;
+
+  // split
+  LINALG::SplitMatrix2x2(k, gsmrow, gnrow,
+      gsmcol, gncol, ksmsm, ksmn, knsm, knn);
+  LINALG::SplitMatrix2x2(ksmsm, gsrow, gmrow, gscol,
+      gmcol, kss, ksm, kms, kmm);
+  LINALG::SplitMatrix2x2(ksmn, gsrow, gmrow, gncol,
+      tempmap, ksn, tempmtx1, kmn, tempmtx2);
+  LINALG::SplitMatrix2x2(knsm, gnrow, tempmap, gscol,
+      gmcol, kns, knm, tempmtx1, tempmtx2);
+
+  if (kms->NormOne()>1.e-12)
+    dserror("stop");
+  if (ksm->NormOne()>1.e-12)
+    dserror("stop");
+
+  Teuchos::RCP<LINALG::SparseMatrix> kteffnew = Teuchos::rcp(
+      new LINALG::SparseMatrix(k->RowMap(), 81, true, false,
+          k->GetMatrixtype()));
+
+  // build new stiffness matrix
+  kteffnew->Add(*knn, false, 1.0, 1.0);
+  kteffnew->Add(*knm, false, 1.0, 1.0);
+  kteffnew->Add(*kmn, false, 1.0, 1.0);
+  kteffnew->Add(*kmm, false, 1.0, 1.0);
+  kteffnew->Add(*LINALG::Multiply(*kns,false,*p_col,false,true,false,true),false,1.,1.);
+  kteffnew->Add(*LINALG::Multiply(*p_row,true,*ksn,false,true,false,true),false,1.,1.);
+  kteffnew->Add(*LINALG::Multiply(*p_row,true,*LINALG::Multiply(*kss,false,*p_col,false,true,false,true),false,true,false,true),false,1.,1.);
+  if (p_row==p_col) kteffnew->Add(*LINALG::Eye(*gsrow),false,1.,1.);
+
+  kteffnew->Complete(k->DomainMap(),k->RangeMap());
+
+  // return new matrix
+  k=kteffnew;
+
+  return;
+
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MORTAR::UTILS::MortarRhsCondensation(
+    Teuchos::RCP<Epetra_Vector>& rhs,
+    const Teuchos::RCP<LINALG::SparseMatrix>& p)
+{
+  // prepare maps
+  Teuchos::RCP<Epetra_Map> gsdofrowmap = Teuchos::rcp_const_cast<Epetra_Map>(
+      Teuchos::rcpFromRef<const Epetra_Map>(p->RangeMap()));
+  Teuchos::RCP<Epetra_Map> gmdofrowmap = Teuchos::rcp_const_cast<Epetra_Map>(
+      Teuchos::rcpFromRef<const Epetra_Map>(p->DomainMap()));
+
+  Teuchos::RCP<Epetra_Vector> fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap));
+  Teuchos::RCP<Epetra_Vector> fm_cond = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap));
+  LINALG::Export(*rhs,*fs);
+  Teuchos::RCP<Epetra_Vector> fs_full = Teuchos::rcp(new Epetra_Vector(rhs->Map()));
+  LINALG::Export(*fs,*fs_full);
+  if(rhs->Update(-1.,*fs_full,1.)) dserror("update failed");
+
+  if (p->Multiply(true,*fs,*fm_cond)) dserror("multiply failed");
+
+  Teuchos::RCP<Epetra_Vector> fm_cond_full = Teuchos::rcp(new Epetra_Vector(rhs->Map()));
+  LINALG::Export(*fm_cond,*fm_cond_full);
+  if (rhs->Update(1.,*fm_cond_full,1.)) dserror("update failed");
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MORTAR::UTILS::MortarRecover(
+    Teuchos::RCP<Epetra_Vector>& inc,
+    const Teuchos::RCP<LINALG::SparseMatrix>& p)
+{
+  // prepare maps
+  Teuchos::RCP<Epetra_Map> gsdofrowmap = Teuchos::rcp_const_cast<Epetra_Map>(
+      Teuchos::rcpFromRef<const Epetra_Map>(p->RangeMap()));
+  Teuchos::RCP<Epetra_Map> gmdofrowmap = Teuchos::rcp_const_cast<Epetra_Map>(
+      Teuchos::rcpFromRef<const Epetra_Map>(p->DomainMap()));
+
+  Teuchos::RCP<Epetra_Vector> m_inc = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap));
+  LINALG::Export(*inc,*m_inc);
+
+  Teuchos::RCP<Epetra_Vector> s_inc = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap));
+  if(p->Multiply(false,*m_inc,*s_inc)) dserror("multiply failed");
+  Teuchos::RCP<Epetra_Vector> s_inc_full = Teuchos::rcp(new Epetra_Vector(inc->Map()));
+  LINALG::Export(*s_inc,*s_inc_full);
+  if (inc->Update(1.,*s_inc_full,1.)) dserror("update failed");
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MORTAR::UTILS::MortarMatrixCondensation(
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase>& k,
+    const std::vector<Teuchos::RCP<LINALG::SparseMatrix> >& p)
+{
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> cond_mat =  Teuchos::rcp(
+      new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+            k->DomainExtractor(),
+            k->RangeExtractor(),
+            81,
+            false,
+            true
+            )
+      );
+
+  for (int row=0;row<k->Rows();++row)
+    for (int col=0;col<k->Cols();++col)
+    {
+      Teuchos::RCP<LINALG::SparseMatrix> new_matrix=
+          Teuchos::rcp(new LINALG::SparseMatrix(k->Matrix(row,col)));
+      MortarMatrixCondensation(new_matrix,p.at(row),p.at(col)/*,row!=col*/);
+      cond_mat->Assign(row,col,LINALG::Copy,*new_matrix);
+    }
+
+  cond_mat->Complete();
+
+  k=cond_mat;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MORTAR::UTILS::MortarRhsCondensation(
+    Teuchos::RCP<Epetra_Vector>& rhs,
+    const std::vector<Teuchos::RCP<LINALG::SparseMatrix> >& p)
+{
+  for (unsigned i=0;i<p.size();MortarRhsCondensation(rhs,p[i++]));
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MORTAR::UTILS::MortarRecover(
+    Teuchos::RCP<Epetra_Vector>& inc,
+    const std::vector<Teuchos::RCP<LINALG::SparseMatrix> >& p)
+{
+  for (unsigned i=0;i<p.size();MortarRecover(inc,p[i++]));
 }

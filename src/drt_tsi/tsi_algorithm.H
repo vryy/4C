@@ -50,6 +50,11 @@ namespace ADAPTER
   class Coupling;
 }
 
+namespace MORTAR
+{
+class MultiFieldCoupling;
+}
+
 
 /*----------------------------------------------------------------------*
  |                                                           dano 12/09 |
@@ -189,6 +194,11 @@ namespace TSI
     Teuchos::RCP<ADAPTER::Coupling> coupST_; // S: master, T: slave
     //@}
 
+
+    //! @name Surface Mortar stuff
+    Teuchos::RCP<MORTAR::MultiFieldCoupling> mortar_coupling_;
+
+    //@}
   };  // Algorithm
 }  // namespace TSI
 
