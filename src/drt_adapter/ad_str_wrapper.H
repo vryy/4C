@@ -149,10 +149,6 @@ namespace ADAPTER
     virtual bool HaveSpringDashpot()
     { return structure_->HaveSpringDashpot(); }
 
-    /// do we have semi-smooth Newton type plasticity algorithm
-    virtual bool HaveSemiSmoothPlasticity()
-    { return structure_->HaveSemiSmoothPlasticity(); }
-
     /// get constraint manager defined in the structure
     virtual const Teuchos::RCP< UTILS::ConstrManager> GetConstraintManager()
     { return structure_->GetConstraintManager(); }
@@ -160,10 +156,6 @@ namespace ADAPTER
     /// get constraint manager defined in the structure
     virtual const Teuchos::RCP< UTILS::SpringDashpotManager> GetSpringDashpotManager()
     { return structure_->GetSpringDashpotManager(); }
-
-    /// get plasticity manager defined in the structure
-    virtual const Teuchos::RCP<DRT::UTILS::PlastSsnManager> GetPlasticityManager()
-    { return structure_->GetPlasticityManager(); }
 
     /// get type of thickness scaling for thin shell structures
     virtual INPAR::STR::STC_Scale GetSTCAlgo()

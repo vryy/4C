@@ -55,7 +55,6 @@
 #include "../drt_patspec/patspec.H"
 #include "../drt_io/io_pstream.H"
 #include "../drt_io/io_control.H"
-#include "../drt_plastic_ssn/plastic_ssn_manager.H"
 #include "../drt_so3/so_hex8.H"
 #include "../drt_so3/so_hex8p1j1.H"
 #include "../drt_so3/so_shw6.H"
@@ -275,16 +274,6 @@ void STR::TimIntImpl::Setup()
   combdisiLp_       = INPAR::STR::bop_and;
   combfresEasres_   = INPAR::STR::bop_and;
   combdisiEasIncr_  = INPAR::STR::bop_and;
-  if (HaveSemiSmoothPlasticity())
-  {
-    combfresplconstr_ = DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(*(plastman_->Params()),"NORMCOMBI_RESFPLASTCONSTR");
-    combdisiLp_       = DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(*(plastman_->Params()),"NORMCOMBI_DISPPLASTINCR");
-    if (plastman_->EAS())
-    {
-      combfresEasres_ = DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(*(plastman_->Params()),"NORMCOMBI_EASRES");
-      combdisiEasIncr_= DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(*(plastman_->Params()),"NORMCOMBI_EASINCR");
-    }
-  }
 
   // -------------------------------------------------------------------
   // setup Krylov projection if necessary
@@ -440,13 +429,6 @@ void STR::TimIntImpl::Predict()
   Teuchos::ParameterList params;
   params.set<bool>("predict",true);
 
-  // set predictor type
-  if (HaveSemiSmoothPlasticity())
-  {
-    plastman_->SetData().pred_type_=pred_;
-    plastman_->SetData().no_recovery_=false; // recovery here also includes prediction
-    plastman_->SetData().no_pl_condensation_=false;
-    }
   // residual of condensed variables (e.g. EAS) for NewtonLS
   if (fresn_str_!=Teuchos::null)
   {
@@ -597,27 +579,23 @@ void STR::TimIntImpl::PrepareLineSearch()
   int haveCondensationLocal=0;
   int haveCondensationGlobal=0;
 
-  // for semi-smooth Newton plasticity we need it anyway
-  if (!HaveSemiSmoothPlasticity())
+  // each proc searches through his elements
+  for (int i=0; i<discret_->NumMyRowElements(); i++)
   {
-    // each proc searches through his elements
-    for (int i=0; i<discret_->NumMyRowElements(); i++)
-    {
-      DRT::Element* actele = discret_->lRowElement(i);
-      DRT::ELEMENTS::So_hex8* ele_hex8 = dynamic_cast<DRT::ELEMENTS::So_hex8*>(actele);
-      if (
-          (ele_hex8!=NULL && ele_hex8->HaveEAS()==true)
-          || (actele->ElementType() == DRT::ELEMENTS::So_Hex8P1J1Type::Instance())
-          || (actele->ElementType() == DRT::ELEMENTS::So_shw6Type::Instance())
-      )
-        haveCondensationLocal=1;
-      if (actele->ElementType() == DRT::ELEMENTS::So_sh8p8Type::Instance())
-        dserror("no line search for this element implemented.\n"
-                "Feel free to implement similar to hex8 with EAS");
-    }
-    discret_->Comm().MaxAll(&haveCondensationLocal,&haveCondensationGlobal,1);
+    DRT::Element* actele = discret_->lRowElement(i);
+    DRT::ELEMENTS::So_hex8* ele_hex8 = dynamic_cast<DRT::ELEMENTS::So_hex8*>(actele);
+    if (
+        (ele_hex8!=NULL && ele_hex8->HaveEAS()==true)
+        || (actele->ElementType() == DRT::ELEMENTS::So_Hex8P1J1Type::Instance())
+        || (actele->ElementType() == DRT::ELEMENTS::So_shw6Type::Instance())
+    )
+      haveCondensationLocal=1;
+    if (actele->ElementType() == DRT::ELEMENTS::So_sh8p8Type::Instance())
+      dserror("no line search for this element implemented.\n"
+              "Feel free to implement similar to hex8 with EAS");
   }
-  if (haveCondensationGlobal || HaveSemiSmoothPlasticity())
+  discret_->Comm().MaxAll(&haveCondensationLocal,&haveCondensationGlobal,1);
+  if (haveCondensationGlobal)
   {
     fresn_str_ = LINALG::CreateVector(*DofRowMapView(), true);
     fintn_str_ = LINALG::CreateVector(*DofRowMapView(), true);
@@ -666,12 +644,6 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
   Teuchos::ParameterList params;
   params.set<bool>("predict",true);
 
-  // hand in flag indicating tangential predictor
-  if (HaveSemiSmoothPlasticity())
-  {
-    plastman_->SetData().pred_type_=INPAR::STR::pred_tangdis;
-    plastman_->SetData().no_pl_condensation_=true;
-  }
   // compute residual forces fres_ and stiffness stiff_
   // at disn_, etc which are unchanged
   EvaluateForceStiffResidual(params);
@@ -959,14 +931,6 @@ void STR::TimIntImpl::ApplyForceStiffInternal
   if( (dismatn_!=Teuchos::null) )
     discret_->SetState(0,"material_displacement",dismatn_);
 
-  // set plasticity data
-  if (HaveSemiSmoothPlasticity())
-  {
-    plastman_->SetPlasticParams(params);
-    if (DRT::Problem::Instance()->ProblemType() == prb_tsi)
-      discret_->SetState(0,"velocity",vel);
-    plastman_->SetData().dt_=(*dt_)[0];
-  }
 
   /* Additionally we hand in "fint_str_"
    * This is usually Teuchos::null unless we do line search in
@@ -984,8 +948,6 @@ void STR::TimIntImpl::ApplyForceStiffInternal
   {
     AssembleEdgeBasedMatandRHS(params,fint,dis,vel);
   }
-  // get plasticity data
-  if (HaveSemiSmoothPlasticity()) plastman_->GetPlasticParams(params);
 
 #if 0
   if (pressure_ != Teuchos::null)
@@ -1041,9 +1003,6 @@ void STR::TimIntImpl::ApplyForceStiffInternalAndInertial
     params.set("rot_alpham", alpham);
   }
 
-  // set plasticity data
-  if (HaveSemiSmoothPlasticity()) plastman_->SetPlasticParams(params);
-
   // compute new inner radius
   discret_->ClearState();
   discret_->SetState(0,"displacement",dis);
@@ -1068,9 +1027,6 @@ void STR::TimIntImpl::ApplyForceStiffInternalAndInertial
    */
   discret_->Evaluate(params, stiff, mass, fint, finert, fintn_str_);
   discret_->ClearState();
-
-  // get plasticity data
-  if (HaveSemiSmoothPlasticity()) plastman_->GetPlasticParams(params);
 
   mass->Complete();
 
@@ -1467,49 +1423,6 @@ bool STR::TimIntImpl::Converged()
 
   }  // end HaveMeshtyingContact()
 
-  // check convergence of plasticity
-  bool cplast=true;
-  if (HaveSemiSmoothPlasticity())
-  {
-    // check convergence of plastic active set
-    cplast = cplast and plastman_->ActiveSetConverged();
-
-    // convergence of residual
-    if (combfresplconstr_==INPAR::STR::bop_and)
-      convfres = convfres and plastman_->ConstraintConverged();
-    else if (combfresplconstr_==INPAR::STR::bop_or)
-      convfres = convfres or plastman_->ConstraintConverged();
-    else
-      dserror("Something went terribly wrong with binary operator!");
-
-    // convergence of increments
-    if (combdisiLp_==INPAR::STR::bop_and)
-      convdis = convdis and plastman_->IncrementConverged();
-    else if (combdisiLp_==INPAR::STR::bop_or)
-      convdis = convdis or plastman_->IncrementConverged();
-    else
-      dserror("Something went terribly wrong with binary operator!");
-
-    if (plastman_->EAS())
-    {
-      // convergence of residual
-      if (combfresEasres_==INPAR::STR::bop_and)
-        convfres = convfres and plastman_->EasResConverged();
-      else if (combfresEasres_==INPAR::STR::bop_or)
-        convfres = convfres or plastman_->EasResConverged();
-      else
-        dserror("Something went terribly wrong with binary operator!");
-
-      // convergence of increments
-      if (combdisiEasIncr_==INPAR::STR::bop_and)
-        convdis = convdis and plastman_->EasIncrConverged();
-      else if (combdisiEasIncr_==INPAR::STR::bop_or)
-        convdis = convdis or plastman_->EasIncrConverged();
-      else
-        dserror("Something went terribly wrong with binary operator!");
-    }
-  }
-
   //pressure related stuff
   if (pressure_ != Teuchos::null)
   {
@@ -1567,7 +1480,7 @@ bool STR::TimIntImpl::Converged()
 
 
   // return things
-  return (conv and cc and cv0d and cv0dincr and ccontact and cplast);
+  return (conv and cc and cv0d and cv0dincr and ccontact);
 }
 
 /*----------------------------------------------------------------------*/
@@ -2417,8 +2330,6 @@ void STR::TimIntImpl::LsPrintLineSearchIter(double* mf_value, int iter_ls, doubl
       oss << std::setw(16) << "abs-dis-norm";
       oss << std::setw(16) << "merit-fct";
       oss << std::setw(10)<< "te";
-      if (HaveSemiSmoothPlasticity())
-        oss << std::setw(10) << "#active";
       oss << std::endl;
     }
 
@@ -2431,8 +2342,6 @@ void STR::TimIntImpl::LsPrintLineSearchIter(double* mf_value, int iter_ls, doubl
     else
       oss << std::setw(16) << std::setprecision(5) << std::scientific << mf_value[1];
     oss << std::setw(10) << std::setprecision(2) << std::scientific << dtele_;
-    if (HaveSemiSmoothPlasticity())
-      oss << std::setw(10) << std::scientific << plastman_->NumActivePlasticGP();
 
     // finish oss
     oss << std::ends;
@@ -3986,17 +3895,6 @@ void STR::TimIntImpl::PrintNewtonIterHeader( FILE* ofile )
     }
   }
 
-  if (HaveSemiSmoothPlasticity())
-  {
-    oss <<std::setw(20)<< "abs-plconstr-norm";
-    oss <<std::setw(20)<< "abs-dLPincr-norm";
-    if (plastman_->EAS())
-    {
-      oss <<std::setw(20)<< "abs-easRes-norm";
-      oss <<std::setw(20)<< "abs-easIncr-norm";
-    }
-  }
-
   // add constraint norm
   if (conman_->HaveConstraintLagr())
   {
@@ -4031,12 +3929,6 @@ void STR::TimIntImpl::PrintNewtonIterHeader( FILE* ofile )
       if (cmtbridge_->GetStrategy().Friction())
         oss << std::setw(10)<< "#slip";
     }
-  }
-
-  // add plasticity information
-  if (HaveSemiSmoothPlasticity())
-  {
-    oss << std::setw(10) << "#plastic";
   }
 
   // finish oss
@@ -4152,17 +4044,6 @@ void STR::TimIntImpl::PrintNewtonIterText( FILE* ofile )
     }
   }
 
-  if (HaveSemiSmoothPlasticity())
-  {
-    oss << std::setw(20) << std::setprecision(5) << std::scientific << plastman_->DeltaLp_residual_norm();
-    oss << std::setw(20) << std::setprecision(5) << std::scientific << plastman_->DeltaLp_increment_norm();
-    if (plastman_->EAS())
-    {
-      oss << std::setw(20) << std::setprecision(5) << std::scientific << plastman_->EAS_residual_norm();
-      oss << std::setw(20) << std::setprecision(5) << std::scientific << plastman_->EAS_increment_norm();
-    }
-  }
-
   // add constraint norm
   if (conman_->HaveConstraintLagr())
   {
@@ -4209,13 +4090,6 @@ void STR::TimIntImpl::PrintNewtonIterText( FILE* ofile )
         oss << std::setw(10) << cmtbridge_->GetStrategy().NumberOfSlipNodes();
     }
   }
-
-  // add plasticity information
-  if (HaveSemiSmoothPlasticity())
-  {
-    oss << std::setw(10) << plastman_->NumActivePlasticGP();
-  }
-
 
   // finish oss
   oss << std::ends;

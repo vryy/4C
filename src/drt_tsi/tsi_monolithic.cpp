@@ -50,9 +50,6 @@
 //for coupling of nonmatching meshes
 #include "../drt_adapter/adapter_coupling_volmortar.H"
 
-// plasticity
-#include "../drt_plastic_ssn/plastic_ssn_manager.H"
-
 #include "../drt_structure_new/str_timint_base.H"
 #include "../drt_structure_new/str_model_evaluator_contact.H"
 #include "../drt_structure_new/str_model_evaluator_structure.H"

@@ -14,7 +14,6 @@
 #include "../drt_io/io_pstream.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_plastic_ssn/plastic_ssn_manager.H"
 
 
 /*======================================================================*/
@@ -216,16 +215,6 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(Teuchos::ParameterList& para
 
   // initialize internal forces
   fintn_->PutScalar(0.0);
-
-  if (HaveSemiSmoothPlasticity())
-    if (plastman_->TSI())
-    {
-      plastman_->SetData().scale_timint_=1.;
-      plastman_->SetData().dt_=(*dt_)[0];
-
-      // pseudo-velocity for quasi-static tsi with Gough-Joule Effect
-      veln_->Update(1./Dt(), *Dispnp(), -1./Dt(),*Dispn(),0.);
-    }
 
   // ordinary internal force and stiffness
   ApplyForceStiffInternal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_, stiff_, params);

@@ -273,10 +273,6 @@ namespace TIMINT {
     virtual const Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager()
     { dserror("Not yet implemented!"); return Teuchos::null; }
 
-    /// FixMe get plasticity manager defined in the structure
-    virtual const Teuchos::RCP<DRT::UTILS::PlastSsnManager> GetPlasticityManager()
-    { dserror("Not yet implemented!"); return Teuchos::null; }
-
     /// FixMe get contact/meshtying manager
     virtual Teuchos::RCP<CONTACT::MeshtyingContactBridge> MeshtyingContactBridge()
     { dserror("Not yet implemented!"); return Teuchos::null; }

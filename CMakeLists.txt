@@ -658,9 +658,6 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/biochemo_mechano_cell_passivefiber.cpp
 )
 
-set(OBJS_DRT_PLASTIC_SSN
-  src/drt_plastic_ssn/plastic_ssn_manager.cpp
-)
 set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_algorithmbase.cpp
   src/drt_adapter/adapter_coupling.cpp
@@ -2615,7 +2612,6 @@ add_library(alg_redairways ${OBJS_DRT_RED_AIRWAYS})
 add_library(alg_lubrication ${OBJS_DRT_LUBRICATION})
 add_library(alg_porofluidmultiphase ${OBJS_DRT_POROFLUIDMULTIPHASE})
 add_library(alg_scatra ${OBJS_DRT_SCATRA})
-add_library(alg_plastic_ssn ${OBJS_DRT_PLASTIC_SSN})
 add_library(alg_structure ${OBJS_DRT_STRUCTURE})
 add_library(alg_xstructure ${OBJS_DRT_STRUCTURE_XSTRUCTURE})
 add_library(alg_thermo ${OBJS_DRT_THERMO})
@@ -2639,7 +2635,6 @@ set(SINGLEFIELD_LIBRARIES
   alg_scatra
   alg_structure
   alg_xstructure
-  alg_plastic_ssn
   alg_invanalysis
   alg_statinvanalysis
   alg_mlmc

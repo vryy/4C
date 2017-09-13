@@ -17,7 +17,6 @@
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_pstream.H"
-#include "../drt_plastic_ssn/plastic_ssn_manager.H"
 
 /*----------------------------------------------------------------------*/
 void STR::TimIntOneStepTheta::VerifyCoeff()
@@ -310,13 +309,6 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(Teuchos::ParameterList&
   // build new internal forces and stiffness
   if (!HaveNonlinearMass())
   {
-    if (HaveSemiSmoothPlasticity())
-      if (plastman_->TSI())
-      {
-        plastman_->SetData().scale_timint_=theta_;
-        plastman_->SetData().dt_=(*dt_)[0];
-      }
-
     // ordinary internal force and stiffness
     ApplyForceStiffInternal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_, stiff_, params, damp_);
   }

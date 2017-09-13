@@ -951,14 +951,8 @@ namespace STR
         INPAR::STR::ModelType mtype)
     { dserror("new time integration only"); exit(EXIT_FAILURE);}
 
-    //! return bool indicating if contact or meshtying are defined
-    bool HaveSemiSmoothPlasticity() { return (plastman_ != Teuchos::null); }
-
     //! return bool indicating if edge based integration is defined
     bool HaveFaceDiscret() { return (facediscret_ != Teuchos::null); }
-
-    //! get access to the plasticity manager from TSI
-    const Teuchos::RCP<DRT::UTILS::PlastSsnManager> GetPlasticityManager() {return plastman_;}
 
     //! Check if contact / meshtying is chosen in input file and
     //! create manager object + initialize all relevant stuff if so
@@ -973,10 +967,6 @@ namespace STR
                                     Teuchos::RCP<Epetra_Vector> & fint,
                                     const Teuchos::RCP<Epetra_Vector> & disp,
                                     const Teuchos::RCP<Epetra_Vector> & vel);
-
-    //! Check if plasticity elements are involved and
-    //! create manager object + initialize all relevant stuff if so
-    void  PrepareSemiSmoothPlasticity();
 
     //! Prepare contact at the beginning of each new time step
     //! (call dynamic redistribution of contact interface(s) AND
@@ -1160,9 +1150,6 @@ namespace STR
 
     //! beam contact
     Teuchos::RCP<CONTACT::Beam3cmanager> beamcman_;
-
-    //! semi-smooth plasticity
-    Teuchos::RCP<DRT::UTILS::PlastSsnManager> plastman_;
 
     //! Dirichlet BCs with local co-ordinate system
     Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;

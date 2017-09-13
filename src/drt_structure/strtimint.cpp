@@ -57,7 +57,6 @@
 #include "../drt_cardiovascular0d/cardiovascular0d_manager.H"
 #include "../drt_patspec/patspec.H"
 #include "../drt_immersed_problem/immersed_field_exchange_manager.H"
-#include "../drt_plastic_ssn/plastic_ssn_manager.H"
 #include "../drt_stru_multi/microstatic.H"
 
 #include "../linalg/linalg_sparsematrix.H"
@@ -295,13 +294,6 @@ void STR::TimInt::Setup()
     // corresponding manager object stored via #cmtman_ is created and all relevant
     // stuff is initialized. Else, #cmtman_ remains a Teuchos::null pointer.
     PrepareContactMeshtying(sdynparams_);
-  }
-  // check for elements using a semi-smooth Newton method for plasticity
-  {
-    // If at least one such element exists, then a
-    // corresponding manager object stored via #ssnplastman_ is created and all relevant
-    // stuff is initialized. Else, #ssnplastman_ remains a Teuchos::null pointer.
-    PrepareSemiSmoothPlasticity();
   }
 
   // Initialize SurfStressManager for handling surface stress conditions due to interfacial phenomena
@@ -991,32 +983,6 @@ void STR::TimInt::AssembleEdgeBasedMatandRHS(Teuchos::ParameterList&  params,
 }
 
 /*----------------------------------------------------------------------*/
-/* Check for semi-smooth Newton type of plasticity and do preparations */
-void STR::TimInt::PrepareSemiSmoothPlasticity()
-{
-  int HavePlasticity_local=0;
-  int HavePlasticity_global=0;
-  for (int i=0; i<discret_->NumMyRowElements(); i++)
-  {
-    DRT::Element* actele = discret_->lRowElement(i);
-    if (   actele->ElementType() == DRT::ELEMENTS::So_hex8PlastType::Instance()
-        || actele->ElementType() == DRT::ELEMENTS::So_hex27PlastType::Instance()
-        || actele->ElementType() == DRT::ELEMENTS::So_sh8PlastType::Instance()
-        || actele->ElementType() == DRT::ELEMENTS::So_hex18PlastType::Instance()
-        || actele->ElementType() == DRT::ELEMENTS::So_sh18PlastType::Instance()
-       )
-    {
-      HavePlasticity_local=1;
-      break;
-    }
-  }
-  discret_->Comm().MaxAll(&HavePlasticity_local,&HavePlasticity_global,1);
-  if (HavePlasticity_global)
-    plastman_=Teuchos::rcp(new DRT::UTILS::PlastSsnManager(discret_));
-  return;
-}
-
-/*----------------------------------------------------------------------*/
 /* Prepare contact for new time step */
 void STR::TimInt::PrepareStepContact()
 {
@@ -1129,14 +1095,6 @@ void STR::TimInt::DetermineMassDampConsistAccel()
       p.set<double>("cond_rhs_norm",0.);
     }
 
-    //plastic parameters
-    if (HaveSemiSmoothPlasticity())
-    {
-      plastman_->SetPlasticParams(p);
-      plastman_->SetData().no_pl_condensation_=true;
-      plastman_->SetData().no_recovery_=true;
-    }
-
     // set vector values needed by elements
     discret_->ClearState();
     // extended SetState(0,...) in case of multiple dofsets (e.g. TSI)
@@ -1164,11 +1122,6 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     {
       AssembleEdgeBasedMatandRHS(p,fint, (*dis_)(0),(*vel_)(0));
     }
-
-
-    //plastic parameters
-    if (HaveSemiSmoothPlasticity())
-      plastman_->GetPlasticParams(p);
   }
 
   // finish mass matrix
@@ -2602,13 +2555,6 @@ void STR::TimInt::DetermineStressStrain()
     p.set("plstrain", plstraindata_);
     p.set<int>("ioplstrain", writeplstrain_);
 
-    // set plasticity data
-    if (HaveSemiSmoothPlasticity())
-    {
-      plastman_->SetPlasticParams(p);
-      plastman_->SetData().dt_=(*dt_)[0];
-    }
-
     // rotation tensor
     rotdata_ = Teuchos::rcp(new std::vector<char>());
     p.set("rotation", rotdata_);
@@ -2626,8 +2572,6 @@ void STR::TimInt::DetermineStressStrain()
                        Teuchos::null, Teuchos::null, Teuchos::null);
     discret_->ClearState();
 
-    // set plasticity data
-    if (HaveSemiSmoothPlasticity()) plastman_->GetPlasticParams(p);
   }
 }
 
@@ -3346,9 +3290,6 @@ void STR::TimInt::ApplyForceInternal
   p.set("delta time", dt);
   p.set<int>("young_temp", young_temp_);
 
-  // set plasticity data
-  if (HaveSemiSmoothPlasticity()) plastman_->SetPlasticParams(p);
-
   // compute new inner radius
   discret_->ClearState();
   discret_->SetState("displacement", dis);
@@ -3364,9 +3305,6 @@ void STR::TimInt::ApplyForceInternal
   //fintn_->PutScalar(0.0);  // initialise internal force vector
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                      fint, Teuchos::null, Teuchos::null);
-
-  // get plasticity data
-  if (HaveSemiSmoothPlasticity()) plastman_->GetPlasticParams(p);
 
   discret_->ClearState();
 

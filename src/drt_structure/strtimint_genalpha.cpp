@@ -24,7 +24,6 @@
 #include "../drt_lib/drt_locsys.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_io/io_pstream.H"
-#include "../drt_plastic_ssn/plastic_ssn_manager.H"
 
 /*----------------------------------------------------------------------*/
 void STR::TimIntGenAlpha::CalcCoeff()
@@ -376,14 +375,6 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(Teuchos::ParameterList& par
   // external mid-forces F_{ext;n+1-alpha_f} ----> TR-like
   // F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1} + alpha_f * F_{ext;n}
   fextm_->Update(1.-alphaf_, *fextn_, alphaf_, *fext_, 0.0);
-
-  // set time integration info for plastic TSI problem
-  if (HaveSemiSmoothPlasticity())
-    if (plastman_->TSI())
-    {
-      plastman_->SetData().scale_timint_=beta_/gamma_;
-      plastman_->SetData().dt_=(*dt_)[0];
-    }
 
   // ************************** (2) INTERNAL FORCES ***************************
 
