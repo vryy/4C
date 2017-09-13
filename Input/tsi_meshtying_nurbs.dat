@@ -110,7 +110,7 @@ DSURF                           1
 E 11 - NUMDOF 1 ONOFF 1 VAL 0 FUNCT 0
 -----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
-E 6 - NUMDOF 3 ONOFF 1 1 1 VAL 0.01 0.02 0.03 FUNCT 0 0 0
+E 6 - NUMDOF 3 ONOFF 1 1 1 VAL 0.001 0.002 0.003 FUNCT 2 2 2
 -----------------------------------------------DESIGN SURF THERMO NEUMANN CONDITIONS
 DSURF                           1
 E 6 - NUMDOF 1 ONOFF 1 VAL 1 FUNCT 1
@@ -120,6 +120,10 @@ E 5 - 1 Slave Active
 E 12 - 1 Master Inactive
 --------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION x+10*x*y+y*y
+--------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION x
+COMPONENT 1 FUNCTION x*y*z*z
+COMPONENT 2 FUNCTION y*y
 --------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                           16
 NDLINE                            24
@@ -1436,8 +1440,8 @@ CP     123  COORD  +2.000000000000e+00  +2.000000000000e+00  +2.000000000000e+00
     12 SONURBS27THERMO NURBS27    60    61    62    65    66    67    70    71    72    85    86    87    90    91    92    95    96    97   110   111   112   115   116   117   120   121   122  MAT 1 GP 3 3 3
     13 SONURBS27THERMO NURBS27    61    62    63    66    67    68    71    72    73    86    87    88    91    92    93    96    97    98   111   112   113   116   117   118   121   122   123  MAT 1 GP 3 3 3
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 20 QUANTITY dispx VALUE 3.66960049012873157e-01 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 20 QUANTITY dispy VALUE 5.21381451104130922e-01 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 20 QUANTITY dispz VALUE 2.27877495467964125e-01 TOLERANCE 1e-12
-THERMAL DIS thermo NODE 20 QUANTITY temp VALUE 4.25221194012077603e+01 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 20 QUANTITY dispx VALUE 1.86436690751724782e-01 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 20 QUANTITY dispy VALUE 1.36474256314176734e+00 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 20 QUANTITY dispz VALUE 2.85374402589992526e-01 TOLERANCE 1e-12
+THERMAL DIS thermo NODE 20 QUANTITY temp VALUE 3.86233886607409360e+01 TOLERANCE 1e-12
 -----------------------------------------------------------------------END

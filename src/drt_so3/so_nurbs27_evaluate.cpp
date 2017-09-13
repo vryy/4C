@@ -23,6 +23,7 @@
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 #include "../drt_mat/so3_material.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_elements_paramsinterface.H"
 
 
 /*----------------------------------------------------------------------*
@@ -590,16 +591,47 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix
  |  Integrate a Volume Neumann boundary condition (public)              |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(
-  Teuchos::ParameterList&   params        ,
-  DRT::Discretization&      discretization,
-  DRT::Condition&           condition     ,
-  std::vector<int>&         lm            ,
-  Epetra_SerialDenseVector& elevec1       ,
-  Epetra_SerialDenseMatrix* elemat1       )
+    Teuchos::ParameterList&   params        ,
+    DRT::Discretization&      discretization,
+    DRT::Condition&           condition     ,
+    std::vector<int>&         lm            ,
+    Epetra_SerialDenseVector& elevec1       ,
+    Epetra_SerialDenseMatrix* elemat1       )
 {
+  SetParamsInterfacePtr(params);
   // get values and switches from the condition
   const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
   const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
+
+  /*
+   **    TIME CURVE BUSINESS
+   */
+  // find out whether we will use a time curve
+  double time = -1.0;
+  if (IsParamsInterface())
+    time = ParamsInterface().GetTotalTime();
+  else
+    time = params.get("total time",-1.0);
+
+  // ensure that at least as many curves/functs as dofs are available
+  if (int(onoff->size()) < NUMDIM_SONURBS27)
+    dserror("Fewer functions or curves defined than the element has dofs.");
+
+  for (int checkdof = NUMDIM_SONURBS27; checkdof < int(onoff->size()); ++checkdof)
+  {
+    if ((*onoff)[checkdof] != 0)
+      dserror("Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
+  }
+
+  // (SPATIAL) FUNCTION BUSINESS
+  const std::vector<int>* funct = condition.Get<std::vector<int> >("funct");
+  LINALG::Matrix<NUMDIM_SONURBS27,1> xrefegp(false);
+  bool havefunct = false;
+  if (funct)
+    for (int dim=0; dim<NUMDIM_SONURBS27; dim++)
+      if ((*funct)[dim] > 0)
+        havefunct = havefunct or true;
+
   // --------------------------------------------------
   // Initialisation of nurbs specific stuff
   std::vector<Epetra_SerialDenseVector> myknots(3);
@@ -608,32 +640,20 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(
   //     o get knots
   //     o get weights
   DRT::NURBS::NurbsDiscretization* nurbsdis
-    =
-    dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+  =
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
 
   if(nurbsdis==NULL)
-  {
     dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
-  }
-
-  bool zero_ele=(*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
 
   // there is nothing to be done for zero sized elements in knotspan
-  if(zero_ele)
-  {
-    return(0);
-  }
+  if((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id()))
+        return(0);
 
   LINALG::Matrix<27,1> weights;
   DRT::Node** nodes = Nodes();
   for (int inode=0; inode<27; inode++)
-  {
-    DRT::NURBS::ControlPoint* cp
-      =
-      dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
-
-    weights(inode) = cp->W();
-  }
+    weights(inode) = dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode])->W();
 
   /*------------------------------------------------------------------*/
   /*                   update element geometry                        */
@@ -648,85 +668,67 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(
     xrefe(i,1) = x[1];
     xrefe(i,2) = x[2];
   }
-
-  /*------------------------------------------------------------------*/
-  /*                 TIME CURVE BUSINESS                              */
-  /*------------------------------------------------------------------*/
-  // find out whether we will use a time curve
-  const double time = params.get("total time",-1.0);
-
-
-  // ensure that at least as many curves/functs as dofs are available
-  if (int(onoff->size()) < 3)
-    dserror("Fewer functions or curves defined than the element has dofs.");
-
-  for (int checkdof = 3; checkdof < int(onoff->size()); ++checkdof)
-  {
-    if ((*onoff)[checkdof] != 0)
-      dserror("Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
-  }
-
-  // find out whether we will use time curves and get the factors
-  const std::vector<int>* tmp_funct  = condition.Get<std::vector<int> >("funct");
-  std::vector<double> functfacs(3, 1.0);
-  for (int i=0; i < 3; ++i)
-  {
-    const int curvenum = (tmp_funct) ? (*tmp_funct)[i] : -1;
-    if (curvenum>=0)
-      functfacs[i] = DRT::Problem::Instance()->Funct(curvenum-1).EvaluateTime(time);
-  }
-
-  /*------------------------------------------------------------------*/
-  /*                    Loop over Gauss Points                        */
-  /*------------------------------------------------------------------*/
+  /* ================================================= Loop over Gauss Points */
   const int numgp=27;
-
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   LINALG::Matrix<3,1> gpa;
 
-  LINALG::Matrix<27,1> funct;
+  LINALG::Matrix<27,1> shape;
   LINALG::Matrix<3,27> deriv;
 
   for (int gp=0; gp<numgp; ++gp)
   {
-
     gpa(0)=intpoints.qxg[gp][0];
     gpa(1)=intpoints.qxg[gp][1];
     gpa(2)=intpoints.qxg[gp][2];
 
     DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
-      (funct                 ,
-       deriv                 ,
-       gpa                   ,
-       myknots               ,
-       weights               ,
-       DRT::Element::nurbs27);
+    (shape                 ,
+        deriv                 ,
+        gpa                   ,
+        myknots               ,
+        weights               ,
+        DRT::Element::nurbs27);
 
-    /* get the inverse of the Jacobian matrix which looks like:
-    **            [ x_,r  y_,r  z_,r ]^-1
-    **     J^-1 = [ x_,s  y_,s  z_,s ]
-    **            [ x_,t  y_,t  z_,t ]
-    */
-    LINALG::Matrix<3,3> invJac(true);
+    // compute the Jacobian matrix
+    LINALG::Matrix<NUMDIM_SONURBS27,NUMDIM_SONURBS27> jac;
+    jac.Multiply(deriv,xrefe);
 
-    invJac.Multiply(deriv,xrefe);
-    double detJ=invJac.Invert();
+    // compute determinant of Jacobian
+    const double detJ = jac.Determinant();
+    if (detJ == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
+    else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
 
-    if (detJ == 0.0)
-      dserror("ZERO JACOBIAN DETERMINANT");
-    else if (detJ < 0.0)
-      dserror("NEGATIVE JACOBIAN DETERMINANT %12.5e IN ELEMENT ID %d, gauss point %d",detJ_[gp],Id(),gp);
+    // material/reference co-ordinates of Gauss point
+    if (havefunct)
+    {
+      for (int dim=0; dim<NUMDIM_SONURBS27; dim++)
+      {
+        xrefegp(dim) = 0.0;
+        for (int nodid=0; nodid<NUMNOD_SONURBS27; ++nodid)
+          xrefegp(dim) += shape(nodid) * xrefe(nodid,dim);
+      }
+    }
 
     // integration factor
-    double fac = intpoints.qwgt[gp] * detJ;
+    const double fac = intpoints.qwgt[gp] * detJ;
     // distribute/add over element load vector
-    for(int dim=0; dim<3; dim++)
+    for(int dim=0; dim<NUMDIM_SONURBS27; dim++)
     {
-      double dim_fac = (*onoff)[dim] * (*val)[dim] * fac * functfacs[dim];
-      for (int nodid=0; nodid<27; ++nodid)
+      if ((*onoff)[dim])
       {
-        elevec1[nodid*3+dim] += funct(nodid) * dim_fac;
+        // function evaluation
+        const int functnum = (funct) ? (*funct)[dim] : -1;
+        const double functfac
+        = (functnum>0)
+        ? DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,xrefegp.A(),time)
+            : 1.0;
+        const double dim_fac = (*val)[dim] * fac * functfac;
+        for (int nodid=0; nodid<NUMNOD_SONURBS27; ++nodid)
+        {
+          elevec1[nodid*NUMDIM_SONURBS27+dim] += shape(nodid) * dim_fac;
+        }
       }
     }
 
