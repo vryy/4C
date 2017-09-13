@@ -864,10 +864,7 @@ void DRT::UTILS::LocsysManager::RotateLocalToGlobal(Teuchos::RCP<LINALG::SparseM
     const
 {
 
-  Teuchos::RCP<LINALG::SparseMatrix> temp;
-  Teuchos::RCP<LINALG::SparseMatrix> temp2;
-  temp = LINALG::Multiply(*sysmat,false,*trafo_,false,false,sysmat->SaveGraph(),true);
-  temp2 = LINALG::Multiply(*trafo_,true,*temp,false,false,sysmat->SaveGraph(),true);
+  Teuchos::RCP<LINALG::SparseMatrix> temp2 = LINALG::Multiply(*trafo_,true,*sysmat,false,false,sysmat->SaveGraph(),true);
   *sysmat = *temp2;
 
   return;
