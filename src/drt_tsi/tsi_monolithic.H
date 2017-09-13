@@ -178,6 +178,9 @@ namespace TSI
     //! outer iteration loop
     void NewtonFull();
 
+    //! apply DBC to all blocks
+    void ApplyDBC();
+
     //! do pseudo-transient continuation nonlinear iteration
     //!
     //! Pseudo-transient continuation is a variant of a full newton which has a

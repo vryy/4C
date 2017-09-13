@@ -588,6 +588,7 @@ void TSI::Monolithic::NewtonFull()
     contact_strategy_lagrange_->Evaluate(
         SystemMatrix(),rhs_,coupST_,StructureField()->WriteAccessDispnp(),ThermoField()->WriteAccessTempnp(),
         StructureField()->GetDBCMapExtractor(),ThermoField()->GetDBCMapExtractor());
+    ApplyDBC();
 
   //------------------------------------------------------ iteration loop
 
@@ -676,6 +677,8 @@ void TSI::Monolithic::NewtonFull()
       dtcmt_ = timernewton_.WallTime() - dtcpu;
       // *********** time measurement ***********
     }
+    ApplyDBC();
+
     // in case of 'Mix'-convergence criterion: save the norm of the 1st
     // iteration in (norm . iter0_)
     if (iter_ == 1)
@@ -1132,7 +1135,7 @@ void TSI::Monolithic::SetupSystem()
            new LINALG::SparseMatrix(
                  *(StructureField()->Discretization()->DofRowMap(0)),
                  81,
-                 true,
+                 false,
                  true
                  )
            );
@@ -1142,7 +1145,7 @@ void TSI::Monolithic::SetupSystem()
            new LINALG::SparseMatrix(
                  *(ThermoField()->Discretization()->DofRowMap(0)),
                  81,
-                 true,
+                 false,
                  true
                  )
            );
@@ -1196,30 +1199,7 @@ void TSI::Monolithic::SetupSystemMatrix()
   // The maps of the block matrix have to match the maps of the blocks we
   // insert here. Extract Jacobian matrices and put them into composite system
   // matrix W
-  // k_ss: already applied ApplyDirichletWithTrafo() in PrepareSystemToNewtonSolve
   Teuchos::RCP<LINALG::SparseMatrix> k_ss = StructureField()->SystemMatrix();
-
-  if (locsysman_ != Teuchos::null)
-  {
-    // rotate k_ss to local coordinate system --> k_ss^{~}
-    locsysman_->RotateGlobalToLocal(k_ss);
-    // apply ApplyDirichletWithTrafo() on rotated block k_ss^{~}
-    // --> if dof has an inclined DBC: blank the complete row, the '1.0' is set
-    //     on diagonal of row, i.e. on diagonal of k_ss
-    k_ss->ApplyDirichletWithTrafo(
-            locsysman_->Trafo(),
-            *StructureField()->GetDBCMapExtractor()->CondMap(),
-            true
-            );
-  }  // end locsys
-  // default: (locsysman_ == Teuchos::null), i.e. NO inclined Dirichlet BC
-  else
-    k_ss->ApplyDirichlet(*StructureField()->GetDBCMapExtractor()->CondMap(),true);
-
-  // build block matrix
-  // The maps of the block matrix have to match the maps of the blocks we
-  // insert here.
-  k_ss->UnComplete();
 
   // assign structure part to the TSI matrix
   systemmatrix_->Assign(0,0,LINALG::View,*k_ss);
@@ -1234,24 +1214,6 @@ void TSI::Monolithic::SetupSystemMatrix()
   ApplyStrCouplMatrix(k_st_);
 #endif // MonTSIwithoutTHR
 
-  // apply dirichlet boundary conditions properly on matrix k_st, i.e. blank row
-  // if dof is a structural DBC
-  // Normally, DBC should be applied on complete systemmatrix k_TSI, but for
-  // diagonal blocks (here k_ss, k_tt) DBC are ALREADY applied in
-  // PrepareSystemForNewtonSolve() included in Evaluate(sx)
-  //
-  // to avoid double work, we only call ApplyDirichlet for the off-diagonal blocks,
-  // here k_st
-  // k_st is an off-diagonal block --> pass the bool diagonal==false
-  // ApplyDirichlet*() expect filled matrix
-  //
-  // in case of inclined STR-DBC
-  //   1.) transform the off-diagonal block k_st to the local system --> k_st^{~}
-  //   2.) apply ApplyDirichletWithTrafo() on rotated block k_st^{~}
-  //              --> blank the row, which has a DBC
-  //
-  // to apply Multiply in LocSys, k_st has to be FillCompleted
-
   k_st_->Complete(
           *(StructureField()->Discretization()->DofRowMap(1)),
           *(StructureField()->Discretization()->DofRowMap(0))
@@ -1259,23 +1221,6 @@ void TSI::Monolithic::SetupSystemMatrix()
 
   if(!matchinggrid_)
     k_st_=volcoupl_->ApplyMatrixMapping12(k_st_);
-
-  if (locsysman_ != Teuchos::null)
-  {
-    // rotate k_st to local coordinate system --> k_st^{~}
-    locsysman_->RotateGlobalToLocal(k_st_);
-    // apply ApplyDirichletWithTrafo() on rotated block k_st^{~}
-    // --> if dof has an inclined DBC: blank the complete row, the '1.0' is set
-    //     on diagonal of row, i.e. on diagonal of k_ss
-    k_st_->ApplyDirichletWithTrafo(
-            locsysman_->Trafo(),
-            *StructureField()->GetDBCMapExtractor()->CondMap(),
-            false
-            );
-  }  // end locsys
-  // default: (locsysman_ == Teuchos::null), i.e. NO inclined Dirichlet BC
-  else
-    k_st_->ApplyDirichlet(*StructureField()->GetDBCMapExtractor()->CondMap(),false);
 
   k_st_->UnComplete();
 
@@ -1292,10 +1237,6 @@ void TSI::Monolithic::SetupSystemMatrix()
   // matrix systemmatrix_
   Teuchos::RCP<LINALG::SparseMatrix> k_tt = ThermoField()->SystemMatrix();
 
-  // Uncomplete thermo matrix to be able to deal with slightly defective
-  // interface meshes.
-  k_tt->UnComplete();
-
   // assign thermo part to the TSI matrix
   systemmatrix_->Assign(1,1,LINALG::View,*(k_tt));
 
@@ -1311,15 +1252,6 @@ void TSI::Monolithic::SetupSystemMatrix()
   ApplyThrCouplMatrix_ConvBC(k_ts_);
 #endif
 
-  // apply dirichlet boundary conditions properly on matrix k_ts, i.e. blank row
-  // if dof is a thermal DBC
-  // Normally, DBC should be applied on full systemmatrix k_TSI, but on diagonal
-  // blocks (here k_ss, k_tt) DBC are already applied in PrepareSystemForNewtonSolve()
-  // to avoid double work, we only call ApplyDirichlet at the off-diagonal blokcs,
-  // here k_ts
-  // k_ts is an off-diagonal block --> pass the bool diagonal==false
-  // ApplyDirichlet() expect filled matrix
-
   k_ts_->Complete(
           *(ThermoField()->Discretization()->DofRowMap(1)),
           *(ThermoField()->Discretization()->DofRowMap(0))
@@ -1328,9 +1260,6 @@ void TSI::Monolithic::SetupSystemMatrix()
   if(!matchinggrid_)
     k_ts_=volcoupl_->ApplyMatrixMapping21(k_ts_);
 
-  // assign thermo part to the TSI matrix
-  k_ts_->ApplyDirichlet(*ThermoField()->GetDBCMapExtractor()->CondMap(),false);
-  k_ts_->UnComplete();
   systemmatrix_->Assign(1,0,LINALG::View,*k_ts_);
 
   /*----------------------------------------------------------------------*/
@@ -1365,8 +1294,6 @@ void TSI::Monolithic::SetupRHS()
   Teuchos::RCP<Epetra_Vector> str_rhs = Teuchos::rcp(new Epetra_Vector(*StructureField()->RHS()));
   if (DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(DRT::Problem::Instance()->StructuralDynamicParams(),"INT_STRATEGY")==INPAR::STR::int_standard)
     str_rhs->Scale(-1.);
-  if (locsysman_!=Teuchos::null)
-    locsysman_->RotateGlobalToLocal(str_rhs);
 
   // insert vectors to tsi rhs
   Extractor()->InsertVector(*str_rhs,0,*rhs_);
@@ -3115,5 +3042,65 @@ void TSI::Monolithic::FixTimeIntegrationParams()
       ga.set<double>("ALPHA_F",alphaf);
       ga.set<double>("ALPHA_M",alpham);
     }
+  }
+}
+
+/*----------------------------------------------------------------------*
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+void TSI::Monolithic::ApplyDBC()
+{
+  Teuchos::RCP<LINALG::SparseMatrix> k_ss = Teuchos::rcp(new LINALG::SparseMatrix(systemmatrix_->Matrix(0,0).EpetraMatrix(),LINALG::Copy,true,false,LINALG::SparseMatrix::CRS_MATRIX));
+  Teuchos::RCP<LINALG::SparseMatrix> k_st = Teuchos::rcp(new LINALG::SparseMatrix(systemmatrix_->Matrix(0,1)));
+  Teuchos::RCP<LINALG::SparseMatrix> k_ts = Teuchos::rcp(new LINALG::SparseMatrix(systemmatrix_->Matrix(1,0)));
+  Teuchos::RCP<LINALG::SparseMatrix> k_tt = Teuchos::rcp(new LINALG::SparseMatrix(systemmatrix_->Matrix(1,1)));
+  if (locsysman_!=Teuchos::null)
+  {
+    {
+      locsysman_->RotateGlobalToLocal(k_ss);
+      k_ss->ApplyDirichletWithTrafo(locsysman_->Trafo(),*StructureField()->GetDBCMapExtractor()->CondMap(),true);
+      locsysman_->RotateLocalToGlobal(k_ss);
+    }
+    {
+      locsysman_->RotateGlobalToLocal(k_st);
+      k_st->ApplyDirichletWithTrafo(locsysman_->Trafo(),*StructureField()->GetDBCMapExtractor()->CondMap(),false);
+      locsysman_->RotateLocalToGlobal(k_st);
+    }
+  }
+  else
+  {
+    k_ss->ApplyDirichlet(*StructureField()->GetDBCMapExtractor()->CondMap(),true);
+    k_st->ApplyDirichlet(*StructureField()->GetDBCMapExtractor()->CondMap(),false);
+  }
+  k_ts->ApplyDirichlet(*ThermoField()->GetDBCMapExtractor()->CondMap(),false);
+  k_tt->ApplyDirichlet(*ThermoField()->GetDBCMapExtractor()->CondMap(),true);
+
+
+  systemmatrix_->UnComplete();
+  systemmatrix_->Assign(0,0,LINALG::View,*k_ss);
+  systemmatrix_->Assign(0,1,LINALG::View,*k_st);
+  systemmatrix_->Assign(1,0,LINALG::View,*k_ts);
+  systemmatrix_->Assign(1,1,LINALG::View,*k_tt);
+  systemmatrix_->Complete();
+
+
+  if (locsysman_!=Teuchos::null)
+  {
+    Teuchos::RCP<Epetra_Vector> s_rhs, t_rhs;
+    ExtractFieldVectors(rhs_,s_rhs,t_rhs);
+    locsysman_->RotateGlobalToLocal(s_rhs);
+    LINALG::ApplyDirichlettoSystem(s_rhs,zeros_,*StructureField()->GetDBCMapExtractor()->CondMap());
+    locsysman_->RotateLocalToGlobal(s_rhs);
+
+    LINALG::ApplyDirichlettoSystem(t_rhs,zeros_,*ThermoField()->GetDBCMapExtractor()->CondMap());
+
+    Extractor()->InsertVector(*s_rhs,0,*rhs_);
+    Extractor()->InsertVector(*t_rhs,1,*rhs_);
+
+  }
+  else
+  {
+    LINALG::ApplyDirichlettoSystem(rhs_,zeros_,*StructureField()->GetDBCMapExtractor()->CondMap());
+    LINALG::ApplyDirichlettoSystem(rhs_,zeros_,*ThermoField()->GetDBCMapExtractor()->CondMap());
   }
 }
