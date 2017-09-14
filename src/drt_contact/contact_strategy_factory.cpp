@@ -358,7 +358,8 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(
     // thermal-structure-interaction contact
     // ---------------------------------------------------------------------
     if (problemtype == prb_tsi
-        && DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") == INPAR::MORTAR::shape_standard)
+        && DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") == INPAR::MORTAR::shape_standard
+        && DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LM_QUAD") != INPAR::MORTAR::lagmult_const)
       dserror("ERROR: Thermal contact only for dual shape functions");
 
     if (problemtype == prb_tsi
@@ -542,14 +543,14 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(
   {
     case prb_tsi:
     {
+      double timestep = DRT::Problem::Instance()->TSIDynamicParams().get<double>("TIMESTEP");
       // rauch 01/16
       if(Comm().MyPID()==0)
         std::cout<<"\n \n  Warning: CONTACT::STRATEGY::Factory::ReadAndCheckInput() reads TIMESTEP = "
-          << (*GState().GetDeltaTime())[0] <<" from STR::GlobalState data container and  \n"
-          << "this value comes directly from your \"PROBLEM DYNAMICS\" section, e.g. "
-          << "\"XCONTACT DYNAMICS\". Anyway, you should not use the \"TIMESTEP\" variable inside of "
+          << timestep <<" from DRT::Problem::Instance()->TSIDynamicParams().  \n"
+          << "Anyway, you should not use the \"TIMESTEP\" variable inside of "
           << "the new structural/contact framework!" << std::endl;
-      cparams.set<double>("TIMESTEP", (*GState().GetDeltaTime())[0]);
+      cparams.set<double>("TIMESTEP", timestep);
       break;
     }
     default:
@@ -1947,6 +1948,14 @@ void CONTACT::STRATEGY::Factory::PrintStrategyBanner(
         {
           IO::cout << "================================================================\n";
           IO::cout << "===== Dual Lagrange multiplier strategy ========================\n";
+          IO::cout << "===== (Condensed formulation) ==================================\n";
+          IO::cout << "================================================================\n\n";
+        }
+        else if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_standard
+            && DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(smortar,"LM_QUAD") == INPAR::MORTAR::lagmult_const)
+        {
+          IO::cout << "================================================================\n";
+          IO::cout << "===== const Lagrange multiplier strategy =======================\n";
           IO::cout << "===== (Condensed formulation) ==================================\n";
           IO::cout << "================================================================\n\n";
         }

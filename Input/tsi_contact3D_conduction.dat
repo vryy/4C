@@ -54,7 +54,7 @@ NORM_INCO                       Abs
 NORM_PRES                       Abs
 NORM_RESF                       Abs
 NUMSTEP                         200
-PREDICT                         ConstVel
+PREDICT                         ConstDis
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 TIMESTEP                        2.5e-3

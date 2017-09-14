@@ -1153,7 +1153,7 @@ public:
    \param type (in): enum defining which quantity to store into CoNodes
 
    */
-  void StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type);
+  virtual void StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type);
 
   /*! \brief Evaluate contact stresses in normal direction and tangential plane
 

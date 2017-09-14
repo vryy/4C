@@ -56,6 +56,7 @@
 #include "../drt_inpar/inpar_beamcontact.H"
 #include "../drt_inpar/inpar_beaminteraction.H"
 #include "../drt_inpar/drt_validparameters.H"
+#include "../drt_inpar/inpar_contact.H"
 
 #include "../drt_so3/so_sh8p8.H"
 #include "../drt_so3/so3_plast/so3_ssn_plast_eletypes.H"
@@ -337,7 +338,22 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   std::vector<DRT::Condition*> ccond(0);
   actdis_->GetCondition("Contact",ccond);
   if (ccond.size())
-    modeltypes.insert(INPAR::STR::model_contact);
+  {
+    // what's the current problem type?
+    PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+    // ToDo: once the new structural time integration can handle
+    //       condensed contact formulations, the model_evaluator
+    //       can have its contact model. For now, the TSI Lagrange
+    //       strategy resides in the TSI algorithm.
+    if (probtype==prb_tsi)
+    {
+      const Teuchos::ParameterList& contact  = DRT::Problem::Instance()->ContactDynamicParams();
+      if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") == INPAR::CONTACT::solution_nitsche)
+        modeltypes.insert(INPAR::STR::model_contact);
+    }
+    else
+      modeltypes.insert(INPAR::STR::model_contact);
+  }
   // --- meshtying conditions
   std::vector<DRT::Condition*> mtcond(0);
   actdis_->GetCondition("Mortar", mtcond);

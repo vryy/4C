@@ -55,12 +55,28 @@ void MORTAR::STRATEGY::Factory::Init(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void MORTAR::STRATEGY::Factory::Init(
+    Teuchos::RCP<DRT::DiscretizationInterface> dis)
+{
+  // call Setup() after Init()
+  issetup_ = false;
+
+  gstate_ptr_ = Teuchos::null;
+
+  discret_ptr_ = dis;
+
+  isinit_ = true;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void MORTAR::STRATEGY::Factory::Setup()
 {
   CheckInit();
 
   //  get the underlying discretization
-  discret_ptr_ = gstate_ptr_->GetMutableDiscret();
+  if (gstate_ptr_!=Teuchos::null)
+    discret_ptr_ = gstate_ptr_->GetMutableDiscret();
 
   // get a copy of the underlying structural communicator
   comm_ptr_ = Teuchos::rcp(discret_ptr_->Comm().Clone());

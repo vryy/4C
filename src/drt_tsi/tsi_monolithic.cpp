@@ -612,7 +612,7 @@ void TSI::Monolithic::NewtonFull()
     // *********** time measurement ***********
 
     // recover LM in the case of contact
-    if (contact_strategy_lagrange_ == Teuchos::null)
+    if (contact_strategy_lagrange_ != Teuchos::null)
       RecoverStructThermLM();
 
     // reset solver tolerance

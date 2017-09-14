@@ -43,6 +43,7 @@
 #include "../drt_contact/contact_tsi_lagrange_strategy.H"
 #include "../drt_contact/contact_nitsche_strategy_tsi.H"
 #include "../drt_contact/meshtying_contact_bridge.H"
+#include "../drt_contact/contact_strategy_factory.H"
 
 #include "../drt_structure_new/str_model_evaluator_contact.H"
 #include "../drt_structure_new/str_model_evaluator_structure.H"
@@ -174,6 +175,8 @@ void TSI::Algorithm::Update()
 {
   StructureField()->Update();
   ThermoField()->Update();
+  if (contact_strategy_lagrange_!=Teuchos::null)
+    contact_strategy_lagrange_->Update((StructureField()->Dispnp()));
 
   return;
 }
@@ -436,10 +439,14 @@ void TSI::Algorithm::ApplyStructCouplingState(Teuchos::RCP<const Epetra_Vector> 
 /*----------------------------------------------------------------------*/
 void TSI::Algorithm::GetContactStrategy()
 {
+  INPAR::CONTACT::SolvingStrategy stype =
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+          DRT::Problem::Instance()->ContactDynamicParams(),"STRATEGY");
 
-  if (StructureField()->HaveModel(INPAR::STR::model_contact))
+  if (stype == INPAR::CONTACT::solution_nitsche)
   {
-    if (DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(DRT::Problem::Instance()->StructuralDynamicParams(),"INT_STRATEGY")!=INPAR::STR::int_standard)
+    if (DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(
+        DRT::Problem::Instance()->StructuralDynamicParams(),"INT_STRATEGY")!=INPAR::STR::int_standard)
       dserror("thermo-mechanical contact only with new structural time integration");
 
     if (coupST_==Teuchos::null)
@@ -447,26 +454,87 @@ void TSI::Algorithm::GetContactStrategy()
 
     STR::MODELEVALUATOR::Contact& a = static_cast<STR::MODELEVALUATOR::Contact&>(
         StructureField()->ModelEvaluator(INPAR::STR::model_contact));
-    contact_strategy_lagrange_ = Teuchos::rcp_dynamic_cast<CONTACT::CoTSILagrangeStrategy>(
-        a.StrategyPtr(),false);
     contact_strategy_nitsche_ = Teuchos::rcp_dynamic_cast<CONTACT::CoNitscheStrategyTsi>(
         a.StrategyPtr(),false);
+    contact_strategy_nitsche_->SetAlphafThermo(DRT::Problem::Instance()->ThermalDynamicParams());
+    contact_strategy_nitsche_->SetCoupling(coupST_);
+    contact_strategy_nitsche_->EnableRedistribution();
+
+    thermo_->SetNitscheContactStrategy(contact_strategy_nitsche_);
+
+    return;
+  }
+
+  else if (stype == INPAR::CONTACT::solution_lagmult)
+  {
+    if (StructureField()->HaveModel(INPAR::STR::model_contact))
+      dserror("structure should not have a Lagrange strategy ... as long as condensed"
+          "contact formulations are not moved to the new structural time integration");
+
+    std::vector<DRT::Condition*> ccond(0);
+    StructureField()->Discretization()->GetCondition("Contact",ccond);
+    if (ccond.size()==0)
+      return;
+
+    // ---------------------------------------------------------------------
+    // create the contact factory
+    // ---------------------------------------------------------------------
+    CONTACT::STRATEGY::Factory factory;
+    factory.Init(Teuchos::rcp_dynamic_cast<DRT::DiscretizationInterface>(StructureField()->Discretization(),true));
+    factory.Setup();
+
+    // check the problem dimension
+    factory.CheckDimension();
+
+    // create some local variables (later to be stored in strategy)
+    std::vector<Teuchos::RCP<CONTACT::CoInterface> > interfaces;
+    Teuchos::ParameterList cparams;
+
+    // read and check contact input parameters
+    factory.ReadAndCheckInput( cparams );
+
+    // ---------------------------------------------------------------------
+    // build the contact interfaces
+    // ---------------------------------------------------------------------
+    // FixMe Would be great, if we get rid of these poro parameters...
+    bool poroslave = false;
+    bool poromaster = false;
+    factory.BuildInterfaces( cparams, interfaces, poroslave, poromaster );
+
+    // ---------------------------------------------------------------------
+    // build the solver strategy object
+    // ---------------------------------------------------------------------
+    contact_strategy_lagrange_ = Teuchos::rcp_dynamic_cast<CONTACT::CoTSILagrangeStrategy>(
+        factory.BuildStrategy( cparams, poroslave,
+                poromaster, 1e8, interfaces ),true);
+
+    // build the search tree
+    factory.BuildSearchTree( interfaces );
+
+    // print final screen output
+    factory.Print( interfaces, contact_strategy_lagrange_, cparams );
+
+    // ---------------------------------------------------------------------
+    // final touches to the contact strategy
+    // ---------------------------------------------------------------------
+
+    contact_strategy_lagrange_->StoreDirichletStatus( StructureField()->GetDBCMapExtractor() );
+
+    Teuchos::RCP<Epetra_Vector> zero_disp = Teuchos::rcp(
+        new Epetra_Vector(*StructureField()->DofRowMap(),true));
+    contact_strategy_lagrange_->SetState( MORTAR::state_new_displacement, *zero_disp );
+    contact_strategy_lagrange_->SaveReferenceState( zero_disp );
+    contact_strategy_lagrange_->EvaluateReferenceState( zero_disp );
+    contact_strategy_lagrange_->Inttime_init();
+    contact_strategy_lagrange_->RedistributeContact( StructureField()->Dispn() );
+    contact_strategy_lagrange_->InitBinStrategyforTimestep( StructureField()->Veln() );
+
     if (contact_strategy_lagrange_!=Teuchos::null)
     {
       contact_strategy_lagrange_->SetAlphafThermo(DRT::Problem::Instance()->ThermalDynamicParams());
       contact_strategy_lagrange_->SetCoupling(coupST_);
     }
-    if (contact_strategy_nitsche_!=Teuchos::null)
-    {
-      contact_strategy_nitsche_->SetAlphafThermo(DRT::Problem::Instance()->ThermalDynamicParams());
-      contact_strategy_nitsche_->SetCoupling(coupST_);
-      contact_strategy_nitsche_->EnableRedistribution();
-    }
-    if (contact_strategy_lagrange_!=Teuchos::null && contact_strategy_nitsche_!=Teuchos::null)
-      dserror("how can the contact strategy be Nitsche and Lagrange at the same time???");
-    if (contact_strategy_lagrange_==Teuchos::null && contact_strategy_nitsche_==Teuchos::null)
-      dserror("contact strategy is neither Lagrange multipliers nor Nitsche. TSI can't handle that.");
-
-    thermo_->SetNitscheContactStrategy(contact_strategy_nitsche_);
   }
+
+
 }

@@ -86,14 +86,14 @@ void CONTACT::CoTSILagrangeStrategy::SetState(
       for (int j=0;j<(int)interface_.size(); ++j)
       {
         DRT::Discretization& idiscr = interface_[j]->Discret();
+
+        Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*idiscr.DofColMap(),false));
+        LINALG::Export(vec,*global);
+
         for (int i=0;i<idiscr.NumMyColNodes();++i)
         {
           CONTACT::CoNode* node = dynamic_cast<CONTACT::CoNode*>(idiscr.lColNode(i));
           std::vector<int> lm(1,node->Dofs()[0]);
-
-          Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*idiscr.DofColMap(),false));
-
-          LINALG::Export(vec,*global);
           std::vector<double> myThermoLM(1,0.);
           DRT::UTILS::ExtractMyValues(*global,myThermoLM,lm);
           node->CoTSIData().ThermoLM() = myThermoLM[0];
@@ -588,7 +588,7 @@ void CONTACT::CoTSILagrangeStrategy::Evaluate(
   thr_act_dofs_=thr_act_dofs;
 
   // get dinv * M
-  Teuchos::RCP<LINALG::SparseMatrix> dInvMa = LINALG::Multiply(*dInvA,false,*mA,false,false,false,true);
+  Teuchos::RCP<LINALG::SparseMatrix> dInvMa = LINALG::MLMultiply(*dInvA,false,*mA,false,false,false,true);
 
   // get dinv * M on the thermal dofs
   LINALG::SparseMatrix dInvMaThr(*thr_act_dofs,100,true,false,LINALG::SparseMatrix::FE_MATRIX);
@@ -611,7 +611,7 @@ void CONTACT::CoTSILagrangeStrategy::Evaluate(
       tmp->Multiply(1.,*diag,*lmDBC,0.);
       diag->Update(-1.,*tmp,1.);
       dInvA->ReplaceDiagonalValues(*diag);
-      dInvMa = LINALG::Multiply(*dInvA,false,*mA,false,false,false,true);
+      dInvMa = LINALG::MLMultiply(*dInvA,false,*mA,false,false,false,true);
     }
   }
 
@@ -622,7 +622,7 @@ void CONTACT::CoTSILagrangeStrategy::Evaluate(
 
   // need diagonal block kss with explicitdirichtlet_=true
   // to be able to apply dirichlet values for contact symmetry condition
-  LINALG::SparseMatrix tmpkss(*gdisprowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX);
+  LINALG::SparseMatrix tmpkss(*gdisprowmap_,100,false,false,LINALG::SparseMatrix::FE_MATRIX);
   sysmat->Assign(0,0,LINALG::Copy,tmpkss);
 
   // get references to the blocks (just for convenience)
@@ -669,17 +669,17 @@ void CONTACT::CoTSILagrangeStrategy::Evaluate(
 
   // (3) condensed parts
   // second row
-  kss_new.Add(*LINALG::Multiply(*dInvMa,true,*kss_a,false,false,false,true),false,1.,1.);
-  kst_new.Add(*LINALG::Multiply(*dInvMa,true,*kst_a,false,false,false,true),false,1.,1.);
+  kss_new.Add(*LINALG::MLMultiply(*dInvMa,true,*kss_a,false,false,false,true),false,1.,1.);
+  kst_new.Add(*LINALG::MLMultiply(*dInvMa,true,*kst_a,false,false,false,true),false,1.,1.);
   tmpv = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
   dInvMa->Multiply(true,*rsa,*tmpv);
   AddVector(*tmpv,*combined_RHS);
   tmpv = Teuchos::null;
 
   // third row
-  Teuchos::RCP<LINALG::SparseMatrix> wDinv = LINALG::Multiply(*dcsdLMc,false,*dInvA,true,false,false,true);
-  kss_new.Add(*LINALG::Multiply(*wDinv,false,*kss_a,false,false,false,true),false,-1./(1.-alphaf_),1.);
-  kst_new.Add(*LINALG::Multiply(*wDinv,false,*kst_a,false,false,false,true),false,-1./(1.-alphaf_),1.);
+  Teuchos::RCP<LINALG::SparseMatrix> wDinv = LINALG::MLMultiply(*dcsdLMc,false,*dInvA,true,false,false,true);
+  kss_new.Add(*LINALG::MLMultiply(*wDinv,false,*kss_a,false,false,false,true),false,-1./(1.-alphaf_),1.);
+  kst_new.Add(*LINALG::MLMultiply(*wDinv,false,*kst_a,false,false,false,true),false,-1./(1.-alphaf_),1.);
   tmpv=Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
   wDinv->Multiply(false,*rsa,*tmpv);
   tmpv->Scale(-1./(1.-alphaf_));
@@ -691,35 +691,35 @@ void CONTACT::CoTSILagrangeStrategy::Evaluate(
 
   // fifth row
   tmp = Teuchos::null;
-  tmp = LINALG::Multiply(m_LinDissContactLM_thrRow,false,*dInvA,false,false,false,true);
-  kts_new.Add(*LINALG::Multiply(*tmp,false,*kss_a,false,false,false,true),false,-tsi_alpha_/(1.-alphaf_),1.);
-  ktt_new.Add(*LINALG::Multiply(*tmp,false,*kst_a,false,false,false,true),false,-tsi_alpha_/(1.-alphaf_),1.);
+  tmp = LINALG::MLMultiply(m_LinDissContactLM_thrRow,false,*dInvA,false,false,false,true);
+  kts_new.Add(*LINALG::MLMultiply(*tmp,false,*kss_a,false,false,false,true),false,-tsi_alpha_/(1.-alphaf_),1.);
+  ktt_new.Add(*LINALG::MLMultiply(*tmp,false,*kst_a,false,false,false,true),false,-tsi_alpha_/(1.-alphaf_),1.);
   tmpv=Teuchos::rcp(new Epetra_Vector(*thr_m_dofs));
   tmp->Multiply(false,*rsa,*tmpv);
   tmpv->Scale(-tsi_alpha_/(1.-alphaf_));
   AddVector(*tmpv,*combined_RHS);
   tmpv=Teuchos::null;
 
-  kts_new.Add(*LINALG::Multiply(dInvMaThr,true,*kts_a,false,false,false,true),false,1.,1.);
-  ktt_new.Add(*LINALG::Multiply(dInvMaThr,true,*ktt_a,false,false,false,true),false,1.,1.);
+  kts_new.Add(*LINALG::MLMultiply(dInvMaThr,true,*kts_a,false,false,false,true),false,1.,1.);
+  ktt_new.Add(*LINALG::MLMultiply(dInvMaThr,true,*ktt_a,false,false,false,true),false,1.,1.);
   tmpv=Teuchos::rcp(new Epetra_Vector(*thr_m_dofs));
   dInvMaThr.Multiply(true,*rta,*tmpv);
   AddVector(*tmpv,*combined_RHS);
   tmp=Teuchos::null;
 
   // sixth row
-  Teuchos::RCP<LINALG::SparseMatrix> yDinv = LINALG::Multiply(dcTdLMc_thr,false,*dInvA,false,false,false,true);
-  kts_new.Add(*LINALG::Multiply(*yDinv,false,*kss_a,false,false,false,true),false,-1./(1.-alphaf_),1.);
-  ktt_new.Add(*LINALG::Multiply(*yDinv,false,*kst_a,false,false,false,true),false,-1./(1.-alphaf_),1.);
+  Teuchos::RCP<LINALG::SparseMatrix> yDinv = LINALG::MLMultiply(dcTdLMc_thr,false,*dInvA,false,false,false,true);
+  kts_new.Add(*LINALG::MLMultiply(*yDinv,false,*kss_a,false,false,false,true),false,-1./(1.-alphaf_),1.);
+  ktt_new.Add(*LINALG::MLMultiply(*yDinv,false,*kst_a,false,false,false,true),false,-1./(1.-alphaf_),1.);
   tmpv=Teuchos::rcp(new Epetra_Vector(*thr_act_dofs));
   yDinv->Multiply(false,*rsa,*tmpv);
   tmpv->Scale(-1./(1.-alphaf_));
   AddVector(*tmpv,*combined_RHS);
   tmpv=Teuchos::null;
 
-  Teuchos::RCP<LINALG::SparseMatrix> gDinv = LINALG::Multiply(dcTdLMt_thr,false,*dInvaThr,false,false,false,true);
-  kts_new.Add(*LINALG::Multiply(*gDinv,false,*kts_a,false,false,false,true),false,-1./(tsi_alpha_),1.);
-  ktt_new.Add(*LINALG::Multiply(*gDinv,false,*ktt_a,false,false,false,true),false,-1./(tsi_alpha_),1.);
+  Teuchos::RCP<LINALG::SparseMatrix> gDinv = LINALG::MLMultiply(dcTdLMt_thr,false,*dInvaThr,false,false,false,true);
+  kts_new.Add(*LINALG::MLMultiply(*gDinv,false,*kts_a,false,false,false,true),false,-1./(tsi_alpha_),1.);
+  ktt_new.Add(*LINALG::MLMultiply(*gDinv,false,*ktt_a,false,false,false,true),false,-1./(tsi_alpha_),1.);
   tmpv=Teuchos::rcp(new Epetra_Vector(*thr_act_dofs));
   gDinv->Multiply(false,*rta,*tmpv);
   tmpv->Scale(-1./tsi_alpha_);
@@ -730,17 +730,6 @@ void CONTACT::CoTSILagrangeStrategy::Evaluate(
 
   // we need to return the rhs, not the residual
   combined_RHS->Scale(-1.);
-  // re-apply DBC after contact condensation
-  sysmat->Matrix(0,0).ApplyDirichlet(*str_dbc->CondMap(),true);
-  sysmat->Matrix(0,1).ApplyDirichlet(*str_dbc->CondMap(),false);
-  sysmat->Matrix(1,0).ApplyDirichlet(*thr_dbc->CondMap(),false);
-  sysmat->Matrix(1,1).ApplyDirichlet(*thr_dbc->CondMap(),true);
-
-  // re-apply DBC to rhs
-  Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(combined_RHS->Map(),true));
-  LINALG::ApplyDirichlettoSystem(combined_RHS,zeros,*str_dbc->CondMap());
-  LINALG::ApplyDirichlettoSystem(combined_RHS,zeros,*thr_dbc->CondMap());
-
 
   return;
 
@@ -892,7 +881,7 @@ void CONTACT::CoTSILagrangeStrategy::StoreNodalQuantities(
   }
 }
 
-void CONTACT::CoTSILagrangeStrategy::Update(Teuchos::RCP<Epetra_Vector> dis)
+void CONTACT::CoTSILagrangeStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
 {
   if (fscn_==Teuchos::null)
     fscn_ = Teuchos::rcp (new Epetra_Vector(*gsmdofrowmap_));

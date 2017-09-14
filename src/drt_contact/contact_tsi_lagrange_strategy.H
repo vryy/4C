@@ -151,7 +151,7 @@ public:
    \param dis (in):  current displacements (-> old displacements)
 
    */
-  void Update(Teuchos::RCP<Epetra_Vector> dis);
+  virtual void Update(Teuchos::RCP<const Epetra_Vector> dis);
 
   /*!
    \brief Set time integration parameter from Thermo time integration
