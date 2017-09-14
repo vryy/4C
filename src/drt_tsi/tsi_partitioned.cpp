@@ -242,7 +242,7 @@ void TSI::Partitioned::TimeLoopOneWay()
     DoStructureStep();
 
     // now extract the current displacements/velocities
-    disp_ = StructureField()->WriteAccessDispnp();
+    disp_ = StructureField()->Dispnp();
 
     // major switch to different time integrators
     if (quasistatic_)
@@ -310,7 +310,7 @@ void TSI::Partitioned::TimeLoopSequStagg()
   temp_ = ThermoField()->WriteAccessTempnp();
   // extract final displacements,
   // update is called afterwards, so we extract the newest solution
-  disp_ = StructureField()->WriteAccessDispnp();
+  disp_ = StructureField()->Dispnp();
 
   // like implicit-implicit staggered scheme, compare Farhat & Park, 1991
   if (displacementcoupling_) // (temperature change due to deformation)
@@ -414,7 +414,7 @@ void TSI::Partitioned::TimeLoopFull()
 {
   // extract final displacement and velocity
   // update is called afterwards, so we extract the newest solution
-  disp_ = StructureField()->WriteAccessDispnp();
+  disp_ = StructureField()->Dispnp();
   temp_ = ThermoField()->WriteAccessTempnp();
 
   // outer iteration loop

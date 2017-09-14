@@ -129,7 +129,7 @@ namespace TSI
   private:
 
     //! displacements at time step (t_n) or (t_n+1)
-    Teuchos::RCP<Epetra_Vector> disp_;
+    Teuchos::RCP<const Epetra_Vector> disp_;
     //! velocities at time step (t_n) or (t_n+1)
     Teuchos::RCP<const Epetra_Vector> vel_;
 

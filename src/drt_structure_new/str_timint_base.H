@@ -186,6 +186,14 @@ namespace TIMINT {
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispNp()
     {
       CheckInit();
+      std::cout << "*** warning ***\n"
+          << "you are using WriteAccessDispNp() in the new structural\n"
+             "time integration. It looks like you could modify the \n"
+             "current displacement state, but you can't, since the \n"
+             "NOX-group will override all your changes. If you really\n"
+             "want write access figure something out. If you just \n"
+             "want a non-const ptr, put some const statements in your code\n"
+             "(or the ugly way using const_cast" << std::endl;
       return dataglobalstate_->GetMutableDisNp();
     }
 

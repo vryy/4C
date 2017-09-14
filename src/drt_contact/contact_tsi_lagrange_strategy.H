@@ -124,8 +124,8 @@ public:
       Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat,
       Teuchos::RCP<Epetra_Vector>& combined_RHS,
       Teuchos::RCP<ADAPTER::Coupling> coupST,
-      Teuchos::RCP<Epetra_Vector> dis,
-      Teuchos::RCP<Epetra_Vector> temp,
+      Teuchos::RCP<const Epetra_Vector> dis,
+      Teuchos::RCP<const Epetra_Vector> temp,
       Teuchos::RCP<const LINALG::MapExtractor> str_dbc,
       Teuchos::RCP<const LINALG::MapExtractor> thr_dbc
       );

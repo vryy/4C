@@ -586,7 +586,7 @@ void TSI::Monolithic::NewtonFull()
   // do the thermo contact modifications all at once
   if (contact_strategy_lagrange_!=Teuchos::null)
     contact_strategy_lagrange_->Evaluate(
-        SystemMatrix(),rhs_,coupST_,StructureField()->WriteAccessDispnp(),ThermoField()->WriteAccessTempnp(),
+        SystemMatrix(),rhs_,coupST_,StructureField()->Dispnp(),ThermoField()->Tempnp(),
         StructureField()->GetDBCMapExtractor(),ThermoField()->GetDBCMapExtractor());
     ApplyDBC();
 
@@ -670,7 +670,7 @@ void TSI::Monolithic::NewtonFull()
       // *********** time measurement ***********
 
       contact_strategy_lagrange_->Evaluate(
-          SystemMatrix(),rhs_,coupST_,StructureField()->WriteAccessDispnp(),ThermoField()->WriteAccessTempnp(),
+          SystemMatrix(),rhs_,coupST_,StructureField()->Dispnp(),ThermoField()->Tempnp(),
           StructureField()->GetDBCMapExtractor(),ThermoField()->GetDBCMapExtractor());
 
       // *********** time measurement ***********
