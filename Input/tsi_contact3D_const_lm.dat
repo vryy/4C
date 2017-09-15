@@ -46,7 +46,7 @@ Inner                           Iteration = no
 Outer                           Iteration = yes
 Outer                           Iteration StatusTest = no
 ------------------------------------------------------STRUCT NOX/Status Test
-XML                             File = /home/seitz/workspace/baci_nitsche/Input/contact3D_nitsche_hex8_sym_coulomb_new_struc.xml
+XML                             File = contact3D_nitsche_hex8_sym_coulomb_new_struc.xml
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 RHO_INF                         1.0
