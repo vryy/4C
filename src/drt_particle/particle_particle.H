@@ -18,6 +18,7 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "../linalg/linalg_fixedsizematrix.H"
+#include "particle_enums.H"
 
 #include <Sacado.hpp>
 typedef Sacado::Fad::DFad<double> FAD;
@@ -226,7 +227,8 @@ namespace PARTICLE
   BoundaryData(bool boundaryparticle) :
   boundaryparticle_(boundaryparticle),
   acc_(LINALG::Matrix<3,1>(true)),
-  velMod_(LINALG::Matrix<3,1>(true)),
+  velModVisc_(LINALG::Matrix<3,1>(true)),
+  velDiffAverage_(LINALG::Matrix<3,1>(true)),
   pressureMod_(-1000),
   densityMod_(-1000)
   {
@@ -234,21 +236,42 @@ namespace PARTICLE
     for(int i=0;i<3;i++)
     {
       acc_(i)=-1000;
-      velMod_(i)=-1000;
+      velModVisc_(i)=-1000;
     }
   }
 
   /// internal variables
   bool boundaryparticle_;         //bool to check if boundary particle or not?
   LINALG::Matrix<3,1> acc_;       //acceleration vector of boundary particles
-  LINALG::Matrix<3,1> velMod_;    //modified velocity vector of boundary particle (see Ref. Adami2012)
+  LINALG::Matrix<3,1> velModVisc_;    //modified velocity vector of boundary particle required for fiscous force calculation(see Ref. Adami2012)
+  LINALG::Matrix<3,1> velDiffAverage_;  //zero-order difference velocity (convection minus physical velocity) average of boundary particle over neighboring fluid particles
   double pressureMod_;            //modified pressure of boundary particle (see Ref. Adami2012)
   double densityMod_;            //modified density of boundary particle consistently derived from modified pressure via equation of state
 
   }; // BoundaryData
 
+  /// Class containing free-surface data required in ParticleMF
+  class FreeSurfaceData
+  {
+  public:
+
+  /// constructor: empty
+  FreeSurfaceData(FreeSurfaceParticleType freesurfaceparticletype) :
+    freesurfaceparticletype_(freesurfaceparticletype),
+    color_field_(-1000),
+    density_sum_(-1000)
+  {
+  }
+
+  /// internal variables
+  FreeSurfaceParticleType freesurfaceparticletype_;         //which type of free surface particle do we have (none, direct or indirect)?
+  double color_field_;                      //small values of the color_function \in [0;\approx 1] indicate (direct) surface particles
+  double density_sum_;                      //particle density determined via naiv summation (also for free-surface particles)
+
+  }; // FreeSurfaceData
+
 // ---------------------------------------------------------- //
-  /// particles for meshfree dynamics (thermodynamics and surface tensions incuded)
+  /// particles for meshfree dynamics (thermodynamics and surface tensions included)
   class ParticleMF : public ParticleBase, public ParticleThermoBase, public ParticleSurfTensionBase, public ParticleMFmGradWbase
   {
   public:
@@ -278,11 +301,12 @@ namespace PARTICLE
         temperature_(temperature),
         densityDot_(densityDot),
         boundarydata_(BoundaryData(false)),
+        freesurfacedata_(FreeSurfaceData(FS_NONE)),
         velConv_(LINALG::Matrix<3,1>(true)){}
 
   /// constructor: empty
   ParticleMF() : ParticleBase(), ParticleThermoBase(), ParticleSurfTensionBase(), ParticleMFmGradWbase(),
-      pressure_(-1), temperature_(-1), densityDot_(-1), boundarydata_(BoundaryData(false)), velConv_(LINALG::Matrix<3,1>(true)) {}
+      pressure_(-1), temperature_(-1), densityDot_(-1), boundarydata_(BoundaryData(false)), freesurfacedata_(FreeSurfaceData(FS_NONE)), velConv_(LINALG::Matrix<3,1>(true)) {}
 
   // contructor: only identifiers
   ParticleMF(
@@ -298,6 +322,7 @@ namespace PARTICLE
         temperature_(-1),
         densityDot_(-1),
         boundarydata_(BoundaryData(boundaryparticle)),
+        freesurfacedata_(FreeSurfaceData(FS_NONE)),
         velConv_(LINALG::Matrix<3,1>(true)){}
 
   /// constructor: only the first round
@@ -322,6 +347,7 @@ namespace PARTICLE
         temperature_(temperature),
         densityDot_(-1),
         boundarydata_(BoundaryData(false)),
+        freesurfacedata_(FreeSurfaceData(FS_NONE)),
         velConv_(LINALG::Matrix<3,1>(true)){}
 
   /// internal variables
@@ -329,6 +355,7 @@ namespace PARTICLE
   double temperature_;
   double densityDot_;
   BoundaryData boundarydata_;
+  FreeSurfaceData freesurfacedata_;
   LINALG::Matrix<3,1> velConv_;    //particle convection velocity that may differ from the particle momentum velocity in general (see Ref. Adami2013)
   }; // ParticleMF
 }

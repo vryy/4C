@@ -32,7 +32,9 @@ namespace PARTICLE
     Pressure,
     Temperature,
     mGradW,
-    mHessW
+    mHessW,
+    ColorField,
+    DensitySum
   };
 
   enum NeighbourType
@@ -40,6 +42,13 @@ namespace PARTICLE
     NT_Particle,
     NT_Wall,
     NT_HeatSource
+  };
+
+  enum FreeSurfaceParticleType
+  {
+    FS_NONE,        //Particle that is not near a free surface
+    FS_DIRECT,      //Particle that is directly near a free surface (low color function value)
+    FS_INDIRECT     //Particle that has a particle of type FS_DIRECT as neighbor
   };
 }
 

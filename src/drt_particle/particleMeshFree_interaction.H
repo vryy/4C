@@ -195,25 +195,28 @@ namespace PARTICLE
     virtual void Inter_pvp_acc_var1(
         const Teuchos::RCP<Epetra_Vector> accn,
         const Teuchos::RCP<Epetra_Vector> p0_acc = Teuchos::null,
-
+        const Teuchos::RCP<Epetra_Vector> acc_A = Teuchos::null,
         const double extMulti = 1.0);
 
     /// compute the momentum part of the boundary particle vs particle interactions
     virtual void Inter_bpvp_acc_var1(
         const Teuchos::RCP<Epetra_Vector> accn,
         const Teuchos::RCP<Epetra_Vector> p0_acc = Teuchos::null,
+        const Teuchos::RCP<Epetra_Vector> acc_A = Teuchos::null,
         const double extMulti = 1.0);
 
     /// compute the momentum part of the particle vs particle interactions: alternative variant according to Adami2013
     virtual void Inter_pvp_acc_var2(
         const Teuchos::RCP<Epetra_Vector> accn,
         const Teuchos::RCP<Epetra_Vector> p0_acc = Teuchos::null,
+        const Teuchos::RCP<Epetra_Vector> acc_A = Teuchos::null,
         const double extMulti = 1.0);
 
     /// compute the momentum part of the boundary particle vs particle interactions: alternative variant according to Adami2013
     virtual void Inter_bpvp_acc_var2(
         const Teuchos::RCP<Epetra_Vector> accn,
         const Teuchos::RCP<Epetra_Vector> p0_acc = Teuchos::null,
+        const Teuchos::RCP<Epetra_Vector> acc_A = Teuchos::null,
         const double extMulti = 1.0);
 
     ///Computes Gradient of divergence operator for vector v - pvp
@@ -290,6 +293,7 @@ namespace PARTICLE
     /// compute density - mesh free sense
     virtual void MF_mW(
         const Teuchos::RCP<Epetra_Vector> mW,
+        const Teuchos::RCP<Epetra_Vector> unity_vec = Teuchos::null,
         const double extMulti = 1.0);
 
     /// compute density - mesh free sense - wall contributions
@@ -300,11 +304,29 @@ namespace PARTICLE
     /// compute density - mesh free sense - boundary particle contributions
     virtual void MF_mW_Boundary(
         const Teuchos::RCP<Epetra_Vector> mW,
+        const Teuchos::RCP<Epetra_Vector> unity_vec,
         const double extMulti = 1.0);
+
+    /// re-initialize density in case of free-surface flow - mesh free sense
+    virtual void MF_ReInitDensity(
+        const Teuchos::RCP<Epetra_Vector> density,
+        const INPAR::PARTICLE::FreeSurfaceType freeSurfaceType);
 
     /// compute pressure difference (for debugging)
     virtual void MF_DeltaP(
         const Teuchos::RCP<Epetra_Vector> PressureDiff);
+
+    /// initialize free surface particles
+    virtual void InitFreeSurfaceParticles();
+
+    /// set pressure of free surface particles
+    virtual void SetPressureOfFreeSurfaceParticles(
+        const Teuchos::RCP<Epetra_Vector> densityn,
+        const Teuchos::RCP<Epetra_Vector> pressuren);
+
+    /// determine accelerations of free-surface particle
+    virtual void Inter_fsvp_acc(
+        const Teuchos::RCP<Epetra_Vector> acc);
 
     /// compute m * gradW - mesh free sense
     virtual void MF_mGradW(
@@ -374,6 +396,13 @@ namespace PARTICLE
         const ParticleMF& particle_i,
         const std::list<DRT::Node*>& neighboursLinf_p,
         const int step);
+
+    //! add to the neighbour maps the neighbours of the present time step - free-surface particles
+    virtual void AddNewNeighbours_fsp(
+        const ParticleMF& particle_i,
+        const std::list<DRT::Node*>& neighboursLinf_p,
+        const bool mark_fs_indirect=false,
+        const int step=1);
 
     //! add to the neighbour maps the neighbours of the present time step - walls
     virtual void AddNewNeighbours_w(
@@ -472,8 +501,14 @@ namespace PARTICLE
     /// neighbours - boundary particles
     std::map<int,std::map<int, InterDataPvP> > neighbours_bp_;
 
-    /// standard map that contains pointers to all boundary particles
+    /// neighbours - free surface particles
+    std::map<int,std::map<int, InterDataPvP> > neighbours_fsp_;
+
+    /// standard map that contains pointers to all boundary particles of column map
     std::map<int,ParticleMF* > boundaryparticles_;
+
+    /// standard map that contains pointers to all free-surface particles of column map
+    std::map<int,ParticleMF* > freesurfaceparticles_;
 
     /// number of space dimensions required for weight function definition
     const INPAR::PARTICLE::WeightFunctionDim WF_DIM_;
@@ -492,6 +527,9 @@ namespace PARTICLE
 
     /// gradient of the divergence of the velocity, convection coefficient
     double convectionCoeff_;
+
+    /// artificial viscosity according to Adami et al. 2012, Eq. (11)
+    double artificialViscosity_;
 
     /// cohesion surface tension coefficient with void (or air)
     double surfaceVoidTension_;

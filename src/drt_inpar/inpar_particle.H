@@ -130,6 +130,16 @@ namespace INPAR
       NoWallInteraction
     };
 
+    /// type of free-surface treatment for MeshFree interactions
+    enum FreeSurfaceType
+    {
+      FreeSurface_None,                           //no free surfaces
+      DensityIntegration,             //density determined via time integration exclusively
+      InteriorReinizialization,       //density via time integration and re-initialization in the interior via density summation (in every time step)
+      NormalizedReinizialization,     //like 'InteriorReinizialization' but with additional re-initialization of free-surface particles via normalized density summation (Shepard Filter)
+      RandlesReinizialization         //like 'NormalizedReinizialization' but with re-initialization of free-surface particles inspired by Randles 1996 instead of Shepard Filter
+    };
+
     /// rendering for smoothed particle hydrodynamics
     enum RenderingType
     {

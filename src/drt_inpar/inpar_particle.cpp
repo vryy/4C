@@ -191,6 +191,25 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                  ),
                                &particledyn);
 
+   setStringToIntegralParameter<int>(
+                               "FREE_SURFACE_TYPE","None",
+                               "type of free-surface treatment for MeshFree interactions",
+                               tuple<std::string>(
+                                 "None",
+                                 "DensityIntegration",
+                                 "InteriorReinizialization",
+                                 "NormalizedReinizialization",
+                                 "RandlesReinizialization"
+                                 ),
+                               tuple<int>(
+                                 INPAR::PARTICLE::None,
+                                 INPAR::PARTICLE::DensityIntegration,
+                                 INPAR::PARTICLE::InteriorReinizialization,
+                                 INPAR::PARTICLE::NormalizedReinizialization,
+                                 INPAR::PARTICLE::RandlesReinizialization
+                                 ),
+                               &particledyn);
+
    IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for structural problems",&particledyn);
    DoubleParameter("ERROR_TOLL",1e-6,"tolerance of the error for implicit schemes",&particledyn);
    IntParameter("ITER_MAX",10,"maximum iteration per time step for implicit schemes",&particledyn);

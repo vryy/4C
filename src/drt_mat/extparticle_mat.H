@@ -92,6 +92,8 @@ namespace MAT
       const double dynamicViscosity_;
       /// bulk viscosity for the liquid phase
       const double bulkViscosity_;
+      /// artificial viscosity for the liquid phase
+      const double artificialViscosity_;
       /// thermal conductivity of the material (it is considered the same for all the phases) - W/(m * K)
       const double thermalConductivity_;
       /// surface tension between void (common air) and the material in liquid phase

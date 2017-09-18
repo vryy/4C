@@ -135,7 +135,9 @@ namespace PARTICLE
     virtual void DetermineMeshfreeDensAndAcc(Teuchos::RCP<Epetra_Vector> acc,
                                              Teuchos::RCP<Epetra_Vector> accmod,
                                              Teuchos::RCP<Epetra_Vector> velConv,
-                                             const double time);
+                                             Teuchos::RCP<Epetra_Vector> acc_A,
+                                             const double time,
+                                             const double dt);
 
     //! Prepare time step
     virtual void PrepareTimeStep();

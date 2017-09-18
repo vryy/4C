@@ -79,7 +79,6 @@ namespace PARTICLE
          dserror("Only the weight function / problem dimensions 1, 2 and 3 are possible!");
        }
      }
-
      return effectiveDistance;
    }
 
@@ -100,7 +99,9 @@ namespace PARTICLE
     static double Density2Pressure(const double& speedOfSound, const double& restDensity, const double& refdensfac, const double& density, const double& exponent)
       {
         if(exponent==1)
+        {
           return speedOfSound * speedOfSound * (density-refdensfac*restDensity);
+        }
         else
         {
           const double restPressure=speedOfSound * speedOfSound * restDensity / exponent;

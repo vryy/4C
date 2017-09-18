@@ -34,6 +34,9 @@ public :
   // destructor
   virtual ~WeightFunction_Base() { ; };
 
+  // get smoothing length h from radius r
+  virtual double SmoothingLength(const double &radius) = 0;
+
   // weight function
   virtual double W(const double &disRel, const double &radius) = 0;
 
@@ -56,7 +59,7 @@ public :
   virtual LINALG::TMatrix<FAD,3,1> GradW(const LINALG::TMatrix<FAD,3,1> &rRelVersor, const FAD& dw);
 
   // hessian, r = r_i - r_j
-  virtual LINALG::Matrix<3,3> HessW(const LINALG::Matrix<3,1> &rRelVersor, const double& dw, const double& rNorm2, const double& ddw);\
+  virtual LINALG::Matrix<3,3> HessW(const LINALG::Matrix<3,1> &rRelVersor, const double& dw, const double& rNorm2, const double& ddw);
 
   // weight function in 0 (auto-interactions)
   virtual double W0(const double& radius) = 0;
@@ -90,6 +93,9 @@ public :
    //! constructor
    WeightFunction_CubicBspline(INPAR::PARTICLE::WeightFunctionDim dim):
     WF_DIM_(dim){}
+
+   // get smoothing length h from radius r
+   virtual inline double SmoothingLength(const double &radius){return radius/2.0; }
 
    //! compute the cubicBspline weight function
    virtual double W(const double &disRel, const double &radius);
@@ -142,6 +148,9 @@ public :
    //! constructor
    WeightFunction_QuinticBspline(INPAR::PARTICLE::WeightFunctionDim dim):
     WF_DIM_(dim){}
+
+   // get smoothing length h from radius r
+   virtual inline double SmoothingLength(const double &radius){return radius/3.0; }
 
    //! compute the QuinticBspline weight function
    virtual double W(const double &disRel, const double &radius);
@@ -199,6 +208,9 @@ public :
    WeightFunction_SqrtHyperbola(INPAR::PARTICLE::WeightFunctionDim dim):
     WF_DIM_(dim){}
 
+   // get smoothing length h from radius r
+   virtual inline double SmoothingLength(const double &radius){return radius; }
+
    //! compute the SqrtHyperbola weight function
    virtual double W(const double &disRel, const double &radius);
 
@@ -243,6 +255,9 @@ public :
 
    //! @name Actions
    //@{
+
+  // get smoothing length h from radius r
+  virtual inline double SmoothingLength(const double &radius){return radius; }
 
    //! compute the HyperbolaNoRsz weight function
    virtual double W(const double &disRel, const double &radius);

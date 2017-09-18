@@ -39,7 +39,11 @@
 #define PARTICLE_TENSILESAFETYFAC 0.0000001         //Factor prescribing the minimal particle distance as compared to the average initial particle distance (tensile instabilites)
 //#define PARTICLE_OVERLAPPINGNEIGHBORS             //Determine also fully overlapping variant of neighbors vectors
 //#define PARTICLE_ONLYLAPLACETERM                  //Apply only Laplace term in viscous force calculation according to variant 1 (this is sufficient for incompressible flows)
-#define PARTICLE_MINMAXOUTPUT_EVRY 100              //Ouput of minimal/maximal pressures, particle distances etc. every PARTICLE_MINMAXOUTPUT_EVRY time steps
+//#define PARTICLE_MINMAXOUTPUT_EVRY 100            //Ouput of minimal/maximal pressures, particle distances etc. every PARTICLE_MINMAXOUTPUT_EVRY time steps
+//#define PARTICLE_VELDIFFBOUNDARY                  //Add boundary particle contributions to the velocity difference term (tensor A)
+#define PARTICLE_ARTVISCBOUNDARY                    //Apply artificial viscosity also for boundary particle interaction (in contrast to Adami et al. 2012)
+#define PARTICLE_COLORLIMIT 0.9                     //Color field limit value to identify free-surface particle
+//#define PARTICLE_NORESTARTACC                       //Calculate initial acceleration new in case of a restart (don't use 'restart' value)
 
 
 /*----------------------------------------------------------------------*

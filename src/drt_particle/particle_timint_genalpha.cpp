@@ -414,7 +414,7 @@ void PARTICLE::TimIntGenAlpha::ResAcc()
   //TODO: Time ramp for gravity forces not considered here so far!
   GravityAcc(resAcc_, -1.0, -1.0);
     // F_int - P
-  interHandler_->Inter_pvp_acc_var1(resAcc_, Teuchos::null, -1.0);
+  interHandler_->Inter_pvp_acc_var1(resAcc_, Teuchos::null, Teuchos::null,-1.0);
   interHandler_->Inter_pvw_acc(resAcc_, -1.0);
     // Acc - Am
   resAcc_->Update(1.0, *accm_, 1.0);

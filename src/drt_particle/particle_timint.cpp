@@ -574,6 +574,7 @@ void PARTICLE::TimInt::PrepareTimeStep()
     // apply Dirichlet BC and rebuild map extractor
     ApplyDirichletBC(timen_, disn_, veln_, accn_, true);
 
+    //TODO: Remove this line?
     // do particle business
     particle_algorithm_->TransferParticles(true);
   }
@@ -604,10 +605,10 @@ void PARTICLE::TimInt::DetermineMassDampConsistAccel()
         ApplyDirichletBC(0.0, Teuchos::null, veln_, Teuchos::null, false);
         ApplyDirichletBC(0.0, Teuchos::null, velmodn_, Teuchos::null, false);
 
-        DetermineMeshfreeDensAndAcc((*acc_)(0),(*accmod_)(0),velmodn_,0.0);
+        DetermineMeshfreeDensAndAcc((*acc_)(0),(*accmod_)(0),velmodn_,Teuchos::null,0.0,0.0);
       }
       else
-        DetermineMeshfreeDensAndAcc((*acc_)(0),Teuchos::null,Teuchos::null,0.0);
+        DetermineMeshfreeDensAndAcc((*acc_)(0),Teuchos::null,Teuchos::null,Teuchos::null,0.0,0.0);
     }
   }
 
@@ -672,7 +673,9 @@ void PARTICLE::TimInt::ComputeAcc(
 void PARTICLE::TimInt::DetermineMeshfreeDensAndAcc(Teuchos::RCP<Epetra_Vector> acc,
                                             Teuchos::RCP<Epetra_Vector> accmod,
                                             Teuchos::RCP<Epetra_Vector> velConv,
-                                            const double time)
+                                            Teuchos::RCP<Epetra_Vector> acc_A,
+                                            const double time,
+                                            const double dt)
 {
 
   //Initialize all columns and boundary particles. Set sate vectors disn_ and veln_
@@ -681,10 +684,48 @@ void PARTICLE::TimInt::DetermineMeshfreeDensAndAcc(Teuchos::RCP<Epetra_Vector> a
   if(velConv!=Teuchos::null)
     interHandler_->SetStateVector(velConv, PARTICLE::VelConv);
 
-  //In case of density summation, the new density and new pressure have been determined as very first step since they are required for all the following calculations
-  interHandler_->MF_mW(densityn_);
-  //Determine also the new pressure and set state vectors for the new density and pressure
-  interHandler_->SetStateVector(densityn_, PARTICLE::Density);
+  const INPAR::PARTICLE::FreeSurfaceType freeSurfaceType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::FreeSurfaceType>(DRT::Problem::Instance()->ParticleParams(),"FREE_SURFACE_TYPE");
+  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"DENSITY_SUMMATION")==false)
+  {
+    //Density update via continuity equation: This is only required as initialization for density summation below in case of free-surface flows
+    //Attention: Here, r_{n+1} and v_{n+1/2} are applied for calculation of densityDotn_ instead of r_{n+1/2} and v_{n+1/2} as in Adami 2012 or
+    //r_{n} and v_{n+1/2} as in Zhang 2017. This procedure is simpler here since otherwise determination of particle positions and neighbors would have
+    //to be done twice. On the other hand, the error should be negligible since densityDotn_ is only required for density initialization before applying the summation formula.
+    //TODO: Enable density evaluation at flexible points in time (e.g. at t_{n}, t_{n+1/2}, t_{n+1})
+
+    interHandler_->Inter_pvp_densityDot(densityDotn_);
+    densityn_->Update(dt, *densityDotn_, 1.0);
+    interHandler_->SetStateVector(densityn_, PARTICLE::Density);
+  }
+  else
+  {
+    if(freeSurfaceType!=INPAR::PARTICLE::FreeSurface_None)
+      dserror("Density summation not suitable for free-surface problems. Choose input parameter DENSITY_SUMMATION=No!");
+
+    interHandler_->MF_mW(densityn_);
+    interHandler_->SetStateVector(densityn_, PARTICLE::Density);
+  }
+
+  if(freeSurfaceType!=INPAR::PARTICLE::FreeSurface_None)
+  {
+    //In case of density summation, the new density and new pressure have been determined as very first step since they are required for all the following calculations
+    Teuchos::RCP<Epetra_Vector> density_sum = Teuchos::rcp(new Epetra_Vector(*densityn_));
+    density_sum->PutScalar(0.0);
+    Teuchos::RCP<Epetra_Vector> color_field = Teuchos::rcp(new Epetra_Vector(*densityn_));
+    color_field->PutScalar(0.0);
+    interHandler_->MF_mW(density_sum,color_field);
+    interHandler_->SetStateVector(color_field, PARTICLE::ColorField);
+    interHandler_->SetStateVector(density_sum, PARTICLE::DensitySum);
+
+    //Determine free-surface particles
+    interHandler_->InitFreeSurfaceParticles();
+
+    //Re-initialize density if required in case of free-surface flow
+    if(freeSurfaceType!=INPAR::PARTICLE::DensityIntegration)
+      interHandler_->MF_ReInitDensity(densityn_,freeSurfaceType);
+  }
+
+  //Determine also the new pressure and set state vector
   bool solve_thermal_problem=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM");
   PARTICLE::Utils::Density2Pressure(restDensity_,refdensfac_,densityn_,specEnthalpyn_,pressure_,particle_algorithm_->ExtParticleMat(),true,solve_thermal_problem);
   interHandler_->SetStateVector(pressure_, PARTICLE::Pressure);
@@ -698,16 +739,17 @@ void PARTICLE::TimInt::DetermineMeshfreeDensAndAcc(Teuchos::RCP<Epetra_Vector> a
 
   //Acceleration contributions due to gravity forces
   acc->PutScalar(0.0);
-
   if(accmod!=Teuchos::null)
+  {
     accmod->PutScalar(0.0);
-
+  }
   GravityAcc(acc,1.0,time);
+
   //Acceleration contributions due to internal forces (pressure, viscosity etc.)
   if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"CALC_ACC_VAR2")==false)
-    interHandler_->Inter_pvp_acc_var1(acc,accmod);
+    interHandler_->Inter_pvp_acc_var1(acc,accmod,acc_A);
   else
-    interHandler_->Inter_pvp_acc_var2(acc,accmod);
+    interHandler_->Inter_pvp_acc_var2(acc,accmod,acc_A);
 
   // clear vectors, keep memory
   interHandler_->Clear();
@@ -845,8 +887,11 @@ void PARTICLE::TimInt::ReadRestartState()
   dis_->UpdateSteps(*disn_);
   reader.ReadVector(veln_, "velocity");
   vel_->UpdateSteps(*veln_);
+
+#ifndef PARTICLE_NORESTARTACC
   reader.ReadVector(accn_, "acceleration");
   acc_->UpdateSteps(*accn_);
+#endif
 
   if (DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")>0.0)
   {

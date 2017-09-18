@@ -38,6 +38,7 @@ MAT::PAR::ExtParticleMat::ExtParticleMat(
     bulkModulus_(matdata->GetDouble("BULK_MODULUS")),
     dynamicViscosity_(matdata->GetDouble("DYNAMIC_VISCOSITY")),
     bulkViscosity_(matdata->GetDouble("BULK_VISCOSITY")),
+    artificialViscosity_(matdata->GetDouble("ARTIFICIAL_VISCOSITY")),
     thermalConductivity_(matdata->GetDouble("THERMAL_CONDUCTIVITY")),
     surfaceVoidTension_(matdata->GetDouble("SURFACE_VOID_TENSION")),
     surfaceWallTension_(matdata->GetDouble("SURFACE_WALL_TENSION"))

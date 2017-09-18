@@ -65,9 +65,6 @@ void PARTICLE::TimIntKickDrift::Init()
   if (particle_algorithm_->ExtParticleMat()->surfaceVoidTension_ != 0)
     dserror("No surface tension possible in kick-drift scheme!");
 
-  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"DENSITY_SUMMATION")==false)
-    dserror("No density integration possible in kick-drift scheme!");
-
   if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM"))
     dserror("No thermal problem possible in kick-drift scheme!");
 
@@ -96,6 +93,7 @@ void PARTICLE::TimIntKickDrift::Init()
 /* Integrate step */
 int PARTICLE::TimIntKickDrift::IntegrateStep()
 {
+
   //Kick-drift-kick integration scheme with modified particle convection \tilde{v} due to modified acceleration contribution \tilde{a},
   //see e.g. Adami2013, Eqs. (14)-(17)
   /*
@@ -113,7 +111,6 @@ int PARTICLE::TimIntKickDrift::IntegrateStep()
 
   //v_{n+1/2}=v_{n}+dt/2*a_{n-1/2}, with *(*acc_)(0)=a_{n-1/2}
   veln_->Update(dthalf, *(*acc_)(0), 1.0);
-
   //Apply modified convection velocity if required
   if (DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")>0.0)
   {
@@ -141,9 +138,12 @@ int PARTICLE::TimIntKickDrift::IntegrateStep()
   //Transfer particles and heat sources into their correct bins
   particle_algorithm_->UpdateConnectivity();
 
+  Teuchos::RCP<Epetra_Vector> acc_A = Teuchos::rcp(new Epetra_Vector(*veln_));
+  acc_A->PutScalar(0.0);
+
   //Determine density as well as physical and modified accelerations a_{n+1/2}=a(r_{n+1},v_{n+1/2})
   //and \tilde{a}_{n+1/2}=\tilde{a}(r_{n+1},v_{n+1/2}) based on r_{n+1} and v_{n+1/2} as well as external forces at t_{n+1}
-  DetermineMeshfreeDensAndAcc(accn_,accmodn_,velmodn_,timen_);
+  DetermineMeshfreeDensAndAcc(accn_,accmodn_,velmodn_,acc_A,timen_,dt);
 
   //Update of end-velocities v_{n+1}=v_{n+1/2}+dt/2*a_{n+1/2}
   veln_->Update(dthalf, *accn_, 1.0);
@@ -172,6 +172,19 @@ void PARTICLE::TimIntKickDrift::ReadRestartState()
 
   bool solve_thermal_problem=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM");
   PARTICLE::Utils::Density2Pressure(restDensity_,refdensfac_,densityn_,specEnthalpyn_,pressure_,particle_algorithm_->ExtParticleMat(),true,solve_thermal_problem);
+
+  // read radius
+  reader.ReadVector(radiusn_, "radius");
+  radius_->UpdateSteps(*radiusn_);
+  // read density
+  reader.ReadVector(densityn_, "density");
+  density_->UpdateSteps(*densityn_);
+  // read specEnthalpy
+  reader.ReadVector(specEnthalpyn_, "specEnthalpy");
+  specEnthalpy_->UpdateSteps(*specEnthalpyn_);
+  // read specEnthalpyDot
+  reader.ReadVector(specEnthalpyDotn_, "specEnthalpyDot");
+  specEnthalpyDot_->UpdateSteps(*specEnthalpyDotn_);
 }
 
 /* Determination (and output) of extreme values */
@@ -204,11 +217,11 @@ void PARTICLE::TimIntKickDrift::GetExtremeValues()
   discret_->Comm().MinAll(&alltimemin_pressure_,&allprocalltime_min_pressure,1);
   discret_->Comm().MaxAll(&alltimemax_pressure_,&allprocalltime_max_pressure,1);
   radiusn_->NormInf(&maxradius);
-  const double c = particle_algorithm_->ExtParticleMat()->SpeedOfSoundL();
 
   #ifdef PARTICLE_MINMAXOUTPUT_EVRY
   if((discret_->Comm().MyPID()==0) and (stepn_ % 100==0))
   {
+    const double c = particle_algorithm_->ExtParticleMat()->SpeedOfSoundL();
     std::cout << "allprocalltime_min_pvp_dist: " << allprocalltime_min_pvp_dist << std::endl;
     std::cout << "allprocalltime_min_pvw_dist: " << allprocalltime_min_pvw_dist << std::endl;
     std::cout << "maximal particle radius: " << maxradius << std::endl;
