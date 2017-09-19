@@ -57,6 +57,26 @@ namespace POROMULTIPHASE
     norm_inf  //!< Maximum/infinity norm
   };
 
+  //! equilibration methods for global system of equations
+  enum EquilibrationMethods
+  {
+    equilibration_none,
+    equilibration_rows_full,
+    equilibration_rows_maindiag,
+    equilibration_columns_full,
+    equilibration_columns_maindiag,
+    equilibration_rowsandcolumns_full,
+    equilibration_rowsandcolumns_maindiag
+  };
+
+  //! relaxation methods for partitioned coupling
+  enum RelaxationMethods
+  {
+    relaxation_none,
+    relaxation_constant,
+    relaxation_aitken
+  };
+
   //! map enum term to std::string
   static inline const std::string VectorNormString(
     const enum VectorNorm norm  //!< input enum term

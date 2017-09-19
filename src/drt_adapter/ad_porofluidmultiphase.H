@@ -24,6 +24,7 @@
 namespace DRT
 {
   class ResultTest;
+  class Discretization;
 }
 
 namespace POROFLUIDMULTIPHASE
@@ -67,6 +68,9 @@ namespace ADAPTER {
 
     /// access dof row map
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds=0) const=0;
+
+    /// direct access to discretization
+    virtual Teuchos::RCP<DRT::Discretization> Discretization() const=0;
 
     //! apply moving mesh data
     virtual void ApplyMeshMovement(

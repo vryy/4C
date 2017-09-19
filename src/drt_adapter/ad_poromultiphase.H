@@ -24,6 +24,11 @@ namespace ADAPTER
   class Structure;
 }
 
+namespace LINALG
+{
+  class Solver;
+}
+
 namespace ADAPTER
 {
 class PoroMultiPhase
@@ -143,6 +148,9 @@ public:
 
   //! get fluid field
   virtual const Teuchos::RCP<ADAPTER::PoroFluidMultiphaseWrapper>& FluidField() = 0;
+
+  //! build the block null spaces
+  virtual void BuildBlockNullSpaces(Teuchos::RCP<LINALG::Solver>& solver) = 0;
 
 };
 }

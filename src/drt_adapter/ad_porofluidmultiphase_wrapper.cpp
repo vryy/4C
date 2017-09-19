@@ -74,6 +74,13 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::PoroFluidMultiphaseWrapper::DofRowMap(un
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Discretization> ADAPTER::PoroFluidMultiphaseWrapper::Discretization() const
+{
+  return porofluid_->Discretization();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void ADAPTER::PoroFluidMultiphaseWrapper::ReadRestart(int restart)
 {
   return porofluid_->ReadRestart(restart);

@@ -42,12 +42,22 @@ TIMESTEP                        0.1
 RESULTSEVRY                     1
 ITEMAX                          10
 COUPALGO                        twoway_monolithic
-LINEAR_SOLVER                   1
+----------------------------------POROMULTIPHASE DYNAMIC/MONOLITHIC
+LINEAR_SOLVER                   2
 TOLRES_GLOBAL                   1e-06
 TOLINC_GLOBAL                   1e-06
+EQUILIBRATION                   rows_full
 --------------------------------------------------------------------SOLVER 1
 NAME                            solver
 SOLVER                          UMFPACK                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+--------------------------------------------------------------------SOLVER 2
+NAME                            iterative_poromultiphase_solver
+SOLVER                          Aztec_MSR
+AZTOL                           1e-10
+AZOUTPUT                        10                             // output every so often, 0 no output
+AZPREC                          AMGnxn
+AMGNXN_TYPE                     XML
+AMGNXN_XML_FILE                 poromultielast_3D_hex8_mono_BGS-AMG_2x2.xml
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 4 MATIDS 10 20 30 40 END
 

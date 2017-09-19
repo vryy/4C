@@ -22,6 +22,7 @@
 #include "../drt_lib/drt_discret.H"
 
 #include "../drt_poromultiphase/poromultiphase_base.H"
+#include "../drt_poromultiphase/poromultiphase_monolithic_twoway.H"
 #include "../drt_adapter/ad_porofluidmultiphase_wrapper.H"
 #include "../drt_adapter/ad_str_structure.H"
 
@@ -52,6 +53,11 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::PoroMultiPhaseScaTra
     itmin_(1),
     itnum_(0),
     blockrowdofmap_(Teuchos::null),
+    equilibration_(INPAR::POROMULTIPHASESCATRA::EquilibrationMethods::equilibration_none),
+    invrowsums_(Teuchos::null),
+    solveradaptolbetter_(0.0),
+    solveradapttol_(false),
+    solve_structure_(true),
     tolinc_(0.0),
     tolfres_(0.0),
     tolinc_struct_(0.0),
@@ -116,12 +122,20 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::Init(
 
   // read input variables
   itmax_ = algoparams.get<int>("ITEMAX");
-  ittolinc_ = algoparams.get<double>("TOLINC_GLOBAL");
-  ittolres_ = algoparams.get<double>("TOLRES_GLOBAL");
+  ittolinc_ = algoparams.sublist("MONOLITHIC").get<double>("TOLINC_GLOBAL");
+  ittolres_ = algoparams.sublist("MONOLITHIC").get<double>("TOLRES_GLOBAL");
 
   blockrowdofmap_ = Teuchos::rcp(new LINALG::MultiMapExtractor);
 
-  fdcheck_ = DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASESCATRA::FDCheck>(algoparams,"FDCHECK");
+  fdcheck_ = DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASESCATRA::FDCheck>(algoparams.sublist("MONOLITHIC"),"FDCHECK");
+
+  equilibration_ = DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASESCATRA::EquilibrationMethods>(algoparams.sublist("MONOLITHIC"),"EQUILIBRATION");
+
+  solveradaptolbetter_ = algoparams.sublist("MONOLITHIC").get<double>("ADAPTCONV_BETTER");
+  solveradapttol_= (DRT::INPUT::IntegralValue<int>(algoparams.sublist("MONOLITHIC"), "ADAPTCONV") == 1);
+
+  // do we also solve the structure, this is helpful in case of fluid-scatra coupling without mesh deformation
+  solve_structure_ = DRT::INPUT::IntegralValue<int>(poroparams,"SOLVE_STRUCTURE");
 
 }
 
@@ -157,6 +171,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupSystem()
   // full Poromultiphase-elasticity-blockmap
   blockrowdofmap_->Setup(*fullmap_, vecSpaces);
 
+  // check global map extractor
+  blockrowdofmap_->CheckForValidMapExtractor();
+
   //-----------------------------------build map of global dofs with DBC
   BuildCombinedDBCMap();
   // -------------------------------------------------------------
@@ -185,6 +202,30 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupSystem()
                         //*(FluidField()->DofRowMap()),
                         81, true, true));
 
+  // perform initialization associated with equilibration of global system of equations
+  switch(equilibration_)
+  {
+    case INPAR::POROMULTIPHASESCATRA::EquilibrationMethods::equilibration_none:
+    {
+      // do nothing
+      break;
+    }
+
+    case INPAR::POROMULTIPHASESCATRA::EquilibrationMethods::equilibration_rows_full:
+    case INPAR::POROMULTIPHASESCATRA::EquilibrationMethods::equilibration_rows_maindiag:
+    {
+      // initialize vector for row sums of global system matrix if necessary
+      invrowsums_ = Teuchos::rcp(new Epetra_Vector(*DofRowMap(),false));
+      break;
+    }
+
+    default:
+    {
+      dserror("Equilibration method not yet implemented!");
+      break;
+    }
+  }
+
   return;
 }
 
@@ -203,6 +244,23 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::BuildCombinedDB
   return;
 }
 
+/*-----------------------------------------------------------------------------------*
+ | build null spaces associated with blocks of global system matrix kremheller 08/17 |
+ *-----------------------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::BuildBlockNullSpaces()
+{
+
+  // Build block null spaces of structure and fluid-field
+  PoroField()->BuildBlockNullSpaces(solver_);
+
+  // equip smoother for scatra matrix block with empty parameter sublists to trigger null space computation
+  Teuchos::ParameterList& blocksmootherparams = solver_->Params().sublist("Inverse3");
+  blocksmootherparams.sublist("Aztec Parameters");
+  blocksmootherparams.sublist("MueLu Parameters");
+
+  ScatraAlgo()->ScaTraField()->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams);
+}
+
 /*----------------------------------------------------------------------*
  | setup the solver if necessary                        kremheller 03/17 |
  *----------------------------------------------------------------------*/
@@ -213,7 +271,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupSolver()
   // get dynamic section of poroelasticity
   const Teuchos::ParameterList& poromultscatradyn = DRT::Problem::Instance()->PoroMultiPhaseScatraDynamicParams();
   // get the solver number used for linear poroelasticity solver
-  const int linsolvernumber = poromultscatradyn.get<int>("LINEAR_SOLVER");
+  const int linsolvernumber = poromultscatradyn.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER");
   // check if the poroelasticity solver has a valid solver number
   if (linsolvernumber == (-1))
     dserror("no linear solver defined for poromultiphaseflow with scatra coupling.\n"
@@ -235,13 +293,64 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupSolver()
                  );
   }
   else
-    dserror("only direct solvers work so far");
-
+    CreateLinearSolver(solverparams, solvertype);
 
   vectornormfres_ = DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASESCATRA::VectorNorm>(
-      poromultscatradyn, "VECTORNORM_RESF");
+      poromultscatradyn.sublist("MONOLITHIC"), "VECTORNORM_RESF");
   vectornorminc_ = DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASESCATRA::VectorNorm>(
-      poromultscatradyn, "VECTORNORM_INC");
+      poromultscatradyn.sublist("MONOLITHIC"), "VECTORNORM_INC");
+}
+
+/*-----------------------------------------------------------------------------------*
+ | create the linear solver                                         kremheller 08/17 |
+ *-----------------------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::CreateLinearSolver(
+    const Teuchos::ParameterList& solverparams,
+    const int                     solvertype
+    )
+{
+
+  if (solvertype != INPAR::SOLVER::aztec_msr &&
+      solvertype != INPAR::SOLVER::belos)
+  {
+    std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
+    std::cout << " Note: the BGS2x2 preconditioner now "                  << std::endl;
+    std::cout << " uses the structural solver and fluid solver blocks"  << std::endl;
+    std::cout << " for building the internal inverses"                    << std::endl;
+    std::cout << " Remove the old BGS PRECONDITIONER BLOCK entries "      << std::endl;
+    std::cout << " in the dat files!"                                     << std::endl;
+    std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
+    dserror("aztec solver expected");
+  }
+  const int azprectype
+    = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(
+        solverparams,
+        "AZPREC"
+        );
+
+  // plausibility check
+  switch (azprectype)
+  {
+    case INPAR::SOLVER::azprec_AMGnxn:
+      {
+        // no plausibility checks here
+        // if you forget to declare an xml file you will get an error message anyway
+      }
+      break;
+    default:
+      dserror("AMGnxn preconditioner expected");
+      break;
+  }
+
+  solver_ = Teuchos::rcp(new LINALG::Solver(
+                         solverparams,
+                         Comm(),
+                         DRT::Problem::Instance()->ErrorFile()->Handle()
+                         )
+                     );
+
+  // build the null spaces of the single blocks
+  BuildBlockNullSpaces();
 }
 
 /*----------------------------------------------------------------------*
@@ -363,7 +472,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupSystemMatr
   // get matrix block
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> mat_pp = PoroField()->BlockSystemMatrix();
 
-  // uncomplete matrix block (appears to be required in certain cases)
+  // uncomplete matrix block (appears to be required in certain cases (locsys+iterative solver))
   mat_pp->UnComplete();
 
   // assign matrix block
@@ -438,7 +547,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupSystemMatr
   // poromultielast_monolithic.cpp or in the respective evalute calls)
   k_spf->ApplyDirichlet(*ScatraAlgo()->ScaTraField()->DirichMaps()->CondMap(),false);
 
-  // uncomplete matrix block (appears to be required in certain cases)
+  // uncomplete matrix block (appears to be required in certain cases (locsys+iterative solver))
   k_sps->UnComplete();
   k_spf->UnComplete();
 
@@ -525,34 +634,37 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::ApplyScatraStru
 
   k_sps->Zero();
 
-  sparams_struct.set<int>("action", SCATRA::calc_scatra_mono_odblock_mesh);
-  // other parameters that might be needed by the elements
-  sparams_struct.set("delta time", Dt());
-  sparams_struct.set("total time", Time());
+  if(solve_structure_)
+  {
+    sparams_struct.set<int>("action", SCATRA::calc_scatra_mono_odblock_mesh);
+    // other parameters that might be needed by the elements
+    sparams_struct.set("delta time", Dt());
+    sparams_struct.set("total time", Time());
 
-  // provide element parameter list with numbers of dofsets associated with displacement and velocity dofs on scatra discretization
-  sparams_struct.set<int>("ndsdisp",ScatraAlgo()->ScaTraField()->NdsDisp());
-  sparams_struct.set<int>("ndsvel",ScatraAlgo()->ScaTraField()->NdsVel());
-  sparams_struct.set<int>("ndspres",2);
+    // provide element parameter list with numbers of dofsets associated with displacement and velocity dofs on scatra discretization
+    sparams_struct.set<int>("ndsdisp",ScatraAlgo()->ScaTraField()->NdsDisp());
+    sparams_struct.set<int>("ndsvel",ScatraAlgo()->ScaTraField()->NdsVel());
+    sparams_struct.set<int>("ndspres",2);
 
-  ScatraAlgo()->ScaTraField()->Discretization()->ClearState();
-  ScatraAlgo()->ScaTraField()->Discretization()->SetState(0,"hist",ScatraAlgo()->ScaTraField()->Hist());
-  ScatraAlgo()->ScaTraField()->Discretization()->SetState(0,"phinp",ScatraAlgo()->ScaTraField()->Phinp());
+    ScatraAlgo()->ScaTraField()->Discretization()->ClearState();
+    ScatraAlgo()->ScaTraField()->Discretization()->SetState(0,"hist",ScatraAlgo()->ScaTraField()->Hist());
+    ScatraAlgo()->ScaTraField()->Discretization()->SetState(0,"phinp",ScatraAlgo()->ScaTraField()->Phinp());
 
-  // build specific assemble strategy for mechanical-fluid system matrix
-  // from the point of view of StructureField:
-  // structdofset = 0, fluiddofset = 1
-  DRT::AssembleStrategy scatrastrategy_struct(
-      0,               // scatradofset for row
-      1,               // structuredofset for column
-      k_sps,          // scatra-structure coupling matrix
-      Teuchos::null ,
-      Teuchos::null ,
-      Teuchos::null,
-      Teuchos::null
-  );
+    // build specific assemble strategy for mechanical-fluid system matrix
+    // from the point of view of StructureField:
+    // structdofset = 0, fluiddofset = 1
+    DRT::AssembleStrategy scatrastrategy_struct(
+        0,               // scatradofset for row
+        1,               // structuredofset for column
+        k_sps,          // scatra-structure coupling matrix
+        Teuchos::null ,
+        Teuchos::null ,
+        Teuchos::null,
+        Teuchos::null
+    );
 
-  ScatraAlgo()->ScaTraField()->Discretization()->Evaluate(sparams_struct, scatrastrategy_struct);
+    ScatraAlgo()->ScaTraField()->Discretization()->Evaluate(sparams_struct, scatrastrategy_struct);
+  }
 
   //complete
   k_sps->Complete(PoroField()->StructureField()->SystemMatrix()->RangeMap(), ScatraAlgo()->ScaTraField()->SystemMatrix()->RangeMap());
@@ -687,6 +799,127 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::ExtractFieldVec
 }
 
 /*----------------------------------------------------------------------*
+ | equilibrate global system of equations if necessary kremheller 08/17 |
+ | (adapated from sti_algorithm.cpp)                                    |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::EquilibrateSystem()
+{
+  switch(equilibration_)
+  {
+    case INPAR::POROMULTIPHASESCATRA::EquilibrationMethods::equilibration_none:
+    {
+      // do nothing
+      break;
+    }
+
+    case INPAR::POROMULTIPHASESCATRA::EquilibrationMethods::equilibration_rows_full:
+    case INPAR::POROMULTIPHASESCATRA::EquilibrationMethods::equilibration_rows_maindiag:
+    {
+
+      // perform row equilibration
+      for(int i=0; i<systemmatrix_->Rows(); ++i)
+      {
+        // initialize vector for inverse row sums
+        const Teuchos::RCP<Epetra_Vector> invrowsums(Teuchos::rcp(new Epetra_Vector(systemmatrix_->Matrix(i,i).RowMap())));
+
+        // compute inverse row sums of current main diagonal matrix block
+        if(equilibration_ == INPAR::POROMULTIPHASESCATRA::EquilibrationMethods::equilibration_rows_maindiag)
+          ComputeInvRowSums(systemmatrix_->Matrix(i,i),invrowsums);
+
+        // compute inverse row sums of current row block of global system matrix
+        else
+        {
+          // loop over all column blocks of global system matrix
+          for(int j=0; j<systemmatrix_->Cols(); ++j)
+          {
+            // extract current block of global system matrix
+            const LINALG::SparseMatrix& matrix = systemmatrix_->Matrix(i,j);
+
+            // loop over all rows of current matrix block
+            for(int irow=0; irow<matrix.RowMap().NumMyElements(); ++irow)
+            {
+              // determine length of current matrix row
+              const int length = matrix.EpetraMatrix()->NumMyEntries(irow);
+
+              if(length > 0)
+              {
+                // extract current matrix row from matrix block
+                int numentries(0);
+                std::vector<double> values(length,0.);
+                if(matrix.EpetraMatrix()->ExtractMyRowCopy(irow,length,numentries,&values[0]))
+                  dserror("Cannot extract matrix row with local ID %d from matrix block!",irow);
+
+                // compute and store current row sum
+                double rowsum(0.);
+                for(int ientry=0; ientry<numentries; ++ientry)
+                  rowsum += std::abs(values[ientry]);
+                (*invrowsums)[irow] += rowsum;
+              }
+            }
+          }
+
+          // invert row sums
+          if(invrowsums->Reciprocal(*invrowsums))
+            dserror("Vector could not be inverted!");
+        }
+
+        // perform row equilibration of matrix blocks in current row block of global system matrix
+        for(int j=0; j<systemmatrix_->Cols(); ++j)
+          EquilibrateMatrixRows(systemmatrix_->Matrix(i,j),invrowsums);
+
+        // insert inverse row sums of current main diagonal matrix block into global vector
+        Extractor()->InsertVector(invrowsums,i,invrowsums_);
+      }
+
+      // perform equilibration of global residual vector
+      if(rhs_->Multiply(1.,*invrowsums_,*rhs_,0.))
+         dserror("Equilibration of global residual vector failed!");
+
+      break;
+    }
+
+    default:
+    {
+      dserror("Equilibration method not yet implemented!");
+      break;
+    }
+  }
+
+  return;
+}
+
+/*--------------------------------------------------------------------------------*
+ | compute inverse sums of absolute values of matrix row entries kremheller 08/17 |
+ | (copy from sti_algorithm.cpp)                                                  |
+ *--------------------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::ComputeInvRowSums(
+    const LINALG::SparseMatrix&          matrix,      //!< matrix
+    const Teuchos::RCP<Epetra_Vector>&   invrowsums   //!< inverse sums of absolute values of row entries in matrix
+    ) const
+{
+  // compute inverse row sums of matrix
+  if(matrix.EpetraMatrix()->InvRowSums(*invrowsums))
+    dserror("Inverse row sums of matrix could not be successfully computed!");
+
+  return;
+} // POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::ComputeInvRowSums
+
+/*----------------------------------------------------------------------*
+ | equilibrate matrix rows                             kremheller 08/17 |
+ | (copy from sti_algorithm.cpp)                                        |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::EquilibrateMatrixRows(
+    LINALG::SparseMatrix&                matrix,      //!< matrix
+    const Teuchos::RCP<Epetra_Vector>&   invrowsums   //!< sums of absolute values of row entries in matrix
+    ) const
+{
+  if(matrix.LeftScale(*invrowsums))
+    dserror("Row equilibration of matrix failed!");
+
+  return;
+} // POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::EquilibrateMatrixRows
+
+/*----------------------------------------------------------------------*
  | Solve linear Poromultiphase-elasticity system     kremheller 06/17   |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::LinearSolve()
@@ -697,16 +930,16 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::LinearSolve()
   double dtcpu = timernewton_.WallTime();
   // *********** time measurement ***********
 
-  /*if (solveradapttol_ and (iter_ > 1))
+  if (solveradapttol_ and (itnum_ > 1))
   {
     double worst = normrhs_;
-    double wanted = tolfres_;
+    double wanted = ittolres_;
     solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
-  }*/
+  }
   iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
 
   // equilibrate global system of equations if necessary
-  //EquilibrateSystem(systemmatrix_,rhs_);
+  EquilibrateSystem();
 
   if(directsolve_)
   {
@@ -723,7 +956,14 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::LinearSolve()
                     );
   }
   else
-    dserror("only direct solvers work so far");
+  {
+    // standard solver call
+    solver_->Solve( systemmatrix_->EpetraOperator(),
+                    iterinc_, rhs_,
+                    true,
+                    itnum_==1
+                    );
+  }
 
   // *********** time measurement ***********
   dtsolve_ = timernewton_.WallTime() - dtcpu;
@@ -924,6 +1164,8 @@ Teuchos::RCP<const Epetra_Map> POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolit
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::PrintHeader()
 {
 
+  if(!solve_structure_)
+    PrintStructureDisabledInfo();
   if (Comm().MyPID()==0)
   {
     std::cout<<"+----------------------------------------------------------------------------------------------+" << std::endl;
@@ -935,6 +1177,22 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::PrintHeader()
         << std::setw(11) << std::setprecision(4) << std::scientific << Dt() <<
         "                            |"<< std::endl;
   }
+}
+
+/*----------------------------------------------------------------------*
+ | inform user that structure is not solved            kremheller 08/17 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::PrintStructureDisabledInfo()
+{
+  // print out Info
+  if (Comm().MyPID()==0 )
+  {
+    std::cout<<"\n";
+    std::cout<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
+    std::cout<<" INFO:    STRUCTURE FIELD IS NOT SOLVED; MAKE SURE YOU HAVE CONSTRAINED ALL DOFS IN YOUR STRUCTURE WITH A DBC\n";
+    std::cout<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
+  }
+
 }
 
 /*----------------------------------------------------------------------*

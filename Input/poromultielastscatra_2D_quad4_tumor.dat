@@ -27,13 +27,9 @@ NUMSTEP                         2 //1440
 MAXTIME                         432000  // 120 hours
 TIMESTEP                        300    // 300 5 mins
 COUPALGO                        twoway_partitioned
-NORM_INC                        AbsGlobal
-NORM_RESF                       AbsGlobal
-TOLRES_GLOBAL                   1e-03
-TOLINC_GLOBAL                   1e-03
-VECTORNORM_RESF                 L2
-VECTORNORM_INC                  L2
 SCATRATYPE                      PoroMultiReac
+--------------------------------------POROMULTIPHASESCATRA DYNAMIC/PARTITIONED
+CONVTOL                         1e-3
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 DYNAMICTYP                      OneStepTheta // OneStepTheta
@@ -56,8 +52,9 @@ FLUX_PROJ_SOLVER                2
 ---------------------------------------------POROMULTIPHASE DYNAMIC
 ITEMAX                          10
 COUPALGO                        twoway_partitioned
-LINEAR_SOLVER                   1
+-----------------------------------POROMULTIPHASE DYNAMIC/PARTITIONED
 CONVTOL                         1e-02
+RELAXATION                      none
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear

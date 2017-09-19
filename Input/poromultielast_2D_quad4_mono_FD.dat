@@ -42,6 +42,7 @@ TIMESTEP                        0.01
 RESULTSEVRY                     1
 ITEMAX                          10
 COUPALGO                        twoway_monolithic
+--------------------------POROMULTIPHASE DYNAMIC/MONOLITHIC
 LINEAR_SOLVER                   1
 TOLRES_GLOBAL                   1e-06
 TOLINC_GLOBAL                   1e-06

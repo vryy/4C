@@ -40,7 +40,7 @@ POROMULTIPHASE::PoroMultiPhaseBase::PoroMultiPhaseBase(
     AlgorithmBase(comm, globaltimeparams),
     structure_(Teuchos::null),
     fluid_(Teuchos::null),
-    zeros_(Teuchos::null),
+    struct_zeros_(Teuchos::null),
     solve_structure_(true)
 {
 
@@ -77,7 +77,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(
   structure_ = Teuchos::rcp_dynamic_cast< ::ADAPTER::Structure>(adapterbase->StructureField());
 
   // initialize zero vector for convenience
-  zeros_ = LINALG::CreateVector(*structure_->DofRowMap(), true);
+  struct_zeros_ = LINALG::CreateVector(*structure_->DofRowMap(), true);
   // do we also solve the structure, this is helpful in case of fluid-scatra coupling without mesh deformation
   solve_structure_ = DRT::INPUT::IntegralValue<int>(algoparams,"SOLVE_STRUCTURE");
 
@@ -195,7 +195,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::PrepareTimeLoop()
     // Inform user that structure field has been disabled
     PrintStructureDisabledInfo();
     // just set displacements and velocities to zero
-    SetStructSolution(zeros_,zeros_);
+    SetStructSolution(struct_zeros_,struct_zeros_);
   }
   FluidField()->PrepareTimeLoop();
 
@@ -218,7 +218,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::PrepareTimeStep()
     SetStructSolution(StructureField()->Dispnp(),StructureField()->Velnp());
   }
   else
-    SetStructSolution(zeros_,zeros_);
+    SetStructSolution(struct_zeros_,struct_zeros_);
 
   FluidField()->PrepareTimeStep();
 }

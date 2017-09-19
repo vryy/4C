@@ -284,7 +284,11 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--POROSCATRA CONTROL", *list);
   reader.ReadGidSection("--POROFLUIDMULTIPHASE DYNAMIC", *list);
   reader.ReadGidSection("--POROMULTIPHASE DYNAMIC", *list);
+  reader.ReadGidSection("--POROMULTIPHASE DYNAMIC/PARTITIONED", *list);
+  reader.ReadGidSection("--POROMULTIPHASE DYNAMIC/MONOLITHIC", *list);
   reader.ReadGidSection("--POROMULTIPHASESCATRA DYNAMIC", *list);
+  reader.ReadGidSection("--POROMULTIPHASESCATRA DYNAMIC/PARTITIONED", *list);
+  reader.ReadGidSection("--POROMULTIPHASESCATRA DYNAMIC/MONOLITHIC", *list);
   reader.ReadGidSection("--ELASTO HYDRO DYNAMIC", *list);
   reader.ReadGidSection("--ELASTO HYDRO DYNAMIC/PARTITIONED", *list);
   reader.ReadGidSection("--ELASTO HYDRO DYNAMIC/MONOLITHIC", *list);

@@ -27,13 +27,12 @@ MAXTIME                         0.2
 TIMESTEP                        0.01
 ITEMAX                          10
 COUPALGO                        twoway_monolithic
-NORM_INC                        AbsGlobal
-NORM_RESF                       AbsGlobal
+SCATRATYPE                      PoroMultiReac
+---------------------------------POROMULTIPHASESCATRA DYNAMIC/MONOLITHIC
 TOLRES_GLOBAL                   1e-08
 TOLINC_GLOBAL                   1e-08
 VECTORNORM_RESF                 L2
 VECTORNORM_INC                  L2
-SCATRATYPE                      PoroMultiReac
 LINEAR_SOLVER                   1
 FDCHECK                         global
 ----------------------------------------------------------STRUCTURAL DYNAMIC
@@ -54,8 +53,6 @@ FLUX_PROJ_SOLVER                2
 ---------------------------------------------POROMULTIPHASE DYNAMIC
 ITEMAX                          10
 COUPALGO                        twoway_monolithic
-LINEAR_SOLVER                   1
-CONVTOL                         1e-06
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear

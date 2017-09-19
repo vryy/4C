@@ -61,7 +61,7 @@ namespace POROMULTIPHASE
         int ndsporofluid_scatra) =0;
 
     /// read restart
-    void ReadRestart( int restart );
+    virtual void ReadRestart( int restart );
 
     /// test results (if necessary)
     void CreateFieldTest();
@@ -82,7 +82,7 @@ namespace POROMULTIPHASE
     void PrepareTimeStep();
 
     //! update fields after convergence
-    void UpdateAndOutput();
+    virtual void UpdateAndOutput();
 
     /// dof map of vector of unknowns of structure field
     virtual Teuchos::RCP<const Epetra_Map> StructDofRowMap() const;
@@ -134,6 +134,10 @@ namespace POROMULTIPHASE
     virtual Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const
         {dserror("CombinedDBCMap() only available for monolithic schemes!"); return Teuchos::null;};
 
+    //! build the block null spaces
+    virtual void BuildBlockNullSpaces(Teuchos::RCP<LINALG::Solver>& solver)
+    {dserror("BuildBlockNullSpaces() only available for monolithic schemes!"); return;};
+
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
     virtual void Evaluate(
         Teuchos::RCP<const Epetra_Vector> sx,
@@ -178,7 +182,7 @@ namespace POROMULTIPHASE
   protected:
 
     /// a zero vector of full length of structure dofs
-    Teuchos::RCP<Epetra_Vector> zeros_;
+    Teuchos::RCP<Epetra_Vector> struct_zeros_;
     //! here the computation of the structure can be skipped, this is helpful if only fluid-scatra coupling should be calculated
     bool solve_structure_;
 

@@ -78,7 +78,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::Init(
 
   // read input variables
   itmax_ = algoparams.get<int>("ITEMAX");
-  ittol_ = algoparams.get<double>("TOLINC_GLOBAL");
+  ittol_ = algoparams.sublist("PARTITIONED").get<double>("CONVTOL");
 
   // initialize increment vectors
   scaincnp_    = Teuchos::rcp(new Epetra_Vector(*(ScatraAlgo()->ScaTraField()->Discretization()->DofRowMap())));

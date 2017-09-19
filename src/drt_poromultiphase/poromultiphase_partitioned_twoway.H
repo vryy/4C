@@ -17,6 +17,8 @@
 
 #include "poromultiphase_partitioned.H"
 
+#include "../drt_inpar/inpar_poromultiphase.H"
+
 namespace POROMULTIPHASE
 {
 
@@ -53,6 +55,12 @@ namespace POROMULTIPHASE
     /// time step of coupled problem
     virtual void TimeStep() {OuterLoop();};
 
+    /// read restart
+    virtual void ReadRestart( int restart );
+
+    // update
+    virtual void UpdateAndOutput();
+
   private:
 
     //! perform iteration loop between fields
@@ -71,17 +79,48 @@ namespace POROMULTIPHASE
     //! convergence check of outer loop
     virtual bool ConvergenceCheck(int itnum);
 
+    //! calculate relaxation parameter omega
+    virtual void CalcOmega(Teuchos::RCP<const Epetra_Vector> phi);
+
+    /// set (relaxed) solid pressure on structure field
+    void SetRelaxedSolidPressure(const double omega) ;
+
+    /// perform aitken
+    void AitkenRelaxation(double& omega) ;
+
     //! pressure increment of the outer loop
     Teuchos::RCP<Epetra_Vector> phiincnp_;
     //! displacement increment of the outer loop
     Teuchos::RCP<Epetra_Vector> dispincnp_;
 
+    //! solid pressure at time n+1, iteration i+1
+    Teuchos::RCP<Epetra_Vector> solidpressurenp_;
+    //! solid pressure at time n+1, iteration i
+    Teuchos::RCP<Epetra_Vector> solidpressureoldnp_;
+    //! solide pressure increment: p_s,n+1^i+1 - p_s,n+1^i
+    Teuchos::RCP<Epetra_Vector> solidpressureincnp_;
+    //! solide pressure increment: p_s,n+1^i+1 - p_s,n+1^i
+    Teuchos::RCP<Epetra_Vector> solidpressureincnpold_;
+
     //! convergence tolerance
     double ittol_;
+    //! relaxation parameter
+    double omega_;
+    //! start value for relaxation parameter (or constant value)
+    double startomega_;
+    //! minimum value for relaxation parameter
+    double omegamin_;
+    //! maximum value for relaxation parameter
+    double omegamax_;
     //! maximum iteration steps
     int itmax_;
     //! current iteration step
     int itnum_;
+    //! write restart every n steps
+    int writerestartevery_;
+
+    //! relaxation method
+    INPAR::POROMULTIPHASE::RelaxationMethods relaxationmethod_;
 
   }; //PoroMultiPhasePartitioned
 

@@ -151,6 +151,9 @@ namespace POROMULTIPHASE
     //Setup solver for monolithic system
     virtual bool SetupSolver();
 
+    //! build the block null spaces
+    virtual void BuildBlockNullSpaces(Teuchos::RCP<LINALG::Solver>& solver);
+
     //! Evaluate mechanical-fluid system matrix
     virtual void ApplyStrCouplMatrix(Teuchos::RCP<LINALG::SparseOperator> k_sf //!< mechanical-fluid stiffness matrix
         );
@@ -172,6 +175,24 @@ namespace POROMULTIPHASE
     //! Solve the linear system of equations
     void LinearSolve();
 
+    //! equilibrate the system of equations
+    void EquilibrateSystem();
+
+    //! equilibrate matrix rows
+    void EquilibrateMatrixRows(
+        LINALG::SparseMatrix&                matrix,      //!< matrix
+        const Teuchos::RCP<Epetra_Vector>&   invrowsums   //!< sums of absolute values of row entries in matrix
+        ) const;
+
+    //! compute inverse sums of absolute values of matrix row entries
+    void ComputeInvRowSums(
+        const LINALG::SparseMatrix&          matrix,      //!< matrix
+        const Teuchos::RCP<Epetra_Vector>&   invrowsums   //!< inverse sums of absolute values of row entries in matrix
+        ) const;
+
+    //! Create the linear solver
+    void CreateLinearSolver(const Teuchos::ParameterList& solverparams,const int solvertype);
+
     //! Setup Newton-Raphson
     void SetupNewton();
 
@@ -188,6 +209,9 @@ namespace POROMULTIPHASE
 
     // check for convergence
     bool Converged();
+
+    /// Print user output that structure field is disabled
+    void PrintStructureDisabledInfo() ;
 
 
     //! linear solver
@@ -211,6 +235,8 @@ namespace POROMULTIPHASE
     Teuchos::RCP<Epetra_Vector> rhs_; //!< rhs of Poroelasticity system
 
     Teuchos::RCP<LINALG::Solver> solver_;   //!< linear algebraic solver
+    double solveradaptolbetter_;            //!< tolerance to which is adpated ?
+    bool solveradapttol_;                   //!< adapt solver tolerance
 
 
     //@}
@@ -232,6 +258,12 @@ namespace POROMULTIPHASE
 
     //! dof row map splitted in (field) blocks
     Teuchos::RCP<LINALG::MultiMapExtractor> blockrowdofmap_;
+
+    //! flag for equilibration of global system of equations
+    INPAR::POROMULTIPHASE::EquilibrationMethods equilibration_;
+
+    //! inverse sums of absolute values of row entries in global system matrix
+    Teuchos::RCP<Epetra_Vector> invrowsums_;
 
     //! dirichlet map of monolithic system
     Teuchos::RCP<Epetra_Map> combinedDBCMap_;

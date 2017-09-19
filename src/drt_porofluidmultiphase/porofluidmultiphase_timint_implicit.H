@@ -192,7 +192,7 @@ public:
   Teuchos::RCP<const Epetra_Vector> RHS() const { return residual_; }
 
   //! return discretization
-  Teuchos::RCP<const DRT::Discretization> Discretization() const { return discret_; }
+  Teuchos::RCP<DRT::Discretization> Discretization() const { return discret_; }
 
   //! access dof row map
   Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) const;

@@ -18,6 +18,7 @@
 #include "../drt_adapter/ad_str_wrapper.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_io/io.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                              vuong 08/16 |
@@ -28,9 +29,18 @@ POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::PoroMultiPhasePartitionedTwoWay
     PoroMultiPhasePartitioned(comm, globaltimeparams),
     phiincnp_(Teuchos::null),
     dispincnp_(Teuchos::null),
+    solidpressurenp_(Teuchos::null),
+    solidpressureoldnp_(Teuchos::null),
+    solidpressureincnp_(Teuchos::null),
     ittol_(0.0),
+    omega_(1.0),
+    startomega_(1.0),
+    omegamin_(1.0),
+    omegamax_(1.0),
     itmax_(0),
-    itnum_(0)
+    itnum_(0),
+    writerestartevery_(-1),
+    relaxationmethod_(INPAR::POROMULTIPHASE::RelaxationMethods::relaxation_none)
 {
 
 }
@@ -69,9 +79,25 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::Init(
   phiincnp_ = LINALG::CreateVector(*FluidField()->DofRowMap(0),true);
   dispincnp_ = LINALG::CreateVector(*StructureField()->DofRowMap(0),true);
 
+  // initialize solid pressure vectors
+  solidpressurenp_ = LINALG::CreateVector(*FluidField()->Discretization()->DofRowMap(nds_solidpressure), true);
+  solidpressureoldnp_ = LINALG::CreateVector(*FluidField()->Discretization()->DofRowMap(nds_solidpressure), true);
+  solidpressureincnp_ = LINALG::CreateVector(*FluidField()->Discretization()->DofRowMap(nds_solidpressure), true);
+  solidpressureincnpold_ = LINALG::CreateVector(*FluidField()->Discretization()->DofRowMap(nds_solidpressure), true);
+
   // Get the parameters for the ConvergenceCheck
   itmax_ = algoparams.get<int>("ITEMAX");
-  ittol_ = algoparams.get<double>("CONVTOL");
+  ittol_ = algoparams.sublist("PARTITIONED").get<double>("CONVTOL");
+
+  // restart
+  writerestartevery_ = algoparams.get<int>("RESTARTEVRY");
+
+  // relaxation parameters
+  startomega_ = algoparams.sublist("PARTITIONED").get<double>("STARTOMEGA");
+  omegamin_ = algoparams.sublist("PARTITIONED").get<double>("MINOMEGA");
+  omegamax_ = algoparams.sublist("PARTITIONED").get<double>("MAXOMEGA");
+
+  relaxationmethod_ = DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASE::RelaxationMethods>(algoparams.sublist("PARTITIONED"),"RELAXATION");
 }
 
 /*----------------------------------------------------------------------*
@@ -79,6 +105,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::Init(
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::SetupSystem()
 {
+  // Do nothing, just monolithic coupling needs this method
   return;
 }
 
@@ -115,7 +142,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::OuterLoop()
 
     if(solve_structure_)
     {
-      // 1.) solve structural system
+      // 1.) solve structural system, note: in first iteration solid pressure has already been set in PrepareTimeStep()
       DoStructStep();
       // 2.) set disp and vel states in porofluid field
       SetStructSolution(StructureField()->Dispnp(),StructureField()->Velnp());
@@ -125,14 +152,17 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::OuterLoop()
       // Inform user that structure field has been disabled
       PrintStructureDisabledInfo();
       // just set displacements and velocities to zero
-      SetStructSolution(zeros_,zeros_);
+      SetStructSolution(struct_zeros_,struct_zeros_);
     }
 
     // 1.) solve scalar transport equation
     DoFluidStep();
 
+    // get relaxation parameter
+    CalcOmega(FluidField()->SolidPressure());
+
     // 2.) set solid pressure state in structure field
-    SetSolidPressure(FluidField()->SolidPressure());
+    SetRelaxedSolidPressure(omega_);
 
     // check convergence for all fields
     // stop iteration loop if converged
@@ -263,6 +293,120 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::DoFluidStep()
 }
 
 /*----------------------------------------------------------------------*
+ | Set relaxed solid pressure on structure             kremheller 09/16 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::SetRelaxedSolidPressure(
+    const double omega)
+{
+  // calculate the relaxed solid pressure as p_s,n+1^i+1 = p_s,n+1^i + \omega*(p_s,n+1^i+1 - p_s,n+1^i)
+  // note: in first iteration step, omega = 1.0
+  solidpressurenp_->Update(1.0,*solidpressureoldnp_,omega,*solidpressureincnp_,0.0);
+
+  // save the old solid pressure vector
+  solidpressureoldnp_->Update(1.0,*solidpressurenp_,0.0);
+
+  // set solid pressure on structure
+  SetSolidPressure(solidpressurenp_);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | Calculate relaxation parameter omega                kremheller 09/16 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::CalcOmega(
+    Teuchos::RCP<const Epetra_Vector> phi
+    )
+{
+  // get the increment vector
+  solidpressureincnp_->Update(1.0,*phi,-1.0,*solidpressureoldnp_,0.0);
+
+  // perform relaxation
+  switch(relaxationmethod_)
+  {
+    case INPAR::POROMULTIPHASE::RelaxationMethods::relaxation_none:
+    {
+      // no relaxation
+      omega_ = 1.0;
+      break;
+    }
+
+    case INPAR::POROMULTIPHASE::RelaxationMethods::relaxation_constant:
+    {
+      // constant relaxation parameter omega
+      omega_ = startomega_;
+      if (Comm().MyPID()==0)
+        std::cout << "Fixed relaxation parameter omega is: " << omega_ << std::endl;
+      break;
+    }
+
+    case INPAR::POROMULTIPHASE::RelaxationMethods::relaxation_aitken:
+    {
+      // Aitken
+      AitkenRelaxation(omega_);
+      if (Comm().MyPID()==0)
+        std::cout << "Aitken relaxation parameter omega is: " << omega_ << std::endl;
+      break;
+    }
+
+    default:
+    {
+      dserror("Relaxation method not yet implemented!");
+      break;
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | Perform Aitken relaxation                           kremheller 09/16 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::AitkenRelaxation(
+    double&                              omega)
+{
+
+  const int nds_solidpressure = FluidField()->GetDofSetNumberOfSolidPressure();
+  // solidpressureincnpdiff =  r^{i+1}_{n+1} - r^i_{n+1}
+  Teuchos::RCP<Epetra_Vector> solidpressureincnpdiff = LINALG::CreateVector(*FluidField()->Discretization()->DofRowMap(nds_solidpressure), true);
+  solidpressureincnpdiff->Update(1.0,*solidpressureincnp_,(-1.0),*solidpressureincnpold_,0.0);
+
+  double solidpressureincnpdiffnorm = 0.0;
+  solidpressureincnpdiff->Norm2(&solidpressureincnpdiffnorm);
+
+  if (solidpressureincnpdiffnorm <=1e-06 and Comm().MyPID()==0)
+    std::cout<<"Warning: The scalar increment is too small in order to use it for Aitken relaxation. Using the previous omega instead!"<<std::endl;
+
+  // calculate dot product
+  double solidpressureincsdot = 0.0; //delsdot = ( r^{i+1}_{n+1} - r^i_{n+1} )^T . r^{i+1}_{n+1}
+  solidpressureincnpdiff->Dot(*solidpressureincnp_,&solidpressureincsdot);
+
+  if (itnum_ != 1 and solidpressureincnpdiffnorm > 1e-06)
+  {
+    // relaxation parameter
+    // omega^{i+1} = 1- mu^{i+1} and nu^{i+1} = nu^i + (nu^i -1) . (r^{i+1} - r^i)^T . (-r^{i+1}) / |r^{i+1} - r^{i}|^2 results in
+    omega = omega * (1.0 - (solidpressureincsdot)/(solidpressureincnpdiffnorm * solidpressureincnpdiffnorm)); //compare e.g. PhD thesis U. Kuettler
+
+    // we force omega to be in the range defined in the input file
+    if (omega < omegamin_)
+    {
+      if (Comm().MyPID()==0)
+        std::cout<<"Warning: The calculation of the relaxation parameter omega via Aitken did lead to a value smaller than MINOMEGA!"<<std::endl;
+      omega= omegamin_;
+    }
+    if (omega > omegamax_)
+    {
+      if (Comm().MyPID()==0)
+        std::cout<<"Warning: The calculation of the relaxation parameter omega via Aitken did lead to a value bigger than MAXOMEGA!"<<std::endl;
+      omega= omegamax_;
+    }
+  }
+
+  // update history vector old increment r^i_{n+1}
+  solidpressureincnpold_->Update(1.0,*solidpressureincnp_,0.0);
+}
+
+/*----------------------------------------------------------------------*
  | update the current states in every iteration             vuong 08/16 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::IterUpdateStates()
@@ -275,3 +419,44 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::IterUpdateStates()
 
   return;
 }  // IterUpdateStates()
+
+/*-------------------------------------------------------------------------*
+ | read restart information for given time step (public) kremheller 09/17  |
+ *-------------------------------------------------------------------------*/
+void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::ReadRestart( int restart )
+{
+  if (restart)
+  {
+    // call base class
+    POROMULTIPHASE::PoroMultiPhaseBase::ReadRestart(restart);
+
+    IO::DiscretizationReader reader(FluidField()->Discretization(), restart);
+    if (restart != reader.ReadInt("step"))
+      dserror("Time step on file not equal to given step");
+
+    // get omega_ from restart
+    omega_ = reader.ReadDouble("omega_");
+
+    // get omega_ from restart
+    reader.ReadVector(solidpressureoldnp_,"solidpressureoldnp_");
+  }
+
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | update fields and output results                    kremheller 09/17 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::UpdateAndOutput()
+{
+  // call base class
+  POROMULTIPHASE::PoroMultiPhaseBase::UpdateAndOutput();
+
+  // write interface force and relaxation parameter in restart
+  if (writerestartevery_ and Step() % writerestartevery_ == 0)
+  {
+    FluidField()->Discretization()->Writer()->WriteDouble("omega_",omega_);
+    FluidField()->Discretization()->Writer()->WriteVector("solidpressureoldnp_",solidpressureoldnp_);
+  }
+}

@@ -93,6 +93,12 @@ namespace POROMULTIPHASESCATRA
     //! build the combined dirichletbcmap
     void BuildCombinedDBCMap();
 
+    //! build the block null spaces
+    void BuildBlockNullSpaces();
+
+    //! create the linear solver
+    void CreateLinearSolver(const Teuchos::ParameterList& solverparams, const int solvertype);
+
     //! full monolithic dof row map
     Teuchos::RCP<const Epetra_Map> DofRowMap();
 
@@ -129,6 +135,21 @@ namespace POROMULTIPHASESCATRA
     //! solve linear system of equations
     void LinearSolve();
 
+    //! equilibrate the system of equations
+    void EquilibrateSystem();
+
+    //! equilibrate matrix rows
+    void EquilibrateMatrixRows(
+        LINALG::SparseMatrix&                matrix,      //!< matrix
+        const Teuchos::RCP<Epetra_Vector>&   invrowsums   //!< sums of absolute values of row entries in matrix
+        ) const;
+
+    //! compute inverse sums of absolute values of matrix row entries
+    void ComputeInvRowSums(
+        const LINALG::SparseMatrix&          matrix,      //!< matrix
+        const Teuchos::RCP<Epetra_Vector>&   invrowsums   //!< inverse sums of absolute values of row entries in matrix
+        ) const;
+
     //! convergence check
     bool Converged();
 
@@ -162,6 +183,9 @@ namespace POROMULTIPHASESCATRA
     //! evaluate scatra-porofluid coupling sparse matrix
     void ApplyScatraPoroFluidCouplMatrix(Teuchos::RCP< LINALG::SparseOperator> k_spf);
 
+    // update the single fields after convergence
+    void PrintStructureDisabledInfo();
+
     //! FD-Check
     void PoroMultiPhaseScaTraFDCheck();
 
@@ -184,6 +208,12 @@ namespace POROMULTIPHASESCATRA
     //! dof row map splitted in (field) blocks
     Teuchos::RCP<LINALG::MultiMapExtractor> blockrowdofmap_;
 
+    //! flag for equilibration of global system of equations
+    INPAR::POROMULTIPHASESCATRA::EquilibrationMethods equilibration_;
+
+    //! inverse sums of absolute values of row entries in global system matrix
+    Teuchos::RCP<Epetra_Vector> invrowsums_;
+
     //! dirichlet map of monolithic system
     Teuchos::RCP<Epetra_Map> combinedDBCMap_;
 
@@ -196,6 +226,11 @@ namespace POROMULTIPHASESCATRA
     Teuchos::RCP<Epetra_Vector> rhs_; //!< rhs of struct-fluid-scatra system
 
     Teuchos::RCP<LINALG::Solver> solver_;   //!< linear algebraic solver
+    double solveradaptolbetter_;            //!< tolerance to which is adpated ?
+    bool solveradapttol_;                   //!< adapt solver tolerance
+
+    // do we solve the structure?
+    bool solve_structure_;
 
     //! block systemmatrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;

@@ -28,14 +28,13 @@ NUMSTEP                         10 // 4320
 MAXTIME                         3000 //1296000  // 180 hours
 TIMESTEP                        300  //  5 mins
 COUPALGO                        twoway_monolithic
-NORM_INC                        AbsGlobal
-NORM_RESF                       AbsGlobal
+SCATRATYPE                      PoroMultiReac
+------------------------------------------POROMULTIPHASESCATRA DYNAMIC/MONOLITHIC
 TOLRES_GLOBAL                   1e-08
 TOLINC_GLOBAL                   1e-08
-VECTORNORM_RESF                 L2
-VECTORNORM_INC                  L2
-SCATRATYPE                      PoroMultiReac
-LINEAR_SOLVER                   1
+LINEAR_SOLVER                   2
+EQUILIBRATION                   rows_maindiag
+ADAPTCONV                       yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 DYNAMICTYP                      OneStepTheta // OneStepTheta
@@ -60,9 +59,7 @@ FLUX_PROJ_SOLVER                2
 ---------------------------------------------POROMULTIPHASE DYNAMIC
 ITEMAX                          20
 COUPALGO                        twoway_monolithic
-LINEAR_SOLVER                   1
-CONVTOL                         1e-06
-SOLVE_STRUCTURE                 yes
+SOLVE_STRUCTURE                 no
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
@@ -90,6 +87,13 @@ ABSTOLRES                       -1
 --------------------------------------------------------------------SOLVER 1
 NAME                            solver
 SOLVER                          UMFPACK                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+--------------------------------------------------------------------SOLVER 2
+NAME                            iterative_poromultiphasescatra_solver
+SOLVER                          Aztec_MSR
+AZOUTPUT                        10                             // output every so often, 0 no output
+AZPREC                          AMGnxn
+AMGNXN_TYPE                     XML
+AMGNXN_XML_FILE                 poromultielastscatra_3D_hex8_mono_tumor_BGS-AMG_3x3.xml
 -------------------------------------------------------------------MATERIALS
 MAT 2 MAT_FluidPoroMultiPhaseReactions LOCAL No PERMEABILITY 1.82e-9 NUMMAT 3 MATIDS 10 11 12 NUMREAC 1 REACIDS 20 END
 // 1 = healthy
@@ -184,7 +188,7 @@ DSURF  1
 E 2 - NUMDOF 2 ONOFF 1 1 VAL 4.2e-6 0.0 FUNCT 0 0
 ---------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL  1
-// surface_out
+// all_nodes
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 --------------------------------DESIGN SURF PORO DIRICH CONDITIONS
 DSURF  1
