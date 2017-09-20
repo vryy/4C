@@ -109,6 +109,12 @@ public:
       Teuchos::RCP<Epetra_Vector>& activevec
       );
 
+  void ExportActivetoInitialVector(
+      Teuchos::RCP<const Epetra_Vector> activevec,
+      Teuchos::RCP< Epetra_Vector> initialvec
+      );
+
+
 
   /*!
   \brief Get the gid of all initial dofs of a node.

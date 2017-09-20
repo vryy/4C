@@ -150,6 +150,20 @@ void DRT::DiscretizationXFEM::ExportInitialtoActiveVector(
   LINALG::Export(*fullvec,*activevec);
 }
 
+/*------------------------------------------------------------------------------*
+ * Export Vector with initialdofrowmap (all nodes have one dofset) - to Vector  |
+* with all active dofs (public)                                       ager 11/14|
+ *  *---------------------------------------------------------------------------*/
+void DRT::DiscretizationXFEM::ExportActivetoInitialVector(
+    Teuchos::RCP<const Epetra_Vector> activevec,
+    Teuchos::RCP< Epetra_Vector> initialvec)
+{
+  // Is the discretization initialized?
+  Initialized();
+
+  LINALG::Export(*activevec,*initialvec);
+}
+
 /*----------------------------------------------------------------------*
  |  get dof row map (public)                                 ager 11/14 |
  *----------------------------------------------------------------------*/
