@@ -126,6 +126,12 @@ void GmshCycleDump( std::ofstream & file, Cycle* cycle, const std::string& visua
 void GmshCompleteCutElement( std::ofstream & file, Element * ele,bool to_local = false);
 
 /*!
+\brief Write output of a coord as point with idx
+ */
+void GmshCoordDump( std::ofstream & file, LINALG::Matrix<3,1> coord, int idx, bool to_local = false, Element* ele = NULL);
+
+
+/*!
 \brief Write output of a line
  */
 void GmshLineDump( std::ofstream & file, GEO::CUT::Point* p1, GEO::CUT::Point* p2,

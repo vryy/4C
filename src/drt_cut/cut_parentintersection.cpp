@@ -149,12 +149,16 @@ void GEO::CUT::ParentIntersection::CreateNodalDofSet( bool include_inner, const 
 
       if(strategy == INPAR::CUT::NDS_Strategy_OneDofset_PerNodeAndPosition)
       {
-
-        /* combine the (ghost) dofsets for this node w.r.t each phase to avoid
+        /* combine the (ghost and standard) dofsets for this node w.r.t each phase to avoid
          * multiple ghost nodal dofsets for a certain phase */
-        n->CollectNodalDofSets();
-
+        n->CollectNodalDofSets(true);
       } // otherwise do nothing
+      else if(strategy == INPAR::CUT::NDS_Strategy_ConnectGhostDofsets_PerNodeAndPosition)
+      {
+        /* combine the only the ghost dofsets for this node w.r.t each phase to avoid
+         * multiple ghost nodal dofsets for a certain phase */
+        n->CollectNodalDofSets(false);
+      }
 
     } // end if n_gid >= 0
   } // end loop over nodes

@@ -87,7 +87,7 @@ REYNOLDS-STRESS                 no_reynolds
 EOS_PRES                        std_eos
 EOS_CONV_STREAM                 std_eos
 ----------------------------------------------------------------XFEM GENERAL
-NODAL_DOFSET_STRATEGY           OneDofset_PerNodeAndPosition
+NODAL_DOFSET_STRATEGY           ConnectGhostDofsets_PerNodeAndPosition
 MAX_NUM_DOFSETS                 2
 GMSH_DEBUG_OUT                  No
 VOLUME_GAUSS_POINTS_BY          DirectDivergence

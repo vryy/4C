@@ -702,6 +702,18 @@ void GEO::CUT::OUTPUT::GmshLevelSetValueDump( std::ofstream & file, Element * el
 }
 
 /*--------------------------------------------------------------------------------------*
+ * Write GMSH output of given coord as point                                   ager 02/17
+ *--------------------------------------------------------------------------------------*/
+void GEO::CUT::OUTPUT::GmshCoordDump( std::ofstream & file, LINALG::Matrix<3,1> coord, int idx, bool to_local, Element* ele)
+{
+  file << "SP (";
+  GmshWriteCoords( file, coord, to_local, ele);
+  file << "){";
+  file << idx;
+  file << "};\n";
+}
+
+/*--------------------------------------------------------------------------------------*
  * Write Level Set Values for given Element
  *
  * The LS-value written at the midpoint of the facets and if the facet is triangulated,

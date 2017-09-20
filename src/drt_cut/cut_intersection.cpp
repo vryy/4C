@@ -739,7 +739,7 @@ bool GEO::CUT::Intersection<probdim,edgetype,sidetype,debug,dimedge,dimside,
           e->BeginNode()->point()->Print(std::cout);
           e->EndNode()->point()->Print(std::cout);
         }
-        dserror("Two Edges have more than two cutpoint, sounds strange!");
+        throw std::runtime_error("Two Edges have more than two cutpoint, sounds strange!");
       }
       if (debug)
       {

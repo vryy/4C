@@ -116,10 +116,18 @@ public:
   };
 
   /// add a nodal dofset to the composite of nodal dofsets
-  void add(Teuchos::RCP<NodalDofSet> nds)
+  void add(Teuchos::RCP<NodalDofSet> nds, bool allow_connect_std_and_ghost_sets)
   {
-    if( is_std_dofset_ != nds->Is_Standard_DofSet() or position_ != nds->Position() )
-      dserror("NodalDofSet you want to combine to a CompositeNodalDofSet do not have the same properties! Invalid!");
+    if(allow_connect_std_and_ghost_sets)
+    {
+      if( position_ != nds->Position() )
+        dserror("NodalDofSet you want to combine to a CompositeNodalDofSet do not have the same position! Invalid!");
+    }
+    else // require same type of dofsets: std/ghost
+    {
+      if( is_std_dofset_ != nds->Is_Standard_DofSet() or position_ != nds->Position() )
+        dserror("NodalDofSet you want to combine to a CompositeNodalDofSet do not have the same properties! Invalid!");
+    }
 
     nodal_dofsets_.push_back(nds);
 
@@ -299,7 +307,7 @@ public:
   void SortNodalDofSets();
 
   /// collect the (ghost) dofsets for this node w.r.t each phase to avoid multiple ghost nodal dofsets for a certain phase
-  void CollectNodalDofSets();
+  void CollectNodalDofSets( bool connect_ghost_with_standard_nds );
 
   /// compare operator for sorting NodalDofSets
   bool operator()( NodalDofSet* nodaldofset1, NodalDofSet* nodaldofset2);

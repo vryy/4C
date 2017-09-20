@@ -52,7 +52,8 @@ namespace INPAR
 
   enum NodalDofSetStrategy
   {
-    NDS_Strategy_OneDofset_PerNodeAndPosition,  ///< suppress multiple dofset per node and allow just one dofset per node and per dofset position
+    NDS_Strategy_OneDofset_PerNodeAndPosition,  ///< suppress multiple dofset per node and allow just one dofset per node and per dofset position (connect std and ghost sets)
+    NDS_Strategy_ConnectGhostDofsets_PerNodeAndPosition,  ///< suppress multiple ghost dofsets per node and allow just one dofset per node and per dofset position (connect only ghost sets, one std and one ghost dofsets possible)
     NDS_Strategy_full                           ///< full strategy based on found connections of volume-cells in support of the nodal shape function
   };
 

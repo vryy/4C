@@ -267,7 +267,7 @@ FLD::XFluidOutputServiceGmsh::XFluidOutputServiceGmsh(
   const bool include_inner
 ) : XFluidOutputService(discret, cond_manager),
   gmsh_sol_out_          ((bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_SOL_OUT")),
-  gmsh_ref_sol_out_      (false),
+  gmsh_ref_sol_out_      ((bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_TIMINT_OUT")),
   gmsh_debug_out_        ((bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DEBUG_OUT")),
   gmsh_debug_out_screen_ ((bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DEBUG_OUT_SCREEN")),
   gmsh_EOS_out_          ((bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_EOS_OUT")),
@@ -287,7 +287,7 @@ void FLD::XFluidOutputServiceGmsh::GmshSolutionOutput(
   int count                                   ///< counter (no counter for standard solution output : -1)
 )
 {
-  if (!gmsh_sol_out_ && !gmsh_ref_sol_out_)
+  if (!gmsh_sol_out_)
     return;
 
   Teuchos::RCP<const Epetra_Vector> output_col_vel = DRT::UTILS::GetColVersionOfRowVector(discret_,state->Velnp());
@@ -312,7 +312,7 @@ void FLD::XFluidOutputServiceGmsh::GmshSolutionOutputPrevious(
   int count
 )
 {
-  if (!gmsh_sol_out_ && !gmsh_ref_sol_out_)
+  if (!gmsh_ref_sol_out_)
     return;
 
   Teuchos::RCP<const Epetra_Vector> output_col_vel = DRT::UTILS::GetColVersionOfRowVector(discret_,state->Veln());

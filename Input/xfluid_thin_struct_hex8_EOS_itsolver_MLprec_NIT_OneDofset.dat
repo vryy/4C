@@ -84,7 +84,7 @@ GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
 VOLUME_GAUSS_POINTS_BY          Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
-NODAL_DOFSET_STRATEGY           OneDofset_PerNodeAndPosition
+NODAL_DOFSET_STRATEGY           ConnectGhostDofsets_PerNodeAndPosition
 MAX_NUM_DOFSETS                 2
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION

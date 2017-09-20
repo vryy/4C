@@ -44,6 +44,8 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                  yesnotuple,yesnovalue,&xfem_general);
   setStringToIntegralParameter<int>("GMSH_SOL_OUT","No","Do you want to write extended Gmsh output for each timestep?",
                                yesnotuple,yesnovalue,&xfem_general);
+  setStringToIntegralParameter<int>("GMSH_TIMINT_OUT","No","Do you want to write extended Gmsh output for each timestep?",
+                               yesnotuple,yesnovalue,&xfem_general);
   setStringToIntegralParameter<int>("GMSH_EOS_OUT","No","Do you want to write extended Gmsh output for each timestep?",
                                yesnotuple,yesnovalue,&xfem_general);
   setStringToIntegralParameter<int>("GMSH_DISCRET_OUT","No","Do you want to write extended Gmsh output for each timestep?",
@@ -56,9 +58,10 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
 
   setStringToIntegralParameter<int>("NODAL_DOFSET_STRATEGY","full","which strategy used for the nodal dofset management per node?",
-                                 tuple<std::string>("OneDofset_PerNodeAndPosition","full"),
+                                 tuple<std::string>("OneDofset_PerNodeAndPosition","ConnectGhostDofsets_PerNodeAndPosition","full"),
                                  tuple<int>(
                                      INPAR::CUT::NDS_Strategy_OneDofset_PerNodeAndPosition,
+                                     INPAR::CUT::NDS_Strategy_ConnectGhostDofsets_PerNodeAndPosition,
                                      INPAR::CUT::NDS_Strategy_full
                                      ),
                                  &xfem_general);

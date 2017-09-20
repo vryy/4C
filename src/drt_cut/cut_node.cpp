@@ -559,7 +559,9 @@ void GEO::CUT::Node::SortNodalDofSets()
 /*-----------------------------------------------------------------------------------------*
  * collect the (ghost) dofsets for this node w.r.t each phase to avoid multiple ghost nodal dofsets for a certain phase
  *-----------------------------------------------------------------------------------------*/
-void GEO::CUT::Node::CollectNodalDofSets()
+void GEO::CUT::Node::CollectNodalDofSets(
+    bool connect_ghost_with_standard_nds
+)
 {
   //TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- CollectNodalDofSets" );
 
@@ -587,7 +589,6 @@ void GEO::CUT::Node::CollectNodalDofSets()
     }
     else // ghost set -> create new collected set or append to an already existing one
     {
-
       if( collected_nodaldofsets.size() == 0 ) // no composite added yet
       {
         cnds = Teuchos::rcp(new GEO::CUT::CompositeNodalDofSet(is_std_dofset, pos)); // if first, then create a new composite
@@ -599,19 +600,34 @@ void GEO::CUT::Node::CollectNodalDofSets()
         // then we potentially combine the current nodal dofset with the last CompositeNodalDofSet
         // at most
         Teuchos::RCP<CompositeNodalDofSet> cnds_last = collected_nodaldofsets.back();
+        if(cnds_last == Teuchos::null)
+          dserror("there should be a valid CompositeNodalDofSet");
 
-        if(cnds_last->Is_Standard_DofSet() == is_std_dofset and
-            cnds_last->Position() == pos) // same position (phase) and also ghost
-          cnds = cnds_last;
-        else
+        if(connect_ghost_with_standard_nds) // classical std-FEM based cut approximation -- combine ghost and std sets with same position
         {
-          cnds = Teuchos::rcp(new GEO::CUT::CompositeNodalDofSet(is_std_dofset, pos)); // if first, then create a new composite
-          collected_nodaldofsets.push_back(cnds);
+          if(cnds_last->Position() == pos) // FIX!!!! same position (phase) and combine also standard and ghost sets! Might change results!
+            cnds = cnds_last;
+          else // different position, then create a new one!
+          {
+            cnds = Teuchos::rcp(new GEO::CUT::CompositeNodalDofSet(is_std_dofset, pos)); // if first, then create a new composite
+            collected_nodaldofsets.push_back(cnds);
+          }
+        }
+        else // combine only ghost dofset with each other, do not combine std with ghost sets as usual in standard FEM
+        {
+          // is_std_dofset=false in this case
+          if(cnds_last->Is_Standard_DofSet() == is_std_dofset and cnds_last->Position() == pos) // same position (phase) and also ghost dofset
+            cnds = cnds_last;
+          else
+          {
+            cnds = Teuchos::rcp(new GEO::CUT::CompositeNodalDofSet(is_std_dofset, pos)); // if first, then create a new composite
+            collected_nodaldofsets.push_back(cnds);
+          }
         }
       }
     }
 
-    cnds->add(nds);
+    cnds->add(nds,connect_ghost_with_standard_nds);
   }
 
   // set the composite of nodal dofsets for the node
@@ -626,15 +642,18 @@ void GEO::CUT::Node::CollectNodalDofSets()
   // safety check for number of allowed sets (one std and one ghost per position)
 
 
-#if(0)
-  // print the sorted dofsets:
-  std::cout << "Collected DOFSETs for node: " << Id() << std::endl;
-  for(int i=0; i< NumDofSets(); i++)
+  if(NumDofSets()>1 and connect_ghost_with_standard_nds) // if statement reasonable for single phase problems
   {
-    NodalDofSet * dofset = GetNodalDofSet(i);
-    dofset->Print();
-  }
+#if(0)
+    // print the sorted dofsets:
+    std::cout << "Collected DOFSETs for node: " << Id() << std::endl;
+    for(int i=0; i< NumDofSets(); i++)
+    {
+      NodalDofSet * dofset = GetNodalDofSet(i);
+      dofset->Print();
+    }
 #endif
+  }
 }
 
 
