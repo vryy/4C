@@ -279,7 +279,8 @@ void FLD::XFluidFluid::Evaluate(
   }
 
   // evaluation of background fluid (new cut for full Newton approach)
-  XFluid::Evaluate(stepinc_xfluid);
+  XFluid::UpdateByIncrements(stepinc_xfluid);
+  XFluid::Evaluate();
 
   // update step increment
   stepinc_->Update(1.0,*xff_state_->xffluidvelnp_,-1.0,*xff_state_->xffluidveln_,0.0);

@@ -299,9 +299,15 @@ void FLD::XFluidOutputServiceGmsh::GmshSolutionOutput(
     output_col_acc = DRT::UTILS::GetColVersionOfRowVector(discret_,state->Accnp());
   }
 
+  Teuchos::RCP<const Epetra_Vector> dispnp_col = Teuchos::null;
+
+  if(state->dispnp_ != Teuchos::null)
+    dispnp_col = DRT::UTILS::GetColVersionOfRowVector(discret_,state->dispnp_);
+
+
   // no counter for standard solution output : -1
   const std::string prefix("SOL");
-  GmshOutput( filename_base, prefix, step, count , state->Wizard(), output_col_vel, output_col_acc );
+  GmshOutput( filename_base, prefix, step, count , state->Wizard(), output_col_vel, output_col_acc, dispnp_col );
   cond_manager_->GmshOutput(filename_base, step, gmsh_step_diff_, gmsh_debug_out_screen_);
 }
 
@@ -324,8 +330,14 @@ void FLD::XFluidOutputServiceGmsh::GmshSolutionOutputPrevious(
     output_col_acc = DRT::UTILS::GetColVersionOfRowVector(discret_,state->Accn());
   }
 
+  Teuchos::RCP<const Epetra_Vector> dispnp_col = Teuchos::null;
+
+  if(state->dispnp_ != Teuchos::null)
+    dispnp_col = DRT::UTILS::GetColVersionOfRowVector(discret_,state->dispnp_);
+
+
   const std::string prefix("ref_SOL");
-  GmshOutput( filename_base, prefix, step, count , state->Wizard(), output_col_vel, output_col_acc );
+  GmshOutput( filename_base, prefix, step, count , state->Wizard(), output_col_vel, output_col_acc, dispnp_col );
 }
 
 void FLD::XFluidOutputServiceGmsh::GmshSolutionOutputDebug(
@@ -338,9 +350,14 @@ void FLD::XFluidOutputServiceGmsh::GmshSolutionOutputDebug(
   if (!gmsh_debug_out_)
     return;
 
+  Teuchos::RCP<const Epetra_Vector> dispnp_col = Teuchos::null;
+
+  if(state->dispnp_ != Teuchos::null)
+    dispnp_col = DRT::UTILS::GetColVersionOfRowVector(discret_,state->dispnp_);
+
   Teuchos::RCP<const Epetra_Vector> output_col_vel = DRT::UTILS::GetColVersionOfRowVector(discret_,state->Velnp());
   const std::string prefix("SOL");
-  GmshOutput( filename_base, prefix, step, count , state->Wizard(), output_col_vel );
+  GmshOutput( filename_base, prefix, step, count , state->Wizard(), output_col_vel, Teuchos::null, dispnp_col );
 }
 
 void FLD::XFluidOutputServiceGmsh::GmshResidualOutputDebug(
@@ -353,9 +370,15 @@ void FLD::XFluidOutputServiceGmsh::GmshResidualOutputDebug(
   if (!gmsh_debug_out_)
     return;
 
+  Teuchos::RCP<const Epetra_Vector> dispnp_col = Teuchos::null;
+
+  if(state->dispnp_ != Teuchos::null)
+    dispnp_col = DRT::UTILS::GetColVersionOfRowVector(discret_,state->dispnp_);
+
+
   Teuchos::RCP<const Epetra_Vector> output_col_residual = DRT::UTILS::GetColVersionOfRowVector(discret_,state->Residual());
   const std::string prefix("RES");
-  GmshOutput( filename_base, prefix, step, count , state->Wizard(), output_col_residual );
+  GmshOutput( filename_base, prefix, step, count , state->Wizard(), output_col_residual, Teuchos::null, dispnp_col );
 }
 
 void FLD::XFluidOutputServiceGmsh::GmshIncrementOutputDebug(
@@ -368,9 +391,14 @@ void FLD::XFluidOutputServiceGmsh::GmshIncrementOutputDebug(
   if (!gmsh_debug_out_)
     return;
 
+  Teuchos::RCP<const Epetra_Vector> dispnp_col = Teuchos::null;
+
+  if(state->dispnp_ != Teuchos::null)
+    dispnp_col = DRT::UTILS::GetColVersionOfRowVector(discret_,state->dispnp_);
+
   Teuchos::RCP<const Epetra_Vector> output_col_incvel = DRT::UTILS::GetColVersionOfRowVector(discret_,state->IncVel());
   const std::string prefix("INC");
-  GmshOutput( filename_base, prefix, step, count , state->Wizard(), output_col_incvel );
+  GmshOutput( filename_base, prefix, step, count , state->Wizard(), output_col_incvel, Teuchos::null, dispnp_col );
 }
 
 void FLD::XFluidOutputServiceGmsh::GmshOutput(
@@ -380,7 +408,8 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
   int count,                                  ///< counter for iterations within a global time step
   const Teuchos::RCP<GEO::CutWizard>& wizard, ///< cut wizard
   Teuchos::RCP<const Epetra_Vector> vel,      ///< vector holding velocity and pressure dofs
-  Teuchos::RCP<const Epetra_Vector> acc       ///< vector holding acceleration
+  Teuchos::RCP<const Epetra_Vector> acc,      ///< vector holding acceleration
+  Teuchos::RCP<const Epetra_Vector> dispnp    ///< vector holding acceleration
 )
 {
   // Todo: should be private
@@ -519,9 +548,9 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
             }
             else
             {
-              GmshOutputElement( *discret_, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, nds, vel, acc );
+              GmshOutputElement( *discret_, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, nds, vel, acc, dispnp );
             }
-            GmshOutputElement( *discret_, gmshfilecontent_vel_ghost, gmshfilecontent_press_ghost, gmshfilecontent_acc_ghost, actele, nds, vel, acc );
+            GmshOutputElement( *discret_, gmshfilecontent_vel_ghost, gmshfilecontent_press_ghost, gmshfilecontent_acc_ghost, actele, nds, vel, acc, dispnp );
           }
           set_counter += 1;
         }
@@ -531,7 +560,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
         std::vector<int> & nds = nds_sets[0];
 
         // one standard uncut physical element
-        GmshOutputElement( *discret_, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, nds, vel, acc );
+        GmshOutputElement( *discret_, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, nds, vel, acc, dispnp );
       }
       else
       {
@@ -541,8 +570,8 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
     else // no element handle
     {
       std::vector<int> nds; // empty vector
-      GmshOutputElement( *discret_, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, nds, vel, acc );
-      GmshOutputElement( *discret_, gmshfilecontent_vel_ghost, gmshfilecontent_press_ghost, gmshfilecontent_acc_ghost, actele, nds, vel, acc );
+      GmshOutputElement( *discret_, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, nds, vel, acc, dispnp );
+      GmshOutputElement( *discret_, gmshfilecontent_vel_ghost, gmshfilecontent_press_ghost, gmshfilecontent_acc_ghost, actele, nds, vel, acc, dispnp );
     }
   } // loop elements
 
@@ -574,7 +603,8 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputElement(
   DRT::Element * actele,         ///< element
   std::vector<int> & nds,        ///< vector holding the nodal dofsets
   Teuchos::RCP<const Epetra_Vector> vel, ///< vector holding velocity and pressure dofs
-  Teuchos::RCP<const Epetra_Vector> acc  ///< vector holding acceleration
+  Teuchos::RCP<const Epetra_Vector> acc,  ///< vector holding acceleration
+  Teuchos::RCP<const Epetra_Vector> dispnp  ///< vector holding ale displacements
 )
 {
   vel_f.setf(std::ios::scientific,std::ios::floatfield);
@@ -610,6 +640,14 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputElement(
   if(acc_output)
   {
     DRT::UTILS::ExtractMyValues(*acc,m_acc,la[0].lm_);
+  }
+
+  const bool ale_output(dispnp != Teuchos::null);
+
+  std::vector<double> m_disp(la[0].lm_.size());
+  if(ale_output)
+  {
+    DRT::UTILS::ExtractMyValues(*dispnp,m_disp,la[0].lm_);
   }
 
   int numnode = 0;
@@ -659,10 +697,11 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputElement(
       press_f << ",";
       if(acc_output) acc_f << ",";
     }
+    int j = 4*i;
     const double * x = actele->Nodes()[i]->X();
-    vel_f   << x[0] << "," << x[1] << "," << x[2];
-    press_f << x[0] << "," << x[1] << "," << x[2];
-    if(acc_output) acc_f << x[0] << "," << x[1] << "," << x[2];
+    vel_f   << x[0]+m_disp[j+0] << "," << x[1]+m_disp[j+1] << "," << x[2]+m_disp[j+2];
+    press_f << x[0]+m_disp[j+0] << "," << x[1]+m_disp[j+1] << "," << x[2]+m_disp[j+2];
+    if(acc_output) acc_f << x[0]+m_disp[j+0] << "," << x[1]+m_disp[j+1] << "," << x[2]+m_disp[j+2];
   }
   vel_f << "){";
   press_f << "){";
@@ -1222,7 +1261,8 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputBoundaryCell(
 
 void FLD::XFluidOutputServiceGmsh::GmshOutputDiscretization(
   bool print_faces,
-  int step
+  int step,
+  std::map<int, LINALG::Matrix<3,1> >* curr_pos
   )
 {
   if (!gmsh_discret_out_)
@@ -1242,7 +1282,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputDiscretization(
   gmshfilecontent.precision(16);
 
   XFEM::UTILS::PrintDiscretizationToStream(discret_,
-     discret_->Name(), true, false, true, false, print_faces, false, gmshfilecontent);
+     discret_->Name(), true, false, true, false, print_faces, false, gmshfilecontent, curr_pos);
 
   // append other discretizations involved (cutter surface discretization, coupling discretization, etc.)
   cond_manager_->GmshOutputDiscretization(gmshfilecontent);

@@ -1285,7 +1285,6 @@ bool FSI::MonolithicXFEM::Evaluate()
       AleField()->GetDBCMapExtractor()->InsertOtherVector(AleField()->GetDBCMapExtractor()->ExtractOtherVector(DispnpAle),AleField()->WriteAccessDispnp()); //just update displacements which are not on dbc condition
     }
 
-
     // call the structure evaluate with the current step increment  Delta d = d^(n+1,i+1) - d^n
     if (sx == Teuchos::null)
       sx = Teuchos::rcp(new Epetra_Vector(*StructurePoro()->DofRowMap(),true));
@@ -1293,14 +1292,7 @@ bool FSI::MonolithicXFEM::Evaluate()
 
     if(Comm().MyPID() == 0) IO::cout  << "structure time: " << ts.ElapsedTime() << IO::endl;
 
-  // ------------------------------------------------------------------
-  // set the current interface displacement to the fluid field to be used in the cut
-  // ------------------------------------------------------------------
-    for (std::map<int, Teuchos::RCP<XFEM::Coupling_Manager> >::iterator coupit = coup_man_.begin(); coupit != coup_man_.end(); ++coupit)
-      coupit->second->SetCouplingStates();
 
-    if (HaveAle())
-      AleField()->Evaluate();
   }
 
   //--------------------------------------------------------
@@ -1318,6 +1310,27 @@ bool FSI::MonolithicXFEM::Evaluate()
 
     PermuteFluidDOFSForward(fx_permuted);
   }
+
+
+
+  // update fluid field increments
+  FluidField()->UpdateByIncrements(fx_permuted);
+
+  //StructurePoro()->StructureField()->writeGmshStrucOutputStep();
+
+  // ------------------------------------------------------------------
+  // set the current interface displacement to the fluid field to be used in the cut
+  // ------------------------------------------------------------------
+
+
+  // update coupling objects and conditionmanager
+
+  for (std::map<int, Teuchos::RCP<XFEM::Coupling_Manager> >::iterator coupit = coup_man_.begin(); coupit != coup_man_.end(); ++coupit)
+    coupit->second->SetCouplingStates();
+
+  // update ALE
+  if (HaveAle())
+    AleField()->Evaluate();
 
 
   //-------------------
@@ -1350,7 +1363,8 @@ bool FSI::MonolithicXFEM::Evaluate()
     // For the first call of a time-step, call Evaluate with a null-pointer
     // note: call the fluid with the permuted step-increment vector as the fluid-dofsets can permute during the Newton
     // whereas the x_sum_ has to preserve the order of dofs during the Newton
-    FluidField()->Evaluate(fx_permuted);
+    FluidField()->Evaluate();
+
 
     if(Comm().MyPID() == 0) IO::cout << "fluid time : " << tf.ElapsedTime() << IO::endl;
 
@@ -1382,189 +1396,6 @@ bool FSI::MonolithicXFEM::Evaluate()
 
   return false; // continue with the setup of the new system and solving the system
 }
-
-
-
-
-//
-///*----------------------------------------------------------------------*
-// * evaluate the single fields and
-// * return if the fluid dofsets between the two last iterations changed
-// *----------------------------------------------------------------------*/
-//bool FSI::MonolithicXFEM::Evaluate(Teuchos::RCP<const Epetra_Vector> iterinc)
-//{
-//   TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::Evaluate");
-//   Teuchos::RCP<const Epetra_Vector> sx;
-//   Teuchos::RCP<const Epetra_Vector> fx;
-//
-//   // TODO: do we have to set x_sum for the 1st iteration due to the predictor?!
-//   // yes I think so, in order to see the effect of the predictor or of the already a little bit converged
-//   // structure and fluid, we need to start with the non-zero increment, otherwise the fluid and structure starts
-//   // to solve from the righthandside = soln
-//
-//   //TODO
-//   // this can be updated later!
-//   // at least the structural residual after restart should be the same as the residual at beginning of the time-step
-//   // TODO: this seems not to be so -> check this!!!
-//
-//   double inc_norm = 0.0;
-//   iterinc->Norm2(&inc_norm);
-//
-//   if( iter_ == 1 and fabs(inc_norm) > 1e-12) dserror("non-zero increment in the first Newton-Call, what to do with x_sum?");
-//
-//
-//   //TODO: do we have to take into account permutations when iterinc != 0 in first iteration, predictors in fluid?
-//
-//   // structure and fluid fields expects the step increment (x^n+1_i+1 - x^n).
-//   // So we add all of the increments together to build the step increment.
-//   //
-//   // The update of the latest step increment with iteration increments:
-//   // x^n+1_i+1 = x^n+1_i + iterinc with x the current step increment
-//
-//   x_sum_->Update(1.0,*iterinc,1.0);
-//
-//   // sx contains the current step increment w.r.t. t^n for the structure block
-//   // fx contains the current step increment w.r.t. t^n for the fluid block
-//   ExtractFieldVectors(x_sum_,sx,fx);
-//
-////   std::cout.precision(15);
-////   std::cout << "sx " << *sx << std::endl;
-//
-//   // create a copy from the structural part of x_sum_
-//   sx_sum_ = sx; // Teuchos::rcp(new Epetra_Vector(*sx));
-//
-//   if (sdbg_!=Teuchos::null)
-//   {
-//     sdbg_->NewIteration();
-//     sdbg_->WriteVector("x",*StructureField()->Interface()->ExtractFSICondVector(sx));
-//   }
-//
-//   // ------------------------------------------------------------------
-//   // Call all fields evaluate method and assemble rhs and matrices
-//   // ------------------------------------------------------------------
-//
-//   //-------------------
-//   // structure field
-//   //-------------------
-//   {
-//     // structural field
-//     Epetra_Time ts(Comm());
-//
-//     // call the structure evaluate with the current step increment  Delta d = d^(n+1,i+1) - d^n
-//     StructureField()->Evaluate(sx);
-//
-//     IO::cout  << "structure time: " << ts.ElapsedTime() << IO::endl;
-//   }
-//
-//
-//   // ------------------------------------------------------------------
-//   // for the first iteration, this has been done at the beginning w.r.t the structural displacement predicted
-//   // by a structural predictor
-//   // compared to the first iteration for all further iterations we have to check if the fluid dofsets have changed
-//   // such that a Newton restart is necessary
-//   // ------------------------------------------------------------------
-//   if(iter_ > 1)
-//   {
-//
-//     // get the current structural displacement
-//     Teuchos::RCP<Epetra_Vector> idispnp = StructureField()->ExtractInterfaceDispnp();
-//
-//     //--------------------------------------------------------
-//     // apply the current interface displacement idispnp to the boundary discretization of the fluid field
-//     FluidField()->ApplyStructMeshDisplacement(idispnp);
-//
-//     //--------------------------------------------------------
-//     // * cut with new interface position
-//     // * create new state-vectors and systemmatrix and
-//     // * update old-rhs and
-//     // * evaluate Neumann and DBCs
-//     FluidField()->PrepareSolve();
-//
-//     // TODO: obtain a mapped velnp_i+1 due to the internally performed time integration and
-//     // safe velnp_i+1 - veln in x_sum_(1) in case of a Newton restart, otherwise
-//
-//
-//     // TODO: be aware of using this function when using a fluid predictor
-//     // in that case a predictor would be applied also in case of just restarting the newton
-//
-//     //--------------------------------------------------------
-//     // check if the fluid dofsets changed in a way such that the Newton scheme has to be restarted
-//     Teuchos::RCP<ADAPTER::XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<ADAPTER::XFluidFSI>(FluidField(), true);
-//
-//     if(xfluid->NewtonRestartMonolithic()) return true;
-//
-//     // HACK to enforce retart of newton
-//     if(iter_==3) return true;
-//
-//   }
-//
-//   Teuchos::RCP<ADAPTER::XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<ADAPTER::XFluidFSI>(FluidField(), true);
-//
-//   //TODO: update the fluid permutation
-//
-//   if(iter_ > 1)
-//   {
-//     // REMARK: No permutation for the first solve! this is the reference
-//     UpdatePermutationMap(*xfluid->GetPermutationMap());
-//   }
-//   BuildFluidPermutation();
-//
-//   Teuchos::RCP<Epetra_Vector> fx_permuted = Teuchos::rcp(new Epetra_Vector(*fx));
-//
-//   {
-//     //TODO: this is not necessary for the first iteration after restarting the Newton
-//     // however it should not cause problems when checking this also in the first iteration
-//     //--------------------------------------------------------
-//     // permute ghost sets of fluid degrees of freedom as the order of corresponding fluid dofsets can change during the Newton
-//     // due to the different interface positions
-//     // the rhs and increment vectors are not allowed to change the order of dofs during a hopefully converging Newton scheme
-//     // as we have to check convergence and build consistent update of the fluid vector
-//     //--------------------------------------------------------
-//
-//     PermuteFluidDOFSForward(fx_permuted);
-//   }
-//
-//
-//   //--------------------------------------------------------
-//   // set current interface velocities to the fluid field
-//   //--------------------------------------------------------
-//   {
-//
-//     //--------------------------------------------------------
-//     // new vector for interface velocities
-
-//     Teuchos::RCP<Epetra_Vector> ivelnp = LINALG::CreateVector( *FluidField()->StructInterface()->FSICondMap(),true);
-//
-//     // now ivelnp contains the interface displacements increment Delta d = d^(n+1,i+1)-d^n
-//     ivelnp->Update(1.0, *StructureField()->ExtractInterfaceDispnp(), -1.0, *StructureField()->ExtractInterfaceDispn(), 0.0 );
-//
-//     // now  Delta d = d^(n+1,i+1)-d^n is converted to the interface velocity increment  Delta u = u^(n+1,i+1)-u^n
-//     // via first order or second order OST-discretization of d/dt d(t) = u(t)
-//     FluidField()->DisplacementToVelocity( ivelnp );
-//
-//     // obtain current interface velocity u^(n+1,i+1) = Delta u + u^n = u^(n+1,i+1)-u^n + u^n
-//     ivelnp->Update( 1.0, *(FluidField()->ExtractStructInterfaceVeln()), 1.0);
-//
-//     // set ivelnp in Xfluid
-//     FluidField()->ApplyInterfaceVelocities(ivelnp);
-//   }
-//
-//   //-------------------
-//   // fluid field
-//   //-------------------
-//   {
-//     // fluid field
-//     Epetra_Time tf(Comm());
-//
-//     // call the fluid evaluate with the current time step increment Delta(u,p) = (u,p)^(n+1,i+1) - u^n
-//     // call the fluid with the permuted increment vector
-//     FluidField()->Evaluate(fx_permuted);
-//
-//     IO::cout << "fluid time : " << tf.ElapsedTime() << IO::endl;
-//   }
-//
-//   return false;
-//}
 
 
 /*----------------------------------------------------------------------*

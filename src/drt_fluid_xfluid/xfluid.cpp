@@ -296,11 +296,6 @@ void FLD::XFluid::Init(bool createinitialstate)
   }
 
   // -------------------------------------------------------------------
-  // GMSH discretization output before CUT
-  // -------------------------------------------------------------------
-  output_service_->GmshOutputDiscretization(eval_eos_, step_);
-
-  // -------------------------------------------------------------------
   // Create velpresssplitter for uncut discretization.
   velpressplitter_std_ = Teuchos::rcp(new LINALG::MapExtractor());
   FLD::UTILS::SetupFluidSplit(*discret_,xdiscret_->InitialDofSet(),numdim_,*velpressplitter_std_);
@@ -641,6 +636,24 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluid::GetNewState()
     LINALG::Export(*dispnp_,*dispnpcol);
   }
 
+  // -------------------------------------------------------------------
+  // GMSH discretization output before CUT (just for the at the beginning of a time step)
+  // -------------------------------------------------------------------
+  if(state_it_ == -1)
+  {
+    if (alefluid_)
+    {
+      std::map<int,LINALG::Matrix<3,1> > currinterfacepositions;
+
+      // compute the current boundary position
+      ExtractNodeVectors(xdiscret_, currinterfacepositions, dispnpcol);
+      output_service_->GmshOutputDiscretization(eval_eos_, step_, &currinterfacepositions);
+    }
+    else
+      output_service_->GmshOutputDiscretization(eval_eos_, step_);
+  }
+
+
   //-------------------------------------------------------------
   // create a temporary state-creator object
   //-------------------------------------------------------------
@@ -656,12 +669,51 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluid::GetNewState()
       );
 
   //--------------------------------------------------------------------------------------
-  // initialize ALE state vectors
-  if(alefluid_) state->InitALEStateVectors(xdiscret_, dispnp_, gridvnp_);
+  // update ALE state vectors
+  UpdateALEStateVectors(state);
 
   return state;
 }
 
+void FLD::XFluid::UpdateALEStateVectors(
+    Teuchos::RCP<FLD::XFluidState> state
+)
+{
+  Teuchos::RCP<FLD::XFluidState> state_tmp = (state != Teuchos::null) ? state : state_;
+  //--------------------------------------------------------------------------------------
+  // initialize ALE state vectors
+  if(alefluid_)
+  {
+    std::cout << "InitALEStateVectors" << std::endl;
+    state_tmp->InitALEStateVectors(xdiscret_, dispnp_, gridvnp_);
+  }
+}
+
+void FLD::XFluid::ExtractNodeVectors(
+    Teuchos::RCP<DRT::DiscretizationXFEM>    dis,
+    std::map<int, LINALG::Matrix<3,1> >& nodevecmap,
+    Teuchos::RCP<Epetra_Vector>          dispnp_col
+)
+{
+  nodevecmap.clear();
+
+  for (int lid = 0; lid < dis->NumMyColNodes(); ++lid)
+  {
+    const DRT::Node* node = dis->lColNode(lid);
+    std::vector<int> lm;
+    dis->InitialDof(node, lm); // initial dofs!
+    std::vector<double> mydisp;
+    DRT::UTILS::ExtractMyValues(*dispnp_col,mydisp,lm);
+    if (mydisp.size() < 3)
+      dserror("we need at least 3 dofs here");
+
+    LINALG::Matrix<3,1> currpos;
+    currpos(0) = node->X()[0] + mydisp[0];
+    currpos(1) = node->X()[1] + mydisp[1];
+    currpos(2) = node->X()[2] + mydisp[2];
+    nodevecmap.insert(std::make_pair(node->Id(),currpos));
+  }
+}
 
 /*----------------------------------------------------------------------*
  |  evaluate elements, volumecells and boundary cells      schott 03/12 |
@@ -2886,14 +2938,12 @@ void FLD::XFluid::CheckMatrixNullspace()
   return;
 }
 
-
-
 /*--------------------------------------------------------------------------*
  | update the veln-vector with the stepinc to obtain new iteration velnp,   |
  | cut and set new state-vectors, perform time-integration, apply bcs       |
- | evaluate the fluid at the new interface position            schott 08/14 |
+ |                                                             schott 08/14 |
  *--------------------------------------------------------------------------*/
-void FLD::XFluid::Evaluate(
+void FLD::XFluid::UpdateByIncrements(
   Teuchos::RCP<const Epetra_Vector> stepinc ///< solution increment between time step n and n+1, stepinc has to match the current xfluid dofmaps
   )
 {
@@ -2942,6 +2992,67 @@ void FLD::XFluid::Evaluate(
     // DBCs will be set in velnp_.
   }
 
+
+}
+
+
+
+
+/*--------------------------------------------------------------------------*
+ | update the veln-vector with the stepinc to obtain new iteration velnp,   |
+ | cut and set new state-vectors, perform time-integration, apply bcs       |
+ | evaluate the fluid at the new interface position            schott 08/14 |
+ *--------------------------------------------------------------------------*/
+void FLD::XFluid::Evaluate(
+//  Teuchos::RCP<const Epetra_Vector> stepinc ///< solution increment between time step n and n+1, stepinc has to match the current xfluid dofmaps
+  )
+{
+//  //--------------------------------------------------------------------------------------------
+//  // FIRST: update the current velnp vector with the increment from the monolithic solve
+//  //--------------------------------------------------------------------------------------------
+//
+//  if (stepinc!=Teuchos::null) // non-first call, when a step increment is already available (also when restarting the global monolithic Newto)
+//  {
+//    //-----------------------------
+//    // update the velnp vector such that the new iteration is stored in velnp
+//    //-----------------------------
+//    // set the new solution we just got. Note: the solution we got here
+//    // is the time step increment which means the sum of all iteration
+//    // increments of the time step.
+//
+//    // Take Dirichlet values from last velnp and add stepinc to veln for non-Dirichlet values.
+//    // * the stepinc should contain the Dirichlet values, however, when using an iterative solver the Dirichlet values
+//    //   of Newton increment might just be approximately zero. In order to strictly set the Dirichlet values to zero
+//    //   we set them here again.
+//    // * for each call of PrepareXFEMSolve (see below) the velnp-vector obtains accurate Dirichlet values
+//    // * therefore we directly can copy the Dirichlet values from the last iteration
+//    // * further, in the next PrepareXFEMSolve()-call, after performing time-integration,
+//    //   the DBCs are set again in velnp
+//
+//    Teuchos::RCP<Epetra_Vector> velnp_tmp = LINALG::CreateVector(*discret_->DofRowMap(),true);
+//
+//    state_->incvel_->Update(1.0, *stepinc, -1.0, *state_->velnp_, 0.0);
+//    state_->incvel_->Update(1.0, *state_->veln_, 1.0);
+//
+//    // update the current u^(n+1,i+1) = u^n + (u^(n+1,i+1)-u^n) = veln_ + stepinc
+//    velnp_tmp->Update(1.0, *state_->veln_, 1.0, *stepinc, 0.0);
+//
+//    // take the Dirichlet values from velnp and insert them in velnp_tmp
+//    state_->dbcmaps_->InsertCondVector(state_->dbcmaps_->ExtractCondVector(state_->velnp_), velnp_tmp );
+//
+//    // set the whole vector with u^(n+1,i+1) including the Dirichlet values to velnp_
+//    state_->velnp_->Update(1.0, *velnp_tmp, 0.0);
+//  }
+//  else // the first call in a new time-step
+//  {
+//    // for the first call in a new time-step the initialization of velnp_ is not allowed as
+//    // velnp_ includes a predicted solution (set in PrepareTimeStep).
+//    // This predicted solution does not include the DBCs yet, however, in the following PrepareXFEMSolve()-call
+//    // veln_ and the predicted solution velnp_ will be mapped to the new interface position and afterwards
+//    // DBCs will be set in velnp_.
+//  }
+//
+//  output_service_->GmshIncrementOutputDebug( "DEBUG_icnr", step_, itnum_out_, state_ );
 
   //--------------------------------------------------------------------------------------------
   // SECOND:
@@ -5024,6 +5135,14 @@ void FLD::XFluid::ReadRestart(int step)
     reader.ReadVector(dispn_,"full_dispnp_res"); //as update() was called anyway before output...
     reader.ReadVector(gridvnp_,"full_gridvnp_res");
     reader.ReadVector(gridvn_,"full_gridvnp_res"); //as update() was called anyway before output...
+
+#if(0)
+  std::cout << "dispnp_ "  << *dispnp_   << std::endl;
+  std::cout << "dispn_ "   << *dispn_    << std::endl;
+  std::cout << "gridvnp_ " << *gridvnp_  << std::endl;
+  std::cout << "gridvn_ "  << *gridvnp_  << std::endl;
+#endif
+
     //state-vectors in state will be set in the creation of a new state
     CreateInitialState(); //Create an State with the deformed Fluid Mesh (otherwise state vectors wouldn't fit)
   }

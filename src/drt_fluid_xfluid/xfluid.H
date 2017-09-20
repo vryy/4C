@@ -178,11 +178,15 @@ namespace FLD
     /// evaluate errors compared to implemented analytical solutions
     virtual Teuchos::RCP<std::vector<double> > EvaluateErrorComparedToAnalyticalSol();
 
-    /// build linear system matrix and rhs
-    /// Monolithic FSI needs to access the linear fluid problem.
-    virtual void Evaluate(
+    /// update velnp by increments
+    virtual void UpdateByIncrements(
       Teuchos::RCP<const Epetra_Vector> stepinc  ///< solution increment between time step n and n+1
     );
+
+
+    /// build linear system matrix and rhs
+    /// Monolithic FSI needs to access the linear fluid problem.
+    virtual void Evaluate();
 
     /// Update the solution after convergence of the nonlinear
     /// iteration. Current solution becomes old solution of next timestep.
@@ -318,6 +322,10 @@ namespace FLD
 
     virtual void CreateInitialState();
 
+    virtual void UpdateALEStateVectors(
+        Teuchos::RCP<FLD::XFluidState> state = Teuchos::null
+    );
+
     void WriteAccess_GeometricQuantities(
        Teuchos::RCP<Epetra_Vector> &      scalaraf,
        Teuchos::RCP<Epetra_MultiVector> & smoothed_gradphiaf,
@@ -353,6 +361,12 @@ namespace FLD
 
     /// get a new state class
     virtual Teuchos::RCP<FLD::XFluidState> GetNewState();
+
+    void ExtractNodeVectors(
+        Teuchos::RCP<DRT::DiscretizationXFEM>    dis,
+        std::map<int, LINALG::Matrix<3,1> >& nodevecmap,
+        Teuchos::RCP<Epetra_Vector>          dispnp_col
+    );
 
     /// call the loop over elements to assemble volume and interface integrals
     virtual void AssembleMatAndRHS(
@@ -753,9 +767,10 @@ namespace FLD
 
     //--------------------------------------------------------------------
 
+  public:
     /// state object at current new time step
     Teuchos::RCP<FLD::XFluidState> state_;
-
+  protected:
 
     /// counter how often a state class has been created during one time-step
     int state_it_;

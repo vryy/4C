@@ -25,6 +25,9 @@
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_inpar/inpar_cut.H"
 
+#include "../linalg/linalg_fixedsizematrix.H"
+
+
 namespace DRT
 {
   class Discretization;
@@ -130,7 +133,8 @@ public:
   /// Gmsh output of discretization
   virtual void GmshOutputDiscretization(
     bool print_faces,
-    int step
+    int step,
+    std::map<int, LINALG::Matrix<3,1> >* curr_pos = NULL
   ){};
 
   /// Main output routine for gmsh output
@@ -233,7 +237,8 @@ public:
   /// Gmsh output of discretization
   void GmshOutputDiscretization(
     bool print_faces,
-    int step
+    int step,
+    std::map<int, LINALG::Matrix<3,1> >* curr_pos = NULL
   );
 
   /// Main output routine for gmsh output
@@ -244,7 +249,8 @@ public:
     int count,                                  ///< counter for iterations within a global time step
     const Teuchos::RCP<GEO::CutWizard>& wizard, ///< cut wizard
     Teuchos::RCP<const Epetra_Vector> vel,      ///< vector holding velocity and pressure dofs
-    Teuchos::RCP<const Epetra_Vector> acc = Teuchos::null  ///< vector holding acceleration
+    Teuchos::RCP<const Epetra_Vector> acc = Teuchos::null,  ///< vector holding acceleration
+    Teuchos::RCP<const Epetra_Vector> dispnp  = Teuchos::null ///< vector holding ale displacements
   );
 
   /// Gmsh output for EOS
@@ -264,7 +270,8 @@ private:
     DRT::Element * actele,         ///< element
     std::vector<int> & nds,        ///< vector holding the nodal dofsets
     Teuchos::RCP<const Epetra_Vector> vel, ///< vector holding velocity and pressure dofs
-    Teuchos::RCP<const Epetra_Vector> acc = Teuchos::null  ///< vector holding acceleration
+    Teuchos::RCP<const Epetra_Vector> acc = Teuchos::null,  ///< vector holding acceleration
+    Teuchos::RCP<const Epetra_Vector> dispnp  = Teuchos::null ///< vector holding ale displacements
   );
 
   /// Gmsh output function for volumecells
