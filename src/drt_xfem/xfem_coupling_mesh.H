@@ -140,6 +140,9 @@ public:
   Teuchos::RCP<Epetra_Vector> IDispnp(){ return idispnp_; }
   Teuchos::RCP<Epetra_Vector> IDispn() { return idispn_;  }
 
+  Teuchos::RCP<Epetra_Vector> IDispnpi(){ return idispnpi_; }
+
+
 protected:
 
   /*!
@@ -671,9 +674,9 @@ public:
   Teuchos::RCP<Epetra_Vector> IForcecol(){ return iforcecol_; }
 
 
-private:
+//private:
 
-  void Output(
+  virtual void Output(
       const int step,
       const double time,
       const bool write_restart_data
@@ -782,6 +785,17 @@ public:
   {
     GetViscositySlave(coup_ele,penscaling_s);
   }
+
+
+  virtual void ReadRestart(
+      const int step
+  );
+
+  virtual void Output(
+      const int step,
+      const double time,
+      const bool write_restart_data
+  );
 
 protected:
 

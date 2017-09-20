@@ -2017,3 +2017,75 @@ void XFEM::MeshCouplingFluidFluid::EstimateNitscheTraceMaxEigenvalue(
   return;
 }
 
+// -------------------------------------------------------------------
+// Read Restart data for cutter discretization
+// -------------------------------------------------------------------
+void XFEM::MeshCouplingFluidFluid::ReadRestart(
+    const int step
+)
+{
+  // copy from FSI!
+
+  if(myrank_) IO::cout << "ReadRestart for boundary discretization " << IO::endl;
+
+  //-------- boundary discretization
+  IO::DiscretizationReader boundaryreader(cutter_dis_, step);
+
+  const double time = boundaryreader.ReadDouble("time");
+//  const int    step = boundaryreader.ReadInt("step");
+
+  if(myrank_ == 0)
+  {
+    IO::cout << "time: " << time << IO::endl;
+    IO::cout << "step: " << step << IO::endl;
+  }
+
+  boundaryreader.ReadVector(iveln_,   "iveln_res");
+  boundaryreader.ReadVector(idispn_,  "idispn_res");
+
+  // REMARK: ivelnp_ and idispnp_ are set again for the new time step in PrepareSolve()
+  boundaryreader.ReadVector(ivelnp_,  "ivelnp_res");
+  boundaryreader.ReadVector(idispnp_, "idispnp_res");
+  boundaryreader.ReadVector(idispnpi_, "idispnpi_res");
+
+  if (not (cutter_dis_->DofRowMap())->SameAs(ivelnp_->Map()))
+    dserror("Global dof numbering in maps does not match");
+  if (not (cutter_dis_->DofRowMap())->SameAs(iveln_->Map()))
+    dserror("Global dof numbering in maps does not match");
+  if (not (cutter_dis_->DofRowMap())->SameAs(idispnp_->Map()))
+    dserror("Global dof numbering in maps does not match");
+  if (not (cutter_dis_->DofRowMap())->SameAs(idispn_->Map()))
+    dserror("Global dof numbering in maps does not match");
+  if (not (cutter_dis_->DofRowMap())->SameAs(idispnpi_->Map()))
+    dserror("Global dof numbering in maps does not match");
+
+
+}
+
+void XFEM::MeshCouplingFluidFluid::Output(
+    const int step,
+    const double time,
+    const bool write_restart_data
+)
+{
+  // copy from FSI without the itrueresidual output!
+
+  // output for interface
+  cutter_output_->NewStep(step,time);
+
+  cutter_output_->WriteVector("ivelnp", ivelnp_);
+  cutter_output_->WriteVector("idispnp", idispnp_);
+
+  cutter_output_->WriteElementData(firstoutputofrun_);
+  firstoutputofrun_ = false;
+
+  // write restart
+  if (write_restart_data)
+  {
+    cutter_output_->WriteVector("iveln_res",   iveln_);
+    cutter_output_->WriteVector("idispn_res",  idispn_);
+    cutter_output_->WriteVector("ivelnp_res",  ivelnp_);
+    cutter_output_->WriteVector("idispnp_res", idispnp_);
+    cutter_output_->WriteVector("idispnpi_res", idispnpi_);
+  }
+}
