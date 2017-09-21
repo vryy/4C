@@ -339,7 +339,7 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector> fx_sum_;
 
     //! intermediate step increment for ale based on predictor solution from beginning of time step
-    Teuchos::RCP<const Epetra_Vector> ax_sum_;
+    Teuchos::RCP<Epetra_Vector> ax_sum_;
 
     //! global Newton increment = iteration increment Delta x = x^n+1_i+1 - x^n+1_i
     Teuchos::RCP<Epetra_Vector> iterinc_;

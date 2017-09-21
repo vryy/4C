@@ -5143,9 +5143,11 @@ void FLD::XFluid::ReadRestart(int step)
   std::cout << "gridvn_ "  << *gridvnp_  << std::endl;
 #endif
 
-    //state-vectors in state will be set in the creation of a new state
-    CreateInitialState(); //Create an State with the deformed Fluid Mesh (otherwise state vectors wouldn't fit)
   }
+
+  //state-vectors in state will be set in the creation of a new state
+  CreateInitialState(); //Create an State with the deformed Fluid Mesh (otherwise state vectors wouldn't fit)
+
   reader.ReadVector(state_->velnp_,"velnp_res");
   reader.ReadVector(state_->velnm_,"velnm_res");
   reader.ReadVector(state_->veln_, "veln_res" );

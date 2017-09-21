@@ -45,6 +45,8 @@
 #include "XFScoupling_manager.H"
 #include "XFAcoupling_manager.H"
 #include "XFPcoupling_manager.H"
+#include "XFFcoupling_manager.H"
+
 
 #include  "../drt_xfem/xfem_condition_manager.H"
 
@@ -172,7 +174,9 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
   // Finish standard FluidField()->Init()!
   // REMARK: We don't want to do this at the beginning, to be able to use std ADAPTER::Coupling for FA-Coupling
   //-------------------------------------------------------------------------
-  FluidField()->CreateInitialState();
+  const int restart = DRT::Problem::Instance()->Restart();
+  if( not restart)
+    FluidField()->CreateInitialState(); // otherwise called within the FluidField-Restart when Ale displacements are correct
 
   //Todo: move that somewhere else
   {
@@ -218,7 +222,17 @@ void FSI::MonolithicXFEM::SetupCouplingObjects()
     idx.clear();
     idx.push_back(fluid_block_);
     idx.push_back(ale_i_block_);
-    coup_man_[coup_idx] = Teuchos::rcp (new XFEM::XFACoupling_Manager(FluidField(),AleField(), idx));
+    idx.push_back(structp_block_);
+    coup_man_[coup_idx] = Teuchos::rcp (new XFEM::XFACoupling_Manager(FluidField(),AleField(), idx,StructurePoro()->StructureField()));
+  }
+
+  if (FluidField()->GetConditionManager()->GetMeshCoupling("XFEMSurfFluidFluid") != Teuchos::null) // TODO: fluid fluid!!!
+  {
+    ++coup_idx;
+    idx.clear();
+    idx.push_back(fluid_block_);
+    idx.push_back(fluid_block_);
+    coup_man_[coup_idx] = Teuchos::rcp (new XFEM::XFFCoupling_Manager(FluidField()->GetConditionManager(),FluidField(),FluidField(), idx));
   }
 
   if (StructurePoro()->isPoro())
@@ -233,6 +247,14 @@ void FSI::MonolithicXFEM::SetupCouplingObjects()
       coup_man_[coup_idx] = Teuchos::rcp( new XFEM::XFPCoupling_Manager(FluidField()->GetConditionManager(), StructurePoro()->PoroField(), FluidField(),idx));
     }
   }
+
+
+  // ------------------------------------------------------------------
+  // set the current interface displacement to the fluid field to be used in the cut
+  // ------------------------------------------------------------------
+  for (std::map<int, Teuchos::RCP<XFEM::Coupling_Manager> >::iterator coupit = coup_man_.begin(); coupit != coup_man_.end(); ++coupit)
+    coupit->second->InitCouplingStates();
+
   return;
 }
 
@@ -697,7 +719,14 @@ void FSI::MonolithicXFEM::PrepareTimeStep()
   //   as the CUT is performed for each increment and therefore the DBCs have to be set again
   FluidField()->PrepareTimeStep();
 
-  if (HaveAle())
+  // predict coupling states (for relaxing ale mesh!) /after Structure->PrepareTimestep
+  for (std::map<int, Teuchos::RCP<XFEM::Coupling_Manager> >::iterator coupit = coup_man_.begin(); coupit != coup_man_.end(); ++coupit)
+    coupit->second->PredictCouplingStates();
+
+  // now we have relaxed ALE mesh -> set in dispnp
+  // for safety apply in AleField again the standard inner DBCs of this timestep
+
+  if (HaveAle()) // Apply inner std-Dirichlet boundary conditions on provided state vector and do locsys
     AleField()->PrepareTimeStep();
 
 }
@@ -901,20 +930,6 @@ bool FSI::MonolithicXFEM::Newton()
 
 
     //-------------------
-    // store structure step-increment
-    //-------------------
-    //TODO: Zwischenspeicherung von Structure-step increment
-//    w.r.t. first interface position of the respective Newton-restart call k: (U,P)^n_(0,k)
-        // set at the beginning of the first outer iteration using the structural PrepareTimeStep-call
-//    if(iter_ == 1) sx_sum_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->DofRowMap()));
-//
-//    sx_sum_->Update(1.0, *Extractor().ExtractVector(x_sum_,0), 0.0);
-//
-//    //create a copy from the structural part of x_sum_
-//    Extractor().ExtractVector(x_sum_,0,sx_sum_);
-//    sx_sum_ = sx; // Teuchos::rcp(new Epetra_Vector(*sx));
-
-    //-------------------
     // store fluid step-increment
     //-------------------
     // this step-increment is based on the old solution from t^n (veln) mapped to the interface position of the current
@@ -925,9 +940,33 @@ bool FSI::MonolithicXFEM::Newton()
     // safe velnp_i+1 - veln in fx_sum_ as start for the Newton as Fluid-Evaluate expects the full step-increment
 
     fx_sum_ = Teuchos::rcp(new Epetra_Vector(*FluidField()->DofRowMap()));
-    fx_sum_->Update(1.0,*FluidField()->Velnp(), -1.0, *FluidField()->Veln(), 0.0);
+    int errfx = fx_sum_->Update(1.0,*FluidField()->Velnp(), -1.0, *FluidField()->Veln(), 0.0);
+    if(errfx != 0) dserror("update not successful");
 
+    //-------------------
+    // store ALE step-increment
+    //-------------------
 
+    if(HaveAle())
+    {
+    ax_sum_ = Teuchos::rcp(new Epetra_Vector(*(Extractor().Map(ale_i_block_))));
+    int errax = ax_sum_->Update(1.0,*AleField()->Interface()->ExtractOtherVector(AleField()->Dispnp()), -1.0, *AleField()->Interface()->ExtractOtherVector(AleField()->Dispn()), 0.0);
+
+    if(errax != 0) dserror("update not successful");
+    }
+
+    //-------------------
+    // store structure step-increment
+    //-------------------
+/*
+    // save the current structural step-increment (also possible // sx_sum_ = sx;
+    sx_sum_ = Teuchos::rcp(new Epetra_Vector(*(Extractor().Map(structp_block_))));
+    if(x_sum_ != Teuchos::null)
+    {
+      int errsx = sx_sum_->Update(1.0, *Extractor().ExtractVector(x_sum_,structp_block_), 0.0);
+      if(errsx != 0) dserror("update not successful");
+    }
+*/
     /*----------------------------------------------------------------------*/
     // Perform at least one solve after the first Evaluate-call.
     // For further iterations, decide if a Newton-restart is required based on the first computed Newton increment
@@ -970,6 +1009,7 @@ bool FSI::MonolithicXFEM::Newton()
       // NOTE:
       //   - the structural dofs do not change, x_sum(0) (structure step-increment) is given w.r.t predictor-solution
       //     from the beginning of the new time-step
+      //   - the ALE dofs do also not change, x_sum(2) (ale step-increment) is given w.r.t. old time step Dispn(), even if a relaxation-predictor is called
       //   - the fluid dofs can permute between Newton iterations and dofsets can completely change such that a Newton restart
       //     is required. x_sum(1) (fluid step-increment) is given w.r.t the old solution at t^n (veln)
       //     mapped/permuted to the interface position of first evaluate-call after (re-)starting the Newton scheme
@@ -1033,7 +1073,10 @@ bool FSI::MonolithicXFEM::Newton()
       Extractor().InsertVector(fx_sum_,fluid_block_, x_sum_);
 
       // if not a new time-step, take the step-increment which has been summed up so far
-      if (HaveAle() && ax_sum_ != Teuchos::null) Extractor().AddVector(ax_sum_, ale_i_block_, x_sum_);
+      if (HaveAle() && ax_sum_ != Teuchos::null)
+      {
+        Extractor().AddVector(ax_sum_, ale_i_block_, x_sum_);
+      }
     }
 
     /*----------------------------------------------------------------------*/
@@ -1242,11 +1285,8 @@ bool FSI::MonolithicXFEM::Evaluate()
       ax = ax_sum_; // take the ax from before the restart
   }
 
-  // TODO: check this update, can we place it anywhere such that it is more consistent with the fluid-specific fx_sum?
-  // save the current structural step-increment
   sx_sum_ = sx;
-  if (HaveAle())
-    ax_sum_ = ax;
+
 
   //TODO:
   if (sdbg_!=Teuchos::null)
@@ -1256,14 +1296,12 @@ bool FSI::MonolithicXFEM::Evaluate()
   }
 
 
-
   // ------------------------------------------------------------------
   // ------------------------------------------------------------------
   // Call all fields evaluate method and assemble fields rhs vectors and matrices
   // ------------------------------------------------------------------
   // ------------------------------------------------------------------
 
-  //StructureField()->writeGmshStrucOutputStep();
   //-------------------
   // structure field
   //-------------------
@@ -2328,17 +2366,29 @@ void FSI::MonolithicXFEM::PrintNewtonIter()
    StructurePoro()->ReadRestart(step);
 
    //--------------------------------
-   // read fluid field
-   FluidField()->ReadRestart(step);
-
-   //--------------------------------
    // read ale field
    if (HaveAle())
      AleField()->ReadRestart(step);
 
    //--------------------------------
+   // read fluid field
+   // set the current interface displacement to the fluid field to be used in the cut
+   // (as we just loaded the displacements in the structure this has to be done again here)
+   for (std::map<int, Teuchos::RCP<XFEM::Coupling_Manager> >::iterator coupit = coup_man_.begin(); coupit != coup_man_.end(); ++coupit)
+     coupit->second->InitCouplingStates();
+
+   // cut to get the correct dofsets (with restart displacements)
+   //FluidField()->CreateInitialState();
+   FluidField()->ReadRestart(step);
+
+
+
+   //--------------------------------
    // setup a new system as dofrowmaps could have been changed!
    SetupSystem();
+
+   if (StructurePoro()->isPoro())
+     StructurePoro()->PoroField()->SetupSystem();
 
    //--------------------------------
    // NOTE: do the following after StructureField()->ReadRestart and after FluidField()->ReadRestart
@@ -2352,5 +2402,4 @@ void FSI::MonolithicXFEM::PrintNewtonIter()
    //
 
    SetTimeStep(FluidField()->Time(),FluidField()->Step());
-   return;
  }

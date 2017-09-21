@@ -171,7 +171,7 @@ GMSH_CUT_OUT                    no
 VOLUME_GAUSS_POINTS_BY          DirectDivergence              //Tessellation //DirectDivergence
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
-XFLUIDFLUID                     yes
+XFLUIDFLUID                     no
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
 VISC_ADJOINT_SYMMETRY           yes
@@ -230,14 +230,14 @@ E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 E 2 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // structure
 E 3 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
--------------------------------DESIGN FSI COUPLING SURF CONDITIONS
-DSURF  1
+//-------------------------------DESIGN FSI COUPLING SURF CONDITIONS
+//DSURF  1
 // FSI
-E 5 - 1 structure conforming
---------------------------------DESIGN FLUID MESH VOL CONDITIONS
-DVOL   1
+//E 5 - 1 structure conforming
+//--------------------------------DESIGN FLUID MESH VOL CONDITIONS
+//DVOL   1
 // stdfluid
-E 2 - 1
+//E 2 - 1
 ----------------------------DESIGN XFEM FLUIDFLUID SURF CONDITIONS
 DSURF  1
 // FFI

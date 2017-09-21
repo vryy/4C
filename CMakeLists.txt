@@ -1245,6 +1245,7 @@ set(OBJS_DRT_FSI_XFEM
   src/drt_fsi_xfem/XFScoupling_manager.cpp
   src/drt_fsi_xfem/XFAcoupling_manager.cpp
   src/drt_fsi_xfem/XFPcoupling_manager.cpp
+  src/drt_fsi_xfem/XFFcoupling_manager.cpp
 )
 set(OBJS_DRT_FS3I
   src/drt_fs3i/fs3i.cpp

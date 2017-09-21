@@ -793,6 +793,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       Teuchos::RCP<FLD::XFluid> tmpfluid;
       if (DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->XFluidDynamicParams().sublist("GENERAL"),"XFLUIDFLUID"))
       {
+        dserror("XFLUIDFLUID with XFSI framework not supported via FLD::XFluidFluid but via FLD::XFluid");
+
         // actdis is the embedded fluid discretization
         Teuchos::RCP<DRT::Discretization> xfluiddis  =  DRT::Problem::Instance()->GetDis("xfluid");
 

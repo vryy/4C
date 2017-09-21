@@ -48,6 +48,12 @@ namespace XFEM
     /// virtual to get polymorph destruction
     virtual ~XFPCoupling_Manager(){}
 
+    //!predict states in the coupling object
+    virtual void PredictCouplingStates(){}
+
+    //! Initializes the couplings (done at the beginning of the algorithm after fields have their state for timestep n)
+    virtual void InitCouplingStates(){return;};
+
     virtual void SetCouplingStates();
 
     virtual void AddCouplingMatrix(LINALG::BlockSparseMatrixBase& systemmatrix, double scaling);

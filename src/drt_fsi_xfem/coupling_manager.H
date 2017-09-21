@@ -43,8 +43,14 @@ namespace XFEM
     /// virtual to get polymorph destruction
     virtual ~Coupling_Manager(){}
 
+    //!predict states in the coupling object
+    virtual void PredictCouplingStates() = 0;
+
     //! Set required states in the coupling object
     virtual void SetCouplingStates() = 0;
+
+    //! Initializes the couplings (done at the beginning of the algorithm after fields have their state for timestep n)
+    virtual void InitCouplingStates() = 0;
 
     //! Add the coupling matrixes to the global systemmatrix
     // in ... idx[0] first discretization index , idx[1] second discretization index, ... in the blockmatrix

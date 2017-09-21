@@ -54,6 +54,13 @@ XFEM::XFSCoupling_Manager::XFSCoupling_Manager(Teuchos::RCP<ConditionManager> co
 }
 
 /*-----------------------------------------------------------------------------------------*
+| Set required displacement & velocity states in the coupling object          ager 04/2017 |
+*-----------------------------------------------------------------------------------------*/
+void XFEM::XFSCoupling_Manager::InitCouplingStates()
+{
+}
+
+/*-----------------------------------------------------------------------------------------*
 | Set required displacement & velocity states in the coupling object          ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
 void XFEM::XFSCoupling_Manager::SetCouplingStates()

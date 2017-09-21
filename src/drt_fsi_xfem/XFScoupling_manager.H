@@ -49,6 +49,12 @@ namespace XFEM
     /// virtual to get polymorph destruction
     virtual ~XFSCoupling_Manager(){}
 
+    //!predict states in the coupling object
+    virtual void PredictCouplingStates(){};
+
+    //! init...
+    virtual void InitCouplingStates();
+
     //! Set required displacement & velocity states in the coupling object
     virtual void SetCouplingStates();
 

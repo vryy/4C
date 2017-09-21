@@ -759,9 +759,6 @@ void xfsi_drt()
     // create the MonolithicXFEM object that does the whole work
     Teuchos::RCP<FSI::AlgorithmXFEM> fsi = Teuchos::rcp(new FSI::MonolithicXFEM(comm, fsidyn));
 
-    // setup the system (block-DOF-row maps, systemmatrix etc.) for the monolithic XFEM system
-    fsi->SetupSystem();
-
     // read the restart information, set vectors and variables ---
     // be careful, dofmaps might be changed here in a Redistribute call
     const int restart = DRT::Problem::Instance()->Restart();
@@ -769,6 +766,9 @@ void xfsi_drt()
     {
       fsi->ReadRestart(restart);
     }
+
+    // setup the system (block-DOF-row maps, systemmatrix etc.) for the monolithic XFEM system
+    fsi->SetupSystem();
 
     // here we go...
     fsi->Timeloop();
@@ -908,7 +908,6 @@ void xfpsi_drt()
 
     Teuchos::RCP<FSI::AlgorithmXFEM> fsi = Teuchos::rcp(new FSI::MonolithicXFEM(comm, fsidyn,ADAPTER::FieldWrapper::type_PoroField));;
 
-    fsi->SetupSystem();
     // read the restart information, set vectors and variables ---
 
     // be careful, dofmaps might be changed here in a Redistribute call
@@ -917,6 +916,9 @@ void xfpsi_drt()
     {
       fsi->ReadRestart(restart);
     }
+
+    fsi->SetupSystem();
+
 
     //3.2.- redistribute the FPSI interface
     //Todo .... fsi->RedistributeInterface(); // this is required for paralles fpi-condition (not included in this commit)
