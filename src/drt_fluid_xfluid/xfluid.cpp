@@ -319,7 +319,7 @@ void FLD::XFluid::Init(bool createinitialstate)
   // -------------------------------------------------------------------
   // note that all vectors w.r.t np have to be set properly
 
-  if (createinitialstate)
+  if (createinitialstate and (not restart))
     CreateInitialState();
 
   return;
@@ -4418,8 +4418,9 @@ void FLD::XFluid::SetInitialFlowField(
   )
 {
 
-  // no set initial flow field for restart
-  if(step_ != 0) return;
+  const int restart = DRT::Problem::Instance()->Restart();
+
+  if(restart) return;
 
   if(myrank_ == 0) std::cout << "SetInitialFlowField " << std::endl;
 

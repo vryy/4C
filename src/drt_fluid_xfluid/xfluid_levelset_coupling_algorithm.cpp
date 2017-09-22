@@ -182,6 +182,11 @@ void XFLUIDLEVELSET::Algorithm::Setup()
   // call Setup() in base class
   ADAPTER::ScaTraFluidCouplingAlgorithm::Setup();
 
+  const int restart = DRT::Problem::Instance()->Restart();
+
+  if(restart)
+    Teuchos::rcp_dynamic_cast<FLD::XFluid>(FluidField(), true)->CreateInitialState();
+
   // Fluid-Scatra Iteration vectors are initialized
   velnpi_ = Teuchos::rcp(new Epetra_Vector(FluidField()->StdVelnp()->Map()),true);
   velnpi_->Update(1.0,*FluidField()->StdVelnp(),0.0);
@@ -191,7 +196,6 @@ void XFLUIDLEVELSET::Algorithm::Setup()
   // do not change the following order of calls
   // this cannot be done in Init() for some reason
 
-  const int restart = DRT::Problem::Instance()->Restart();
 
   if(!restart) // otherwise SetScaTraValuesInFluid would overwrite the restarted vectors in the cond-manager
   {
