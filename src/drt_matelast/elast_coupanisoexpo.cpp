@@ -220,7 +220,7 @@ void MAT::ELASTIC::CoupAnisoExpo::GetDerivativesAniso(LINALG::TMatrix<T,2,1>& dP
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoExpo::AddStressAnisoPrincipal(
-    const LINALG::Matrix<6,1> rcg,
+    const LINALG::Matrix<6,1>& rcg,
     LINALG::Matrix<6,6>& cmat,
     LINALG::Matrix<6,1>& stress,
     Teuchos::ParameterList& params,
@@ -261,8 +261,8 @@ void MAT::ELASTIC::CoupAnisoExpo::GetFiberVecs(
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoExpo::SetFiberVecs(
     const double newgamma,
-    const LINALG::Matrix<3,3> locsys,
-    const LINALG::Matrix<3,3> defgrd
+    const LINALG::Matrix<3,3>& locsys,
+    const LINALG::Matrix<3,3>& defgrd
 )
 {
   if ((params_->gamma_<-90) || (params_->gamma_ >90)) dserror("Fiber angle not in [-90,90]");

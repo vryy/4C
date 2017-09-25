@@ -121,7 +121,7 @@ void MAT::ELASTIC::CoupAnisoPow::Setup(DRT::INPUT::LineDefinition* linedef)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoPow::AddStressAnisoPrincipal(
-    const LINALG::Matrix<6,1> rcg,
+    const LINALG::Matrix<6,1>& rcg,
     LINALG::Matrix<6,6>& cmat,
     LINALG::Matrix<6,1>& stress,
     Teuchos::ParameterList& params,
@@ -189,8 +189,8 @@ void MAT::ELASTIC::CoupAnisoPow::GetFiberVecs(
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoPow::SetFiberVecs(
     const double newgamma,
-    const LINALG::Matrix<3,3> locsys,
-    const LINALG::Matrix<3,3> defgrd
+    const LINALG::Matrix<3,3>& locsys,
+    const LINALG::Matrix<3,3>& defgrd
 )
 {
   if ((params_->gamma_<-90) || (params_->gamma_ >90)) dserror("Fiber angle not in [-90,90]");

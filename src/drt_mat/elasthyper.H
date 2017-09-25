@@ -469,34 +469,34 @@ private:
         );
 
     /// calculates the isotropic stress and elasticity tensor
-    virtual void EvaluateIsotropicStressCmat(
+    void EvaluateIsotropicStressCmat(
         LINALG::Matrix<6,1>& stress,
         LINALG::Matrix<6,6>& cmat,
-        LINALG::Matrix<6,1> scg,
-        LINALG::Matrix<6,1> id2,
-        LINALG::Matrix<6,1> icg,
-        LINALG::Matrix<6,6> id4sharp,
-        LINALG::Matrix<3,1> prinv,
-        LINALG::Matrix<3,1> dPI,
-        LINALG::Matrix<6,1> ddPII
+        const LINALG::Matrix<6,1>& scg,
+        const LINALG::Matrix<6,1>& id2,
+        const LINALG::Matrix<6,1>& icg,
+        const LINALG::Matrix<6,6>& id4sharp,
+        const LINALG::Matrix<3,1>& prinv,
+        const LINALG::Matrix<3,1>& dPI,
+        const LINALG::Matrix<6,1>& ddPII
         );
 
     /// calculates the anisotropic stress and elasticity tensor for coupled configuration
-    virtual void EvaluateAnisotropicPrinc(
+    void EvaluateAnisotropicPrinc(
         LINALG::Matrix<6,1>& stressanisoprinc,
         LINALG::Matrix<6,6>& cmatanisoprinc,
-        LINALG::Matrix<6,1> rcg,
+        const LINALG::Matrix<6,1>& rcg,
         Teuchos::ParameterList& params,
         const int eleGID
         );
 
     /// calculates the anisotropic stress and elasticity tensor for decoupled configuration
-    virtual void EvaluateAnisotropicMod(
+    void EvaluateAnisotropicMod(
         LINALG::Matrix<6,1>& stressanisoprinc,
         LINALG::Matrix<6,6>& cmatanisoprinc,
-        LINALG::Matrix<6,1> rcg,
-        LINALG::Matrix<6,1> icg,
-        LINALG::Matrix<3,1> prinv,
+        const LINALG::Matrix<6,1>& rcg,
+        const LINALG::Matrix<6,1>& icg,
+        const LINALG::Matrix<3,1>& prinv,
         const int eleGID
         );
 
@@ -596,13 +596,13 @@ private:
     /// \author bborn
     /// \date 08/09
 
-    virtual void ResponseStretches(
-    LINALG::Matrix<6,6>& cmat,      ///< material elasticity matrix
-    LINALG::Matrix<6,1>& stress,    ///< 2nd Piola-Kirchhoff stress vector
-    const LINALG::Matrix<6,1> rcg,  ///< Right Cauchy-Green tensor
-    const bool& havecoeffstrpr,     ///< true, if at least one summand is based on pr.stretches
-    const bool& havecoeffstrmod,    ///< true, if at least one summand is based on mod.pr.stretches
-    const int eleGID                ///< element GID
+    void ResponseStretches(
+        LINALG::Matrix<6,6>& cmat,      ///< material elasticity matrix
+        LINALG::Matrix<6,1>& stress,    ///< 2nd Piola-Kirchhoff stress vector
+        const LINALG::Matrix<6,1>& rcg,  ///< Right Cauchy-Green tensor
+        const bool& havecoeffstrpr,     ///< true, if at least one summand is based on pr.stretches
+        const bool& havecoeffstrmod,    ///< true, if at least one summand is based on mod.pr.stretches
+        const int eleGID                ///< element GID
     );
 
     /// Check if material state is polyconvex:

@@ -419,7 +419,7 @@ namespace MAT
       /// \delta^{aniso}_{15} = \frac {\partial^2\Psi}{\partial VIII_{\boldsymbol C}\partial VIII_{\boldsymbol C}}
       ///\f]
       virtual void AddStressAnisoPrincipal(
-        const LINALG::Matrix<6,1> rcg,  ///<right Cauchy Green Tensor
+        const LINALG::Matrix<6,1>& rcg,  ///<right Cauchy Green Tensor
         LINALG::Matrix<6,6>& cmat,  ///< material stiffness matrix
         LINALG::Matrix<6,1>& stress,  ///< 2nd PK-stress
         Teuchos::ParameterList& params,
@@ -464,8 +464,8 @@ namespace MAT
       /// retrieve stress and cmat
       /// of summand for fiber directions with respect to modified strains
       virtual void AddStressAnisoModified(
-        const LINALG::Matrix<6,1> rcg,  ///<right Cauchy Green Tensor
-        const LINALG::Matrix<6,1> icg,  ///< inverse of right Cauchy Green Tensor
+        const LINALG::Matrix<6,1>& rcg,  ///<right Cauchy Green Tensor
+        const LINALG::Matrix<6,1>& icg,  ///< inverse of right Cauchy Green Tensor
         LINALG::Matrix<6,6>& cmat,  ///< material stiffness matrix
         LINALG::Matrix<6,1>& stress,  ///< 2nd PK-stress
         double I3,   ///< third principal invariant
@@ -540,8 +540,8 @@ namespace MAT
       /// Set fiber directions
       virtual void SetFiberVecs(
           const double newgamma,   ///< new angle
-          const LINALG::Matrix<3,3> locsys,   ///< local coordinate system
-          const LINALG::Matrix<3,3> defgrd   ///< deformation gradient
+          const LINALG::Matrix<3,3>& locsys,   ///< local coordinate system
+          const LINALG::Matrix<3,3>& defgrd   ///< deformation gradient
       )
       {
         return;  // do nothing

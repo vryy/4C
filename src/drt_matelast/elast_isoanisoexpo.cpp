@@ -126,8 +126,8 @@ void MAT::ELASTIC::IsoAnisoExpo::Setup(DRT::INPUT::LineDefinition* linedef)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoAnisoExpo::AddStressAnisoModified(
-    const LINALG::Matrix<6,1> rcg,
-    LINALG::Matrix<6,1> icg,
+    const LINALG::Matrix<6,1>& rcg,
+    const LINALG::Matrix<6,1>& icg,
     LINALG::Matrix<6,6>& cmat,
     LINALG::Matrix<6,1>& stress,
     double I3,
@@ -215,8 +215,8 @@ void MAT::ELASTIC::IsoAnisoExpo::GetFiberVecs(
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoAnisoExpo::SetFiberVecs(
     const double newgamma,
-    const LINALG::Matrix<3,3> locsys,
-    const LINALG::Matrix<3,3> defgrd
+    const LINALG::Matrix<3,3>& locsys,
+    const LINALG::Matrix<3,3>& defgrd
 )
 {
   if ((params_->gamma_<-90) || (params_->gamma_ >90)) dserror("Fiber angle not in [-90,90]");

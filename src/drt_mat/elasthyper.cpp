@@ -1339,13 +1339,13 @@ void MAT::ElastHyper::CalculateGammaDelta(
 void MAT::ElastHyper::EvaluateIsotropicStressCmat(
     LINALG::Matrix<6,1>& stress,
     LINALG::Matrix<6,6>& cmat,
-    LINALG::Matrix<6,1> scg,
-    LINALG::Matrix<6,1> id2,
-    LINALG::Matrix<6,1> icg,
-    LINALG::Matrix<6,6> id4sharp,
-    LINALG::Matrix<3,1> prinv,
-    LINALG::Matrix<3,1> dPI,
-    LINALG::Matrix<6,1> ddPII
+    const LINALG::Matrix<6,1>& scg,
+    const LINALG::Matrix<6,1>& id2,
+    const LINALG::Matrix<6,1>& icg,
+    const LINALG::Matrix<6,6>& id4sharp,
+    const LINALG::Matrix<3,1>& prinv,
+    const LINALG::Matrix<3,1>& dPI,
+    const LINALG::Matrix<6,1>& ddPII
     )
 {
   // 2nd Piola Kirchhoff stress factors (according to Holzapfel-Nonlinear Solid Mechanics p. 216)
@@ -1391,15 +1391,15 @@ void MAT::ElastHyper::EvaluateIsotropicStressCmat(
 void MAT::ElastHyper::EvaluateAnisotropicPrinc(
     LINALG::Matrix<6,1>& stressanisoprinc,
     LINALG::Matrix<6,6>& cmatanisoprinc,
-    LINALG::Matrix<6,1> rcg,
+    const LINALG::Matrix<6,1>& rcg,
     Teuchos::ParameterList& params,
     const int eleGID
     )
 {
   // loop map of associated potential summands
-  for (unsigned int p=0; p<potsum_.size(); ++p)
+  for ( const Teuchos::RCP<MAT::ELASTIC::Summand>& p : potsum_ )
   {
-    potsum_[p]->AddStressAnisoPrincipal(rcg,cmatanisoprinc,stressanisoprinc,params,eleGID);
+    p->AddStressAnisoPrincipal(rcg,cmatanisoprinc,stressanisoprinc,params,eleGID);
   }
 
   return ;
@@ -1410,17 +1410,17 @@ void MAT::ElastHyper::EvaluateAnisotropicPrinc(
 void MAT::ElastHyper::EvaluateAnisotropicMod(
     LINALG::Matrix<6,1>& stressanisomod,
     LINALG::Matrix<6,6>& cmatanisomod,
-    LINALG::Matrix<6,1> rcg,
-    LINALG::Matrix<6,1> icg,
-    LINALG::Matrix<3,1> prinv,
+    const LINALG::Matrix<6,1>& rcg,
+    const LINALG::Matrix<6,1>& icg,
+    const LINALG::Matrix<3,1>& prinv,
     const int eleGID
     )
 {
 
   // loop map of associated potential summands
-  for (unsigned int p=0; p<potsum_.size(); ++p)
+  for ( const Teuchos::RCP<MAT::ELASTIC::Summand>& p : potsum_ )
   {
-    potsum_[p]->AddStressAnisoModified(rcg,icg,cmatanisomod,stressanisomod,prinv(2),eleGID);
+    p->AddStressAnisoModified(rcg,icg,cmatanisomod,stressanisomod,prinv(2),eleGID);
   }
 
   return ;
@@ -1431,7 +1431,7 @@ void MAT::ElastHyper::EvaluateAnisotropicMod(
 void MAT::ElastHyper::ResponseStretches(
   LINALG::Matrix<6,6>& cmat,
   LINALG::Matrix<6,1>& stress,
-  const LINALG::Matrix<6,1> rcg,
+  const LINALG::Matrix<6,1>& rcg,
   const bool& havecoeffstrpr,
   const bool& havecoeffstrmod,
   const int eleGID

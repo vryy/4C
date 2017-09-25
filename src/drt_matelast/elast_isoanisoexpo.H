@@ -137,8 +137,8 @@ namespace ELASTIC
 
     /// Add anisotropic modified stresses
     virtual void AddStressAnisoModified(
-        const LINALG::Matrix<6,1> rcg,  ///<right Cauchy Green Tensor
-        const LINALG::Matrix<6,1> icg,  ///< inverse of right Cauchy Green Tensor
+        const LINALG::Matrix<6,1>& rcg,  ///<right Cauchy Green Tensor
+        const LINALG::Matrix<6,1>& icg,  ///< inverse of right Cauchy Green Tensor
         LINALG::Matrix<6,6>& cmat,  ///< material stiffness matrix
         LINALG::Matrix<6,1>& stress,  ///< 2nd PK-stress
         double I3,   ///< third principal invariant
@@ -164,8 +164,8 @@ namespace ELASTIC
     /// Set fiber directions
     virtual void SetFiberVecs(
         const double newgamma,   ///< new angle
-        const LINALG::Matrix<3,3> locsys,   ///< local coordinate system
-        const LINALG::Matrix<3,3> defgrd   ///< deformation gradient
+        const LINALG::Matrix<3,3>& locsys,   ///< local coordinate system
+        const LINALG::Matrix<3,3>& defgrd   ///< deformation gradient
     );
 
     /// Get fiber directions

@@ -149,7 +149,7 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::Setup(DRT::INPUT::LineDefinition* 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::AddStressAnisoPrincipal(
-    const LINALG::Matrix<6,1> rcg,
+    const LINALG::Matrix<6,1>& rcg,
     LINALG::Matrix<6,6>& cmat,
     LINALG::Matrix<6,1>& stress,
     Teuchos::ParameterList& params,
@@ -183,8 +183,8 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::GetFiberVecs(
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::SetFiberVecs(
     const double newgamma,
-    const LINALG::Matrix<3,3> locsys,
-    const LINALG::Matrix<3,3> defgrd
+    const LINALG::Matrix<3,3>& locsys,
+    const LINALG::Matrix<3,3>& defgrd
 )
 {
   if ((params_->gamma_<-90) || (params_->gamma_ >90)) dserror("Fiber angle not in [-90,90]");

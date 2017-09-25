@@ -155,7 +155,7 @@ namespace ELASTIC
     /// Add anisotropic principal stresses
     /// ATTENTION: this is only the passive contribution of the fiber!
     virtual void AddStressAnisoPrincipal(
-        const LINALG::Matrix<6,1> rcg,  ///<right Cauchy Green in "strain-like" Voigt notation
+        const LINALG::Matrix<6,1>& rcg,  ///<right Cauchy Green in "strain-like" Voigt notation
         LINALG::Matrix<6,6>& cmat,  ///< material stiffness matrix
         LINALG::Matrix<6,1>& stress,  ///< 2nd PK-stress
         Teuchos::ParameterList& params, ///< additional parameters for computation of material properties
@@ -203,8 +203,8 @@ namespace ELASTIC
     /// Set fiber directions
     virtual void SetFiberVecs(
         const double newgamma,   ///< new angle
-        const LINALG::Matrix<3,3> locsys,   ///< local coordinate system
-        const LINALG::Matrix<3,3> defgrd   ///< deformation gradient
+        const LINALG::Matrix<3,3>& locsys,   ///< local coordinate system
+        const LINALG::Matrix<3,3>& defgrd   ///< deformation gradient
     );
 
     /// Get fiber directions
