@@ -759,6 +759,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::mes_coupanisoexpoactive:
   case INPAR::MAT::mes_coupanisoexpo:
   case INPAR::MAT::mes_coupanisopow:
+  case INPAR::MAT::mes_couptransverselyisotropic:
   case INPAR::MAT::mes_coupanisoexpotwocoup:
   case INPAR::MAT::mes_coupanisoneohooke:
   case INPAR::MAT::mes_coupanisoneohooke_varprop:

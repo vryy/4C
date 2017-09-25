@@ -164,6 +164,7 @@ namespace INPAR
       mes_coupanisoneohooke,                   ///< anisotropic Neo-Hooke single fiber summand
       mes_coupanisoneohooke_varprop,           ///< anisotropic Neo-Hooke single fiber summand with space-time variable coefficient
       mes_coupanisopow,                        ///< anisotropic pow-like single fiber summand
+      mes_couptransverselyisotropic,           ///< transversely isotropic hyperelastic summand
       mes_coupblatzko,                         ///< Blatz and Ko  material as hyperelastic potential summand
       mes_coupexppol,                          ///< compressible, isotropic material law for soft tissue
       mes_couplogmixneohooke,                  ///< logarithmic Neo-Hooke material as hyperelastic potential summand

@@ -1795,6 +1795,25 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*--------------------------------------------------------------------*/
+  // transversely isotropic material
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_CoupTransverselyIsotropic",
+                                            "transversely part of a simple othotropic, transversely "
+                                            "isotropic hyperelastic constitutive equation",
+                                            INPAR::MAT::mes_couptransverselyisotropic));
+
+    AddNamedReal(m,"ALPHA","1-st constant");
+    AddNamedReal(m,"BETA","2-nd constant");
+    AddNamedReal(m,"GAMMA","3-rd constant");
+    AddNamedReal(m,"ANGLE","fiber angle");
+    AddNamedInt(m,"FIBER","exponential constant", 1, true);
+    AddNamedInt(m,"INIT","initialization modus for fiber alignment", 1, true);
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*--------------------------------------------------------------------*/
   // coupled Varga material acc. to Holzapfel
   {
     Teuchos::RCP<MaterialDefinition> m

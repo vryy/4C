@@ -58,6 +58,7 @@ Interface class for materials of (visco)elasthyper toolbox.
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "elast_anisoactivestress_evolution.H"
+#include "elast_couptransverselyisotropic.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -311,6 +312,13 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
       curmat->SetParameter(new MAT::ELASTIC::PAR::CoupAnisoNeoHooke_VarProp(curmat));
     MAT::ELASTIC::PAR::CoupAnisoNeoHooke_VarProp* params = static_cast<MAT::ELASTIC::PAR::CoupAnisoNeoHooke_VarProp*>(curmat->Parameter());
     return Teuchos::rcp(new CoupAnisoNeoHooke_VarProp(params));
+  }
+  case INPAR::MAT::mes_couptransverselyisotropic:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::CoupTransverselyIsotropic(curmat));
+    MAT::ELASTIC::PAR::CoupTransverselyIsotropic* params = static_cast<MAT::ELASTIC::PAR::CoupTransverselyIsotropic*>(curmat->Parameter());
+    return Teuchos::rcp(new CoupTransverselyIsotropic(params));
   }
   case INPAR::MAT::mes_isoanisoexpo:
   {

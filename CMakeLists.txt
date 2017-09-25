@@ -601,6 +601,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/viscoelasthyper.cpp
   src/drt_mat/visconeohooke.cpp
   src/drt_mat/yoghurt.cpp
+  src/drt_mat/utils.cpp
   src/drt_matelast/elast_anisoactivestress_evolution.cpp
   src/drt_matelast/elast_coupanisoexpoactive.cpp
   src/drt_matelast/elast_coupanisoexpo.cpp
@@ -608,6 +609,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_matelast/elast_coupanisoneohooke.cpp
   src/drt_matelast/elast_coupanisoneohooke_VarProp.cpp
   src/drt_matelast/elast_coupanisopow.cpp
+  src/drt_matelast/elast_couptransverselyisotropic.cpp
   src/drt_matelast/elast_coupblatzko.cpp
   src/drt_matelast/elast_couplogneohooke.cpp
   src/drt_matelast/elast_coupSaintVenantKirchhoff.cpp
