@@ -81,7 +81,7 @@ namespace MAT {
     /** \brief Compute the product of a tensor in perturbed Voigt notation
      *  and a vector
      *
-     *  \f$ [vec_res]_{A} = vtensor_{AB} vec^{B} \f$
+     *  \f$ [vecres]_{A} = vtensor_{AB} vec^{B} \f$
      *
      *  \param[in]  vtensor      tensor in Voigt <type> notation
      *  \param[out] vtensor_inv  inverser tensor in Voigt <type> notation
@@ -94,7 +94,7 @@ namespace MAT {
 
     /** \brief Compute the symmetric outer product of two vectors
      *
-     *  \f$ [abba]_{AB} = [vec_a]_{A} [vec_b]_{B} + [vec_a]_{B} [vec_b]_{A} \f$
+     *  \f$ [abba]_{AB} = [veca]_{A} [vecb]_{B} + [veca]_{B} [vecb]_{A} \f$
      *
      *  \param[in]  vec_a  first vector
      *  \param[in]  vec_b  second vector

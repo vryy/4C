@@ -32,11 +32,11 @@ namespace PAR {
    *  by consideration of the parameters for the small strain regime via
    *
    *  \f{eqnarray}{
-   *  \lambda &=& \Lambda = \frac{\nu_{12} \nu_{21} + \nu_{22}}{(1-\nu_{22}-2\nu_{12} \nu_{21})(1+\nu_{22})} \E_{2}, \\
-   *  \mu &=& \G_{23} = \frac{E_{1}}{2(1+\nu_{22})}, \\
-   *  \alpha &=& \G_{23} - \G_{12}, \\
-   *  \beta &=& \frac{\nu_{12}}{2} (\lambda +2 \Go), \\
-   *  \gamma &=& \frac{1}{8} \left(\frac{1 -\nu_{22}}{1-\nu_{22} - \nu_{12} \nu_{21}} \E_{1} + 4 \alpha - 4 \beta \right).
+   *  \lambda &=& \Lambda = \frac{\nu_{12} \nu_{21} + \nu_{22}}{(1-\nu_{22}-2\nu_{12} \nu_{21})(1+\nu_{22})} E_{2}, \\
+   *  \mu &=& G_{23} = \frac{E_{1}}{2(1+\nu_{22})}, \\
+   *  \alpha &=& G_{23} - G_{12}, \\
+   *  \beta &=& \frac{\nu_{12}}{2} (\lambda +2 G_{23}), \\
+   *  \gamma &=& \frac{1}{8} \left(\frac{1 -\nu_{22}}{1-\nu_{22} - \nu_{12} \nu_{21}} E_{1} + 4 \alpha - 4 \beta \right).
    *  \f}
    *  where \f$ E_{2} = E_{3} \f$ is the Young modulus in the plane normal to the fiber
    *  direction and \f$ E_{1} = E_{A} \f$ denotes the Young's modulus in fiber direction.
@@ -109,7 +109,7 @@ namespace PAR {
    *  hyperelastic constitutive equation for large strain computations",
    *  Comput. Methods Appl. Mech. Engrg., 162, pp. 151-164, (1998).
    *
-   *  Note that the given reference contains many typos, such that almost all
+   *  \note The given reference contains many typos, such that almost all
    *  equations (beside the strain energy function) were derived independently.
    *
    *  \author hiermeier \date 09/17 */
@@ -152,7 +152,7 @@ namespace PAR {
      *  \gamma (I_{4}-1) \right) (I_{4}-1) - \frac{\alpha}{2} ( I_{5} - 1)
      *  \f]
      *
-     *  Note that \f$ \ln(J) = \ln(\sqrt(I_{3})) = \frac{1}{2} \ln(I_{3}) \f$
+     *  \note \f$ \ln(J) = \ln(\sqrt(I_{3})) = \frac{1}{2} \ln(I_{3}) \f$
      *  holds.
      *
      *  \param[out] psi      Updated value of the strain energy function
@@ -206,11 +206,11 @@ namespace PAR {
 
     /** \brief Indicator for formulation
      *
-     *  \param[in/out] isoprinc     global indicator for isotropic principal formulation
-     *  \param[in/out] isomod       global indicator for isotropic splitted formulation
-     *  \param[in/out] anisoprinc   global indicator for anisotropic principal formulation
-     *  \param[in/out] anisomod     global indicator for anisotropic splitted formulation
-     *  \param[in/out] viscogeneral global indicator, if one viscoelastic formulation is used
+     *  \param[out] isoprinc     global indicator for isotropic principal formulation
+     *  \param[out] isomod       global indicator for isotropic splitted formulation
+     *  \param[out] anisoprinc   global indicator for anisotropic principal formulation
+     *  \param[out] anisomod     global indicator for anisotropic splitted formulation
+     *  \param[out] viscogeneral global indicator, if one viscoelastic formulation is used
      */
     virtual void SpecifyFormulation( bool& isoprinc, bool& isomod,
         bool& anisoprinc, bool& anisomod, bool& viscogeneral )
@@ -222,7 +222,7 @@ namespace PAR {
   private:
     /** \brief Reset the pseudo invariants and the jacobian determinant
      *
-     *  \param rcg[in]  right cauchy green tensor in perturbed Voigt strain notation
+     *  \param[in] rcg  right cauchy green tensor in perturbed Voigt strain notation
      *
      *  \author hiermeier \date 09/17 */
     void ResetInvariants( const LINALG::Matrix<6,1>& rcg );
@@ -231,13 +231,13 @@ namespace PAR {
      *  tensor
      *
      *  \f{eqnarray}{
-     *  \mat{S}_{\mathrm{trn}} =& 2 \left\{ \frac{\partial \Psi_{\mathrm{trn}} }{\partial \Ithree} \frac{\partial \Ithree}{\partial \mat{C}}
-     *  + \frac{\partial \Psi_{\mathrm{trn}} }{\partial \Ifour} \frac{\partial \Ifour}{\partial \mat{C}}
-     *  + \frac{\partial \Psi_{\mathrm{trn}} }{\partial \Ifive} \frac{\partial \Ifive}{\partial \mat{C}} \right\} \nonumber \\
+     *  \mat{S}_{\mathrm{trn}} =& 2 \left\{ \frac{\partial \Psi_{\mathrm{trn}} }{\partial I_{3}} \frac{\partial I_{3}}{\partial \mat{C}}
+     *  + \frac{\partial \Psi_{\mathrm{trn}} }{\partial I_{4}} \frac{\partial I_{4}}{\partial \mat{C}}
+     *  + \frac{\partial \Psi_{\mathrm{trn}} }{\partial I_{5}} \frac{\partial I_{5}}{\partial \mat{C}} \right\} \nonumber \\
      *  =& 2 \left\{
-     *  \frac{\beta}{2\Ithree} (\Ifour-1) \Ithree \mat{C}^{-1} + \left[\alpha + \frac{\beta}{2} \ln(\Ithree) + 2 \gamma (\Ifour-1)\right] \mat{A} \otimes \mat{A}
+     *  \frac{\beta}{2 I_{3}} (I_{4}-1) I_{3} \mat{C}^{-1} + \left[\alpha + \frac{\beta}{2} \ln(I_{3}) + 2 \gamma (I_{4}-1)\right] \mat{A} \otimes \mat{A}
      *  - \frac{\alpha}{2} ( \mat{A} \otimes \mat{C}\, \mat{A} + \mat{A}\, \mat{C} \otimes \mat{A} )\right\} \nonumber \\
-     *  =& \beta (\Ifour - 1) \mat{C}^{-1} + 2\left[\alpha + \frac{\beta}{2} \ln(\Ithree) + 2 \gamma (\Ifour-1)\right] \mat{A} \otimes \mat{A}
+     *  =& \beta (I_{4} - 1) \mat{C}^{-1} + 2\left[\alpha + \frac{\beta}{2} \ln(I_{3}) + 2 \gamma (I_{4}-1)\right] \mat{A} \otimes \mat{A}
      *  - \alpha ( \mat{A} \otimes \mat{C}\, \mat{A} + \mat{A}\, \mat{C} \otimes \mat{A} ).
      *  \f}
      *
@@ -258,14 +258,14 @@ namespace PAR {
      *  \f{eqnarray}{
      *  \mathbb{C}_{\mathrm{trn}} = [\mathbb{C}_{\mathrm{trn}}]_{ABCD} =& 2 \frac{\partial [\mat{S}_{\mathrm{trn}}]_{AB}}{\partial [\mat{C}]_{CD}} =
      *  2 \{ \beta [\mat{C}^{-1}]_{AB} [\vct{A} \otimes \vct{A}]_{CD}  \nonumber \\
-     *  & - \beta (\Ifour -1 ) \frac{1}{2} \left([\mat{C}^{-1}]_{AC}[\mat{C}^{-1}]_{BD} + [\mat{C}^{-1}]_{AD} [\mat{C}^{-1}]_{BC} \right) \nonumber \\
-     *  &+ \beta \frac{1}{\Ithree} \Ithree [\mat{C}^{-1}]_{CD} [\vct{A} \otimes \vct{A}]_{AB} + 4 \gamma  [\vct{A} \otimes \vct{A} \otimes \vct{A} \otimes \vct{A}]_{ABCD} \nonumber \\
+     *  & - \beta (I_{4} -1 ) \frac{1}{2} \left([\mat{C}^{-1}]_{AC}[\mat{C}^{-1}]_{BD} + [\mat{C}^{-1}]_{AD} [\mat{C}^{-1}]_{BC} \right) \nonumber \\
+     *  &+ \beta \frac{1}{I_{3}} I_{3} [\mat{C}^{-1}]_{CD} [\vct{A} \otimes \vct{A}]_{AB} + 4 \gamma  [\vct{A} \otimes \vct{A} \otimes \vct{A} \otimes \vct{A}]_{ABCD} \nonumber \\
      *  &-\frac{\alpha}{2} \left( [\vct{A}]_{A} [\vct{A}]_{D} [\mat{\delta}]_{BC} +
      *  [\vct{A}]_{A} [\vct{A}]_{C} [\mat{\delta}]_{BD} +
      *  [\vct{A}]_{C} [\vct{A}]_{B} [\mat{\delta}]_{AD} \right. \nonumber \\
      *  &\left. +
      *  [\vct{A}]_{D} [\vct{A}]_{B} [\mat{\delta}]_{AC} \right) \nonumber \\
-     *  =& 2 \beta \left( \mat{C}^{-1} \otimes \vct{A} \otimes \vct{A} + \vct{A} \otimes \vct{A}\otimes \mat{C}^{-1} \right) -2 \beta (\Ifour-1) \mat{C}^{-1} \odot \mat{C}^{-1} \nonumber \\
+     *  =& 2 \beta \left( \mat{C}^{-1} \otimes \vct{A} \otimes \vct{A} + \vct{A} \otimes \vct{A}\otimes \mat{C}^{-1} \right) -2 \beta (I_{4}-1) \mat{C}^{-1} \odot \mat{C}^{-1} \nonumber \\
      *  &-2 \alpha \left( (\vct{A} \otimes \vct{A} ) \odot \mat{\delta}
      *  + \mat{\delta} \odot (\vct{A} \otimes \vct{A} ) \right)
      *  \f}
@@ -297,10 +297,10 @@ namespace PAR {
      *  {11, 22, 33, 12, 23, 13}. */
     LINALG::Matrix<6,1> AA_;
 
-    /// pseudo invariant I4 ( strain measure in fiber direction )
+    /// pseudo invariant \f$ I_4 \f$ ( strain measure in fiber direction )
     double I4_ = 0.0;
 
-    /// pseudo invariant I5 ( quadratic strain measure in fiber direction )
+    /// pseudo invariant \f$ I_5 \f$ ( quadratic strain measure in fiber direction )
     double I5_ = 0.0;
 
     /// determinant of the deformation gradient
