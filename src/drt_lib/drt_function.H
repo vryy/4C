@@ -284,20 +284,7 @@ namespace UTILS {
                      function will be evaluated
 
     */
-    double Evaluate(const int index, const double* x, const double t);
-
-    /*!
-
-    \brief evaluate function at given time
-
-    \param index (i) For vector-valued functions, index defines the
-                     function-component which should be evaluated
-                     For scalar functions, index is always set to 0
-    \param t     (i) The point in time in which the
-                     function will be evaluated
-
-    */
-    double EvaluateTimeFunc(const int index, const double t);
+    virtual double Evaluate(const int index, const double* x, const double t);
 
     /*!
 
@@ -308,7 +295,7 @@ namespace UTILS {
     \param variables (i) A vector containing a pair (variablename, value) for each variable
 
     */
-    double Evaluate(const int index, const std::vector<std::pair<std::string,double> >& variables);
+    virtual double Evaluate(const int index, const std::vector<std::pair<std::string,double> >& variables);
 
     /*!
 
@@ -320,7 +307,7 @@ namespace UTILS {
     \param constants (i) A vector containing a pair (variablename, value) for each constant
 
     */
-    double Evaluate(
+    virtual double Evaluate(
         const int                                          index,
         const std::vector<std::pair<std::string,double> >& variables,
         const std::vector<std::pair<std::string,double> >& constants);
@@ -338,7 +325,7 @@ namespace UTILS {
                      function will be evaluated
 
     */
-    std::vector<double> EvaluateSpatialDerivative(const int index, const double* x, const double t);
+    virtual std::vector<double> EvaluateSpatialDerivative(const int index, const double* x, const double t);
 
     /*!
 
@@ -349,7 +336,7 @@ namespace UTILS {
     \param variables (i) A vector containing a pair (variablename, value) for each variable
 
     */
-    std::vector<double> EvaluateDerivative(const int index, const std::vector<std::pair<std::string,double> >& variables);
+    virtual std::vector<double> EvaluateDerivative(const int index, const std::vector<std::pair<std::string,double> >& variables);
 
     /*!
 
@@ -361,7 +348,7 @@ namespace UTILS {
     \param constants (i) A vector containing a pair (variablename, value) for each constant
 
     */
-    std::vector<double> EvaluateDerivative(
+    virtual std::vector<double> EvaluateDerivative(
         int                                                index,
         const std::vector<std::pair<std::string,double> >& variables,
         const std::vector<std::pair<std::string,double> >& constants);
@@ -374,7 +361,7 @@ namespace UTILS {
     \param varname  (i)  Variable name to be checked
 
     */
-    bool IsVariable(const int index, const std::string& varname) const;
+    virtual bool IsVariable(const int index, const std::string& varname) const;
 
     /*!
     \brief  add a variable to the parser object
@@ -386,12 +373,12 @@ namespace UTILS {
     \param varvalue (i)  Value of the variable
 
     */
-    void AddVariable(const int index, const std::string& varname, double varvalue);
+    virtual void AddVariable(const int index, const std::string& varname, double varvalue);
 
     /*!
     \brief  parse the underlying expression
     */
-    void ParseExpressions();
+    virtual void ParseExpressions();
 
   private:
 

@@ -1064,6 +1064,7 @@ set(OBJS_DRT_UTILS
   src/drt_fluid/fluid_rotsym_periodicbc_utils.cpp
   src/drt_fluid_xfluid/xfluid_functions.cpp
   src/drt_fluid_xfluid/xfluid_functions_combust.cpp
+  src/drt_poromultiphase_scatra/poromultiphase_scatra_function.cpp
   src/drt_geometry/integrationcell.cpp
   src/drt_geometry/intersection_interfacepoint.cpp
   src/drt_geometry/intersection_math.cpp

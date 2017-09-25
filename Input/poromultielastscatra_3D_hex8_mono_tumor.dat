@@ -100,7 +100,8 @@ MAT 2 MAT_FluidPoroMultiPhaseReactions LOCAL No PERMEABILITY 1.82e-9 NUMMAT 3 MA
 // 2 = tumor
 // 3 = IF
 
-MAT 20 MAT_FluidPoroSingleReaction NUMSCAL 2 NUMPHASES 3 SCALE 0 -1 1 COUPLING scalar_by_function FUNCTID 4
+MAT 20 MAT_FluidPoroSingleReaction NUMSCAL 2 NUMPHASES 3 SCALE 0 -1 1 COUPLING scalar_by_function FUNCTID 10
+// equivalent with: MAT 20 MAT_FluidPoroSingleReaction NUMSCAL 2 NUMPHASES 3 SCALE 0 -1 1 COUPLING scalar_by_function FUNCTID 4
 
 MAT 10 MAT_FluidPoroSinglePhase DOFTYPEID 101 VISCOSITYLAWID 104 DENSITYLAWID 103 DENSITY 1.0 BULKMODULUS 1e15 RELPERMEABILITYLAWID 105
 MAT 101 MAT_FluidPoroSinglePhaseDofDiffPressure NUMDOF 3 PRESCOEFF 1 0 -1 END PHASELAWID 102
@@ -132,7 +133,8 @@ MAT 5 MAT_matlist_reactions LOCAL No NUMMAT 2 MATIDS 501 502 NUMREAC 4 REACIDS 5
 MAT 501 MAT_scatra_multiporo PHASEID 2 DIFFUSIVITY 3.2e-3 DENSITY 1.0 DELTA 2.0 // oxygen --> belongs to IF
 MAT 502 MAT_scatra_multiporo PHASEID 1 DIFFUSIVITY 0.0 DENSITY 1.0 DELTA 0.0 // necrotic tumor cells --> belong to tumor cells
 MAT 503 MAT_scatra_reaction NUMSCAL 2 STOICH 0 1 REACCOEFF 1.0 COUPLING by_function ROLE 0 5
-MAT 504 MAT_scatra_reaction NUMSCAL 2 STOICH -1 0 REACCOEFF 1.0 COUPLING by_function ROLE 6 0
+MAT 504 MAT_scatra_reaction NUMSCAL 2 STOICH -1 0 REACCOEFF 1.0 COUPLING by_function ROLE 12 0
+//equivalent with: MAT 504 MAT_scatra_reaction NUMSCAL 2 STOICH -1 0 REACCOEFF 1.0 COUPLING by_function ROLE 6 0
 MAT 505 MAT_scatra_reaction NUMSCAL 2 STOICH 1 0 REACCOEFF 1.0 COUPLING by_function ROLE 9 0
 MAT 506 MAT_scatra_reaction NUMSCAL 2 STOICH 0 -1 REACCOEFF 1.0 COUPLING by_function ROLE 0 7
 --------------------------------------------------------CLONING MATERIAL MAP
@@ -161,6 +163,16 @@ COMPONENT 0 FUNCTION 4.2e-6
 COMPONENT 1 FUNCTION 2.0e-6
 ----------------------------------------------------------------------FUNCT9
 VARFUNCTION ((9.6e-6*(phi1-2.0e-6)/(4.2e-6-2.0e-6)*heaviside((phi1-2.0e-6)/(4.2e-6-2.0e-6))*heaviside(1.3e6-p2))*(1-phi2)*S2/S3)*phi1 NUMCONSTANTS 3 CONSTANTS p2 0.0 S2 0.0 S3 0.0
+----------------------------------------------------------------------FUNCT10
+POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE NUMPARAMS 5 PARAMS gamma_T_growth 9.6e-6 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9
+----------------------------------------------------------------------FUNCT11
+POROMULTIPHASESCATRA_FUNCTION NECROSIS_LAW_HEAVISIDE NUMPARAMS 5 PARAMS gamma_t_necr 9.6e-6 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 delta_a_t 0.0 p_t_crit 1.0e9
+----------------------------------------------------------------------FUNCT12
+POROMULTIPHASESCATRA_FUNCTION OXYGEN_CONSUMPTION_LAW_HEAVISIDE NUMPARAMS 5 PARAMS gamma_nl_growth 2.4e-7 gamma_0_nl 6e-7 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 p_t_crit 1.0e9
+----------------------------------------------------------------------FUNCT13
+POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE_OXY NUMPARAMS 5 PARAMS gamma_T_growth 9.6e-6 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9
+----------------------------------------------------------------------FUNCT14
+POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE_NECRO NUMPARAMS 5 PARAMS gamma_T_growth 9.6e-6 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 0.0 TOLERANCE 1e-14  // DIRICH VALUE
 STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE 0.0 TOLERANCE 1e-14  // DIRICH VALUE

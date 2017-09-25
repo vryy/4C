@@ -22,6 +22,7 @@
 #include "standardtypes_cpp.H"
 #include "drt_linedefinition.H"
 #include "../drt_fluid/fluid_functions.H"
+#include "../drt_poromultiphase_scatra/poromultiphase_scatra_function.H"
 #include "../drt_fluid_xfluid/xfluid_functions.H"
 #include "../drt_fluid_xfluid/xfluid_functions_combust.H"
 #include "../drt_io/io.H"
@@ -263,6 +264,13 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   .AddNamedDouble("CASSINIA")
   ;
 
+  DRT::INPUT::LineDefinition poromultiphasescatra_funct;
+  poromultiphasescatra_funct
+    .AddNamedString("POROMULTIPHASESCATRA_FUNCTION")
+    .AddOptionalNamedInt("NUMPARAMS")
+    .AddOptionalNamedPairOfStringAndDoubleVector("PARAMS","NUMPARAMS")
+    ;
+
   lines->Add(componentvarfunct);
   lines->Add(varfunct);
   lines->Add(linelin);
@@ -289,6 +297,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(accelerationprofile);
   lines->Add(ramptovalue);
   lines->Add(nodenormal);
+  lines->Add(poromultiphasescatra_funct);
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   DRT::UTILS::CombustValidFunctionLines(lines);
@@ -572,6 +581,31 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
           function->ExtractPairOfStringAndDoubleVector("CONSTANTS",constants);
 
         vecfunc->AddExpr(component,constants);
+        functions_.push_back(vecfunc);
+      }
+      else if (function->HaveNamed("POROMULTIPHASESCATRA_FUNCTION"))
+      {
+        std::string type;
+        function->ExtractString("POROMULTIPHASESCATRA_FUNCTION",type);
+
+        std::vector<std::pair<std::string,double> > params;
+        if (function->HaveNamed("PARAMS"))
+          function->ExtractPairOfStringAndDoubleVector("PARAMS",params);
+
+        Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraFunction> vecfunc = Teuchos::null;
+        if(type == "TUMOR_GROWTH_LAW_HEAVISIDE")
+          vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeaviside(params));
+        else if(type == "NECROSIS_LAW_HEAVISIDE")
+          vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::NecrosisLawHeaviside(params));
+        else if(type == "OXYGEN_CONSUMPTION_LAW_HEAVISIDE")
+          vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside(params));
+        else if(type == "TUMOR_GROWTH_LAW_HEAVISIDE_OXY")
+          vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy(params));
+        else if(type == "TUMOR_GROWTH_LAW_HEAVISIDE_NECRO")
+          vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro(params));
+        else
+          dserror("Wrong type of POROMULTIPHASESCATRA_FUNCTION");
+
         functions_.push_back(vecfunc);
       }
       else if (DRT::UTILS::CombustFunctionHaveNamed(function, &functions_))

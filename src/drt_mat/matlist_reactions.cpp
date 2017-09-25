@@ -379,10 +379,6 @@ void MAT::MatListReactions::CalcReaBodyForceDerivMatrixAddVariables(
 
   // add time and space coordinates
   std::vector<std::pair<std::string,double> >constants_mod(constants);
-  constants_mod.push_back(std::pair<std::string,double>("t",0.0));
-  constants_mod.push_back(std::pair<std::string,double>("x",gpcoord[0]));
-  constants_mod.push_back(std::pair<std::string,double>("y",gpcoord[1]));
-  constants_mod.push_back(std::pair<std::string,double>("z",gpcoord[2]));
 
   // add scalar values as constants
   for (unsigned iscal = 0; iscal < phinp.size(); iscal++)
@@ -391,6 +387,10 @@ void MAT::MatListReactions::CalcReaBodyForceDerivMatrixAddVariables(
     temp << iscal+1;
     constants_mod.push_back(std::pair<std::string,double>("phi"+temp.str(),phinp[iscal]));
   }
+  constants_mod.push_back(std::pair<std::string,double>("t",0.0));
+  constants_mod.push_back(std::pair<std::string,double>("x",gpcoord[0]));
+  constants_mod.push_back(std::pair<std::string,double>("y",gpcoord[1]));
+  constants_mod.push_back(std::pair<std::string,double>("z",gpcoord[2]));
 
   for (int condnum = 0;condnum < NumReac();condnum++)
   {
