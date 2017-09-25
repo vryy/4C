@@ -33,10 +33,10 @@ namespace PAR {
    *
    *  \f{eqnarray}{
    *  \lambda &=& \Lambda = \frac{\nu_{12} \nu_{21} + \nu_{22}}{(1-\nu_{22}-2\nu_{12} \nu_{21})(1+\nu_{22})} E_{2}, \\
-   *  \mu &=& G_{23} = \frac{E_{1}}{2(1+\nu_{22})}, \\
+   *  \mu &=& G_{23} = \frac{E_{2}}{2(1+\nu_{23})}, \\
    *  \alpha &=& G_{23} - G_{12}, \\
-   *  \beta &=& \frac{\nu_{12}}{2} (\lambda +2 G_{23}), \\
-   *  \gamma &=& \frac{1}{8} \left(\frac{1 -\nu_{22}}{1-\nu_{22} - \nu_{12} \nu_{21}} E_{1} + 4 \alpha - 4 \beta \right).
+   *  \beta &=& \nu_{12} (\lambda + G_{23}) - \frac{\lambda}{2}, \\
+   *  \gamma &=& \frac{1}{8} \left(\frac{1 -\nu_{23}}{1-\nu_{23} - \nu_{12} \nu_{21}} E_{1} + 4 \alpha - 4 \beta - \lambda - 2 \mu \right).
    *  \f}
    *  where \f$ E_{2} = E_{3} \f$ is the Young modulus in the plane normal to the fiber
    *  direction and \f$ E_{1} = E_{A} \f$ denotes the Young's modulus in fiber direction.
