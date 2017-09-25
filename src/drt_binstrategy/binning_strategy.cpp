@@ -2698,6 +2698,9 @@ void BINSTRATEGY::BinningStrategy::TransferNodesAndElements(
 {
   TEUCHOS_FUNC_TIME_MONITOR("BINSTRATEGY::BinningStrategy::TransferNodesAndElements");
 
+  // clear map before setting up new one
+  bintorowelemap.clear();
+
   // store elements that need treatment
   std::set< DRT::Element* > elestoupdate;
 
