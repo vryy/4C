@@ -261,7 +261,7 @@ public:
   /*!
   \brief Read input for this element
   */
-  bool ReadElement(const std::string& eletype,
+  virtual bool ReadElement(const std::string& eletype,
                    const std::string& eledistype,
                    DRT::INPUT::LineDefinition* linedef) ;
 

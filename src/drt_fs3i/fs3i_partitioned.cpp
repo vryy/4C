@@ -57,6 +57,8 @@
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_lib/drt_dofset_predefineddofnumber.H"
 #include "../drt_structure/stru_aux.H"
+//CLONE SCATRA DISCRETIZATION FROM STRUCTURE DISCRETIZATION
+#include "../drt_ssi/ssi_clonestrategy.H"
 
 
 //#define SCATRABLOCKMATRIXMERGE
@@ -175,11 +177,6 @@ void FS3I::PartFS3I::Init()
     dserror("Mortar volume coupling for the fluid-scalar is yet not tested. So be careful!");
   }
 
-
-  // determine type of scalar transport
-    const INPAR::SCATRA::ImplType impltype_struct =
-        DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(DRT::Problem::Instance()->FS3IDynamicParams(),"STRUCTSCAL_SCATRATYPE");
-
   //---------------------------------------------------------------------
   // create discretization for structure-based scalar transport from and
   // according to structure discretization
@@ -194,17 +191,8 @@ void FS3I::PartFS3I::Init()
       dserror("If you clone your structure-scatra mesh from the structure use STRUCTSCAL_FIELDCOUPLING 'volume_matching'!");
 
     // fill structure-based scatra discretization by cloning structure discretization
-    DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(structdis,structscatradis);
+    DRT::UTILS::CloneDiscretization<SSI::ScatraStructureCloneStrategy>(structdis,structscatradis);
     structscatradis->FillComplete();
-    // set implementation type of cloned scatra elements to advanced reactions
-    for(int i=0; i<structscatradis->NumMyColElements(); ++i)
-    {
-      DRT::ELEMENTS::Transport* element = dynamic_cast<DRT::ELEMENTS::Transport*>(structscatradis->lColElement(i));
-      if(element == NULL)
-        dserror("Invalid element type!");
-      else
-        element->SetImplType(impltype_struct);
-    }
 
     volume_coupling_objects_.push_back(Teuchos::null);
 
@@ -222,8 +210,15 @@ void FS3I::PartFS3I::Init()
     if ( not (volume_fieldcouplings_[1]==INPAR::FS3I::coupling_nonmatch) )
       dserror("If you have specified the structure-scalar by TRANSPORT2 ELEMENTS use STRUCTSCAL_FIELDCOUPLING 'volume_nonmatching'!");
 
-    if ( not (impltype_struct == INPAR::SCATRA::impltype_undefined) )
-          dserror("Be aware that your STRUCTSCAL_SCATRATYPE will be ignored and the impltype from the TRANSPORT2 ELMENTS section will be utilized. Use STRUCTSCAL_SCATRATYPE 'Undefined'!");
+    // is the set ImplType for the STRUCTURE Elements reasonable in case they are not cloned?
+    SSI::ScatraStructureCloneStrategy clonestrategy;
+    for(int i= 0; i< structdis->NumMyColElements(); ++i)
+    {
+      if(clonestrategy.GetImplType(structdis->lColElement(i)) != INPAR::SCATRA::impltype_undefined)
+        dserror("Be aware that the ImplType defined for the STRUCTURE Elements will be ignored and the "
+            "ImplType from the TRANSPORT2 ELMENTS section will be utilized. Use TYPE 'Undefined' if "
+            "cloning the scatra discretization from structure discretization is not intended!");
+    }
 
     volume_coupling_objects_.push_back( CreateVolMortarObject(structdis,structscatradis) );
   }

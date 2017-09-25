@@ -39,6 +39,13 @@ namespace INPAR
       matrix_sparse
     };
 
+    //! type of scalar transport time integration
+    enum ScaTraTimIntType
+    {
+      scatratiminttype_standard,
+      scatratiminttype_elch
+    };
+
     //! set valid parameters for scatra-thermo interaction
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 

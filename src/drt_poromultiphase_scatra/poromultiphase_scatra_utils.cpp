@@ -20,7 +20,7 @@
 
 #include "../drt_poroelast/poroelast_utils.H"
 
-#include "../drt_scatra/scatra_utils_clonestrategy.H"
+#include "../drt_poroelast/poro_utils_clonestrategy.H"
 #include "../drt_scatra_ele/scatra_ele.H"
 
 #include "../drt_inpar/inpar_poromultiphase_scatra.H"
@@ -101,17 +101,8 @@ void POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAndFieldCoupling(
   Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis(scatra_disname);
 
   // fill scatra discretization by cloning structure discretization
-  DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(structdis,scatradis);
+  DRT::UTILS::CloneDiscretization<POROELAST::UTILS::PoroScatraCloneStrategy>(structdis,scatradis);
   scatradis->FillComplete();
-  // set implementation type
-  for(int i=0; i<scatradis->NumMyColElements(); ++i)
-  {
-    DRT::ELEMENTS::Transport* element = dynamic_cast<DRT::ELEMENTS::Transport*>(scatradis->lColElement(i));
-    if(element == NULL)
-      dserror("Invalid element type!");
-    else
-      element->SetImplType(DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(problem->PoroMultiPhaseScatraDynamicParams(),"SCATRATYPE"));
-  }
 
   // the problem is two way coupled, thus each discretization must know the other discretization
 

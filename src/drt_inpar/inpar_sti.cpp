@@ -36,20 +36,18 @@ void INPAR::STI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "general control parameters for scatra-thermo interaction problems"
       );
 
-  // type of scalar transport
+  // type of scalar transport time integration
   setStringToIntegralParameter<int>(
-      "SCATRATYPE",
-      "Undefined",
-      "type of scalar transport",
+      "SCATRATIMINTTYPE",
+      "Standard",
+      "scalar transport time integration type is needed to instantiate correct scalar transport time integration scheme for sti problems",
        tuple<std::string>(
-           "Undefined",
-           "ConvectionDiffusion",
+           "Standard",
            "Elch"
            ),
        tuple<int>(
-           INPAR::SCATRA::impltype_undefined,
-           INPAR::SCATRA::impltype_std,
-           INPAR::SCATRA::impltype_elch_diffcond   // we abuse this enumeration entry here to indicate electrochemistry in general
+           INPAR::STI::scatratiminttype_standard,
+           INPAR::STI::scatratiminttype_elch
            ),
        &stidyn
        );

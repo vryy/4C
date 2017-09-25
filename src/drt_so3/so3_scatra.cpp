@@ -16,6 +16,7 @@
 
 #include "so3_scatra.H"
 
+#include "../drt_lib/drt_linedefinition.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            vuong 03/12|
@@ -24,6 +25,7 @@
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::So3_Scatra(int id, int owner):
 so3_ele(id,owner),
+impltype_(INPAR::SCATRA::impltype_undefined),
 intpoints_(distype)
 {
   numgpt_ = intpoints_.NumPoints();
@@ -38,6 +40,7 @@ intpoints_(distype)
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::So3_Scatra(const DRT::ELEMENTS::So3_Scatra<so3_ele,distype>& old):
 so3_ele(old),
+impltype_(old.impltype_),
 intpoints_(distype)
 {
   numgpt_ = intpoints_.NumPoints();
@@ -69,6 +72,9 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::Pack(DRT::PackBuffer& data) con
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   so3_ele::AddtoPack(data,type);
+
+  // pack scalar transport impltype
+  so3_ele::AddtoPack(data,impltype_);
   // data_
   //so3_ele::AddtoPack(data,data_);
 
@@ -102,6 +108,10 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::Unpack(const std::vector<char>&
   int type = 0;
   so3_ele::ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  // extract scalar transport impltype_
+  impltype_ = static_cast<INPAR::SCATRA::ImplType>(so3_ele::ExtractInt(position,data));
+
   // data_
   //vector<char> tmp(0);
   //so3_ele::ExtractfromPack(position,data,tmp);
@@ -140,14 +150,40 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::Print(std::ostream& os) const
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |  read this element (public)                             schmidt 09/17|
+ *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 bool DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::ReadElement(const std::string& eletype,
                                              const std::string& eledistype,
                                              DRT::INPUT::LineDefinition* linedef)
 {
   so3_ele::ReadElement(eletype,eledistype,linedef );
+
+  // read scalar transport implementation type
+  std::string impltype;
+  linedef->ExtractString("TYPE",impltype);
+
+  if(impltype == "Undefined")
+    impltype_ = INPAR::SCATRA::impltype_undefined;
+  else if(impltype == "AdvReac")
+    impltype_ = INPAR::SCATRA::impltype_advreac;
+  else if(impltype == "BondReac")
+    impltype_ = INPAR::SCATRA::impltype_bondreac;
+  else if(impltype == "CardMono")
+    impltype_ = INPAR::SCATRA::impltype_cardiac_monodomain;
+  else if(impltype == "Chemo")
+    impltype_ = INPAR::SCATRA::impltype_chemo;
+  else if(impltype == "ChemoReac")
+    impltype_ = INPAR::SCATRA::impltype_chemoreac;
+  else if(impltype == "Loma")
+    impltype_ = INPAR::SCATRA::impltype_loma;
+  else if(impltype == "RefConcReac")
+    impltype_ = INPAR::SCATRA::impltype_refconcreac;
+  else if(impltype == "Std")
+    impltype_ = INPAR::SCATRA::impltype_std;
+  else
+    dserror("Invalid implementation type for So3_Scatra elements!");
 
   return true;
 }

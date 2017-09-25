@@ -19,7 +19,6 @@
 
 #include "drt_validparameters.H"
 #include "inpar_ssi.H"
-#include "inpar_scatra.H"
 #include "../drt_lib/drt_conditiondefinition.H"
 
 
@@ -97,27 +96,15 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                 ),
                               &ssidyn);
 
-  // type of scalar transport
-  setStringToIntegralParameter<int>("SCATRATYPE","Undefined",
-                               "Type of scalar transport problem",
+  // type of scalar transport time integration
+  setStringToIntegralParameter<int>("SCATRATIMINTTYPE","Standard",
+                               "scalar transport time integration type is needed to instantiate correct scalar transport time integration scheme for ssi problems",
                                tuple<std::string>(
-                                 "Undefined",
-                                 "ConvectionDiffusion",
-                                 "Advanced_Reaction",
-                                 "RefConc_Reac",
-                                 "Cardiac_Monodomain",
-                                 "Chemotaxis",
-                                 "Chemo_Reac",
-                                 "Bond_Reac"),
+                                 "Standard",
+                                 "Cardiac_Monodomain"),
                                tuple<int>(
-                                 INPAR::SCATRA::impltype_undefined,
-                                 INPAR::SCATRA::impltype_std,
-                                 INPAR::SCATRA::impltype_advreac,
-                                 INPAR::SCATRA::impltype_refconcreac,
-                                 INPAR::SCATRA::impltype_cardiac_monodomain,
-                                 INPAR::SCATRA::impltype_chemo,
-                                 INPAR::SCATRA::impltype_chemoreac,
-                                 INPAR::SCATRA::impltype_bondreac),
+                                 INPAR::SSI::scatratiminttype_standard,
+                                 INPAR::SSI::scatratiminttype_cardiac_monodomain),
                                  &ssidyn);
 
   //Restart from Structure problem instead of SSI

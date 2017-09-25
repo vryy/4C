@@ -40,7 +40,7 @@ EQUPOT                          divi
 DIFFCOND_FORMULATION            yes
 INITPOTCALC                     yes
 --------------------------------------------------------STI DYNAMIC
-SCATRATYPE                      Elch
+SCATRATIMINTTYPE                Elch
 THERMO_INITIALFIELD             field_by_function
 THERMO_INITFUNCNO               4
 MATRIXTYPE                      sparse

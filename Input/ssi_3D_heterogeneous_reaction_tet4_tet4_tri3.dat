@@ -73,7 +73,7 @@ TIMESTEP                        0.1
 COUPALGO                        ssi_IterStagg // ssi_OneWay_SolidToScatra ssi_IterStagg
 ITEMAX                          5
 SCATRA_FROM_RESTART_FILE        No
-SCATRATYPE                      ConvectionDiffusion
+SCATRATIMINTTYPE                Standard
 FIELDCOUPLING                   volumeboundary_matching
 -----------------------------------------------------------------SSI CONTROL/PARTITIONED
 CONVTOL                         1.000e-02

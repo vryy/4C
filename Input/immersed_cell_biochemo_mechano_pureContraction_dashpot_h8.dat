@@ -113,7 +113,7 @@ ITEMAX                          25
 -------------------------------------------------------------SSI CONTROL
 COUPALGO                        ssi_IterStagg
 ITEMAX                          30
-SCATRATYPE                      Advanced_Reaction
+SCATRATIMINTTYPE                Standard
 -------------------------------------------------SSI CONTROL/PARTITIONED
 MAXOMEGA                        10
 MINOMEGA                        0.1
@@ -225,7 +225,6 @@ TOLRES_GLOBAL                   1e-08
 TOLINC_GLOBAL                   1e-08
 VECTORNORM_RESF                 L2
 VECTORNORM_INC                  L2
-SCATRATYPE                      Poro_Scatra_Reaction //Poroscatra
 ITEMAX                          10
 ITEMIN                          1
 TOLRES_DISP                     1.000e-08

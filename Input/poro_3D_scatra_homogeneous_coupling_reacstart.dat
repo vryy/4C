@@ -103,7 +103,6 @@ RESTARTEVRY                     5
 NUMSTEP                         200
 MAXTIME                         1.0
 TIMESTEP                        0.005
-SCATRATYPE                      Poro_Scatra_Reaction //Poroscatra //
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   4
 SOLVERTYPE                      nonlinear
@@ -283,8 +282,8 @@ NODE 10     COORD   0.1000000000000000e+00  0.0000000000000000e+00  0.0000000000
 NODE 11     COORD   0.0000000000000000e+00  0.0000000000000000e+00  -0.1000000000000000e+00
 NODE 12     COORD   0.0000000000000000e+00  0.0000000000000000e+00  0.0000000000000000e+00
 ------------------------------------------------STRUCTURE ELEMENTS
-1 SOLIDH8PORO HEX8  1 2 3 4 5 6 7 8    MAT 1 KINEM nonlinear EAS none
-2 SOLIDH8PORO HEX8  2 9 10 3 6 11 12 7    MAT 1 KINEM nonlinear EAS none
+1 SOLIDH8POROSCATRA HEX8  1 2 3 4 5 6 7 8    MAT 1 KINEM nonlinear EAS none TYPE PoroReac
+2 SOLIDH8POROSCATRA HEX8  2 9 10 3 6 11 12 7    MAT 1 KINEM nonlinear EAS none TYPE PoroReac
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
 ------------------------------------------------TRANSPORT ELEMENTS

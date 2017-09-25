@@ -184,7 +184,6 @@ TOLRES_GLOBAL                   1e-08
 TOLINC_GLOBAL                   1e-08
 VECTORNORM_RESF                 L2
 VECTORNORM_INC                  L2
-SCATRATYPE                      Poroscatra
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   3
 SOLVERTYPE                      linear_incremental

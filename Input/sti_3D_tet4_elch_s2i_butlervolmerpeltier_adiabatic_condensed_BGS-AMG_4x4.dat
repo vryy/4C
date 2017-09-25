@@ -48,7 +48,7 @@ COUPLINGTYPE                    MatchingNodes
 MATRIXTYPE                      block_condition
 EQUILIBRATION                   rows_maindiag
 --------------------------------------------------------STI DYNAMIC
-SCATRATYPE                      Elch
+SCATRATIMINTTYPE                Elch
 THERMO_INITIALFIELD             field_by_function
 THERMO_INITFUNCNO               4
 LINEAR_SOLVER                   1

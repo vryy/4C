@@ -1012,6 +1012,10 @@ set(OBJS_SOH8_LIB
   src/drt_so3/so3_poro_p1.cpp
   src/drt_so3/so3_poro_p1_eletypes.cpp
   src/drt_so3/so3_poro_p1_evaluate.cpp
+  src/drt_so3/so3_poro_p1_scatra.cpp
+  src/drt_so3/so3_poro_p1_scatra_eletypes.cpp
+  src/drt_so3/so3_poro_scatra.cpp
+  src/drt_so3/so3_poro_scatra_eletypes.cpp
   src/drt_so3/so3_scatra.cpp
   src/drt_so3/so3_scatra_evaluate.cpp
   src/drt_so3/so3_scatra_eletypes.cpp
@@ -1167,6 +1171,7 @@ set(OBJS_DRT_S8_LIB
   src/drt_s8/shell8_input.cpp
   src/drt_s8/shell8_line.cpp
   src/drt_s8/shell8_line_evaluate.cpp
+  src/drt_s8/shell8_scatra.cpp
   src/fortran/s8_fserv.f
   src/drt_s8/shell8/s8_mat_linel.c
   src/drt_s8/shell8/s8_mat_ogden.c
@@ -2149,6 +2154,10 @@ set(OBJS_DRT_W1_LIB
   src/drt_w1/wall1_poro_p1.cpp
   src/drt_w1/wall1_poro_p1_eletypes.cpp
   src/drt_w1/wall1_poro_p1_evaluate.cpp
+  src/drt_w1/wall1_poro_p1_scatra.cpp
+  src/drt_w1/wall1_poro_p1_scatra_eletypes.cpp
+  src/drt_w1/wall1_poro_scatra.cpp
+  src/drt_w1/wall1_poro_scatra_eletypes.cpp
   src/drt_w1/wall1_scatra.cpp
   src/drt_w1/wall1_scatra_evaluate.cpp
 )
@@ -2381,6 +2390,7 @@ set(OBJS_DRT_FPSI
 set(OBJS_DRT_SSI
 src/drt_ssi/ssi_dyn.cpp
 src/drt_ssi/ssi_base.cpp
+src/drt_ssi/ssi_clonestrategy.cpp
 src/drt_ssi/ssi_coupling.cpp
 src/drt_ssi/ssi_monolithic.cpp
 src/drt_ssi/ssi_partitioned.cpp

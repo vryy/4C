@@ -117,7 +117,6 @@ TIMESTEP                        0.01
 COUPALGO                        two_way //two_way monolithic
 TOLRES_GLOBAL                   1e-08
 TOLINC_GLOBAL                   1e-08
-SCATRATYPE                      Poroscatra
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 3
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 5
@@ -265,10 +264,10 @@ NODE 23 COORD -5.0000000000000000e+00 -2.5000000000000000e+00 0.0000000000000000
 NODE 24 COORD -2.5000000000000000e+00 -5.0000000000000000e+00 0.0000000000000000e+00
 NODE 25 COORD -2.5000000000000000e+00 -2.5000000000000000e+00 0.0000000000000000e+00
 ----------------------------------------------------------STRUCTURE ELEMENTS
-1 WALLQ9PORO QUAD9 1 2 3 4 5 6 7 8 9 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3
-2 WALLQ9PORO QUAD9 2 10 11 3 12 13 14 6 15 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3
-3 WALLQ9PORO QUAD9 4 3 16 17 7 18 19 20 21 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3
-4 WALLQ9PORO QUAD9 3 11 22 16 14 23 24 18 25 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3
+1 WALLQ9POROSCATRA QUAD9 1 2 3 4 5 6 7 8 9 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3 TYPE Poro
+2 WALLQ9POROSCATRA QUAD9 2 10 11 3 12 13 14 6 15 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3 TYPE Poro
+3 WALLQ9POROSCATRA QUAD9 4 3 16 17 7 18 19 20 21 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3 TYPE Poro
+4 WALLQ9POROSCATRA QUAD9 3 11 22 16 14 23 24 18 25 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3 TYPE Poro
 --------------------------------------------------------------FLUID ELEMENTS
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS

@@ -45,7 +45,7 @@ EQUPOT                          divi
 ------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
 --------------------------------------------------------STI DYNAMIC
-SCATRATYPE                      Elch
+SCATRATIMINTTYPE                Elch
 MATRIXTYPE                      sparse
 THERMO_INITIALFIELD             field_by_function
 THERMO_INITFUNCNO               4

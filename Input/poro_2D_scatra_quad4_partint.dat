@@ -109,7 +109,6 @@ TOLRES_GLOBAL                   1e-08
 TOLINC_GLOBAL                   1e-08
 VECTORNORM_RESF                 L2
 VECTORNORM_INC                  L2
-SCATRATYPE                      Poroscatra
 MATCHINGGRID                    no
 ----------------------------------------------------------VOLMORTAR COUPLING
 COUPLINGTYPE                    consint

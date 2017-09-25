@@ -45,7 +45,7 @@ COUPLINGTYPE                    StandardMortar
 PARALLEL_REDIST                 no
 MESH_RELOCATION                 no
 -------------------------------------------------------STI DYNAMIC
-SCATRATYPE                      Elch
+SCATRATIMINTTYPE                Elch
 THERMO_INITIALFIELD             field_by_function
 THERMO_INITFUNCNO               4
 LINEAR_SOLVER                   1

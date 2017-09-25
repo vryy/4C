@@ -71,13 +71,22 @@ void DRT::ELEMENTS::Wall1ScatraType::SetupElementDefinition( std::map<std::strin
   defs["NURBS4"]=defs_wall["NURBS4"];
   defs["NURBS9"]=defs_wall["NURBS9"];
 
+  // add scalar transport impltype
+  defs["QUAD4"].AddNamedString("TYPE");
+  defs["QUAD8"].AddNamedString("TYPE");
+  defs["QUAD9"].AddNamedString("TYPE");
+  defs["TRI3"].AddNamedString("TYPE");
+  defs["TRI6"].AddNamedString("TYPE");
+  defs["NURBS4"].AddNamedString("TYPE");
+  defs["NURBS9"].AddNamedString("TYPE");
 }
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            vuong 01/14/|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Wall1_Scatra::Wall1_Scatra(int id, int owner) :
-Wall1(id,owner)
+Wall1(id,owner),
+impltype_(INPAR::SCATRA::impltype_undefined)
 {
   return;
 }
@@ -86,8 +95,8 @@ Wall1(id,owner)
  |  copy-ctor (public)                                       vuong 01/14|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Wall1_Scatra::Wall1_Scatra(const DRT::ELEMENTS::Wall1_Scatra& old) :
-    Wall1(old)
-
+    Wall1(old),
+    impltype_(old.impltype_)
 {
   return;
 }
@@ -114,6 +123,9 @@ void DRT::ELEMENTS::Wall1_Scatra::Pack(DRT::PackBuffer& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
+  // pack scalar transport impltype
+  AddtoPack(data,impltype_);
+
   // add base class Element
   Wall1::Pack(data);
 
@@ -132,6 +144,9 @@ void DRT::ELEMENTS::Wall1_Scatra::Unpack(const std::vector<char>& data)
   int type = 0;
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  // extract scalar transport impltype
+  impltype_ = static_cast<INPAR::SCATRA::ImplType>(ExtractInt(position,data));
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
@@ -146,4 +161,40 @@ void DRT::ELEMENTS::Wall1_Scatra::Print(std::ostream& os) const
   os << "Wall1_Scatra ";
   Wall1::Print(os);
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  read this element (public)                             schmidt 09/17|
+ *----------------------------------------------------------------------*/
+bool DRT::ELEMENTS::Wall1_Scatra::ReadElement(const std::string& eletype, const std::string& eledistype, DRT::INPUT::LineDefinition* linedef)
+{
+  // read base element
+  Wall1::ReadElement(eletype,eledistype,linedef );
+
+  // read scalar transport implementation type
+  std::string impltype;
+  linedef->ExtractString("TYPE",impltype);
+
+  if(impltype == "Undefined")
+    impltype_ = INPAR::SCATRA::impltype_undefined;
+  else if(impltype == "AdvReac")
+    impltype_ = INPAR::SCATRA::impltype_advreac;
+  else if(impltype == "BondReac")
+    impltype_ = INPAR::SCATRA::impltype_bondreac;
+  else if(impltype == "CardMono")
+    impltype_ = INPAR::SCATRA::impltype_cardiac_monodomain;
+  else if(impltype == "Chemo")
+    impltype_ = INPAR::SCATRA::impltype_chemo;
+  else if(impltype == "ChemoReac")
+    impltype_ = INPAR::SCATRA::impltype_chemoreac;
+  else if(impltype == "Loma")
+    impltype_ = INPAR::SCATRA::impltype_loma;
+  else if(impltype == "RefConcReac")
+    impltype_ = INPAR::SCATRA::impltype_refconcreac;
+  else if(impltype == "Std")
+    impltype_ = INPAR::SCATRA::impltype_std;
+  else
+    dserror("Invalid implementation type for Wall1_Scatra elements!");
+
+  return true;
 }

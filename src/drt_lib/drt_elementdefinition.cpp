@@ -54,6 +54,7 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   PrintElementLines(stream,"NSTET5");
   //PrintElementLines(stream,"NSTET5SCATRA");
   PrintElementLines(stream,"SHELL8");
+  PrintElementLines(stream,"SHELL8SCATRA");
   PrintElementLines(stream,"SOLIDH18");
   PrintElementLines(stream,"SOLIDH20");
   PrintElementLines(stream,"SOLIDH27");
@@ -70,6 +71,9 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   PrintElementLines(stream,"SOLIDH8FBARSCATRA");
   PrintElementLines(stream,"SOLIDH8FBARTHERMO");
   PrintElementLines(stream,"SOLIDH8PORO");
+  PrintElementLines(stream,"SOLIDH8POROSCATRA");
+  PrintElementLines(stream,"SOLIDH8POROP1");
+  PrintElementLines(stream,"SOLIDH8POROP1SCATRA");
   PrintElementLines(stream,"SOLIDH8THERMO");
   PrintElementLines(stream,"SOLIDH8PLAST");
   PrintElementLines(stream,"SOLIDH8SCATRA");
@@ -94,7 +98,11 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   PrintElementLines(stream,"TORSION3");
   PrintElementLines(stream,"TRUSS3");
   PrintElementLines(stream,"WALL");
+  PrintElementLines(stream,"WALLSCATRA");
   PrintElementLines(stream,"WALLQ4PORO");
+  PrintElementLines(stream,"WALLQ4POROSCATRA");
+  PrintElementLines(stream,"WALLQ4POROP1");
+  PrintElementLines(stream,"WALLQ4POROP1SCATRA");
   PrintElementLines(stream,"WALLQ9PORO");
 
 

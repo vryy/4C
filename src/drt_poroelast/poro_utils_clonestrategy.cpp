@@ -29,7 +29,18 @@
 #include "../drt_mat/fluidporo.H"
 #include "../drt_mat/structporo.H"
 
-#include"../drt_w1/wall1_poro.H"
+#include "../drt_so3/so_nurbs27.H"
+#include "../drt_so3/so3_scatra.H"
+#include "../drt_so3/so3_poro_scatra.H"
+#include "../drt_so3/so3_poro_p1_scatra.H"
+
+#include "../drt_w1/wall1_scatra.H"
+#include "../drt_w1/wall1_poro_scatra.H"
+#include "../drt_w1/wall1_poro_p1_scatra.H"
+
+#include "../drt_s8/shell8_scatra.H"
+
+#include "../drt_scatra_ele/scatra_ele.H"
 
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/11  |
@@ -141,6 +152,75 @@ bool POROELAST::UTILS::PoroelastCloneStrategy::DetermineEleType(
 }
 
 /*----------------------------------------------------------------------*
+ | return SCATRA::ImplType of element (public)            schmidt 09/17 |
+ *----------------------------------------------------------------------*/
+INPAR::SCATRA::ImplType POROELAST::UTILS::PoroScatraCloneStrategy::GetImplType(
+    DRT::Element*                ele          //! element whose SCATRA::ImplType shall be determined
+    )
+{
+  INPAR::SCATRA::ImplType impltype(INPAR::SCATRA::impltype_undefined);
+
+  // the element type name, needed to cast correctly in the following
+  const std::string eletypename = ele->ElementType().Name();
+
+  // TET 4 Elements
+  // tet 4 solid poro scatra
+  if(eletypename == "So_tet4PoroScatraType")
+    impltype = (dynamic_cast<DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>*>(ele))->ImplType();
+  // tet4 solid porop1 scatra
+  else if(eletypename == "So_tet4PoroP1ScatraType")
+    impltype = (dynamic_cast<DRT::ELEMENTS::So3_Poro_P1_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>*>(ele))->ImplType();
+  // tet 10 solid poro scatra
+  else if(eletypename == "So_tet10PoroScatraType")
+    impltype = (dynamic_cast<DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>*>(ele))->ImplType();
+  // HEX 8 Elements
+  // hex8 solid poro scatra
+  else if(eletypename == "So_hex8PoroScatraType")
+    impltype = (dynamic_cast<DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>*>(ele))->ImplType();
+  // hex8 solid porop1 scatra
+  else if(eletypename == "So_hex8PoroP1ScatraType")
+    impltype = (dynamic_cast<DRT::ELEMENTS::So3_Poro_P1_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>*>(ele))->ImplType();
+  // hex27 solid poro scatra
+  else if(eletypename == "So_hex27PoroScatraType")
+    impltype = (dynamic_cast<DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>*>(ele))->ImplType();
+  // nurbs 27
+  else if(eletypename == "So_nurbs27PoroScatraType")
+    impltype = (dynamic_cast<DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27>*>(ele))->ImplType();
+  // wall poro scatra elements
+  // quad 4
+  else if(eletypename == "WallQuad4PoroScatraType")
+      impltype = (dynamic_cast<DRT::ELEMENTS::Wall1_Poro_Scatra<DRT::Element::quad4>*>(ele))->ImplType();
+  // quad 9
+  else if(eletypename == "WallQuad9PoroScatraType")
+      impltype = (dynamic_cast<DRT::ELEMENTS::Wall1_Poro_Scatra<DRT::Element::quad9>*>(ele))->ImplType();
+  // nurbs 4
+  else if(eletypename == "WallNurbs4PoroScatraType")
+      impltype = (dynamic_cast<DRT::ELEMENTS::Wall1_Poro_Scatra<DRT::Element::nurbs4>*>(ele))->ImplType();
+  // nurbs 9
+  else if(eletypename == "WallNurbs9PoroScatraType")
+      impltype = (dynamic_cast<DRT::ELEMENTS::Wall1_Poro_Scatra<DRT::Element::nurbs9>*>(ele))->ImplType();
+  // tri 3
+  else if(eletypename == "WallTri3PoroScatraType")
+      impltype = (dynamic_cast<DRT::ELEMENTS::Wall1_Poro_Scatra<DRT::Element::tri3>*>(ele))->ImplType();
+  // wall poro p1 elements
+  // quad 4
+  else if(eletypename == "WallQuad4PoroP1ScatraType")
+    impltype = (dynamic_cast<DRT::ELEMENTS::Wall1_PoroP1Scatra<DRT::Element::quad4>*>(ele))->ImplType();
+  // quad 9
+  else if(eletypename == "WallQuad9PoroP1ScatraType")
+    impltype = (dynamic_cast<DRT::ELEMENTS::Wall1_PoroP1Scatra<DRT::Element::quad9>*>(ele))->ImplType();
+  // tri 3
+  else if(eletypename == "WallTri3PoroP1ScatraType")
+    impltype = (dynamic_cast<DRT::ELEMENTS::Wall1_PoroP1Scatra<DRT::Element::tri3>*>(ele))->ImplType();
+  // call base class routine
+  else
+    impltype = my::GetImplType(ele);
+
+  return impltype;
+}
+
+
+/*----------------------------------------------------------------------*
  |                                                         vuong 08/11  |
  *----------------------------------------------------------------------*/
 bool POROELAST::UTILS::PoroScatraCloneStrategy::DetermineEleType(
@@ -157,16 +237,61 @@ bool POROELAST::UTILS::PoroScatraCloneStrategy::DetermineEleType(
   return false;
 }
 
+
+/*----------------------------------------------------------------------*
+ | set the element data (protected)                       schmidt 09/17 |
+ *----------------------------------------------------------------------*/
+void POROELAST::UTILS::PoroScatraCloneStrategy::SetElementData(
+    Teuchos::RCP<DRT::Element> newele,
+    DRT::Element* oldele,
+    const int matid,
+    const bool isnurbsdis)
+{
+  // We need to set material and possibly other things to complete element setup.
+  // This is again really ugly as we have to extract the actual
+  // element type in order to access the material property
+
+  // note: SetMaterial() was reimplemented by the transport element!
+  DRT::ELEMENTS::Transport* trans = dynamic_cast<DRT::ELEMENTS::Transport*>(newele.get());
+  if (trans!=NULL)
+  {
+    // set material
+    trans->SetMaterial(matid,oldele);
+    // set distype as well!
+    trans->SetDisType(oldele->Shape());
+
+    // now check whether ImplType is reasonable and if set the ImplType
+    INPAR::SCATRA::ImplType impltype = POROELAST::UTILS::PoroScatraCloneStrategy::GetImplType(oldele);
+    if(impltype == INPAR::SCATRA::impltype_undefined)
+      dserror("PoroScatraCloneStrategy copies scatra discretization from structure discretization, but the "
+          "STRUCTURE elements that are defined in the .dat file are either not meant to be copied to scatra elements "
+          "or the ImplType is set 'Undefined' which is not meaningful for the created scatra discretization! "
+          "Use SOLIDSCATRA, WALLSCATRA, SHELLSCATRA, SOLIDPOROSCATRA, SOLIDPOROP1SCATRA, WALLPOROSCATRA or "
+          "WALLPOROP1SCATRA Elements with meaningful ImplType instead!");
+
+    else
+      trans->SetImplType(impltype);
+  }
+  else
+  {
+    dserror("unsupported element type '%s'", typeid(*newele).name());
+  }
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/11  |
  *----------------------------------------------------------------------*/
 std::map<std::string, std::string> POROELAST::UTILS::PoroScatraCloneStrategy::ConditionsToCopy()
 {
   //call base class
-  std::map<std::string, std::string> conditions_to_copy = SCATRA::ScatraFluidCloneStrategy::ConditionsToCopy();
+  std::map<std::string, std::string> conditions_to_copy = SSI::ScatraStructureCloneStrategy::ConditionsToCopy();
 
   conditions_to_copy.insert(std::pair<std::string, std::string> ("PoroCoupling",
       "PoroCoupling"));
+
+  conditions_to_copy.insert(std::pair<std::string,std::string>("Initfield","Initfield"));
 
   return conditions_to_copy;
 }

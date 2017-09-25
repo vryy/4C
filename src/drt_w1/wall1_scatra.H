@@ -111,9 +111,9 @@ public:
   //@{
 
   /// Read input for this element
-//  virtual bool ReadElement(const std::string& eletype,
-//                   const std::string& distype,
-//                   DRT::INPUT::LineDefinition* linedef);
+  bool ReadElement(const std::string& eletype,
+                   const std::string& distype,
+                   DRT::INPUT::LineDefinition* linedef);
 
   //@}
 
@@ -143,6 +143,17 @@ public:
     Epetra_SerialDenseVector& elevec2,  ///< vector to be filled by element
     Epetra_SerialDenseVector& elevec3  ///< vector to be filled by element
   );
+
+  /// @name params
+  /// return SCATRA::ImplType
+  const INPAR::SCATRA::ImplType& ImplType() const {return impltype_;};
+
+private:
+
+  //@{
+  //! scalar transport implementation type (physics)
+  INPAR::SCATRA::ImplType impltype_;
+  //@}
 
 protected:
 

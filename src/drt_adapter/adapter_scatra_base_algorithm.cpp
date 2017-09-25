@@ -25,6 +25,8 @@
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_inpar/inpar_elch.H"
 #include "../drt_inpar/inpar_cardiac_monodomain.H"
+#include "../drt_inpar/inpar_ssi.H"
+#include "../drt_inpar/inpar_sti.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_scatra/scatra_resulttest.H"
@@ -236,7 +238,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
   }
 
   // electrochemistry
-  else if (probtype == prb_elch or (probtype == prb_sti and disname == "scatra" and DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(DRT::Problem::Instance()->STIDynamicParams(),"SCATRATYPE") == INPAR::SCATRA::impltype_elch_diffcond))
+  else if (probtype == prb_elch or (probtype == prb_sti and disname == "scatra" and DRT::INPUT::IntegralValue<INPAR::STI::ScaTraTimIntType>(DRT::Problem::Instance()->STIDynamicParams(),"SCATRATIMINTTYPE") == INPAR::STI::scatratiminttype_elch))
   {
     Teuchos::RCP<Teuchos::ParameterList> elchparams = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->ELCHControlParams()));
 
@@ -379,7 +381,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
   }
 
   // cardiac monodomain
-  else if (probtype == prb_cardiac_monodomain or (probtype == prb_ssi and DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(DRT::Problem::Instance()->SSIControlParams(),"SCATRATYPE") == INPAR::SCATRA::impltype_cardiac_monodomain))
+  else if (probtype == prb_cardiac_monodomain or (probtype == prb_ssi and DRT::INPUT::IntegralValue<INPAR::SSI::ScaTraTimIntType>(DRT::Problem::Instance()->SSIControlParams(),"SCATRATIMINTTYPE") == INPAR::SSI::scatratiminttype_cardiac_monodomain))
   {
     Teuchos::RCP<Teuchos::ParameterList> cmonoparams = rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->EPControlParams()));
 
@@ -532,7 +534,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Setup()
   PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
 
   // prepare fixing the null space for electrochemistry and sti
-  if (probtype == prb_elch or (probtype == prb_sti and discret->Name() == "scatra" and DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(DRT::Problem::Instance()->STIDynamicParams(),"SCATRATYPE") == INPAR::SCATRA::impltype_elch_diffcond))
+  if (probtype == prb_elch or (probtype == prb_sti and discret->Name() == "scatra" and DRT::INPUT::IntegralValue<INPAR::STI::ScaTraTimIntType>(DRT::Problem::Instance()->STIDynamicParams(),"SCATRATIMINTTYPE") == INPAR::STI::scatratiminttype_elch))
   {
     Teuchos::RCP<Teuchos::ParameterList> elchparams = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->ELCHControlParams()));
 

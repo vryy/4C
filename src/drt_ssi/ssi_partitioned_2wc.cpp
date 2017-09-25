@@ -19,6 +19,7 @@
 #include "../drt_adapter/ad_str_ssiwrapper.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
+#include "../drt_scatra_ele/scatra_ele.H"
 #include "../drt_scatra/scatra_timint_implicit.H"
 
 /*----------------------------------------------------------------------*
@@ -70,11 +71,19 @@ int SSI::SSI_Part2WC::Init(
 
     INPAR::SCATRA::ConvForm convform
     = DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(scatraparams,"CONVFORM");
-    INPAR::SCATRA::ImplType impltype
-    = DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(ssicontrol,"SCATRATYPE");
-    if ( (convform == INPAR::SCATRA::convform_convective) and (not (impltype == INPAR::SCATRA::impltype_refconcreac)) )
-      dserror("If the scalar transport problem is solved on the deforming domain, the conservative form must be"
-          "used to include volume changes! Set 'CONVFORM' to 'conservative' in the SCALAR TRANSPORT DYNAMIC section or use RefConc_Reac as impltype!");
+    if (convform == INPAR::SCATRA::convform_convective)
+    {
+      // get scatra discretization
+      Teuchos::RCP<DRT::Discretization> scatradis = DRT::Problem::Instance()->GetDis(scatra_disname);
+
+      // loop over all elements of scatra discretization to check if impltype is correct or not
+      for(int i= 0; i< scatradis->NumMyColElements(); ++i)
+      {
+        if((dynamic_cast<DRT::ELEMENTS::Transport * >(scatradis->lColElement(i)))->ImplType() != INPAR::SCATRA::impltype_refconcreac)
+          dserror("If the scalar transport problem is solved on the deforming domain, the conservative form must be "
+                          "used to include volume changes! Set 'CONVFORM' to 'conservative' in the SCALAR TRANSPORT DYNAMIC section or use RefConcReac as ScatraType!");
+      }
+    }
   }
 
   if (DRT::INPUT::IntegralValue<int>(ssicontrol, "DIFFTIMESTEPSIZE")){

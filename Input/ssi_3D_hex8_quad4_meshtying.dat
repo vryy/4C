@@ -78,7 +78,7 @@ TIMESTEP                        0.001
 COUPALGO                        ssi_OneWay_SolidToScatra
 ITEMAX                          10
 SCATRA_FROM_RESTART_FILE        No
-SCATRATYPE                      ConvectionDiffusion
+SCATRATIMINTTYPE                Standard
 FIELDCOUPLING                   boundary_nonmatching
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     dual

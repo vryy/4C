@@ -43,9 +43,14 @@
 #include "../drt_lib/drt_condition_utils.H"
 
 #include "../drt_so3/so3_poro_eletypes.H"
+#include "../drt_so3/so3_poro_scatra_eletypes.H"
 #include "../drt_so3/so3_poro_p1_eletypes.H"
+#include "../drt_so3/so3_poro_p1_scatra_eletypes.H"
+
 #include "../drt_w1/wall1_poro_eletypes.H"
+#include "../drt_w1/wall1_poro_scatra_eletypes.H"
 #include "../drt_w1/wall1_poro_p1_eletypes.H"
+#include "../drt_w1/wall1_poro_p1_scatra_eletypes.H"
 
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_fluid_ele/fluid_ele_poro.H"
@@ -62,16 +67,26 @@ bool POROELAST::UTILS::CheckPoro(
     const DRT::Element* actele)
 {
   //all poro elements need to be listed here
-  if( actele->ElementType() == DRT::ELEMENTS::So_hex8PoroType::Instance()    or
-      actele->ElementType() == DRT::ELEMENTS::So_tet4PoroType::Instance()    or
-      actele->ElementType() == DRT::ELEMENTS::So_tet10PoroType::Instance()   or
-      actele->ElementType() == DRT::ELEMENTS::So_hex27PoroType::Instance()   or
-      actele->ElementType() == DRT::ELEMENTS::So_nurbs27PoroType::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::WallTri3PoroType::Instance()   or
-      actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroType::Instance()  or
-      actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroType::Instance()  or
-      actele->ElementType() == DRT::ELEMENTS::WallNurbs4PoroType::Instance()  or
-      actele->ElementType() == DRT::ELEMENTS::WallNurbs9PoroType::Instance()  or
+  if( actele->ElementType() == DRT::ELEMENTS::So_hex8PoroType::Instance()           or
+      actele->ElementType() == DRT::ELEMENTS::So_hex8PoroScatraType::Instance()     or
+      actele->ElementType() == DRT::ELEMENTS::So_tet4PoroType::Instance()           or
+      actele->ElementType() == DRT::ELEMENTS::So_tet4PoroScatraType::Instance()     or
+      actele->ElementType() == DRT::ELEMENTS::So_tet10PoroType::Instance()          or
+      actele->ElementType() == DRT::ELEMENTS::So_tet10PoroScatraType::Instance()    or
+      actele->ElementType() == DRT::ELEMENTS::So_hex27PoroType::Instance()          or
+      actele->ElementType() == DRT::ELEMENTS::So_hex27PoroScatraType::Instance()    or
+      actele->ElementType() == DRT::ELEMENTS::So_nurbs27PoroType::Instance()        or
+      actele->ElementType() == DRT::ELEMENTS::So_nurbs27PoroScatraType::Instance()  or
+      actele->ElementType() == DRT::ELEMENTS::WallTri3PoroType::Instance()          or
+      actele->ElementType() == DRT::ELEMENTS::WallTri3PoroScatraType::Instance()    or
+      actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroType::Instance()         or
+      actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroScatraType::Instance()   or
+      actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroType::Instance()         or
+      actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroScatraType::Instance()   or
+      actele->ElementType() == DRT::ELEMENTS::WallNurbs4PoroType::Instance()        or
+      actele->ElementType() == DRT::ELEMENTS::WallNurbs4PoroScatraType::Instance()  or
+      actele->ElementType() == DRT::ELEMENTS::WallNurbs9PoroType::Instance()        or
+      actele->ElementType() == DRT::ELEMENTS::WallNurbs9PoroScatraType::Instance()  or
       CheckPoroP1(actele)
      )
     return true;
@@ -87,11 +102,16 @@ bool POROELAST::UTILS::CheckPoroP1(
 {
   //all poro-p1 elements need to be listed here
   if(
-      actele->ElementType() == DRT::ELEMENTS::So_hex8PoroP1Type::Instance()  or
-      actele->ElementType() == DRT::ELEMENTS::So_tet4PoroP1Type::Instance()  or
-      actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroP1Type::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::WallTri3PoroP1Type::Instance() or
-      actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroP1Type::Instance()
+      actele->ElementType() == DRT::ELEMENTS::So_hex8PoroP1Type::Instance()          or
+      actele->ElementType() == DRT::ELEMENTS::So_hex8PoroP1ScatraType::Instance()    or
+      actele->ElementType() == DRT::ELEMENTS::So_tet4PoroP1Type::Instance()          or
+      actele->ElementType() == DRT::ELEMENTS::So_tet4PoroP1ScatraType::Instance()    or
+      actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroP1Type::Instance()        or
+      actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroP1ScatraType::Instance()  or
+      actele->ElementType() == DRT::ELEMENTS::WallTri3PoroP1Type::Instance()         or
+      actele->ElementType() == DRT::ELEMENTS::WallTri3PoroP1ScatraType::Instance()   or
+      actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroP1Type::Instance()        or
+      actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroP1ScatraType::Instance()
      )
     return true;
 

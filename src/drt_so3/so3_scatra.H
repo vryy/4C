@@ -20,6 +20,7 @@
 
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 
+#include "../drt_inpar/inpar_scatra.H"
 
 namespace DRT
 {
@@ -86,15 +87,6 @@ public:
 
   //! number of space dimensions
   static const int numdim_ = 3;
-
-  //! number of dofs per node
-  static const int noddof_ = 3;
-
-  //! total dofs per element
-  static const int numdof_ = noddof_ * numnod_;
-
-  //! number of strains/stresses
-  static const int numstr_ = 6;
 
   //!total gauss points per element
   int numgpt_;
@@ -285,6 +277,14 @@ public:
 
   //@}
 
+  /// @name params
+  /// return SCATRA::ImplType
+  const INPAR::SCATRA::ImplType& ImplType() const {return impltype_;};
+
+private:
+
+  //! scalar transport implementation type (physics)
+  INPAR::SCATRA::ImplType impltype_;
 
 protected:
 

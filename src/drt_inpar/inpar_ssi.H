@@ -63,6 +63,13 @@ namespace SSI
     matrix_sparse
   };
 
+  //! type of scalar transport time integration
+  enum ScaTraTimIntType
+  {
+    scatratiminttype_standard,
+    scatratiminttype_cardiac_monodomain,
+  };
+
   /// set the ssi parameters
   void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 

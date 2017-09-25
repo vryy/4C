@@ -70,6 +70,9 @@ void DRT::ELEMENTS::So_hex8ScatraType::SetupElementDefinition( std::map<std::str
       definitions["SOLIDH8SCATRA"];
 
   defs["HEX8"]=defs_hex8["HEX8"];
+
+  // add scalar transport ImplType
+  defs["HEX8"].AddNamedString("TYPE");
 }
 
 /*----------------------------------------------------------------------*
@@ -138,6 +141,8 @@ void DRT::ELEMENTS::So_hex8fbarScatraType::SetupElementDefinition(
 
   defs["HEX8"]=defs_hex8["HEX8"];
 
+  // add scalar transport ImplType
+  defs["HEX8"].AddNamedString("TYPE");
 }
 
 /*----------------------------------------------------------------------*
@@ -202,6 +207,9 @@ void DRT::ELEMENTS::So_hex27ScatraType::SetupElementDefinition( std::map<std::st
       definitions["SOLIDH27SCATRA"];
 
   defs["HEX27"]=defs_hex27["HEX27"];
+
+  // add scalar transport ImplType
+  defs["HEX27"].AddNamedString("TYPE");
 }
 
 /*----------------------------------------------------------------------*
@@ -268,6 +276,9 @@ void DRT::ELEMENTS::So_tet4ScatraType::SetupElementDefinition( std::map<std::str
       definitions["SOLIDT4SCATRA"];
 
   defs["TET4"]=defs_tet4["TET4"];
+
+  // add scalar transport ImplType
+  defs["TET4"].AddNamedString("TYPE");
 }
 
 /*----------------------------------------------------------------------*
@@ -333,6 +344,9 @@ void DRT::ELEMENTS::So_tet10ScatraType::SetupElementDefinition( std::map<std::st
       definitions["SOLIDT10SCATRA"];
 
   defs["TET10"]=defs_tet10["TET10"];
+
+  // add scalar transport ImplType
+  defs["TET10"].AddNamedString("TYPE");
 }
 
 /*----------------------------------------------------------------------*
@@ -399,7 +413,8 @@ void DRT::ELEMENTS::So_weg6ScatraType::SetupElementDefinition( std::map<std::str
 
   defs["WEDGE6"]=defs_weg6["WEDGE6"];
 
-
+  // add scalar transport ImplType
+  defs["WEDGE6"].AddNamedString("TYPE");
 }
 
 

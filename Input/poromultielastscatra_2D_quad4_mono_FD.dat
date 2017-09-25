@@ -27,7 +27,6 @@ MAXTIME                         0.2
 TIMESTEP                        0.01
 ITEMAX                          10
 COUPALGO                        twoway_monolithic
-SCATRATYPE                      PoroMultiReac
 ---------------------------------POROMULTIPHASESCATRA DYNAMIC/MONOLITHIC
 TOLRES_GLOBAL                   1e-08
 TOLINC_GLOBAL                   1e-08
@@ -203,9 +202,9 @@ NODE         7 COORD  0.0000000000000000e+00 -5.0000000000000000e-01  0.00000000
 NODE         8 COORD  5.0000000000000000e-01 -5.0000000000000000e-01  0.0000000000000000e+00
 NODE         9 COORD -5.0000000000000000e-01 -5.0000000000000000e-01  0.0000000000000000e+00
 ------------------------------------------------STRUCTURE ELEMENTS
-   1 WALLQ4PORO QUAD4  1 2 3 4    MAT 2 KINEM nonlinear EAS none THICK 1 STRESS_STRAIN plane_strain GP 2 2
-   2 WALLQ4PORO QUAD4  2 5 6 3    MAT 2 KINEM nonlinear EAS none THICK 1 STRESS_STRAIN plane_strain GP 2 2
-   3 WALLQ4PORO QUAD4  4 3 7 8    MAT 2 KINEM nonlinear EAS none THICK 1 STRESS_STRAIN plane_strain GP 2 2
-   4 WALLQ4PORO QUAD4  3 6 9 7    MAT 2 KINEM nonlinear EAS none THICK 1 STRESS_STRAIN plane_strain GP 2 2
+   1 WALLQ4POROSCATRA QUAD4  1 2 3 4    MAT 2 KINEM nonlinear EAS none THICK 1 STRESS_STRAIN plane_strain GP 2 2 TYPE PoroMultiReac
+   2 WALLQ4POROSCATRA QUAD4  2 5 6 3    MAT 2 KINEM nonlinear EAS none THICK 1 STRESS_STRAIN plane_strain GP 2 2 TYPE PoroMultiReac
+   3 WALLQ4POROSCATRA QUAD4  4 3 7 8    MAT 2 KINEM nonlinear EAS none THICK 1 STRESS_STRAIN plane_strain GP 2 2 TYPE PoroMultiReac
+   4 WALLQ4POROSCATRA QUAD4  3 6 9 7    MAT 2 KINEM nonlinear EAS none THICK 1 STRESS_STRAIN plane_strain GP 2 2 TYPE PoroMultiReac
 ---------------------------------------------------------------END
 // END

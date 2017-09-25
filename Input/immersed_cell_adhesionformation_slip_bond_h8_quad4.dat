@@ -84,7 +84,7 @@ COUPALGO                        ssi_IterStagg
 ITEMAX                          30
 RESULTSEVRY                     1
 RESTARTEVRY                     0
-SCATRATYPE                      Bond_Reac
+SCATRATIMINTTYPE                Standard
 FIELDCOUPLING                   volumeboundary_matching
 --------------------------------------------------------SSI CONTROL/PARTITIONED
 CONVTOL                         1e+00
@@ -178,7 +178,6 @@ TOLRES_GLOBAL                   1e-08
 TOLINC_GLOBAL                   1e-08
 VECTORNORM_RESF                 L2
 VECTORNORM_INC                  L2
-SCATRATYPE                      Poro_Scatra_Reaction //Poroscatra
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear

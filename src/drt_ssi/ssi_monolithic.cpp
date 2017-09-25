@@ -90,6 +90,8 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
     structure_->Evaluate();
   else
     structure_->Evaluate(maps_->ExtractVector(increment_,1));
+
+  // apply Dirichlet conditions on structural system matrix
   structure_->SystemMatrix()->ApplyDirichlet(*structure_->GetDBCMapExtractor()->CondMap(),true);
 
   // pass structural degrees of freedom to scalar transport discretization

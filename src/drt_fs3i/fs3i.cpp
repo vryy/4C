@@ -44,6 +44,8 @@
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_fluid/fluidresulttest.H"
 
+#include "../drt_ssi/ssi_clonestrategy.H"
+
 #include "fs3i.H"
 
 
@@ -216,9 +218,19 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
 
   //is scatra calculated conservative?
   if ( DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(fs3idyn,"STRUCTSCAL_CONVFORM") == INPAR::SCATRA::convform_convective
-      and DRT::INPUT::IntegralValue<INPAR::FS3I::VolumeCoupling>(fs3idyn,"STRUCTSCAL_FIELDCOUPLING")==INPAR::FS3I::coupling_match
-      and not ( DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(fs3idyn,"STRUCTSCAL_SCATRATYPE") == INPAR::SCATRA::impltype_refconcreac) )
-      dserror("Your scalar fields have to be calculated in conservative form, since the velocity field in the structure is NOT divergence free!");
+      and DRT::INPUT::IntegralValue<INPAR::FS3I::VolumeCoupling>(fs3idyn,"STRUCTSCAL_FIELDCOUPLING")==INPAR::FS3I::coupling_match)
+  {
+    // get structure discretization
+    Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
+    SSI::ScatraStructureCloneStrategy clonestrategy;
+
+    for(int i= 0; i< structdis->NumMyColElements(); ++i)
+    {
+      if(clonestrategy.GetImplType(structdis->lColElement(i)) != INPAR::SCATRA::impltype_refconcreac)
+        dserror("Your scalar fields have to be calculated in conservative form, "
+            "since the velocity field in the structure is NOT divergence free!");
+    }
+  }
 
   //is structure calculated dynamic when not prestressing?
   if ( DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(structdynparams,"DYNAMICTYP") == INPAR::STR::dyna_statics and

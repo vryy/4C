@@ -24,8 +24,6 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
 
-#include "../drt_scatra_ele/scatra_ele.H"
-
 #include "../drt_lib/drt_utils_parallel.H"
 
 
@@ -189,15 +187,6 @@ void SetupPoroScatraDiscretizations(bool setmaterialpointers=true)
     // fill scatra discretization by cloning structure discretization
     DRT::UTILS::CloneDiscretization<PoroScatraCloneStrategy>(structdis,scatradis);
     scatradis->FillComplete();
-    // set implementation type
-    for(int i=0; i<scatradis->NumMyColElements(); ++i)
-    {
-      DRT::ELEMENTS::Transport* element = dynamic_cast<DRT::ELEMENTS::Transport*>(scatradis->lColElement(i));
-      if(element == NULL)
-        dserror("Invalid element type!");
-      else
-        element->SetImplType(DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(DRT::Problem::Instance()->PoroScatraControlParams(),"SCATRATYPE"));
-    }
 
     // assign materials. Order is important here!
     POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis,fluiddis);

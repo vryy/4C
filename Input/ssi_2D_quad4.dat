@@ -82,7 +82,7 @@ COUPALGO                        ssi_OneWay_SolidToScatra
 ITEMAX                          10
 FIELDCOUPLING                   volume_matching
 SCATRA_FROM_RESTART_FILE        No
-SCATRATYPE                      ConvectionDiffusion
+SCATRATIMINTTYPE                Standard
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -125,6 +125,6 @@ NODE         2 COORD -5.0000000000000000e-01  5.0000000000000000e-01  0.00000000
 NODE         3 COORD -5.0000000000000000e-01 -5.0000000000000000e-01  0.0000000000000000e+00
 NODE         4 COORD  5.0000000000000000e-01 -5.0000000000000000e-01  0.0000000000000000e+00
 ------------------------------------------------STRUCTURE ELEMENTS
-   1 WALLSCATRA QUAD4  1 2 3 4    MAT 2 KINEM nonlinear EAS none THICK 1 STRESS_STRAIN plane_strain GP 2 2
+   1 WALLSCATRA QUAD4  1 2 3 4    MAT 2 KINEM nonlinear EAS none THICK 1 STRESS_STRAIN plane_strain GP 2 2 TYPE Std
 ---------------------------------------------------------------END
 // END

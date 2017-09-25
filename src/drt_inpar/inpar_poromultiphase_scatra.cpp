@@ -60,17 +60,6 @@ void INPAR::POROMULTIPHASESCATRA::SetValidParameters(Teuchos::RCP<Teuchos::Param
                               &poromultiphasescatradyn);
 
 
-  // type of scalar transport
-  setStringToIntegralParameter<int>("SCATRATYPE","Undefined",
-                               "Type of scalar transport problem",
-                               tuple<std::string>(
-                                 "Undefined",
-                                 "PoroMultiReac"),
-                               tuple<int>(
-                                 INPAR::SCATRA::impltype_undefined,
-                                 INPAR::SCATRA::impltype_multipororeac),
-                                 &poromultiphasescatradyn);
-
   // ----------------------------------------------------------------------
   // (2) monolithic parameters
   Teuchos::ParameterList& poromultiphasescatradynmono = poromultiphasescatradyn.sublist("MONOLITHIC",false,

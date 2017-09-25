@@ -158,7 +158,7 @@ void sti_dyn(
 
   // perform result tests
   problem->AddFieldTest(Teuchos::rcp<DRT::ResultTest>(new STI::STIResultTest(sti_algorithm)));
-  if(DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(problem->STIDynamicParams(),"SCATRATYPE") == INPAR::SCATRA::impltype_elch_diffcond)
+  if(DRT::INPUT::IntegralValue<INPAR::STI::ScaTraTimIntType>(problem->STIDynamicParams(),"SCATRATIMINTTYPE") == INPAR::STI::scatratiminttype_elch)
     problem->AddFieldTest(Teuchos::rcp<DRT::ResultTest>(new SCATRA::ElchResultTest(Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(sti_algorithm->Scatra()))));
   else
     dserror("Scatra-thermo interaction is currently only available for thermodynamic electrochemistry, but not for other kinds of thermodynamic scalar transport!");

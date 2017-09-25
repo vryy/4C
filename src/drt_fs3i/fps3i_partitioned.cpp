@@ -176,11 +176,6 @@ void FS3I::PartFPS3I::Init()
   else
     dserror("Fluid AND ScaTra discretization present. This is not supported.");
 
-
-  //determine type of scalar transport
-  const INPAR::SCATRA::ImplType impltype_struct =
-    DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(DRT::Problem::Instance()->FS3IDynamicParams(),"STRUCTSCAL_SCATRATYPE");
-
   //---------------------------------------------------------------------
   // create discretization for poro-based scalar transport from and
   // according to poro (structure) discretization
@@ -193,16 +188,6 @@ void FS3I::PartFPS3I::Init()
   {
     // fill poro-based scatra discretization by cloning structure discretization
     DRT::UTILS::CloneDiscretization<POROELAST::UTILS::PoroScatraCloneStrategy>(structdis,structscatradis);
-
-    // set implementation type of cloned scatra elements to poro reactions
-    for(int i=0; i<structscatradis->NumMyColElements(); ++i)
-    {
-      DRT::ELEMENTS::Transport* element = dynamic_cast<DRT::ELEMENTS::Transport*>(structscatradis->lColElement(i));
-      if(element == NULL)
-        dserror("Invalid element type!");
-      else
-        element->SetImplType(impltype_struct);
-    }
 
     // redistribute FPSI interface here, since if done before the PoroScatra cloning does not work
     //fpsi_->RedistributeInterface();

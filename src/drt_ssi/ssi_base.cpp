@@ -26,11 +26,11 @@
 #include "../drt_lib/drt_globalproblem.H"
 //for cloning
 #include "../drt_lib/drt_utils_createdis.H"
+#include "ssi_clonestrategy.H"
 
 #include"../drt_inpar/inpar_volmortar.H"
 
 #include "../drt_scatra/scatra_timint_implicit.H"
-#include "../drt_scatra/scatra_utils_clonestrategy.H"
 #include "../drt_scatra_ele/scatra_ele.H"
 
 #include "../linalg/linalg_utils.H"
@@ -181,7 +181,7 @@ int SSI::SSI_Base::Init(
 
   // initialize scatra base algorithm.
   // scatra time integrator constructed and initialized inside.
-  // mesh is writen inside. cloning must happen before!
+  // mesh is written inside. cloning must happen before!
   scatra_->Init(
       *scatratimeparams,
       scatraparams,
@@ -277,18 +277,13 @@ void SSI::SSI_Base::InitDiscretizations(
 
   if (scatradis->NumGlobalNodes()==0)
   {
+    if(fieldcoupling_!=INPAR::SSI::coupling_volume_match)
+      dserror("If 'FIELDCOUPLING' is NOT 'volume_matching' in the SSI CONTROL section cloning of the scatra discretization"
+          "from the structure discretization is not supported!");
+
     // fill scatra discretization by cloning structure discretization
-    DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(structdis,scatradis);
+    DRT::UTILS::CloneDiscretization<SSI::ScatraStructureCloneStrategy>(structdis,scatradis);
     scatradis->FillComplete();
-    // set implementation type
-    for(int i=0; i<scatradis->NumMyColElements(); ++i)
-    {
-      DRT::ELEMENTS::Transport* element = dynamic_cast<DRT::ELEMENTS::Transport*>(scatradis->lColElement(i));
-      if(element == NULL)
-        dserror("Invalid element type!");
-      else
-        element->SetImplType(DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(problem->SSIControlParams(),"SCATRATYPE"));
-    }
   }
   else
   {
@@ -302,10 +297,21 @@ void SSI::SSI_Base::InitDiscretizations(
     // this is actually only needed for copying TRANSPORT DIRICHLET/NEUMANN CONDITIONS
     // as standard DIRICHLET/NEUMANN CONDITIONS
     std::map<std::string,std::string> conditions_to_copy;
-    SCATRA::ScatraFluidCloneStrategy clonestrategy;
+    SSI::ScatraStructureCloneStrategy clonestrategy;
     conditions_to_copy = clonestrategy.ConditionsToCopy();
     DRT::UTILS::DiscretizationCreatorBase creator;
     creator.CopyConditions(*scatradis,*scatradis,conditions_to_copy);
+
+    // safety check, since it is not reasonable to have SOLIDSCATRA or SOLIDPOROP1 Elements with a SCATRA::ImplType != 'impltype_undefined'
+    // if they are not cloned! Therefore loop over all structure elements and check the impltype
+    for(int i= 0; i< structdis->NumMyColElements(); ++i)
+    {
+      if(clonestrategy.GetImplType(structdis->lColElement(i)) != INPAR::SCATRA::impltype_undefined)
+        dserror("A TRANSPORT discretization is read from the .dat file, which is fine since the scatra discretization is not cloned from "
+            "the structure discretization. But in the STRUCTURE ELEMENTS section of the .dat file an ImplType that is NOT 'Undefined' is prescribed "
+            "which does not make sense if you don't want to clone the structure discretization. Change the ImplType to 'Undefined' "
+            "or decide to clone the scatra discretization from the structure discretization.");
+    }
   }
 
   return;
