@@ -1050,6 +1050,45 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors(
   return normal;
 } // SCATRA:: ScaTraTimIntImpl::ComputeNormalVectors
 
+
+/*------------------------------------------------------------------------------------------------*
+ | compute null space information associated with global system matrix if applicable   fang 09/17 |
+ *------------------------------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::ComputeNullSpaceIfNecessary() const
+{
+  // extract solver parameters
+  Teuchos::ParameterList& solverparams = solver_->Params();
+
+  // compute point-based null space information if applicable
+  if(DRT::INPUT::IntegralValue<bool>(*params_,"NULLSPACE_POINTBASED"))
+  {
+    // MueLu preconditioner
+    if(solverparams.isSublist("MueLu Parameters"))
+    {
+      // extract and fill parameter list for MueLu preconditioner
+      Teuchos::ParameterList& mllist = solverparams.sublist("MueLu Parameters",true);
+      mllist.set("PDE equations",1);
+      mllist.set("null space: dimension",1);
+      mllist.set("null space: type","pre-computed");
+      mllist.set("null space: add default vectors",false);
+      const Teuchos::RCP<std::vector<double> > ns = Teuchos::rcp(new std::vector<double>(discret_->DofRowMap()->NumMyElements(),1.));
+      mllist.set<Teuchos::RCP<std::vector<double> > >("nullspace",ns);
+      mllist.set("null space: vectors",&((*ns)[0]));
+      mllist.set<bool>("ML validate parameter list",false);
+    }
+
+    else
+      dserror("Point-based null space calculation currently only implemented for MueLu preconditioner!");
+  }
+
+  else
+    // compute standard, vector-based null space information if applicable
+    discret_->ComputeNullSpaceIfNecessary(solverparams,true);
+
+  return;
+} // SCATRA::ScaTraTimIntImpl::ComputeNullSpaceIfNecessary()
+
+
 /*----------------------------------------------------------------------*
  | evaluate Neumann inflow boundary condition                  vg 03/09 |
  *----------------------------------------------------------------------*/

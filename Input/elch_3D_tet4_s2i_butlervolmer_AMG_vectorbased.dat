@@ -42,7 +42,7 @@ EQUILIBRATION                   rows_maindiag
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          Aztec_MSR
 AZPREC                          MueLu_sym
-STRATIMIKOS_XMLFILE             elch_3D_tet4_s2i_butlervolmer_AMG.xml
+STRATIMIKOS_XMLFILE             elch_3D_tet4_s2i_butlervolmer_AMG_vectorbased.xml
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_electrode DIFFCOEF -1 COND -1 DIFF_PARA_NUM 1 DIFF_PARA 2.e-10 COND_PARA_NUM 1 COND_PARA 1.e5 C_MAX 16.1 OCP_MODEL Redlich-Kister OCP_PARA_NUM 16 OCP_PARA 1.1652e4 -3.268e3 3.955e3 -4.573e3 6.147e3 -3.339e3 1.117e4 2.997e2 -4.866e4 1.362e2 1.373e5 -2.129e4 -1.722e5 3.956e4 9.302e4 -3.280e4 END
 MAT 2 MAT_elchmat NUMDOF 2 NUMSCAL 1 NUMPHASE 1 PHASEIDS 4 END

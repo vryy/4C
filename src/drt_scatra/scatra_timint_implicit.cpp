@@ -320,7 +320,7 @@ void SCATRA::ScaTraTimIntImpl::Setup()
   CheckIsInit();
 
   // compute Null Space
-  discret_->ComputeNullSpaceIfNecessary(solver_->Params(),true);
+  ComputeNullSpaceIfNecessary();
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching

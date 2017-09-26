@@ -1812,7 +1812,8 @@ baci_test(fpsi_bending_struct_BGSAMG 2 "")
 baci_test(scatra_2D_quad4_s2i_constperm_AMG 2 "")
 
 # electrochemistry using the MueLu/AMGnxn framework
-baci_test(elch_3D_tet4_s2i_butlervolmer_AMG 3 "")
+baci_test(elch_3D_tet4_s2i_butlervolmer_AMG_pointbased 3 "")
+baci_test(elch_3D_tet4_s2i_butlervolmer_AMG_vectorbased 3 "")
 baci_test(elch_3D_tet4_s2i_butlervolmer_AMG-BGS_3x3 3 "")
 baci_test(elch_3D_tet4_s2i_butlervolmer_BGS-AMG_3x3 3 "")
 muelu_agg2vtk(elch_3D_tet4_s2i_butlervolmer_BGS-AMG_3x3 2 3 3 100.)

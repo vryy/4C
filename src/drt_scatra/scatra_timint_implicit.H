@@ -894,6 +894,9 @@ protected:
   /*========================================================================*/
 
   /*--- set, prepare, and predict ------------------------------------------*/
+  //! compute null space information associated with global system matrix if applicable
+  void ComputeNullSpaceIfNecessary() const;
+
   //! create scalar handler
   virtual void CreateScalarHandler();
 
