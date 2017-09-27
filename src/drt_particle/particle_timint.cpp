@@ -124,6 +124,9 @@ PARTICLE::TimInt::TimInt
   pressure_(Teuchos::null),
   f_structure_(Teuchos::null),
 
+  colorField_(Teuchos::null),
+  fspType_(Teuchos::null),
+
   initDensity_(-1.0),
   restDensity_(-1.0),
   refdensfac_(-1.0),
@@ -180,6 +183,11 @@ void PARTICLE::TimInt::Init()
   {
     pressure_ = LINALG::CreateVector(*NodeRowMapView(), true);
     densityDot_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
+
+#ifdef PARTICLE_WRITECOLORFIELD
+    colorField_ = LINALG::CreateVector(*NodeRowMapView(), true);
+    fspType_ = LINALG::CreateVector(*NodeRowMapView(), true);
+#endif
   }// no break
   case INPAR::PARTICLE::Normal_DEM_thermo :
   {
@@ -221,7 +229,7 @@ void PARTICLE::TimInt::Init()
   veln_ = Teuchos::rcp(new Epetra_Vector(*(*vel_)(0)));
   accn_ = Teuchos::rcp(new Epetra_Vector(*(*acc_)(0)));
 
-  if (DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")>0.0)
+  if (DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"TRANSPORT_VELOCITY")==true)
   {
     velmod_ =  Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
     velmodn_ = Teuchos::rcp(new Epetra_Vector(*(*velmod_)(0)));
@@ -574,9 +582,8 @@ void PARTICLE::TimInt::PrepareTimeStep()
     // apply Dirichlet BC and rebuild map extractor
     ApplyDirichletBC(timen_, disn_, veln_, accn_, true);
 
-    //TODO: Remove this line?
-    // do particle business
-    particle_algorithm_->TransferParticles(true);
+    //TODO: TransferParticles() is called inside the time integrators directly after displacement update and should not be required here!
+    //particle_algorithm_->TransferParticles(true);
   }
 
   // update particle radii if necessary
@@ -597,7 +604,7 @@ void PARTICLE::TimInt::DetermineMassDampConsistAccel()
     INPAR::PARTICLE::DynamicType timinttype = DRT::INPUT::IntegralValue<INPAR::PARTICLE::DynamicType>(DRT::Problem::Instance()->ParticleParams(),"DYNAMICTYP");
     if(timinttype==INPAR::PARTICLE::dyna_kickdrift)
     {
-      if (DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")>0.0)
+      if (DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"TRANSPORT_VELOCITY")==true)
       {
         //Initially, the convection velocity velmodn_ is set equal to the initial velocity veln_
         velmodn_->Update(1.0,*veln_,0.0);
@@ -711,18 +718,22 @@ void PARTICLE::TimInt::DetermineMeshfreeDensAndAcc(Teuchos::RCP<Epetra_Vector> a
     //In case of density summation, the new density and new pressure have been determined as very first step since they are required for all the following calculations
     Teuchos::RCP<Epetra_Vector> density_sum = Teuchos::rcp(new Epetra_Vector(*densityn_));
     density_sum->PutScalar(0.0);
-    Teuchos::RCP<Epetra_Vector> color_field = Teuchos::rcp(new Epetra_Vector(*densityn_));
-    color_field->PutScalar(0.0);
-    interHandler_->MF_mW(density_sum,color_field);
-    interHandler_->SetStateVector(color_field, PARTICLE::ColorField);
+    Teuchos::RCP<Epetra_Vector> colorField = Teuchos::rcp(new Epetra_Vector(*densityn_));
+    colorField->PutScalar(0.0);
+
+    interHandler_->MF_mW(density_sum,colorField);
+    interHandler_->SetStateVector(colorField, PARTICLE::ColorField);
     interHandler_->SetStateVector(density_sum, PARTICLE::DensitySum);
 
     //Determine free-surface particles
-    interHandler_->InitFreeSurfaceParticles();
+    interHandler_->InitFreeSurfaceParticles(fspType_);
 
     //Re-initialize density if required in case of free-surface flow
     if(freeSurfaceType!=INPAR::PARTICLE::DensityIntegration)
       interHandler_->MF_ReInitDensity(densityn_,freeSurfaceType);
+
+    if(colorField_!=Teuchos::null)
+      colorField_->Update(1.0,*colorField,0.0);
   }
 
   //Determine also the new pressure and set state vector
@@ -838,6 +849,12 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
   UpdateStateVectorMap(inertia_,true);
   UpdateStateVectorMap(temperature_,true);
   UpdateStateVectorMap(pressure_,true);
+
+  if(colorField_!=Teuchos::null)
+    UpdateStateVectorMap(colorField_,true);
+
+  if(fspType_!=Teuchos::null)
+    UpdateStateVectorMap(fspType_,true);
 }
 
 /*----------------------------------------------------------------------*/
@@ -893,7 +910,7 @@ void PARTICLE::TimInt::ReadRestartState()
   acc_->UpdateSteps(*accn_);
 #endif
 
-  if (DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")>0.0)
+  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"TRANSPORT_VELOCITY")==true)
   {
     reader.ReadVector(velmodn_, "modified_velocity");
     velmod_->UpdateSteps(*velmodn_);
@@ -1026,7 +1043,7 @@ void PARTICLE::TimInt::OutputRestart
   WriteVector("velocity", vel_);
   WriteVector("acceleration", acc_);
 
-  if (DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")>0.0)
+  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"TRANSPORT_VELOCITY")==true)
   {
     WriteVector("modified_velocity", velmod_);
     WriteVector("modified_acceleration", accmod_);
@@ -1042,6 +1059,12 @@ void PARTICLE::TimInt::OutputRestart
   WriteVector("specEnthalpy", specEnthalpy_, false);
   WriteVector("specEnthalpyDot", specEnthalpyDot_, false);
   WriteVector("temperature", temperature_, false);
+
+  if(colorField_!=Teuchos::null)
+    WriteVector("colorField", colorField_, false);
+
+  if(fspType_!=Teuchos::null)
+    WriteVector("fspType", fspType_, false);
 
   if(variableradius_)
   {
@@ -1109,7 +1132,15 @@ void PARTICLE::TimInt::OutputState
   WriteVector("pressure", pressure_, false);
   //WriteVector("densityapprox", densityapproxn_, false);
   WriteVector("density", density_, false);
+  //TODO COLORFIELD
   WriteVector("specEnthalpy", specEnthalpy_, false);
+
+  if(colorField_!=Teuchos::null)
+    WriteVector("colorField", colorField_, false);
+
+  if(fspType_!=Teuchos::null)
+    WriteVector("fspType", fspType_, false);
+
   WriteVector("temperature", temperature_, false);
 
   WriteVector("modified_velocity", velmod_);
@@ -1291,7 +1322,7 @@ void PARTICLE::TimInt::PerformMeshfreeRendering(bool clearstate, bool writeoutpu
 
       // determine the (averaged) rendering vectors
       std::cout << "Update (averaged) rendering vectors!" << std::endl;
-      if (DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")>0.0)
+      if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"TRANSPORT_VELOCITY")==true)
         rendering->UpdateRenderingVectors(discret_, (*dis_)(0), (*vel_)(0), (*acc_)(0), (*velmod_)(0), (*density_)(0), (*specEnthalpy_)(0), temperature_, (*radius_)(0), pressure_, mass_);
       else
         rendering->UpdateRenderingVectors(discret_, (*dis_)(0), (*vel_)(0), (*acc_)(0), Teuchos::null, (*density_)(0), (*specEnthalpy_)(0), temperature_, (*radius_)(0), pressure_, mass_);
@@ -1612,7 +1643,7 @@ void PARTICLE::TimInt::UpdateStepState()
   UpdateStateVector(specEnthalpy_, specEnthalpyn_);
   UpdateStateVector(specEnthalpyDot_, specEnthalpyDotn_);
 
-  if (DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")>0.0)
+  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"TRANSPORT_VELOCITY")==true)
   {
     UpdateStateVector(velmod_, velmodn_);
     UpdateStateVector(accmod_, accmodn_);

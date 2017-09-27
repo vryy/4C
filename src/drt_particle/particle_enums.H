@@ -23,7 +23,6 @@ namespace PARTICLE
     Dis,
     Vel,
     VelConv,
-    ColorFieldGradient,
     Radius,
     Density,
     DensityDot,
@@ -31,8 +30,6 @@ namespace PARTICLE
     Mass,
     Pressure,
     Temperature,
-    mGradW,
-    mHessW,
     ColorField,
     DensitySum
   };
@@ -40,7 +37,6 @@ namespace PARTICLE
   enum NeighbourType
   {
     NT_Particle,
-    NT_Wall,
     NT_HeatSource
   };
 

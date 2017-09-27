@@ -19,6 +19,7 @@ BOUNDINGBOX                     -0.220000 -0.0010001 -0.0010001 0.220000 0.00100
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 ------------------------------------------------------------PARTICLE DYNAMIC
+DYNAMICTYP                      KickDrift
 RESULTSEVRY                     1
 TIMESTEP                        0.001
 NUMSTEP                         1000000

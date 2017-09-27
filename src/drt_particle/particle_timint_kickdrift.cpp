@@ -61,19 +61,11 @@ PARTICLE::TimIntKickDrift::TimIntKickDrift(
 /* mostly init of collision handling  */
 void PARTICLE::TimIntKickDrift::Init()
 {
-
-  if (particle_algorithm_->ExtParticleMat()->surfaceVoidTension_ != 0)
-    dserror("No surface tension possible in kick-drift scheme!");
-
   if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM"))
     dserror("No thermal problem possible in kick-drift scheme!");
 
-  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"NO_VELDIFF_TERM")==true and DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")<0.0)
-      dserror("The parameter NO_VELDIFF_TERM only makes sense in combination with BACKGROUND_PRESSURE!");
-
-  const INPAR::PARTICLE::WallInteractionType wallInteractionType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallInteractionType>(DRT::Problem::Instance()->ParticleParams(),"WALL_INTERACTION_TYPE");
-  if(wallInteractionType==INPAR::PARTICLE::Mirror or wallInteractionType==INPAR::PARTICLE::Custom or wallInteractionType==INPAR::PARTICLE::InitParticle)
-    dserror("the wall interaction types Mirror, Custom and InitParticle not possible in kick-drift scheme!");
+  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"NO_VELDIFF_TERM")==true and DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"TRANSPORT_VELOCITY")==false)
+      dserror("The parameter NO_VELDIFF_TERM only makes sense in combination with TRANSPORT_VELOCITY!");
 
   // call base class init
   PARTICLE::TimIntExpl::Init();
@@ -112,7 +104,7 @@ int PARTICLE::TimIntKickDrift::IntegrateStep()
   //v_{n+1/2}=v_{n}+dt/2*a_{n-1/2}, with *(*acc_)(0)=a_{n-1/2}
   veln_->Update(dthalf, *(*acc_)(0), 1.0);
   //Apply modified convection velocity if required
-  if (DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")>0.0)
+  if (DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"TRANSPORT_VELOCITY")==true)
   {
     //\tilde{v}_{n+1/2}=v_{n+1/2}+dt/2*\tilde{a}_{n-1/2}, with \tilde{a}_{n-1/2}=*(*accmod_)(0), \tilde{v}_{n+1/2}=velmodn_
     velmodn_->Update(1.0, *veln_, 0.0);
@@ -132,7 +124,7 @@ int PARTICLE::TimIntKickDrift::IntegrateStep()
   ApplyDirichletBC(timen_, disn_, Teuchos::null, accn_, false);
   ApplyDirichletBC(timen_-dthalf, Teuchos::null, veln_, Teuchos::null, false);
 
-  if (DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")>0.0)
+  if (DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"TRANSPORT_VELOCITY")==true)
     ApplyDirichletBC(timen_-dthalf, Teuchos::null, velmodn_, Teuchos::null, false);
 
   //Transfer particles and heat sources into their correct bins

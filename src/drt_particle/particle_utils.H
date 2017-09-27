@@ -95,7 +95,6 @@ namespace PARTICLE
       bool trg_createInertiaVector = false);
 
     //! Compute the pressure from the proper speed of sound and the density (small density variation hypothesis)
-    /// if you change this function you need to touch Inter_pvp_gradAccP too!
     static double Density2Pressure(const double& speedOfSound, const double& restDensity, const double& refdensfac, const double& density, const double& exponent)
       {
         if(exponent==1)
@@ -110,7 +109,6 @@ namespace PARTICLE
       };
 
     //! Compute the pressure from the proper speed of sound and the density (small density variation hypothesis)
-    /// if you change this function you need to touch Inter_pvp_gradAccP too! (FAD version)
     static FAD Density2Pressure(const double& speedOfSound, const double& restDensity, const double& refdensfac, const FAD& density, const double& exponent)
       {
         if(exponent==1)
@@ -135,7 +133,6 @@ namespace PARTICLE
     };
 
     //! Compute pressure for the entire vector
-    /// if you change this function you need to touch Inter_pvp_gradAccP too!
     static void Density2Pressure(
         const double& restDensity,
         const double& refdensfac,

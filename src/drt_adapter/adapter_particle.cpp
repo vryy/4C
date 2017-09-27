@@ -17,7 +17,6 @@
  | headers                                                  ghamm 12/13 |
  *----------------------------------------------------------------------*/
 #include "adapter_particle.H"
-#include "../drt_particle/particle_timint_genalpha.H"
 #include "../drt_particle/particle_timint_centrdiff.H"
 #include "../drt_particle/particle_timint_kickdrift.H"
 #include "../drt_particle/particle_timint_expleuler.H"
@@ -118,12 +117,6 @@ void ADAPTER::ParticleBaseAlgorithm::SetupTimInt(
   case INPAR::PARTICLE::dyna_rk4:
   {
     tmppart = Teuchos::rcp(new PARTICLE::TimIntRK(ioflags, *partdyn, *xparams, actdis, output));
-    break;
-  }
-  case INPAR::PARTICLE::dyna_genAlpha:
-  {
-    Teuchos::RCP<LINALG::Solver> solver = CreateLinearSolver(actdis, *partdyn);
-    tmppart = Teuchos::rcp(new PARTICLE::TimIntGenAlpha(ioflags, *partdyn, *xparams, actdis, solver, output));
     break;
   }
   default :

@@ -36,7 +36,8 @@ DENSITY_SUMMATION               yes // Density via summation formula or via time
 CONSISTENT_PROBLEM_VOLUME       1.0 // =-1.0(default): particle mass via sphere volume, >0: particle mass via DENSITY and problem volume
 SOLVE_THERMAL_PROBLEM           no // only mechanical problem or thermal problem as well?
 WALL_INTERACTION_TYPE           BoundarParticle_NoSlip //InitParticle (default),Mirror,Custom,BoundarParticle_NoSlip,BoundarParticle_FreeSlip,None
-BACKGROUND_PRESSURE              100
+TRANSPORT_VELOCITY              yes
+BACKGROUND_PRESSURE             100
 NO_VELDIFF_TERM                 yes
 EXTENDED_GHOSTING               BdryParticleGhosting
 --------------------------------------------------------------------SOLVER 1

@@ -149,15 +149,9 @@ namespace PARTICLE
     //! add to the neighbour maps the neighbours of the present time step
     virtual void AddNewNeighbours(const int step);
 
-    //! update weights and distances in all the neighbours (all maps, all the particles, all the walls)
-    //! to speed-up the process the interactions with "step" are skipped. -1 means that nothing is skipped
-    virtual void UpdateWeights(const int step = -1);
-
-    //! update neighbour weights
-
     //! set state vector in ColParticles
     virtual void SetStateVector(
-        Teuchos::RCP<const Epetra_Vector> colorFieldGradientn,
+        Teuchos::RCP<const Epetra_Vector> stateVector,
         const PARTICLE::StateVectorType svt);
 
     //! set state vector in ColParticles - for multiVector
@@ -194,28 +188,28 @@ namespace PARTICLE
     /// compute the momentum part of the particle vs particle interactions
     virtual void Inter_pvp_acc_var1(
         const Teuchos::RCP<Epetra_Vector> accn,
-        const Teuchos::RCP<Epetra_Vector> p0_acc = Teuchos::null,
+        const Teuchos::RCP<Epetra_Vector> trvl_acc = Teuchos::null,
         const Teuchos::RCP<Epetra_Vector> acc_A = Teuchos::null,
         const double extMulti = 1.0);
 
     /// compute the momentum part of the boundary particle vs particle interactions
     virtual void Inter_bpvp_acc_var1(
         const Teuchos::RCP<Epetra_Vector> accn,
-        const Teuchos::RCP<Epetra_Vector> p0_acc = Teuchos::null,
+        const Teuchos::RCP<Epetra_Vector> trvl_acc = Teuchos::null,
         const Teuchos::RCP<Epetra_Vector> acc_A = Teuchos::null,
         const double extMulti = 1.0);
 
     /// compute the momentum part of the particle vs particle interactions: alternative variant according to Adami2013
     virtual void Inter_pvp_acc_var2(
         const Teuchos::RCP<Epetra_Vector> accn,
-        const Teuchos::RCP<Epetra_Vector> p0_acc = Teuchos::null,
+        const Teuchos::RCP<Epetra_Vector> trvl_acc = Teuchos::null,
         const Teuchos::RCP<Epetra_Vector> acc_A = Teuchos::null,
         const double extMulti = 1.0);
 
     /// compute the momentum part of the boundary particle vs particle interactions: alternative variant according to Adami2013
     virtual void Inter_bpvp_acc_var2(
         const Teuchos::RCP<Epetra_Vector> accn,
-        const Teuchos::RCP<Epetra_Vector> p0_acc = Teuchos::null,
+        const Teuchos::RCP<Epetra_Vector> trvl_acc = Teuchos::null,
         const Teuchos::RCP<Epetra_Vector> acc_A = Teuchos::null,
         const double extMulti = 1.0);
 
@@ -238,51 +232,9 @@ namespace PARTICLE
         const Teuchos::RCP<Epetra_Vector> specEnthalpyDotn,
         const double extMulti = 1.0);
 
-    /// compute the colorFieldGradient of the particle vs particle interactions
-    virtual void Inter_pvp_colorFieldGradient(
-        const Teuchos::RCP<Epetra_Vector> colorFieldGradientn,
-        const double extMulti = 1.0);
-
-    /// compute the accn from the color field gradient of the particle vs particle interactions
-    virtual void Inter_pvp_surfaceTensionCFG(
-        const Teuchos::RCP<Epetra_Vector> accn,
-        const double extMulti = 1.0);
-
-    /// compute the gradient of the momentum part of the particle vs particle interactions
-    /// if you change this function you need to touch the pressure definition too!
-    virtual void Inter_pvp_gradAccP(
-        const Teuchos::RCP<LINALG::SparseMatrix> gradAccP,
-        const double &restDensity,
-        const double extMulti = 1.0);
-
-    virtual void Inter_pvp_gradAccPapproxOnlyHess(
-        const Teuchos::RCP<LINALG::SparseMatrix> gradAccP,
-        const double &restDensity,
-        const double extMulti = 1.0);
-
-    /// compute the density part of the particle vs wall interactions
-    virtual void Inter_pvw_densityDot(
-        const Teuchos::RCP<Epetra_Vector> densityDotn,
-        const double extMulti = 1.0);
-
-    /// compute the momentum part of the particle vs wall interactions
-    virtual void Inter_pvw_acc(
-        const Teuchos::RCP<Epetra_Vector> accn,
-        const double extMulti = 1.0);
-
     /// compute the heat of the particle vs heat sources interactions
     virtual void Inter_pvhs_specEnthalpyDot(
         const Teuchos::RCP<Epetra_Vector> specEnthalpyDotn,
-        const double extMulti = 1.0);
-
-    virtual void Inter_pvw_gradAccP(
-        const Teuchos::RCP<LINALG::SparseMatrix> gradAccP,
-        const double &restDensity,
-        const double extMulti = 1.0);
-
-    virtual void Inter_pvw_gradAccPapproxOnlyHess(
-        const Teuchos::RCP<LINALG::SparseMatrix> gradAccP,
-        const double &restDensity,
         const double extMulti = 1.0);
 
     //@}
@@ -296,11 +248,6 @@ namespace PARTICLE
         const Teuchos::RCP<Epetra_Vector> unity_vec = Teuchos::null,
         const double extMulti = 1.0);
 
-    /// compute density - mesh free sense - wall contributions
-    virtual void MF_mW_Wall(
-        const Teuchos::RCP<Epetra_Vector> mW,
-        const double extMulti = 1.0);
-
     /// compute density - mesh free sense - boundary particle contributions
     virtual void MF_mW_Boundary(
         const Teuchos::RCP<Epetra_Vector> mW,
@@ -312,43 +259,9 @@ namespace PARTICLE
         const Teuchos::RCP<Epetra_Vector> density,
         const INPAR::PARTICLE::FreeSurfaceType freeSurfaceType);
 
-    /// compute pressure difference (for debugging)
-    virtual void MF_DeltaP(
-        const Teuchos::RCP<Epetra_Vector> PressureDiff);
-
     /// initialize free surface particles
-    virtual void InitFreeSurfaceParticles();
-
-    /// set pressure of free surface particles
-    virtual void SetPressureOfFreeSurfaceParticles(
-        const Teuchos::RCP<Epetra_Vector> densityn,
-        const Teuchos::RCP<Epetra_Vector> pressuren);
-
-    /// determine accelerations of free-surface particle
-    virtual void Inter_fsvp_acc(
-        const Teuchos::RCP<Epetra_Vector> acc);
-
-    /// compute m * gradW - mesh free sense
-    virtual void MF_mGradW(
-        const Teuchos::RCP<Epetra_Vector> mGradW,
-        const bool withWalls = true,
-        const double extMulti = 1.0);
-
-    /// compute m * hessW - mesh free sense
-    virtual void MF_mHessW(
-        const Teuchos::RCP<Epetra_MultiVector> mHessW,
-        const bool withWalls = true,
-        const double extMulti = 1.0);
-
-    /// Compute linearizaton of AccP via FAD (for debugging) - mesh free style
-    void Inter_pvp_gradAccP_FAD(
-        const Teuchos::RCP<Epetra_Vector> res,
-        const Teuchos::RCP<LINALG::SparseMatrix> stiff);
-
-    /// Compute consistent linearizaton of AccP - mesh free style
-    void Inter_pvp_gradAccP_consistent(
-        const Teuchos::RCP<Epetra_Vector> res,
-        const Teuchos::RCP<LINALG::SparseMatrix> stiff);
+    virtual void InitFreeSurfaceParticles(
+        const Teuchos::RCP<Epetra_Vector> fspType);
 
     //@}
 
@@ -404,28 +317,10 @@ namespace PARTICLE
         const bool mark_fs_indirect=false,
         const int step=1);
 
-    //! add to the neighbour maps the neighbours of the present time step - walls
-    virtual void AddNewNeighbours_w(
-        const ParticleMF& particle_i,
-        const boost::unordered_map<int, DRT::Element*>& neighboursLinf_w,
-        const int step);
-
     //! add to the neighbour maps the neighbours of the present time step - heat sources
     virtual void AddNewNeighbours_hs(
         const ParticleMF& particle_i,
         const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > >& neighboring_heatSources);
-
-    //! update the neighbours_p_ map
-    virtual void UpdateWeights_p(const int step = -1);
-
-    //! update the neighbours_w_ map
-    virtual void UpdateWeights_w(const int step = -1);
-
-    //! update weights and distances of boundary particle neighbours
-    virtual void UpdateWeights_bp(const int step = -1);
-
-     //! update the neighbours_op_ map
-     virtual void UpdateWeights_op(const int step = -1);
 
      //! build periodic boundary conditions
      virtual void BuildPeriodicBC();
@@ -486,9 +381,6 @@ namespace PARTICLE
     /// neighbours - heat sources
     std::vector<boost::unordered_map<int, Teuchos::RCP<HeatSource> > > neighbours_hs_;
 
-    /// neighbours - walls
-    std::vector<boost::unordered_map<int, InterDataPvW> > neighbours_w_;
-
     /// weight function
     Teuchos::RCP<PARTICLE::WeightFunction_Base> weightFunctionHandler_;
 
@@ -530,15 +422,6 @@ namespace PARTICLE
 
     /// artificial viscosity according to Adami et al. 2012, Eq. (11)
     double artificialViscosity_;
-
-    /// cohesion surface tension coefficient with void (or air)
-    double surfaceVoidTension_;
-
-    /// cohesion surface tension coefficient with the wall
-    double surfaceWallTension_;
-
-    // security trigger in case the color field gradient was not set properly
-    bool trg_updatedColorFieldGradient_;
 
     // length of periodic box if appicable (=-1.0 if not)
     double periodic_length_;

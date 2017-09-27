@@ -19,6 +19,7 @@ BOUNDINGBOX                     -0.220000 -0.0010001 -0.0010001 0.220000 0.00100
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 ------------------------------------------------------------PARTICLE DYNAMIC
+DYNAMICTYP                      KickDrift
 RESULTSEVRY                     1
 TIMESTEP                        0.001
 NUMSTEP                         1000000
@@ -359,7 +360,5 @@ COMPONENT 2FUNCTION 0.0
 -------------------------------------------------------------------MATERIALS
 MAT 2 MAT_ExtParticle DENSITY 1.0 RESTDENSITY 1.0 REFDENSFAC 1.0 EXPONENT 1.0 INITRADIUS 0.015 DISMEMBER_RADIUS 0 NUE 0 YOUNG 0 INITTEMPERATURE 0 CPS 0 CPL 0 LATENT_HEAT 0 TRANSITION_TEMPERATURE 0 THERMAL_EXPANSION_S 0 THERMAL_EXPANSION_L 0 THERMAL_EXPANSION_T 0 BULK_MODULUS 0.01 DYNAMIC_VISCOSITY 0.00005 BULK_VISCOSITY 0.000025 ARTIFICIAL_VISCOSITY -1 THERMAL_CONDUCTIVITY 0 SURFACE_VOID_TENSION 0 SURFACE_WALL_TENSION 0
 ----------------------------------------------------------RESULT DESCRIPTION
-//Old result due to error in second derivative occuring in viscosity terms
-//PARTICLE DIS particle NODE 37 QUANTITY velx VALUE -1.11774988996871558e-04 TOLERANCE 1.0e-10
-PARTICLE DIS particle NODE 37 QUANTITY velx VALUE -1.27213020510670626e-04 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 37 QUANTITY velx VALUE -1.24947006355195702e-04 TOLERANCE 1.0e-10
 -------------------------------------------------------------------------END

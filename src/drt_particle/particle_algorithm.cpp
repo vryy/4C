@@ -109,16 +109,10 @@ PARTICLE::Algorithm::Algorithm(
       }
     }
 
-    if(wallInteractionType==INPAR::PARTICLE::Mirror or wallInteractionType==INPAR::PARTICLE::InitParticle or wallInteractionType==INPAR::PARTICLE::Custom)
-    {
-      if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"DENSITY_SUMMATION"))
-        dserror("Density summation has so far not been tested in combination with wall boundaries. Use Boundary particles when applying density summation!");
-    }
-
     INPAR::PARTICLE::DynamicType timinttype = DRT::INPUT::IntegralValue<INPAR::PARTICLE::DynamicType>(DRT::Problem::Instance()->ParticleParams(),"DYNAMICTYP");
 
-    if(timinttype!=INPAR::PARTICLE::dyna_kickdrift and DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")>=0.0)
-      dserror("Modified particle convection velocities based on a constant BACKGROUND_PRESSURE field only possible for KickDrift time integration scheme!");
+    if(timinttype!=INPAR::PARTICLE::dyna_kickdrift and DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"TRANSPORT_VELOCITY")==true)
+      dserror("Modified particle convection velocities based on a TRANSPORT_VELOCITY field only possible for KickDrift time integration scheme!");
   }
   else
   {

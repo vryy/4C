@@ -37,15 +37,13 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                   "CentrDiff",
                                   "KickDrift",
                                   "RK2",
-                                  "RK4",
-                                  "GenAlpha"),
+                                  "RK4"),
                                 tuple<int>(
                                   INPAR::PARTICLE::dyna_expleuler,
                                   INPAR::PARTICLE::dyna_centrdiff,
                                   INPAR::PARTICLE::dyna_kickdrift,
                                   INPAR::PARTICLE::dyna_rk2,
-                                  INPAR::PARTICLE::dyna_rk4,
-                                  INPAR::PARTICLE::dyna_genAlpha
+                                  INPAR::PARTICLE::dyna_rk4
                                 ),
                                 &particledyn);
 
@@ -171,20 +169,14 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                   &particledyn);
 
    setStringToIntegralParameter<int>(
-                               "WALL_INTERACTION_TYPE","InitParticle",
+                               "WALL_INTERACTION_TYPE","BoundarParticle_NoSlip",
                                "wall interaction type for MeshFree interactions",
                                tuple<std::string>(
-                                 "InitParticle",
-                                 "Mirror",
-                                 "Custom",
                                  "BoundarParticle_NoSlip",
                                  "BoundarParticle_FreeSlip",
                                  "NoWallInteraction"
                                  ),
                                tuple<int>(
-                                 INPAR::PARTICLE::InitParticle,
-                                 INPAR::PARTICLE::Mirror,
-                                 INPAR::PARTICLE::Custom,
                                  INPAR::PARTICLE::BoundarParticle_NoSlip,
                                  INPAR::PARTICLE::BoundarParticle_FreeSlip,
                                  INPAR::PARTICLE::NoWallInteraction
@@ -213,10 +205,6 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for structural problems",&particledyn);
    DoubleParameter("ERROR_TOLL",1e-6,"tolerance of the error for implicit schemes",&particledyn);
    IntParameter("ITER_MAX",10,"maximum iteration per time step for implicit schemes",&particledyn);
-   DoubleParameter("ALPHA_MIN",1e-6,"cap of the alpha parameter for the divergence free scheme for meshfree",&particledyn);
-   DoubleParameter("WALL_FAKE_DENSITY",-1.0,"fake density for meshfree dynamics, in case of -1 the coefficients are extracted from the initial values of the particle material parameters",&particledyn);
-   DoubleParameter("WALL_FAKE_MASS",-1.0,"fake mass of the wall element for meshfree dynamics, in case of -1 the coefficients are extracted from the initial values of the particle material parameters",&particledyn);
-   DoubleParameter("WALL_FAKE_PRESSURE",-1.0,"fake pressure of the wall element for meshfree dynamics, in case of -1 the coefficients are extracted from the initial values of the particle material parameters",&particledyn);
    DoubleParameter("MIN_RADIUS",-1.0,"smallest particle radius",&particledyn);
    DoubleParameter("MAX_RADIUS",-1.0,"largest particle radius",&particledyn);
    DoubleParameter("REL_PENETRATION",-1.0,"relative particle-particle penetration",&particledyn);
@@ -268,6 +256,9 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                              &particledyn);
    DoubleParameter("GRAVITY_RAMP_TIME",-1.0,"increase gravity force smoothly within a time interval GRAVITY_RAMP_TIME in the beginning of the simulation",&particledyn);
    DoubleParameter("BACKGROUND_PRESSURE",-1.0,"constant background pressure employed for modified particle convection velocity/acceleration in KickDrift time integrator (SPH only)",&particledyn);
+   DoubleParameter("XSPH_DAMPFAC",-1.0,"damping factor of XSPH scheme",&particledyn);
+   DoubleParameter("XSPH_STIFFAC",-1.0,"damping factor of XSPH scheme",&particledyn);
+   BoolParameter("TRANSPORT_VELOCITY","no","apply particle convection velocity that differs from momentum velocity",&particledyn);
 
    setStringToIntegralParameter<int>("DIMENSION","3D",
                                 "number of space dimensions for handling of quasi-2D problems with 3D particles",
@@ -334,40 +325,6 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    DoubleParameter("ADHESION_NORMAL_EPS",-1.0,"depth of Lennard-Jones adhesion potential well",&particledyn);
    DoubleParameter("ADHESION_MAX_FORCE",-1.0,"maximum adhesion force",&particledyn);
    DoubleParameter("ADHESION_MAX_DISP",-1.0,"maximum displacement from adhesion equilibrium",&particledyn);
-   /*----------------------------------------------------------------------*/
-   /* parameters for generalised-alpha integrator */
-   Teuchos::ParameterList& genalpha = particledyn.sublist("GENALPHA",false,"");
-
-   setStringToIntegralParameter<int>("GENAVG","TrLike",
-                                "mid-average type of internal forces",
-                                tuple<std::string>(
-                                  "Vague",
-                                  "ImrLike",
-                                  "TrLike"),
-                                tuple<int>(
-                                  midavg_vague,
-                                  midavg_imrlike,
-                                  midavg_trlike),
-                                &genalpha);
-   setStringToIntegralParameter<int>("GRADRES_APPROX","OnlyHess",
-                                "type of approximation of the Generalised-alpha's residual of the gradient",
-                                tuple<std::string>(
-                                  "Full",
-                                  "OnlyHess"),
-                                tuple<int>(
-                                  gaapprox_full,
-                                  gaapprox_onlyhess),
-                                &genalpha);
-
-
-   DoubleParameter("BETA",0.25,"Generalised-alpha factor in (0,1/2]",&genalpha);
-   DoubleParameter("GAMMA",0.5,"Generalised-alpha factor in (0,1]",&genalpha);
-   DoubleParameter("ALPHA_M",0.5,"Generalised-alpha factor in [0,1)",&genalpha);
-   DoubleParameter("ALPHA_F",0.5,"Generalised-alpha factor in [0,1)",&genalpha);
-   DoubleParameter("RHO_INF",-1.0,"Generalised-alpha factor in [0,1]",&genalpha);
-   DoubleParameter("TOL",1e-5,"Generalised-alpha tollerance",&genalpha);
-   IntParameter("MAXIT",10,"Generalised-alpha max number of iterations",&genalpha);
-   IntParameter("MAXIT",10,"Generalised-alpha max number of iterations",&genalpha);
 }
 
 

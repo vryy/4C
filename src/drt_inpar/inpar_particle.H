@@ -34,8 +34,7 @@ namespace INPAR
       dyna_centrdiff,                  ///< central differences (explicit)
       dyna_kickdrift,                  ///< kick-dirft scheme (explicit)
       dyna_rk2,                        ///< Runge-Kutta 2 (explicit)
-      dyna_rk4,                        ///< Runge-Kutta 4 (explicit)
-      dyna_genAlpha                    ///< general alpha scheme (implicit)
+      dyna_rk4                        ///< Runge-Kutta 4 (explicit)
     };
 
     /// Contact type for particles
@@ -122,9 +121,6 @@ namespace INPAR
     /// wall interaction type for MeshFree interactions
     enum WallInteractionType
     {
-      InitParticle,
-      Mirror,
-      Custom,
       BoundarParticle_NoSlip,
       BoundarParticle_FreeSlip,
       NoWallInteraction

@@ -1798,7 +1798,6 @@ set(OBJS_DRT_PARTICLE
   src/drt_particle/particle_timint_kickdrift.cpp
   src/drt_particle/particle_timint_expleuler.cpp
   src/drt_particle/particle_timint_rk.cpp
-  src/drt_particle/particle_timint_genalpha.cpp
   src/drt_particle/particle_handler.cpp
   src/drt_particle/particle_algorithm.cpp
   src/drt_particle/particle_contact.cpp
@@ -1806,7 +1805,6 @@ set(OBJS_DRT_PARTICLE
   src/drt_particle/particle_resulttest.cpp
   src/drt_particle/particleMeshFree_interaction.cpp
   src/drt_particle/particleMeshFree_weightFunction.cpp
-  src/drt_particle/particleMeshFree_surfaceTensionInteractions.cpp
   src/drt_particle/particleMeshFree_rendering.cpp
   src/drt_particle/particleMeshFree_rendering_resulttest.cpp
   src/drt_particle/particle_utils.cpp

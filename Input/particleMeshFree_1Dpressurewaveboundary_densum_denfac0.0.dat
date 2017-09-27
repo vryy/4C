@@ -6,9 +6,9 @@
                   General Data File BACI
 ==================================================================
 ---------------------------------------------------------------------------TITLE
-1D test case for Particle Meshfree Interaction (SPH): 1D wave propagation (WF_1D) with initial velocity field,
+1D test case for Particle Meshfree Interaction (SPH) employing kick-drift time integration scheme: 1D wave propagation (WF_1D) with initial velocity field,
 fixed boundary particles according to Adami et al. 2012 (wave reflection, no slip condition), density summation, no viscous forces,
-equation of state with REFDENSFAC=0, particle mass consistently determined via problem volume and density
+equation of state p=c_0^2\rho with REFDENSFAC=0, particle mass consistently determined via problem volume and density
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      MeshFree
 SHAPEFCT                        Meshfree
@@ -19,6 +19,7 @@ BOUNDINGBOX                     -0.220000 -0.0010001 -0.0010001 0.220000 0.00100
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 ------------------------------------------------------------PARTICLE DYNAMIC
+DYNAMICTYP                      KickDrift
 RESULTSEVRY                     1
 TIMESTEP                        0.001
 NUMSTEP                         1000000
@@ -345,16 +346,16 @@ E 76 - NUMDOF 3 ONOFF 1 1 1 VAL 0.104081632653061 0.0 0.0 FUNCT 0 0 0
 ----------------------------------------------------------------------FUNCT1
 // initial velocity (x component) applied in the interval x in [-0.015;0.015]
 COMPONENT 0 FUNCTION 0.0005*(1+cos(x*pi/0.015))
-// initial velocity (y component)
+// initial velocity (y component) for remaining domain
 COMPONENT 1 FUNCTION 0.0
-// initial velocity (z component)
+// initial velocity (z component) for remaining domain
 COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
 // initial velocity (x component) for remaining domain
 COMPONENT 0 FUNCTION 0.0
-// initial velocity (y component)
+// initial velocity (y component) for remaining domain
 COMPONENT 1 FUNCTION 0.0
-// initial velocity (z component)
+// initial velocity (z component) for remaining domain
 COMPONENT 2 FUNCTION 0.0
 -------------------------------------------------------------------MATERIALS
 MAT 2 MAT_ExtParticle DENSITY 1.0 RESTDENSITY 1.0 REFDENSFAC 0.0 EXPONENT 1.0 INITRADIUS 0.015 DISMEMBER_RADIUS 0 NUE 0 YOUNG 0 INITTEMPERATURE 0 CPS 0 CPL 0 LATENT_HEAT 0 TRANSITION_TEMPERATURE 0 THERMAL_EXPANSION_S 0 THERMAL_EXPANSION_L 0 THERMAL_EXPANSION_T 0 BULK_MODULUS 0.01 DYNAMIC_VISCOSITY 0.0 BULK_VISCOSITY 0 ARTIFICIAL_VISCOSITY -1 THERMAL_CONDUCTIVITY 0 SURFACE_VOID_TENSION 0 SURFACE_WALL_TENSION 0

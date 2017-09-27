@@ -667,7 +667,11 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> pressure_;
     //! Particle force on wall discretization \f$f_{n}\f$ or \f$f_{n+1}\f$
     Teuchos::RCP<Epetra_FEVector> f_structure_;
-    //! m * grad(weightFunction) for meshfree methods
+
+    //! color field
+    Teuchos::RCP<Epetra_Vector> colorField_;
+    //! free-surface particle type
+    Teuchos::RCP<Epetra_Vector> fspType_;
 
     //! initial density for meshFree-pressure dynamics
     double initDensity_;

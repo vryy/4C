@@ -102,44 +102,6 @@ namespace PARTICLE
 
   }; // ParticleThermoBase
 
-
-// ---------------------------------------------------------- //
-  /// base class for surface tension dynamics
-  class ParticleSurfTensionBase
-  {
-  public:
-
-  /// constructor
-
-  ParticleSurfTensionBase(const LINALG::Matrix<3,1> colorFieldGradient) : colorFieldGradient_(colorFieldGradient) {}
-
-  ParticleSurfTensionBase() {}
-
-  /// internal variables
-
-  LINALG::Matrix<3,1> colorFieldGradient_;
-
-  }; // ParticleSurfTensionBase
-
-// ---------------------------------------------------------- //
-  /// base class for surface tension dynamics
-  class ParticleMFmGradWbase
-  {
-  public:
-
-  /// constructor
-
-    ParticleMFmGradWbase(const LINALG::Matrix<3,1> mGradW) :
-      mGradW_(mGradW) {}
-
-    ParticleMFmGradWbase() {}
-
-  /// internal variables
-
-    LINALG::Matrix<3,1> mGradW_;
-
-  }; // ParticleMFmGradHessWbase
-
 // ---------------------------------------------------------- //
   /// class for material particles (no meshfree - GH stuff)
   class Particle : public ParticleBase
@@ -228,7 +190,6 @@ namespace PARTICLE
   boundaryparticle_(boundaryparticle),
   acc_(LINALG::Matrix<3,1>(true)),
   velModVisc_(LINALG::Matrix<3,1>(true)),
-  velDiffAverage_(LINALG::Matrix<3,1>(true)),
   pressureMod_(-1000),
   densityMod_(-1000)
   {
@@ -244,7 +205,6 @@ namespace PARTICLE
   bool boundaryparticle_;         //bool to check if boundary particle or not?
   LINALG::Matrix<3,1> acc_;       //acceleration vector of boundary particles
   LINALG::Matrix<3,1> velModVisc_;    //modified velocity vector of boundary particle required for fiscous force calculation(see Ref. Adami2012)
-  LINALG::Matrix<3,1> velDiffAverage_;  //zero-order difference velocity (convection minus physical velocity) average of boundary particle over neighboring fluid particles
   double pressureMod_;            //modified pressure of boundary particle (see Ref. Adami2012)
   double densityMod_;            //modified density of boundary particle consistently derived from modified pressure via equation of state
 
@@ -271,8 +231,8 @@ namespace PARTICLE
   }; // FreeSurfaceData
 
 // ---------------------------------------------------------- //
-  /// particles for meshfree dynamics (thermodynamics and surface tensions included)
-  class ParticleMF : public ParticleBase, public ParticleThermoBase, public ParticleSurfTensionBase, public ParticleMFmGradWbase
+  /// particles for meshfree dynamics (thermodynamics included)
+  class ParticleMF : public ParticleBase, public ParticleThermoBase
   {
   public:
 
@@ -287,16 +247,12 @@ namespace PARTICLE
       const double mass,
       const double density,
       const double specEnthalpy,
-      const LINALG::Matrix<3,1> colorFieldGradient,
       const double pressure,
       const double temperature,
-      const double densityDot,
-      const LINALG::Matrix<3,1> mGradW
+      const double densityDot
       ) :
         ParticleBase(gid, owner, lm, dis, vel, radius, mass, density),
         ParticleThermoBase(specEnthalpy),
-        ParticleSurfTensionBase(colorFieldGradient),
-        ParticleMFmGradWbase(mGradW),
         pressure_(pressure),
         temperature_(temperature),
         densityDot_(densityDot),
@@ -305,7 +261,7 @@ namespace PARTICLE
         velConv_(LINALG::Matrix<3,1>(true)){}
 
   /// constructor: empty
-  ParticleMF() : ParticleBase(), ParticleThermoBase(), ParticleSurfTensionBase(), ParticleMFmGradWbase(),
+  ParticleMF() : ParticleBase(), ParticleThermoBase(),
       pressure_(-1), temperature_(-1), densityDot_(-1), boundarydata_(BoundaryData(false)), freesurfacedata_(FreeSurfaceData(FS_NONE)), velConv_(LINALG::Matrix<3,1>(true)) {}
 
   // contructor: only identifiers
@@ -316,8 +272,6 @@ namespace PARTICLE
       bool boundaryparticle) :
         ParticleBase(gid, owner, lm),
         ParticleThermoBase(),
-        ParticleSurfTensionBase(),
-        ParticleMFmGradWbase(),
         pressure_(-1),
         temperature_(-1),
         densityDot_(-1),
@@ -341,8 +295,6 @@ namespace PARTICLE
       ) :
         ParticleBase(gid, owner, lm, dis, vel, radius, mass, density),
         ParticleThermoBase(specEnthalpy),
-        ParticleSurfTensionBase(),
-        ParticleMFmGradWbase(),
         pressure_(pressure),
         temperature_(temperature),
         densityDot_(-1),
