@@ -1789,9 +1789,9 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
     {
       if(myrank_ == 0)
       {
-        std::cout << "+---------------------------------------------------------------+" << std::endl;
-        std::cout << "|            >>>>>> not converged!                              |" << std::endl;
-        std::cout << "+---------------------------------------------------------------+" << std::endl << std::endl;
+        std::cout << "+--------------------------------------------------------------+" << std::endl;
+        std::cout << "|            >>>>>> not converged!                             |" << std::endl;
+        std::cout << "+--------------------------------------------------------------+" << std::endl << std::endl;
       }
 
       // abort Newton-Raphson iteration

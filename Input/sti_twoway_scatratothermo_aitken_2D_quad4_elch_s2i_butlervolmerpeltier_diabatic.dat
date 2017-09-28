@@ -16,7 +16,8 @@ constant initial lithium concentrations, electric potentials, and temperatures
 - charge transfer kinetics characterized by Butler-Volmer-Peltier kinetics
 - discharge from partially charged state at C rate of approximately 0.8
 - 2500 quad4 elements with matching interface nodes
-- cf. bachelor thesis by Tobias Crönert (2015) and term paper by Maximilian Wurzer (2016) for details
+- stronger coupling between scatra and thermo fields due to reduced heat conductivities
+- cf. bachelor thesis by Alexander Angerer (2017) for details
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    2500
 //NODES       2909
@@ -25,11 +26,16 @@ DIM           2
 PROBLEMTYP                      Scalar_Thermo_Interaction
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      nonlinear
+TIMEINTEGR                      One_Step_Theta
+NUMSTEP                         10
 TIMESTEP                        1.0
+THETA                           0.5
+VELOCITYFIELD                   zero
 INITIALFIELD                    field_by_condition
-LINEAR_SOLVER                   2
+SKIPINITDER                     no
+LINEAR_SOLVER                   1
 ---------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
-ITEMAX                          2
+CONVTOL_OUTER                   1.e-8
 -----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero
@@ -43,28 +49,21 @@ INITPOTCALC                     yes
 SCATRATIMINTTYPE                Elch
 THERMO_INITIALFIELD             field_by_function
 THERMO_INITFUNCNO               4
-MATRIXTYPE                      sparse
-LINEAR_SOLVER                   1
-THERMO_LINEAR_SOLVER            2
+THERMO_LINEAR_SOLVER            1
+COUPLINGTYPE                    TwoWay_ScatraToThermo_Aitken
 ------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
-EQUILIBRATION                   rows_maindiag
 -----------------------------------------------------------SOLVER 1
-SOLVER                          Aztec_MSR
-AZPREC                          MueLu_nonsym
-AZSUB                           100
-STRATIMIKOS_XMLFILE             sti_2D_quad4_elch_s2i_butlervolmerpeltier_diabatic_AMG_pointbased.xml
------------------------------------------------------------SOLVER 2
 SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_elchmat NUMDOF 2 NUMSCAL 1 NUMPHASE 1 PHASEIDS 3 END
-MAT 2 MAT_soret CAPA 2000 CONDUCT 1.e3 SORET 1.0
+MAT 2 MAT_soret CAPA 2000 CONDUCT 1.e-3 SORET 1.0
 MAT 3 MAT_elchphase EPSILON 1.0 TORTUOSITY 1.0 NUMMAT 1 MATIDS 4 END
 MAT 4 MAT_newman VALENCE 1.0 DIFFCOEF -1 TRANSNR -1 THERMFAC -1 COND -1 DIFF_PARA_NUM 1 DIFF_PARA 7.5e-5 TRANS_PARA_NUM 1 TRANS_PARA 0.363 THERM_PARA_NUM 1 THERM_PARA 1 COND_PARA_NUM 1 COND_PARA 200 END
 MAT 5 MAT_electrode DIFFCOEF -1 COND -1 DIFF_PARA_NUM 1 DIFF_PARA 3.9e-8 COND_PARA_NUM 1 COND_PARA 1e5 C_MAX 24.681 OCP_MODEL Taralov OCP_PARA_NUM 13 OCP_PARA -0.132 0 0 0 0 0 0 0 0 0 1.41 -3.52 0 END
 MAT 6 MAT_electrode DIFFCOEF -1 COND -1 DIFF_PARA_NUM 1 DIFF_PARA 1.0e-7 COND_PARA_NUM 1 COND_PARA 3800 C_MAX 23.671 OCP_MODEL Taralov OCP_PARA_NUM 13 OCP_PARA 4.06279 0.0677504 -21.8502 12.8268 -0.045 -71.69 -0.105734 1.00167 0.379571 -1.576 0.01 -200. -0.19 END
-MAT 7 MAT_soret CAPA 20300 CONDUCT 1.e3 SORET 1.0
-MAT 8 MAT_soret CAPA 25200 CONDUCT 1.e3 SORET 1.0
+MAT 7 MAT_soret CAPA 20300 CONDUCT 1.e-3 SORET 1.0
+MAT 8 MAT_soret CAPA 25200 CONDUCT 1.e-3 SORET 1.0
 -----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD scatra SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2 // electrolyte
 SRC_FIELD scatra SRC_MAT 5 TAR_FIELD thermo TAR_MAT 7 // anode
@@ -84,26 +83,23 @@ FUNCTION 300.0              // initial temperature
 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 7.0 20.0 DESCRIPTION 0.5*(sin((t*pi/7.0)-(pi/2)))+0.5 1.0
 -------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 2066 QUANTITY phi1 VALUE 1.55898161317318422e+01 TOLERANCE 1.e-08        // local lithium concentration at anode-electrolyte interface (anode side)
-SCATRA DIS scatra NODE 2066 QUANTITY phi2 VALUE 1.18996807406734819e-02 TOLERANCE 1.e-11        // local electric potential at anode-electrolyte interface (anode side)
-SCATRA DIS thermo NODE 2066 QUANTITY phi VALUE 3.00067336454611961e+02 TOLERANCE 1.e-07         // local temperature at anode-electrolyte interface (anode side)
-SCATRA DIS scatra NODE 1238 QUANTITY phi1 VALUE 1.00411720660688175e+00 TOLERANCE 1.e-09        // local lithium concentration at anode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 1238 QUANTITY phi2 VALUE -2.90411328166074012e-01 TOLERANCE 1.e-10       // local electric potential at anode-electrolyte interface (electrolyte side)
-SCATRA DIS thermo NODE 1238 QUANTITY phi VALUE 3.00067336454963538e+02 TOLERANCE 1.e-07         // local temperature at anode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 786 QUANTITY phi1 VALUE 9.90236082362481063e-01 TOLERANCE 1.e-10         // local lithium concentration at cathode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 786 QUANTITY phi2 VALUE -2.91670898872599949e-01 TOLERANCE 1.e-10        // local electric potential at cathode-electrolyte interface (electrolyte side)
-SCATRA DIS thermo NODE 786 QUANTITY phi VALUE 3.00067320285388860e+02 TOLERANCE 1.e-07          // local temperature at cathode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 2666 QUANTITY phi1 VALUE 8.46876665580362165e+00 TOLERANCE 1.e-09        // local lithium concentration at cathode-electrolyte interface (cathode side)
-SCATRA DIS scatra NODE 2666 QUANTITY phi2 VALUE 3.79966986718984323e+00 TOLERANCE 1.e-09        // local electric potential at cathode-electrolyte interface (cathode side)
-SCATRA DIS thermo NODE 2666 QUANTITY phi VALUE 3.00067320285767835e+02 TOLERANCE 1.e-07         // local temperature at cathode-electrolyte interface (cathode side)
-SCATRA DIS scatra SPECIAL QUANTITY soc1 VALUE 6.44626030722005083e-01 TOLERANCE 1.e-10          // anode state of charge
-SCATRA DIS scatra SPECIAL QUANTITY soc2 VALUE 6.45499541115929776e-01 TOLERANCE 1.e-10          // cathode state of charge
-SCATRA DIS scatra SPECIAL QUANTITY cellvoltage VALUE 3.78780928847287557e+00 TOLERANCE 1.e-09   // cell voltage
-STI SPECIAL QUANTITY numiterlastnewton VALUE 2.0 TOLERANCE 1.e-20                               // number of Newton-Raphson iterations during last time step
-STI SPECIAL QUANTITY numiterlastsolve VALUE 82.0 TOLERANCE 1.e-20                               // number of iterations performed by linear solver during last Newton-Raphson iteration
+SCATRA DIS scatra NODE 2066 QUANTITY phi1 VALUE 1.57645502035880209e+01 TOLERANCE 1.e-08   // local lithium concentration at anode-electrolyte interface (anode side)
+SCATRA DIS scatra NODE 2066 QUANTITY phi2 VALUE 1.18996801480918419e-02 TOLERANCE 1.e-11   // local electric potential at anode-electrolyte interface (anode side)
+SCATRA DIS thermo NODE 2066 QUANTITY phi VALUE 3.00066701810361906e+02 TOLERANCE 1.e-07    // local temperature at anode-electrolyte interface (anode side)
+SCATRA DIS scatra NODE 1238 QUANTITY phi1 VALUE 1.00499605021901250e+00 TOLERANCE 1.e-09   // local lithium concentration at anode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 1238 QUANTITY phi2 VALUE -2.86568861834885336e-01 TOLERANCE 1.e-10  // local electric potential at anode-electrolyte interface (electrolyte side)
+SCATRA DIS thermo NODE 1238 QUANTITY phi VALUE 3.00066701810361906e+02 TOLERANCE 1.e-07    // local temperature at anode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 786 QUANTITY phi1 VALUE 9.91915023436576671e-01 TOLERANCE 1.e-10    // local lithium concentration at cathode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 786 QUANTITY phi2 VALUE -2.87801675638906407e-01 TOLERANCE 1.e-10   // local electric potential at cathode-electrolyte interface (electrolyte side)
+SCATRA DIS thermo NODE 786 QUANTITY phi VALUE 3.00193533515912463e+02 TOLERANCE 1.e-07     // local temperature at cathode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 2666 QUANTITY phi1 VALUE 8.39682499625060785e+00 TOLERANCE 1.e-09   // local lithium concentration at cathode-electrolyte interface (cathode side)
+SCATRA DIS scatra NODE 2666 QUANTITY phi2 VALUE 3.80361811487549017e+00 TOLERANCE 1.e-09   // local electric potential at cathode-electrolyte interface (cathode side)
+SCATRA DIS thermo NODE 2666 QUANTITY phi VALUE 3.00193533515912463e+02 TOLERANCE 1.e-07    // local temperature at cathode-electrolyte interface (cathode side)
+SCATRA DIS scatra SPECIAL QUANTITY omega1 VALUE 1.01712822407213888e+00 TOLERANCE 1.e-09
+STI SPECIAL QUANTITY numiterlastnonlinearsolve VALUE 5.0 TOLERANCE 1.e-20                  // number of Newton-Raphson iterations during last time step
 ------------------------------------------------DESIGN DESCRIPTION
-NDLINE  17
-NDSURF  5
+NDLINE  9
+NDSURF  3
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE  1
 E 3 - NUMDOF 2  ONOFF 0 1 VAL 0.0 -0.000103642 FUNCT 0 5 Live Mid
@@ -121,15 +117,7 @@ E 4 - 1 Slave KineticModel Butler-Volmer-Peltier numscal 1 stoichiometries -1 e-
 E 5 - 1 Master
 E 6 - 2 Slave KineticModel Butler-Volmer-Peltier numscal 1 stoichiometries -1 e- 1 k_r 6.554939e-7 alpha_a 0.5 alpha_c 0.5 peltier -0.38
 E 7 - 2 Master
-------------------DESIGN ELECTRODE STATE OF CHARGE SURF CONDITIONS
-DSURF  2
-E 2 - ID 0 c_0% 0.0 c_100% 24.681
-E 3 - ID 1 c_0% 23.671 c_100% 0.0
--------------------------------DESIGN CELL VOLTAGE LINE CONDITIONS
-DLINE  2
-E 2 - ID 0
-E 3 - ID 1
--------------------------------DESIGN THERMO ROBIN LINE CONDITIONS
+--------------------------------------DESIGN THERMO ROBIN LINE CONDITIONS
 DLINE  3
 E 1 - NUMSCAL 1 ONOFF 1 PREFACTOR -0.1 REFVALUE 300.0
 E 2 - NUMSCAL 1 ONOFF 1 PREFACTOR -0.1 REFVALUE 300.0

@@ -32,7 +32,21 @@ namespace INPAR
 {
   namespace STI
   {
-    //! type of global system matrix in global system of equations
+    //! type of coupling between scatra and thermo fields
+    enum CouplingType
+    {
+      coupling_undefined,
+      coupling_monolithic,
+      coupling_oneway_scatratothermo,
+      coupling_oneway_thermotoscatra,
+      coupling_twoway_scatratothermo,
+      coupling_twoway_scatratothermo_aitken,
+      coupling_twoway_scatratothermo_aitken_dofsplit,
+      coupling_twoway_thermotoscatra,
+      coupling_twoway_thermotoscatra_aitken
+    };
+
+    //! type of monolithic system matrix in global system of equations
     enum MatrixType
     {
       matrix_block,

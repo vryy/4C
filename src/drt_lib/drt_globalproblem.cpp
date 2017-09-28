@@ -314,6 +314,8 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/STABILIZATION", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/S2I COUPLING", *list);
   reader.ReadGidSection("--STI DYNAMIC", *list);
+  reader.ReadGidSection("--STI DYNAMIC/MONOLITHIC", *list);
+  reader.ReadGidSection("--STI DYNAMIC/PARTITIONED", *list);
   reader.ReadGidSection("--FS3I DYNAMIC", *list);
   reader.ReadGidSection("--FS3I DYNAMIC/PARTITIONED", *list);
   reader.ReadGidSection("--FS3I DYNAMIC/STRUCTURE SCALAR STABILIZATION", *list);

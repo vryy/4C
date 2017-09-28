@@ -23,6 +23,7 @@ namespace STI
 {
   // forward declaration
   class Algorithm;
+  class Monolithic;
 
   /*!
     \brief result testing functionality for scatra-thermo interaction problems
@@ -58,6 +59,9 @@ namespace STI
       double ResultSpecial(
           const std::string&   quantity   //! name of quantity to be tested
           ) const;
+
+      //! return time integrator for monolithic scatra-thermo interaction
+      const STI::Monolithic& STIMonolithic() const;
 
       //! time integrator for scatra-thermo interaction
       const Teuchos::RCP<const STI::Algorithm> sti_algorithm_;

@@ -44,8 +44,10 @@ INITPOTCALC                     yes
 SCATRATIMINTTYPE                Elch
 THERMO_INITIALFIELD             field_by_function
 THERMO_INITFUNCNO               4
-LINEAR_SOLVER                   1
 THERMO_LINEAR_SOLVER            2
+COUPLINGTYPE                    Monolithic
+---------------------------------------------STI DYNAMIC/MONOLITHIC
+LINEAR_SOLVER                   1
 ------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
 EQUILIBRATION                   rows_maindiag
@@ -53,7 +55,7 @@ EQUILIBRATION                   rows_maindiag
 SOLVER                          Aztec_MSR
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
-AMGNXN_XML_FILE                 sti_2D_quad4_elch_s2i_butlervolmerpeltier_diabatic_BGS-AMG_2x2.xml
+AMGNXN_XML_FILE                 sti_mono_2D_quad4_elch_s2i_butlervolmerpeltier_diabatic_BGS-AMG_2x2.xml
 -----------------------------------------------------------SOLVER 2
 SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
@@ -111,8 +113,8 @@ SCATRA DIS thermo NODE 2666 QUANTITY phi VALUE 3.00067290228926879e+02 TOLERANCE
 SCATRA DIS scatra SPECIAL QUANTITY soc1 VALUE 6.44626033023056433e-01 TOLERANCE 1.e-10                  // anode state of charge
 SCATRA DIS scatra SPECIAL QUANTITY soc2 VALUE 6.45499568212280717e-01 TOLERANCE 1.e-10                  // cathode state of charge
 SCATRA DIS scatra SPECIAL QUANTITY cellvoltage VALUE 3.78782024461830025e+00 TOLERANCE 1.e-09           // cell voltage
-STI SPECIAL QUANTITY numiterlastnewton VALUE 2.0 TOLERANCE 1.e-20                                       // number of Newton-Raphson iterations during last time step
-STI SPECIAL QUANTITY numiterlastsolve VALUE 17.0 TOLERANCE 1.e-20                                       // number of iterations performed by linear solver during last Newton-Raphson iteration
+STI SPECIAL QUANTITY numiterlastnonlinearsolve VALUE 2.0 TOLERANCE 1.e-20                               // number of Newton-Raphson iterations during last time step
+STI SPECIAL QUANTITY numiterlastlinearsolve VALUE 17.0 TOLERANCE 1.e-20                                 // number of iterations performed by linear solver during last Newton-Raphson iteration
 ------------------------------------------------DESIGN DESCRIPTION
 NDLINE  17
 NDSURF  5

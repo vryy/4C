@@ -5,14 +5,14 @@
 // 089 - 289-15251
 //
 ==================================================================
-General Data File BACI
+                  General Data File BACI
 ==================================================================
 -------------------------------------------------------------TITLE
 Test case for scatra-thermo interaction involving electrochemistry and electrode-electrolyte interface coupling:
 - based on results in Taralov et al., Berichte des Fraunhofer ITWM, Nr. 221 (2012)
 - three-dimensional problem with two two-dimensional electrode-electrolyte interfaces
 - four box-shaped anode particles, electrolyte, and four box-shaped cathode particles,
-each with constant initial lithium concentrations, electric potentials, and temperatures
+  each with constant initial lithium concentrations, electric potentials, and temperatures
 - charge transfer kinetics characterized by Butler-Volmer-Peltier kinetics
 - discharge from partially charged state at C rate of approximately 0.8
 - 818 tet4 and hex8 elements with non-matching interface nodes
@@ -28,10 +28,12 @@ SOLVERTYPE                      nonlinear
 TIMESTEP                        1.0
 INITIALFIELD                    field_by_condition
 CALCFLUX_BOUNDARY               total
-LINEAR_SOLVER                   1
+LINEAR_SOLVER                   2
 ---------------------------------------------------MORTAR COUPLING
 PARALLEL_REDIST                 no
 MESH_RELOCATION                 no
+--------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
+ITEMAX                          2
 ----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero
@@ -45,12 +47,25 @@ INITPOTCALC                     yes
 SCATRATIMINTTYPE                Elch
 THERMO_INITIALFIELD             field_by_function
 THERMO_INITFUNCNO               4
-MATRIXTYPE                      sparse
+THERMO_LINEAR_SOLVER            3
+THERMO_CONDENSATION             yes
+COUPLINGTYPE                    Monolithic
+--------------------------------------------STI DYNAMIC/MONOLITHIC
 LINEAR_SOLVER                   1
-THERMO_LINEAR_SOLVER            1
 -----------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    StandardMortar
-----------------------------------------------------------SOLVER 1
+MATRIXTYPE                      block_condition
+-----------------------------------------------------------SOLVER 1
+SOLVER                          Aztec_MSR
+AZPREC                          AMGnxn
+AMGNXN_TYPE                     XML
+AMGNXN_XML_FILE                 sti_mono_3D_tet4_elch_s2i_butlervolmerpeltier_adiabatic_BGS-AMG_4x4.xml
+-----------------------------------------------------------SOLVER 2
+SOLVER                          Aztec_MSR
+AZPREC                          AMGnxn
+AMGNXN_TYPE                     XML
+AMGNXN_XML_FILE                 sti_mono_3D_tet4_elch_s2i_butlervolmerpeltier_adiabatic_BGS-AMG_4x4_scatra.xml
+-----------------------------------------------------------SOLVER 3
 SOLVER                          UMFPACK
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_elchmat NUMDOF 2 NUMSCAL 1 NUMPHASE 1 PHASEIDS 3 END
@@ -62,67 +77,56 @@ MAT 6 MAT_electrode DIFFCOEF -1 COND -1 DIFF_PARA_NUM 1 DIFF_PARA 1.0e-7 COND_PA
 MAT 7 MAT_soret CAPA 20300 CONDUCT 1.e3 SORET 1.0
 MAT 8 MAT_soret CAPA 25200 CONDUCT 1.e3 SORET 1.0
 ----------------------------------------------CLONING MATERIAL MAP
-SRC_FIELD scatra SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2 // electrolyte
-SRC_FIELD scatra SRC_MAT 5 TAR_FIELD thermo TAR_MAT 7 // anode
-SRC_FIELD scatra SRC_MAT 6 TAR_FIELD thermo TAR_MAT 8 // cathode
+SRC_FIELD scatra SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2   // electrolyte
+SRC_FIELD scatra SRC_MAT 5 TAR_FIELD thermo TAR_MAT 7   // anode
+SRC_FIELD scatra SRC_MAT 6 TAR_FIELD thermo TAR_MAT 8   // cathode
 ------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 1.0    // initial concentration in electrolyte
-COMPONENT 1 FUNCTION 0.0    // initial electric potential in electrolyte
+COMPONENT 0 FUNCTION 1.0      // initial concentration in electrolyte
+COMPONENT 1 FUNCTION 0.0      // initial electric potential in electrolyte
 ------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION 16.0   // initial concentration in anode
-COMPONENT 1 FUNCTION 0.0119 // initial electric potential in anode
+COMPONENT 0 FUNCTION 16.0     // initial concentration in anode
+COMPONENT 1 FUNCTION 0.0119   // initial electric potential in anode
 ------------------------------------------------------------FUNCT3
-COMPONENT 0 FUNCTION 8.3    // initial concentration in cathode
-COMPONENT 1 FUNCTION 4.0087 // initial electric potential in cathode
+COMPONENT 0 FUNCTION 8.3      // initial concentration in cathode
+COMPONENT 1 FUNCTION 4.0087   // initial electric potential in cathode
 ------------------------------------------------------------FUNCT4
-COMPONENT 0 FUNCTION 300.0  // initial temperature
+FUNCTION 300.0                // initial temperature
 ------------------------------------------------------------FUNCT5
-COMPONENT 0 FUNCTION a
-VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 7 500000.0 DESCRIPTION 0.5*(sin((t*pi/7.0)-(pi/2)))+0.5 0.5*(sin((7*pi/7.0)-(pi/2)))+0.5
+FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 7.0 20.0 DESCRIPTION 0.5*(sin((t*pi/7.0)-(pi/2)))+0.5 1.0
 ------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 366 QUANTITY phi1 VALUE 1.58019083787428478e+01 TOLERANCE 1.e-08                 // local lithium concentration at anode-electrolyte interface (anode side)
-SCATRA DIS scatra NODE 366 QUANTITY phi2 VALUE 1.18996874264758537e-02 TOLERANCE 1.e-11                 // local electric potential at anode-electrolyte interface (anode side)
-SCATRA DIS thermo NODE 366 QUANTITY phi VALUE 3.00062042758347616e+02 TOLERANCE 1.e-07                  // local temperature at anode-electrolyte interface (anode side)
-SCATRA DIS scatra NODE 366 QUANTITY flux_boundary_1_x VALUE 1.41175177781133303e-05 TOLERANCE 1.e-14    // local lithium flux at anode-electrolyte interface (anode side)
+SCATRA DIS scatra NODE 366 QUANTITY phi1 VALUE 1.58019280751066002e+01 TOLERANCE 1.e-08                // local lithium concentration at anode-electrolyte interface (anode side)
+SCATRA DIS scatra NODE 366 QUANTITY phi2 VALUE 1.18996874264499005e-02 TOLERANCE 1.e-11                // local electric potential at anode-electrolyte interface (anode side)
+SCATRA DIS thermo NODE 366 QUANTITY phi VALUE 3.00065716639030484e+02 TOLERANCE 1.e-07                 // local temperature at anode-electrolyte interface (anode side)
+SCATRA DIS scatra NODE 366 QUANTITY flux_boundary_1_x VALUE 1.41175717168306044e-05 TOLERANCE 1.e-14   // local lithium flux at anode-electrolyte interface (anode side)
 SCATRA DIS scatra NODE 366 QUANTITY flux_boundary_1_y VALUE 0.0 TOLERANCE 1.e-20
 SCATRA DIS scatra NODE 366 QUANTITY flux_boundary_1_z VALUE 0.0 TOLERANCE 1.e-20
-SCATRA DIS thermo NODE 366 QUANTITY flux_boundary_1_x VALUE -8.20714247847725176e-01 TOLERANCE 1.e-10   // local heat flux at anode-electrolyte interface (anode side)
-SCATRA DIS thermo NODE 366 QUANTITY flux_boundary_1_y VALUE 0.0 TOLERANCE 1.e-20
-SCATRA DIS thermo NODE 366 QUANTITY flux_boundary_1_z VALUE 0.0 TOLERANCE 1.e-20
-SCATRA DIS scatra NODE 200 QUANTITY flux_boundary_1_x VALUE 6.18614744431092430e-06 TOLERANCE 1.e-15    // local lithium flux at anode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 200 QUANTITY flux_boundary_1_y VALUE -3.09307372215546215e-06 TOLERANCE 1.e-15
-SCATRA DIS scatra NODE 200 QUANTITY flux_boundary_1_z VALUE -3.09307372215546215e-06 TOLERANCE 1.e-15
-SCATRA DIS thermo NODE 200 QUANTITY flux_boundary_1_x VALUE -1.51681688734016384e-01 TOLERANCE 1.e-10   // local heat flux at anode-electrolyte interface (electrolyte side)
-SCATRA DIS thermo NODE 200 QUANTITY flux_boundary_1_y VALUE 7.58408443670081922e-02 TOLERANCE 1.e-11
-SCATRA DIS thermo NODE 200 QUANTITY flux_boundary_1_z VALUE 7.58408443670081922e-02 TOLERANCE 1.e-11
-SCATRA DIS scatra NODE 200 QUANTITY phi1 VALUE 1.00620579207560645e+00 TOLERANCE 1.e-09                 // local lithium concentration at anode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 200 QUANTITY phi2 VALUE -2.74738789296011310e-01 TOLERANCE 1.e-10                // local electric potential at anode-electrolyte interface (electrolyte side)
-SCATRA DIS thermo NODE 200 QUANTITY phi VALUE 3.00062042947587997e+02 TOLERANCE 1.e-07                  // local temperature at anode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 100 QUANTITY phi1 VALUE 9.96283380846452959e-01 TOLERANCE 1.e-10                 // local lithium concentration at cathode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 100 QUANTITY phi2 VALUE -2.75629278278885781e-01 TOLERANCE 1.e-10                // local electric potential at cathode-electrolyte interface (electrolyte side)
-SCATRA DIS thermo NODE 100 QUANTITY phi VALUE 3.00062065696648290e+02 TOLERANCE 1.e-07                  // local temperature at cathode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 100 QUANTITY flux_boundary_1_x VALUE 0.0 TOLERANCE 1.e-20                        // local lithium flux at cathode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 100 QUANTITY flux_boundary_1_y VALUE 1.15528497384608143e-05 TOLERANCE 1.e-14
+SCATRA DIS scatra NODE 200 QUANTITY flux_boundary_1_x VALUE 6.18612345353864032e-06 TOLERANCE 1.e-15   // local lithium flux at anode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 200 QUANTITY flux_boundary_1_y VALUE -3.09306172676932016e-06 TOLERANCE 1.e-15
+SCATRA DIS scatra NODE 200 QUANTITY flux_boundary_1_z VALUE -3.09306172676932016e-06 TOLERANCE 1.e-15
+SCATRA DIS scatra NODE 200 QUANTITY phi1 VALUE 1.00483562825128336e+00 TOLERANCE 1.e-09                // local lithium concentration at anode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 200 QUANTITY phi2 VALUE -2.74777008450079019e-01 TOLERANCE 1.e-10               // local electric potential at anode-electrolyte interface (electrolyte side)
+SCATRA DIS thermo NODE 200 QUANTITY phi VALUE 3.00065716775751753e+02 TOLERANCE 1.e-07                 // local temperature at anode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 100 QUANTITY phi1 VALUE 9.94945331319121995e-01 TOLERANCE 1.e-10                // local lithium concentration at cathode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 100 QUANTITY phi2 VALUE -2.75666886229406494e-01 TOLERANCE 1.e-10               // local electric potential at cathode-electrolyte interface (electrolyte side)
+SCATRA DIS thermo NODE 100 QUANTITY phi VALUE 3.00065703199743325e+02 TOLERANCE 1.e-07                 // local temperature at cathode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 100 QUANTITY flux_boundary_1_x VALUE 0.0 TOLERANCE 1.e-20                       // local lithium flux at cathode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 100 QUANTITY flux_boundary_1_y VALUE 1.15530964348453600e-05 TOLERANCE 1.e-14
 SCATRA DIS scatra NODE 100 QUANTITY flux_boundary_1_z VALUE 0.0 TOLERANCE 1.e-20
-SCATRA DIS thermo NODE 100 QUANTITY flux_boundary_1_x VALUE 0.0 TOLERANCE 1.e-20                        // local heat flux at cathode-electrolyte interface (electrolyte side)
-SCATRA DIS thermo NODE 100 QUANTITY flux_boundary_1_y VALUE -2.14007100388529437e-01 TOLERANCE 1.e-10
-SCATRA DIS thermo NODE 100 QUANTITY flux_boundary_1_z VALUE 0.0 TOLERANCE 1.e-20
-SCATRA DIS scatra NODE 600 QUANTITY flux_boundary_1_x VALUE 1.16365280724559499e-05 TOLERANCE 1.e-14    // local lithium flux at cathode-electrolyte interface (cathode side)
+SCATRA DIS scatra NODE 600 QUANTITY flux_boundary_1_x VALUE 1.16333289777133352e-05 TOLERANCE 1.e-14   // local lithium flux at cathode-electrolyte interface (cathode side)
 SCATRA DIS scatra NODE 600 QUANTITY flux_boundary_1_y VALUE 0.0 TOLERANCE 1.e-20
 SCATRA DIS scatra NODE 600 QUANTITY flux_boundary_1_z VALUE 0.0 TOLERANCE 1.e-20
-SCATRA DIS thermo NODE 600 QUANTITY flux_boundary_1_x VALUE -5.12724962359425551e-01 TOLERANCE 1.e-10   // local heat flux at cathode-electrolyte interface (cathode side)
-SCATRA DIS thermo NODE 600 QUANTITY flux_boundary_1_y VALUE 0.0 TOLERANCE 1.e-20
-SCATRA DIS thermo NODE 600 QUANTITY flux_boundary_1_z VALUE 0.0 TOLERANCE 1.e-20
-SCATRA DIS scatra NODE 600 QUANTITY phi1 VALUE 8.45993743918637264e+00 TOLERANCE 1.e-09                 // local lithium concentration at cathode-electrolyte interface (cathode side)
-SCATRA DIS scatra NODE 600 QUANTITY phi2 VALUE 3.81534214524092485e+00 TOLERANCE 1.e-09                 // local electric potential at cathode-electrolyte interface (cathode side)
-SCATRA DIS thermo NODE 600 QUANTITY phi VALUE 3.00062060886540451e+02 TOLERANCE 1.e-07                  // local temperature at cathode-electrolyte interface (cathode side)
-SCATRA DIS scatra SPECIAL QUANTITY soc1 VALUE 6.44625222043805124e-01 TOLERANCE 1.e-10                  // anode state of charge
-SCATRA DIS scatra SPECIAL QUANTITY soc2 VALUE 6.45747763821829079e-01 TOLERANCE 1.e-10                  // cathode state of charge
-SCATRA DIS scatra SPECIAL QUANTITY cellvoltage VALUE 3.80348775794024707e+00 TOLERANCE 1.e-09           // cell voltage
-STI SPECIAL QUANTITY numiterlastnewton VALUE 3.0 TOLERANCE 1.e-20                                       // number of Newton-Raphson iterations during last time step
+SCATRA DIS scatra NODE 600 QUANTITY phi1 VALUE 8.47066542910742726e+00 TOLERANCE 1.e-09                // local lithium concentration at cathode-electrolyte interface (cathode side)
+SCATRA DIS scatra NODE 600 QUANTITY phi2 VALUE 3.81527589202178286e+00 TOLERANCE 1.e-09                // local electric potential at cathode-electrolyte interface (cathode side)
+SCATRA DIS thermo NODE 600 QUANTITY phi VALUE 3.00065705424520843e+02 TOLERANCE 1.e-07                 // local temperature at cathode-electrolyte interface (cathode side)
+SCATRA DIS scatra SPECIAL QUANTITY soc1 VALUE 6.44625242874985793e-01 TOLERANCE 1.e-10                 // anode state of charge
+SCATRA DIS scatra SPECIAL QUANTITY soc2 VALUE 6.45498693173858329e-01 TOLERANCE 1.e-10                 // cathode state of charge
+SCATRA DIS scatra SPECIAL QUANTITY cellvoltage VALUE 3.80342082502127798e+00 TOLERANCE 1.e-09          // cell voltage
+STI SPECIAL QUANTITY numiterlastnonlinearsolve VALUE 2.0 TOLERANCE 1.e-20                              // number of Newton-Raphson iterations during last time step
+STI SPECIAL QUANTITY numiterlastlinearsolve VALUE 3.0 TOLERANCE 1.e-20                                 // number of iterations performed by linear solver during last Newton-Raphson iteration
 ------------------------------------------------DESIGN DESCRIPTION
 NDSURF  14
-NDVOL   5
+NDVOL   8
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
 E 2 - NUMDOF 2  ONOFF 0 1 VAL 0.0 -0.000103642 FUNCT 0 5 Live Mid
@@ -140,6 +144,11 @@ E 3 - 1 Slave KineticModel Butler-Volmer-Peltier numscal 1 stoichiometries -1 e-
 E 4 - 1 Master
 E 5 - 2 Slave KineticModel Butler-Volmer-Peltier numscal 1 stoichiometries -1 e- 1 k_r 6.554939e-7 alpha_a 0.5 alpha_c 0.5 peltier -0.38
 E 6 - 2 Master
+-----------------DESIGN S2I COUPLING VOL CONDITIONS / PARTITIONING
+DVOL   3
+E 1 -
+E 2 -
+E 3 -
 -------------------DESIGN ELECTRODE STATE OF CHARGE VOL CONDITIONS
 DVOL   2
 E 2 - ID 0 c_0% 0.0 c_100% 24.681
@@ -2076,822 +2085,822 @@ NODE       726 COORD  3.2500000000000001e-02  3.9000000000000000e-02  2.00000000
 NODE       727 COORD  2.9999999999999999e-02  3.9000000000000000e-02  0.0000000000000000e+00
 NODE       728 COORD  2.9999999999999999e-02  3.9000000000000000e-02  2.0000000000000000e-03
 ------------------------------------------------TRANSPORT ELEMENTS
-1 TRANSP TET4  1 2 3 4    MAT 1 TYPE ElchDiffCondThermo
-2 TRANSP TET4  5 6 4 2    MAT 1 TYPE ElchDiffCondThermo
-3 TRANSP TET4  5 2 7 6    MAT 1 TYPE ElchDiffCondThermo
-4 TRANSP TET4  8 9 10 7    MAT 1 TYPE ElchDiffCondThermo
-5 TRANSP TET4  9 5 4 10    MAT 1 TYPE ElchDiffCondThermo
-6 TRANSP TET4  9 11 7 8    MAT 1 TYPE ElchDiffCondThermo
-7 TRANSP TET4  12 13 14 15    MAT 1 TYPE ElchDiffCondThermo
-8 TRANSP TET4  15 14 16 17    MAT 1 TYPE ElchDiffCondThermo
-9 TRANSP TET4  18 19 20 21    MAT 1 TYPE ElchDiffCondThermo
-10 TRANSP TET4  22 23 24 25    MAT 1 TYPE ElchDiffCondThermo
-11 TRANSP TET4  13 17 26 14    MAT 1 TYPE ElchDiffCondThermo
-12 TRANSP TET4  14 27 28 12    MAT 1 TYPE ElchDiffCondThermo
-13 TRANSP TET4  29 30 31 32    MAT 1 TYPE ElchDiffCondThermo
-14 TRANSP TET4  29 33 32 31    MAT 1 TYPE ElchDiffCondThermo
-15 TRANSP TET4  29 32 34 30    MAT 1 TYPE ElchDiffCondThermo
-16 TRANSP TET4  29 35 36 33    MAT 1 TYPE ElchDiffCondThermo
-17 TRANSP TET4  28 37 13 38    MAT 1 TYPE ElchDiffCondThermo
-18 TRANSP TET4  36 34 35 29    MAT 1 TYPE ElchDiffCondThermo
-19 TRANSP TET4  39 40 41 42    MAT 1 TYPE ElchDiffCondThermo
-20 TRANSP TET4  43 42 44 41    MAT 1 TYPE ElchDiffCondThermo
-21 TRANSP TET4  45 46 47 48    MAT 1 TYPE ElchDiffCondThermo
-22 TRANSP TET4  43 40 49 50    MAT 1 TYPE ElchDiffCondThermo
-23 TRANSP TET4  51 52 53 54    MAT 1 TYPE ElchDiffCondThermo
-24 TRANSP TET4  43 55 42 50    MAT 1 TYPE ElchDiffCondThermo
-25 TRANSP TET4  43 44 42 55    MAT 1 TYPE ElchDiffCondThermo
-26 TRANSP TET4  1 56 57 58    MAT 1 TYPE ElchDiffCondThermo
-27 TRANSP TET4  1 2 6 57    MAT 1 TYPE ElchDiffCondThermo
-28 TRANSP TET4  2 6 4 1    MAT 1 TYPE ElchDiffCondThermo
-29 TRANSP TET4  1 6 4 58    MAT 1 TYPE ElchDiffCondThermo
-30 TRANSP TET4  1 56 59 2    MAT 1 TYPE ElchDiffCondThermo
-31 TRANSP TET4  1 3 2 59    MAT 1 TYPE ElchDiffCondThermo
-32 TRANSP TET4  16 60 61 62    MAT 1 TYPE ElchDiffCondThermo
-33 TRANSP TET4  16 17 61 15    MAT 1 TYPE ElchDiffCondThermo
-34 TRANSP TET4  16 14 27 17    MAT 1 TYPE ElchDiffCondThermo
-35 TRANSP TET4  16 12 60 62    MAT 1 TYPE ElchDiffCondThermo
-36 TRANSP TET4  16 27 12 63    MAT 1 TYPE ElchDiffCondThermo
-37 TRANSP TET4  64 65 66 67    MAT 1 TYPE ElchDiffCondThermo
-38 TRANSP TET4  67 66 68 69    MAT 1 TYPE ElchDiffCondThermo
-39 TRANSP TET4  67 64 68 66    MAT 1 TYPE ElchDiffCondThermo
-40 TRANSP TET4  69 70 66 71    MAT 1 TYPE ElchDiffCondThermo
-41 TRANSP TET4  72 52 53 51    MAT 1 TYPE ElchDiffCondThermo
-42 TRANSP TET4  73 69 71 74    MAT 1 TYPE ElchDiffCondThermo
-43 TRANSP TET4  69 74 67 70    MAT 1 TYPE ElchDiffCondThermo
-44 TRANSP TET4  73 8 71 9    MAT 1 TYPE ElchDiffCondThermo
-45 TRANSP TET4  75 76 77 78    MAT 1 TYPE ElchDiffCondThermo
-46 TRANSP TET4  78 79 80 76    MAT 1 TYPE ElchDiffCondThermo
-47 TRANSP TET4  78 77 81 79    MAT 1 TYPE ElchDiffCondThermo
-48 TRANSP TET4  78 79 82 80    MAT 1 TYPE ElchDiffCondThermo
-49 TRANSP TET4  78 82 81 75    MAT 1 TYPE ElchDiffCondThermo
-50 TRANSP TET4  37 26 83 13    MAT 1 TYPE ElchDiffCondThermo
-51 TRANSP TET4  84 85 86 87    MAT 1 TYPE ElchDiffCondThermo
-52 TRANSP TET4  86 88 84 87    MAT 1 TYPE ElchDiffCondThermo
-53 TRANSP TET4  53 51 89 72    MAT 1 TYPE ElchDiffCondThermo
-54 TRANSP TET4  87 85 90 91    MAT 1 TYPE ElchDiffCondThermo
-55 TRANSP TET4  87 90 88 91    MAT 1 TYPE ElchDiffCondThermo
-56 TRANSP TET4  92 93 94 95    MAT 1 TYPE ElchDiffCondThermo
-57 TRANSP TET4  92 96 94 93    MAT 1 TYPE ElchDiffCondThermo
-58 TRANSP TET4  92 94 97 95    MAT 1 TYPE ElchDiffCondThermo
-59 TRANSP TET4  92 98 99 96    MAT 1 TYPE ElchDiffCondThermo
-60 TRANSP TET4  99 97 98 92    MAT 1 TYPE ElchDiffCondThermo
-61 TRANSP TET4  17 26 14 83    MAT 1 TYPE ElchDiffCondThermo
-62 TRANSP TET4  7 9 10 5    MAT 1 TYPE ElchDiffCondThermo
-63 TRANSP TET4  8 11 7 74    MAT 1 TYPE ElchDiffCondThermo
-64 TRANSP TET4  8 100 9 11    MAT 1 TYPE ElchDiffCondThermo
-65 TRANSP TET4  8 71 9 100    MAT 1 TYPE ElchDiffCondThermo
-66 TRANSP TET4  101 102 103 104    MAT 1 TYPE ElchDiffCondThermo
-67 TRANSP TET4  73 74 71 8    MAT 1 TYPE ElchDiffCondThermo
-68 TRANSP TET4  105 106 107 108    MAT 1 TYPE ElchDiffCondThermo
-69 TRANSP TET4  74 71 8 100    MAT 1 TYPE ElchDiffCondThermo
-70 TRANSP TET4  37 26 109 110    MAT 1 TYPE ElchDiffCondThermo
-71 TRANSP TET4  109 111 38 37    MAT 1 TYPE ElchDiffCondThermo
-72 TRANSP TET4  18 112 21 113    MAT 1 TYPE ElchDiffCondThermo
-73 TRANSP TET4  114 111 38 109    MAT 1 TYPE ElchDiffCondThermo
-74 TRANSP TET4  14 13 28 83    MAT 1 TYPE ElchDiffCondThermo
-75 TRANSP TET4  37 83 111 28    MAT 1 TYPE ElchDiffCondThermo
-76 TRANSP TET4  114 115 101 116    MAT 1 TYPE ElchDiffCondThermo
-77 TRANSP TET4  114 117 118 101    MAT 1 TYPE ElchDiffCondThermo
-78 TRANSP TET4  114 109 117 115    MAT 1 TYPE ElchDiffCondThermo
-79 TRANSP TET4  114 116 118 119    MAT 1 TYPE ElchDiffCondThermo
-80 TRANSP TET4  37 110 109 111    MAT 1 TYPE ElchDiffCondThermo
-81 TRANSP TET4  114 111 110 119    MAT 1 TYPE ElchDiffCondThermo
-82 TRANSP TET4  111 110 109 114    MAT 1 TYPE ElchDiffCondThermo
-83 TRANSP TET4  120 121 122 123    MAT 1 TYPE ElchDiffCondThermo
-84 TRANSP TET4  124 122 125 121    MAT 1 TYPE ElchDiffCondThermo
-85 TRANSP TET4  48 46 47 126    MAT 1 TYPE ElchDiffCondThermo
-86 TRANSP TET4  127 128 129 130    MAT 1 TYPE ElchDiffCondThermo
-87 TRANSP TET4  130 131 132 133    MAT 1 TYPE ElchDiffCondThermo
-88 TRANSP TET4  134 135 131 130    MAT 1 TYPE ElchDiffCondThermo
-89 TRANSP TET4  51 136 89 72    MAT 1 TYPE ElchDiffCondThermo
-90 TRANSP TET4  130 134 137 138    MAT 1 TYPE ElchDiffCondThermo
-91 TRANSP TET4  139 130 137 138    MAT 1 TYPE ElchDiffCondThermo
-92 TRANSP TET4  140 141 142 127    MAT 1 TYPE ElchDiffCondThermo
-93 TRANSP TET4  47 133 130 132    MAT 1 TYPE ElchDiffCondThermo
-94 TRANSP TET4  140 143 45 144    MAT 1 TYPE ElchDiffCondThermo
-95 TRANSP TET4  145 146 147 148    MAT 1 TYPE ElchDiffCondThermo
-96 TRANSP TET4  145 146 120 147    MAT 1 TYPE ElchDiffCondThermo
-97 TRANSP TET4  145 149 147 150    MAT 1 TYPE ElchDiffCondThermo
-98 TRANSP TET4  120 150 145 147    MAT 1 TYPE ElchDiffCondThermo
-99 TRANSP TET4  151 133 126 132    MAT 1 TYPE ElchDiffCondThermo
-100 TRANSP TET4  128 47 127 45    MAT 1 TYPE ElchDiffCondThermo
-101 TRANSP TET4  152 126 48 132    MAT 1 TYPE ElchDiffCondThermo
-102 TRANSP TET4  130 135 131 133    MAT 1 TYPE ElchDiffCondThermo
-103 TRANSP TET4  37 13 38 26    MAT 1 TYPE ElchDiffCondThermo
-104 TRANSP TET4  47 153 130 133    MAT 1 TYPE ElchDiffCondThermo
-105 TRANSP TET4  135 153 130 134    MAT 1 TYPE ElchDiffCondThermo
-106 TRANSP TET4  154 131 155 156    MAT 1 TYPE ElchDiffCondThermo
-107 TRANSP TET4  131 60 135 157    MAT 1 TYPE ElchDiffCondThermo
-108 TRANSP TET4  158 125 122 159    MAT 1 TYPE ElchDiffCondThermo
-109 TRANSP TET4  101 104 118 102    MAT 1 TYPE ElchDiffCondThermo
-110 TRANSP TET4  126 48 132 47    MAT 1 TYPE ElchDiffCondThermo
-111 TRANSP TET4  160 158 161 142    MAT 1 TYPE ElchDiffCondThermo
-112 TRANSP TET4  161 143 162 163    MAT 1 TYPE ElchDiffCondThermo
-113 TRANSP TET4  114 117 119 118    MAT 1 TYPE ElchDiffCondThermo
-114 TRANSP TET4  141 142 161 140    MAT 1 TYPE ElchDiffCondThermo
-115 TRANSP TET4  100 71 70 74    MAT 1 TYPE ElchDiffCondThermo
-116 TRANSP TET4  161 142 141 160    MAT 1 TYPE ElchDiffCondThermo
-117 TRANSP TET4  16 61 60 15    MAT 1 TYPE ElchDiffCondThermo
-118 TRANSP TET4  48 127 130 47    MAT 1 TYPE ElchDiffCondThermo
-119 TRANSP TET4  47 132 126 133    MAT 1 TYPE ElchDiffCondThermo
-120 TRANSP TET4  125 164 146 122    MAT 1 TYPE ElchDiffCondThermo
-121 TRANSP TET4  165 125 164 146    MAT 1 TYPE ElchDiffCondThermo
-122 TRANSP TET4  106 120 166 121    MAT 1 TYPE ElchDiffCondThermo
-123 TRANSP TET4  56 148 57 167    MAT 1 TYPE ElchDiffCondThermo
-124 TRANSP TET4  145 148 57 56    MAT 1 TYPE ElchDiffCondThermo
-125 TRANSP TET4  168 169 170 171    MAT 1 TYPE ElchDiffCondThermo
-126 TRANSP TET4  40 41 42 43    MAT 1 TYPE ElchDiffCondThermo
-127 TRANSP TET4  135 157 62 172    MAT 1 TYPE ElchDiffCondThermo
-128 TRANSP TET4  48 132 47 130    MAT 1 TYPE ElchDiffCondThermo
-129 TRANSP TET4  131 135 156 154    MAT 1 TYPE ElchDiffCondThermo
-130 TRANSP TET4  130 128 129 153    MAT 1 TYPE ElchDiffCondThermo
-131 TRANSP TET4  47 130 153 128    MAT 1 TYPE ElchDiffCondThermo
-132 TRANSP TET4  45 141 127 128    MAT 1 TYPE ElchDiffCondThermo
-133 TRANSP TET4  173 127 174 129    MAT 1 TYPE ElchDiffCondThermo
-134 TRANSP TET4  168 175 176 148    MAT 1 TYPE ElchDiffCondThermo
-135 TRANSP TET4  167 177 56 168    MAT 1 TYPE ElchDiffCondThermo
-136 TRANSP TET4  56 167 57 178    MAT 1 TYPE ElchDiffCondThermo
-137 TRANSP TET4  12 60 133 15    MAT 1 TYPE ElchDiffCondThermo
-138 TRANSP TET4  16 62 61 63    MAT 1 TYPE ElchDiffCondThermo
-139 TRANSP TET4  62 157 61 63    MAT 1 TYPE ElchDiffCondThermo
-140 TRANSP TET4  62 60 135 133    MAT 1 TYPE ElchDiffCondThermo
-141 TRANSP TET4  12 16 14 27    MAT 1 TYPE ElchDiffCondThermo
-142 TRANSP TET4  158 159 179 160    MAT 1 TYPE ElchDiffCondThermo
-143 TRANSP TET4  158 159 160 125    MAT 1 TYPE ElchDiffCondThermo
-144 TRANSP TET4  120 121 147 146    MAT 1 TYPE ElchDiffCondThermo
-145 TRANSP TET4  121 146 122 125    MAT 1 TYPE ElchDiffCondThermo
-146 TRANSP TET4  129 130 137 139    MAT 1 TYPE ElchDiffCondThermo
-147 TRANSP TET4  127 173 139 129    MAT 1 TYPE ElchDiffCondThermo
-148 TRANSP TET4  141 142 180 160    MAT 1 TYPE ElchDiffCondThermo
-149 TRANSP TET4  174 181 142 173    MAT 1 TYPE ElchDiffCondThermo
-150 TRANSP TET4  158 160 179 142    MAT 1 TYPE ElchDiffCondThermo
-151 TRANSP TET4  139 182 183 129    MAT 1 TYPE ElchDiffCondThermo
-152 TRANSP TET4  11 9 5 4    MAT 1 TYPE ElchDiffCondThermo
-153 TRANSP TET4  145 168 184 148    MAT 1 TYPE ElchDiffCondThermo
-154 TRANSP TET4  184 145 146 120    MAT 1 TYPE ElchDiffCondThermo
-155 TRANSP TET4  65 185 64 186    MAT 1 TYPE ElchDiffCondThermo
-156 TRANSP TET4  187 188 189 190    MAT 1 TYPE ElchDiffCondThermo
-157 TRANSP TET4  187 188 191 165    MAT 1 TYPE ElchDiffCondThermo
-158 TRANSP TET4  192 183 193 182    MAT 1 TYPE ElchDiffCondThermo
-159 TRANSP TET4  194 192 183 193    MAT 1 TYPE ElchDiffCondThermo
-160 TRANSP TET4  182 192 183 129    MAT 1 TYPE ElchDiffCondThermo
-161 TRANSP TET4  182 192 129 173    MAT 1 TYPE ElchDiffCondThermo
-162 TRANSP TET4  164 159 165 188    MAT 1 TYPE ElchDiffCondThermo
-163 TRANSP TET4  159 195 196 197    MAT 1 TYPE ElchDiffCondThermo
-164 TRANSP TET4  196 189 198 197    MAT 1 TYPE ElchDiffCondThermo
-165 TRANSP TET4  187 199 191 200    MAT 1 TYPE ElchDiffCondThermo
-166 TRANSP TET4  134 135 156 131    MAT 1 TYPE ElchDiffCondThermo
-167 TRANSP TET4  155 201 202 203    MAT 1 TYPE ElchDiffCondThermo
-168 TRANSP TET4  156 204 205 201    MAT 1 TYPE ElchDiffCondThermo
-169 TRANSP TET4  153 137 134 206    MAT 1 TYPE ElchDiffCondThermo
-170 TRANSP TET4  153 137 206 129    MAT 1 TYPE ElchDiffCondThermo
-171 TRANSP TET4  174 180 181 207    MAT 1 TYPE ElchDiffCondThermo
-172 TRANSP TET4  207 181 208 209    MAT 1 TYPE ElchDiffCondThermo
-173 TRANSP TET4  174 192 173 129    MAT 1 TYPE ElchDiffCondThermo
-174 TRANSP TET4  210 208 209 207    MAT 1 TYPE ElchDiffCondThermo
-175 TRANSP TET4  203 156 211 155    MAT 1 TYPE ElchDiffCondThermo
-176 TRANSP TET4  155 203 202 212    MAT 1 TYPE ElchDiffCondThermo
-177 TRANSP TET4  155 134 138 205    MAT 1 TYPE ElchDiffCondThermo
-178 TRANSP TET4  156 131 155 134    MAT 1 TYPE ElchDiffCondThermo
-179 TRANSP TET4  170 213 214 215    MAT 1 TYPE ElchDiffCondThermo
-180 TRANSP TET4  170 171 213 216    MAT 1 TYPE ElchDiffCondThermo
-181 TRANSP TET4  170 176 171 216    MAT 1 TYPE ElchDiffCondThermo
-182 TRANSP TET4  171 170 214 169    MAT 1 TYPE ElchDiffCondThermo
-183 TRANSP TET4  213 170 214 171    MAT 1 TYPE ElchDiffCondThermo
-184 TRANSP TET4  1 58 57 6    MAT 1 TYPE ElchDiffCondThermo
-185 TRANSP TET4  167 168 56 148    MAT 1 TYPE ElchDiffCondThermo
-186 TRANSP TET4  145 57 148 147    MAT 1 TYPE ElchDiffCondThermo
-187 TRANSP TET4  101 217 118 104    MAT 1 TYPE ElchDiffCondThermo
-188 TRANSP TET4  118 117 119 218    MAT 1 TYPE ElchDiffCondThermo
-189 TRANSP TET4  153 130 134 137    MAT 1 TYPE ElchDiffCondThermo
-190 TRANSP TET4  114 117 101 115    MAT 1 TYPE ElchDiffCondThermo
-191 TRANSP TET4  217 118 104 218    MAT 1 TYPE ElchDiffCondThermo
-192 TRANSP TET4  65 185 186 219    MAT 1 TYPE ElchDiffCondThermo
-193 TRANSP TET4  220 64 185 221    MAT 1 TYPE ElchDiffCondThermo
-194 TRANSP TET4  122 159 125 164    MAT 1 TYPE ElchDiffCondThermo
-195 TRANSP TET4  139 137 206 138    MAT 1 TYPE ElchDiffCondThermo
-196 TRANSP TET4  165 191 222 164    MAT 1 TYPE ElchDiffCondThermo
-197 TRANSP TET4  164 165 146 222    MAT 1 TYPE ElchDiffCondThermo
-198 TRANSP TET4  223 165 191 222    MAT 1 TYPE ElchDiffCondThermo
-199 TRANSP TET4  146 176 184 222    MAT 1 TYPE ElchDiffCondThermo
-200 TRANSP TET4  146 222 184 164    MAT 1 TYPE ElchDiffCondThermo
-201 TRANSP TET4  125 159 195 165    MAT 1 TYPE ElchDiffCondThermo
-202 TRANSP TET4  179 180 209 181    MAT 1 TYPE ElchDiffCondThermo
-203 TRANSP TET4  124 224 123 121    MAT 1 TYPE ElchDiffCondThermo
-204 TRANSP TET4  179 180 142 160    MAT 1 TYPE ElchDiffCondThermo
-205 TRANSP TET4  179 181 142 180    MAT 1 TYPE ElchDiffCondThermo
-206 TRANSP TET4  161 160 124 158    MAT 1 TYPE ElchDiffCondThermo
-207 TRANSP TET4  142 161 140 162    MAT 1 TYPE ElchDiffCondThermo
-208 TRANSP TET4  161 124 162 158    MAT 1 TYPE ElchDiffCondThermo
-209 TRANSP TET4  170 216 225 226    MAT 1 TYPE ElchDiffCondThermo
-210 TRANSP TET4  170 216 226 176    MAT 1 TYPE ElchDiffCondThermo
-211 TRANSP TET4  214 171 227 213    MAT 1 TYPE ElchDiffCondThermo
-212 TRANSP TET4  168 171 167 169    MAT 1 TYPE ElchDiffCondThermo
-213 TRANSP TET4  216 226 223 228    MAT 1 TYPE ElchDiffCondThermo
-214 TRANSP TET4  129 137 206 139    MAT 1 TYPE ElchDiffCondThermo
-215 TRANSP TET4  216 229 213 225    MAT 1 TYPE ElchDiffCondThermo
-216 TRANSP TET4  216 176 175 230    MAT 1 TYPE ElchDiffCondThermo
-217 TRANSP TET4  178 177 56 167    MAT 1 TYPE ElchDiffCondThermo
-218 TRANSP TET4  145 57 147 6    MAT 1 TYPE ElchDiffCondThermo
-219 TRANSP TET4  176 148 184 168    MAT 1 TYPE ElchDiffCondThermo
-220 TRANSP TET4  12 151 133 126    MAT 1 TYPE ElchDiffCondThermo
-221 TRANSP TET4  124 158 125 122    MAT 1 TYPE ElchDiffCondThermo
-222 TRANSP TET4  159 165 188 195    MAT 1 TYPE ElchDiffCondThermo
-223 TRANSP TET4  168 175 148 167    MAT 1 TYPE ElchDiffCondThermo
-224 TRANSP TET4  168 169 167 177    MAT 1 TYPE ElchDiffCondThermo
-225 TRANSP TET4  41 42 44 231    MAT 1 TYPE ElchDiffCondThermo
-226 TRANSP TET4  148 168 56 145    MAT 1 TYPE ElchDiffCondThermo
-227 TRANSP TET4  174 180 142 181    MAT 1 TYPE ElchDiffCondThermo
-228 TRANSP TET4  127 174 129 128    MAT 1 TYPE ElchDiffCondThermo
-229 TRANSP TET4  196 188 189 195    MAT 1 TYPE ElchDiffCondThermo
-230 TRANSP TET4  173 142 174 127    MAT 1 TYPE ElchDiffCondThermo
-231 TRANSP TET4  209 180 207 181    MAT 1 TYPE ElchDiffCondThermo
-232 TRANSP TET4  179 209 180 197    MAT 1 TYPE ElchDiffCondThermo
-233 TRANSP TET4  174 207 208 192    MAT 1 TYPE ElchDiffCondThermo
-234 TRANSP TET4  174 207 181 208    MAT 1 TYPE ElchDiffCondThermo
-235 TRANSP TET4  222 165 146 230    MAT 1 TYPE ElchDiffCondThermo
-236 TRANSP TET4  187 223 165 191    MAT 1 TYPE ElchDiffCondThermo
-237 TRANSP TET4  187 191 199 223    MAT 1 TYPE ElchDiffCondThermo
-238 TRANSP TET4  188 165 164 191    MAT 1 TYPE ElchDiffCondThermo
-239 TRANSP TET4  196 189 232 198    MAT 1 TYPE ElchDiffCondThermo
-240 TRANSP TET4  16 15 60 12    MAT 1 TYPE ElchDiffCondThermo
-241 TRANSP TET4  139 129 183 206    MAT 1 TYPE ElchDiffCondThermo
-242 TRANSP TET4  131 134 130 138    MAT 1 TYPE ElchDiffCondThermo
-243 TRANSP TET4  142 174 127 141    MAT 1 TYPE ElchDiffCondThermo
-244 TRANSP TET4  127 141 174 128    MAT 1 TYPE ElchDiffCondThermo
-245 TRANSP TET4  159 196 195 188    MAT 1 TYPE ElchDiffCondThermo
-246 TRANSP TET4  196 197 195 189    MAT 1 TYPE ElchDiffCondThermo
-247 TRANSP TET4  174 192 208 173    MAT 1 TYPE ElchDiffCondThermo
-248 TRANSP TET4  139 173 182 129    MAT 1 TYPE ElchDiffCondThermo
-249 TRANSP TET4  182 173 208 192    MAT 1 TYPE ElchDiffCondThermo
-250 TRANSP TET4  207 209 210 198    MAT 1 TYPE ElchDiffCondThermo
-251 TRANSP TET4  233 210 208 209    MAT 1 TYPE ElchDiffCondThermo
-252 TRANSP TET4  179 180 160 197    MAT 1 TYPE ElchDiffCondThermo
-253 TRANSP TET4  207 234 208 192    MAT 1 TYPE ElchDiffCondThermo
-254 TRANSP TET4  120 184 122 146    MAT 1 TYPE ElchDiffCondThermo
-255 TRANSP TET4  129 130 139 127    MAT 1 TYPE ElchDiffCondThermo
-256 TRANSP TET4  139 183 182 235    MAT 1 TYPE ElchDiffCondThermo
-257 TRANSP TET4  124 162 158 123    MAT 1 TYPE ElchDiffCondThermo
-258 TRANSP TET4  159 160 195 197    MAT 1 TYPE ElchDiffCondThermo
-259 TRANSP TET4  125 160 195 159    MAT 1 TYPE ElchDiffCondThermo
-260 TRANSP TET4  125 159 165 164    MAT 1 TYPE ElchDiffCondThermo
-261 TRANSP TET4  196 209 198 232    MAT 1 TYPE ElchDiffCondThermo
-262 TRANSP TET4  196 209 179 197    MAT 1 TYPE ElchDiffCondThermo
-263 TRANSP TET4  187 188 195 189    MAT 1 TYPE ElchDiffCondThermo
-264 TRANSP TET4  189 198 236 232    MAT 1 TYPE ElchDiffCondThermo
-265 TRANSP TET4  237 238 239 240    MAT 1 TYPE ElchDiffCondThermo
-266 TRANSP TET4  241 242 243 239    MAT 1 TYPE ElchDiffCondThermo
-267 TRANSP TET4  237 241 239 238    MAT 1 TYPE ElchDiffCondThermo
-268 TRANSP TET4  124 122 123 158    MAT 1 TYPE ElchDiffCondThermo
-269 TRANSP TET4  244 241 242 46    MAT 1 TYPE ElchDiffCondThermo
-270 TRANSP TET4  237 238 245 241    MAT 1 TYPE ElchDiffCondThermo
-271 TRANSP TET4  246 241 126 238    MAT 1 TYPE ElchDiffCondThermo
-272 TRANSP TET4  239 243 241 237    MAT 1 TYPE ElchDiffCondThermo
-273 TRANSP TET4  247 248 249 250    MAT 1 TYPE ElchDiffCondThermo
-274 TRANSP TET4  251 252 253 254    MAT 1 TYPE ElchDiffCondThermo
-275 TRANSP TET4  251 254 255 252    MAT 1 TYPE ElchDiffCondThermo
-276 TRANSP TET4  248 251 252 253    MAT 1 TYPE ElchDiffCondThermo
-277 TRANSP TET4  247 248 256 249    MAT 1 TYPE ElchDiffCondThermo
-278 TRANSP TET4  43 50 49 55    MAT 1 TYPE ElchDiffCondThermo
-279 TRANSP TET4  247 163 257 143    MAT 1 TYPE ElchDiffCondThermo
-280 TRANSP TET4  249 163 257 247    MAT 1 TYPE ElchDiffCondThermo
-281 TRANSP TET4  258 108 259 260    MAT 1 TYPE ElchDiffCondThermo
-282 TRANSP TET4  158 161 142 162    MAT 1 TYPE ElchDiffCondThermo
-283 TRANSP TET4  261 260 262 258    MAT 1 TYPE ElchDiffCondThermo
-284 TRANSP TET4  260 263 258 261    MAT 1 TYPE ElchDiffCondThermo
-285 TRANSP TET4  143 162 140 161    MAT 1 TYPE ElchDiffCondThermo
-286 TRANSP TET4  260 105 108 264    MAT 1 TYPE ElchDiffCondThermo
-287 TRANSP TET4  46 244 48 45    MAT 1 TYPE ElchDiffCondThermo
-288 TRANSP TET4  108 107 224 106    MAT 1 TYPE ElchDiffCondThermo
-289 TRANSP TET4  212 265 211 203    MAT 1 TYPE ElchDiffCondThermo
-290 TRANSP TET4  51 266 89 267    MAT 1 TYPE ElchDiffCondThermo
-291 TRANSP TET4  268 266 54 240    MAT 1 TYPE ElchDiffCondThermo
-292 TRANSP TET4  124 163 162 257    MAT 1 TYPE ElchDiffCondThermo
-293 TRANSP TET4  268 266 239 269    MAT 1 TYPE ElchDiffCondThermo
-294 TRANSP TET4  24 270 22 25    MAT 1 TYPE ElchDiffCondThermo
-295 TRANSP TET4  166 224 271 107    MAT 1 TYPE ElchDiffCondThermo
-296 TRANSP TET4  120 150 147 106    MAT 1 TYPE ElchDiffCondThermo
-297 TRANSP TET4  251 253 272 254    MAT 1 TYPE ElchDiffCondThermo
-298 TRANSP TET4  254 252 253 273    MAT 1 TYPE ElchDiffCondThermo
-299 TRANSP TET4  251 248 252 255    MAT 1 TYPE ElchDiffCondThermo
-300 TRANSP TET4  43 41 44 49    MAT 1 TYPE ElchDiffCondThermo
-301 TRANSP TET4  20 113 274 252    MAT 1 TYPE ElchDiffCondThermo
-302 TRANSP TET4  21 113 274 20    MAT 1 TYPE ElchDiffCondThermo
-303 TRANSP TET4  258 107 271 259    MAT 1 TYPE ElchDiffCondThermo
-304 TRANSP TET4  260 263 259 258    MAT 1 TYPE ElchDiffCondThermo
-305 TRANSP TET4  275 261 260 262    MAT 1 TYPE ElchDiffCondThermo
-306 TRANSP TET4  108 224 107 259    MAT 1 TYPE ElchDiffCondThermo
-307 TRANSP TET4  107 258 108 259    MAT 1 TYPE ElchDiffCondThermo
-308 TRANSP TET4  108 105 258 107    MAT 1 TYPE ElchDiffCondThermo
-309 TRANSP TET4  251 255 276 248    MAT 1 TYPE ElchDiffCondThermo
-310 TRANSP TET4  248 276 256 277    MAT 1 TYPE ElchDiffCondThermo
-311 TRANSP TET4  247 143 256 276    MAT 1 TYPE ElchDiffCondThermo
-312 TRANSP TET4  256 278 277 143    MAT 1 TYPE ElchDiffCondThermo
-313 TRANSP TET4  248 251 250 247    MAT 1 TYPE ElchDiffCondThermo
-314 TRANSP TET4  266 51 279 267    MAT 1 TYPE ElchDiffCondThermo
-315 TRANSP TET4  266 269 267 280    MAT 1 TYPE ElchDiffCondThermo
-316 TRANSP TET4  51 136 72 281    MAT 1 TYPE ElchDiffCondThermo
-317 TRANSP TET4  47 130 128 127    MAT 1 TYPE ElchDiffCondThermo
-318 TRANSP TET4  89 268 266 54    MAT 1 TYPE ElchDiffCondThermo
-319 TRANSP TET4  47 127 45 48    MAT 1 TYPE ElchDiffCondThermo
-320 TRANSP TET4  270 282 24 261    MAT 1 TYPE ElchDiffCondThermo
-321 TRANSP TET4  261 282 263 283    MAT 1 TYPE ElchDiffCondThermo
-322 TRANSP TET4  260 108 105 258    MAT 1 TYPE ElchDiffCondThermo
-323 TRANSP TET4  260 261 275 263    MAT 1 TYPE ElchDiffCondThermo
-324 TRANSP TET4  23 24 284 22    MAT 1 TYPE ElchDiffCondThermo
-325 TRANSP TET4  261 270 22 24    MAT 1 TYPE ElchDiffCondThermo
-326 TRANSP TET4  284 22 285 23    MAT 1 TYPE ElchDiffCondThermo
-327 TRANSP TET4  123 166 121 224    MAT 1 TYPE ElchDiffCondThermo
-328 TRANSP TET4  19 20 21 286    MAT 1 TYPE ElchDiffCondThermo
-329 TRANSP TET4  113 18 20 21    MAT 1 TYPE ElchDiffCondThermo
-330 TRANSP TET4  286 18 287 19    MAT 1 TYPE ElchDiffCondThermo
-331 TRANSP TET4  252 255 288 274    MAT 1 TYPE ElchDiffCondThermo
-332 TRANSP TET4  254 273 20 252    MAT 1 TYPE ElchDiffCondThermo
-333 TRANSP TET4  252 113 274 288    MAT 1 TYPE ElchDiffCondThermo
-334 TRANSP TET4  66 64 68 186    MAT 1 TYPE ElchDiffCondThermo
-335 TRANSP TET4  237 239 243 269    MAT 1 TYPE ElchDiffCondThermo
-336 TRANSP TET4  237 268 239 269    MAT 1 TYPE ElchDiffCondThermo
-337 TRANSP TET4  241 246 239 238    MAT 1 TYPE ElchDiffCondThermo
-338 TRANSP TET4  237 289 240 268    MAT 1 TYPE ElchDiffCondThermo
-339 TRANSP TET4  244 241 126 246    MAT 1 TYPE ElchDiffCondThermo
-340 TRANSP TET4  268 239 240 237    MAT 1 TYPE ElchDiffCondThermo
-341 TRANSP TET4  126 246 152 244    MAT 1 TYPE ElchDiffCondThermo
-342 TRANSP TET4  239 246 241 242    MAT 1 TYPE ElchDiffCondThermo
-343 TRANSP TET4  139 235 138 206    MAT 1 TYPE ElchDiffCondThermo
-344 TRANSP TET4  131 154 157 135    MAT 1 TYPE ElchDiffCondThermo
-345 TRANSP TET4  153 130 137 129    MAT 1 TYPE ElchDiffCondThermo
-346 TRANSP TET4  205 201 202 155    MAT 1 TYPE ElchDiffCondThermo
-347 TRANSP TET4  137 134 206 138    MAT 1 TYPE ElchDiffCondThermo
-348 TRANSP TET4  134 204 205 156    MAT 1 TYPE ElchDiffCondThermo
-349 TRANSP TET4  290 235 183 205    MAT 1 TYPE ElchDiffCondThermo
-350 TRANSP TET4  141 174 180 142    MAT 1 TYPE ElchDiffCondThermo
-351 TRANSP TET4  138 235 205 206    MAT 1 TYPE ElchDiffCondThermo
-352 TRANSP TET4  133 153 130 135    MAT 1 TYPE ElchDiffCondThermo
-353 TRANSP TET4  206 204 205 134    MAT 1 TYPE ElchDiffCondThermo
-354 TRANSP TET4  148 175 176 146    MAT 1 TYPE ElchDiffCondThermo
-355 TRANSP TET4  163 124 291 257    MAT 1 TYPE ElchDiffCondThermo
-356 TRANSP TET4  78 77 79 76    MAT 1 TYPE ElchDiffCondThermo
-357 TRANSP TET4  168 170 176 171    MAT 1 TYPE ElchDiffCondThermo
-358 TRANSP TET4  226 176 230 222    MAT 1 TYPE ElchDiffCondThermo
-359 TRANSP TET4  168 171 176 175    MAT 1 TYPE ElchDiffCondThermo
-360 TRANSP TET4  161 140 45 141    MAT 1 TYPE ElchDiffCondThermo
-361 TRANSP TET4  161 124 163 162    MAT 1 TYPE ElchDiffCondThermo
-362 TRANSP TET4  176 230 146 175    MAT 1 TYPE ElchDiffCondThermo
-363 TRANSP TET4  89 54 266 51    MAT 1 TYPE ElchDiffCondThermo
-364 TRANSP TET4  168 175 167 171    MAT 1 TYPE ElchDiffCondThermo
-365 TRANSP TET4  216 226 230 223    MAT 1 TYPE ElchDiffCondThermo
-366 TRANSP TET4  165 230 222 223    MAT 1 TYPE ElchDiffCondThermo
-367 TRANSP TET4  167 169 292 177    MAT 1 TYPE ElchDiffCondThermo
-368 TRANSP TET4  145 56 57 2    MAT 1 TYPE ElchDiffCondThermo
-369 TRANSP TET4  205 134 138 206    MAT 1 TYPE ElchDiffCondThermo
-370 TRANSP TET4  293 194 183 290    MAT 1 TYPE ElchDiffCondThermo
-371 TRANSP TET4  182 208 294 192    MAT 1 TYPE ElchDiffCondThermo
-372 TRANSP TET4  133 62 60 12    MAT 1 TYPE ElchDiffCondThermo
-373 TRANSP TET4  159 197 179 160    MAT 1 TYPE ElchDiffCondThermo
-374 TRANSP TET4  180 198 197 209    MAT 1 TYPE ElchDiffCondThermo
-375 TRANSP TET4  196 209 197 198    MAT 1 TYPE ElchDiffCondThermo
-376 TRANSP TET4  210 209 232 198    MAT 1 TYPE ElchDiffCondThermo
-377 TRANSP TET4  4 2 3 5    MAT 1 TYPE ElchDiffCondThermo
-378 TRANSP TET4  174 208 181 173    MAT 1 TYPE ElchDiffCondThermo
-379 TRANSP TET4  145 6 149 2    MAT 1 TYPE ElchDiffCondThermo
-380 TRANSP TET4  196 189 190 232    MAT 1 TYPE ElchDiffCondThermo
-381 TRANSP TET4  182 192 294 193    MAT 1 TYPE ElchDiffCondThermo
-382 TRANSP TET4  60 135 133 131    MAT 1 TYPE ElchDiffCondThermo
-383 TRANSP TET4  204 205 293 183    MAT 1 TYPE ElchDiffCondThermo
-384 TRANSP TET4  290 194 183 193    MAT 1 TYPE ElchDiffCondThermo
-385 TRANSP TET4  226 222 223 191    MAT 1 TYPE ElchDiffCondThermo
-386 TRANSP TET4  229 225 216 228    MAT 1 TYPE ElchDiffCondThermo
-387 TRANSP TET4  191 200 199 295    MAT 1 TYPE ElchDiffCondThermo
-388 TRANSP TET4  187 188 190 200    MAT 1 TYPE ElchDiffCondThermo
-389 TRANSP TET4  187 200 190 199    MAT 1 TYPE ElchDiffCondThermo
-390 TRANSP TET4  43 44 55 49    MAT 1 TYPE ElchDiffCondThermo
-391 TRANSP TET4  54 51 89 53    MAT 1 TYPE ElchDiffCondThermo
-392 TRANSP TET4  136 89 72 53    MAT 1 TYPE ElchDiffCondThermo
-393 TRANSP TET4  51 281 279 136    MAT 1 TYPE ElchDiffCondThermo
-394 TRANSP TET4  239 243 280 242    MAT 1 TYPE ElchDiffCondThermo
-395 TRANSP TET4  268 266 269 267    MAT 1 TYPE ElchDiffCondThermo
-396 TRANSP TET4  246 244 241 242    MAT 1 TYPE ElchDiffCondThermo
-397 TRANSP TET4  239 243 269 280    MAT 1 TYPE ElchDiffCondThermo
-398 TRANSP TET4  266 279 280 267    MAT 1 TYPE ElchDiffCondThermo
-399 TRANSP TET4  266 239 269 280    MAT 1 TYPE ElchDiffCondThermo
-400 TRANSP TET4  89 296 54 53    MAT 1 TYPE ElchDiffCondThermo
-401 TRANSP TET4  51 279 267 136    MAT 1 TYPE ElchDiffCondThermo
-402 TRANSP TET4  45 46 244 144    MAT 1 TYPE ElchDiffCondThermo
-403 TRANSP TET4  182 235 183 193    MAT 1 TYPE ElchDiffCondThermo
-404 TRANSP TET4  207 210 208 234    MAT 1 TYPE ElchDiffCondThermo
-405 TRANSP TET4  241 244 126 46    MAT 1 TYPE ElchDiffCondThermo
-406 TRANSP TET4  126 244 48 46    MAT 1 TYPE ElchDiffCondThermo
-407 TRANSP TET4  192 208 294 234    MAT 1 TYPE ElchDiffCondThermo
-408 TRANSP TET4  45 144 143 46    MAT 1 TYPE ElchDiffCondThermo
-409 TRANSP TET4  162 143 278 257    MAT 1 TYPE ElchDiffCondThermo
-410 TRANSP TET4  132 60 133 131    MAT 1 TYPE ElchDiffCondThermo
-411 TRANSP TET4  256 143 257 278    MAT 1 TYPE ElchDiffCondThermo
-412 TRANSP TET4  183 206 204 205    MAT 1 TYPE ElchDiffCondThermo
-413 TRANSP TET4  16 62 63 12    MAT 1 TYPE ElchDiffCondThermo
-414 TRANSP TET4  46 242 243 241    MAT 1 TYPE ElchDiffCondThermo
-415 TRANSP TET4  254 274 255 252    MAT 1 TYPE ElchDiffCondThermo
-416 TRANSP TET4  19 112 21 18    MAT 1 TYPE ElchDiffCondThermo
-417 TRANSP TET4  274 20 252 254    MAT 1 TYPE ElchDiffCondThermo
-418 TRANSP TET4  19 20 286 18    MAT 1 TYPE ElchDiffCondThermo
-419 TRANSP TET4  248 276 288 255    MAT 1 TYPE ElchDiffCondThermo
-420 TRANSP TET4  256 277 276 143    MAT 1 TYPE ElchDiffCondThermo
-421 TRANSP TET4  256 248 247 276    MAT 1 TYPE ElchDiffCondThermo
-422 TRANSP TET4  248 276 277 288    MAT 1 TYPE ElchDiffCondThermo
-423 TRANSP TET4  89 296 268 54    MAT 1 TYPE ElchDiffCondThermo
-424 TRANSP TET4  18 287 19 112    MAT 1 TYPE ElchDiffCondThermo
-425 TRANSP TET4  143 247 256 257    MAT 1 TYPE ElchDiffCondThermo
-426 TRANSP TET4  253 251 250 248    MAT 1 TYPE ElchDiffCondThermo
-427 TRANSP TET4  247 250 249 163    MAT 1 TYPE ElchDiffCondThermo
-428 TRANSP TET4  20 273 18 252    MAT 1 TYPE ElchDiffCondThermo
-429 TRANSP TET4  254 297 20 273    MAT 1 TYPE ElchDiffCondThermo
-430 TRANSP TET4  20 286 273 297    MAT 1 TYPE ElchDiffCondThermo
-431 TRANSP TET4  18 20 286 273    MAT 1 TYPE ElchDiffCondThermo
-432 TRANSP TET4  250 248 249 253    MAT 1 TYPE ElchDiffCondThermo
-433 TRANSP TET4  257 247 256 249    MAT 1 TYPE ElchDiffCondThermo
-434 TRANSP TET4  252 18 20 113    MAT 1 TYPE ElchDiffCondThermo
-435 TRANSP TET4  140 127 45 141    MAT 1 TYPE ElchDiffCondThermo
-436 TRANSP TET4  251 250 272 253    MAT 1 TYPE ElchDiffCondThermo
-437 TRANSP TET4  124 158 160 125    MAT 1 TYPE ElchDiffCondThermo
-438 TRANSP TET4  254 273 253 297    MAT 1 TYPE ElchDiffCondThermo
-439 TRANSP TET4  248 247 276 251    MAT 1 TYPE ElchDiffCondThermo
-440 TRANSP TET4  266 268 239 240    MAT 1 TYPE ElchDiffCondThermo
-441 TRANSP TET4  89 136 51 267    MAT 1 TYPE ElchDiffCondThermo
-442 TRANSP TET4  124 121 123 122    MAT 1 TYPE ElchDiffCondThermo
-443 TRANSP TET4  187 190 189 298    MAT 1 TYPE ElchDiffCondThermo
-444 TRANSP TET4  237 240 245 238    MAT 1 TYPE ElchDiffCondThermo
-445 TRANSP TET4  208 234 210 294    MAT 1 TYPE ElchDiffCondThermo
-446 TRANSP TET4  192 294 193 194    MAT 1 TYPE ElchDiffCondThermo
-447 TRANSP TET4  60 62 135 157    MAT 1 TYPE ElchDiffCondThermo
-448 TRANSP TET4  123 224 291 166    MAT 1 TYPE ElchDiffCondThermo
-449 TRANSP TET4  162 257 163 143    MAT 1 TYPE ElchDiffCondThermo
-450 TRANSP TET4  122 164 146 184    MAT 1 TYPE ElchDiffCondThermo
-451 TRANSP TET4  145 148 184 146    MAT 1 TYPE ElchDiffCondThermo
-452 TRANSP TET4  24 299 261 275    MAT 1 TYPE ElchDiffCondThermo
-453 TRANSP TET4  261 282 283 270    MAT 1 TYPE ElchDiffCondThermo
-454 TRANSP TET4  25 282 24 270    MAT 1 TYPE ElchDiffCondThermo
-455 TRANSP TET4  258 259 283 263    MAT 1 TYPE ElchDiffCondThermo
-456 TRANSP TET4  273 18 287 286    MAT 1 TYPE ElchDiffCondThermo
-457 TRANSP TET4  22 285 23 300    MAT 1 TYPE ElchDiffCondThermo
-458 TRANSP TET4  258 283 259 271    MAT 1 TYPE ElchDiffCondThermo
-459 TRANSP TET4  260 301 262 264    MAT 1 TYPE ElchDiffCondThermo
-460 TRANSP TET4  258 261 263 283    MAT 1 TYPE ElchDiffCondThermo
-461 TRANSP TET4  261 275 263 282    MAT 1 TYPE ElchDiffCondThermo
-462 TRANSP TET4  24 261 299 22    MAT 1 TYPE ElchDiffCondThermo
-463 TRANSP TET4  23 24 25 284    MAT 1 TYPE ElchDiffCondThermo
-464 TRANSP TET4  25 300 270 22    MAT 1 TYPE ElchDiffCondThermo
-465 TRANSP TET4  22 300 23 25    MAT 1 TYPE ElchDiffCondThermo
-466 TRANSP TET4  241 245 126 238    MAT 1 TYPE ElchDiffCondThermo
-467 TRANSP TET4  275 282 261 24    MAT 1 TYPE ElchDiffCondThermo
-468 TRANSP TET4  24 284 299 302    MAT 1 TYPE ElchDiffCondThermo
-469 TRANSP TET4  22 24 284 299    MAT 1 TYPE ElchDiffCondThermo
-470 TRANSP TET4  24 275 302 299    MAT 1 TYPE ElchDiffCondThermo
-471 TRANSP TET4  108 105 106 264    MAT 1 TYPE ElchDiffCondThermo
-472 TRANSP TET4  260 264 262 105    MAT 1 TYPE ElchDiffCondThermo
-473 TRANSP TET4  260 262 301 275    MAT 1 TYPE ElchDiffCondThermo
-474 TRANSP TET4  224 271 107 259    MAT 1 TYPE ElchDiffCondThermo
-475 TRANSP TET4  120 123 166 121    MAT 1 TYPE ElchDiffCondThermo
-476 TRANSP TET4  301 302 275 262    MAT 1 TYPE ElchDiffCondThermo
-477 TRANSP TET4  238 246 152 126    MAT 1 TYPE ElchDiffCondThermo
-478 TRANSP TET4  261 262 275 299    MAT 1 TYPE ElchDiffCondThermo
-479 TRANSP TET4  260 258 105 262    MAT 1 TYPE ElchDiffCondThermo
-480 TRANSP TET4  299 22 285 284    MAT 1 TYPE ElchDiffCondThermo
-481 TRANSP TET4  107 166 224 106    MAT 1 TYPE ElchDiffCondThermo
-482 TRANSP TET4  57 2 6 145    MAT 1 TYPE ElchDiffCondThermo
-483 TRANSP TET4  150 106 120 166    MAT 1 TYPE ElchDiffCondThermo
-484 TRANSP TET4  147 149 106 150    MAT 1 TYPE ElchDiffCondThermo
-485 TRANSP TET4  124 224 163 291    MAT 1 TYPE ElchDiffCondThermo
-486 TRANSP TET4  145 150 2 149    MAT 1 TYPE ElchDiffCondThermo
-487 TRANSP TET4  302 299 275 262    MAT 1 TYPE ElchDiffCondThermo
-488 TRANSP TET4  107 166 106 150    MAT 1 TYPE ElchDiffCondThermo
-489 TRANSP TET4  48 45 140 127    MAT 1 TYPE ElchDiffCondThermo
-490 TRANSP TET4  5 7 2 3    MAT 1 TYPE ElchDiffCondThermo
-491 TRANSP TET4  167 178 177 292    MAT 1 TYPE ElchDiffCondThermo
-492 TRANSP TET4  56 178 57 58    MAT 1 TYPE ElchDiffCondThermo
-493 TRANSP TET4  121 106 224 166    MAT 1 TYPE ElchDiffCondThermo
-494 TRANSP TET4  69 73 67 74    MAT 1 TYPE ElchDiffCondThermo
-495 TRANSP TET4  5 11 7 9    MAT 1 TYPE ElchDiffCondThermo
-496 TRANSP TET4  5 6 7 11    MAT 1 TYPE ElchDiffCondThermo
-497 TRANSP TET4  8 73 74 10    MAT 1 TYPE ElchDiffCondThermo
-498 TRANSP TET4  65 220 70 67    MAT 1 TYPE ElchDiffCondThermo
-499 TRANSP TET4  5 7 3 10    MAT 1 TYPE ElchDiffCondThermo
-500 TRANSP TET4  8 10 74 7    MAT 1 TYPE ElchDiffCondThermo
-501 TRANSP TET4  5 6 11 4    MAT 1 TYPE ElchDiffCondThermo
-502 TRANSP TET4  1 59 58 3    MAT 1 TYPE ElchDiffCondThermo
-503 TRANSP TET4  67 64 220 221    MAT 1 TYPE ElchDiffCondThermo
-504 TRANSP TET4  8 100 11 74    MAT 1 TYPE ElchDiffCondThermo
-505 TRANSP TET4  171 169 227 292    MAT 1 TYPE ElchDiffCondThermo
-506 TRANSP TET4  196 188 190 189    MAT 1 TYPE ElchDiffCondThermo
-507 TRANSP TET4  185 64 186 221    MAT 1 TYPE ElchDiffCondThermo
-508 TRANSP TET4  69 70 67 66    MAT 1 TYPE ElchDiffCondThermo
-509 TRANSP TET4  65 220 64 185    MAT 1 TYPE ElchDiffCondThermo
-510 TRANSP TET4  65 219 220 185    MAT 1 TYPE ElchDiffCondThermo
-511 TRANSP TET4  213 214 215 303    MAT 1 TYPE ElchDiffCondThermo
-512 TRANSP TET4  304 305 77 303    MAT 1 TYPE ElchDiffCondThermo
-513 TRANSP TET4  304 215 214 303    MAT 1 TYPE ElchDiffCondThermo
-514 TRANSP TET4  169 171 227 214    MAT 1 TYPE ElchDiffCondThermo
-515 TRANSP TET4  227 303 304 214    MAT 1 TYPE ElchDiffCondThermo
-516 TRANSP TET4  213 227 214 303    MAT 1 TYPE ElchDiffCondThermo
-517 TRANSP TET4  226 222 230 223    MAT 1 TYPE ElchDiffCondThermo
-518 TRANSP TET4  222 230 146 176    MAT 1 TYPE ElchDiffCondThermo
-519 TRANSP TET4  216 230 226 176    MAT 1 TYPE ElchDiffCondThermo
-520 TRANSP TET4  304 77 215 303    MAT 1 TYPE ElchDiffCondThermo
-521 TRANSP TET4  213 170 216 225    MAT 1 TYPE ElchDiffCondThermo
-522 TRANSP TET4  48 126 152 244    MAT 1 TYPE ElchDiffCondThermo
-523 TRANSP TET4  56 58 59 178    MAT 1 TYPE ElchDiffCondThermo
-524 TRANSP TET4  146 148 184 176    MAT 1 TYPE ElchDiffCondThermo
-525 TRANSP TET4  48 45 244 140    MAT 1 TYPE ElchDiffCondThermo
-526 TRANSP TET4  156 306 211 307    MAT 1 TYPE ElchDiffCondThermo
-527 TRANSP TET4  1 3 58 4    MAT 1 TYPE ElchDiffCondThermo
-528 TRANSP TET4  171 292 167 169    MAT 1 TYPE ElchDiffCondThermo
-529 TRANSP TET4  2 56 57 1    MAT 1 TYPE ElchDiffCondThermo
-530 TRANSP TET4  8 10 9 73    MAT 1 TYPE ElchDiffCondThermo
-531 TRANSP TET4  5 4 10 3    MAT 1 TYPE ElchDiffCondThermo
-532 TRANSP TET4  69 71 68 73    MAT 1 TYPE ElchDiffCondThermo
-533 TRANSP TET4  71 70 74 69    MAT 1 TYPE ElchDiffCondThermo
-534 TRANSP TET4  66 70 67 65    MAT 1 TYPE ElchDiffCondThermo
-535 TRANSP TET4  56 178 59 177    MAT 1 TYPE ElchDiffCondThermo
-536 TRANSP TET4  69 71 66 68    MAT 1 TYPE ElchDiffCondThermo
-537 TRANSP TET4  65 67 64 220    MAT 1 TYPE ElchDiffCondThermo
-538 TRANSP TET4  186 65 66 64    MAT 1 TYPE ElchDiffCondThermo
-539 TRANSP TET4  308 304 76 77    MAT 1 TYPE ElchDiffCondThermo
-540 TRANSP TET4  65 219 186 66    MAT 1 TYPE ElchDiffCondThermo
-541 TRANSP TET4  69 67 73 68    MAT 1 TYPE ElchDiffCondThermo
-542 TRANSP TET4  304 77 305 76    MAT 1 TYPE ElchDiffCondThermo
-543 TRANSP TET4  305 75 76 77    MAT 1 TYPE ElchDiffCondThermo
-544 TRANSP TET4  213 225 303 215    MAT 1 TYPE ElchDiffCondThermo
-545 TRANSP TET4  225 216 228 226    MAT 1 TYPE ElchDiffCondThermo
-546 TRANSP TET4  140 45 244 144    MAT 1 TYPE ElchDiffCondThermo
-547 TRANSP TET4  308 214 304 215    MAT 1 TYPE ElchDiffCondThermo
-548 TRANSP TET4  213 225 229 303    MAT 1 TYPE ElchDiffCondThermo
-549 TRANSP TET4  147 6 106 149    MAT 1 TYPE ElchDiffCondThermo
-550 TRANSP TET4  308 79 77 76    MAT 1 TYPE ElchDiffCondThermo
-551 TRANSP TET4  145 147 149 6    MAT 1 TYPE ElchDiffCondThermo
-552 TRANSP TET4  308 304 77 215    MAT 1 TYPE ElchDiffCondThermo
-553 TRANSP TET4  171 176 175 216    MAT 1 TYPE ElchDiffCondThermo
-554 TRANSP TET4  199 36 32 295    MAT 1 TYPE ElchDiffCondThermo
-555 TRANSP TET4  187 188 200 191    MAT 1 TYPE ElchDiffCondThermo
-556 TRANSP TET4  191 226 228 223    MAT 1 TYPE ElchDiffCondThermo
-557 TRANSP TET4  29 33 36 32    MAT 1 TYPE ElchDiffCondThermo
-558 TRANSP TET4  32 295 228 199    MAT 1 TYPE ElchDiffCondThermo
-559 TRANSP TET4  228 31 32 199    MAT 1 TYPE ElchDiffCondThermo
-560 TRANSP TET4  29 34 32 36    MAT 1 TYPE ElchDiffCondThermo
-561 TRANSP TET4  226 228 225 295    MAT 1 TYPE ElchDiffCondThermo
-562 TRANSP TET4  36 200 295 199    MAT 1 TYPE ElchDiffCondThermo
-563 TRANSP TET4  29 30 34 35    MAT 1 TYPE ElchDiffCondThermo
-564 TRANSP TET4  29 35 31 30    MAT 1 TYPE ElchDiffCondThermo
-565 TRANSP TET4  199 31 32 33    MAT 1 TYPE ElchDiffCondThermo
-566 TRANSP TET4  309 36 34 35    MAT 1 TYPE ElchDiffCondThermo
-567 TRANSP TET4  199 295 228 191    MAT 1 TYPE ElchDiffCondThermo
-568 TRANSP TET4  170 215 225 213    MAT 1 TYPE ElchDiffCondThermo
-569 TRANSP TET4  191 223 228 199    MAT 1 TYPE ElchDiffCondThermo
-570 TRANSP TET4  187 165 195 188    MAT 1 TYPE ElchDiffCondThermo
-571 TRANSP TET4  189 298 190 236    MAT 1 TYPE ElchDiffCondThermo
-572 TRANSP TET4  189 190 232 236    MAT 1 TYPE ElchDiffCondThermo
-573 TRANSP TET4  29 33 31 35    MAT 1 TYPE ElchDiffCondThermo
-574 TRANSP TET4  1 59 56 58    MAT 1 TYPE ElchDiffCondThermo
-575 TRANSP TET4  187 298 199 190    MAT 1 TYPE ElchDiffCondThermo
-576 TRANSP TET4  198 209 180 207    MAT 1 TYPE ElchDiffCondThermo
-577 TRANSP TET4  210 99 94 232    MAT 1 TYPE ElchDiffCondThermo
-578 TRANSP TET4  233 210 209 232    MAT 1 TYPE ElchDiffCondThermo
-579 TRANSP TET4  94 232 236 210    MAT 1 TYPE ElchDiffCondThermo
-580 TRANSP TET4  92 96 99 94    MAT 1 TYPE ElchDiffCondThermo
-581 TRANSP TET4  92 98 95 97    MAT 1 TYPE ElchDiffCondThermo
-582 TRANSP TET4  236 93 94 210    MAT 1 TYPE ElchDiffCondThermo
-583 TRANSP TET4  92 97 94 99    MAT 1 TYPE ElchDiffCondThermo
-584 TRANSP TET4  99 233 232 210    MAT 1 TYPE ElchDiffCondThermo
-585 TRANSP TET4  123 291 257 166    MAT 1 TYPE ElchDiffCondThermo
-586 TRANSP TET4  210 232 236 198    MAT 1 TYPE ElchDiffCondThermo
-587 TRANSP TET4  210 93 94 96    MAT 1 TYPE ElchDiffCondThermo
-588 TRANSP TET4  92 93 95 98    MAT 1 TYPE ElchDiffCondThermo
-589 TRANSP TET4  92 96 93 98    MAT 1 TYPE ElchDiffCondThermo
-590 TRANSP TET4  310 99 97 98    MAT 1 TYPE ElchDiffCondThermo
-591 TRANSP TET4  208 233 294 210    MAT 1 TYPE ElchDiffCondThermo
-592 TRANSP TET4  78 75 76 80    MAT 1 TYPE ElchDiffCondThermo
-593 TRANSP TET4  192 294 194 234    MAT 1 TYPE ElchDiffCondThermo
-594 TRANSP TET4  32 33 36 199    MAT 1 TYPE ElchDiffCondThermo
-595 TRANSP TET4  159 197 196 179    MAT 1 TYPE ElchDiffCondThermo
-596 TRANSP TET4  193 290 235 183    MAT 1 TYPE ElchDiffCondThermo
-597 TRANSP TET4  94 96 99 210    MAT 1 TYPE ElchDiffCondThermo
-598 TRANSP TET4  87 90 85 86    MAT 1 TYPE ElchDiffCondThermo
-599 TRANSP TET4  87 88 90 86    MAT 1 TYPE ElchDiffCondThermo
-600 TRANSP TET4  194 90 193 86    MAT 1 TYPE ElchDiffCondThermo
-601 TRANSP TET4  85 194 293 86    MAT 1 TYPE ElchDiffCondThermo
-602 TRANSP TET4  60 133 15 132    MAT 1 TYPE ElchDiffCondThermo
-603 TRANSP TET4  85 90 194 86    MAT 1 TYPE ElchDiffCondThermo
-604 TRANSP TET4  193 86 290 194    MAT 1 TYPE ElchDiffCondThermo
-605 TRANSP TET4  87 85 91 84    MAT 1 TYPE ElchDiffCondThermo
-606 TRANSP TET4  87 84 91 88    MAT 1 TYPE ElchDiffCondThermo
-607 TRANSP TET4  140 144 278 143    MAT 1 TYPE ElchDiffCondThermo
-608 TRANSP TET4  311 84 85 86    MAT 1 TYPE ElchDiffCondThermo
-609 TRANSP TET4  86 85 311 293    MAT 1 TYPE ElchDiffCondThermo
-610 TRANSP TET4  194 290 293 86    MAT 1 TYPE ElchDiffCondThermo
-611 TRANSP TET4  205 202 293 290    MAT 1 TYPE ElchDiffCondThermo
-612 TRANSP TET4  205 202 201 293    MAT 1 TYPE ElchDiffCondThermo
-613 TRANSP TET4  201 156 155 205    MAT 1 TYPE ElchDiffCondThermo
-614 TRANSP TET4  206 235 205 183    MAT 1 TYPE ElchDiffCondThermo
-615 TRANSP TET4  203 156 155 201    MAT 1 TYPE ElchDiffCondThermo
-616 TRANSP TET4  212 203 41 265    MAT 1 TYPE ElchDiffCondThermo
-617 TRANSP TET4  139 235 206 183    MAT 1 TYPE ElchDiffCondThermo
-618 TRANSP TET4  39 231 41 203    MAT 1 TYPE ElchDiffCondThermo
-619 TRANSP TET4  78 80 82 75    MAT 1 TYPE ElchDiffCondThermo
-620 TRANSP TET4  41 203 231 265    MAT 1 TYPE ElchDiffCondThermo
-621 TRANSP TET4  312 86 88 84    MAT 1 TYPE ElchDiffCondThermo
-622 TRANSP TET4  41 44 265 231    MAT 1 TYPE ElchDiffCondThermo
-623 TRANSP TET4  203 211 306 265    MAT 1 TYPE ElchDiffCondThermo
-624 TRANSP TET4  120 121 146 122    MAT 1 TYPE ElchDiffCondThermo
-625 TRANSP TET4  104 118 102 218    MAT 1 TYPE ElchDiffCondThermo
-626 TRANSP TET4  101 104 103 217    MAT 1 TYPE ElchDiffCondThermo
-627 TRANSP TET4  101 118 116 102    MAT 1 TYPE ElchDiffCondThermo
-628 TRANSP TET4  37 38 109 26    MAT 1 TYPE ElchDiffCondThermo
-629 TRANSP TET4  13 26 83 14    MAT 1 TYPE ElchDiffCondThermo
-630 TRANSP TET4  83 13 28 37    MAT 1 TYPE ElchDiffCondThermo
-631 TRANSP TET4  37 83 110 111    MAT 1 TYPE ElchDiffCondThermo
-632 TRANSP TET4  14 27 83 28    MAT 1 TYPE ElchDiffCondThermo
-633 TRANSP TET4  161 45 140 143    MAT 1 TYPE ElchDiffCondThermo
-634 TRANSP TET4  37 110 83 26    MAT 1 TYPE ElchDiffCondThermo
-635 TRANSP TET4  16 61 17 27    MAT 1 TYPE ElchDiffCondThermo
-636 TRANSP TET4  13 14 15 17    MAT 1 TYPE ElchDiffCondThermo
-637 TRANSP TET4  16 61 27 63    MAT 1 TYPE ElchDiffCondThermo
-638 TRANSP TET4  114 115 116 109    MAT 1 TYPE ElchDiffCondThermo
-639 TRANSP TET4  62 63 172 157    MAT 1 TYPE ElchDiffCondThermo
-640 TRANSP TET4  135 307 156 154    MAT 1 TYPE ElchDiffCondThermo
-641 TRANSP TET4  135 172 154 157    MAT 1 TYPE ElchDiffCondThermo
-642 TRANSP TET4  156 155 154 211    MAT 1 TYPE ElchDiffCondThermo
-643 TRANSP TET4  135 307 154 172    MAT 1 TYPE ElchDiffCondThermo
-644 TRANSP TET4  14 13 12 28    MAT 1 TYPE ElchDiffCondThermo
-645 TRANSP TET4  131 155 134 138    MAT 1 TYPE ElchDiffCondThermo
-646 TRANSP TET4  140 278 144 244    MAT 1 TYPE ElchDiffCondThermo
-647 TRANSP TET4  120 121 106 147    MAT 1 TYPE ElchDiffCondThermo
-648 TRANSP TET4  211 307 154 156    MAT 1 TYPE ElchDiffCondThermo
-649 TRANSP TET4  203 306 231 265    MAT 1 TYPE ElchDiffCondThermo
-650 TRANSP TET4  78 81 77 75    MAT 1 TYPE ElchDiffCondThermo
-651 TRANSP TET4  231 39 41 42    MAT 1 TYPE ElchDiffCondThermo
-652 TRANSP TET4  183 205 293 290    MAT 1 TYPE ElchDiffCondThermo
-653 TRANSP TET4  306 203 156 211    MAT 1 TYPE ElchDiffCondThermo
-654 TRANSP TET4  43 40 50 42    MAT 1 TYPE ElchDiffCondThermo
-655 TRANSP TET4  155 212 211 203    MAT 1 TYPE ElchDiffCondThermo
-656 TRANSP TET4  101 115 103 102    MAT 1 TYPE ElchDiffCondThermo
-657 TRANSP TET4  114 101 118 116    MAT 1 TYPE ElchDiffCondThermo
-658 TRANSP TET4  278 143 162 140    MAT 1 TYPE ElchDiffCondThermo
-659 TRANSP TET4  114 116 119 110    MAT 1 TYPE ElchDiffCondThermo
-660 TRANSP TET4  14 83 27 17    MAT 1 TYPE ElchDiffCondThermo
-661 TRANSP TET4  295 191 226 228    MAT 1 TYPE ElchDiffCondThermo
-662 TRANSP TET4  124 291 123 224    MAT 1 TYPE ElchDiffCondThermo
-663 TRANSP TET4  114 119 38 111    MAT 1 TYPE ElchDiffCondThermo
-664 TRANSP TET4  114 116 110 109    MAT 1 TYPE ElchDiffCondThermo
-665 TRANSP TET4  60 61 62 157    MAT 1 TYPE ElchDiffCondThermo
-666 TRANSP TET4  37 28 111 38    MAT 1 TYPE ElchDiffCondThermo
-667 TRANSP TET4  12 15 14 16    MAT 1 TYPE ElchDiffCondThermo
-668 TRANSP TET4  114 117 38 119    MAT 1 TYPE ElchDiffCondThermo
-669 TRANSP TET4  205 204 293 201    MAT 1 TYPE ElchDiffCondThermo
-670 TRANSP TET4  132 152 151 15    MAT 1 TYPE ElchDiffCondThermo
-671 TRANSP TET4  15 133 151 132    MAT 1 TYPE ElchDiffCondThermo
-672 TRANSP TET4  43 41 49 40    MAT 1 TYPE ElchDiffCondThermo
-673 TRANSP TET4  78 79 81 82    MAT 1 TYPE ElchDiffCondThermo
-674 TRANSP TET4  114 109 38 117    MAT 1 TYPE ElchDiffCondThermo
-675 TRANSP TET4  117 118 217 218    MAT 1 TYPE ElchDiffCondThermo
-676 TRANSP TET4  101 117 118 217    MAT 1 TYPE ElchDiffCondThermo
-677 TRANSP TET4  101 102 116 115    MAT 1 TYPE ElchDiffCondThermo
-678 TRANSP TET4  254 253 272 297    MAT 1 TYPE ElchDiffCondThermo
-679 TRANSP TET4  150 105 106 107    MAT 1 TYPE ElchDiffCondThermo
-680 TRANSP TET4  248 252 255 288    MAT 1 TYPE ElchDiffCondThermo
-681 TRANSP TET4  124 291 257 123    MAT 1 TYPE ElchDiffCondThermo
-682 TRANSP TET4  51 281 72 52    MAT 1 TYPE ElchDiffCondThermo
-683 TRANSP TET4  205 156 155 134    MAT 1 TYPE ElchDiffCondThermo
-684 TRANSP TET4  237 245 240 289    MAT 1 TYPE ElchDiffCondThermo
-685 TRANSP TET4  266 89 267 268    MAT 1 TYPE ElchDiffCondThermo
-686 TRANSP TET4  268 296 240 54    MAT 1 TYPE ElchDiffCondThermo
-687 TRANSP TET4  12 15 133 151    MAT 1 TYPE ElchDiffCondThermo
-688 TRANSP TET4  124 162 123 257    MAT 1 TYPE ElchDiffCondThermo
-689 TRANSP TET4  268 296 289 240    MAT 1 TYPE ElchDiffCondThermo
-690 TRANSP TET4  132 126 151 152    MAT 1 TYPE ElchDiffCondThermo
-691 TRANSP HEX8  313 314 315 316 317 318 319 320    MAT 5 TYPE ElchElectrodeThermo
-692 TRANSP HEX8  314 321 322 315 318 323 324 319    MAT 5 TYPE ElchElectrodeThermo
-693 TRANSP HEX8  321 325 326 322 323 327 328 324    MAT 5 TYPE ElchElectrodeThermo
-694 TRANSP HEX8  325 329 330 326 327 331 332 328    MAT 5 TYPE ElchElectrodeThermo
-695 TRANSP HEX8  316 315 333 334 320 319 335 336    MAT 5 TYPE ElchElectrodeThermo
-696 TRANSP HEX8  315 322 337 333 319 324 338 335    MAT 5 TYPE ElchElectrodeThermo
-697 TRANSP HEX8  322 326 339 337 324 328 340 338    MAT 5 TYPE ElchElectrodeThermo
-698 TRANSP HEX8  326 330 341 339 328 332 342 340    MAT 5 TYPE ElchElectrodeThermo
-699 TRANSP HEX8  334 333 343 344 336 335 345 346    MAT 5 TYPE ElchElectrodeThermo
-700 TRANSP HEX8  333 337 347 343 335 338 348 345    MAT 5 TYPE ElchElectrodeThermo
-701 TRANSP HEX8  337 339 349 347 338 340 350 348    MAT 5 TYPE ElchElectrodeThermo
-702 TRANSP HEX8  339 341 351 349 340 342 352 350    MAT 5 TYPE ElchElectrodeThermo
-703 TRANSP HEX8  344 343 353 354 346 345 355 356    MAT 5 TYPE ElchElectrodeThermo
-704 TRANSP HEX8  343 347 357 353 345 348 358 355    MAT 5 TYPE ElchElectrodeThermo
-705 TRANSP HEX8  347 349 359 357 348 350 360 358    MAT 5 TYPE ElchElectrodeThermo
-706 TRANSP HEX8  349 351 361 359 350 352 362 360    MAT 5 TYPE ElchElectrodeThermo
-707 TRANSP HEX8  363 364 365 366 367 368 369 370    MAT 5 TYPE ElchElectrodeThermo
-708 TRANSP HEX8  364 371 372 365 368 373 374 369    MAT 5 TYPE ElchElectrodeThermo
-709 TRANSP HEX8  371 375 376 372 373 377 378 374    MAT 5 TYPE ElchElectrodeThermo
-710 TRANSP HEX8  375 379 380 376 377 381 382 378    MAT 5 TYPE ElchElectrodeThermo
-711 TRANSP HEX8  366 365 383 384 370 369 385 386    MAT 5 TYPE ElchElectrodeThermo
-712 TRANSP HEX8  365 372 387 383 369 374 388 385    MAT 5 TYPE ElchElectrodeThermo
-713 TRANSP HEX8  372 376 389 387 374 378 390 388    MAT 5 TYPE ElchElectrodeThermo
-714 TRANSP HEX8  376 380 391 389 378 382 392 390    MAT 5 TYPE ElchElectrodeThermo
-715 TRANSP HEX8  384 383 393 394 386 385 395 396    MAT 5 TYPE ElchElectrodeThermo
-716 TRANSP HEX8  383 387 397 393 385 388 398 395    MAT 5 TYPE ElchElectrodeThermo
-717 TRANSP HEX8  387 389 399 397 388 390 400 398    MAT 5 TYPE ElchElectrodeThermo
-718 TRANSP HEX8  389 391 401 399 390 392 402 400    MAT 5 TYPE ElchElectrodeThermo
-719 TRANSP HEX8  394 393 403 404 396 395 405 406    MAT 5 TYPE ElchElectrodeThermo
-720 TRANSP HEX8  393 397 407 403 395 398 408 405    MAT 5 TYPE ElchElectrodeThermo
-721 TRANSP HEX8  397 399 409 407 398 400 410 408    MAT 5 TYPE ElchElectrodeThermo
-722 TRANSP HEX8  399 401 411 409 400 402 412 410    MAT 5 TYPE ElchElectrodeThermo
-723 TRANSP HEX8  413 414 415 416 417 418 419 420    MAT 5 TYPE ElchElectrodeThermo
-724 TRANSP HEX8  414 421 422 415 418 423 424 419    MAT 5 TYPE ElchElectrodeThermo
-725 TRANSP HEX8  421 425 426 422 423 427 428 424    MAT 5 TYPE ElchElectrodeThermo
-726 TRANSP HEX8  425 429 430 426 427 431 432 428    MAT 5 TYPE ElchElectrodeThermo
-727 TRANSP HEX8  416 415 433 434 420 419 435 436    MAT 5 TYPE ElchElectrodeThermo
-728 TRANSP HEX8  415 422 437 433 419 424 438 435    MAT 5 TYPE ElchElectrodeThermo
-729 TRANSP HEX8  422 426 439 437 424 428 440 438    MAT 5 TYPE ElchElectrodeThermo
-730 TRANSP HEX8  426 430 441 439 428 432 442 440    MAT 5 TYPE ElchElectrodeThermo
-731 TRANSP HEX8  434 433 443 444 436 435 445 446    MAT 5 TYPE ElchElectrodeThermo
-732 TRANSP HEX8  433 437 447 443 435 438 448 445    MAT 5 TYPE ElchElectrodeThermo
-733 TRANSP HEX8  437 439 449 447 438 440 450 448    MAT 5 TYPE ElchElectrodeThermo
-734 TRANSP HEX8  439 441 451 449 440 442 452 450    MAT 5 TYPE ElchElectrodeThermo
-735 TRANSP HEX8  444 443 453 454 446 445 455 456    MAT 5 TYPE ElchElectrodeThermo
-736 TRANSP HEX8  443 447 457 453 445 448 458 455    MAT 5 TYPE ElchElectrodeThermo
-737 TRANSP HEX8  447 449 459 457 448 450 460 458    MAT 5 TYPE ElchElectrodeThermo
-738 TRANSP HEX8  449 451 461 459 450 452 462 460    MAT 5 TYPE ElchElectrodeThermo
-739 TRANSP HEX8  463 464 465 466 467 468 469 470    MAT 5 TYPE ElchElectrodeThermo
-740 TRANSP HEX8  464 471 472 465 468 473 474 469    MAT 5 TYPE ElchElectrodeThermo
-741 TRANSP HEX8  471 475 476 472 473 477 478 474    MAT 5 TYPE ElchElectrodeThermo
-742 TRANSP HEX8  475 479 480 476 477 481 482 478    MAT 5 TYPE ElchElectrodeThermo
-743 TRANSP HEX8  466 465 483 484 470 469 485 486    MAT 5 TYPE ElchElectrodeThermo
-744 TRANSP HEX8  465 472 487 483 469 474 488 485    MAT 5 TYPE ElchElectrodeThermo
-745 TRANSP HEX8  472 476 489 487 474 478 490 488    MAT 5 TYPE ElchElectrodeThermo
-746 TRANSP HEX8  476 480 491 489 478 482 492 490    MAT 5 TYPE ElchElectrodeThermo
-747 TRANSP HEX8  484 483 493 494 486 485 495 496    MAT 5 TYPE ElchElectrodeThermo
-748 TRANSP HEX8  483 487 497 493 485 488 498 495    MAT 5 TYPE ElchElectrodeThermo
-749 TRANSP HEX8  487 489 499 497 488 490 500 498    MAT 5 TYPE ElchElectrodeThermo
-750 TRANSP HEX8  489 491 501 499 490 492 502 500    MAT 5 TYPE ElchElectrodeThermo
-751 TRANSP HEX8  494 493 503 504 496 495 505 506    MAT 5 TYPE ElchElectrodeThermo
-752 TRANSP HEX8  493 497 507 503 495 498 508 505    MAT 5 TYPE ElchElectrodeThermo
-753 TRANSP HEX8  497 499 509 507 498 500 510 508    MAT 5 TYPE ElchElectrodeThermo
-754 TRANSP HEX8  499 501 511 509 500 502 512 510    MAT 5 TYPE ElchElectrodeThermo
-755 TRANSP HEX8  513 514 515 516 517 518 519 520    MAT 6 TYPE ElchElectrodeThermo
-756 TRANSP HEX8  514 521 522 515 518 523 524 519    MAT 6 TYPE ElchElectrodeThermo
-757 TRANSP HEX8  521 525 526 522 523 527 528 524    MAT 6 TYPE ElchElectrodeThermo
-758 TRANSP HEX8  525 529 530 526 527 531 532 528    MAT 6 TYPE ElchElectrodeThermo
-759 TRANSP HEX8  529 533 534 530 531 535 536 532    MAT 6 TYPE ElchElectrodeThermo
-760 TRANSP HEX8  533 537 538 534 535 539 540 536    MAT 6 TYPE ElchElectrodeThermo
-761 TRANSP HEX8  537 541 542 538 539 543 544 540    MAT 6 TYPE ElchElectrodeThermo
-762 TRANSP HEX8  541 545 546 542 543 547 548 544    MAT 6 TYPE ElchElectrodeThermo
-763 TRANSP HEX8  516 515 549 550 520 519 551 552    MAT 6 TYPE ElchElectrodeThermo
-764 TRANSP HEX8  515 522 553 549 519 524 554 551    MAT 6 TYPE ElchElectrodeThermo
-765 TRANSP HEX8  522 526 555 553 524 528 556 554    MAT 6 TYPE ElchElectrodeThermo
-766 TRANSP HEX8  526 530 557 555 528 532 558 556    MAT 6 TYPE ElchElectrodeThermo
-767 TRANSP HEX8  530 534 559 557 532 536 560 558    MAT 6 TYPE ElchElectrodeThermo
-768 TRANSP HEX8  534 538 561 559 536 540 562 560    MAT 6 TYPE ElchElectrodeThermo
-769 TRANSP HEX8  538 542 563 561 540 544 564 562    MAT 6 TYPE ElchElectrodeThermo
-770 TRANSP HEX8  542 546 565 563 544 548 566 564    MAT 6 TYPE ElchElectrodeThermo
-771 TRANSP HEX8  567 568 569 570 571 572 573 574    MAT 6 TYPE ElchElectrodeThermo
-772 TRANSP HEX8  568 575 576 569 572 577 578 573    MAT 6 TYPE ElchElectrodeThermo
-773 TRANSP HEX8  575 579 580 576 577 581 582 578    MAT 6 TYPE ElchElectrodeThermo
-774 TRANSP HEX8  579 583 584 580 581 585 586 582    MAT 6 TYPE ElchElectrodeThermo
-775 TRANSP HEX8  583 587 588 584 585 589 590 586    MAT 6 TYPE ElchElectrodeThermo
-776 TRANSP HEX8  587 591 592 588 589 593 594 590    MAT 6 TYPE ElchElectrodeThermo
-777 TRANSP HEX8  591 595 596 592 593 597 598 594    MAT 6 TYPE ElchElectrodeThermo
-778 TRANSP HEX8  595 599 600 596 597 601 602 598    MAT 6 TYPE ElchElectrodeThermo
-779 TRANSP HEX8  570 569 603 604 574 573 605 606    MAT 6 TYPE ElchElectrodeThermo
-780 TRANSP HEX8  569 576 607 603 573 578 608 605    MAT 6 TYPE ElchElectrodeThermo
-781 TRANSP HEX8  576 580 609 607 578 582 610 608    MAT 6 TYPE ElchElectrodeThermo
-782 TRANSP HEX8  580 584 611 609 582 586 612 610    MAT 6 TYPE ElchElectrodeThermo
-783 TRANSP HEX8  584 588 613 611 586 590 614 612    MAT 6 TYPE ElchElectrodeThermo
-784 TRANSP HEX8  588 592 615 613 590 594 616 614    MAT 6 TYPE ElchElectrodeThermo
-785 TRANSP HEX8  592 596 617 615 594 598 618 616    MAT 6 TYPE ElchElectrodeThermo
-786 TRANSP HEX8  596 600 619 617 598 602 620 618    MAT 6 TYPE ElchElectrodeThermo
-787 TRANSP HEX8  621 622 623 624 625 626 627 628    MAT 6 TYPE ElchElectrodeThermo
-788 TRANSP HEX8  622 629 630 623 626 631 632 627    MAT 6 TYPE ElchElectrodeThermo
-789 TRANSP HEX8  629 633 634 630 631 635 636 632    MAT 6 TYPE ElchElectrodeThermo
-790 TRANSP HEX8  633 637 638 634 635 639 640 636    MAT 6 TYPE ElchElectrodeThermo
-791 TRANSP HEX8  637 641 642 638 639 643 644 640    MAT 6 TYPE ElchElectrodeThermo
-792 TRANSP HEX8  641 645 646 642 643 647 648 644    MAT 6 TYPE ElchElectrodeThermo
-793 TRANSP HEX8  645 649 650 646 647 651 652 648    MAT 6 TYPE ElchElectrodeThermo
-794 TRANSP HEX8  649 653 654 650 651 655 656 652    MAT 6 TYPE ElchElectrodeThermo
-795 TRANSP HEX8  624 623 657 658 628 627 659 660    MAT 6 TYPE ElchElectrodeThermo
-796 TRANSP HEX8  623 630 661 657 627 632 662 659    MAT 6 TYPE ElchElectrodeThermo
-797 TRANSP HEX8  630 634 663 661 632 636 664 662    MAT 6 TYPE ElchElectrodeThermo
-798 TRANSP HEX8  634 638 665 663 636 640 666 664    MAT 6 TYPE ElchElectrodeThermo
-799 TRANSP HEX8  638 642 667 665 640 644 668 666    MAT 6 TYPE ElchElectrodeThermo
-800 TRANSP HEX8  642 646 669 667 644 648 670 668    MAT 6 TYPE ElchElectrodeThermo
-801 TRANSP HEX8  646 650 671 669 648 652 672 670    MAT 6 TYPE ElchElectrodeThermo
-802 TRANSP HEX8  650 654 673 671 652 656 674 672    MAT 6 TYPE ElchElectrodeThermo
-803 TRANSP HEX8  675 676 677 678 679 680 681 682    MAT 6 TYPE ElchElectrodeThermo
-804 TRANSP HEX8  676 683 684 677 680 685 686 681    MAT 6 TYPE ElchElectrodeThermo
-805 TRANSP HEX8  683 687 688 684 685 689 690 686    MAT 6 TYPE ElchElectrodeThermo
-806 TRANSP HEX8  687 691 692 688 689 693 694 690    MAT 6 TYPE ElchElectrodeThermo
-807 TRANSP HEX8  691 695 696 692 693 697 698 694    MAT 6 TYPE ElchElectrodeThermo
-808 TRANSP HEX8  695 699 700 696 697 701 702 698    MAT 6 TYPE ElchElectrodeThermo
-809 TRANSP HEX8  699 703 704 700 701 705 706 702    MAT 6 TYPE ElchElectrodeThermo
-810 TRANSP HEX8  703 707 708 704 705 709 710 706    MAT 6 TYPE ElchElectrodeThermo
-811 TRANSP HEX8  678 677 711 712 682 681 713 714    MAT 6 TYPE ElchElectrodeThermo
-812 TRANSP HEX8  677 684 715 711 681 686 716 713    MAT 6 TYPE ElchElectrodeThermo
-813 TRANSP HEX8  684 688 717 715 686 690 718 716    MAT 6 TYPE ElchElectrodeThermo
-814 TRANSP HEX8  688 692 719 717 690 694 720 718    MAT 6 TYPE ElchElectrodeThermo
-815 TRANSP HEX8  692 696 721 719 694 698 722 720    MAT 6 TYPE ElchElectrodeThermo
-816 TRANSP HEX8  696 700 723 721 698 702 724 722    MAT 6 TYPE ElchElectrodeThermo
-817 TRANSP HEX8  700 704 725 723 702 706 726 724    MAT 6 TYPE ElchElectrodeThermo
-818 TRANSP HEX8  704 708 727 725 706 710 728 726    MAT 6 TYPE ElchElectrodeThermo
+   1 TRANSP TET4  1 2 3 4    MAT 1 TYPE ElchDiffCondThermo
+   2 TRANSP TET4  5 6 4 2    MAT 1 TYPE ElchDiffCondThermo
+   3 TRANSP TET4  5 2 7 6    MAT 1 TYPE ElchDiffCondThermo
+   4 TRANSP TET4  8 9 10 7    MAT 1 TYPE ElchDiffCondThermo
+   5 TRANSP TET4  9 5 4 10    MAT 1 TYPE ElchDiffCondThermo
+   6 TRANSP TET4  9 11 7 8    MAT 1 TYPE ElchDiffCondThermo
+   7 TRANSP TET4  12 13 14 15    MAT 1 TYPE ElchDiffCondThermo
+   8 TRANSP TET4  15 14 16 17    MAT 1 TYPE ElchDiffCondThermo
+   9 TRANSP TET4  18 19 20 21    MAT 1 TYPE ElchDiffCondThermo
+   10 TRANSP TET4  22 23 24 25    MAT 1 TYPE ElchDiffCondThermo
+   11 TRANSP TET4  13 17 26 14    MAT 1 TYPE ElchDiffCondThermo
+   12 TRANSP TET4  14 27 28 12    MAT 1 TYPE ElchDiffCondThermo
+   13 TRANSP TET4  29 30 31 32    MAT 1 TYPE ElchDiffCondThermo
+   14 TRANSP TET4  29 33 32 31    MAT 1 TYPE ElchDiffCondThermo
+   15 TRANSP TET4  29 32 34 30    MAT 1 TYPE ElchDiffCondThermo
+   16 TRANSP TET4  29 35 36 33    MAT 1 TYPE ElchDiffCondThermo
+   17 TRANSP TET4  28 37 13 38    MAT 1 TYPE ElchDiffCondThermo
+   18 TRANSP TET4  36 34 35 29    MAT 1 TYPE ElchDiffCondThermo
+   19 TRANSP TET4  39 40 41 42    MAT 1 TYPE ElchDiffCondThermo
+   20 TRANSP TET4  43 42 44 41    MAT 1 TYPE ElchDiffCondThermo
+   21 TRANSP TET4  45 46 47 48    MAT 1 TYPE ElchDiffCondThermo
+   22 TRANSP TET4  43 40 49 50    MAT 1 TYPE ElchDiffCondThermo
+   23 TRANSP TET4  51 52 53 54    MAT 1 TYPE ElchDiffCondThermo
+   24 TRANSP TET4  43 55 42 50    MAT 1 TYPE ElchDiffCondThermo
+   25 TRANSP TET4  43 44 42 55    MAT 1 TYPE ElchDiffCondThermo
+   26 TRANSP TET4  1 56 57 58    MAT 1 TYPE ElchDiffCondThermo
+   27 TRANSP TET4  1 2 6 57    MAT 1 TYPE ElchDiffCondThermo
+   28 TRANSP TET4  2 6 4 1    MAT 1 TYPE ElchDiffCondThermo
+   29 TRANSP TET4  1 6 4 58    MAT 1 TYPE ElchDiffCondThermo
+   30 TRANSP TET4  1 56 59 2    MAT 1 TYPE ElchDiffCondThermo
+   31 TRANSP TET4  1 3 2 59    MAT 1 TYPE ElchDiffCondThermo
+   32 TRANSP TET4  16 60 61 62    MAT 1 TYPE ElchDiffCondThermo
+   33 TRANSP TET4  16 17 61 15    MAT 1 TYPE ElchDiffCondThermo
+   34 TRANSP TET4  16 14 27 17    MAT 1 TYPE ElchDiffCondThermo
+   35 TRANSP TET4  16 12 60 62    MAT 1 TYPE ElchDiffCondThermo
+   36 TRANSP TET4  16 27 12 63    MAT 1 TYPE ElchDiffCondThermo
+   37 TRANSP TET4  64 65 66 67    MAT 1 TYPE ElchDiffCondThermo
+   38 TRANSP TET4  67 66 68 69    MAT 1 TYPE ElchDiffCondThermo
+   39 TRANSP TET4  67 64 68 66    MAT 1 TYPE ElchDiffCondThermo
+   40 TRANSP TET4  69 70 66 71    MAT 1 TYPE ElchDiffCondThermo
+   41 TRANSP TET4  72 52 53 51    MAT 1 TYPE ElchDiffCondThermo
+   42 TRANSP TET4  73 69 71 74    MAT 1 TYPE ElchDiffCondThermo
+   43 TRANSP TET4  69 74 67 70    MAT 1 TYPE ElchDiffCondThermo
+   44 TRANSP TET4  73 8 71 9    MAT 1 TYPE ElchDiffCondThermo
+   45 TRANSP TET4  75 76 77 78    MAT 1 TYPE ElchDiffCondThermo
+   46 TRANSP TET4  78 79 80 76    MAT 1 TYPE ElchDiffCondThermo
+   47 TRANSP TET4  78 77 81 79    MAT 1 TYPE ElchDiffCondThermo
+   48 TRANSP TET4  78 79 82 80    MAT 1 TYPE ElchDiffCondThermo
+   49 TRANSP TET4  78 82 81 75    MAT 1 TYPE ElchDiffCondThermo
+   50 TRANSP TET4  37 26 83 13    MAT 1 TYPE ElchDiffCondThermo
+   51 TRANSP TET4  84 85 86 87    MAT 1 TYPE ElchDiffCondThermo
+   52 TRANSP TET4  86 88 84 87    MAT 1 TYPE ElchDiffCondThermo
+   53 TRANSP TET4  53 51 89 72    MAT 1 TYPE ElchDiffCondThermo
+   54 TRANSP TET4  87 85 90 91    MAT 1 TYPE ElchDiffCondThermo
+   55 TRANSP TET4  87 90 88 91    MAT 1 TYPE ElchDiffCondThermo
+   56 TRANSP TET4  92 93 94 95    MAT 1 TYPE ElchDiffCondThermo
+   57 TRANSP TET4  92 96 94 93    MAT 1 TYPE ElchDiffCondThermo
+   58 TRANSP TET4  92 94 97 95    MAT 1 TYPE ElchDiffCondThermo
+   59 TRANSP TET4  92 98 99 96    MAT 1 TYPE ElchDiffCondThermo
+   60 TRANSP TET4  99 97 98 92    MAT 1 TYPE ElchDiffCondThermo
+   61 TRANSP TET4  17 26 14 83    MAT 1 TYPE ElchDiffCondThermo
+   62 TRANSP TET4  7 9 10 5    MAT 1 TYPE ElchDiffCondThermo
+   63 TRANSP TET4  8 11 7 74    MAT 1 TYPE ElchDiffCondThermo
+   64 TRANSP TET4  8 100 9 11    MAT 1 TYPE ElchDiffCondThermo
+   65 TRANSP TET4  8 71 9 100    MAT 1 TYPE ElchDiffCondThermo
+   66 TRANSP TET4  101 102 103 104    MAT 1 TYPE ElchDiffCondThermo
+   67 TRANSP TET4  73 74 71 8    MAT 1 TYPE ElchDiffCondThermo
+   68 TRANSP TET4  105 106 107 108    MAT 1 TYPE ElchDiffCondThermo
+   69 TRANSP TET4  74 71 8 100    MAT 1 TYPE ElchDiffCondThermo
+   70 TRANSP TET4  37 26 109 110    MAT 1 TYPE ElchDiffCondThermo
+   71 TRANSP TET4  109 111 38 37    MAT 1 TYPE ElchDiffCondThermo
+   72 TRANSP TET4  18 112 21 113    MAT 1 TYPE ElchDiffCondThermo
+   73 TRANSP TET4  114 111 38 109    MAT 1 TYPE ElchDiffCondThermo
+   74 TRANSP TET4  14 13 28 83    MAT 1 TYPE ElchDiffCondThermo
+   75 TRANSP TET4  37 83 111 28    MAT 1 TYPE ElchDiffCondThermo
+   76 TRANSP TET4  114 115 101 116    MAT 1 TYPE ElchDiffCondThermo
+   77 TRANSP TET4  114 117 118 101    MAT 1 TYPE ElchDiffCondThermo
+   78 TRANSP TET4  114 109 117 115    MAT 1 TYPE ElchDiffCondThermo
+   79 TRANSP TET4  114 116 118 119    MAT 1 TYPE ElchDiffCondThermo
+   80 TRANSP TET4  37 110 109 111    MAT 1 TYPE ElchDiffCondThermo
+   81 TRANSP TET4  114 111 110 119    MAT 1 TYPE ElchDiffCondThermo
+   82 TRANSP TET4  111 110 109 114    MAT 1 TYPE ElchDiffCondThermo
+   83 TRANSP TET4  120 121 122 123    MAT 1 TYPE ElchDiffCondThermo
+   84 TRANSP TET4  124 122 125 121    MAT 1 TYPE ElchDiffCondThermo
+   85 TRANSP TET4  48 46 47 126    MAT 1 TYPE ElchDiffCondThermo
+   86 TRANSP TET4  127 128 129 130    MAT 1 TYPE ElchDiffCondThermo
+   87 TRANSP TET4  130 131 132 133    MAT 1 TYPE ElchDiffCondThermo
+   88 TRANSP TET4  134 135 131 130    MAT 1 TYPE ElchDiffCondThermo
+   89 TRANSP TET4  51 136 89 72    MAT 1 TYPE ElchDiffCondThermo
+   90 TRANSP TET4  130 134 137 138    MAT 1 TYPE ElchDiffCondThermo
+   91 TRANSP TET4  139 130 137 138    MAT 1 TYPE ElchDiffCondThermo
+   92 TRANSP TET4  140 141 142 127    MAT 1 TYPE ElchDiffCondThermo
+   93 TRANSP TET4  47 133 130 132    MAT 1 TYPE ElchDiffCondThermo
+   94 TRANSP TET4  140 143 45 144    MAT 1 TYPE ElchDiffCondThermo
+   95 TRANSP TET4  145 146 147 148    MAT 1 TYPE ElchDiffCondThermo
+   96 TRANSP TET4  145 146 120 147    MAT 1 TYPE ElchDiffCondThermo
+   97 TRANSP TET4  145 149 147 150    MAT 1 TYPE ElchDiffCondThermo
+   98 TRANSP TET4  120 150 145 147    MAT 1 TYPE ElchDiffCondThermo
+   99 TRANSP TET4  151 133 126 132    MAT 1 TYPE ElchDiffCondThermo
+   100 TRANSP TET4  128 47 127 45    MAT 1 TYPE ElchDiffCondThermo
+   101 TRANSP TET4  152 126 48 132    MAT 1 TYPE ElchDiffCondThermo
+   102 TRANSP TET4  130 135 131 133    MAT 1 TYPE ElchDiffCondThermo
+   103 TRANSP TET4  37 13 38 26    MAT 1 TYPE ElchDiffCondThermo
+   104 TRANSP TET4  47 153 130 133    MAT 1 TYPE ElchDiffCondThermo
+   105 TRANSP TET4  135 153 130 134    MAT 1 TYPE ElchDiffCondThermo
+   106 TRANSP TET4  154 131 155 156    MAT 1 TYPE ElchDiffCondThermo
+   107 TRANSP TET4  131 60 135 157    MAT 1 TYPE ElchDiffCondThermo
+   108 TRANSP TET4  158 125 122 159    MAT 1 TYPE ElchDiffCondThermo
+   109 TRANSP TET4  101 104 118 102    MAT 1 TYPE ElchDiffCondThermo
+   110 TRANSP TET4  126 48 132 47    MAT 1 TYPE ElchDiffCondThermo
+   111 TRANSP TET4  160 158 161 142    MAT 1 TYPE ElchDiffCondThermo
+   112 TRANSP TET4  161 143 162 163    MAT 1 TYPE ElchDiffCondThermo
+   113 TRANSP TET4  114 117 119 118    MAT 1 TYPE ElchDiffCondThermo
+   114 TRANSP TET4  141 142 161 140    MAT 1 TYPE ElchDiffCondThermo
+   115 TRANSP TET4  100 71 70 74    MAT 1 TYPE ElchDiffCondThermo
+   116 TRANSP TET4  161 142 141 160    MAT 1 TYPE ElchDiffCondThermo
+   117 TRANSP TET4  16 61 60 15    MAT 1 TYPE ElchDiffCondThermo
+   118 TRANSP TET4  48 127 130 47    MAT 1 TYPE ElchDiffCondThermo
+   119 TRANSP TET4  47 132 126 133    MAT 1 TYPE ElchDiffCondThermo
+   120 TRANSP TET4  125 164 146 122    MAT 1 TYPE ElchDiffCondThermo
+   121 TRANSP TET4  165 125 164 146    MAT 1 TYPE ElchDiffCondThermo
+   122 TRANSP TET4  106 120 166 121    MAT 1 TYPE ElchDiffCondThermo
+   123 TRANSP TET4  56 148 57 167    MAT 1 TYPE ElchDiffCondThermo
+   124 TRANSP TET4  145 148 57 56    MAT 1 TYPE ElchDiffCondThermo
+   125 TRANSP TET4  168 169 170 171    MAT 1 TYPE ElchDiffCondThermo
+   126 TRANSP TET4  40 41 42 43    MAT 1 TYPE ElchDiffCondThermo
+   127 TRANSP TET4  135 157 62 172    MAT 1 TYPE ElchDiffCondThermo
+   128 TRANSP TET4  48 132 47 130    MAT 1 TYPE ElchDiffCondThermo
+   129 TRANSP TET4  131 135 156 154    MAT 1 TYPE ElchDiffCondThermo
+   130 TRANSP TET4  130 128 129 153    MAT 1 TYPE ElchDiffCondThermo
+   131 TRANSP TET4  47 130 153 128    MAT 1 TYPE ElchDiffCondThermo
+   132 TRANSP TET4  45 141 127 128    MAT 1 TYPE ElchDiffCondThermo
+   133 TRANSP TET4  173 127 174 129    MAT 1 TYPE ElchDiffCondThermo
+   134 TRANSP TET4  168 175 176 148    MAT 1 TYPE ElchDiffCondThermo
+   135 TRANSP TET4  167 177 56 168    MAT 1 TYPE ElchDiffCondThermo
+   136 TRANSP TET4  56 167 57 178    MAT 1 TYPE ElchDiffCondThermo
+   137 TRANSP TET4  12 60 133 15    MAT 1 TYPE ElchDiffCondThermo
+   138 TRANSP TET4  16 62 61 63    MAT 1 TYPE ElchDiffCondThermo
+   139 TRANSP TET4  62 157 61 63    MAT 1 TYPE ElchDiffCondThermo
+   140 TRANSP TET4  62 60 135 133    MAT 1 TYPE ElchDiffCondThermo
+   141 TRANSP TET4  12 16 14 27    MAT 1 TYPE ElchDiffCondThermo
+   142 TRANSP TET4  158 159 179 160    MAT 1 TYPE ElchDiffCondThermo
+   143 TRANSP TET4  158 159 160 125    MAT 1 TYPE ElchDiffCondThermo
+   144 TRANSP TET4  120 121 147 146    MAT 1 TYPE ElchDiffCondThermo
+   145 TRANSP TET4  121 146 122 125    MAT 1 TYPE ElchDiffCondThermo
+   146 TRANSP TET4  129 130 137 139    MAT 1 TYPE ElchDiffCondThermo
+   147 TRANSP TET4  127 173 139 129    MAT 1 TYPE ElchDiffCondThermo
+   148 TRANSP TET4  141 142 180 160    MAT 1 TYPE ElchDiffCondThermo
+   149 TRANSP TET4  174 181 142 173    MAT 1 TYPE ElchDiffCondThermo
+   150 TRANSP TET4  158 160 179 142    MAT 1 TYPE ElchDiffCondThermo
+   151 TRANSP TET4  139 182 183 129    MAT 1 TYPE ElchDiffCondThermo
+   152 TRANSP TET4  11 9 5 4    MAT 1 TYPE ElchDiffCondThermo
+   153 TRANSP TET4  145 168 184 148    MAT 1 TYPE ElchDiffCondThermo
+   154 TRANSP TET4  184 145 146 120    MAT 1 TYPE ElchDiffCondThermo
+   155 TRANSP TET4  65 185 64 186    MAT 1 TYPE ElchDiffCondThermo
+   156 TRANSP TET4  187 188 189 190    MAT 1 TYPE ElchDiffCondThermo
+   157 TRANSP TET4  187 188 191 165    MAT 1 TYPE ElchDiffCondThermo
+   158 TRANSP TET4  192 183 193 182    MAT 1 TYPE ElchDiffCondThermo
+   159 TRANSP TET4  194 192 183 193    MAT 1 TYPE ElchDiffCondThermo
+   160 TRANSP TET4  182 192 183 129    MAT 1 TYPE ElchDiffCondThermo
+   161 TRANSP TET4  182 192 129 173    MAT 1 TYPE ElchDiffCondThermo
+   162 TRANSP TET4  164 159 165 188    MAT 1 TYPE ElchDiffCondThermo
+   163 TRANSP TET4  159 195 196 197    MAT 1 TYPE ElchDiffCondThermo
+   164 TRANSP TET4  196 189 198 197    MAT 1 TYPE ElchDiffCondThermo
+   165 TRANSP TET4  187 199 191 200    MAT 1 TYPE ElchDiffCondThermo
+   166 TRANSP TET4  134 135 156 131    MAT 1 TYPE ElchDiffCondThermo
+   167 TRANSP TET4  155 201 202 203    MAT 1 TYPE ElchDiffCondThermo
+   168 TRANSP TET4  156 204 205 201    MAT 1 TYPE ElchDiffCondThermo
+   169 TRANSP TET4  153 137 134 206    MAT 1 TYPE ElchDiffCondThermo
+   170 TRANSP TET4  153 137 206 129    MAT 1 TYPE ElchDiffCondThermo
+   171 TRANSP TET4  174 180 181 207    MAT 1 TYPE ElchDiffCondThermo
+   172 TRANSP TET4  207 181 208 209    MAT 1 TYPE ElchDiffCondThermo
+   173 TRANSP TET4  174 192 173 129    MAT 1 TYPE ElchDiffCondThermo
+   174 TRANSP TET4  210 208 209 207    MAT 1 TYPE ElchDiffCondThermo
+   175 TRANSP TET4  203 156 211 155    MAT 1 TYPE ElchDiffCondThermo
+   176 TRANSP TET4  155 203 202 212    MAT 1 TYPE ElchDiffCondThermo
+   177 TRANSP TET4  155 134 138 205    MAT 1 TYPE ElchDiffCondThermo
+   178 TRANSP TET4  156 131 155 134    MAT 1 TYPE ElchDiffCondThermo
+   179 TRANSP TET4  170 213 214 215    MAT 1 TYPE ElchDiffCondThermo
+   180 TRANSP TET4  170 171 213 216    MAT 1 TYPE ElchDiffCondThermo
+   181 TRANSP TET4  170 176 171 216    MAT 1 TYPE ElchDiffCondThermo
+   182 TRANSP TET4  171 170 214 169    MAT 1 TYPE ElchDiffCondThermo
+   183 TRANSP TET4  213 170 214 171    MAT 1 TYPE ElchDiffCondThermo
+   184 TRANSP TET4  1 58 57 6    MAT 1 TYPE ElchDiffCondThermo
+   185 TRANSP TET4  167 168 56 148    MAT 1 TYPE ElchDiffCondThermo
+   186 TRANSP TET4  145 57 148 147    MAT 1 TYPE ElchDiffCondThermo
+   187 TRANSP TET4  101 217 118 104    MAT 1 TYPE ElchDiffCondThermo
+   188 TRANSP TET4  118 117 119 218    MAT 1 TYPE ElchDiffCondThermo
+   189 TRANSP TET4  153 130 134 137    MAT 1 TYPE ElchDiffCondThermo
+   190 TRANSP TET4  114 117 101 115    MAT 1 TYPE ElchDiffCondThermo
+   191 TRANSP TET4  217 118 104 218    MAT 1 TYPE ElchDiffCondThermo
+   192 TRANSP TET4  65 185 186 219    MAT 1 TYPE ElchDiffCondThermo
+   193 TRANSP TET4  220 64 185 221    MAT 1 TYPE ElchDiffCondThermo
+   194 TRANSP TET4  122 159 125 164    MAT 1 TYPE ElchDiffCondThermo
+   195 TRANSP TET4  139 137 206 138    MAT 1 TYPE ElchDiffCondThermo
+   196 TRANSP TET4  165 191 222 164    MAT 1 TYPE ElchDiffCondThermo
+   197 TRANSP TET4  164 165 146 222    MAT 1 TYPE ElchDiffCondThermo
+   198 TRANSP TET4  223 165 191 222    MAT 1 TYPE ElchDiffCondThermo
+   199 TRANSP TET4  146 176 184 222    MAT 1 TYPE ElchDiffCondThermo
+   200 TRANSP TET4  146 222 184 164    MAT 1 TYPE ElchDiffCondThermo
+   201 TRANSP TET4  125 159 195 165    MAT 1 TYPE ElchDiffCondThermo
+   202 TRANSP TET4  179 180 209 181    MAT 1 TYPE ElchDiffCondThermo
+   203 TRANSP TET4  124 224 123 121    MAT 1 TYPE ElchDiffCondThermo
+   204 TRANSP TET4  179 180 142 160    MAT 1 TYPE ElchDiffCondThermo
+   205 TRANSP TET4  179 181 142 180    MAT 1 TYPE ElchDiffCondThermo
+   206 TRANSP TET4  161 160 124 158    MAT 1 TYPE ElchDiffCondThermo
+   207 TRANSP TET4  142 161 140 162    MAT 1 TYPE ElchDiffCondThermo
+   208 TRANSP TET4  161 124 162 158    MAT 1 TYPE ElchDiffCondThermo
+   209 TRANSP TET4  170 216 225 226    MAT 1 TYPE ElchDiffCondThermo
+   210 TRANSP TET4  170 216 226 176    MAT 1 TYPE ElchDiffCondThermo
+   211 TRANSP TET4  214 171 227 213    MAT 1 TYPE ElchDiffCondThermo
+   212 TRANSP TET4  168 171 167 169    MAT 1 TYPE ElchDiffCondThermo
+   213 TRANSP TET4  216 226 223 228    MAT 1 TYPE ElchDiffCondThermo
+   214 TRANSP TET4  129 137 206 139    MAT 1 TYPE ElchDiffCondThermo
+   215 TRANSP TET4  216 229 213 225    MAT 1 TYPE ElchDiffCondThermo
+   216 TRANSP TET4  216 176 175 230    MAT 1 TYPE ElchDiffCondThermo
+   217 TRANSP TET4  178 177 56 167    MAT 1 TYPE ElchDiffCondThermo
+   218 TRANSP TET4  145 57 147 6    MAT 1 TYPE ElchDiffCondThermo
+   219 TRANSP TET4  176 148 184 168    MAT 1 TYPE ElchDiffCondThermo
+   220 TRANSP TET4  12 151 133 126    MAT 1 TYPE ElchDiffCondThermo
+   221 TRANSP TET4  124 158 125 122    MAT 1 TYPE ElchDiffCondThermo
+   222 TRANSP TET4  159 165 188 195    MAT 1 TYPE ElchDiffCondThermo
+   223 TRANSP TET4  168 175 148 167    MAT 1 TYPE ElchDiffCondThermo
+   224 TRANSP TET4  168 169 167 177    MAT 1 TYPE ElchDiffCondThermo
+   225 TRANSP TET4  41 42 44 231    MAT 1 TYPE ElchDiffCondThermo
+   226 TRANSP TET4  148 168 56 145    MAT 1 TYPE ElchDiffCondThermo
+   227 TRANSP TET4  174 180 142 181    MAT 1 TYPE ElchDiffCondThermo
+   228 TRANSP TET4  127 174 129 128    MAT 1 TYPE ElchDiffCondThermo
+   229 TRANSP TET4  196 188 189 195    MAT 1 TYPE ElchDiffCondThermo
+   230 TRANSP TET4  173 142 174 127    MAT 1 TYPE ElchDiffCondThermo
+   231 TRANSP TET4  209 180 207 181    MAT 1 TYPE ElchDiffCondThermo
+   232 TRANSP TET4  179 209 180 197    MAT 1 TYPE ElchDiffCondThermo
+   233 TRANSP TET4  174 207 208 192    MAT 1 TYPE ElchDiffCondThermo
+   234 TRANSP TET4  174 207 181 208    MAT 1 TYPE ElchDiffCondThermo
+   235 TRANSP TET4  222 165 146 230    MAT 1 TYPE ElchDiffCondThermo
+   236 TRANSP TET4  187 223 165 191    MAT 1 TYPE ElchDiffCondThermo
+   237 TRANSP TET4  187 191 199 223    MAT 1 TYPE ElchDiffCondThermo
+   238 TRANSP TET4  188 165 164 191    MAT 1 TYPE ElchDiffCondThermo
+   239 TRANSP TET4  196 189 232 198    MAT 1 TYPE ElchDiffCondThermo
+   240 TRANSP TET4  16 15 60 12    MAT 1 TYPE ElchDiffCondThermo
+   241 TRANSP TET4  139 129 183 206    MAT 1 TYPE ElchDiffCondThermo
+   242 TRANSP TET4  131 134 130 138    MAT 1 TYPE ElchDiffCondThermo
+   243 TRANSP TET4  142 174 127 141    MAT 1 TYPE ElchDiffCondThermo
+   244 TRANSP TET4  127 141 174 128    MAT 1 TYPE ElchDiffCondThermo
+   245 TRANSP TET4  159 196 195 188    MAT 1 TYPE ElchDiffCondThermo
+   246 TRANSP TET4  196 197 195 189    MAT 1 TYPE ElchDiffCondThermo
+   247 TRANSP TET4  174 192 208 173    MAT 1 TYPE ElchDiffCondThermo
+   248 TRANSP TET4  139 173 182 129    MAT 1 TYPE ElchDiffCondThermo
+   249 TRANSP TET4  182 173 208 192    MAT 1 TYPE ElchDiffCondThermo
+   250 TRANSP TET4  207 209 210 198    MAT 1 TYPE ElchDiffCondThermo
+   251 TRANSP TET4  233 210 208 209    MAT 1 TYPE ElchDiffCondThermo
+   252 TRANSP TET4  179 180 160 197    MAT 1 TYPE ElchDiffCondThermo
+   253 TRANSP TET4  207 234 208 192    MAT 1 TYPE ElchDiffCondThermo
+   254 TRANSP TET4  120 184 122 146    MAT 1 TYPE ElchDiffCondThermo
+   255 TRANSP TET4  129 130 139 127    MAT 1 TYPE ElchDiffCondThermo
+   256 TRANSP TET4  139 183 182 235    MAT 1 TYPE ElchDiffCondThermo
+   257 TRANSP TET4  124 162 158 123    MAT 1 TYPE ElchDiffCondThermo
+   258 TRANSP TET4  159 160 195 197    MAT 1 TYPE ElchDiffCondThermo
+   259 TRANSP TET4  125 160 195 159    MAT 1 TYPE ElchDiffCondThermo
+   260 TRANSP TET4  125 159 165 164    MAT 1 TYPE ElchDiffCondThermo
+   261 TRANSP TET4  196 209 198 232    MAT 1 TYPE ElchDiffCondThermo
+   262 TRANSP TET4  196 209 179 197    MAT 1 TYPE ElchDiffCondThermo
+   263 TRANSP TET4  187 188 195 189    MAT 1 TYPE ElchDiffCondThermo
+   264 TRANSP TET4  189 198 236 232    MAT 1 TYPE ElchDiffCondThermo
+   265 TRANSP TET4  237 238 239 240    MAT 1 TYPE ElchDiffCondThermo
+   266 TRANSP TET4  241 242 243 239    MAT 1 TYPE ElchDiffCondThermo
+   267 TRANSP TET4  237 241 239 238    MAT 1 TYPE ElchDiffCondThermo
+   268 TRANSP TET4  124 122 123 158    MAT 1 TYPE ElchDiffCondThermo
+   269 TRANSP TET4  244 241 242 46    MAT 1 TYPE ElchDiffCondThermo
+   270 TRANSP TET4  237 238 245 241    MAT 1 TYPE ElchDiffCondThermo
+   271 TRANSP TET4  246 241 126 238    MAT 1 TYPE ElchDiffCondThermo
+   272 TRANSP TET4  239 243 241 237    MAT 1 TYPE ElchDiffCondThermo
+   273 TRANSP TET4  247 248 249 250    MAT 1 TYPE ElchDiffCondThermo
+   274 TRANSP TET4  251 252 253 254    MAT 1 TYPE ElchDiffCondThermo
+   275 TRANSP TET4  251 254 255 252    MAT 1 TYPE ElchDiffCondThermo
+   276 TRANSP TET4  248 251 252 253    MAT 1 TYPE ElchDiffCondThermo
+   277 TRANSP TET4  247 248 256 249    MAT 1 TYPE ElchDiffCondThermo
+   278 TRANSP TET4  43 50 49 55    MAT 1 TYPE ElchDiffCondThermo
+   279 TRANSP TET4  247 163 257 143    MAT 1 TYPE ElchDiffCondThermo
+   280 TRANSP TET4  249 163 257 247    MAT 1 TYPE ElchDiffCondThermo
+   281 TRANSP TET4  258 108 259 260    MAT 1 TYPE ElchDiffCondThermo
+   282 TRANSP TET4  158 161 142 162    MAT 1 TYPE ElchDiffCondThermo
+   283 TRANSP TET4  261 260 262 258    MAT 1 TYPE ElchDiffCondThermo
+   284 TRANSP TET4  260 263 258 261    MAT 1 TYPE ElchDiffCondThermo
+   285 TRANSP TET4  143 162 140 161    MAT 1 TYPE ElchDiffCondThermo
+   286 TRANSP TET4  260 105 108 264    MAT 1 TYPE ElchDiffCondThermo
+   287 TRANSP TET4  46 244 48 45    MAT 1 TYPE ElchDiffCondThermo
+   288 TRANSP TET4  108 107 224 106    MAT 1 TYPE ElchDiffCondThermo
+   289 TRANSP TET4  212 265 211 203    MAT 1 TYPE ElchDiffCondThermo
+   290 TRANSP TET4  51 266 89 267    MAT 1 TYPE ElchDiffCondThermo
+   291 TRANSP TET4  268 266 54 240    MAT 1 TYPE ElchDiffCondThermo
+   292 TRANSP TET4  124 163 162 257    MAT 1 TYPE ElchDiffCondThermo
+   293 TRANSP TET4  268 266 239 269    MAT 1 TYPE ElchDiffCondThermo
+   294 TRANSP TET4  24 270 22 25    MAT 1 TYPE ElchDiffCondThermo
+   295 TRANSP TET4  166 224 271 107    MAT 1 TYPE ElchDiffCondThermo
+   296 TRANSP TET4  120 150 147 106    MAT 1 TYPE ElchDiffCondThermo
+   297 TRANSP TET4  251 253 272 254    MAT 1 TYPE ElchDiffCondThermo
+   298 TRANSP TET4  254 252 253 273    MAT 1 TYPE ElchDiffCondThermo
+   299 TRANSP TET4  251 248 252 255    MAT 1 TYPE ElchDiffCondThermo
+   300 TRANSP TET4  43 41 44 49    MAT 1 TYPE ElchDiffCondThermo
+   301 TRANSP TET4  20 113 274 252    MAT 1 TYPE ElchDiffCondThermo
+   302 TRANSP TET4  21 113 274 20    MAT 1 TYPE ElchDiffCondThermo
+   303 TRANSP TET4  258 107 271 259    MAT 1 TYPE ElchDiffCondThermo
+   304 TRANSP TET4  260 263 259 258    MAT 1 TYPE ElchDiffCondThermo
+   305 TRANSP TET4  275 261 260 262    MAT 1 TYPE ElchDiffCondThermo
+   306 TRANSP TET4  108 224 107 259    MAT 1 TYPE ElchDiffCondThermo
+   307 TRANSP TET4  107 258 108 259    MAT 1 TYPE ElchDiffCondThermo
+   308 TRANSP TET4  108 105 258 107    MAT 1 TYPE ElchDiffCondThermo
+   309 TRANSP TET4  251 255 276 248    MAT 1 TYPE ElchDiffCondThermo
+   310 TRANSP TET4  248 276 256 277    MAT 1 TYPE ElchDiffCondThermo
+   311 TRANSP TET4  247 143 256 276    MAT 1 TYPE ElchDiffCondThermo
+   312 TRANSP TET4  256 278 277 143    MAT 1 TYPE ElchDiffCondThermo
+   313 TRANSP TET4  248 251 250 247    MAT 1 TYPE ElchDiffCondThermo
+   314 TRANSP TET4  266 51 279 267    MAT 1 TYPE ElchDiffCondThermo
+   315 TRANSP TET4  266 269 267 280    MAT 1 TYPE ElchDiffCondThermo
+   316 TRANSP TET4  51 136 72 281    MAT 1 TYPE ElchDiffCondThermo
+   317 TRANSP TET4  47 130 128 127    MAT 1 TYPE ElchDiffCondThermo
+   318 TRANSP TET4  89 268 266 54    MAT 1 TYPE ElchDiffCondThermo
+   319 TRANSP TET4  47 127 45 48    MAT 1 TYPE ElchDiffCondThermo
+   320 TRANSP TET4  270 282 24 261    MAT 1 TYPE ElchDiffCondThermo
+   321 TRANSP TET4  261 282 263 283    MAT 1 TYPE ElchDiffCondThermo
+   322 TRANSP TET4  260 108 105 258    MAT 1 TYPE ElchDiffCondThermo
+   323 TRANSP TET4  260 261 275 263    MAT 1 TYPE ElchDiffCondThermo
+   324 TRANSP TET4  23 24 284 22    MAT 1 TYPE ElchDiffCondThermo
+   325 TRANSP TET4  261 270 22 24    MAT 1 TYPE ElchDiffCondThermo
+   326 TRANSP TET4  284 22 285 23    MAT 1 TYPE ElchDiffCondThermo
+   327 TRANSP TET4  123 166 121 224    MAT 1 TYPE ElchDiffCondThermo
+   328 TRANSP TET4  19 20 21 286    MAT 1 TYPE ElchDiffCondThermo
+   329 TRANSP TET4  113 18 20 21    MAT 1 TYPE ElchDiffCondThermo
+   330 TRANSP TET4  286 18 287 19    MAT 1 TYPE ElchDiffCondThermo
+   331 TRANSP TET4  252 255 288 274    MAT 1 TYPE ElchDiffCondThermo
+   332 TRANSP TET4  254 273 20 252    MAT 1 TYPE ElchDiffCondThermo
+   333 TRANSP TET4  252 113 274 288    MAT 1 TYPE ElchDiffCondThermo
+   334 TRANSP TET4  66 64 68 186    MAT 1 TYPE ElchDiffCondThermo
+   335 TRANSP TET4  237 239 243 269    MAT 1 TYPE ElchDiffCondThermo
+   336 TRANSP TET4  237 268 239 269    MAT 1 TYPE ElchDiffCondThermo
+   337 TRANSP TET4  241 246 239 238    MAT 1 TYPE ElchDiffCondThermo
+   338 TRANSP TET4  237 289 240 268    MAT 1 TYPE ElchDiffCondThermo
+   339 TRANSP TET4  244 241 126 246    MAT 1 TYPE ElchDiffCondThermo
+   340 TRANSP TET4  268 239 240 237    MAT 1 TYPE ElchDiffCondThermo
+   341 TRANSP TET4  126 246 152 244    MAT 1 TYPE ElchDiffCondThermo
+   342 TRANSP TET4  239 246 241 242    MAT 1 TYPE ElchDiffCondThermo
+   343 TRANSP TET4  139 235 138 206    MAT 1 TYPE ElchDiffCondThermo
+   344 TRANSP TET4  131 154 157 135    MAT 1 TYPE ElchDiffCondThermo
+   345 TRANSP TET4  153 130 137 129    MAT 1 TYPE ElchDiffCondThermo
+   346 TRANSP TET4  205 201 202 155    MAT 1 TYPE ElchDiffCondThermo
+   347 TRANSP TET4  137 134 206 138    MAT 1 TYPE ElchDiffCondThermo
+   348 TRANSP TET4  134 204 205 156    MAT 1 TYPE ElchDiffCondThermo
+   349 TRANSP TET4  290 235 183 205    MAT 1 TYPE ElchDiffCondThermo
+   350 TRANSP TET4  141 174 180 142    MAT 1 TYPE ElchDiffCondThermo
+   351 TRANSP TET4  138 235 205 206    MAT 1 TYPE ElchDiffCondThermo
+   352 TRANSP TET4  133 153 130 135    MAT 1 TYPE ElchDiffCondThermo
+   353 TRANSP TET4  206 204 205 134    MAT 1 TYPE ElchDiffCondThermo
+   354 TRANSP TET4  148 175 176 146    MAT 1 TYPE ElchDiffCondThermo
+   355 TRANSP TET4  163 124 291 257    MAT 1 TYPE ElchDiffCondThermo
+   356 TRANSP TET4  78 77 79 76    MAT 1 TYPE ElchDiffCondThermo
+   357 TRANSP TET4  168 170 176 171    MAT 1 TYPE ElchDiffCondThermo
+   358 TRANSP TET4  226 176 230 222    MAT 1 TYPE ElchDiffCondThermo
+   359 TRANSP TET4  168 171 176 175    MAT 1 TYPE ElchDiffCondThermo
+   360 TRANSP TET4  161 140 45 141    MAT 1 TYPE ElchDiffCondThermo
+   361 TRANSP TET4  161 124 163 162    MAT 1 TYPE ElchDiffCondThermo
+   362 TRANSP TET4  176 230 146 175    MAT 1 TYPE ElchDiffCondThermo
+   363 TRANSP TET4  89 54 266 51    MAT 1 TYPE ElchDiffCondThermo
+   364 TRANSP TET4  168 175 167 171    MAT 1 TYPE ElchDiffCondThermo
+   365 TRANSP TET4  216 226 230 223    MAT 1 TYPE ElchDiffCondThermo
+   366 TRANSP TET4  165 230 222 223    MAT 1 TYPE ElchDiffCondThermo
+   367 TRANSP TET4  167 169 292 177    MAT 1 TYPE ElchDiffCondThermo
+   368 TRANSP TET4  145 56 57 2    MAT 1 TYPE ElchDiffCondThermo
+   369 TRANSP TET4  205 134 138 206    MAT 1 TYPE ElchDiffCondThermo
+   370 TRANSP TET4  293 194 183 290    MAT 1 TYPE ElchDiffCondThermo
+   371 TRANSP TET4  182 208 294 192    MAT 1 TYPE ElchDiffCondThermo
+   372 TRANSP TET4  133 62 60 12    MAT 1 TYPE ElchDiffCondThermo
+   373 TRANSP TET4  159 197 179 160    MAT 1 TYPE ElchDiffCondThermo
+   374 TRANSP TET4  180 198 197 209    MAT 1 TYPE ElchDiffCondThermo
+   375 TRANSP TET4  196 209 197 198    MAT 1 TYPE ElchDiffCondThermo
+   376 TRANSP TET4  210 209 232 198    MAT 1 TYPE ElchDiffCondThermo
+   377 TRANSP TET4  4 2 3 5    MAT 1 TYPE ElchDiffCondThermo
+   378 TRANSP TET4  174 208 181 173    MAT 1 TYPE ElchDiffCondThermo
+   379 TRANSP TET4  145 6 149 2    MAT 1 TYPE ElchDiffCondThermo
+   380 TRANSP TET4  196 189 190 232    MAT 1 TYPE ElchDiffCondThermo
+   381 TRANSP TET4  182 192 294 193    MAT 1 TYPE ElchDiffCondThermo
+   382 TRANSP TET4  60 135 133 131    MAT 1 TYPE ElchDiffCondThermo
+   383 TRANSP TET4  204 205 293 183    MAT 1 TYPE ElchDiffCondThermo
+   384 TRANSP TET4  290 194 183 193    MAT 1 TYPE ElchDiffCondThermo
+   385 TRANSP TET4  226 222 223 191    MAT 1 TYPE ElchDiffCondThermo
+   386 TRANSP TET4  229 225 216 228    MAT 1 TYPE ElchDiffCondThermo
+   387 TRANSP TET4  191 200 199 295    MAT 1 TYPE ElchDiffCondThermo
+   388 TRANSP TET4  187 188 190 200    MAT 1 TYPE ElchDiffCondThermo
+   389 TRANSP TET4  187 200 190 199    MAT 1 TYPE ElchDiffCondThermo
+   390 TRANSP TET4  43 44 55 49    MAT 1 TYPE ElchDiffCondThermo
+   391 TRANSP TET4  54 51 89 53    MAT 1 TYPE ElchDiffCondThermo
+   392 TRANSP TET4  136 89 72 53    MAT 1 TYPE ElchDiffCondThermo
+   393 TRANSP TET4  51 281 279 136    MAT 1 TYPE ElchDiffCondThermo
+   394 TRANSP TET4  239 243 280 242    MAT 1 TYPE ElchDiffCondThermo
+   395 TRANSP TET4  268 266 269 267    MAT 1 TYPE ElchDiffCondThermo
+   396 TRANSP TET4  246 244 241 242    MAT 1 TYPE ElchDiffCondThermo
+   397 TRANSP TET4  239 243 269 280    MAT 1 TYPE ElchDiffCondThermo
+   398 TRANSP TET4  266 279 280 267    MAT 1 TYPE ElchDiffCondThermo
+   399 TRANSP TET4  266 239 269 280    MAT 1 TYPE ElchDiffCondThermo
+   400 TRANSP TET4  89 296 54 53    MAT 1 TYPE ElchDiffCondThermo
+   401 TRANSP TET4  51 279 267 136    MAT 1 TYPE ElchDiffCondThermo
+   402 TRANSP TET4  45 46 244 144    MAT 1 TYPE ElchDiffCondThermo
+   403 TRANSP TET4  182 235 183 193    MAT 1 TYPE ElchDiffCondThermo
+   404 TRANSP TET4  207 210 208 234    MAT 1 TYPE ElchDiffCondThermo
+   405 TRANSP TET4  241 244 126 46    MAT 1 TYPE ElchDiffCondThermo
+   406 TRANSP TET4  126 244 48 46    MAT 1 TYPE ElchDiffCondThermo
+   407 TRANSP TET4  192 208 294 234    MAT 1 TYPE ElchDiffCondThermo
+   408 TRANSP TET4  45 144 143 46    MAT 1 TYPE ElchDiffCondThermo
+   409 TRANSP TET4  162 143 278 257    MAT 1 TYPE ElchDiffCondThermo
+   410 TRANSP TET4  132 60 133 131    MAT 1 TYPE ElchDiffCondThermo
+   411 TRANSP TET4  256 143 257 278    MAT 1 TYPE ElchDiffCondThermo
+   412 TRANSP TET4  183 206 204 205    MAT 1 TYPE ElchDiffCondThermo
+   413 TRANSP TET4  16 62 63 12    MAT 1 TYPE ElchDiffCondThermo
+   414 TRANSP TET4  46 242 243 241    MAT 1 TYPE ElchDiffCondThermo
+   415 TRANSP TET4  254 274 255 252    MAT 1 TYPE ElchDiffCondThermo
+   416 TRANSP TET4  19 112 21 18    MAT 1 TYPE ElchDiffCondThermo
+   417 TRANSP TET4  274 20 252 254    MAT 1 TYPE ElchDiffCondThermo
+   418 TRANSP TET4  19 20 286 18    MAT 1 TYPE ElchDiffCondThermo
+   419 TRANSP TET4  248 276 288 255    MAT 1 TYPE ElchDiffCondThermo
+   420 TRANSP TET4  256 277 276 143    MAT 1 TYPE ElchDiffCondThermo
+   421 TRANSP TET4  256 248 247 276    MAT 1 TYPE ElchDiffCondThermo
+   422 TRANSP TET4  248 276 277 288    MAT 1 TYPE ElchDiffCondThermo
+   423 TRANSP TET4  89 296 268 54    MAT 1 TYPE ElchDiffCondThermo
+   424 TRANSP TET4  18 287 19 112    MAT 1 TYPE ElchDiffCondThermo
+   425 TRANSP TET4  143 247 256 257    MAT 1 TYPE ElchDiffCondThermo
+   426 TRANSP TET4  253 251 250 248    MAT 1 TYPE ElchDiffCondThermo
+   427 TRANSP TET4  247 250 249 163    MAT 1 TYPE ElchDiffCondThermo
+   428 TRANSP TET4  20 273 18 252    MAT 1 TYPE ElchDiffCondThermo
+   429 TRANSP TET4  254 297 20 273    MAT 1 TYPE ElchDiffCondThermo
+   430 TRANSP TET4  20 286 273 297    MAT 1 TYPE ElchDiffCondThermo
+   431 TRANSP TET4  18 20 286 273    MAT 1 TYPE ElchDiffCondThermo
+   432 TRANSP TET4  250 248 249 253    MAT 1 TYPE ElchDiffCondThermo
+   433 TRANSP TET4  257 247 256 249    MAT 1 TYPE ElchDiffCondThermo
+   434 TRANSP TET4  252 18 20 113    MAT 1 TYPE ElchDiffCondThermo
+   435 TRANSP TET4  140 127 45 141    MAT 1 TYPE ElchDiffCondThermo
+   436 TRANSP TET4  251 250 272 253    MAT 1 TYPE ElchDiffCondThermo
+   437 TRANSP TET4  124 158 160 125    MAT 1 TYPE ElchDiffCondThermo
+   438 TRANSP TET4  254 273 253 297    MAT 1 TYPE ElchDiffCondThermo
+   439 TRANSP TET4  248 247 276 251    MAT 1 TYPE ElchDiffCondThermo
+   440 TRANSP TET4  266 268 239 240    MAT 1 TYPE ElchDiffCondThermo
+   441 TRANSP TET4  89 136 51 267    MAT 1 TYPE ElchDiffCondThermo
+   442 TRANSP TET4  124 121 123 122    MAT 1 TYPE ElchDiffCondThermo
+   443 TRANSP TET4  187 190 189 298    MAT 1 TYPE ElchDiffCondThermo
+   444 TRANSP TET4  237 240 245 238    MAT 1 TYPE ElchDiffCondThermo
+   445 TRANSP TET4  208 234 210 294    MAT 1 TYPE ElchDiffCondThermo
+   446 TRANSP TET4  192 294 193 194    MAT 1 TYPE ElchDiffCondThermo
+   447 TRANSP TET4  60 62 135 157    MAT 1 TYPE ElchDiffCondThermo
+   448 TRANSP TET4  123 224 291 166    MAT 1 TYPE ElchDiffCondThermo
+   449 TRANSP TET4  162 257 163 143    MAT 1 TYPE ElchDiffCondThermo
+   450 TRANSP TET4  122 164 146 184    MAT 1 TYPE ElchDiffCondThermo
+   451 TRANSP TET4  145 148 184 146    MAT 1 TYPE ElchDiffCondThermo
+   452 TRANSP TET4  24 299 261 275    MAT 1 TYPE ElchDiffCondThermo
+   453 TRANSP TET4  261 282 283 270    MAT 1 TYPE ElchDiffCondThermo
+   454 TRANSP TET4  25 282 24 270    MAT 1 TYPE ElchDiffCondThermo
+   455 TRANSP TET4  258 259 283 263    MAT 1 TYPE ElchDiffCondThermo
+   456 TRANSP TET4  273 18 287 286    MAT 1 TYPE ElchDiffCondThermo
+   457 TRANSP TET4  22 285 23 300    MAT 1 TYPE ElchDiffCondThermo
+   458 TRANSP TET4  258 283 259 271    MAT 1 TYPE ElchDiffCondThermo
+   459 TRANSP TET4  260 301 262 264    MAT 1 TYPE ElchDiffCondThermo
+   460 TRANSP TET4  258 261 263 283    MAT 1 TYPE ElchDiffCondThermo
+   461 TRANSP TET4  261 275 263 282    MAT 1 TYPE ElchDiffCondThermo
+   462 TRANSP TET4  24 261 299 22    MAT 1 TYPE ElchDiffCondThermo
+   463 TRANSP TET4  23 24 25 284    MAT 1 TYPE ElchDiffCondThermo
+   464 TRANSP TET4  25 300 270 22    MAT 1 TYPE ElchDiffCondThermo
+   465 TRANSP TET4  22 300 23 25    MAT 1 TYPE ElchDiffCondThermo
+   466 TRANSP TET4  241 245 126 238    MAT 1 TYPE ElchDiffCondThermo
+   467 TRANSP TET4  275 282 261 24    MAT 1 TYPE ElchDiffCondThermo
+   468 TRANSP TET4  24 284 299 302    MAT 1 TYPE ElchDiffCondThermo
+   469 TRANSP TET4  22 24 284 299    MAT 1 TYPE ElchDiffCondThermo
+   470 TRANSP TET4  24 275 302 299    MAT 1 TYPE ElchDiffCondThermo
+   471 TRANSP TET4  108 105 106 264    MAT 1 TYPE ElchDiffCondThermo
+   472 TRANSP TET4  260 264 262 105    MAT 1 TYPE ElchDiffCondThermo
+   473 TRANSP TET4  260 262 301 275    MAT 1 TYPE ElchDiffCondThermo
+   474 TRANSP TET4  224 271 107 259    MAT 1 TYPE ElchDiffCondThermo
+   475 TRANSP TET4  120 123 166 121    MAT 1 TYPE ElchDiffCondThermo
+   476 TRANSP TET4  301 302 275 262    MAT 1 TYPE ElchDiffCondThermo
+   477 TRANSP TET4  238 246 152 126    MAT 1 TYPE ElchDiffCondThermo
+   478 TRANSP TET4  261 262 275 299    MAT 1 TYPE ElchDiffCondThermo
+   479 TRANSP TET4  260 258 105 262    MAT 1 TYPE ElchDiffCondThermo
+   480 TRANSP TET4  299 22 285 284    MAT 1 TYPE ElchDiffCondThermo
+   481 TRANSP TET4  107 166 224 106    MAT 1 TYPE ElchDiffCondThermo
+   482 TRANSP TET4  57 2 6 145    MAT 1 TYPE ElchDiffCondThermo
+   483 TRANSP TET4  150 106 120 166    MAT 1 TYPE ElchDiffCondThermo
+   484 TRANSP TET4  147 149 106 150    MAT 1 TYPE ElchDiffCondThermo
+   485 TRANSP TET4  124 224 163 291    MAT 1 TYPE ElchDiffCondThermo
+   486 TRANSP TET4  145 150 2 149    MAT 1 TYPE ElchDiffCondThermo
+   487 TRANSP TET4  302 299 275 262    MAT 1 TYPE ElchDiffCondThermo
+   488 TRANSP TET4  107 166 106 150    MAT 1 TYPE ElchDiffCondThermo
+   489 TRANSP TET4  48 45 140 127    MAT 1 TYPE ElchDiffCondThermo
+   490 TRANSP TET4  5 7 2 3    MAT 1 TYPE ElchDiffCondThermo
+   491 TRANSP TET4  167 178 177 292    MAT 1 TYPE ElchDiffCondThermo
+   492 TRANSP TET4  56 178 57 58    MAT 1 TYPE ElchDiffCondThermo
+   493 TRANSP TET4  121 106 224 166    MAT 1 TYPE ElchDiffCondThermo
+   494 TRANSP TET4  69 73 67 74    MAT 1 TYPE ElchDiffCondThermo
+   495 TRANSP TET4  5 11 7 9    MAT 1 TYPE ElchDiffCondThermo
+   496 TRANSP TET4  5 6 7 11    MAT 1 TYPE ElchDiffCondThermo
+   497 TRANSP TET4  8 73 74 10    MAT 1 TYPE ElchDiffCondThermo
+   498 TRANSP TET4  65 220 70 67    MAT 1 TYPE ElchDiffCondThermo
+   499 TRANSP TET4  5 7 3 10    MAT 1 TYPE ElchDiffCondThermo
+   500 TRANSP TET4  8 10 74 7    MAT 1 TYPE ElchDiffCondThermo
+   501 TRANSP TET4  5 6 11 4    MAT 1 TYPE ElchDiffCondThermo
+   502 TRANSP TET4  1 59 58 3    MAT 1 TYPE ElchDiffCondThermo
+   503 TRANSP TET4  67 64 220 221    MAT 1 TYPE ElchDiffCondThermo
+   504 TRANSP TET4  8 100 11 74    MAT 1 TYPE ElchDiffCondThermo
+   505 TRANSP TET4  171 169 227 292    MAT 1 TYPE ElchDiffCondThermo
+   506 TRANSP TET4  196 188 190 189    MAT 1 TYPE ElchDiffCondThermo
+   507 TRANSP TET4  185 64 186 221    MAT 1 TYPE ElchDiffCondThermo
+   508 TRANSP TET4  69 70 67 66    MAT 1 TYPE ElchDiffCondThermo
+   509 TRANSP TET4  65 220 64 185    MAT 1 TYPE ElchDiffCondThermo
+   510 TRANSP TET4  65 219 220 185    MAT 1 TYPE ElchDiffCondThermo
+   511 TRANSP TET4  213 214 215 303    MAT 1 TYPE ElchDiffCondThermo
+   512 TRANSP TET4  304 305 77 303    MAT 1 TYPE ElchDiffCondThermo
+   513 TRANSP TET4  304 215 214 303    MAT 1 TYPE ElchDiffCondThermo
+   514 TRANSP TET4  169 171 227 214    MAT 1 TYPE ElchDiffCondThermo
+   515 TRANSP TET4  227 303 304 214    MAT 1 TYPE ElchDiffCondThermo
+   516 TRANSP TET4  213 227 214 303    MAT 1 TYPE ElchDiffCondThermo
+   517 TRANSP TET4  226 222 230 223    MAT 1 TYPE ElchDiffCondThermo
+   518 TRANSP TET4  222 230 146 176    MAT 1 TYPE ElchDiffCondThermo
+   519 TRANSP TET4  216 230 226 176    MAT 1 TYPE ElchDiffCondThermo
+   520 TRANSP TET4  304 77 215 303    MAT 1 TYPE ElchDiffCondThermo
+   521 TRANSP TET4  213 170 216 225    MAT 1 TYPE ElchDiffCondThermo
+   522 TRANSP TET4  48 126 152 244    MAT 1 TYPE ElchDiffCondThermo
+   523 TRANSP TET4  56 58 59 178    MAT 1 TYPE ElchDiffCondThermo
+   524 TRANSP TET4  146 148 184 176    MAT 1 TYPE ElchDiffCondThermo
+   525 TRANSP TET4  48 45 244 140    MAT 1 TYPE ElchDiffCondThermo
+   526 TRANSP TET4  156 306 211 307    MAT 1 TYPE ElchDiffCondThermo
+   527 TRANSP TET4  1 3 58 4    MAT 1 TYPE ElchDiffCondThermo
+   528 TRANSP TET4  171 292 167 169    MAT 1 TYPE ElchDiffCondThermo
+   529 TRANSP TET4  2 56 57 1    MAT 1 TYPE ElchDiffCondThermo
+   530 TRANSP TET4  8 10 9 73    MAT 1 TYPE ElchDiffCondThermo
+   531 TRANSP TET4  5 4 10 3    MAT 1 TYPE ElchDiffCondThermo
+   532 TRANSP TET4  69 71 68 73    MAT 1 TYPE ElchDiffCondThermo
+   533 TRANSP TET4  71 70 74 69    MAT 1 TYPE ElchDiffCondThermo
+   534 TRANSP TET4  66 70 67 65    MAT 1 TYPE ElchDiffCondThermo
+   535 TRANSP TET4  56 178 59 177    MAT 1 TYPE ElchDiffCondThermo
+   536 TRANSP TET4  69 71 66 68    MAT 1 TYPE ElchDiffCondThermo
+   537 TRANSP TET4  65 67 64 220    MAT 1 TYPE ElchDiffCondThermo
+   538 TRANSP TET4  186 65 66 64    MAT 1 TYPE ElchDiffCondThermo
+   539 TRANSP TET4  308 304 76 77    MAT 1 TYPE ElchDiffCondThermo
+   540 TRANSP TET4  65 219 186 66    MAT 1 TYPE ElchDiffCondThermo
+   541 TRANSP TET4  69 67 73 68    MAT 1 TYPE ElchDiffCondThermo
+   542 TRANSP TET4  304 77 305 76    MAT 1 TYPE ElchDiffCondThermo
+   543 TRANSP TET4  305 75 76 77    MAT 1 TYPE ElchDiffCondThermo
+   544 TRANSP TET4  213 225 303 215    MAT 1 TYPE ElchDiffCondThermo
+   545 TRANSP TET4  225 216 228 226    MAT 1 TYPE ElchDiffCondThermo
+   546 TRANSP TET4  140 45 244 144    MAT 1 TYPE ElchDiffCondThermo
+   547 TRANSP TET4  308 214 304 215    MAT 1 TYPE ElchDiffCondThermo
+   548 TRANSP TET4  213 225 229 303    MAT 1 TYPE ElchDiffCondThermo
+   549 TRANSP TET4  147 6 106 149    MAT 1 TYPE ElchDiffCondThermo
+   550 TRANSP TET4  308 79 77 76    MAT 1 TYPE ElchDiffCondThermo
+   551 TRANSP TET4  145 147 149 6    MAT 1 TYPE ElchDiffCondThermo
+   552 TRANSP TET4  308 304 77 215    MAT 1 TYPE ElchDiffCondThermo
+   553 TRANSP TET4  171 176 175 216    MAT 1 TYPE ElchDiffCondThermo
+   554 TRANSP TET4  199 36 32 295    MAT 1 TYPE ElchDiffCondThermo
+   555 TRANSP TET4  187 188 200 191    MAT 1 TYPE ElchDiffCondThermo
+   556 TRANSP TET4  191 226 228 223    MAT 1 TYPE ElchDiffCondThermo
+   557 TRANSP TET4  29 33 36 32    MAT 1 TYPE ElchDiffCondThermo
+   558 TRANSP TET4  32 295 228 199    MAT 1 TYPE ElchDiffCondThermo
+   559 TRANSP TET4  228 31 32 199    MAT 1 TYPE ElchDiffCondThermo
+   560 TRANSP TET4  29 34 32 36    MAT 1 TYPE ElchDiffCondThermo
+   561 TRANSP TET4  226 228 225 295    MAT 1 TYPE ElchDiffCondThermo
+   562 TRANSP TET4  36 200 295 199    MAT 1 TYPE ElchDiffCondThermo
+   563 TRANSP TET4  29 30 34 35    MAT 1 TYPE ElchDiffCondThermo
+   564 TRANSP TET4  29 35 31 30    MAT 1 TYPE ElchDiffCondThermo
+   565 TRANSP TET4  199 31 32 33    MAT 1 TYPE ElchDiffCondThermo
+   566 TRANSP TET4  309 36 34 35    MAT 1 TYPE ElchDiffCondThermo
+   567 TRANSP TET4  199 295 228 191    MAT 1 TYPE ElchDiffCondThermo
+   568 TRANSP TET4  170 215 225 213    MAT 1 TYPE ElchDiffCondThermo
+   569 TRANSP TET4  191 223 228 199    MAT 1 TYPE ElchDiffCondThermo
+   570 TRANSP TET4  187 165 195 188    MAT 1 TYPE ElchDiffCondThermo
+   571 TRANSP TET4  189 298 190 236    MAT 1 TYPE ElchDiffCondThermo
+   572 TRANSP TET4  189 190 232 236    MAT 1 TYPE ElchDiffCondThermo
+   573 TRANSP TET4  29 33 31 35    MAT 1 TYPE ElchDiffCondThermo
+   574 TRANSP TET4  1 59 56 58    MAT 1 TYPE ElchDiffCondThermo
+   575 TRANSP TET4  187 298 199 190    MAT 1 TYPE ElchDiffCondThermo
+   576 TRANSP TET4  198 209 180 207    MAT 1 TYPE ElchDiffCondThermo
+   577 TRANSP TET4  210 99 94 232    MAT 1 TYPE ElchDiffCondThermo
+   578 TRANSP TET4  233 210 209 232    MAT 1 TYPE ElchDiffCondThermo
+   579 TRANSP TET4  94 232 236 210    MAT 1 TYPE ElchDiffCondThermo
+   580 TRANSP TET4  92 96 99 94    MAT 1 TYPE ElchDiffCondThermo
+   581 TRANSP TET4  92 98 95 97    MAT 1 TYPE ElchDiffCondThermo
+   582 TRANSP TET4  236 93 94 210    MAT 1 TYPE ElchDiffCondThermo
+   583 TRANSP TET4  92 97 94 99    MAT 1 TYPE ElchDiffCondThermo
+   584 TRANSP TET4  99 233 232 210    MAT 1 TYPE ElchDiffCondThermo
+   585 TRANSP TET4  123 291 257 166    MAT 1 TYPE ElchDiffCondThermo
+   586 TRANSP TET4  210 232 236 198    MAT 1 TYPE ElchDiffCondThermo
+   587 TRANSP TET4  210 93 94 96    MAT 1 TYPE ElchDiffCondThermo
+   588 TRANSP TET4  92 93 95 98    MAT 1 TYPE ElchDiffCondThermo
+   589 TRANSP TET4  92 96 93 98    MAT 1 TYPE ElchDiffCondThermo
+   590 TRANSP TET4  310 99 97 98    MAT 1 TYPE ElchDiffCondThermo
+   591 TRANSP TET4  208 233 294 210    MAT 1 TYPE ElchDiffCondThermo
+   592 TRANSP TET4  78 75 76 80    MAT 1 TYPE ElchDiffCondThermo
+   593 TRANSP TET4  192 294 194 234    MAT 1 TYPE ElchDiffCondThermo
+   594 TRANSP TET4  32 33 36 199    MAT 1 TYPE ElchDiffCondThermo
+   595 TRANSP TET4  159 197 196 179    MAT 1 TYPE ElchDiffCondThermo
+   596 TRANSP TET4  193 290 235 183    MAT 1 TYPE ElchDiffCondThermo
+   597 TRANSP TET4  94 96 99 210    MAT 1 TYPE ElchDiffCondThermo
+   598 TRANSP TET4  87 90 85 86    MAT 1 TYPE ElchDiffCondThermo
+   599 TRANSP TET4  87 88 90 86    MAT 1 TYPE ElchDiffCondThermo
+   600 TRANSP TET4  194 90 193 86    MAT 1 TYPE ElchDiffCondThermo
+   601 TRANSP TET4  85 194 293 86    MAT 1 TYPE ElchDiffCondThermo
+   602 TRANSP TET4  60 133 15 132    MAT 1 TYPE ElchDiffCondThermo
+   603 TRANSP TET4  85 90 194 86    MAT 1 TYPE ElchDiffCondThermo
+   604 TRANSP TET4  193 86 290 194    MAT 1 TYPE ElchDiffCondThermo
+   605 TRANSP TET4  87 85 91 84    MAT 1 TYPE ElchDiffCondThermo
+   606 TRANSP TET4  87 84 91 88    MAT 1 TYPE ElchDiffCondThermo
+   607 TRANSP TET4  140 144 278 143    MAT 1 TYPE ElchDiffCondThermo
+   608 TRANSP TET4  311 84 85 86    MAT 1 TYPE ElchDiffCondThermo
+   609 TRANSP TET4  86 85 311 293    MAT 1 TYPE ElchDiffCondThermo
+   610 TRANSP TET4  194 290 293 86    MAT 1 TYPE ElchDiffCondThermo
+   611 TRANSP TET4  205 202 293 290    MAT 1 TYPE ElchDiffCondThermo
+   612 TRANSP TET4  205 202 201 293    MAT 1 TYPE ElchDiffCondThermo
+   613 TRANSP TET4  201 156 155 205    MAT 1 TYPE ElchDiffCondThermo
+   614 TRANSP TET4  206 235 205 183    MAT 1 TYPE ElchDiffCondThermo
+   615 TRANSP TET4  203 156 155 201    MAT 1 TYPE ElchDiffCondThermo
+   616 TRANSP TET4  212 203 41 265    MAT 1 TYPE ElchDiffCondThermo
+   617 TRANSP TET4  139 235 206 183    MAT 1 TYPE ElchDiffCondThermo
+   618 TRANSP TET4  39 231 41 203    MAT 1 TYPE ElchDiffCondThermo
+   619 TRANSP TET4  78 80 82 75    MAT 1 TYPE ElchDiffCondThermo
+   620 TRANSP TET4  41 203 231 265    MAT 1 TYPE ElchDiffCondThermo
+   621 TRANSP TET4  312 86 88 84    MAT 1 TYPE ElchDiffCondThermo
+   622 TRANSP TET4  41 44 265 231    MAT 1 TYPE ElchDiffCondThermo
+   623 TRANSP TET4  203 211 306 265    MAT 1 TYPE ElchDiffCondThermo
+   624 TRANSP TET4  120 121 146 122    MAT 1 TYPE ElchDiffCondThermo
+   625 TRANSP TET4  104 118 102 218    MAT 1 TYPE ElchDiffCondThermo
+   626 TRANSP TET4  101 104 103 217    MAT 1 TYPE ElchDiffCondThermo
+   627 TRANSP TET4  101 118 116 102    MAT 1 TYPE ElchDiffCondThermo
+   628 TRANSP TET4  37 38 109 26    MAT 1 TYPE ElchDiffCondThermo
+   629 TRANSP TET4  13 26 83 14    MAT 1 TYPE ElchDiffCondThermo
+   630 TRANSP TET4  83 13 28 37    MAT 1 TYPE ElchDiffCondThermo
+   631 TRANSP TET4  37 83 110 111    MAT 1 TYPE ElchDiffCondThermo
+   632 TRANSP TET4  14 27 83 28    MAT 1 TYPE ElchDiffCondThermo
+   633 TRANSP TET4  161 45 140 143    MAT 1 TYPE ElchDiffCondThermo
+   634 TRANSP TET4  37 110 83 26    MAT 1 TYPE ElchDiffCondThermo
+   635 TRANSP TET4  16 61 17 27    MAT 1 TYPE ElchDiffCondThermo
+   636 TRANSP TET4  13 14 15 17    MAT 1 TYPE ElchDiffCondThermo
+   637 TRANSP TET4  16 61 27 63    MAT 1 TYPE ElchDiffCondThermo
+   638 TRANSP TET4  114 115 116 109    MAT 1 TYPE ElchDiffCondThermo
+   639 TRANSP TET4  62 63 172 157    MAT 1 TYPE ElchDiffCondThermo
+   640 TRANSP TET4  135 307 156 154    MAT 1 TYPE ElchDiffCondThermo
+   641 TRANSP TET4  135 172 154 157    MAT 1 TYPE ElchDiffCondThermo
+   642 TRANSP TET4  156 155 154 211    MAT 1 TYPE ElchDiffCondThermo
+   643 TRANSP TET4  135 307 154 172    MAT 1 TYPE ElchDiffCondThermo
+   644 TRANSP TET4  14 13 12 28    MAT 1 TYPE ElchDiffCondThermo
+   645 TRANSP TET4  131 155 134 138    MAT 1 TYPE ElchDiffCondThermo
+   646 TRANSP TET4  140 278 144 244    MAT 1 TYPE ElchDiffCondThermo
+   647 TRANSP TET4  120 121 106 147    MAT 1 TYPE ElchDiffCondThermo
+   648 TRANSP TET4  211 307 154 156    MAT 1 TYPE ElchDiffCondThermo
+   649 TRANSP TET4  203 306 231 265    MAT 1 TYPE ElchDiffCondThermo
+   650 TRANSP TET4  78 81 77 75    MAT 1 TYPE ElchDiffCondThermo
+   651 TRANSP TET4  231 39 41 42    MAT 1 TYPE ElchDiffCondThermo
+   652 TRANSP TET4  183 205 293 290    MAT 1 TYPE ElchDiffCondThermo
+   653 TRANSP TET4  306 203 156 211    MAT 1 TYPE ElchDiffCondThermo
+   654 TRANSP TET4  43 40 50 42    MAT 1 TYPE ElchDiffCondThermo
+   655 TRANSP TET4  155 212 211 203    MAT 1 TYPE ElchDiffCondThermo
+   656 TRANSP TET4  101 115 103 102    MAT 1 TYPE ElchDiffCondThermo
+   657 TRANSP TET4  114 101 118 116    MAT 1 TYPE ElchDiffCondThermo
+   658 TRANSP TET4  278 143 162 140    MAT 1 TYPE ElchDiffCondThermo
+   659 TRANSP TET4  114 116 119 110    MAT 1 TYPE ElchDiffCondThermo
+   660 TRANSP TET4  14 83 27 17    MAT 1 TYPE ElchDiffCondThermo
+   661 TRANSP TET4  295 191 226 228    MAT 1 TYPE ElchDiffCondThermo
+   662 TRANSP TET4  124 291 123 224    MAT 1 TYPE ElchDiffCondThermo
+   663 TRANSP TET4  114 119 38 111    MAT 1 TYPE ElchDiffCondThermo
+   664 TRANSP TET4  114 116 110 109    MAT 1 TYPE ElchDiffCondThermo
+   665 TRANSP TET4  60 61 62 157    MAT 1 TYPE ElchDiffCondThermo
+   666 TRANSP TET4  37 28 111 38    MAT 1 TYPE ElchDiffCondThermo
+   667 TRANSP TET4  12 15 14 16    MAT 1 TYPE ElchDiffCondThermo
+   668 TRANSP TET4  114 117 38 119    MAT 1 TYPE ElchDiffCondThermo
+   669 TRANSP TET4  205 204 293 201    MAT 1 TYPE ElchDiffCondThermo
+   670 TRANSP TET4  132 152 151 15    MAT 1 TYPE ElchDiffCondThermo
+   671 TRANSP TET4  15 133 151 132    MAT 1 TYPE ElchDiffCondThermo
+   672 TRANSP TET4  43 41 49 40    MAT 1 TYPE ElchDiffCondThermo
+   673 TRANSP TET4  78 79 81 82    MAT 1 TYPE ElchDiffCondThermo
+   674 TRANSP TET4  114 109 38 117    MAT 1 TYPE ElchDiffCondThermo
+   675 TRANSP TET4  117 118 217 218    MAT 1 TYPE ElchDiffCondThermo
+   676 TRANSP TET4  101 117 118 217    MAT 1 TYPE ElchDiffCondThermo
+   677 TRANSP TET4  101 102 116 115    MAT 1 TYPE ElchDiffCondThermo
+   678 TRANSP TET4  254 253 272 297    MAT 1 TYPE ElchDiffCondThermo
+   679 TRANSP TET4  150 105 106 107    MAT 1 TYPE ElchDiffCondThermo
+   680 TRANSP TET4  248 252 255 288    MAT 1 TYPE ElchDiffCondThermo
+   681 TRANSP TET4  124 291 257 123    MAT 1 TYPE ElchDiffCondThermo
+   682 TRANSP TET4  51 281 72 52    MAT 1 TYPE ElchDiffCondThermo
+   683 TRANSP TET4  205 156 155 134    MAT 1 TYPE ElchDiffCondThermo
+   684 TRANSP TET4  237 245 240 289    MAT 1 TYPE ElchDiffCondThermo
+   685 TRANSP TET4  266 89 267 268    MAT 1 TYPE ElchDiffCondThermo
+   686 TRANSP TET4  268 296 240 54    MAT 1 TYPE ElchDiffCondThermo
+   687 TRANSP TET4  12 15 133 151    MAT 1 TYPE ElchDiffCondThermo
+   688 TRANSP TET4  124 162 123 257    MAT 1 TYPE ElchDiffCondThermo
+   689 TRANSP TET4  268 296 289 240    MAT 1 TYPE ElchDiffCondThermo
+   690 TRANSP TET4  132 126 151 152    MAT 1 TYPE ElchDiffCondThermo
+   691 TRANSP HEX8  313 314 315 316 317 318 319 320    MAT 5 TYPE ElchElectrodeThermo
+   692 TRANSP HEX8  314 321 322 315 318 323 324 319    MAT 5 TYPE ElchElectrodeThermo
+   693 TRANSP HEX8  321 325 326 322 323 327 328 324    MAT 5 TYPE ElchElectrodeThermo
+   694 TRANSP HEX8  325 329 330 326 327 331 332 328    MAT 5 TYPE ElchElectrodeThermo
+   695 TRANSP HEX8  316 315 333 334 320 319 335 336    MAT 5 TYPE ElchElectrodeThermo
+   696 TRANSP HEX8  315 322 337 333 319 324 338 335    MAT 5 TYPE ElchElectrodeThermo
+   697 TRANSP HEX8  322 326 339 337 324 328 340 338    MAT 5 TYPE ElchElectrodeThermo
+   698 TRANSP HEX8  326 330 341 339 328 332 342 340    MAT 5 TYPE ElchElectrodeThermo
+   699 TRANSP HEX8  334 333 343 344 336 335 345 346    MAT 5 TYPE ElchElectrodeThermo
+   700 TRANSP HEX8  333 337 347 343 335 338 348 345    MAT 5 TYPE ElchElectrodeThermo
+   701 TRANSP HEX8  337 339 349 347 338 340 350 348    MAT 5 TYPE ElchElectrodeThermo
+   702 TRANSP HEX8  339 341 351 349 340 342 352 350    MAT 5 TYPE ElchElectrodeThermo
+   703 TRANSP HEX8  344 343 353 354 346 345 355 356    MAT 5 TYPE ElchElectrodeThermo
+   704 TRANSP HEX8  343 347 357 353 345 348 358 355    MAT 5 TYPE ElchElectrodeThermo
+   705 TRANSP HEX8  347 349 359 357 348 350 360 358    MAT 5 TYPE ElchElectrodeThermo
+   706 TRANSP HEX8  349 351 361 359 350 352 362 360    MAT 5 TYPE ElchElectrodeThermo
+   707 TRANSP HEX8  363 364 365 366 367 368 369 370    MAT 5 TYPE ElchElectrodeThermo
+   708 TRANSP HEX8  364 371 372 365 368 373 374 369    MAT 5 TYPE ElchElectrodeThermo
+   709 TRANSP HEX8  371 375 376 372 373 377 378 374    MAT 5 TYPE ElchElectrodeThermo
+   710 TRANSP HEX8  375 379 380 376 377 381 382 378    MAT 5 TYPE ElchElectrodeThermo
+   711 TRANSP HEX8  366 365 383 384 370 369 385 386    MAT 5 TYPE ElchElectrodeThermo
+   712 TRANSP HEX8  365 372 387 383 369 374 388 385    MAT 5 TYPE ElchElectrodeThermo
+   713 TRANSP HEX8  372 376 389 387 374 378 390 388    MAT 5 TYPE ElchElectrodeThermo
+   714 TRANSP HEX8  376 380 391 389 378 382 392 390    MAT 5 TYPE ElchElectrodeThermo
+   715 TRANSP HEX8  384 383 393 394 386 385 395 396    MAT 5 TYPE ElchElectrodeThermo
+   716 TRANSP HEX8  383 387 397 393 385 388 398 395    MAT 5 TYPE ElchElectrodeThermo
+   717 TRANSP HEX8  387 389 399 397 388 390 400 398    MAT 5 TYPE ElchElectrodeThermo
+   718 TRANSP HEX8  389 391 401 399 390 392 402 400    MAT 5 TYPE ElchElectrodeThermo
+   719 TRANSP HEX8  394 393 403 404 396 395 405 406    MAT 5 TYPE ElchElectrodeThermo
+   720 TRANSP HEX8  393 397 407 403 395 398 408 405    MAT 5 TYPE ElchElectrodeThermo
+   721 TRANSP HEX8  397 399 409 407 398 400 410 408    MAT 5 TYPE ElchElectrodeThermo
+   722 TRANSP HEX8  399 401 411 409 400 402 412 410    MAT 5 TYPE ElchElectrodeThermo
+   723 TRANSP HEX8  413 414 415 416 417 418 419 420    MAT 5 TYPE ElchElectrodeThermo
+   724 TRANSP HEX8  414 421 422 415 418 423 424 419    MAT 5 TYPE ElchElectrodeThermo
+   725 TRANSP HEX8  421 425 426 422 423 427 428 424    MAT 5 TYPE ElchElectrodeThermo
+   726 TRANSP HEX8  425 429 430 426 427 431 432 428    MAT 5 TYPE ElchElectrodeThermo
+   727 TRANSP HEX8  416 415 433 434 420 419 435 436    MAT 5 TYPE ElchElectrodeThermo
+   728 TRANSP HEX8  415 422 437 433 419 424 438 435    MAT 5 TYPE ElchElectrodeThermo
+   729 TRANSP HEX8  422 426 439 437 424 428 440 438    MAT 5 TYPE ElchElectrodeThermo
+   730 TRANSP HEX8  426 430 441 439 428 432 442 440    MAT 5 TYPE ElchElectrodeThermo
+   731 TRANSP HEX8  434 433 443 444 436 435 445 446    MAT 5 TYPE ElchElectrodeThermo
+   732 TRANSP HEX8  433 437 447 443 435 438 448 445    MAT 5 TYPE ElchElectrodeThermo
+   733 TRANSP HEX8  437 439 449 447 438 440 450 448    MAT 5 TYPE ElchElectrodeThermo
+   734 TRANSP HEX8  439 441 451 449 440 442 452 450    MAT 5 TYPE ElchElectrodeThermo
+   735 TRANSP HEX8  444 443 453 454 446 445 455 456    MAT 5 TYPE ElchElectrodeThermo
+   736 TRANSP HEX8  443 447 457 453 445 448 458 455    MAT 5 TYPE ElchElectrodeThermo
+   737 TRANSP HEX8  447 449 459 457 448 450 460 458    MAT 5 TYPE ElchElectrodeThermo
+   738 TRANSP HEX8  449 451 461 459 450 452 462 460    MAT 5 TYPE ElchElectrodeThermo
+   739 TRANSP HEX8  463 464 465 466 467 468 469 470    MAT 5 TYPE ElchElectrodeThermo
+   740 TRANSP HEX8  464 471 472 465 468 473 474 469    MAT 5 TYPE ElchElectrodeThermo
+   741 TRANSP HEX8  471 475 476 472 473 477 478 474    MAT 5 TYPE ElchElectrodeThermo
+   742 TRANSP HEX8  475 479 480 476 477 481 482 478    MAT 5 TYPE ElchElectrodeThermo
+   743 TRANSP HEX8  466 465 483 484 470 469 485 486    MAT 5 TYPE ElchElectrodeThermo
+   744 TRANSP HEX8  465 472 487 483 469 474 488 485    MAT 5 TYPE ElchElectrodeThermo
+   745 TRANSP HEX8  472 476 489 487 474 478 490 488    MAT 5 TYPE ElchElectrodeThermo
+   746 TRANSP HEX8  476 480 491 489 478 482 492 490    MAT 5 TYPE ElchElectrodeThermo
+   747 TRANSP HEX8  484 483 493 494 486 485 495 496    MAT 5 TYPE ElchElectrodeThermo
+   748 TRANSP HEX8  483 487 497 493 485 488 498 495    MAT 5 TYPE ElchElectrodeThermo
+   749 TRANSP HEX8  487 489 499 497 488 490 500 498    MAT 5 TYPE ElchElectrodeThermo
+   750 TRANSP HEX8  489 491 501 499 490 492 502 500    MAT 5 TYPE ElchElectrodeThermo
+   751 TRANSP HEX8  494 493 503 504 496 495 505 506    MAT 5 TYPE ElchElectrodeThermo
+   752 TRANSP HEX8  493 497 507 503 495 498 508 505    MAT 5 TYPE ElchElectrodeThermo
+   753 TRANSP HEX8  497 499 509 507 498 500 510 508    MAT 5 TYPE ElchElectrodeThermo
+   754 TRANSP HEX8  499 501 511 509 500 502 512 510    MAT 5 TYPE ElchElectrodeThermo
+   755 TRANSP HEX8  513 514 515 516 517 518 519 520    MAT 6 TYPE ElchElectrodeThermo
+   756 TRANSP HEX8  514 521 522 515 518 523 524 519    MAT 6 TYPE ElchElectrodeThermo
+   757 TRANSP HEX8  521 525 526 522 523 527 528 524    MAT 6 TYPE ElchElectrodeThermo
+   758 TRANSP HEX8  525 529 530 526 527 531 532 528    MAT 6 TYPE ElchElectrodeThermo
+   759 TRANSP HEX8  529 533 534 530 531 535 536 532    MAT 6 TYPE ElchElectrodeThermo
+   760 TRANSP HEX8  533 537 538 534 535 539 540 536    MAT 6 TYPE ElchElectrodeThermo
+   761 TRANSP HEX8  537 541 542 538 539 543 544 540    MAT 6 TYPE ElchElectrodeThermo
+   762 TRANSP HEX8  541 545 546 542 543 547 548 544    MAT 6 TYPE ElchElectrodeThermo
+   763 TRANSP HEX8  516 515 549 550 520 519 551 552    MAT 6 TYPE ElchElectrodeThermo
+   764 TRANSP HEX8  515 522 553 549 519 524 554 551    MAT 6 TYPE ElchElectrodeThermo
+   765 TRANSP HEX8  522 526 555 553 524 528 556 554    MAT 6 TYPE ElchElectrodeThermo
+   766 TRANSP HEX8  526 530 557 555 528 532 558 556    MAT 6 TYPE ElchElectrodeThermo
+   767 TRANSP HEX8  530 534 559 557 532 536 560 558    MAT 6 TYPE ElchElectrodeThermo
+   768 TRANSP HEX8  534 538 561 559 536 540 562 560    MAT 6 TYPE ElchElectrodeThermo
+   769 TRANSP HEX8  538 542 563 561 540 544 564 562    MAT 6 TYPE ElchElectrodeThermo
+   770 TRANSP HEX8  542 546 565 563 544 548 566 564    MAT 6 TYPE ElchElectrodeThermo
+   771 TRANSP HEX8  567 568 569 570 571 572 573 574    MAT 6 TYPE ElchElectrodeThermo
+   772 TRANSP HEX8  568 575 576 569 572 577 578 573    MAT 6 TYPE ElchElectrodeThermo
+   773 TRANSP HEX8  575 579 580 576 577 581 582 578    MAT 6 TYPE ElchElectrodeThermo
+   774 TRANSP HEX8  579 583 584 580 581 585 586 582    MAT 6 TYPE ElchElectrodeThermo
+   775 TRANSP HEX8  583 587 588 584 585 589 590 586    MAT 6 TYPE ElchElectrodeThermo
+   776 TRANSP HEX8  587 591 592 588 589 593 594 590    MAT 6 TYPE ElchElectrodeThermo
+   777 TRANSP HEX8  591 595 596 592 593 597 598 594    MAT 6 TYPE ElchElectrodeThermo
+   778 TRANSP HEX8  595 599 600 596 597 601 602 598    MAT 6 TYPE ElchElectrodeThermo
+   779 TRANSP HEX8  570 569 603 604 574 573 605 606    MAT 6 TYPE ElchElectrodeThermo
+   780 TRANSP HEX8  569 576 607 603 573 578 608 605    MAT 6 TYPE ElchElectrodeThermo
+   781 TRANSP HEX8  576 580 609 607 578 582 610 608    MAT 6 TYPE ElchElectrodeThermo
+   782 TRANSP HEX8  580 584 611 609 582 586 612 610    MAT 6 TYPE ElchElectrodeThermo
+   783 TRANSP HEX8  584 588 613 611 586 590 614 612    MAT 6 TYPE ElchElectrodeThermo
+   784 TRANSP HEX8  588 592 615 613 590 594 616 614    MAT 6 TYPE ElchElectrodeThermo
+   785 TRANSP HEX8  592 596 617 615 594 598 618 616    MAT 6 TYPE ElchElectrodeThermo
+   786 TRANSP HEX8  596 600 619 617 598 602 620 618    MAT 6 TYPE ElchElectrodeThermo
+   787 TRANSP HEX8  621 622 623 624 625 626 627 628    MAT 6 TYPE ElchElectrodeThermo
+   788 TRANSP HEX8  622 629 630 623 626 631 632 627    MAT 6 TYPE ElchElectrodeThermo
+   789 TRANSP HEX8  629 633 634 630 631 635 636 632    MAT 6 TYPE ElchElectrodeThermo
+   790 TRANSP HEX8  633 637 638 634 635 639 640 636    MAT 6 TYPE ElchElectrodeThermo
+   791 TRANSP HEX8  637 641 642 638 639 643 644 640    MAT 6 TYPE ElchElectrodeThermo
+   792 TRANSP HEX8  641 645 646 642 643 647 648 644    MAT 6 TYPE ElchElectrodeThermo
+   793 TRANSP HEX8  645 649 650 646 647 651 652 648    MAT 6 TYPE ElchElectrodeThermo
+   794 TRANSP HEX8  649 653 654 650 651 655 656 652    MAT 6 TYPE ElchElectrodeThermo
+   795 TRANSP HEX8  624 623 657 658 628 627 659 660    MAT 6 TYPE ElchElectrodeThermo
+   796 TRANSP HEX8  623 630 661 657 627 632 662 659    MAT 6 TYPE ElchElectrodeThermo
+   797 TRANSP HEX8  630 634 663 661 632 636 664 662    MAT 6 TYPE ElchElectrodeThermo
+   798 TRANSP HEX8  634 638 665 663 636 640 666 664    MAT 6 TYPE ElchElectrodeThermo
+   799 TRANSP HEX8  638 642 667 665 640 644 668 666    MAT 6 TYPE ElchElectrodeThermo
+   800 TRANSP HEX8  642 646 669 667 644 648 670 668    MAT 6 TYPE ElchElectrodeThermo
+   801 TRANSP HEX8  646 650 671 669 648 652 672 670    MAT 6 TYPE ElchElectrodeThermo
+   802 TRANSP HEX8  650 654 673 671 652 656 674 672    MAT 6 TYPE ElchElectrodeThermo
+   803 TRANSP HEX8  675 676 677 678 679 680 681 682    MAT 6 TYPE ElchElectrodeThermo
+   804 TRANSP HEX8  676 683 684 677 680 685 686 681    MAT 6 TYPE ElchElectrodeThermo
+   805 TRANSP HEX8  683 687 688 684 685 689 690 686    MAT 6 TYPE ElchElectrodeThermo
+   806 TRANSP HEX8  687 691 692 688 689 693 694 690    MAT 6 TYPE ElchElectrodeThermo
+   807 TRANSP HEX8  691 695 696 692 693 697 698 694    MAT 6 TYPE ElchElectrodeThermo
+   808 TRANSP HEX8  695 699 700 696 697 701 702 698    MAT 6 TYPE ElchElectrodeThermo
+   809 TRANSP HEX8  699 703 704 700 701 705 706 702    MAT 6 TYPE ElchElectrodeThermo
+   810 TRANSP HEX8  703 707 708 704 705 709 710 706    MAT 6 TYPE ElchElectrodeThermo
+   811 TRANSP HEX8  678 677 711 712 682 681 713 714    MAT 6 TYPE ElchElectrodeThermo
+   812 TRANSP HEX8  677 684 715 711 681 686 716 713    MAT 6 TYPE ElchElectrodeThermo
+   813 TRANSP HEX8  684 688 717 715 686 690 718 716    MAT 6 TYPE ElchElectrodeThermo
+   814 TRANSP HEX8  688 692 719 717 690 694 720 718    MAT 6 TYPE ElchElectrodeThermo
+   815 TRANSP HEX8  692 696 721 719 694 698 722 720    MAT 6 TYPE ElchElectrodeThermo
+   816 TRANSP HEX8  696 700 723 721 698 702 724 722    MAT 6 TYPE ElchElectrodeThermo
+   817 TRANSP HEX8  700 704 725 723 702 706 726 724    MAT 6 TYPE ElchElectrodeThermo
+   818 TRANSP HEX8  704 708 727 725 706 710 728 726    MAT 6 TYPE ElchElectrodeThermo
 ---------------------------------------------------------------END

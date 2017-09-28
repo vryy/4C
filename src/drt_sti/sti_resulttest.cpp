@@ -16,9 +16,8 @@
 /*----------------------------------------------------------------------*/
 #include "sti_resulttest.H"
 
-#include "sti_algorithm.H"
+#include "sti_monolithic.H"
 
-#include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
 
 #include "../linalg/linalg_solver.H"
@@ -79,16 +78,16 @@ double STI::STIResultTest::ResultSpecial(
   double result(0.);
 
   // number of Newton-Raphson iterations in last time step
-  if(quantity == "numiterlastnewton")
+  if(quantity == "numiterlastnonlinearsolve")
     result = (double) sti_algorithm_->Iter();
 
   // number of iterations performed by linear solver during last Newton-Raphson iteration
-  else if(quantity == "numiterlastsolve")
+  else if(quantity == "numiterlastlinearsolve")
   {
     // safety check
-    if(sti_algorithm_->Solver().Params().get("solver","none") != "aztec")
+    if(STIMonolithic().Solver().Params().get("solver","none") != "aztec")
       dserror("Must have Aztec solver for result test involving number of solver iterations during last Newton-Raphson iteration!");
-    result = (double) sti_algorithm_->Solver().getNumIters();
+    result = (double) STIMonolithic().Solver().getNumIters();
   }
 
   // catch unknown quantity strings
@@ -97,3 +96,15 @@ double STI::STIResultTest::ResultSpecial(
 
   return result;
 } // STI::STIResultTest::ResultSpecial
+
+
+/*------------------------------------------------------------------------------*
+ | return time integrator for monolithic scatra-thermo interaction   fang 09/17 |
+ *------------------------------------------------------------------------------*/
+const STI::Monolithic& STI::STIResultTest::STIMonolithic() const
+{
+  const STI::Monolithic* const sti_monolithic = dynamic_cast<const STI::Monolithic* const>(sti_algorithm_.get());
+  if(sti_monolithic == NULL)
+    dserror("Couldn't access time integrator for monolithic scatra-thermo interaction!");
+  return *sti_monolithic;
+}

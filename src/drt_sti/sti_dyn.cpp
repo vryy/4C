@@ -16,16 +16,16 @@
 /*----------------------------------------------------------------------*/
 #include "sti_dyn.H"
 
-#include "sti_algorithm.H"
 #include "sti_clonestrategy.H"
+#include "sti_monolithic.H"
+#include "sti_partitioned.H"
 #include "sti_resulttest.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dofset_predefineddofnumber.H"
-#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
+
 #include "../drt_scatra/scatra_resulttest_elch.H"
 #include "../drt_scatra/scatra_timint_elch.H"
 
@@ -117,11 +117,6 @@ void sti_dyn(
   const Teuchos::ParameterList& stidyn = problem->STIDynamicParams();
   const Teuchos::ParameterList& scatradyn = problem->ScalarTransportDynamicParams();
 
-  // extract and check ID of global linear solver
-  const int solver_id = stidyn.get<int>("LINEAR_SOLVER");
-  if(solver_id == -1)
-    dserror("No global linear solver was specified in input file section 'STI DYNAMIC'!");
-
   // extract and check ID of linear solver for scatra field
   const int solver_id_scatra = scatradyn.get<int>("LINEAR_SOLVER");
   if(solver_id_scatra == -1)
@@ -132,15 +127,57 @@ void sti_dyn(
   if(solver_id_thermo == -1)
     dserror("No linear solver for temperature field was specified in input file section 'STI DYNAMIC'!");
 
-  // instantiate monolithic algorithm for scatra-thermo interaction
-  const Teuchos::RCP<STI::Algorithm> sti_algorithm = Teuchos::rcp(new STI::Algorithm(
-      comm,
-      stidyn,
-      scatradyn,
-      DRT::Problem::Instance()->SolverParams(solver_id),
-      DRT::Problem::Instance()->SolverParams(solver_id_scatra),
-      DRT::Problem::Instance()->SolverParams(solver_id_thermo)
-      ));
+  // instantiate coupling algorithm for scatra-thermo interaction
+  Teuchos::RCP<STI::Algorithm> sti_algorithm(Teuchos::null);
+  switch(DRT::INPUT::IntegralValue<INPAR::STI::CouplingType>(stidyn,"COUPLINGTYPE"))
+  {
+    // monolithic algorithm
+    case INPAR::STI::coupling_monolithic:
+    {
+      // extract and check ID of monolithic linear solver
+      const int solver_id = stidyn.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER");
+      if(solver_id == -1)
+        dserror("No global linear solver was specified in input file section 'STI DYNAMIC/MONOLITHIC'!");
+
+      sti_algorithm = Teuchos::rcp(new STI::Monolithic(
+          comm,
+          stidyn,
+          scatradyn,
+          DRT::Problem::Instance()->SolverParams(solver_id),
+          DRT::Problem::Instance()->SolverParams(solver_id_scatra),
+          DRT::Problem::Instance()->SolverParams(solver_id_thermo)
+          ));
+
+      break;
+    }
+
+    // partitioned algorithm
+    case INPAR::STI::coupling_oneway_scatratothermo:
+    case INPAR::STI::coupling_oneway_thermotoscatra:
+    case INPAR::STI::coupling_twoway_scatratothermo:
+    case INPAR::STI::coupling_twoway_scatratothermo_aitken:
+    case INPAR::STI::coupling_twoway_scatratothermo_aitken_dofsplit:
+    case INPAR::STI::coupling_twoway_thermotoscatra:
+    case INPAR::STI::coupling_twoway_thermotoscatra_aitken:
+    {
+      sti_algorithm = Teuchos::rcp(new STI::Partitioned(
+          comm,
+          stidyn,
+          scatradyn,
+          DRT::Problem::Instance()->SolverParams(solver_id_scatra),
+          DRT::Problem::Instance()->SolverParams(solver_id_thermo)
+          ));
+
+      break;
+    }
+
+    // unknown algorithm
+    default:
+    {
+      dserror("Unknown coupling algorithm for scatra-thermo interaction!");
+      break;
+    }
+  }
 
   // read restart data if necessary
   if(restartstep)

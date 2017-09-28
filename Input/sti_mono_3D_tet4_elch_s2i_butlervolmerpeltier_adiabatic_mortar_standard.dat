@@ -47,11 +47,13 @@ PARALLEL_REDIST                 no
 MESH_RELOCATION                 no
 -------------------------------------------------------STI DYNAMIC
 SCATRATIMINTTYPE                Elch
-MATRIXTYPE                      sparse
 THERMO_INITIALFIELD             field_by_function
 THERMO_INITFUNCNO               4
-LINEAR_SOLVER                   1
 THERMO_LINEAR_SOLVER            1
+COUPLINGTYPE                    Monolithic
+--------------------------------------------STI DYNAMIC/MONOLITHIC
+LINEAR_SOLVER                   1
+MATRIXTYPE                      sparse
 ----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ---------------------------------------------------------MATERIALS
@@ -118,7 +120,7 @@ SCATRA DIS thermo NODE 390 QUANTITY phi VALUE 3.00389263185800360e+02 TOLERANCE 
 SCATRA DIS scatra SPECIAL QUANTITY soc1 VALUE 9.44444415603965526e-01 TOLERANCE 1.e-10                  // anode state of charge
 SCATRA DIS scatra SPECIAL QUANTITY soc2 VALUE 9.58384658169807446e-01 TOLERANCE 1.e-10                  // cathode state of charge
 SCATRA DIS scatra SPECIAL QUANTITY cellvoltage VALUE 3.76624889083234216e+00 TOLERANCE 1.e-09           // cell voltage
-STI SPECIAL QUANTITY numiterlastnewton VALUE 2.0 TOLERANCE 1.e-20                                       // number of Newton-Raphson iterations during last time step
+STI SPECIAL QUANTITY numiterlastnonlinearsolve VALUE 2.0 TOLERANCE 1.e-20                               // number of Newton-Raphson iterations during last time step
 ------------------------------------------------DESIGN DESCRIPTION
 NDSURF  14
 NDVOL   5

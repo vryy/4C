@@ -464,7 +464,7 @@ public:
   //! return number of newton iterations in last timestep
   const int& IterNum() const { return iternum_; }
 
-  //! return number of outer iterations in truly partitioned multi-scale simulations
+  //! return number of outer iterations in partitioned simulations
   const unsigned& IterNumOuter() const { return iternum_outer_; };
 
   //! return time step size
@@ -529,7 +529,13 @@ public:
     return NumDofPerNodeInCondition(condition);
   };
 
-  // return scalar field phi at time n-1
+  //! return relaxation parameters
+  std::vector<double>& Omega(){return omega_;};
+
+  //! return relaxation parameters
+  const std::vector<double>& Omega() const {return omega_;};
+
+  //! return scalar field phi at time n-1
   virtual Teuchos::RCP<Epetra_Vector> Phinm() = 0;
 
   //! return scalar field phi at time n
@@ -538,8 +544,17 @@ public:
   //! return scalar field phi at time n+1
   Teuchos::RCP<Epetra_Vector> Phinp() const { return phinp_; }
 
-  //! return increment of scalar field phi at time n+1 for truly partitioned multi-scale simulations
-  const Teuchos::RCP<const Epetra_Vector> PhinpInc() const { return phinp_inc_; };
+  //! return increment of scalar field phi at time n+1 for partitioned simulations
+  Teuchos::RCP<Epetra_Vector>& PhinpInc() { return phinp_inc_; };
+
+  //! return increment of scalar field phi at time n+1 for partitioned simulations
+  const Teuchos::RCP<Epetra_Vector>& PhinpInc() const { return phinp_inc_; };
+
+  //! return increment of scalar field phi at time n+1 from previous outer iteration step for partitioned simulations
+  Teuchos::RCP<Epetra_Vector>& PhinpIncOld() { return phinp_inc_old_; };
+
+  //! return increment of scalar field phi at time n+1 from previous outer iteration step for partitioned simulations
+  const Teuchos::RCP<Epetra_Vector>& PhinpIncOld() const { return phinp_inc_old_; };
 
   //! return time derivative of scalar field phi at time n
   Teuchos::RCP<Epetra_Vector> Phidtn() { return phidtn_; }
@@ -1108,7 +1123,7 @@ protected:
   //! number of newton iterations in actual timestep
   int iternum_;
 
-  //! number of outer iterations in truly partitioned multi-scale simulations
+  //! number of outer iterations in partitioned simulations
   unsigned iternum_outer_;
 
   //! used time integration scheme
@@ -1131,9 +1146,9 @@ protected:
   Teuchos::RCP<Epetra_Vector> phin_;
   //! phi at time n+1
   Teuchos::RCP<Epetra_Vector> phinp_;
-  //! increment of phi at time n+1 for truly partitioned multi-scale simulations
+  //! increment of phi at time n+1 for partitioned simulations
   Teuchos::RCP<Epetra_Vector> phinp_inc_;
-  //! increment of phi at time n+1 from previous outer iteration step for truly partitioned multi-scale simulations
+  //! increment of phi at time n+1 from previous outer iteration step for partitioned simulations
   Teuchos::RCP<Epetra_Vector> phinp_inc_old_;
   //! relaxation parameters
   std::vector<double> omega_;

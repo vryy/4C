@@ -4,7 +4,7 @@
 
 \brief strategy for cloning thermo discretization from scatra discretization
 
-\level 3
+\level 2
 
 <pre>
 \maintainer Rui Fang
@@ -14,15 +14,13 @@
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#include "../drt_inpar/inpar_material.H"
+#include "sti_clonestrategy.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_mat/matpar_bundle.H"
 
 #include "../drt_scatra_ele/scatra_ele.H"
-
-#include "sti_clonestrategy.H"
 
 /*----------------------------------------------------------------------*
  | check material of cloned element                          fang 04/15 |

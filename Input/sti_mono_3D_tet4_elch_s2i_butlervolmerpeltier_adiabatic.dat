@@ -47,11 +47,14 @@ EQUPOT                          divi
 COUPLINGTYPE                    MatchingNodes
 --------------------------------------------------------STI DYNAMIC
 SCATRATIMINTTYPE                Elch
-MATRIXTYPE                      sparse
 THERMO_INITIALFIELD             field_by_function
 THERMO_INITFUNCNO               4
-LINEAR_SOLVER                   1
 THERMO_LINEAR_SOLVER            1
+COUPLINGTYPE                    Monolithic
+OUTPUTNONLINSOLVERSTATS         Yes
+---------------------------------------------STI DYNAMIC/MONOLITHIC
+LINEAR_SOLVER                   1
+MATRIXTYPE                      sparse
 -----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
@@ -106,7 +109,7 @@ SCATRA DIS thermo NODE 452 QUANTITY phi VALUE 3.00355754949047707e+02 TOLERANCE 
 SCATRA DIS scatra SPECIAL QUANTITY soc1 VALUE 9.44444416539958476e-01 TOLERANCE 1.e-10                  // anode state of charge
 SCATRA DIS scatra SPECIAL QUANTITY soc2 VALUE 9.58363865002511583e-01 TOLERANCE 1.e-10                  // cathode state of charge
 SCATRA DIS scatra SPECIAL QUANTITY cellvoltage VALUE 3.77030388966926777e+00 TOLERANCE 1.e-09           // cell voltage
-STI SPECIAL QUANTITY numiterlastnewton VALUE 4.0 TOLERANCE 1.e-20                                       // number of Newton-Raphson iterations during last time step
+STI SPECIAL QUANTITY numiterlastnonlinearsolve VALUE 4.0 TOLERANCE 1.e-20                               // number of Newton-Raphson iterations during last time step
 ------------------------------------------------DESIGN DESCRIPTION
 NDSURF  14
 NDVOL   5

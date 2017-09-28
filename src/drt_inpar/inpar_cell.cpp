@@ -647,6 +647,9 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   // flag for output of performance statistics associated with linear solver into text file
   BoolParameter("OUTPUTSOLVERSTATS","No","flag for output of performance statistics associated with linear solver into text file",&cellscatradyn);
 
+  // flag for point-based null space calculation
+  BoolParameter("NULLSPACE_POINTBASED","No","flag for point-based null space calculation",&cellscatradyn);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& cellscatra_nonlin = cellscatradyn.sublist(
       "NONLINEAR",

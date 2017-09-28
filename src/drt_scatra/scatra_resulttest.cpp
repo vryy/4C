@@ -431,6 +431,24 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
     scatratimint_->Discretization()->Comm().Broadcast(&result,1,processor);
   }
 
+  // test relaxation parameters for partitioned simulations
+  else if(!quantity.compare(0,5,"omega"))
+  {
+    // read parameter index
+    std::string index_string = quantity.substr(5);
+    char* locator(NULL);
+    const unsigned index = strtol(index_string.c_str(),&locator,10) - 1;
+
+    // safety checks
+    if(locator == index_string.c_str())
+      dserror("Couldn't read parameter index!");
+    if(index >= scatratimint_->Omega().size())
+      dserror("Invalid parameter index!");
+
+    // extract result
+    result = scatratimint_->Omega()[index];
+  }
+
   // catch unknown quantity strings
   else
     dserror("Quantity '%s' not supported in result test!", quantity.c_str());

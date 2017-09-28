@@ -336,6 +336,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
 
   if (myrank_ == 0)
   {
+    std::cout << std::endl;
     std::cout << "Normal fluxes at boundary 'ScaTraFluxCalc' on discretization '" << discret_->Name() << "':" << std::endl;
     std::cout <<"+----+-----+-------------------------+------------------+--------------------------+" << std::endl;
     std::cout << "| ID | DOF | Integral of normal flux | Area of boundary | Mean normal flux density |" << std::endl;
@@ -569,7 +570,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       printf("| Sum of all normal flux boundary integrals for scalar %d: %+10.5E             |\n"
           ,idof,normfluxsum[idof]);
     }
-    std::cout << "+----------------------------------------------------------------------------------+" << std::endl << std::endl;
+    std::cout << "+----------------------------------------------------------------------------------+" << std::endl;
   }
   // clean up
   discret_->ClearState();
