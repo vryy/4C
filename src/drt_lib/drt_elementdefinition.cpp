@@ -85,6 +85,7 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   PrintElementLines(stream,"SOLIDSHW6");
   PrintElementLines(stream,"SOLIDT10");
   PrintElementLines(stream,"SOLIDT4");
+  PrintElementLines(stream,"SOLIDT4PLAST");
   PrintElementLines(stream,"SOLIDT4PORO");
   PrintElementLines(stream,"SOLIDT4THERMO");
   PrintElementLines(stream,"SOLIDT10THERMO");

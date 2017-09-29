@@ -216,6 +216,9 @@ int DRT::ELEMENTS::So3_Plast<distype>::NumSurface() const
   case DRT::Element::hex27:
     return 6;
     break;
+  case DRT::Element::tet4:
+    return 4;
+    break;
   default:
     dserror("unknown distpye for So3_Plast");
     break;
@@ -235,6 +238,9 @@ int DRT::ELEMENTS::So3_Plast<distype>::NumLine() const
   case DRT::Element::hex18:
   case DRT::Element::hex27:
     return 12;
+    break;
+  case DRT::Element::tet4:
+    return 6;
     break;
   default:
     dserror("unknown distpye for So3_Plast");
@@ -698,6 +704,9 @@ int DRT::ELEMENTS::So3_Plast<distype>::UniqueParObjectId() const
   case DRT::Element::hex27:
     return So_hex27PlastType::Instance().UniqueParObjectId();
     break;
+  case DRT::Element::tet4:
+    return So_tet4PlastType::Instance().UniqueParObjectId();
+    break;
   default:
     dserror("unknown element type!");
     break;
@@ -723,6 +732,9 @@ DRT::ElementType& DRT::ELEMENTS::So3_Plast<distype>::ElementType() const
   }
   case DRT::Element::hex27:
     return So_hex27PlastType::Instance();
+    break;
+  case DRT::Element::tet4:
+    return So_tet4PlastType::Instance();
     break;
   default:
     dserror("unknown element type!");

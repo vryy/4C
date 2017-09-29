@@ -36,6 +36,9 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueCombin
   case DRT::Element::hex27:
       return EstimateNitscheTraceMaxEigenvalueCombined<DRT::Element::hex27,DRT::Element::quad9>(parent_disp);
       break;
+  case DRT::Element::tet4:
+      return EstimateNitscheTraceMaxEigenvalueCombined<DRT::Element::tet4,DRT::Element::tri3>(parent_disp);
+      break;
   default:
     dserror("parent shape not implemented");
   }
@@ -380,6 +383,8 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueTSI(
     break;
   case DRT::Element::hex27:
     return EstimateNitscheTraceMaxEigenvalueTSI<DRT::Element::hex27,DRT::Element::quad9>(parent_disp);
+  case DRT::Element::tet4:
+    return EstimateNitscheTraceMaxEigenvalueTSI<DRT::Element::tet4,DRT::Element::tri3>(parent_disp);
   default:
     dserror("parent shape not implemented");
   }

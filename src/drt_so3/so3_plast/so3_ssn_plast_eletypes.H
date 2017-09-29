@@ -7,6 +7,7 @@
 #ifndef SO3_SSN_PLAST_ELETYPES_H_
 #define SO3_SSN_PLAST_ELETYPES_H_
 
+#include "../so_tet4.H"
 #include "../so_hex8.H"
 #include "../so_hex18.H"
 #include "../so_hex27.H"
@@ -127,6 +128,43 @@ namespace ELEMENTS
     static So_hex27PlastType instance_;
 
   };  // class So_hex27PlastType
+
+
+  /*----------------------------------------------------------------------------*
+   * TET4 Element
+   *----------------------------------------------------------------------------*/
+  class So_tet4PlastType : public So_tet4Type
+  {
+  public:
+
+    std::string Name() const { return "So_tet4PlastType"; }
+
+    static So_tet4PlastType & Instance();
+
+    virtual DRT::ParObject* Create( const std::vector<char> & data );
+
+    virtual Teuchos::RCP<DRT::Element> Create(
+        const std::string eletype,
+        const std::string eledistype,
+        const int id,
+        const int owner
+    );
+
+    virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+
+    virtual int Initialize(DRT::Discretization& dis);
+
+    virtual void SetupElementDefinition(
+        std::map<std::string,
+        std::map<std::string,
+        DRT::INPUT::LineDefinition> > & definitions
+    );
+
+  private:
+
+    static So_tet4PlastType instance_;
+
+  };  // class So_tet4PlastType
 
 
 }  // namespace ELEMENTS
