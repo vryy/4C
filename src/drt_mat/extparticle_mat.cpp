@@ -40,8 +40,8 @@ MAT::PAR::ExtParticleMat::ExtParticleMat(
     bulkViscosity_(matdata->GetDouble("BULK_VISCOSITY")),
     artificialViscosity_(matdata->GetDouble("ARTIFICIAL_VISCOSITY")),
     thermalConductivity_(matdata->GetDouble("THERMAL_CONDUCTIVITY")),
-    surfaceVoidTension_(matdata->GetDouble("SURFACE_VOID_TENSION")),
-    surfaceWallTension_(matdata->GetDouble("SURFACE_WALL_TENSION"))
+    surfaceTension_(matdata->GetDouble("SURFACE_TENSION")),
+    staticContactAngle_(matdata->GetDouble("STATIC_CONTACT_ANGLE"))
 {
   return;
 }

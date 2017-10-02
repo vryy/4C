@@ -581,9 +581,6 @@ void PARTICLE::TimInt::PrepareTimeStep()
   {
     // apply Dirichlet BC and rebuild map extractor
     ApplyDirichletBC(timen_, disn_, veln_, accn_, true);
-
-    //TODO: TransferParticles() is called inside the time integrators directly after displacement update and should not be required here!
-    //particle_algorithm_->TransferParticles(true);
   }
 
   // update particle radii if necessary
@@ -758,9 +755,9 @@ void PARTICLE::TimInt::DetermineMeshfreeDensAndAcc(Teuchos::RCP<Epetra_Vector> a
 
   //Acceleration contributions due to internal forces (pressure, viscosity etc.)
   if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"CALC_ACC_VAR2")==false)
-    interHandler_->Inter_pvp_acc_var1(acc,accmod,acc_A);
+    interHandler_->Inter_pvp_acc_var1(acc,accmod,acc_A,time);
   else
-    interHandler_->Inter_pvp_acc_var2(acc,accmod,acc_A);
+    interHandler_->Inter_pvp_acc_var2(acc,accmod,acc_A,time);
 
   // clear vectors, keep memory
   interHandler_->Clear();

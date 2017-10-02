@@ -189,16 +189,16 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                tuple<std::string>(
                                  "None",
                                  "DensityIntegration",
-                                 "InteriorReinizialization",
-                                 "NormalizedReinizialization",
-                                 "RandlesReinizialization"
+                                 "InteriorReinitialization",
+                                 "NormalizedReinitialization",
+                                 "RandlesReinitialization"
                                  ),
                                tuple<int>(
                                  INPAR::PARTICLE::None,
                                  INPAR::PARTICLE::DensityIntegration,
-                                 INPAR::PARTICLE::InteriorReinizialization,
-                                 INPAR::PARTICLE::NormalizedReinizialization,
-                                 INPAR::PARTICLE::RandlesReinizialization
+                                 INPAR::PARTICLE::InteriorReinitialization,
+                                 INPAR::PARTICLE::NormalizedReinitialization,
+                                 INPAR::PARTICLE::RandlesReinitialization
                                  ),
                                &particledyn);
 
@@ -255,10 +255,14 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                              "Acceleration due to gravity in particle simulations.",
                              &particledyn);
    DoubleParameter("GRAVITY_RAMP_TIME",-1.0,"increase gravity force smoothly within a time interval GRAVITY_RAMP_TIME in the beginning of the simulation",&particledyn);
+   DoubleParameter("SURFTENSION_RAMP_TIME",-1.0,"increase surface tension force smoothly within a time interval SURFTENSION_RAMP_TIME in the beginning of the simulation",&particledyn);
    DoubleParameter("BACKGROUND_PRESSURE",-1.0,"constant background pressure employed for modified particle convection velocity/acceleration in KickDrift time integrator (SPH only)",&particledyn);
    DoubleParameter("XSPH_DAMPFAC",-1.0,"damping factor of XSPH scheme",&particledyn);
    DoubleParameter("XSPH_STIFFAC",-1.0,"damping factor of XSPH scheme",&particledyn);
    BoolParameter("TRANSPORT_VELOCITY","no","apply particle convection velocity that differs from momentum velocity",&particledyn);
+   DoubleParameter("SURFTENSION_POT_A",2.0,"Scale factor of repulsive part of pairwise interaction force",&particledyn);
+   DoubleParameter("SURFTENSION_POT_B",1.0,"Scale factor of attractive part of pairwise interaction force",&particledyn);
+   DoubleParameter("SURFTENSION_POT_RATIO",0.5,"Range ratio of repulsive and attractive part of pairwise interaction force",&particledyn);
 
    setStringToIntegralParameter<int>("DIMENSION","3D",
                                 "number of space dimensions for handling of quasi-2D problems with 3D particles",

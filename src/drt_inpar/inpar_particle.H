@@ -34,7 +34,7 @@ namespace INPAR
       dyna_centrdiff,                  ///< central differences (explicit)
       dyna_kickdrift,                  ///< kick-dirft scheme (explicit)
       dyna_rk2,                        ///< Runge-Kutta 2 (explicit)
-      dyna_rk4                        ///< Runge-Kutta 4 (explicit)
+      dyna_rk4                         ///< Runge-Kutta 4 (explicit)
     };
 
     /// Contact type for particles
@@ -129,11 +129,11 @@ namespace INPAR
     /// type of free-surface treatment for MeshFree interactions
     enum FreeSurfaceType
     {
-      FreeSurface_None,                           //no free surfaces
+      FreeSurface_None,               //no free surfaces
       DensityIntegration,             //density determined via time integration exclusively
-      InteriorReinizialization,       //density via time integration and re-initialization in the interior via density summation (in every time step)
-      NormalizedReinizialization,     //like 'InteriorReinizialization' but with additional re-initialization of free-surface particles via normalized density summation (Shepard Filter)
-      RandlesReinizialization         //like 'NormalizedReinizialization' but with re-initialization of free-surface particles inspired by Randles 1996 instead of Shepard Filter
+      InteriorReinitialization,       //density via time integration and re-initialization in the interior via density summation (in every time step)
+      NormalizedReinitialization,     //like 'InteriorReinitialization' but with additional re-initialization of free-surface particles via normalized density summation (Shepard Filter)
+      RandlesReinitialization         //like 'NormalizedReinitialization' but with re-initialization of free-surface particles inspired by Randles 1996 instead of Shepard Filter
     };
 
     /// rendering for smoothed particle hydrodynamics
@@ -155,48 +155,6 @@ namespace INPAR
     {
       WithBdryParticle,
       NoBdryParticle
-    };
-
-    enum MidAverageEnum
-    {
-      midavg_vague,
-      midavg_imrlike,  ///< alphaf-mid-averaging is done IMR-like, i.e.
-                       ///< \f$F_{int,m}\f$
-                       ///< \f$= F_{int}(D_m)\f$
-                       ///< \f$= F_{int}( (1-\alpha_f)*D_{n+1} + \alpha_f*D_n )\f$
-                       ///< (IMR means implicit mid-point rule.)
-      midavg_trlike    ///< alphaf-mid-averaging is done TR-like, i.e.
-                       ///< \f$F_{int,m}\f$
-                       ///< \f$= (1-\alpha_f)*F_{int,n+1} + \alpha_f*F_{int,n}\f$
-                       ///<  \f$= (1-\alpha_f)*F_{int}(D_{n+1}) + \alpha_f*F_{int}(D_n)\f$
-                       ///<  (TR means trapezoidal rule.)
-    };
-
-    /// Map mid-averaging to std::string
-    static inline const std::string MidAverageString
-    (
-      const enum MidAverageEnum name  ///< enum to convert
-    )
-    {
-      switch (name)
-      {
-        break;
-      case midavg_imrlike :
-        return "IMR-like";
-      case midavg_trlike :
-        return "TR-like";
-        break;
-      default :
-        dserror("Cannot make std::string for time integrator %d", name);
-        return "";
-      }
-    }
-
-    /// approximations of the generalized-alpha scheme
-    enum GAapproxType
-    {
-      gaapprox_full,
-      gaapprox_onlyhess
     };
 
     /// set the particle parameters

@@ -45,7 +45,7 @@ RESTARTEVRY                     10
 TIMESTEP                        5.0e-4
 NUMSTEP                         50
 MAXTIME                         0.025
-COUPALGO                        partitioned_twowaycoup_forcerelaxaitken
+COUPALGO                        partitioned_twowaycoup
 ITEMAX                          10
 ----------------------------------------------------PASI DYNAMIC/PARTITIONED
 CONVTOL                         1.0e-6

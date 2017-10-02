@@ -96,10 +96,10 @@ namespace MAT
       const double artificialViscosity_;
       /// thermal conductivity of the material (it is considered the same for all the phases) - W/(m * K)
       const double thermalConductivity_;
-      /// surface tension between void (common air) and the material in liquid phase
-      const double surfaceVoidTension_;
-      /// surface tension between the wall and the material in liquid phase
-      const double surfaceWallTension_;
+      /// surface tension between fluid and void phase
+      const double surfaceTension_;
+      /// static contact angle between fluid and solid phase in degree measure
+      const double staticContactAngle_;
 
 
     };  // class MAT::PAR::ExtParticleMat

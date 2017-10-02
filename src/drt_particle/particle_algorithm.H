@@ -40,10 +40,10 @@
 #define PARTICLE_COLORLIMIT 0.9                     //Color field limit value to identify free-surface particle
 #define PARTICLE_P0ZHANG 3.0                        //Factor between h and \tilde{h} of smoothing kernel applied in background pressure term for free-surface flow according to Zhang et al. 2017
 
-#define PARTICLE_REINITSHIFT 2                      //Define shifting criterion between free-surface and interior particles in case of density reinizialiation (default: 2)
+#define PARTICLE_REINITSHIFT 2                      //Define shifting criterion between free-surface and interior particles in case of density reinitialization (default: 2)
                                                     //1: Apply shifting criterion for free-surface particles according to free-surface particle type (fspType_)
                                                     //2: Apply shifting criterion for free-surface particles according to colorfield<1 (see Zhang et al. 2017)
-                                                    //3: Apply reinizialization everywhere
+                                                    //3: Apply reinitialization everywhere
 
 //Usefull defines (additional functionalities and debugging tools)
 //#define PARTICLE_OVERLAPPINGNEIGHBORS             //Determine also fully overlapping variant of neighbors vectors

@@ -17,14 +17,13 @@
 #include "particle_timint_centrdiff.H"
 #include "particle_algorithm.H"
 #include "particle_contact.H"
+#include "particle_heatSource.H"
 #include "particle_utils.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/extparticle_mat.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
-#include "particle_algorithm.H"
-#include "particle_heatSource.H"
 
 #include "../drt_io/io_control.H"
 #include <Teuchos_TimeMonitor.hpp>
@@ -63,11 +62,6 @@ void PARTICLE::TimIntCentrDiff::Init()
 
   switch(particle_algorithm_->ParticleInteractionType())
   {
-  case INPAR::PARTICLE::MeshFree:
-  {
-    dserror("Meshfree particle interaction (SPH) not possible with Central Difference Time Integrator anymore. Choose Kick-Drift scheme!");
-    break;
-  }
   case INPAR::PARTICLE::Normal_DEM:
   case INPAR::PARTICLE::Normal_DEM_thermo:
   case INPAR::PARTICLE::NormalAndTang_DEM:
@@ -75,9 +69,16 @@ void PARTICLE::TimIntCentrDiff::Init()
     collhandler_ = Teuchos::rcp(new PARTICLE::ParticleCollisionHandlerDEM(discret_, particle_algorithm_, particleparams));
     break;
   }
+  case INPAR::PARTICLE::MeshFree:
+  {
+    dserror("Meshfree particle interaction (SPH) not possible with Central Difference Time Integrator anymore. Choose Kick-Drift scheme!");
+    break;
+  }
   case INPAR::PARTICLE::Normal_MD:
+  {
     dserror("central difference time integrator cannot be combined with molecular dynamics collision mechanism");
-  break;
+    break;
+  }
   default:
   {
     if(myrank_ == 0)
@@ -149,23 +150,12 @@ void PARTICLE::TimIntCentrDiff::Init()
     if (v_max_thermo > 0.01 * v_max)
       dserror("The expansion speed of the particle radii is bigger than 1 percent of MAX_VELOCITY. Dismembered particles can explode");
   }
-
-  /////////////
-  // fast check of the thermodynamic heat exchange
-  //    std::cout << "cheap temperature change to test\n";
-  //    (*specEnthalpyn_)[0] += 1e3;
-  //    (*(*specEnthalpy_)(0))[0] += 1e3;
-  //    std::cout << *specEnthalpyn_ << std::endl;
-  //    std::cin.get();
-  ////////////
 }
 
 /*----------------------------------------------------------------------*/
 /* Integrate step */
 int PARTICLE::TimIntCentrDiff::IntegrateStep()
 {
-
-
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::TimIntCentrDiff::IntegrateStep");
 
   //Velocity-Verlet scheme,
@@ -228,16 +218,8 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
   // update of end-velocities v_{n+1}=v_{n+1/2}+dt/2*a_{n+1}
   veln_->Update(dthalf, *accn_, 1.0);
 
-  switch (particle_algorithm_->ParticleInteractionType())
-  {
-  case INPAR::PARTICLE::Normal_DEM_thermo :
-  {
+  if(particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::Normal_DEM_thermo)
     specEnthalpyn_->Update(dt, *specEnthalpyDotn_, 1.0);
-    break;
-  }
-  default :
-    break;
-  }
 
   if(collhandler_ != Teuchos::null)
   {

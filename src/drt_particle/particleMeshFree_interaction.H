@@ -190,6 +190,7 @@ namespace PARTICLE
         const Teuchos::RCP<Epetra_Vector> accn,
         const Teuchos::RCP<Epetra_Vector> trvl_acc = Teuchos::null,
         const Teuchos::RCP<Epetra_Vector> acc_A = Teuchos::null,
+        const double time = -1.0,
         const double extMulti = 1.0);
 
     /// compute the momentum part of the boundary particle vs particle interactions
@@ -197,6 +198,7 @@ namespace PARTICLE
         const Teuchos::RCP<Epetra_Vector> accn,
         const Teuchos::RCP<Epetra_Vector> trvl_acc = Teuchos::null,
         const Teuchos::RCP<Epetra_Vector> acc_A = Teuchos::null,
+        const double time = -1.0,
         const double extMulti = 1.0);
 
     /// compute the momentum part of the particle vs particle interactions: alternative variant according to Adami2013
@@ -204,6 +206,7 @@ namespace PARTICLE
         const Teuchos::RCP<Epetra_Vector> accn,
         const Teuchos::RCP<Epetra_Vector> trvl_acc = Teuchos::null,
         const Teuchos::RCP<Epetra_Vector> acc_A = Teuchos::null,
+        const double time = -1.0,
         const double extMulti = 1.0);
 
     /// compute the momentum part of the boundary particle vs particle interactions: alternative variant according to Adami2013
@@ -211,6 +214,7 @@ namespace PARTICLE
         const Teuchos::RCP<Epetra_Vector> accn,
         const Teuchos::RCP<Epetra_Vector> trvl_acc = Teuchos::null,
         const Teuchos::RCP<Epetra_Vector> acc_A = Teuchos::null,
+        const double time = -1.0,
         const double extMulti = 1.0);
 
     ///Computes Gradient of divergence operator for vector v - pvp
@@ -322,8 +326,21 @@ namespace PARTICLE
         const ParticleMF& particle_i,
         const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > >& neighboring_heatSources);
 
-     //! build periodic boundary conditions
-     virtual void BuildPeriodicBC();
+    //! build periodic boundary conditions
+    virtual void BuildPeriodicBC();
+
+    //! evaluate surface tension interaction potential
+    virtual void SurfTensionInterPot(
+        const double& radius,
+        const double& rRelNorm2,
+        double& lambda,
+        double& potential
+    );
+
+    //! return surface tension time fac
+    virtual double SurfTensionTimeFac(
+        const double& time
+    );
 
     /// template to print neighbours
     template <typename obj>
@@ -387,6 +404,9 @@ namespace PARTICLE
     /// wall interaction type
     const INPAR::PARTICLE::WallInteractionType wallInteractionType_;
 
+    /// free surface type
+    const INPAR::PARTICLE::FreeSurfaceType freeSurfaceType_;
+
     /// temporary storage of wallMeshFree data
     WallMeshFreeData wallMeshFreeData_;
 
@@ -422,6 +442,12 @@ namespace PARTICLE
 
     /// artificial viscosity according to Adami et al. 2012, Eq. (11)
     double artificialViscosity_;
+
+    /// surface tension between fluid and void phase
+    double surfaceTension_;
+
+    /// static contact angle between fluid and solid phase in degree measure
+    double staticContactAngle_;
 
     // length of periodic box if appicable (=-1.0 if not)
     double periodic_length_;

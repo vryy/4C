@@ -8,7 +8,7 @@
 ---------------------------------------------------------------------------TITLE
 1D test case for Particle Meshfree Interaction (SPH): First steps in the (dynamic) equilibration of a 1D hydrostatic problem.
 The density field of the free surface problem is determined via density integration ('DENSITY_SUMMATION no') with
-re-initialization in every time step based on 'RandlesReinizialization'.
+re-initialization in every time step (only in the interior region) based on 'InteriorReinitialization'.
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      MeshFree
 SHAPEFCT                        Meshfree
@@ -29,7 +29,7 @@ GRAVITY_ACCELERATION            -0.0001 0.0 0.0
 GRAVITY_RAMP_TIME               5000
 WEIGHT_FUNCTION_DIM             WF_1D // Spatial dimension of problem entering weight functions: WF_3D (default), WF_2D, WF_1D
 DENSITY_SUMMATION               no // Density via summation formula or via time integration?
-FREE_SURFACE_TYPE               RandlesReinizialization
+FREE_SURFACE_TYPE               InteriorReinitialization
 CONSISTENT_PROBLEM_VOLUME       4.9 // =-1.0(default): particle mass via sphere volume, >0: particle mass via DENSITY and problem volume
 SOLVE_THERMAL_PROBLEM           no // only mechanical problem or thermal problem as well?
 WALL_INTERACTION_TYPE           BoundarParticle_NoSlip //InitParticle (default),Mirror,Custom,BoundarParticle_NoSlip,BoundarParticle_FreeSlip,None
@@ -106,7 +106,7 @@ E 2 - NUMDOF 3 ONOFF 1 1 1 VAL -0.25 0.0 0.0 FUNCT 0 0 0
 E 3 - NUMDOF 3 ONOFF 1 1 1 VAL -0.15 0.0 0.0 FUNCT 0 0 0
 E 4 - NUMDOF 3 ONOFF 1 1 1 VAL -0.05 0.0 0.0 FUNCT 0 0 0
 -------------------------------------------------------------------MATERIALS
-MAT 2 MAT_ExtParticle DENSITY 1.0 RESTDENSITY 1.0 REFDENSFAC 1.0 EXPONENT 1 INITRADIUS 0.3 DISMEMBER_RADIUS 0.01 NUE 0.1 YOUNG 0.1 INITTEMPERATURE 0.0 CPS 0.0 CPL 0.0 LATENT_HEAT 0.0 TRANSITION_TEMPERATURE 0.0 THERMAL_EXPANSION_S 0.0 THERMAL_EXPANSION_L 0.0 THERMAL_EXPANSION_T 0.0 BULK_MODULUS 0.01 DYNAMIC_VISCOSITY 0.0 BULK_VISCOSITY 0.0 ARTIFICIAL_VISCOSITY -1 THERMAL_CONDUCTIVITY 0.0 SURFACE_VOID_TENSION 0.0 SURFACE_WALL_TENSION 0.0
+MAT 2 MAT_ExtParticle DENSITY 1.0 RESTDENSITY 1.0 REFDENSFAC 1.0 EXPONENT 1 INITRADIUS 0.3 DISMEMBER_RADIUS 0.01 NUE 0.1 YOUNG 0.1 INITTEMPERATURE 0.0 CPS 0.0 CPL 0.0 LATENT_HEAT 0.0 TRANSITION_TEMPERATURE 0.0 THERMAL_EXPANSION_S 0.0 THERMAL_EXPANSION_L 0.0 THERMAL_EXPANSION_T 0.0 BULK_MODULUS 0.01 DYNAMIC_VISCOSITY 0.0 BULK_VISCOSITY 0.0 ARTIFICIAL_VISCOSITY -1 THERMAL_CONDUCTIVITY 0.0 SURFACE_TENSION 0.0 STATIC_CONTACT_ANGLE 0.0
 ----------------------------------------------------------RESULT DESCRIPTION
-PARTICLE DIS particle NODE 53 QUANTITY velx VALUE -3.16853048307502472e-05 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 53 QUANTITY velx VALUE -3.52549352772783725e-05 TOLERANCE 1.0e-10
 -------------------------------------------------------------------------END

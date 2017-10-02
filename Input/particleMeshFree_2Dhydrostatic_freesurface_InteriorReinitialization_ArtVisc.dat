@@ -8,7 +8,7 @@
 ---------------------------------------------------------------------------TITLE
 2D test case for Particle Meshfree Interaction (SPH): First steps in the (dynamic) equilibration of a 2D hydrostatic problem.
 The density field of the free surface problem is determined via density integration ('DENSITY_SUMMATION no') with
-re-initialization in every time step (only in the interior region) based on 'InteriorReinizialization'.
+re-initialization in every time step (only in the interior region) based on 'InteriorReinitialization'.
 Furthermore, artificial instead of laminar viscosity is applied.
 ==================================================================
                   General Data File BACI
@@ -35,7 +35,7 @@ PARTICLE_INTERACTION            MeshFree  //None (default),Normal_DEM,Normal_MD,
 WEIGHT_FUNCTION                 QuinticBspline // CubicBspline (default), SqrtHyperbola, HyperbolaNoRsz
 WEIGHT_FUNCTION_DIM             WF_2D // Spatial dimension of problem entering weight functions: WF_3D (default), WF_2D, WF_1D
 DENSITY_SUMMATION               no // Density via summation formula or via time integration?
-FREE_SURFACE_TYPE               InteriorReinizialization
+FREE_SURFACE_TYPE               InteriorReinitialization
 CONSISTENT_PROBLEM_VOLUME       2 // =-1.0(default): particle mass via sphere volume, >0: particle mass via DENSITY and problem volume
 SOLVE_THERMAL_PROBLEM           no // only mechanical problem or thermal problem as well?
 WALL_INTERACTION_TYPE           BoundarParticle_FreeSlip //InitParticle (default),Mirror,Custom,BoundarParticle_NoSlip,BoundarParticle_FreeSlip,None
@@ -15215,7 +15215,7 @@ E 6720 - NUMDOF 3 ONOFF 1 1 1 VAL 5.37 -0.05 0.0 FUNCT 0 0 0
 E 6721 - NUMDOF 3 ONOFF 1 1 1 VAL 5.39 -0.05 0.0 FUNCT 0 0 0
 E 6722 - NUMDOF 3 ONOFF 1 1 1 VAL 5.41 -0.05 0.0 FUNCT 0 0 0
 -------------------------------------------------------------------MATERIALS
-MAT 2 MAT_ExtParticle DENSITY 1 RESTDENSITY 1 REFDENSFAC 1.0 EXPONENT 1 INITRADIUS 0.06 DISMEMBER_RADIUS 0.01 NUE 0.1 YOUNG 0.1 INITTEMPERATURE 0.0 CPS 0.0 CPL 0.0 LATENT_HEAT 0.0 TRANSITION_TEMPERATURE 0.0 THERMAL_EXPANSION_S 0.0 THERMAL_EXPANSION_L 0.0 THERMAL_EXPANSION_T 0.0 BULK_MODULUS 200 DYNAMIC_VISCOSITY 0.0 BULK_VISCOSITY 0.0 ARTIFICIAL_VISCOSITY 0.4 THERMAL_CONDUCTIVITY 0.0 SURFACE_VOID_TENSION 0.0 SURFACE_WALL_TENSION 0.0
+MAT 2 MAT_ExtParticle DENSITY 1 RESTDENSITY 1 REFDENSFAC 1.0 EXPONENT 1 INITRADIUS 0.06 DISMEMBER_RADIUS 0.01 NUE 0.1 YOUNG 0.1 INITTEMPERATURE 0.0 CPS 0.0 CPL 0.0 LATENT_HEAT 0.0 TRANSITION_TEMPERATURE 0.0 THERMAL_EXPANSION_S 0.0 THERMAL_EXPANSION_L 0.0 THERMAL_EXPANSION_T 0.0 BULK_MODULUS 200 DYNAMIC_VISCOSITY 0.0 BULK_VISCOSITY 0.0 ARTIFICIAL_VISCOSITY 0.4 THERMAL_CONDUCTIVITY 0.0 SURFACE_TENSION 0.0 STATIC_CONTACT_ANGLE 0.0
 ----------------------------------------------------------RESULT DESCRIPTION
 PARTICLE DIS particle NODE 4950 QUANTITY vely VALUE 1.22062233061289910e-04 TOLERANCE 1.0e-10
 -------------------------------------------------------------------------END

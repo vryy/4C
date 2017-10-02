@@ -60,6 +60,7 @@ PARTICLE::ParticleMeshFreeInteractionHandler::ParticleMeshFreeInteractionHandler
   myrank_(discret->Comm().MyPID()),
   weightFunctionHandler_(Teuchos::null),
   wallInteractionType_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallInteractionType>(particledynparams,"WALL_INTERACTION_TYPE")),
+  freeSurfaceType_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::FreeSurfaceType>(DRT::Problem::Instance()->ParticleParams(),"FREE_SURFACE_TYPE")),
   WF_DIM_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::WeightFunctionDim>(particledynparams,"WEIGHT_FUNCTION_DIM")),
   initDensity_(initDensity),
   restDensity_(restDensity),
@@ -76,20 +77,11 @@ PARTICLE::ParticleMeshFreeInteractionHandler::ParticleMeshFreeInteractionHandler
   // extract material parameters
   const MAT::PAR::ExtParticleMat* extParticleMat = particle_algorithm_->ExtParticleMat();
 
-  switch(wallInteractionType_)
+  if(wallInteractionType_==INPAR::PARTICLE::BoundarParticle_NoSlip or wallInteractionType_==INPAR::PARTICLE::BoundarParticle_FreeSlip)
   {
-  case INPAR::PARTICLE::BoundarParticle_NoSlip :
-  case INPAR::PARTICLE::BoundarParticle_FreeSlip :
-  {
-    if(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ExtendedGhosting>(particledynparams,"EXTENDED_GHOSTING")!=INPAR::PARTICLE::BdryParticleGhosting and DRT::INPUT::IntegralValue<INPAR::PARTICLE::ExtendedGhosting>(particledynparams,"EXTENDED_GHOSTING")!=INPAR::PARTICLE::AddLayerGhosting)
+    INPAR::PARTICLE::ExtendedGhosting extendedGhosting = DRT::INPUT::IntegralValue<INPAR::PARTICLE::ExtendedGhosting>(particledynparams,"EXTENDED_GHOSTING");
+    if(extendedGhosting != INPAR::PARTICLE::BdryParticleGhosting and extendedGhosting != INPAR::PARTICLE::AddLayerGhosting)
       dserror("Extended ghosting is required if boundary particles are applied!");
-
-    break;
-  }
-  case INPAR::PARTICLE::NoWallInteraction :
-    {
-      //nothing to do
-    }
   }
 
   #ifndef PARTICLE_ONLYLAPLACETERM
@@ -138,6 +130,9 @@ PARTICLE::ParticleMeshFreeInteractionHandler::ParticleMeshFreeInteractionHandler
   }
 
   artificialViscosity_ = extParticleMat->bulkViscosity_+extParticleMat->artificialViscosity_;
+
+  surfaceTension_ = extParticleMat->surfaceTension_;
+  staticContactAngle_ = extParticleMat->staticContactAngle_;
 
   // set the correct WeightFunction
   switch (DRT::INPUT::IntegralValue<INPAR::PARTICLE::WeightFunction>(particledynparams,"WEIGHT_FUNCTION"))
@@ -1411,6 +1406,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc_var1(
     const Teuchos::RCP<Epetra_Vector> accn,
     const Teuchos::RCP<Epetra_Vector> trvl_acc,
     const Teuchos::RCP<Epetra_Vector> acc_A,
+    const double time,
     const double extMulti)
 {
 
@@ -1421,8 +1417,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc_var1(
   {
     dserror("accn is empty");
   }
-
-  const INPAR::PARTICLE::FreeSurfaceType freeSurfaceType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::FreeSurfaceType>(DRT::Problem::Instance()->ParticleParams(),"FREE_SURFACE_TYPE");
 
   // Modified particle transport velocities either due to constant background pressure according to Adami2013 or due to XSPH according to Monaghan1989
   // The terms associated with the constant background pressure are similar to the real pressure terms
@@ -1589,6 +1583,43 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc_var1(
         momentum_ij.Update(art_visc_fac, rRelVersor_ij, 1.0);
       }
 
+      //*******surface tension**************************************************************************************************
+      // The following term applies pairwise interaction forces to model surface tension following Tartakovsky et al. 2016
+      if(surfaceTension_>0.0)
+      {
+        double radius_ij = 0.5*(particle_i.radius_+particle_j.radius_);
+        double lambda = 0.0;
+        double potential = 0.0;
+        SurfTensionInterPot(radius_ij, rRelNorm2, lambda, potential);
+
+        if(potential != 0.0)
+        {
+          // averaged number density (n_i = \rho_i/m_i)
+          double n_ij = 0.5*((density_i/particle_i.mass_)+(density_j/particle_j.mass_));
+
+          double timefac = 1.0;
+          if(time >= 0.0)
+            timefac = SurfTensionTimeFac(time);
+
+          // pair-wise interaction force
+          const double s_ff = 0.5*std::pow(n_ij,-2.0)*(surfaceTension_/lambda);
+          LINALG::Matrix<3,1> pf_ij(true);
+          pf_ij.Update(-s_ff*potential*timefac, rRelVersor_ij, 1.0);
+
+          // assemble and write
+          LINALG::Matrix<3,1> accn_ij;
+          accn_ij.Update(1.0/particle_i.mass_, pf_ij);
+          accn_ij.Scale(extMulti);
+          sumj_accn_ij.Update(1.0,accn_ij,1.0);
+
+          // assemble and write
+          LINALG::Matrix<3,1> accn_ji;
+          accn_ji.Update(1.0/particle_j.mass_, pf_ij);
+          accn_ji.Scale(-extMulti); // actio = - reactio
+          LINALG::Assemble(*accn, accn_ji, particle_j.lm_, particle_j.owner_);
+        }
+      }
+
       // write on particle i if appropriate specializing the quantities
       if (interData_ij.dw_ij_ != 0)
       {
@@ -1609,7 +1640,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc_var1(
         if(background_pressure>0)
         {
           LINALG::Matrix<3,1> p0_accn_ij;
-          if(freeSurfaceType==INPAR::PARTICLE::FreeSurface_None)
+          if(freeSurfaceType_==INPAR::PARTICLE::FreeSurface_None)
           {
             p0_accn_ij.Update(generalCoeff_ij, p0_momentum_ij);
             p0_accn_ij.Scale(extMulti);
@@ -1655,7 +1686,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc_var1(
         if(background_pressure>0)
         {
           LINALG::Matrix<3,1> p0_accn_ji;
-          if(freeSurfaceType==INPAR::PARTICLE::FreeSurface_None)
+          if(freeSurfaceType_==INPAR::PARTICLE::FreeSurface_None)
           {
             p0_accn_ji.Update(generalCoeff_ji, p0_momentum_ij);
             p0_accn_ji.Scale(-extMulti); // actio = - reactio
@@ -1688,7 +1719,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc_var1(
   }//sum over i
 
   if(wallInteractionType_==INPAR::PARTICLE::BoundarParticle_NoSlip or wallInteractionType_==INPAR::PARTICLE::BoundarParticle_FreeSlip)
-    Inter_bpvp_acc_var1(accn, trvl_acc, acc_A, extMulti);
+    Inter_bpvp_acc_var1(accn, trvl_acc, acc_A, time, extMulti);
 }
 
 
@@ -1699,6 +1730,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_bpvp_acc_var1(
     const Teuchos::RCP<Epetra_Vector> accn,
     const Teuchos::RCP<Epetra_Vector> trvl_acc,
     const Teuchos::RCP<Epetra_Vector> acc_A,
+    const double time,
     const double extMulti)
 {
   //checks
@@ -1706,8 +1738,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_bpvp_acc_var1(
   {
     dserror("accn is empty");
   }
-
-  const INPAR::PARTICLE::FreeSurfaceType freeSurfaceType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::FreeSurfaceType>(DRT::Problem::Instance()->ParticleParams(),"FREE_SURFACE_TYPE");
 
   // Modified particle transport velocities either due to constant background pressure according to Adami2013 or due to XSPH according to Monaghan1989
   // The terms associated with the constant background pressure are similar to the real pressure terms
@@ -1864,6 +1894,40 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_bpvp_acc_var1(
         }
       }
 
+      //*******surface tension**************************************************************************************************
+      // The following term applies pairwise interaction forces to model surface tension following Tartakovsky et al. 2016
+      if(surfaceTension_>0.0)
+      {
+        double radius_ij = 0.5*(particle_i->radius_+particle_j.radius_);
+        double lambda = 0.0;
+        double potential = 0.0;
+        SurfTensionInterPot(radius_ij, interData_ij.rRelNorm2_, lambda, potential);
+
+        if(potential != 0.0)
+        {
+          // averaged number density (n_i = \rho_i/m_i)
+          double n_ij = 0.5*((density_i/particle_i->mass_)+(density_j/particle_j.mass_));
+
+          // convert static contact anglee in radians
+          double theta_0 = staticContactAngle_*PI/180.0;
+
+          double timefac = 1.0;
+          if(time >= 0.0)
+            timefac = SurfTensionTimeFac(time);
+
+          // pair-wise interaction force
+          const double s_sf = 0.5*std::pow(n_ij,-2.0)*(surfaceTension_/lambda)*(1+0.5*std::cos(theta_0));
+          LINALG::Matrix<3,1> pf_ij(true);
+          pf_ij.Update(-s_sf*potential*timefac, rRelVersor_ij, 1.0);
+
+          // assemble and write
+          LINALG::Matrix<3,1> accn_ji;
+          accn_ji.Update(1.0/particle_j.mass_, pf_ij);
+          accn_ji.Scale(-extMulti); // actio = - reactio
+          LINALG::Assemble(*accn, accn_ji, particle_j.lm_, particle_j.owner_);
+        }
+      }
+
       // write on particle j if appropriate specializing the quantities
       if (interData_ij.dw_ji_ != 0)
       {
@@ -1884,7 +1948,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_bpvp_acc_var1(
         if(background_pressure>0)
         {
           LINALG::Matrix<3,1> p0_accn_ji;
-          if(freeSurfaceType==INPAR::PARTICLE::FreeSurface_None)
+          if(freeSurfaceType_==INPAR::PARTICLE::FreeSurface_None)
           {
             p0_accn_ji.Update(generalCoeff_ji, p0_momentum_ij);
             p0_accn_ji.Scale(-extMulti); // actio = - reactio
@@ -1921,6 +1985,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc_var2(
     const Teuchos::RCP<Epetra_Vector> accn,
     const Teuchos::RCP<Epetra_Vector> trvl_acc,
     const Teuchos::RCP<Epetra_Vector> acc_A,
+    const double time,
     const double extMulti)
 {
 
@@ -1931,8 +1996,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc_var2(
   {
     dserror("accn is empty");
   }
-
-  const INPAR::PARTICLE::FreeSurfaceType freeSurfaceType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::FreeSurfaceType>(DRT::Problem::Instance()->ParticleParams(),"FREE_SURFACE_TYPE");
 
   // Modified particle transport velocities either due to constant background pressure according to Adami2013 or due to XSPH according to Monaghan1989
   // The terms associated with the constant background pressure are similar to the real pressure terms
@@ -2091,6 +2154,43 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc_var2(
         momentum_artvisc_ij.Update(art_visc_fac, rRelVersor_ij, 1.0);
       }
 
+      //*******surface tension**************************************************************************************************
+      // The following term applies pairwise interaction forces to model surface tension following Tartakovsky et al. 2016
+      if(surfaceTension_>0.0)
+      {
+        double radius_ij = 0.5*(particle_i.radius_+particle_j.radius_);
+        double lambda = 0.0;
+        double potential = 0.0;
+        SurfTensionInterPot(radius_ij, rRelNorm2, lambda, potential);
+
+        if(potential != 0.0)
+        {
+          // averaged number density (n_i = \rho_i/m_i)
+          double n_ij = 0.5*((density_i/particle_i.mass_)+(density_j/particle_j.mass_));
+
+          double timefac = 1.0;
+          if(time >= 0.0)
+            timefac = SurfTensionTimeFac(time);
+
+          // pair-wise interaction force
+          const double s_ff = 0.5*std::pow(n_ij,-2.0)*(surfaceTension_/lambda);
+          LINALG::Matrix<3,1> pf_ij(true);
+          pf_ij.Update(-s_ff*potential, rRelVersor_ij, 1.0);
+
+          // assemble and write
+          LINALG::Matrix<3,1> accn_ij;
+          accn_ij.Update(1.0/particle_i.mass_, pf_ij);
+          accn_ij.Scale(extMulti);
+          sumj_accn_ij.Update(1.0,accn_ij,1.0);
+
+          // assemble and write
+          LINALG::Matrix<3,1> accn_ji;
+          accn_ji.Update(1.0/particle_j.mass_, pf_ij);
+          accn_ji.Scale(-extMulti); // actio = - reactio
+          LINALG::Assemble(*accn, accn_ji, particle_j.lm_, particle_j.owner_);
+        }
+      }
+
       // write on particle i if appropriate specializing the quantities
       if (interData_ij.dw_ij_ != 0)
       {
@@ -2115,7 +2215,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc_var2(
 
         if(background_pressure>0)
         {
-          if(freeSurfaceType!=INPAR::PARTICLE::FreeSurface_None)
+          if(freeSurfaceType_!=INPAR::PARTICLE::FreeSurface_None)
             dserror("Background pressure not available for free-surface flow in var2 so far!");
 
           LINALG::Matrix<3,1> p0_accn_ij;
@@ -2156,7 +2256,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc_var2(
 
         if(background_pressure>0)
         {
-          if(freeSurfaceType!=INPAR::PARTICLE::FreeSurface_None)
+          if(freeSurfaceType_!=INPAR::PARTICLE::FreeSurface_None)
             dserror("Background pressure not available for free-surface flow in var2 so far!");
 
           LINALG::Matrix<3,1> p0_accn_ji;
@@ -2190,6 +2290,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_bpvp_acc_var2(
     const Teuchos::RCP<Epetra_Vector> accn,
     const Teuchos::RCP<Epetra_Vector> trvl_acc,
     const Teuchos::RCP<Epetra_Vector> acc_A,
+    const double time,
     const double extMulti)
 {
   //checks
@@ -2197,8 +2298,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_bpvp_acc_var2(
   {
     dserror("accn is empty");
   }
-
-  const INPAR::PARTICLE::FreeSurfaceType freeSurfaceType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::FreeSurfaceType>(DRT::Problem::Instance()->ParticleParams(),"FREE_SURFACE_TYPE");
 
   // Modified particle transport velocities either due to constant background pressure according to Adami2013 or due to XSPH according to Monaghan1989
   // The terms associated with the constant background pressure are similar to the real pressure terms
@@ -2348,6 +2447,40 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_bpvp_acc_var2(
         }
       }
 
+      //*******surface tension**************************************************************************************************
+      // The following term applies pairwise interaction forces to model surface tension following Tartakovsky et al. 2016
+      if(surfaceTension_>0.0)
+      {
+        double radius_ij = 0.5*(particle_i->radius_+particle_j.radius_);
+        double lambda = 0.0;
+        double potential = 0.0;
+        SurfTensionInterPot(radius_ij, interData_ij.rRelNorm2_, lambda, potential);
+
+        if(potential != 0.0)
+        {
+          // averaged number density (n_i = \rho_i/m_i)
+          double n_ij = 0.5*((density_i/particle_i->mass_)+(density_j/particle_j.mass_));
+
+          // convert static contact anglee in radians
+          double theta_0 = staticContactAngle_*PI/180.0;
+
+          double timefac = 1.0;
+          if(time >= 0.0)
+            timefac = SurfTensionTimeFac(time);
+
+          // pair-wise interaction force
+          const double s_sf = 0.5*std::pow(n_ij,-2.0)*(surfaceTension_/lambda)*(1+0.5*std::cos(theta_0));
+          LINALG::Matrix<3,1> pf_ij(true);
+          pf_ij.Update(-s_sf*potential, rRelVersor_ij, 1.0);
+
+          // assemble and write
+          LINALG::Matrix<3,1> accn_ji;
+          accn_ji.Update(1.0/particle_j.mass_, pf_ij);
+          accn_ji.Scale(-extMulti); // actio = - reactio
+          LINALG::Assemble(*accn, accn_ji, particle_j.lm_, particle_j.owner_);
+        }
+      }
+
       // write on particle j if appropriate specializing the quantities
       if (interData_ij.dw_ji_ != 0)
       {
@@ -2374,7 +2507,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_bpvp_acc_var2(
 
         if(background_pressure>0)
         {
-          if(freeSurfaceType!=INPAR::PARTICLE::FreeSurface_None)
+          if(freeSurfaceType_!=INPAR::PARTICLE::FreeSurface_None)
             dserror("Background pressure not available for free-surface flow in var2 so far!");
 
           LINALG::Matrix<3,1> p0_accn_ji;
@@ -2765,7 +2898,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_ReInitDensity(
   // erase the vectors
   density->PutScalar(0.0);
 
-  if(freeSurfaceType==INPAR::PARTICLE::InteriorReinizialization)
+  if(freeSurfaceType==INPAR::PARTICLE::InteriorReinitialization)
   {
     //loop over particles and re-initialize interior particles (FS_NONE) via density summation.
     //The density of free-surface particles has already been set via density integration and remains untouched!
@@ -2795,7 +2928,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_ReInitDensity(
     }//loop over i
   }
 
-  if(freeSurfaceType==INPAR::PARTICLE::NormalizedReinizialization)
+  if(freeSurfaceType==INPAR::PARTICLE::NormalizedReinitialization)
   {
     //loop over particles and re-initialize interior particles (FS_NONE) via density summation
     //and free-surface particles (FS_DIRECT and FS_INDIRECT) via normalized density summation (Shepard Filter)
@@ -2829,7 +2962,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_ReInitDensity(
     }//loop over i
   }
 
-  if(freeSurfaceType==INPAR::PARTICLE::RandlesReinizialization)
+  if(freeSurfaceType==INPAR::PARTICLE::RandlesReinitialization)
   {
     //loop over particles and re-initialize interior particles (FS_NONE) via density summation
     //and free-surface particles (FS_DIRECT and FS_INDIRECT) similar to the procedure in Randles 1996.
@@ -3040,6 +3173,76 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::InitFreeSurfaceParticles(
 
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate surface tension interaction potential          sfuchs 10/17 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::ParticleMeshFreeInteractionHandler::SurfTensionInterPot(
+    const double& radius,
+    const double& rRelNorm2,
+    double& lambda,
+    double& potential
+    )
+{
+  // Note: Following Tartakovsky et al. 2016 the pairwise interaction force F_int_4 is based on a QuinticBspline weight function
+  // and the parameter lambda follows from an integration of F_int_4 (see equations (45) and (46) for lambda in three and two dimensions)
+  // here we use the normalized QuinticBspline (in contrast to Tartakovsky et al. 2016 and in accordance with Kordilla et al. 2013), hence
+  // lambda contains also normalization terms
+
+  Teuchos::RCP<PARTICLE::WeightFunction_QuinticBspline> weightFunction = Teuchos::rcp(new PARTICLE::WeightFunction_QuinticBspline(WF_DIM_));
+
+  // scale factor of repulsive part
+  double A = DRT::Problem::Instance()->ParticleParams().get<double>("SURFTENSION_POT_A");
+  // scale factor of attractive part
+  double B = DRT::Problem::Instance()->ParticleParams().get<double>("SURFTENSION_POT_A");
+
+  // ratio of repulsive and attractive parts
+  double ratio = DRT::Problem::Instance()->ParticleParams().get<double>("SURFTENSION_POT_RATIO");
+
+  // range of repulsive part
+  double radius0 = ratio*radius;
+
+  switch (WF_DIM_)
+  {
+  case INPAR::PARTICLE::WF_3D :
+  {
+    lambda = (7.0*81.0)/(324.0*359.0) * ( -A*std::pow(radius0, 2) + B*std::pow(radius, 2) );
+    break;
+  }
+  case INPAR::PARTICLE::WF_2D :
+  {
+    lambda = (2771.0*63.0)/(20412.0*478.0*PI) * ( -A*std::pow(radius0, 2) + B*std::pow(radius, 2) );
+    break;
+  }
+  default :
+  {
+    dserror("Pairwise interaction force currently just possible for dimension 2 and 3!");
+  }
+  }
+
+  if(lambda <= 0.0)
+    dserror("The parameter lambda in the pairwise interaction force should be positive!");
+
+  potential = -A*weightFunction->W(rRelNorm2, radius0) + B*weightFunction->W(rRelNorm2, radius);
+
+  return;
+}
+
+/*------------------------------------------------------------------------*
+ | return surface tension time fac                           sfuchs 10/17 |
+ *------------------------------------------------------------------------*/
+double PARTICLE::ParticleMeshFreeInteractionHandler::SurfTensionTimeFac(const double& time)
+{
+  double fac=1.0;
+  double ramp_time=DRT::Problem::Instance()->ParticleParams().get<double>("SURFTENSION_RAMP_TIME");
+  if(ramp_time>0 and time >=0)
+  {
+    if(time<ramp_time)
+       fac=0.5*(1-cos(time*PI/ramp_time));
+  }
+
+  return fac;
 }
 
 /*------------------------------------------------------------------------------*
