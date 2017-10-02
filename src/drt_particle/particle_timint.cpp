@@ -700,6 +700,18 @@ void PARTICLE::TimInt::DetermineMeshfreeDensAndAcc(Teuchos::RCP<Epetra_Vector> a
     interHandler_->Inter_pvp_densityDot(densityDotn_);
     densityn_->Update(dt, *densityDotn_, 1.0);
     interHandler_->SetStateVector(densityn_, PARTICLE::Density);
+
+    #ifdef PARTICLE_BOUNDARYDENSITY
+    bool solve_thermal_problem=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM");
+    PARTICLE::Utils::Density2Pressure(restDensity_,refdensfac_,densityn_,specEnthalpyn_,pressure_,particle_algorithm_->ExtParticleMat(),true,solve_thermal_problem);
+    interHandler_->SetStateVector(pressure_, PARTICLE::Pressure);
+    //Asign accelerations, modified pressures and modified velocities for boundary particles and calculate their mechanical energy contribution
+    const INPAR::PARTICLE::WallInteractionType wallInteractionType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallInteractionType>(DRT::Problem::Instance()->ParticleParams(),"WALL_INTERACTION_TYPE");
+    if(wallInteractionType==INPAR::PARTICLE::BoundarParticle_NoSlip or wallInteractionType==INPAR::PARTICLE::BoundarParticle_FreeSlip)
+    {
+      interHandler_->InitBoundaryData(acc,particle_algorithm_->GetGravityAcc(time),bpintergy_);
+    }
+    #endif
   }
   else
   {

@@ -23,6 +23,7 @@ namespace PARTICLE
     Dis,
     Vel,
     VelConv,
+    Acc,
     Radius,
     Density,
     DensityDot,

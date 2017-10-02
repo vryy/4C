@@ -49,7 +49,7 @@
 //#define PARTICLE_OVERLAPPINGNEIGHBORS             //Determine also fully overlapping variant of neighbors vectors
 //#define PARTICLE_ONLYLAPLACETERM                  //Apply only Laplace term in viscous force calculation according to variant 1 (this is sufficient for incompressible flows)
 //#define PARTICLE_MINMAXOUTPUT_EVRY 100            //Ouput of minimal/maximal pressures, particle distances etc. every PARTICLE_MINMAXOUTPUT_EVRY time steps
-//#define PARTICLE_WRITECOLORFIELD                  //Output of colorField_ and fspType_ (free-surface particle type) for paraview
+//#define PARTICLE_BOUNDARYDENSITY                  //Determine the density of boundary particles required for colorfield and density reinitialization on the basis of pressure extrapolation (similar to Adami et al. 2012)
 
 /*----------------------------------------------------------------------*
  | forward declarations                                     ghamm 09/12 |

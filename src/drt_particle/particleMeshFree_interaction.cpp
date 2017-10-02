@@ -176,6 +176,11 @@ PARTICLE::ParticleMeshFreeInteractionHandler::ParticleMeshFreeInteractionHandler
     if (particle_algorithm_->GetRendering() == Teuchos::null)
       dserror("Rendering handler not set correctly in particle algorithm!");
   }
+
+#ifndef PARTICLE_BOUNDARYDENSITY
+  if(PARTICLE_REINITSHIFT!=2)
+    dserror("If PARTICLE_REINITSHIFT != 2, the flag PARTICLE_BOUNDARYDENSITY is required!");
+#endif
 }
 
 /*----------------------------------------------------------------------*
@@ -383,10 +388,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::InitBoundaryData(
   if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM"))
     dserror("Boundary particles are only considered in the context of pure fluid problems so far!");
 
-  // export acceleration accn (which is in row map format) into overlapping column map format, since accelerations of
-  // ghosted particles are also required in order to determine averaged accelerations of boundary particles!
-  Epetra_Vector accn_col(*(discret_->DofColMap()),true);
-  LINALG::Export(*accn,accn_col);
+  SetStateVector(accn, PARTICLE::Acc);
 
   //Clear energy in the beginning
   bpintergy=0.0;
@@ -397,14 +399,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::InitBoundaryData(
     int id_i = ii->first;
 
     ParticleMF *particle_i = boundaryparticles_[id_i];
-
-    //node ID equals particle ID id_i
-    DRT::Node *node = discret_->gNode(id_i);
-    std::vector<int> dofnode = discret_->Dof(node);
-    for(int i=0;i<3;i++)
-    {
-      particle_i->boundarydata_.acc_(i)=accn_col[discret_->DofColMap()->LID(dofnode[i])];
-    }
 
     LINALG::Matrix<3,1> sumjVjWij(true);
     LINALG::Matrix<3,1> sumjVDiffjWij(true);
@@ -468,7 +462,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::InitBoundaryData(
       //TODO: So far, boundary particles are only considered in the context of fluid problems (use of SpeedOfSoundL())!
       bpintergy+=PARTICLE::Utils::Density2Energy(particle_algorithm_->ExtParticleMat()->SpeedOfSoundL(),
           density_i, restDensity_, refdensfac_, particle_i->mass_);
-
     }
     else
     {
@@ -559,6 +552,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::SetStateVector(Teuchos::RCP<c
     case PARTICLE::Dis :
     case PARTICLE::Vel :
     case PARTICLE::VelConv :
+    case PARTICLE::Acc :
     {
       stateVectorCol = LINALG::CreateVector(*discret_->DofColMap(),false);
       break;
@@ -594,6 +588,11 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::SetStateVector(Teuchos::RCP<c
       case PARTICLE::VelConv :
       {
         DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*stateVectorCol, data.velConv_, data.lm_);
+        break;
+      }
+      case PARTICLE::Acc :
+      {
+        DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*stateVectorCol, data.boundarydata_.acc_, data.lm_);
         break;
       }
       // node based vectors
@@ -1686,6 +1685,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc_var1(
         if(background_pressure>0)
         {
           LINALG::Matrix<3,1> p0_accn_ji;
+
           if(freeSurfaceType_==INPAR::PARTICLE::FreeSurface_None)
           {
             p0_accn_ji.Update(generalCoeff_ji, p0_momentum_ij);
@@ -2175,7 +2175,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc_var2(
           // pair-wise interaction force
           const double s_ff = 0.5*std::pow(n_ij,-2.0)*(surfaceTension_/lambda);
           LINALG::Matrix<3,1> pf_ij(true);
-          pf_ij.Update(-s_ff*potential, rRelVersor_ij, 1.0);
+          pf_ij.Update(-s_ff*potential*timefac, rRelVersor_ij, 1.0);
 
           // assemble and write
           LINALG::Matrix<3,1> accn_ij;
@@ -2471,7 +2471,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_bpvp_acc_var2(
           // pair-wise interaction force
           const double s_sf = 0.5*std::pow(n_ij,-2.0)*(surfaceTension_/lambda)*(1+0.5*std::cos(theta_0));
           LINALG::Matrix<3,1> pf_ij(true);
-          pf_ij.Update(-s_sf*potential, rRelVersor_ij, 1.0);
+          pf_ij.Update(-s_sf*potential*timefac, rRelVersor_ij, 1.0);
 
           // assemble and write
           LINALG::Matrix<3,1> accn_ji;
@@ -2694,7 +2694,6 @@ for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_hs_.size(); ++lid
   //const double density_i = useDensityApprox ? particle_i.densityapprox_ : particle_i.density_;
   const double density_i = particle_i.density_;
 
-
   double specEnthalpyDot_i = 0.0;
   // loop over the interaction particle list
   for (boost::unordered_map<int, Teuchos::RCP<HeatSource> >::const_iterator jj = neighbours_hs_[lidNodeRow_i].begin(); jj != neighbours_hs_[lidNodeRow_i].end(); ++jj)
@@ -2817,6 +2816,9 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mW_Boundary(
     const Teuchos::RCP<Epetra_Vector> unity_vec,
     const double extMulti)
 {
+
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleMeshFreeInteractionHandler::MF_mW_Boundary");
+
   //checks
   if (mW == Teuchos::null)
   {
@@ -2850,13 +2852,19 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mW_Boundary(
         LINALG::Assemble(*mW, mW_ji, particle_j.gid_, particle_j.owner_);
         if(unity_vec!=Teuchos::null)
         {
-          double unity_vec_aux=mW_ji/initDensity_;
+          double unity_vec_aux=0.0;
+#ifndef PARTICLE_BOUNDARYDENSITY
+          unity_vec_aux=mW_ji/initDensity_;
+#else
+          unity_vec_aux=mW_ji/particle_i->boundarydata_.densityMod_;
+#endif
+
+
           LINALG::Assemble(*unity_vec, unity_vec_aux, particle_j.gid_, particle_j.owner_);
         }
       }
     }
   }
-
 
   // loop over all boundary particles (not only the one with fluid neighbors!) and set density and color field
   // loop over the boundary particles
@@ -3110,6 +3118,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::InitFreeSurfaceParticles(
       freesurfaceparticles_[particle_i.gid_]=&colParticles_[lidNodeCol_i];
     }
   }
+  //***********************************************************************************************************************************************
 
   //************loop over free surface particles and search for neighbors (for free-surface particles we need superposition --> column map)********
   // clear bin checker
@@ -3170,7 +3179,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::InitFreeSurfaceParticles(
       LINALG::Assemble(*fspType, fspType_i, particle_i.gid_, particle_i.owner_);
     }
   }
-
 
   return;
 }
