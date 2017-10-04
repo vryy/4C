@@ -1884,7 +1884,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiElast(
     Epetra_SerialDenseMatrix* d2sntDdDT
     )
 {
-  GetNurbsEleInfo();
+  if (distype==DRT::Element::nurbs27)
+    GetNurbsEleInfo();
 
   if (fbar_ || eastype_!=soh8p_easnone)
     dserror("cauchy stress not available for fbar or eas elements");
@@ -3233,6 +3234,9 @@ void DRT::ELEMENTS::So3_Plast<distype>::HeatFlux(
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::GetNurbsEleInfo(DRT::Discretization* dis)
 {
+  if (! IsNurbsElement())
+    return;
+
   if (dis==NULL)
         dis = DRT::Problem::Instance()->GetDis("structure").get();
 
