@@ -12,11 +12,14 @@
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_element_integration_select.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 #include "../drt_mat/so3_material.H"
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_mat/material_service.H"
 #include "../drt_mat/fourieriso.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
 
 
 /*----------------------------------------------------------------------*
@@ -38,6 +41,9 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueCombin
       break;
   case DRT::Element::tet4:
       return EstimateNitscheTraceMaxEigenvalueCombined<DRT::Element::tet4,DRT::Element::tri3>(parent_disp);
+      break;
+  case DRT::Element::nurbs27:
+      return EstimateNitscheTraceMaxEigenvalueCombined<DRT::Element::nurbs27,DRT::Element::nurbs9>(parent_disp);
       break;
   default:
     dserror("parent shape not implemented");
@@ -189,8 +195,40 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrix(
     Teuchos::rcp_dynamic_cast<MAT::So3Material>(ParentElement()->Material())->
         Evaluate(&defgrd,&glstrain,params,&stress,&cmat,ParentElement()->Id());
 
-    DRT::UTILS::shape_function_2D_deriv1(deriv_surf,ip.IP().qxg[gp][0], ip.IP().qxg[gp][1],Shape());
+    double normalfac=1.;
+    if (Shape()==DRT::Element::nurbs9)
+    {
+      std::vector<Epetra_SerialDenseVector> parentknots(dim);
+      std::vector<Epetra_SerialDenseVector> boundaryknots(dim-1);
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(
+          DRT::Problem::Instance()->GetDis("structure").get())->
+              GetKnotVector()->GetBoundaryEleAndParentKnots(
+                  parentknots,
+                  boundaryknots,
+                  normalfac,
+                  ParentElement()->Id(),
+                  FaceParentNumber());
+
+      LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<dt_surf>::numNodePerElement,1> weights, shapefcn;
+      for (int i=0;i<DRT::UTILS::DisTypeToNumNodePerEle<dt_surf>::numNodePerElement;++i)
+        weights(i) = dynamic_cast<DRT::NURBS::ControlPoint* > (Nodes()[i])->W();
+
+      LINALG::Matrix<2,1> xi_surf;
+      xi_surf(0)=ip.IP().qxg[gp][0];
+      xi_surf(1)=ip.IP().qxg[gp][1];
+      DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
+        (shapefcn                 ,
+         deriv_surf                 ,
+         xi_surf                   ,
+         boundaryknots               ,
+         weights               ,
+         dt_surf);
+    }
+    else
+      DRT::UTILS::shape_function_2D_deriv1(deriv_surf,ip.IP().qxg[gp][0], ip.IP().qxg[gp][1],Shape());
+
     SurfaceIntegration(detA,n,xrefe_surf,deriv_surf);
+    n_v.Scale(normalfac);
     n_v.Scale(1./n_v.Norm2());
     nn.MultiplyNT(n_v,n_v);
 
@@ -227,7 +265,29 @@ void DRT::ELEMENTS::StructuralSurface::Strains(
   const int dim = DRT::UTILS::DisTypeToDim<dt_vol>::dim;
   const int num_node = DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement;
   LINALG::Matrix<dim,num_node> deriv;
-  DRT::UTILS::shape_function_deriv1<dt_vol>(xi,deriv);
+
+  if (dt_vol==DRT::Element::nurbs27)
+  {
+    std::vector<Epetra_SerialDenseVector> knots;
+    dynamic_cast<DRT::NURBS::NurbsDiscretization*>(
+        DRT::Problem::Instance()->GetDis("structure").get())->
+            GetKnotVector()->GetEleKnots(knots,ParentElementId());
+
+    LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,1> weights, shapefcn;
+
+    for (int i=0;i<DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement;++i)
+      weights(i) = dynamic_cast<DRT::NURBS::ControlPoint* > (ParentElement()->Nodes()[i])->W();
+
+    DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
+      (shapefcn                 ,
+       deriv                 ,
+       xi                   ,
+       knots               ,
+       weights               ,
+       dt_vol);
+  }
+  else
+    DRT::UTILS::shape_function_deriv1<dt_vol>(xi,deriv);
 
   LINALG::Matrix<dim,dim> invJ;
   invJ.Multiply(deriv,xrefe);
@@ -385,6 +445,8 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueTSI(
     return EstimateNitscheTraceMaxEigenvalueTSI<DRT::Element::hex27,DRT::Element::quad9>(parent_disp);
   case DRT::Element::tet4:
     return EstimateNitscheTraceMaxEigenvalueTSI<DRT::Element::tet4,DRT::Element::tri3>(parent_disp);
+  case DRT::Element::nurbs27:
+    return EstimateNitscheTraceMaxEigenvalueTSI<DRT::Element::nurbs27,DRT::Element::nurbs9>(parent_disp);
   default:
     dserror("parent shape not implemented");
   }

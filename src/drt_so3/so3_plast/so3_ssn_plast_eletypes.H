@@ -11,6 +11,7 @@
 #include "../so_hex8.H"
 #include "../so_hex18.H"
 #include "../so_hex27.H"
+#include "../so_nurbs27.H"
 
 namespace DRT
 {
@@ -165,6 +166,43 @@ namespace ELEMENTS
     static So_tet4PlastType instance_;
 
   };  // class So_tet4PlastType
+
+
+  /*----------------------------------------------------------------------------*
+   * NURBS27 Element
+   *----------------------------------------------------------------------------*/
+  class So_nurbs27PlastType : public NURBS::So_nurbs27Type
+  {
+  public:
+
+    std::string Name() const { return "So_nurbs27PlastType"; }
+
+    static So_nurbs27PlastType & Instance();
+
+    virtual DRT::ParObject* Create( const std::vector<char> & data );
+
+    virtual Teuchos::RCP<DRT::Element> Create(
+        const std::string eletype,
+        const std::string eledistype,
+        const int id,
+        const int owner
+    );
+
+    virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+
+    virtual int Initialize(DRT::Discretization& dis);
+
+    virtual void SetupElementDefinition(
+        std::map<std::string,
+        std::map<std::string,
+        DRT::INPUT::LineDefinition> > & definitions
+    );
+
+  private:
+
+    static So_nurbs27PlastType instance_;
+
+  };  // class So_nurbs27PlastType
 
 
 }  // namespace ELEMENTS

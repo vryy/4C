@@ -25,6 +25,8 @@
 // dependent on distype
 #include "../../drt_fem_general/drt_utils_gausspoints.H"
 
+#include "../../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+
 /*----------------------------------------------------------------------*
  |                                                          seitz 07/13 |
  *----------------------------------------------------------------------*/
@@ -679,6 +681,10 @@ enum So3Plast_EASType  // with meaningful value for matrix size info
     static std::pair<bool,double> det_jac_0_;
     static std::pair<bool,LINALG::SerialDenseMatrix> M_eas_;      // EAS matrix M at current GP
 
+    // NURBS-specific
+    static std::pair<bool,LINALG::Matrix<nen_,1> > weights_;
+    static std::pair<bool,std::vector<Epetra_SerialDenseVector> > knots_;
+
     virtual void InvalidGpData()
     {
       shapefunct_.first=false;
@@ -713,6 +719,30 @@ enum So3Plast_EASType  // with meaningful value for matrix size info
       T0invT_.first=false;
       jac_0_.first=false;
       det_jac_0_.first=false;
+      weights_.first=false;
+      knots_.first=false;
+    }
+
+    inline const LINALG::Matrix<nen_,1>& Weights() const
+    {
+      dsassert(weights_.first,"weights_ not valid");
+      return weights_.second;
+    }
+    inline LINALG::Matrix<nen_,1>& SetWeights()
+    {
+      weights_.first=true;
+      return weights_.second;
+    }
+
+    inline const std::vector<Epetra_SerialDenseVector>& Knots() const
+    {
+      dsassert(knots_.first,"weights_ not valid");
+      return knots_.second;
+    }
+    inline std::vector<Epetra_SerialDenseVector>& SetKnots()
+    {
+      knots_.first=true;
+      return knots_.second;
     }
 
     void FillPositionArrays(
@@ -1060,6 +1090,36 @@ enum So3Plast_EASType  // with meaningful value for matrix size info
       M_eas_.first=true;
       return M_eas_.second;
     }
+
+    inline void EvaluateShape(const LINALG::Matrix<3,1>& xi)
+    {
+      if (distype==DRT::Element::nurbs27)
+        DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
+          (SetShapeFunction(),
+           SetDerivShapeFunction(),
+           xi,
+           Knots(),
+           Weights(),
+           distype);
+      else
+        DRT::UTILS::shape_function<distype>(xi,SetShapeFunction());
+    }
+
+    inline void EvaluateShapeDeriv(const LINALG::Matrix<3,1>& xi)
+    {
+      if (distype==DRT::Element::nurbs27)
+        DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
+          (SetShapeFunction(),
+           SetDerivShapeFunction(),
+           xi,
+           Knots(),
+           Weights(),
+           distype);
+      else
+        DRT::UTILS::shape_function_deriv1<distype>(xi,SetDerivShapeFunction());
+    }
+
+    void GetNurbsEleInfo(DRT::Discretization* dis=NULL);
 
 
   };  // class So3_Plast

@@ -59,6 +59,10 @@ DRT::ELEMENTS::So3_Plast<distype>::So3_Plast(
   tsi_(false),
   is_nitsche_contact_(false)
 {
+  if (distype==DRT::Element::nurbs27)
+    SetNurbsElement()=true;
+  else
+    SetNurbsElement()=false;
   return;
 }
 
@@ -72,6 +76,10 @@ DRT::ELEMENTS::So3_Plast<distype>::So3_Plast(
   ):
   So_base(old)
 {
+  if (distype==DRT::Element::nurbs27)
+    SetNurbsElement()=true;
+  else
+    SetNurbsElement()=false;
   return;
 }
 
@@ -183,6 +191,13 @@ template<DRT::Element::DiscretizationType distype>
 std::pair<bool,LINALG::SerialDenseMatrix>
 DRT::ELEMENTS::So3_Plast<distype>::M_eas_;
 
+template<DRT::Element::DiscretizationType distype>
+std::pair<bool,LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_,1> >
+DRT::ELEMENTS::So3_Plast<distype>::weights_;
+template<DRT::Element::DiscretizationType distype>
+std::pair<bool,std::vector<Epetra_SerialDenseVector> >
+DRT::ELEMENTS::So3_Plast<distype>::knots_;
+
 /*----------------------------------------------------------------------*
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
@@ -191,9 +206,11 @@ int DRT::ELEMENTS::So3_Plast<distype>::NumVolume() const
 {
   switch(distype)
   {
+  case DRT::Element::tet4:
   case DRT::Element::hex8:
   case DRT::Element::hex18:
   case DRT::Element::hex27:
+  case DRT::Element::nurbs27:
     return 0;
     break;
   default:
@@ -214,6 +231,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::NumSurface() const
   case DRT::Element::hex8:
   case DRT::Element::hex18:
   case DRT::Element::hex27:
+  case DRT::Element::nurbs27:
     return 6;
     break;
   case DRT::Element::tet4:
@@ -237,6 +255,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::NumLine() const
   case DRT::Element::hex8:
   case DRT::Element::hex18:
   case DRT::Element::hex27:
+  case DRT::Element::nurbs27:
     return 12;
     break;
   case DRT::Element::tet4:
@@ -707,6 +726,9 @@ int DRT::ELEMENTS::So3_Plast<distype>::UniqueParObjectId() const
   case DRT::Element::tet4:
     return So_tet4PlastType::Instance().UniqueParObjectId();
     break;
+  case DRT::Element::nurbs27:
+    return So_nurbs27PlastType::Instance().UniqueParObjectId();
+    break;
   default:
     dserror("unknown element type!");
     break;
@@ -735,6 +757,9 @@ DRT::ElementType& DRT::ELEMENTS::So3_Plast<distype>::ElementType() const
     break;
   case DRT::Element::tet4:
     return So_tet4PlastType::Instance();
+    break;
+  case DRT::Element::nurbs27:
+    return So_nurbs27PlastType::Instance();
     break;
   default:
     dserror("unknown element type!");

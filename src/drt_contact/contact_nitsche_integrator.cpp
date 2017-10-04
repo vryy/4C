@@ -465,6 +465,9 @@ void CONTACT::CoIntegratorNitsche::SoEleCauchy(
   case DRT::Element::tri3:
     SoEleGP<DRT::Element::tri3,dim>(moEle,gp_wgt,boundary_gpcoord,pxsi,derivtravo_slave);
     break;
+  case DRT::Element::nurbs27:
+    SoEleGP<DRT::Element::nurbs27,dim>(moEle,gp_wgt,boundary_gpcoord,pxsi,derivtravo_slave);
+    break;
   default:
     dserror("Nitsche contact not implemented for used (bulk) elements");
   }
@@ -516,6 +519,8 @@ void CONTACT::CoIntegratorNitsche::IntegrateTest(
     const LINALG::Matrix<dim,1>& test_dir, const std::vector<GEN::pairedvector<int,double> >& test_dir_deriv
     )
 {
+  if (abs(fac)<1.e-16) return;
+
   for (int d=0;d<Dim();++d)
   {
     double val = fac*jac*wgt*test_val*test_dir(d);

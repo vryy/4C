@@ -201,7 +201,15 @@ bool STR::MODELEVALUATOR::Contact::AssembleForce(Epetra_Vector& f,
     const double & timefac_np) const
 {
   Teuchos::RCP<const Epetra_Vector> block_vec_ptr = Teuchos::null;
-  if (Strategy().IsCondensedSystem())
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(
+      Strategy().Params(),"ALGORITHM") == INPAR::MORTAR::algorithm_gpts)
+  {
+    block_vec_ptr = Strategy().GetRhsBlockPtr(DRT::UTILS::block_displ);
+    // if there are no active contact contributions, we can skip this...
+    if (block_vec_ptr.is_null()) return true;
+    LINALG::AssembleMyVector(1.0,f,timefac_np,*block_vec_ptr);
+  }
+  else if (Strategy().IsCondensedSystem())
   {
     block_vec_ptr = Strategy().GetCondensedRhsPtr(f, timefac_np);
     // if there are no active contact contributions, we can skip this...
@@ -226,14 +234,6 @@ bool STR::MODELEVALUATOR::Contact::AssembleForce(Epetra_Vector& f,
           "are present!");
     LINALG::AssembleMyVector(1.0,f,1.0,*block_vec_ptr);
   }
-  else if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(
-      Strategy().Params(),"ALGORITHM") == INPAR::MORTAR::algorithm_gpts)
-  {
-    block_vec_ptr = Strategy().GetRhsBlockPtr(DRT::UTILS::block_displ);
-    // if there are no active contact contributions, we can skip this...
-    if (block_vec_ptr.is_null()) return true;
-    LINALG::AssembleMyVector(1.0,f,timefac_np,*block_vec_ptr);
-  }
 
 
   return true;
@@ -247,9 +247,21 @@ bool STR::MODELEVALUATOR::Contact::AssembleJacobian(
   Teuchos::RCP<LINALG::SparseMatrix> block_ptr = Teuchos::null;
   int err = 0;
   // ---------------------------------------------------------------------
+  // gpts / Nitsche system: no additional/condensed dofs
+  // ---------------------------------------------------------------------
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(
+      Strategy().Params(),"ALGORITHM") == INPAR::MORTAR::algorithm_gpts)
+  {
+    block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::block_displ_displ);
+    Teuchos::RCP<LINALG::SparseMatrix> jac_dd =
+        GState().ExtractDisplBlock(jac);
+    jac_dd->Add(*block_ptr,false,timefac_np,1.0);
+  }
+
+  // ---------------------------------------------------------------------
   // condensed system of equations
   // ---------------------------------------------------------------------
-  if (Strategy().IsCondensedSystem())
+  else if (Strategy().IsCondensedSystem())
   {
     Teuchos::RCP<LINALG::SparseMatrix> jac_dd =
         GState().ExtractDisplBlock(jac);
@@ -321,14 +333,6 @@ bool STR::MODELEVALUATOR::Contact::AssembleJacobian(
     }
     // reset the block pointer, just to be on the safe side
     block_ptr = Teuchos::null;
-  }
-  else if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(
-      Strategy().Params(),"ALGORITHM") == INPAR::MORTAR::algorithm_gpts)
-  {
-    block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::block_displ_displ);
-    Teuchos::RCP<LINALG::SparseMatrix> jac_dd =
-        GState().ExtractDisplBlock(jac);
-    jac_dd->Add(*block_ptr,false,timefac_np,1.0);
   }
 
   return (err==0);

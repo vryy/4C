@@ -25,6 +25,7 @@
 #include "../../drt_structure_new/str_elements_paramsinterface.H"
 #include "../../linalg/linalg_serialdensematrix.H"
 #include "../../linalg/linalg_serialdensevector.H"
+#include "../../drt_nurbs_discret/drt_nurbs_discret.H"
 
 #include "../../drt_mat/fourieriso.H"
 
@@ -43,6 +44,10 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(
   Epetra_SerialDenseVector& elevec3_epetra
   )
 {
+  InvalidEleData();
+  if (distype==DRT::Element::nurbs27)
+    GetNurbsEleInfo(&discretization);
+
   SetParamsInterfacePtr(params);
 
   dsassert(kintype_==INPAR::STR::kinem_nonlinearTotLag,"only geometricallly nonlinear formluation for plasticity!");
@@ -706,8 +711,6 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
     const INPAR::STR::StrainType   iostrain   // strain output option
     )
 {
-  InvalidEleData();
-
   const bool eval_tsi = (temp.size()!=0);
   const bool is_tangDis = StrParamsInterface().GetPredictorType() == INPAR::STR::pred_tangdis;
   const double dt=StrParamsInterface().GetDeltaTime();
@@ -749,8 +752,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
     InvalidGpData();
 
     // shape functions (shapefunct) and their first derivatives (deriv)
-    DRT::UTILS::shape_function<distype>(xsi_[gp],SetShapeFunction());
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],SetDerivShapeFunction());
+    EvaluateShape(xsi_[gp]);
+    EvaluateShapeDeriv(xsi_[gp]);
 
     Kinematics(gp);
 
@@ -1881,6 +1884,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiElast(
     Epetra_SerialDenseMatrix* d2sntDdDT
     )
 {
+  GetNurbsEleInfo();
+
   if (fbar_ || eastype_!=soh8p_easnone)
     dserror("cauchy stress not available for fbar or eas elements");
 
@@ -1913,8 +1918,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiElast(
         ele_temp(i)=temp->at(i);
   }
 
-  DRT::UTILS::shape_function<distype>(xi,SetShapeFunction());
-  DRT::UTILS::shape_function_deriv1<distype>(xi,SetDerivShapeFunction());
+  EvaluateShape(xi);
+  EvaluateShapeDeriv(xi);
 
   const double gp_temp = ele_temp.Dot(ShapeFunction());
   double dsntdT_gp =0.;
@@ -2041,7 +2046,17 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiElast(
 
     LINALG::Matrix < DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2,
     nen_ > deriv2;
-    DRT::UTILS::shape_function_deriv2<distype>(xi,deriv2);
+    if (distype==DRT::Element::nurbs27)
+      DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv_deriv2(
+         SetShapeFunction(),
+         SetDerivShapeFunction(),
+         deriv2,
+         xi,
+         Knots(),
+         Weights(),
+         distype);
+    else
+      DRT::UTILS::shape_function_deriv2<distype>(xi,deriv2);
 
     LINALG::Matrix<nen_,nsd_> xXF(xcurr);
     xXF.MultiplyNT(-1.,xrefe,defgrd,1.);
@@ -3215,6 +3230,18 @@ void DRT::ELEMENTS::So3_Plast<distype>::HeatFlux(
   }
 }
 
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::GetNurbsEleInfo(DRT::Discretization* dis)
+{
+  if (dis==NULL)
+        dis = DRT::Problem::Instance()->GetDis("structure").get();
+
+  dynamic_cast<DRT::NURBS::NurbsDiscretization*>(dis)->
+      GetKnotVector()->GetEleKnots(SetKnots(),Id());
+  for (int i=0;i<nen_;++i)
+    SetWeights()(i) = dynamic_cast<DRT::NURBS::ControlPoint* > (Nodes()[i])->W();
+}
+
 // template functions
 template void DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>::
 CondensePlasticity<5>(
@@ -3336,6 +3363,46 @@ CondensePlasticity<8>(
     const LINALG::Matrix<numdofperelement_,1>*
     );
 
+template void DRT::ELEMENTS::So3_Plast<DRT::Element::nurbs27>::
+CondensePlasticity<5>(
+    const LINALG::Matrix<nsd_,nsd_>&,
+    const LINALG::Matrix<nsd_,nsd_>&,
+    const LINALG::Matrix<numstr_,numdofperelement_>&,
+    const LINALG::Matrix<nsd_,nen_>*,
+    const LINALG::Matrix<numstr_,1>*,
+    const double,
+    const int,
+    const double,
+    Teuchos::ParameterList&,
+    LINALG::Matrix<numdofperelement_,1>*,
+    LINALG::Matrix<numdofperelement_,numdofperelement_>*,
+    const Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    std::vector<Epetra_SerialDenseVector>*,
+    const double*,
+    const LINALG::Matrix<numdofperelement_,1>*
+    );
+
+template void DRT::ELEMENTS::So3_Plast<DRT::Element::nurbs27>::
+CondensePlasticity<8>(
+    const LINALG::Matrix<nsd_,nsd_>&,
+    const LINALG::Matrix<nsd_,nsd_>&,
+    const LINALG::Matrix<numstr_,numdofperelement_>&,
+    const LINALG::Matrix<nsd_,nen_>*,
+    const LINALG::Matrix<numstr_,1>*,
+    const double,
+    const int,
+    const double,
+    Teuchos::ParameterList&,
+    LINALG::Matrix<numdofperelement_,1>*,
+    LINALG::Matrix<numdofperelement_,numdofperelement_>*,
+    const Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    std::vector<Epetra_SerialDenseVector>*,
+    const double*,
+    const LINALG::Matrix<numdofperelement_,1>*
+    );
+
 template
 void DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>::HeatFlux(
     const std::vector<double>& ,
@@ -3369,6 +3436,21 @@ void DRT::ELEMENTS::So3_Plast<DRT::Element::hex27>::HeatFlux(
 
 template
 void DRT::ELEMENTS::So3_Plast<DRT::Element::tet4>::HeatFlux(
+    const std::vector<double>& ,
+    const std::vector<double>& ,
+    const LINALG::Matrix<nsd_,1>& ,
+    const LINALG::Matrix<nsd_,1>& ,
+    double& ,
+    Epetra_SerialDenseMatrix* ,
+    Epetra_SerialDenseMatrix* ,
+    LINALG::Matrix<nsd_,1>* ,
+    LINALG::Matrix<nsd_,1>* ,
+    Epetra_SerialDenseMatrix* ,
+    Epetra_SerialDenseMatrix* ,
+    Epetra_SerialDenseMatrix* );
+
+template
+void DRT::ELEMENTS::So3_Plast<DRT::Element::nurbs27>::HeatFlux(
     const std::vector<double>& ,
     const std::vector<double>& ,
     const LINALG::Matrix<nsd_,1>& ,
