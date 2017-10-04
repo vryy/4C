@@ -2174,6 +2174,10 @@ int DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
   case DRT::Element::quad8:
   case DRT::Element::quad9:
     return eleNodeNumbering_quad9_lines[faceId][faceNodeId]; break;
+  case DRT::Element::nurbs9:
+    return eleNodeNumbering_nurbs9_lines[faceId][faceNodeId]; break;
+  case DRT::Element::nurbs27:
+    return eleNodeNumbering_nurbs27_surfaces[faceId][faceNodeId]; break;
   default: dserror("not implemented for this distype");
   }
   return -1;
