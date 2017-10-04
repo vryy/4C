@@ -22,7 +22,7 @@
 #include "../drt_mortar/mortar_element.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_lib/drt_utils_matrix_vector_enums.H"
-
+#include <unordered_map>
 
 namespace MORTAR
 {
@@ -72,9 +72,9 @@ public:
       DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement;
 
   LINALG::Matrix<num_parent_thermo_dof,1> rhs_t_;
-  std::map<int,LINALG::Matrix<num_parent_thermo_dof,1> > k_tt_;
-  std::map<int,LINALG::Matrix<num_parent_thermo_dof,1> > k_td_;
-  std::map<int,LINALG::Matrix<num_parent_disp_dof,1> > k_dt_;
+  std::unordered_map<int,LINALG::Matrix<num_parent_thermo_dof,1> > k_tt_;
+  std::unordered_map<int,LINALG::Matrix<num_parent_thermo_dof,1> > k_td_;
+  std::unordered_map<int,LINALG::Matrix<num_parent_disp_dof,1> > k_dt_;
 };
 
 
@@ -115,7 +115,7 @@ public:
   template<int num_dof_per_node>
   void AssembleMatrix(
       MORTAR::MortarElement* mele,
-      const std::map<int,LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement*num_dof_per_node,1> >& k,
+      const std::unordered_map<int,LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement*num_dof_per_node,1> >& k,
       Teuchos::RCP<LINALG::SparseMatrix> kc);
 
 
@@ -126,7 +126,7 @@ private:
   DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement
   *
   DRT::UTILS::DisTypeToDim<parent_distype>::dim,1> rhs_;
-  std::map<int,LINALG::Matrix<
+  std::unordered_map<int,LINALG::Matrix<
   DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement
     *
     DRT::UTILS::DisTypeToDim<parent_distype>::dim,1> > k_;

@@ -529,7 +529,7 @@ void CONTACT::CoIntegratorNitsche::IntegrateTest(
       *(ele.GetNitscheContainer().rhs(
           DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(ele.ParentElement()->Shape(),ele.FaceParentNumber(),s)*dim+d))+=val*shape(s);
 
-    std::map<int,double> val_deriv;
+    std::unordered_map<int,double> val_deriv;
 
     for (GEN::pairedvector<int,double>::const_iterator p=jacintcellmap.begin();p!=jacintcellmap.end();++p)
       val_deriv[p->first]+=fac * p->second * wgt*test_val*test_dir(d);
@@ -538,7 +538,7 @@ void CONTACT::CoIntegratorNitsche::IntegrateTest(
     for (GEN::pairedvector<int,double>::const_iterator p=test_dir_deriv[d].begin();p!=test_dir_deriv[d].end();++p)
       val_deriv[p->first]+=fac * jac*wgt*test_val*p->second;
 
-    for (std::map<int,double>::const_iterator p=val_deriv.begin();p!=val_deriv.end();++p)
+    for (std::unordered_map<int,double>::const_iterator p=val_deriv.begin();p!=val_deriv.end();++p)
     {
       double* row = ele.GetNitscheContainer().k(p->first);
       for (int s=0;s<ele.NumNode();++s)

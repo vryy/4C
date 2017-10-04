@@ -43,14 +43,14 @@ template<DRT::Element::DiscretizationType parent_distype>
 template<int num_dof_per_node>
 void MORTAR::MortarElementNitscheData<parent_distype>::AssembleMatrix(
     MORTAR::MortarElement* mele,
-    const std::map<int,LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement*num_dof_per_node,1> >& k,
+    const std::unordered_map<int,LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement*num_dof_per_node,1> >& k,
     Teuchos::RCP<LINALG::SparseMatrix> kc)
 {
   const int nen = DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement;
   const int nsd = DRT::UTILS::DisTypeToDim<parent_distype>::dim;
 
   if (kc!=Teuchos::null)
-    for (typename std::map<
+    for (typename std::unordered_map<
         int,LINALG::Matrix<nen*num_dof_per_node,1>
         >::const_iterator p=k.begin();p!=k.end();++p)
       for (int n=0;n<nen;++n)
