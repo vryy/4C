@@ -2202,7 +2202,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc_var2(
         if(artificialViscosity_>0)
         {
           const double generalCoeff_artvisc_ij = particle_j.mass_*interData_ij.dw_ij_;
-          accn_ij.Update(generalCoeff_artvisc_ij, momentum_artvisc_ij);
+          accn_ij.Update(generalCoeff_artvisc_ij, momentum_artvisc_ij, 1.0);
         }
         accn_ij.Scale(extMulti);
         sumj_accn_ij.Update(1.0,accn_ij,1.0);
@@ -2243,7 +2243,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc_var2(
         if(artificialViscosity_>0)
         {
           const double generalCoeff_artvisc_ji = particle_i.mass_*interData_ij.dw_ji_;
-          accn_ji.Update(generalCoeff_artvisc_ji, momentum_artvisc_ij);
+          accn_ji.Update(generalCoeff_artvisc_ji, momentum_artvisc_ij, 1.0);
         }
         accn_ji.Scale(-extMulti); // actio = - reactio
         LINALG::Assemble(*accn, accn_ji, particle_j.lm_, particle_j.owner_);
@@ -2494,7 +2494,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_bpvp_acc_var2(
         if(artificialViscosity_>0)
         {
           const double generalCoeff_artvisc_ji = particle_i->mass_*interData_ij.dw_ji_;
-          accn_ji.Update(generalCoeff_artvisc_ji, momentum_artvisc_ij);
+          accn_ji.Update(generalCoeff_artvisc_ji, momentum_artvisc_ij, 1.0);
         }
         accn_ji.Scale(-extMulti); // actio = - reactio
         LINALG::Assemble(*accn, accn_ji, particle_j.lm_, particle_j.owner_);
