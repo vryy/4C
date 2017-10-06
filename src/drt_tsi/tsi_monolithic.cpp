@@ -99,6 +99,7 @@ TSI::Monolithic::Monolithic(
   iter_(0),
   sdyn_(sdynparams),
   timernewton_(comm),
+  dtsolve_(0.),
   ptcdt_(tsidynmono_.get<double>("PTCDT")),
   dti_(1.0/ptcdt_),
   ls_strategy_(DRT::INPUT::IntegralValue<INPAR::TSI::LineSearch>(tsidynmono_,"TSI_LINE_SEARCH")),
