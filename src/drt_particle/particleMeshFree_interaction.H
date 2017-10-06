@@ -186,36 +186,18 @@ namespace PARTICLE
         const double extMulti = 1.0);
 
     /// compute the momentum part of the particle vs particle interactions
-    virtual void Inter_pvp_acc_var1(
+    virtual void Inter_pvp_acc(
         const Teuchos::RCP<Epetra_Vector> accn,
         const Teuchos::RCP<Epetra_Vector> trvl_acc = Teuchos::null,
         const Teuchos::RCP<Epetra_Vector> acc_A = Teuchos::null,
-        const double time = -1.0,
-        const double extMulti = 1.0);
+        const double time = -1.0);
 
     /// compute the momentum part of the boundary particle vs particle interactions
-    virtual void Inter_bpvp_acc_var1(
+    virtual void Inter_bpvp_acc(
         const Teuchos::RCP<Epetra_Vector> accn,
         const Teuchos::RCP<Epetra_Vector> trvl_acc = Teuchos::null,
         const Teuchos::RCP<Epetra_Vector> acc_A = Teuchos::null,
-        const double time = -1.0,
-        const double extMulti = 1.0);
-
-    /// compute the momentum part of the particle vs particle interactions: alternative variant according to Adami2013
-    virtual void Inter_pvp_acc_var2(
-        const Teuchos::RCP<Epetra_Vector> accn,
-        const Teuchos::RCP<Epetra_Vector> trvl_acc = Teuchos::null,
-        const Teuchos::RCP<Epetra_Vector> acc_A = Teuchos::null,
-        const double time = -1.0,
-        const double extMulti = 1.0);
-
-    /// compute the momentum part of the boundary particle vs particle interactions: alternative variant according to Adami2013
-    virtual void Inter_bpvp_acc_var2(
-        const Teuchos::RCP<Epetra_Vector> accn,
-        const Teuchos::RCP<Epetra_Vector> trvl_acc = Teuchos::null,
-        const Teuchos::RCP<Epetra_Vector> acc_A = Teuchos::null,
-        const double time = -1.0,
-        const double extMulti = 1.0);
+        const double time = -1.0);
 
     ///Computes Gradient of divergence operator for vector v - pvp
     virtual void Inter_pvp_Laplace_x(
@@ -292,8 +274,10 @@ namespace PARTICLE
 
   protected:
 
-    //! @name AddNewNeighbours - these functions are collected in AddNewNeighbours for faster search. This is the most modular
-    //! way to compute neighbours that I can think off (without hindering performances) If you have a better idea I am open to suggestions
+    //! build periodic boundary conditions
+    virtual void BuildPeriodicBC();
+
+    //! @name AddNewNeighbours - these functions are collected in AddNewNeighbours for faster search
     //@{
 
     //! add to the neighbour maps the neighbours of the present time step - particles
@@ -326,22 +310,6 @@ namespace PARTICLE
         const ParticleMF& particle_i,
         const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > >& neighboring_heatSources);
 
-    //! build periodic boundary conditions
-    virtual void BuildPeriodicBC();
-
-    //! evaluate surface tension interaction potential
-    virtual void SurfTensionInterPot(
-        const double& radius,
-        const double& rRelNorm2,
-        double& lambda,
-        double& potential
-    );
-
-    //! return surface tension time fac
-    virtual double SurfTensionTimeFac(
-        const double& time
-    );
-
     /// template to print neighbours
     template <typename obj>
     void PrintNeighbours(const std::vector< boost::unordered_map<int, obj> >& neighbours)
@@ -363,6 +331,144 @@ namespace PARTICLE
         std::cout << std::endl;
       }
     }
+
+    //@}
+
+    //! @name interaction methods
+    //@{
+
+    //! construct the specific coefficients
+    virtual void Inter_generalCoeff(
+        double& generalCoeff_ij,
+        double& generalCoeff_ji,
+        const double& density_i,
+        const double& density_j,
+        const double& mass_i,
+        const double& mass_j,
+        const double& dw_ij,
+        const double& dw_ji
+        );
+
+    //! evaluate pressure
+    virtual void Inter_pressure(
+        LINALG::Matrix<3,1>* accn_ij,
+        LINALG::Matrix<3,1>* accn_ji,
+        const double& generalCoeff_ij,
+        const double& generalCoeff_ji,
+        const double& density_i,
+        const double& density_j,
+        const double& pressure_i,
+        const double& pressure_j,
+        const LINALG::Matrix<3,1>& rRelVersor_ij
+        );
+
+    //! evaluate background pressure
+    virtual void Inter_backgroundPressure(
+        LINALG::Matrix<3,1>* trvl_accn_ij,
+        LINALG::Matrix<3,1>* trvl_accn_ji,
+        const double& generalCoeff_ij,
+        const double& generalCoeff_ji,
+        const double& density_i,
+        const double& density_j,
+        const double& mass_i,
+        const double& mass_j,
+        const double& radius_i,
+        const double& radius_j,
+        const double& pressure_i,
+        const double& pressure_j,
+        const double& rRelNorm2,
+        const LINALG::Matrix<3,1>& rRelVersor_ij
+        );
+
+    //! evaluate xsph contribution
+    virtual void Inter_xsph(
+        LINALG::Matrix<3,1>* trvl_accn_ij,
+        LINALG::Matrix<3,1>* trvl_accn_ji,
+        const double& density_i,
+        const double& density_j,
+        const double& mass_i,
+        const double& mass_j,
+        const double& radius_i,
+        const double& rRelNorm2,
+        const LINALG::Matrix<3,1>& rRelVersor_ij,
+        const LINALG::Matrix<3,1>& vRel_ij,
+        const double& w_ij
+        );
+
+    //! evaluate additional term divA due to transport velocity
+    virtual void Inter_transportVelocity_divA(
+        LINALG::Matrix<3,1>* accn_ij,
+        LINALG::Matrix<3,1>* accn_ji,
+        LINALG::Matrix<3,1>* accn_ij_A,
+        LINALG::Matrix<3,1>* accn_ji_A,
+        const double& generalCoeff_ij,
+        const double& generalCoeff_ji,
+        const double& density_i,
+        const double& density_j,
+        const LINALG::Matrix<3,1>& vel_i,
+        const LINALG::Matrix<3,1>& vel_j,
+        const LINALG::Matrix<3,1>& velConv_i,
+        const LINALG::Matrix<3,1>& velConv_j,
+        const LINALG::Matrix<3,1>& rRelVersor_ij
+        );
+
+    //! evaluate laminar viscosity
+    virtual void Inter_laminarViscosity(
+        LINALG::Matrix<3,1>* accn_ij,
+        LINALG::Matrix<3,1>* accn_ji,
+        const double& generalCoeff_ij,
+        const double& generalCoeff_ji,
+        const double& density_i,
+        const double& density_j,
+        const double& rRelNorm2,
+        const LINALG::Matrix<3,1>& rRelVersor_ij,
+        const LINALG::Matrix<3,1>& vRel_ij
+        );
+
+    //! evaluate artificial viscosity
+    virtual void Inter_artificialViscosity(
+        LINALG::Matrix<3,1>* accn_ij,
+        LINALG::Matrix<3,1>* accn_ji,
+        const double& density_i,
+        const double& density_j,
+        const double& mass_i,
+        const double& mass_j,
+        const double& radius_i,
+        const double& radius_j,
+        const double& rRelNorm2,
+        const LINALG::Matrix<3,1>& rRelVersor_ij,
+        const LINALG::Matrix<3,1>& vRel_ij,
+        const double& dw_ij,
+        const double& dw_ji
+        );
+
+    //! evaluate surface tension
+    virtual void Inter_surfaceTension(
+        LINALG::Matrix<3,1>* accn_ij,
+        LINALG::Matrix<3,1>* accn_ji,
+        const double& density_i,
+        const double& density_j,
+        const double& mass_i,
+        const double& mass_j,
+        const double& radius_i,
+        const double& radius_j,
+        const double& rRelNorm2,
+        const LINALG::Matrix<3,1>& rRelVersor_ij,
+        const double& time
+        );
+
+    //! evaluate surface tension interaction potential
+    virtual void SurfTensionInterPot(
+        const double& radius,
+        const double& rRelNorm2,
+        double& lambda,
+        double& potential
+    );
+
+    //! return surface tension time fac
+    virtual double SurfTensionTimeFac(
+        const double& time
+    );
 
     //@}
 
@@ -401,6 +507,9 @@ namespace PARTICLE
     /// weight function
     Teuchos::RCP<PARTICLE::WeightFunction_Base> weightFunctionHandler_;
 
+    /// particle interaction variant
+    const bool interactionVariant2_;
+
     /// wall interaction type
     const INPAR::PARTICLE::WallInteractionType wallInteractionType_;
 
@@ -433,6 +542,15 @@ namespace PARTICLE
 
     /// factor defining the equation of state: pressure=c_0^2(density-refdensfac_*restDensity_)  with the speed of sound c_0^2=BULK_MODULUS/restDensity_;
     const double refdensfac_;
+
+    /// background pressure employed for modified particle convection velocity
+    double background_pressure_;
+
+    /// damping factor of XSPH scheme
+    double xsph_dampfac_;
+
+    /// stiffness factor of XSPH scheme
+    double xsph_stiffac_;
 
     /// laplacian velocity, diffusion coefficient
     double diffusionCoeff_;

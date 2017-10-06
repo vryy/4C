@@ -745,19 +745,19 @@ void PARTICLE::TimInt::DetermineMeshfreeDensAndAcc(Teuchos::RCP<Epetra_Vector> a
       colorField_->Update(1.0,*colorField,0.0);
   }
 
-  //Determine also the new pressure and set state vector
+  // determine also the new pressure and set state vector
   bool solve_thermal_problem=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM");
   PARTICLE::Utils::Density2Pressure(restDensity_,refdensfac_,densityn_,specEnthalpyn_,pressure_,particle_algorithm_->ExtParticleMat(),true,solve_thermal_problem);
   interHandler_->SetStateVector(pressure_, PARTICLE::Pressure);
 
-  //Asign accelerations, modified pressures and modified velocities for boundary particles and calculate their mechanical energy contribution
+  // assign accelerations, modified pressures and modified velocities for boundary particles and calculate their mechanical energy contribution
   const INPAR::PARTICLE::WallInteractionType wallInteractionType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallInteractionType>(DRT::Problem::Instance()->ParticleParams(),"WALL_INTERACTION_TYPE");
   if(wallInteractionType==INPAR::PARTICLE::BoundarParticle_NoSlip or wallInteractionType==INPAR::PARTICLE::BoundarParticle_FreeSlip)
   {
     interHandler_->InitBoundaryData(acc,particle_algorithm_->GetGravityAcc(time),bpintergy_);
   }
 
-  //Acceleration contributions due to gravity forces
+  // acceleration contributions due to gravity forces
   acc->PutScalar(0.0);
   if(accmod!=Teuchos::null)
   {
@@ -765,11 +765,8 @@ void PARTICLE::TimInt::DetermineMeshfreeDensAndAcc(Teuchos::RCP<Epetra_Vector> a
   }
   GravityAcc(acc,1.0,time);
 
-  //Acceleration contributions due to internal forces (pressure, viscosity etc.)
-  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"CALC_ACC_VAR2")==false)
-    interHandler_->Inter_pvp_acc_var1(acc,accmod,acc_A,time);
-  else
-    interHandler_->Inter_pvp_acc_var2(acc,accmod,acc_A,time);
+  // acceleration contributions due to internal forces (pressure, viscosity, etc.)
+  interHandler_->Inter_pvp_acc(acc,accmod,acc_A,time);
 
   // clear vectors, keep memory
   interHandler_->Clear();
