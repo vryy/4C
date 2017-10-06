@@ -214,7 +214,7 @@ namespace TSI
     //! Determine norm of force residual
     double CalculateVectorNorm(
       const enum INPAR::TSI::VectorNorm norm,  //!< norm to use
-      const Teuchos::RCP<Epetra_Vector> vect  //!< the vector of interest
+      const Teuchos::RCP<const Epetra_Vector> vect  //!< the vector of interest
       );
 
     //@}
@@ -343,6 +343,9 @@ namespace TSI
       Teuchos::RCP<const Epetra_Vector> tv  //!< vector containing only thermal dofs
       );
 
+    //! check if step is admissible for line search
+    bool LSadmissible();
+
     //! block systemmatrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
 
@@ -406,6 +409,12 @@ namespace TSI
     double ptcdt_;  //!< pseudo time step size for PTC
     double dti_;  //!< scaling factor for PTC (initially 1/ptcdt_, then adapted)
 
+    //@}
+
+    //! @name line search parameters
+    INPAR::TSI::LineSearch ls_strategy_;
+    double ls_step_length_;
+    std::pair<double,double> last_iter_res_;
     //@}
 
     //! @name Various global forces

@@ -280,5 +280,18 @@ void INPAR::TSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       &tsic
       );
 
-
+  setStringToIntegralParameter<int>("TSI_LINE_SEARCH","none",
+      "line-search strategy",
+      tuple<std::string>(
+        "none",
+        "structure",
+        "thermo","and","or"),
+      tuple<int>(
+        LS_none,
+        LS_structure,
+        LS_thermo,
+        LS_and,
+        LS_or),
+      &tsidynmono
+      );
 }

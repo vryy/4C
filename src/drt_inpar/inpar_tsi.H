@@ -3,7 +3,8 @@
 \file inpar_tsi.H
 \maintainer Alexander Seitz
 
-\brief
+\brief TSI input parameters
+\level 1
 
 <pre>
 Maintainer: Alexander Seitz
@@ -79,6 +80,16 @@ namespace TSI
   {
     soltech_newtonfull,  //!< full Newton-Raphson iteration
     soltech_ptc,  //!< pseudo transient continuation nonlinear iteration
+  };
+
+  //! type of line-search strategy
+  enum LineSearch
+  {
+    LS_none=0,    //!< no line search
+    LS_structure, //!< line-search based on structural residual
+    LS_thermo,    //!< line-search based on thermal residual
+    LS_or,        //!< line-search based on structural or thermal residual
+    LS_and,       //!< line-search based on structural and thermal residual
   };
 
   //! Map solution technique enum to std::string
