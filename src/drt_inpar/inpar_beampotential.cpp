@@ -44,6 +44,22 @@ void INPAR::BEAMPOTENTIAL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLis
                   beampot_vol,beampot_vol),
        &beampotential);
 
+  setStringToIntegralParameter<int>("STRATEGY","DoubleLengthSpecific_LargeSepApprox",
+      "strategy to evaluate interaction potential: double/single length specific, "
+      "small/large separation approximation",
+       tuple<std::string>("DoubleLengthSpecific_LargeSepApprox",
+           "DoubleLengthSpecific_SmallSepApprox",
+           "SingleLengthSpecific_SmallSepApprox"),
+       tuple<int>(strategy_doublelengthspec_largesepapprox,
+           strategy_doublelengthspec_smallsepapprox,
+           strategy_singlelengthspec_smallsepapprox),
+           &beampotential);
+
+  IntParameter("NUM_GAUSSPOINTS",10,"Number of Gauss points used per beam element",&beampotential);
+
+  setStringToIntegralParameter<int>("AUTOMATIC_DIFFERENTIATION","No",
+      "apply automatic differentiation via FAD?", yesnotuple,yesnovalue,&beampotential);
+
   setStringToIntegralParameter<int>("BEAMPOT_BTSOL","No","decide, whether potential-based interaction between beams and solids is considered",
                                yesnotuple,yesnovalue,&beampotential);
 

@@ -70,6 +70,21 @@ namespace BEAMINTERACTION {
       return potential_type_;
     }
 
+    inline enum INPAR::BEAMPOTENTIAL::BeamPotentialStrategy Strategy() const
+    {
+      return strategy_;
+    }
+
+    inline int NumberGaussPoints() const
+    {
+      return num_GPs_;
+    }
+
+    inline bool UseFAD() const
+    {
+      return useFAD_;
+    }
+
 
   private:
 
@@ -86,6 +101,15 @@ namespace BEAMINTERACTION {
 
     //! type of applied potential (volume, surface)
     enum INPAR::BEAMPOTENTIAL::BeamPotentialType potential_type_;
+
+    //! strategy to evaluate interaction potential
+    enum INPAR::BEAMPOTENTIAL::BeamPotentialStrategy strategy_;
+
+    //! number of Gauss points to be used per beam element
+    int num_GPs_;
+
+    //! use automatic differentiation via FAD
+    bool useFAD_;
 
   };
 

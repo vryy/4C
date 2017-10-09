@@ -154,10 +154,20 @@ bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
     ele2pos_(i).diff(3*numnodes*numnodalvalues+i,3*numnodes*numnodalvalues+3);
 #endif
 
-  // compute the values for fpot1, fpot2, stiffpot1, stiffpot2
-  // TODO specify approximation type in input file: FullInt, LargeSepApprox, SmallSepApprox (Langbein)
-  EvaluateFpotandStiffpot_LargeSepApprox();
 
+  // compute the values for element residual vectors ('force') and linearizations ('stiff')
+  // Todo allow for independent choice of strategy for beam-to-sphere potentials
+  switch ( Params()->Strategy() )
+  {
+    case INPAR::BEAMPOTENTIAL::strategy_doublelengthspec_largesepapprox:
+    {
+      EvaluateFpotandStiffpot_LargeSepApprox();
+      break;
+    }
+
+    default:
+      dserror("Invalid strategy to evaluate beam-to-sphere interaction potential!");
+  }
 
   // resize variables and fill with pre-computed values
   if (forcevec1 != NULL)
@@ -211,7 +221,7 @@ template<unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::EvaluateFpotandStiffpot_LargeSepApprox()
 {
   // Set gauss integration rule
-  DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::intrule_line_10point;
+  DRT::UTILS::GaussRule1D gaussrule = GetGaussRule();
 
   // Get gauss points (gp) for integration
   DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);

@@ -12,6 +12,8 @@
 #ifndef BEAMPOTENTIALPAIR_H
 #define BEAMPOTENTIALPAIR_H
 
+#include "../drt_fem_general/drt_utils_integration.H"
+
 #include <Teuchos_RCP.hpp>
 
 //forward declaration ...
@@ -65,7 +67,8 @@ public:
 
   //! return appropriate derived (templated) class (acts as a simple factory)
   static Teuchos::RCP<BeamPotentialPair> Create(
-      std::vector< DRT::Element const *> const& ele_ptrs);
+      std::vector< DRT::Element const *> const& ele_ptrs,
+      BEAMINTERACTION::BeamPotentialParams const& beam_potential_params);
 
   //@}
 
@@ -136,6 +139,9 @@ protected:
 
   //! Check the init and setup state
   void CheckInitSetup() const;
+
+  //! get Gauss rule to be used
+  DRT::UTILS::GaussRule1D GetGaussRule() const;
 
   //@}
 

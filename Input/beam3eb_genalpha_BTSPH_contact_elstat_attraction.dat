@@ -53,7 +53,7 @@ MAXITER                         25
 LOADLIN                         Yes
 --------------------------------------------------------------------BINNING STRATEGY
 DEFINEBINSPER                   cutoff
-CUTOFF_RADIUS                   8
+CUTOFF_RADIUS                   4
 DEFINEXAABBPER                  input
 BOUNDINGBOX                     -5 -5 -5 5 5 5
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
@@ -89,6 +89,7 @@ BEAMS_BTSPH                     Yes
 POT_LAW_PREFACTOR               4e-3
 POT_LAW_EXPONENT                1.0
 BEAMPOTENTIAL_TYPE              Surface
+STRATEGY                        DoubleLengthSpecific_LargeSepApprox
 
 // needed only for old beam_contact_manager
 BEAMPOT_OCTREE                  none
@@ -96,7 +97,7 @@ CUTOFFRADIUS                    -1
 BEAMPOT_BTSPH                   Yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          Amesos_KLU_nonsym
+SOLVER                          UMFPACK
 ---------------------------------------------------------STRUCT NOX/Printing
 Outer Iteration                 = Yes
 Inner Iteration                 = No

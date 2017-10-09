@@ -25,7 +25,8 @@ BEAMINTERACTION::BeamPotentialParams::BeamPotentialParams()
   issetup_(false),
   pot_law_exponents_(Teuchos::null),
   pot_law_prefactors_(Teuchos::null),
-  potential_type_(INPAR::BEAMPOTENTIAL::beampot_vague)
+  potential_type_(INPAR::BEAMPOTENTIAL::beampot_vague),
+  useFAD_(false)
 {
   // empty constructor
 }
@@ -84,6 +85,21 @@ void BEAMINTERACTION::BeamPotentialParams::Init()
   if (potential_type_ == INPAR::BEAMPOTENTIAL::beampot_vague)
     dserror("You must specify the type of the specified beam interaction potential!");
 
+  /****************************************************************************/
+  strategy_ = DRT::INPUT::IntegralValue<INPAR::BEAMPOTENTIAL::BeamPotentialStrategy>(
+      beam_potential_params_list,"STRATEGY");
+
+  if (strategy_ == INPAR::BEAMPOTENTIAL::strategy_vague)
+    dserror("You must specify a strategy to be used to evaluate beam interaction potential!");
+
+  /****************************************************************************/
+  num_GPs_ = beam_potential_params_list.get<int>("NUM_GAUSSPOINTS");
+
+  if (num_GPs_ <= 0)
+    dserror("Invalid number of Gauss points!");
+
+  /****************************************************************************/
+  useFAD_ = DRT::INPUT::IntegralValue<int>(beam_potential_params_list,"AUTOMATIC_DIFFERENTIATION");
 
 
   /****************************************************************************/

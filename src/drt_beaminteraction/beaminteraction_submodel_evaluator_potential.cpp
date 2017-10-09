@@ -691,7 +691,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
       ele_ptrs[1] = *secondeleiter;
 
       Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> newbeaminteractionpair =
-          BEAMINTERACTION::BeamPotentialPair::Create(ele_ptrs);
+          BEAMINTERACTION::BeamPotentialPair::Create( ele_ptrs, BeamPotentialParams() );
 
       newbeaminteractionpair->Init(
           BeamPotentialParamsPtr(),
@@ -767,10 +767,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
   // get correct condition for beam or rigid sphere element
   if ( BEAMCONTACT::BeamElement(*ele2) )
     nodes2[0]->GetCondition("BeamPotentialLineCharge", conditions_element2);
-  else if(BEAMCONTACT::RigidsphereElement(*ele2) )
+  else if ( BEAMCONTACT::RigidsphereElement(*ele2) )
     nodes2[0]->GetCondition("RigidspherePotentialPointCharge", conditions_element2);
   else
-    dserror("Only beam-to-beampotential or beam-to-sphere -based interaction is implemented yet. "
+    dserror("Only beam-to-beam or beam-to-sphere potential-based interaction is implemented yet. "
         "No other types of elements allowed!");
 
 }

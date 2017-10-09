@@ -491,7 +491,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   std::vector<DRT::Condition*> beampotconditions(0);
   actdis_->GetCondition("BeamPotentialLineCharge",beampotconditions);
 
-  if ((strategy != INPAR::BEAMCONTACT::bstr_none or beampotconditions.size()) and
+  if (strategy != INPAR::BEAMCONTACT::bstr_none and
       modelevaluator == INPAR::BEAMCONTACT::bstr_old)
     modeltypes.insert(INPAR::STR::model_beam_interaction_old);
 
@@ -512,7 +512,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
        DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SPHERE CONTACT"), "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none or
        DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
        DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID CONTACT"), "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none  or
-       ( beampotconditions.size() > 0 and modelevaluator == INPAR::BEAMCONTACT::bstr_standard)
+       beampotconditions.size() > 0
      )
     modeltypes.insert(INPAR::STR::model_beaminteraction);
 

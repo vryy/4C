@@ -38,6 +38,16 @@ namespace INPAR
       beampot_vague
     };
 
+    /// available strategies/methods to evaluate potential interaction
+    /// (this enum represents the input file parameter STRATEGY)
+    enum BeamPotentialStrategy
+    {
+      strategy_doublelengthspec_largesepapprox,  ///< double length specific potential, large separations
+      strategy_doublelengthspec_smallsepapprox,  ///< double length specific potential, small separations
+      strategy_singlelengthspec_smallsepapprox,  ///< single length specific potential, small separations
+      strategy_vague
+    };
+
     /// set the beam potential parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
