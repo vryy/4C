@@ -149,7 +149,7 @@ public:
   /*!
   \brief Get flag indicating whether contact is active (true) or inactive (false)
   */
-  virtual bool GetContactFlag()=0;
+  virtual bool GetContactFlag() const =0;
 
 //  /*!
 //  \brief Get coordinates of contact point of element1 and element2

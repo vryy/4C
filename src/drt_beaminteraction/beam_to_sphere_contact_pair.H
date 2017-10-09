@@ -121,7 +121,7 @@ public:
   /*!
   \brief Get flag indicating whether contact is active (true) or inactive (false)
   */
-  virtual inline bool GetContactFlag()
+  virtual inline bool GetContactFlag() const
   {
     return (contactflag_ or nodalcontactflag_[0] or nodalcontactflag_[1]);
   };
@@ -318,7 +318,7 @@ private:
   LINALG::TMatrix<TYPE,3, 1> x1_;
   LINALG::TMatrix<TYPE,3, 1> x2_;
 
-  //! parameter value of contact point
+  //! parameter value of contact point on beam element
   TYPE xicontact_;
 
   //! normal vector of current time step

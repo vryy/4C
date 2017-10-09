@@ -4993,7 +4993,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::PrintSumm
         "(" << std::setw(3) << std::right << cpvariables_[i]->GetSegIds().first+1 << "/" << std::setw(3) << numseg1_ << ")" <<
         " " << std::setw(5) << std::left << Element2()->Id() <<
         "(" << std::setw(3) << std::right << cpvariables_[i]->GetSegIds().second+1 << "/" << std::setw(3) << numseg2_ << ")" <<
-        "  CP ";
+        "  CP    ";
     cpvariables_[i]->PrintSummaryInOneLine(out);
     out << "\n";
   }
@@ -5003,7 +5003,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::PrintSumm
         "(" << std::setw(3) << std::right << gpvariables_[i]->GetSegIds().first+1 << "/" << std::setw(3) << numseg1_ << ")" <<
         " " << std::setw(5) << std::left << Element2()->Id() <<
         "(" << std::setw(3) << std::right << gpvariables_[i]->GetSegIds().second+1 << "/" << std::setw(3) << numseg2_ << ")" <<
-        "  GP ";
+        "  GP    ";
     gpvariables_[i]->PrintSummaryInOneLine(out);
     out << "\n";
   }
@@ -5013,7 +5013,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::PrintSumm
         "(" << std::setw(3) << std::right << epvariables_[i]->GetSegIds().first+1 << "/" << std::setw(3) << numseg1_ << ")" <<
         " " << std::setw(5) << std::left << Element2()->Id() <<
         "(" << std::setw(3) << std::right << epvariables_[i]->GetSegIds().second+1 << "/" << std::setw(3) << numseg2_ << ")" <<
-        "  EP ";
+        "  EP    ";
     epvariables_[i]->PrintSummaryInOneLine(out);
     out << "\n";
   }

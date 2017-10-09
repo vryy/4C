@@ -343,7 +343,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForceStiff()
 
   }
 
-//  PrintActiveBeamToBeamContactSet(std::cout);
+  PrintActiveBeamContactSet(std::cout);
 
   return true;
 }
@@ -579,10 +579,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
     }
   }
 
-  IO::cout(IO::standard) <<"\n\n************************************************"<<IO::endl;
-  IO::cout(IO::standard) << "PID " << GState().GetMyRank() << " currently monitors " <<
+  IO::cout(IO::standard) << "PID " << std::setw(2) << std::right << GState().GetMyRank()
+      << " currently monitors " << std::setw(5) << std::right <<
       contact_elepairs_.size() << " beam contact pairs" << IO::endl;
-  IO::cout(IO::standard) <<"************************************************"<<IO::endl;
 
 }
 
@@ -602,12 +601,25 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
     PrintActiveBeamContactSet( std::ostream& out ) const
 {
-  out << "\n    Active BeamToBeam Contact Set (PID " << GState().GetMyRank() << "):-----------------------------------------\n";
-  out << "    ID1            ID2              T xi       eta      angle    gap         force\n";
+  bool atleastoneactivepair = false;
 
   std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair> >::const_iterator iter;
   for (iter=contact_elepairs_.begin(); iter!=contact_elepairs_.end(); ++iter)
-    (*iter)->PrintSummaryOneLinePerActiveSegmentPair(out);
+    if ( (*iter)->GetContactFlag() == true )
+      atleastoneactivepair = true;
 
-  out << std::endl;
+
+  if ( atleastoneactivepair )
+  {
+    out << "\n    Active Beam-To-? Contact Set (PID " << GState().GetMyRank()
+        << "):-----------------------------------------\n";
+    out << "    ID1            ID2              T    xi       eta      angle    gap         force\n";
+
+
+    for (iter=contact_elepairs_.begin(); iter!=contact_elepairs_.end(); ++iter)
+      (*iter)->PrintSummaryOneLinePerActiveSegmentPair(out);
+
+    out << std::endl;
+  }
+
 }

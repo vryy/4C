@@ -111,7 +111,7 @@ public:
   /*!
   \brief Get flag indicating whether contact is active (true) or inactive (false)
   */
-  virtual inline bool GetContactFlag()
+  virtual inline bool GetContactFlag() const
   {
     //The element pair is assumed to be active when we have at least one active contact point
     return (cpvariables_.size()+gpvariables_.size()+epvariables_.size());

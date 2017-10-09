@@ -89,7 +89,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Setup()
   radius2_ = sphere_element_->Radius();
 
 
-  nodalcontactflag_.assign(BeamElement()->NumNode(),false);
+  nodalcontactflag_.assign(2,false);
 
   issetup_ = true;
 
@@ -894,17 +894,6 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Compute
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template<unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::ComputeEleRadius(double& radius, const double& moi)
-{
-  // fixed formula for circular cross sections: the factor f can be used to manipulate the geometrical radius if not equal to 1
-  radius = MANIPULATERADIUS * sqrt(sqrt(4 * moi / M_PI));
-
-  return;
-}
-
-/*-----------------------------------------------------------------------------------------------*
- *-----------------------------------------------------------------------------------------------*/
-template<unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::ComputeCoordsAndDerivs(LINALG::TMatrix<TYPE,3,1>& x1,
                                                              LINALG::TMatrix<TYPE,3,1>& x2,
                                                              LINALG::TMatrix<TYPE,3,1>& dx1,
@@ -1223,7 +1212,24 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::PrintSu
 {
   CheckInitSetup();
 
-  // Todo print current gap and force here
+  if ( GetContactFlag() )
+  {
+    out << "    " << std::setw(5) << std::left << Element1()->Id() <<
+        "(" << std::setw(3) << std::right << -1 << "/" << std::setw(3) << -1 << ")" <<
+        " " << std::setw(5) << std::left << Element2()->Id() <<
+        "(" << std::setw(3) << std::right << -1 << "/" << std::setw(3) << -1 << ")" <<
+        "  BTSPH ";
+
+    out <<
+    std::setw(9) << std::left << std::setprecision(2) << xicontact_ <<
+    std::setw(9) << std::left << std::setprecision(2) << -1 <<
+    std::setw(9) << std::left << std::setprecision(3) << -1 <<
+    std::setw(12) << std::left << std::scientific << gap_ <<
+    std::setw(12) << std::left << std::scientific << FADUTILS::CastToDouble<TYPE,3,1>(fc2_).Norm2() <<
+    std::setprecision(6) << std::resetiosflags(std::ios::scientific) << std::right;
+
+    out << "\n";
+  }
 }
 
 //explicit template instantiations

@@ -706,10 +706,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
 
   if( static_cast<int>( beam_potential_element_pairs_.size() ) > 0 )
   {
-    IO::cout(IO::standard) <<"\n\n************************************************"<<IO::endl;
-    IO::cout(IO::standard) << "PID " << GState().GetMyRank() << " currently monitors " <<
+    IO::cout(IO::standard) << "PID " << std::setw(2) << std::right << GState().GetMyRank()
+        << " currently monitors " << std::setw(5) << std::right <<
         beam_potential_element_pairs_.size() << " beam potential pairs" << IO::endl;
-    IO::cout(IO::standard) <<"************************************************"<<IO::endl;
   }
 }
 
