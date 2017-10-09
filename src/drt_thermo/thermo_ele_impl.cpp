@@ -1932,12 +1932,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
     defgrdrate.MultiplyTT(xcurrrate, derxy_);
     // inverse of deformation gradient
     invdefgrd.Invert(defgrd);
-    // build the linear B-operator
-    LINALG::Matrix<6,nen_*nsd_*numdofpernode_> boplin(false);
-    CalculateBoplin(&boplin, &derxy_);
-    // build the nonlinear B-operator
-    LINALG::Matrix<6,nen_*nsd_*numdofpernode_> bop(false);
-    CalculateBop(&bop, &defgrd, &derxy_);
 
     // ----------- derivatives of right Cauchy-Green deformation tensor C
     // build the rate of C: C'= F^T . F' + (F')^T . F
