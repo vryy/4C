@@ -12,15 +12,6 @@
 
 *-----------------------------------------------------------------------*/
 
-/*
- References:
- Antoci2007: Numerical simulation of fluid–structure interaction by SPH, doi: 10.1016/j.compstruc.2007.01.002.
- Monaghan2005: Smoothed particle hydrodynamics, doi:10.1088/0034-4885/68/8/R01.
- Espanol2003: Smoothed dissipative particle dynamics, DOI: 10.1103/PhysRevE.67.026705.
- Akinci2013: http://doi.acm.org/10.1145/2508363.2508395\nhttp://dl.acm.org/ft_gateway.cfm?id=2508395&type=pdf
-*/
-/* macros */
-
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "particleMeshFree_interaction.H"
@@ -59,16 +50,20 @@ PARTICLE::ParticleMeshFreeInteractionHandler::ParticleMeshFreeInteractionHandler
   particle_algorithm_(particlealgorithm),
   myrank_(discret->Comm().MyPID()),
   weightFunctionHandler_(Teuchos::null),
-  interactionVariant2_(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"CALC_ACC_VAR2")),
+  interactionVariant2_(DRT::INPUT::IntegralValue<int>(particledynparams,"CALC_ACC_VAR2")),
+  solve_thermal_prob_(DRT::INPUT::IntegralValue<int>(particledynparams,"SOLVE_THERMAL_PROBLEM")),
   wallInteractionType_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallInteractionType>(particledynparams,"WALL_INTERACTION_TYPE")),
-  freeSurfaceType_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::FreeSurfaceType>(DRT::Problem::Instance()->ParticleParams(),"FREE_SURFACE_TYPE")),
+  freeSurfaceType_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::FreeSurfaceType>(particledynparams,"FREE_SURFACE_TYPE")),
   WF_DIM_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::WeightFunctionDim>(particledynparams,"WEIGHT_FUNCTION_DIM")),
   initDensity_(initDensity),
   restDensity_(restDensity),
   refdensfac_(refdensfac),
-  background_pressure_(DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")),
-  xsph_dampfac_(DRT::Problem::Instance()->ParticleParams().get<double>("XSPH_DAMPFAC")),
-  xsph_stiffac_(DRT::Problem::Instance()->ParticleParams().get<double>("XSPH_STIFFAC")),
+  background_pressure_(particledynparams.get<double>("BACKGROUND_PRESSURE")),
+  transport_velocity_(DRT::INPUT::IntegralValue<int>(particledynparams,"TRANSPORT_VELOCITY")),
+  no_veldiff_term_(DRT::INPUT::IntegralValue<int>(particledynparams,"NO_VELDIFF_TERM")),
+  damping_factor_(particledynparams.get<double>("VISCOUS_DAMPING")),
+  xsph_dampfac_(particledynparams.get<double>("XSPH_DAMPFAC")),
+  xsph_stiffac_(particledynparams.get<double>("XSPH_STIFFAC")),
   periodic_length_(-1.0),
   min_pvp_dist_(1.0e10),
   min_pvw_dist_(1.0e10),
@@ -171,7 +166,7 @@ PARTICLE::ParticleMeshFreeInteractionHandler::ParticleMeshFreeInteractionHandler
   BuildPeriodicBC();
 
   // initialize rendering handler
-  const INPAR::PARTICLE::RenderingType renderingType = DRT::INPUT::IntegralValue<INPAR::PARTICLE::RenderingType>(DRT::Problem::Instance()->ParticleParams(),"RENDERING");
+  const INPAR::PARTICLE::RenderingType renderingType = DRT::INPUT::IntegralValue<INPAR::PARTICLE::RenderingType>(particledynparams,"RENDERING");
   if (renderingType == INPAR::PARTICLE::StandardRendering or renderingType == INPAR::PARTICLE::NormalizedRendering)
   {
     Teuchos::RCP<Rendering> rendering = Teuchos::rcp(new PARTICLE::Rendering(particle_algorithm_, Teuchos::rcp(this,false), weightFunctionHandler_));
@@ -389,7 +384,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::InitBoundaryData(
         double &bpintergy)
 {
   //TODO: So far, boundary particles are only considered in the context of fluid problems (use of SpeedOfSoundL())!
-  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM"))
+  if(solve_thermal_prob_)
     dserror("Boundary particles are only considered in the context of pure fluid problems so far!");
 
   SetStateVector(accn, PARTICLE::Acc);
@@ -718,7 +713,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours(const int st
       if(wallInteractionType_==INPAR::PARTICLE::BoundarParticle_FreeSlip or wallInteractionType_==INPAR::PARTICLE::BoundarParticle_NoSlip)
         dserror("Combination of boundary particles and heat sources not possible so far!");
 
-      if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM")==false)
+      if(not solve_thermal_prob_)
         dserror("Heat sources are defined but thermal problem is not solved. Is that your intention?");
     }
 
@@ -1311,9 +1306,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_densityDot(
 
       LINALG::Matrix<3,1> vRel_ij;
 
-      bool transport_velocity=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"TRANSPORT_VELOCITY");
-
-      if(transport_velocity==false)
+      if(transport_velocity_==false)
         vRel_ij.Update(1.0, particle_i.vel_, -1.0, particle_j.vel_);
       else
         vRel_ij.Update(1.0, particle_i.velConv_, -1.0, particle_j.velConv_);
@@ -1382,8 +1375,8 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_bpvp_densityDot(
       // --- extract and compute general data --- //
 
       LINALG::Matrix<3,1> vRel_ij;
-      bool transport_velocity=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"TRANSPORT_VELOCITY");
-      if(transport_velocity==false)
+
+      if(transport_velocity_==false)
         vRel_ij.Update(1.0, particle_i->vel_, -1.0, particle_j.vel_);
       else
         vRel_ij.Update(1.0, particle_i->velConv_, -1.0, particle_j.velConv_);
@@ -1421,21 +1414,17 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc(
   // The terms associated with the constant background pressure are similar to the real pressure terms
   // but with the pressures p_i and p_j replaced by the background pressure. All the related variables
   // and terms are marked by a prefix p0, e.g. p0_momentum_ij etc.. All terms related to XSPH are marked by a prefix xsph
-  bool transport_velocity = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"TRANSPORT_VELOCITY");
   if (trvl_acc != Teuchos::null)
   {
     if(background_pressure_<0.0 and xsph_dampfac_<0.0 and xsph_stiffac_<0.0)
       dserror("Negative values of background pressure, xsph_dampfac and xsph_stifffac! Why is the vector trvl_acc handed in for this case? Set flag TRANSPORT_VELOCITY to no!");
 
-    if(transport_velocity==false)
+    if(transport_velocity_==false)
       dserror("Vector trvl_acc handed in even though TRANSPORT_VELOCITY is set to no?!?");
 
     if((xsph_dampfac_<0.0 and xsph_stiffac_>0.0) or (xsph_dampfac_>0.0 and xsph_stiffac_<0.0))
       dserror("Either both or none of the xsph parameters have to be set!");
   }
-
-  // apply additional damping force in order to achieve static equilibrium solution
-  const double damping_factor = DRT::Problem::Instance()->ParticleParams().get<double>("VISCOUS_DAMPING");
 
   // loop over the particles (no superpositions)
   for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_p_.size(); ++lidNodeRow_i)
@@ -1457,19 +1446,15 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc(
     const LINALG::Matrix<3,1> vel_i(particle_i.vel_);
     const LINALG::Matrix<3,1> velConv_i(particle_i.velConv_);
 
-    // ********** damping (optional) **********
-    // If required, add artificial viscous damping force in order to determine static equilibrium configurations
-    if(damping_factor>0)
-    {
-      LINALG::Matrix<3,1> dampingforce(true);
-      dampingforce.Update(-damping_factor/mass_i, vel_i);
-      LINALG::Assemble(*accn, dampingforce, particle_i.lm_, particle_i.owner_);
-    }
-
-    // init the sum of accelerations acting on particle i due to particles j
+    // init the sum of accelerations acting on particle i (due to particles j and due to artificial viscous damping)
     LINALG::Matrix<3,1> sumj_accn_ij(true);
     LINALG::Matrix<3,1> sumj_trvl_accn_ij(true);
     LINALG::Matrix<3,1> sumj_accn_ij_A(true);
+
+    // ********** damping (optional) **********
+    // If required, add artificial viscous damping force in order to determine static equilibrium configurations
+    if(damping_factor_>0)
+      sumj_accn_ij.Update(-damping_factor_/mass_i, vel_i);
 
     // loop over the interaction particle list
     boost::unordered_map<int, InterDataPvP>::const_iterator jj;
@@ -1483,14 +1468,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc(
       if(particle_j.boundarydata_.boundaryparticle_==true)
         continue;
 
-      // get properties of particle j
-      const double density_j = particle_j.density_;
-      const double mass_j = particle_j.mass_;
-      const double pressure_j = particle_j.pressure_;
-      const double radius_j = particle_j.radius_;
-      const LINALG::Matrix<3,1> vel_j(particle_j.vel_);
-      const LINALG::Matrix<3,1> velConv_j(particle_j.velConv_);
-
       // init acceleration acting on particle j due to particle i
       LINALG::Matrix<3,1> accn_ji(true);
       LINALG::Matrix<3,1> trvl_accn_ji(true);
@@ -1499,53 +1476,45 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc(
       // extract particle interaction data
       const InterDataPvP& interData_ij = jj->second;
 
-      const double rRelNorm2 = interData_ij.rRelNorm2_;
-      LINALG::Matrix<3,1> rRelVersor_ij(interData_ij.rRelVersor_ij_);
       LINALG::Matrix<3,1> vRel_ij(true);
-      vRel_ij.Update(1.0, vel_i, -1.0, vel_j);
+      vRel_ij.Update(1.0, vel_i, -1.0, particle_j.vel_);
 
       // construct the specific coefficients
       double generalCoeff_ij = 0.0;
       double generalCoeff_ji = 0.0;
-      Inter_generalCoeff(generalCoeff_ij, generalCoeff_ji, density_i, density_j, mass_i, mass_j, interData_ij.dw_ij_, interData_ij.dw_ji_);
+      Inter_generalCoeff(generalCoeff_ij, generalCoeff_ji, density_i, mass_i, particle_j, interData_ij);
 
       // ********** pressure **********
-      Inter_pressure(&sumj_accn_ij, &accn_ji, generalCoeff_ij, generalCoeff_ji,
-          density_i, density_j, pressure_i, pressure_j, rRelVersor_ij);
+      Inter_pressure(&sumj_accn_ij, &accn_ji, generalCoeff_ij, generalCoeff_ji, density_i, pressure_i, particle_j, interData_ij);
 
       // ********** transport velocity (optional) **********
       // background pressure term for modified convection velocities/accelerations
       if(background_pressure_>0)
-        Inter_backgroundPressure(&sumj_trvl_accn_ij, &trvl_accn_ji, generalCoeff_ij, generalCoeff_ji,
-            density_i, density_j, mass_i, mass_j, radius_i, radius_j, pressure_i, pressure_j, rRelNorm2, rRelVersor_ij);
+        Inter_backgroundPressure(&sumj_trvl_accn_ij, &trvl_accn_ji, generalCoeff_ij, generalCoeff_ji, density_i, mass_i, radius_i, pressure_i, particle_j, interData_ij);
 
       // xsph contributions to transport velocity
       if(xsph_dampfac_>0 or xsph_stiffac_>0)
-        Inter_xsph(&sumj_trvl_accn_ij, &trvl_accn_ji, density_i, density_j, mass_i, mass_j, radius_i, rRelNorm2, rRelVersor_ij, vRel_ij, interData_ij.w_ij_);
+        Inter_xsph(&sumj_trvl_accn_ij, &trvl_accn_ji, density_i, mass_i, radius_i, particle_j, vRel_ij, interData_ij);
 
       // additional term div(A) in Navier-Stokes equation due to non-material particle convection
-      if(transport_velocity)
-        Inter_transportVelocity_divA(&sumj_accn_ij, &accn_ji, &sumj_accn_ij_A, &accn_ji_A, generalCoeff_ij, generalCoeff_ji,
-            density_i, density_j, vel_i, vel_j, velConv_i, velConv_j, rRelVersor_ij);
+      if(transport_velocity_)
+        Inter_transportVelocity_divA(&sumj_accn_ij, &accn_ji, &sumj_accn_ij_A, &accn_ji_A, generalCoeff_ij, generalCoeff_ji, density_i, vel_i, velConv_i, particle_j, interData_ij);
 
       // ********** viscous forces **********
-      Inter_laminarViscosity(&sumj_accn_ij, &accn_ji, generalCoeff_ij, generalCoeff_ji, density_i, density_j, rRelNorm2, rRelVersor_ij, vRel_ij);
+      Inter_laminarViscosity(&sumj_accn_ij, &accn_ji, generalCoeff_ij, generalCoeff_ji, density_i, particle_j, vRel_ij, interData_ij);
 
       // ********** artificial viscous forces **********
       if(artificialViscosity_>0)
-        Inter_artificialViscosity(&sumj_accn_ij, &accn_ji, density_i, density_j, mass_i, mass_j,
-            radius_i, radius_j, rRelNorm2, rRelVersor_ij, vRel_ij, interData_ij.dw_ij_, interData_ij.dw_ji_);
+        Inter_artificialViscosity(&sumj_accn_ij, &accn_ji, density_i, mass_i, radius_i, particle_j, vRel_ij, interData_ij);
 
       // ********** surface tension **********
       if(surfaceTension_>0.0)
-        Inter_surfaceTension(&sumj_accn_ij, &accn_ji, density_i, density_j, mass_i, mass_j, radius_i, radius_j, rRelNorm2, rRelVersor_ij, time);
+        Inter_surfaceTension(&sumj_accn_ij, &accn_ji, density_i, mass_i, radius_i, particle_j, interData_ij, time);
 
       // assemble all contributions to particle j
       LINALG::Assemble(*accn, accn_ji, particle_j.lm_, particle_j.owner_);
-
       if(background_pressure_>0)
         LINALG::Assemble(*trvl_acc, trvl_accn_ji, particle_j.lm_, particle_j.owner_);
-
       if(acc_A!=Teuchos::null)
         LINALG::Assemble(*acc_A, accn_ji_A, particle_j.lm_, particle_j.owner_);
 
@@ -1553,10 +1522,8 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc(
 
     // assemble all contributions to particle i (we do this at once outside the j-loop since the assemble operation is expensive!)
     LINALG::Assemble(*accn, sumj_accn_ij, particle_i.lm_, particle_i.owner_);
-
     if(background_pressure_>0)
       LINALG::Assemble(*trvl_acc, sumj_trvl_accn_ij, particle_i.lm_, particle_i.owner_);
-
     if(acc_A!=Teuchos::null)
       LINALG::Assemble(*acc_A, sumj_accn_ij_A, particle_i.lm_, particle_i.owner_);
 
@@ -1586,13 +1553,12 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_bpvp_acc(
   // The terms associated with the constant background pressure are similar to the real pressure terms
   // but with the pressures p_i and p_j replaced by the background pressure. All the related variables
   // and terms are marked by a prefix p0, e.g. p0_momentum_ij etc.. All terms related to XSPH are marked by a prefix xsph
-  bool transport_velocity = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"TRANSPORT_VELOCITY");
   if (trvl_acc != Teuchos::null)
   {
     if(background_pressure_<0.0 and xsph_dampfac_<0.0 and xsph_stiffac_<0.0)
       dserror("Negative values of background pressure, xsph_dampfac and xsph_stifffac! Why is the vector trvl_acc handed in for this case? Set flag TRANSPORT_VELOCITY to no!");
 
-    if(transport_velocity==false)
+    if(transport_velocity_==false)
       dserror("Vector trvl_acc handed in even though TRANSPORT_VELOCITY is set to no?!?");
 
     if((xsph_dampfac_<0.0 and xsph_stiffac_>0.0) or (xsph_dampfac_>0.0 and xsph_stiffac_<0.0))
@@ -1628,14 +1594,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_bpvp_acc(
       const int lidNodeCol_j = discret_->NodeColMap()->LID(gid_j);
       const ParticleMF& particle_j = colParticles_[lidNodeCol_j];
 
-      // get properties of particle j
-      const double density_j = particle_j.density_;
-      const double mass_j = particle_j.mass_;
-      const double pressure_j = particle_j.pressure_;
-      const double radius_j = particle_j.radius_;
-      const LINALG::Matrix<3,1> vel_j(particle_j.vel_);
-      const LINALG::Matrix<3,1> velConv_j(particle_j.velConv_);
-
       // init acceleration acting on particle j due to boundary particle i
       LINALG::Matrix<3,1> accn_ji(true);
       LINALG::Matrix<3,1> trvl_accn_ji(true);
@@ -1644,61 +1602,53 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_bpvp_acc(
       // extract particle interaction data
       const InterDataPvP& interData_ij =(neighbours_bp_[gid_i])[gid_j];
 
-      const double rRelNorm2 = interData_ij.rRelNorm2_;
-      LINALG::Matrix<3,1> rRelVersor_ij(interData_ij.rRelVersor_ij_);
-      LINALG::Matrix<3,1> vRel_ij;
       // the viscous terms require modified velocities of the boundary particles according to Adami2012, Eq. (23)
-      vRel_ij.Update(1.0, particle_i->boundarydata_.velModVisc_, -1.0, vel_j);
+      LINALG::Matrix<3,1> vRel_ij;
+      vRel_ij.Update(1.0, particle_i->boundarydata_.velModVisc_, -1.0, particle_j.vel_);
 
       // construct the specific coefficients
       double generalCoeff_ij = 0.0;
       double generalCoeff_ji = 0.0;
-      Inter_generalCoeff(generalCoeff_ij, generalCoeff_ji, density_i, density_j, mass_i, mass_j, interData_ij.dw_ij_, interData_ij.dw_ji_);
+      Inter_generalCoeff(generalCoeff_ij, generalCoeff_ji, density_i, mass_i, particle_j, interData_ij);
 
       // ********** pressure **********
-      Inter_pressure(NULL, &accn_ji, generalCoeff_ij, generalCoeff_ji,
-          density_i, density_j, pressure_i, pressure_j, rRelVersor_ij);
+      Inter_pressure(NULL, &accn_ji, generalCoeff_ij, generalCoeff_ji, density_i, pressure_i, particle_j, interData_ij);
 
       // ********** transport velocity (optional) **********
       // background pressure term for modified convection velocities/accelerations
       if(background_pressure_>0)
-        Inter_backgroundPressure(NULL, &trvl_accn_ji, generalCoeff_ij, generalCoeff_ji,
-            density_i, density_j, mass_i, mass_j, radius_i, radius_j, pressure_i, pressure_j, rRelNorm2, rRelVersor_ij);
+        Inter_backgroundPressure(NULL, &trvl_accn_ji, generalCoeff_ij, generalCoeff_ji, density_i, mass_i, radius_i, pressure_i, particle_j, interData_ij);
 
       // xsph contributions to transport velocity
       if(xsph_dampfac_>0 or xsph_stiffac_>0)
-        Inter_xsph(NULL, &trvl_accn_ji, density_i, density_j, mass_i, mass_j, radius_i, rRelNorm2, rRelVersor_ij, vRel_ij, interData_ij.w_ij_);
+        Inter_xsph(NULL, &trvl_accn_ji, density_i, mass_i, radius_i, particle_j, vRel_ij, interData_ij);
 
       // additional term div(A) in Navier-Stokes equation due to non-material particle convection
-      if(transport_velocity)
+      if(transport_velocity_)
       {
         LINALG::Matrix<3,1> dummy;
-        Inter_transportVelocity_divA(NULL, &accn_ji, NULL, &accn_ji_A, generalCoeff_ij, generalCoeff_ji,
-            density_i, density_j, dummy, vel_j, dummy, velConv_j, rRelVersor_ij);
+        Inter_transportVelocity_divA(NULL, &accn_ji, NULL, &accn_ji_A, generalCoeff_ij, generalCoeff_ji, density_i, dummy, dummy, particle_j, interData_ij);
       }
 
       // viscous interaction with boundary particles is only required in case of a no-slip boundary condition
       if(wallInteractionType_==INPAR::PARTICLE::BoundarParticle_NoSlip)
       {
         // ********** viscous forces **********
-        Inter_laminarViscosity(NULL, &accn_ji, generalCoeff_ij, generalCoeff_ji, density_i, density_j, rRelNorm2, rRelVersor_ij, vRel_ij);
+        Inter_laminarViscosity(NULL, &accn_ji, generalCoeff_ij, generalCoeff_ji, density_i, particle_j, vRel_ij, interData_ij);
 
         // ********** artificial viscous forces **********
         if(artificialViscosity_>0)
-          Inter_artificialViscosity(NULL, &accn_ji, density_i, density_j, mass_i, mass_j,
-              radius_i, radius_j, rRelNorm2, rRelVersor_ij, vRel_ij, interData_ij.dw_ij_, interData_ij.dw_ji_);
+          Inter_artificialViscosity(NULL, &accn_ji, density_i, mass_i, radius_i, particle_j, vRel_ij, interData_ij);
       }
 
       // ********** surface tension **********
       if(surfaceTension_>0.0)
-        Inter_surfaceTension(NULL, &accn_ji, density_i, density_j, mass_i, mass_j, radius_i, radius_j, rRelNorm2, rRelVersor_ij, time);
+        Inter_surfaceTension(NULL, &accn_ji, density_i, mass_i, radius_i, particle_j, interData_ij, time);
 
       // assemble all contributions to particle j
       LINALG::Assemble(*accn, accn_ji, particle_j.lm_, particle_j.owner_);
-
       if(background_pressure_>0)
         LINALG::Assemble(*trvl_acc, trvl_accn_ji, particle_j.lm_, particle_j.owner_);
-
       if(acc_A!=Teuchos::null)
         LINALG::Assemble(*acc_A, accn_ji_A, particle_j.lm_, particle_j.owner_);
 
@@ -2372,23 +2322,21 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_generalCoeff(
     double& generalCoeff_ij,
     double& generalCoeff_ji,
     const double& density_i,
-    const double& density_j,
     const double& mass_i,
-    const double& mass_j,
-    const double& dw_ij,
-    const double& dw_ji
+    const ParticleMF& particle_j,
+    const InterDataPvP& interData_ij
     )
 {
   if(not interactionVariant2_)
   {
-    generalCoeff_ij = dw_ij*mass_j;
-    generalCoeff_ji = dw_ji*mass_i;
+    generalCoeff_ij = interData_ij.dw_ij_*particle_j.mass_;
+    generalCoeff_ji = interData_ij.dw_ji_*mass_i;
   }
   else
   {
-    const double VSquare_ij = std::pow((mass_i/density_i), 2) + std::pow((mass_j/density_j), 2);
-    generalCoeff_ij = VSquare_ij*dw_ij/mass_i;
-    generalCoeff_ji = VSquare_ij*dw_ji/mass_j;
+    const double VSquare_ij = std::pow((mass_i/density_i), 2) + std::pow((particle_j.mass_/particle_j.density_), 2);
+    generalCoeff_ij = VSquare_ij*interData_ij.dw_ij_/mass_i;
+    generalCoeff_ji = VSquare_ij*interData_ij.dw_ji_/particle_j.mass_;
   }
 
   return;
@@ -2403,12 +2351,14 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pressure(
     const double& generalCoeff_ij,
     const double& generalCoeff_ji,
     const double& density_i,
-    const double& density_j,
     const double& pressure_i,
-    const double& pressure_j,
-    const LINALG::Matrix<3,1>& rRelVersor_ij
+    const ParticleMF& particle_j,
+    const InterDataPvP& interData_ij
     )
 {
+  double density_j = particle_j.density_;
+  double pressure_j = particle_j.pressure_;
+
   double fac = 0.0;
   if(not interactionVariant2_)
     fac = (pressure_i/std::pow(density_i,2) + pressure_j/std::pow(density_j,2));
@@ -2416,8 +2366,8 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pressure(
     fac = (density_i*pressure_j+density_j*pressure_i)/(density_i+density_j);
 
   if (accn_ij != NULL)
-    accn_ij->Update( -generalCoeff_ij*fac, rRelVersor_ij, 1.0);
-  accn_ji->Update( generalCoeff_ji*fac, rRelVersor_ij, 1.0);
+    accn_ij->Update( -generalCoeff_ij*fac, interData_ij.rRelVersor_ij_, 1.0);
+  accn_ji->Update( generalCoeff_ji*fac, interData_ij.rRelVersor_ij_, 1.0);
 
   return;
 }
@@ -2431,15 +2381,11 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_backgroundPressure(
     const double& generalCoeff_ij,
     const double& generalCoeff_ji,
     const double& density_i,
-    const double& density_j,
     const double& mass_i,
-    const double& mass_j,
     const double& radius_i,
-    const double& radius_j,
     const double& pressure_i,
-    const double& pressure_j,
-    const double& rRelNorm2,
-    const LINALG::Matrix<3,1>& rRelVersor_ij
+    const ParticleMF& particle_j,
+    const InterDataPvP& interData_ij
     )
 {
   if(freeSurfaceType_==INPAR::PARTICLE::FreeSurface_None)
@@ -2448,11 +2394,11 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_backgroundPressure(
 
     double fac = 0.0;
     if(not interactionVariant2_)
-      fac = background_pressure_*( 1.0/std::pow(density_i,2) + 1.0/std::pow(density_j,2) );
+      fac = background_pressure_*( 1.0/std::pow(density_i,2) + 1.0/std::pow(particle_j.density_,2) );
     else
       fac = background_pressure_;
 
-    p0_momentum_ij.Update( fac, rRelVersor_ij, 1.0);
+    p0_momentum_ij.Update( fac, interData_ij.rRelVersor_ij_, 1.0);
 
     if (trvl_accn_ij != NULL)
       trvl_accn_ij->Update( -generalCoeff_ij, p0_momentum_ij, 1.0);
@@ -2466,15 +2412,15 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_backgroundPressure(
     if (trvl_accn_ij != NULL)
     {
       double mod_background_pressure_i = std::min(abs(10.0*pressure_i), background_pressure_);
-      double dw_ij_tilde = weightFunctionHandler_->DW(rRelNorm2, radius_i/PARTICLE_P0ZHANG);
-      const double p0_gradP0_Rho2_ij = mod_background_pressure_i*mass_j*dw_ij_tilde/std::pow(density_i,2);
-      trvl_accn_ij->Update( -p0_gradP0_Rho2_ij, rRelVersor_ij, 1.0);
+      double dw_ij_tilde = weightFunctionHandler_->DW(interData_ij.rRelNorm2_, radius_i/PARTICLE_P0ZHANG);
+      const double p0_gradP0_Rho2_ij = mod_background_pressure_i*particle_j.mass_*dw_ij_tilde/std::pow(density_i,2);
+      trvl_accn_ij->Update( -p0_gradP0_Rho2_ij, interData_ij.rRelVersor_ij_, 1.0);
     }
 
-    double mod_background_pressure_j = std::min(abs(10.0*pressure_j), background_pressure_);
-    double dw_ji_tilde = weightFunctionHandler_->DW(rRelNorm2, radius_j/PARTICLE_P0ZHANG);
-    const double p0_gradP0_Rho2_ji = mod_background_pressure_j*mass_i*dw_ji_tilde/std::pow(density_j,2);
-    trvl_accn_ji->Update( p0_gradP0_Rho2_ji, rRelVersor_ij, 1.0);
+    double mod_background_pressure_j = std::min(abs(10.0*particle_j.pressure_), background_pressure_);
+    double dw_ji_tilde = weightFunctionHandler_->DW(interData_ij.rRelNorm2_, particle_j.radius_/PARTICLE_P0ZHANG);
+    const double p0_gradP0_Rho2_ji = mod_background_pressure_j*mass_i*dw_ji_tilde/std::pow(particle_j.density_,2);
+    trvl_accn_ji->Update( p0_gradP0_Rho2_ji, interData_ij.rRelVersor_ij_, 1.0);
   }
 
   return;
@@ -2487,27 +2433,24 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_xsph(
     LINALG::Matrix<3,1>* trvl_accn_ij,
     LINALG::Matrix<3,1>* trvl_accn_ji,
     const double& density_i,
-    const double& density_j,
     const double& mass_i,
-    const double& mass_j,
     const double& radius_i,
-    const double& rRelNorm2,
-    const LINALG::Matrix<3,1>& rRelVersor_ij,
+    const ParticleMF& particle_j,
     const LINALG::Matrix<3,1>& vRel_ij,
-    const double& w_ij
+    const InterDataPvP& interData_ij
     )
 {
-  double w_ij_damp = w_ij;
-  double w_ij_stiff = weightFunctionHandler_->W(rRelNorm2, radius_i/PARTICLE_P0ZHANG);
+  double w_ij_damp = interData_ij.w_ij_;
+  double w_ij_stiff = weightFunctionHandler_->W(interData_ij.rRelNorm2_, radius_i/PARTICLE_P0ZHANG);
 
   LINALG::Matrix<3,1> xsph_momentum_ij(true);
   xsph_momentum_ij.Update( -xsph_dampfac_*w_ij_damp, vRel_ij, 1.0);
-  xsph_momentum_ij.Update( xsph_stiffac_*w_ij_stiff, rRelVersor_ij, 1.0);
+  xsph_momentum_ij.Update( xsph_stiffac_*w_ij_stiff, interData_ij.rRelVersor_ij_, 1.0);
 
-  const double inv_density_ij = 1.0/(0.5*(density_i+density_j));
+  const double inv_density_ij = 1.0/(0.5*(density_i+particle_j.density_));
 
   if (trvl_accn_ij != NULL)
-    trvl_accn_ij->Update( mass_j*inv_density_ij, xsph_momentum_ij, 1.0);
+    trvl_accn_ij->Update( particle_j.mass_*inv_density_ij, xsph_momentum_ij, 1.0);
   trvl_accn_ji->Update( -mass_i*inv_density_ij, xsph_momentum_ij, 1.0);
 
   return;
@@ -2524,12 +2467,10 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_transportVelocity_divA(
     const double& generalCoeff_ij,
     const double& generalCoeff_ji,
     const double& density_i,
-    const double& density_j,
     const LINALG::Matrix<3,1>& vel_i,
-    const LINALG::Matrix<3,1>& vel_j,
     const LINALG::Matrix<3,1>& velConv_i,
-    const LINALG::Matrix<3,1>& velConv_j,
-    const LINALG::Matrix<3,1>& rRelVersor_ij
+    const ParticleMF& particle_j,
+    const InterDataPvP& interData_ij
     )
 {
   // build ternsor A_{ab}:=\rho*vel_a*(\tilde{vel}_b-vel_b) according to Adami 2013, Eq. (4).
@@ -2546,9 +2487,9 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_transportVelocity_divA(
     A_i.MultiplyNT(density_i, vel_i, velConv_vel_i, 0.0);
   }
 
-  LINALG::Matrix<3,1> velConv_vel_j(velConv_j);
-  velConv_vel_j.Update(-1.0, vel_j, 1.0);
-  A_j.MultiplyNT(density_j, vel_j, velConv_vel_j, 0.0);
+  LINALG::Matrix<3,1> velConv_vel_j(particle_j.velConv_);
+  velConv_vel_j.Update(-1.0, particle_j.vel_, 1.0);
+  A_j.MultiplyNT(particle_j.density_, particle_j.vel_, velConv_vel_j, 0.0);
 
   LINALG::Matrix<3,3> p0_A_scaled(true);
   LINALG::Matrix<3,1> p0_A_e_ij(true);
@@ -2557,7 +2498,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_transportVelocity_divA(
   {
     if (accn_ij != NULL and accn_ij_A != NULL)
       p0_A_scaled.Update((1.0/std::pow(density_i,2)), A_i, 1.0);
-    p0_A_scaled.Update((1.0/std::pow(density_j,2)), A_j, 1.0);
+    p0_A_scaled.Update((1.0/std::pow(particle_j.density_,2)), A_j, 1.0);
   }
   else
   {
@@ -2566,9 +2507,9 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_transportVelocity_divA(
     p0_A_scaled.Update(0.5, A_j, 1.0);
   }
 
-  p0_A_e_ij.MultiplyNN(1.0, p0_A_scaled, rRelVersor_ij, 0.0);
+  p0_A_e_ij.MultiplyNN(1.0, p0_A_scaled, interData_ij.rRelVersor_ij_, 0.0);
 
-  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"NO_VELDIFF_TERM")==false)
+  if(no_veldiff_term_==false)
   {
     if (accn_ij != NULL)
       accn_ij->Update( generalCoeff_ij, p0_A_e_ij, 1.0);
@@ -2591,18 +2532,17 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_laminarViscosity(
     const double& generalCoeff_ij,
     const double& generalCoeff_ji,
     const double& density_i,
-    const double& density_j,
-    const double& rRelNorm2,
-    const LINALG::Matrix<3,1>& rRelVersor_ij,
-    const LINALG::Matrix<3,1>& vRel_ij
+    const ParticleMF& particle_j,
+    const LINALG::Matrix<3,1>& vRel_ij,
+    const InterDataPvP& interData_ij
     )
 {
   if(not interactionVariant2_)
   {
     // The following two viscous terms are taken from Espanol2003, Eq(30) and re-expressed in terms of mass densities in an
     // equivalent manner. This is necessary since Espanol2003 only specifies the case m_i=m_j=m.
-    const double inv_rho2rRelNorm2 = 1.0 / (density_i * density_j * rRelNorm2);
-    const double rRelVersorDotVrel = rRelVersor_ij.Dot(vRel_ij);
+    const double inv_rho2rRelNorm2 = 1.0 / (density_i * particle_j.density_ * interData_ij.rRelNorm2_);
+    const double rRelVersorDotVrel = interData_ij.rRelVersor_ij_.Dot(vRel_ij);
 
     // diffusion
     const double dC_rho2rRelNorm2 = diffusionCoeff_ * inv_rho2rRelNorm2;
@@ -2613,15 +2553,15 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_laminarViscosity(
     // convection
     const double cCrRelVersorDotVrel_rho2rRelNorm2 =  convectionCoeff_ * rRelVersorDotVrel * inv_rho2rRelNorm2;
     if (accn_ij != NULL)
-      accn_ij->Update( generalCoeff_ij*cCrRelVersorDotVrel_rho2rRelNorm2, rRelVersor_ij, 1.0);
-    accn_ji->Update( -generalCoeff_ji*cCrRelVersorDotVrel_rho2rRelNorm2, rRelVersor_ij, 1.0);
+      accn_ij->Update( generalCoeff_ij*cCrRelVersorDotVrel_rho2rRelNorm2, interData_ij.rRelVersor_ij_, 1.0);
+    accn_ji->Update( -generalCoeff_ji*cCrRelVersorDotVrel_rho2rRelNorm2, interData_ij.rRelVersor_ij_, 1.0);
   }
   else
   {
     const double viscosity = particle_algorithm_->ExtParticleMat()->dynamicViscosity_;
     if (accn_ij != NULL)
-      accn_ij->Update( generalCoeff_ij*viscosity/rRelNorm2, vRel_ij, 1.0);
-    accn_ji->Update( -generalCoeff_ji*viscosity/rRelNorm2, vRel_ij, 1.0);
+      accn_ij->Update( generalCoeff_ij*viscosity/interData_ij.rRelNorm2_, vRel_ij, 1.0);
+    accn_ji->Update( -generalCoeff_ji*viscosity/interData_ij.rRelNorm2_, vRel_ij, 1.0);
   }
 
   return;
@@ -2634,39 +2574,34 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_artificialViscosity(
     LINALG::Matrix<3,1>* accn_ij,
     LINALG::Matrix<3,1>* accn_ji,
     const double& density_i,
-    const double& density_j,
     const double& mass_i,
-    const double& mass_j,
     const double& radius_i,
-    const double& radius_j,
-    const double& rRelNorm2,
-    const LINALG::Matrix<3,1>& rRelVersor_ij,
+    const ParticleMF& particle_j,
     const LINALG::Matrix<3,1>& vRel_ij,
-    const double& dw_ij,
-    const double& dw_ji
+    const InterDataPvP& interData_ij
     )
 {
   // the following term represents the forces resulting from artificial viscosity as applied in Adami et al. 2012, Eq. (11)
 
-  const double h_ij = 0.5*(weightFunctionHandler_->SmoothingLength(radius_i)+weightFunctionHandler_->SmoothingLength(radius_j));
+  const double h_ij = 0.5*(weightFunctionHandler_->SmoothingLength(radius_i)+weightFunctionHandler_->SmoothingLength(particle_j.radius_));
 
   //TODO: So far, boundary particles are only considered in the context of fluid problems (use of SpeedOfSoundL())!
   //TODO: So far, all fluid particles have the same speed of sound. In cases, where each particle has an individual speed of sound,
   // c_ij has to be the average speed of sound of the two particles i and j!
   const double c_ij = particle_algorithm_->ExtParticleMat()->SpeedOfSoundL();
 
-  const double density_ij = 0.5*(density_i+density_j);
+  const double density_ij = 0.5*(density_i+particle_j.density_);
 
   //The parameter epsilon avoids division by zero when particles get to close. The value epsilon=0.01 is a typical choice (see Adami et al. 2012).
   const double epsilon = 0.01;
 
-  const double rRelVersorDotVrel = rRelVersor_ij.Dot(vRel_ij);
+  const double rRelVersorDotVrel = interData_ij.rRelVersor_ij_.Dot(vRel_ij);
 
-  const double art_visc_fac = artificialViscosity_*h_ij*c_ij*rRelVersorDotVrel*rRelNorm2 / (density_ij*(std::pow(rRelNorm2, 2)+epsilon*std::pow(h_ij, 2)));
+  const double art_visc_fac = artificialViscosity_*h_ij*c_ij*rRelVersorDotVrel*interData_ij.rRelNorm2_ / (density_ij*(std::pow(interData_ij.rRelNorm2_, 2)+epsilon*std::pow(h_ij, 2)));
 
   if (accn_ij != NULL)
-    accn_ij->Update( mass_j*dw_ij*art_visc_fac, rRelVersor_ij, 1.0);
-  accn_ji->Update( -mass_i*dw_ji*art_visc_fac, rRelVersor_ij, 1.0);
+    accn_ij->Update( particle_j.mass_*interData_ij.dw_ij_*art_visc_fac, interData_ij.rRelVersor_ij_, 1.0);
+  accn_ji->Update( -mass_i*interData_ij.dw_ji_*art_visc_fac, interData_ij.rRelVersor_ij_, 1.0);
 
   return;
 }
@@ -2678,27 +2613,24 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_surfaceTension(
     LINALG::Matrix<3,1>* accn_ij,
     LINALG::Matrix<3,1>* accn_ji,
     const double& density_i,
-    const double& density_j,
     const double& mass_i,
-    const double& mass_j,
     const double& radius_i,
-    const double& radius_j,
-    const double& rRelNorm2,
-    const LINALG::Matrix<3,1>& rRelVersor_ij,
+    const ParticleMF& particle_j,
+    const InterDataPvP& interData_ij,
     const double& time
     )
 {
   // The following term applies pairwise interaction forces to model surface tension following Tartakovsky et al. 2016
 
-  double radius_ij = 0.5*(radius_i+radius_j);
+  double radius_ij = 0.5*(radius_i+particle_j.radius_);
   double lambda = 0.0;
   double potential = 0.0;
-  SurfTensionInterPot(radius_ij, rRelNorm2, lambda, potential);
+  SurfTensionInterPot(radius_ij, interData_ij.rRelNorm2_, lambda, potential);
 
   if(potential != 0.0)
   {
     // averaged number density (n_i = \rho_i/m_i)
-    double n_ij = 0.5*((density_i/mass_i)+(density_j/mass_j));
+    double n_ij = 0.5*((density_i/mass_i)+(particle_j.density_/particle_j.mass_));
 
     double timefac = 1.0;
     if(time >= 0.0)
@@ -2717,11 +2649,11 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_surfaceTension(
 
     // pair-wise interaction force
     LINALG::Matrix<3,1> pf_ij(true);
-    pf_ij.Update(-s_ij*potential*timefac, rRelVersor_ij, 1.0);
+    pf_ij.Update(-s_ij*potential*timefac, interData_ij.rRelVersor_ij_, 1.0);
 
     if (accn_ij != NULL)
       accn_ij->Update( 1.0/mass_i, pf_ij, 1.0);
-    accn_ji->Update( -1.0/mass_j, pf_ij, 1.0);
+    accn_ji->Update( -1.0/particle_j.mass_, pf_ij, 1.0);
   }
 
   return;

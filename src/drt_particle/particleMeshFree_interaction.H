@@ -342,11 +342,9 @@ namespace PARTICLE
         double& generalCoeff_ij,
         double& generalCoeff_ji,
         const double& density_i,
-        const double& density_j,
         const double& mass_i,
-        const double& mass_j,
-        const double& dw_ij,
-        const double& dw_ji
+        const ParticleMF& particle_j,
+        const InterDataPvP& interData_ij
         );
 
     //! evaluate pressure
@@ -356,10 +354,9 @@ namespace PARTICLE
         const double& generalCoeff_ij,
         const double& generalCoeff_ji,
         const double& density_i,
-        const double& density_j,
         const double& pressure_i,
-        const double& pressure_j,
-        const LINALG::Matrix<3,1>& rRelVersor_ij
+        const ParticleMF& particle_j,
+        const InterDataPvP& interData_ij
         );
 
     //! evaluate background pressure
@@ -369,15 +366,11 @@ namespace PARTICLE
         const double& generalCoeff_ij,
         const double& generalCoeff_ji,
         const double& density_i,
-        const double& density_j,
         const double& mass_i,
-        const double& mass_j,
         const double& radius_i,
-        const double& radius_j,
         const double& pressure_i,
-        const double& pressure_j,
-        const double& rRelNorm2,
-        const LINALG::Matrix<3,1>& rRelVersor_ij
+        const ParticleMF& particle_j,
+        const InterDataPvP& interData_ij
         );
 
     //! evaluate xsph contribution
@@ -385,14 +378,11 @@ namespace PARTICLE
         LINALG::Matrix<3,1>* trvl_accn_ij,
         LINALG::Matrix<3,1>* trvl_accn_ji,
         const double& density_i,
-        const double& density_j,
         const double& mass_i,
-        const double& mass_j,
         const double& radius_i,
-        const double& rRelNorm2,
-        const LINALG::Matrix<3,1>& rRelVersor_ij,
+        const ParticleMF& particle_j,
         const LINALG::Matrix<3,1>& vRel_ij,
-        const double& w_ij
+        const InterDataPvP& interData_ij
         );
 
     //! evaluate additional term divA due to transport velocity
@@ -404,12 +394,10 @@ namespace PARTICLE
         const double& generalCoeff_ij,
         const double& generalCoeff_ji,
         const double& density_i,
-        const double& density_j,
         const LINALG::Matrix<3,1>& vel_i,
-        const LINALG::Matrix<3,1>& vel_j,
         const LINALG::Matrix<3,1>& velConv_i,
-        const LINALG::Matrix<3,1>& velConv_j,
-        const LINALG::Matrix<3,1>& rRelVersor_ij
+        const ParticleMF& particle_j,
+        const InterDataPvP& interData_ij
         );
 
     //! evaluate laminar viscosity
@@ -419,10 +407,9 @@ namespace PARTICLE
         const double& generalCoeff_ij,
         const double& generalCoeff_ji,
         const double& density_i,
-        const double& density_j,
-        const double& rRelNorm2,
-        const LINALG::Matrix<3,1>& rRelVersor_ij,
-        const LINALG::Matrix<3,1>& vRel_ij
+        const ParticleMF& particle_j,
+        const LINALG::Matrix<3,1>& vRel_ij,
+        const InterDataPvP& interData_ij
         );
 
     //! evaluate artificial viscosity
@@ -430,16 +417,11 @@ namespace PARTICLE
         LINALG::Matrix<3,1>* accn_ij,
         LINALG::Matrix<3,1>* accn_ji,
         const double& density_i,
-        const double& density_j,
         const double& mass_i,
-        const double& mass_j,
         const double& radius_i,
-        const double& radius_j,
-        const double& rRelNorm2,
-        const LINALG::Matrix<3,1>& rRelVersor_ij,
+        const ParticleMF& particle_j,
         const LINALG::Matrix<3,1>& vRel_ij,
-        const double& dw_ij,
-        const double& dw_ji
+        const InterDataPvP& interData_ij
         );
 
     //! evaluate surface tension
@@ -447,13 +429,10 @@ namespace PARTICLE
         LINALG::Matrix<3,1>* accn_ij,
         LINALG::Matrix<3,1>* accn_ji,
         const double& density_i,
-        const double& density_j,
         const double& mass_i,
-        const double& mass_j,
         const double& radius_i,
-        const double& radius_j,
-        const double& rRelNorm2,
-        const LINALG::Matrix<3,1>& rRelVersor_ij,
+        const ParticleMF& particle_j,
+        const InterDataPvP& interData_ij,
         const double& time
         );
 
@@ -510,6 +489,9 @@ namespace PARTICLE
     /// particle interaction variant
     const bool interactionVariant2_;
 
+    /// solve thermal problem
+    const bool solve_thermal_prob_;
+
     /// wall interaction type
     const INPAR::PARTICLE::WallInteractionType wallInteractionType_;
 
@@ -544,13 +526,22 @@ namespace PARTICLE
     const double refdensfac_;
 
     /// background pressure employed for modified particle convection velocity
-    double background_pressure_;
+    const double background_pressure_;
+
+    /// apply particle convection velocity that differs from momentum velocity
+    const bool transport_velocity_;
+
+    /// do not apply velocity difference tensor in case of transport velocity formulation
+    const bool no_veldiff_term_;
+
+    /// apply additional damping force in order to achieve static equilibrium solution
+    const double damping_factor_;
 
     /// damping factor of XSPH scheme
-    double xsph_dampfac_;
+    const double xsph_dampfac_;
 
     /// stiffness factor of XSPH scheme
-    double xsph_stiffac_;
+    const double xsph_stiffac_;
 
     /// laplacian velocity, diffusion coefficient
     double diffusionCoeff_;
