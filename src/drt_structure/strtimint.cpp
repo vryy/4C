@@ -58,6 +58,7 @@
 #include "../drt_patspec/patspec.H"
 #include "../drt_immersed_problem/immersed_field_exchange_manager.H"
 #include "../drt_stru_multi/microstatic.H"
+#include "../drt_mor/mor_pod.H"
 
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_blocksparsematrix.H"
@@ -179,6 +180,7 @@ STR::TimInt::TimInt
   dtcmt_(0.0),
   pslist_(Teuchos::null),
   strgrdisp_(Teuchos::null),
+  mor_(Teuchos::null),
   issetup_(false),
   isinit_(false)
 {
@@ -261,12 +263,16 @@ void STR::TimInt::Setup()
   // setup constraint manager
   conman_->Setup((*dis_)(0),sdynparams_);
 
+  // model order reduction
+  mor_ = Teuchos::rcp(new UTILS::MOR(discret_));
+
   // initialize 0D cardiovascular manager
   cardvasc0dman_ = Teuchos::rcp(new UTILS::Cardiovascular0DManager(discret_,
                                                         (*dis_)(0),
                                                         sdynparams_,
                                                         DRT::Problem::Instance()->Cardiovascular0DStructuralParams(),
-                                                        *solver_));
+                                                        *solver_,
+                                                        mor_));
 
   // initialize spring dashpot manager
   springman_ = Teuchos::rcp(new UTILS::SpringDashpotManager(discret_));

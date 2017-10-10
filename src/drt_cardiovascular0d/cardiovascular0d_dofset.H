@@ -23,6 +23,8 @@
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Map.h>
 
+#include "../drt_mor/mor_pod.H"
+
 #include "../drt_lib/drt_dofset.H"
 #include "../drt_lib/drt_discret.H"
 
@@ -87,7 +89,11 @@ public:
   //! @name Construction
 
   /// Assign dof numbers using all elements and nodes of the discretization.
-  virtual int AssignDegreesOfFreedom(const Teuchos::RCP<DRT::Discretization> dis, const int numdofs, const int start);
+  virtual int AssignDegreesOfFreedom(
+      const Teuchos::RCP<DRT::Discretization> dis,
+      const int numdofs,
+      const int start,
+      const Teuchos::RCP<UTILS::MOR> mor);
 
   /// reset all internal variables
   virtual void Reset();

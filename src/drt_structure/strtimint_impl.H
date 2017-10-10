@@ -1036,7 +1036,9 @@ namespace STR
     double normcharforce_;  //!< characteristic norm for residual force
     double normchardis_;  //!< characteristic norm for residual displacements
     double normfres_;  //!< norm of residual forces
+    double normfresr_;  //!< norm of reduced residual forces
     double normdisi_;  //!< norm of residual displacements
+    double normdisir_;  //!< norm of reduced residual displacements
     double normcon_;  //!< norm of constraint
     double normcardvasc0d_;  //!< norm of 0D cardiovascular residual
     double normcardvasc0ddofincr_;  //!< norm of 0D cardiovascular dof increment

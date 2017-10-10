@@ -649,6 +649,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("NDVOL",0,"number of volume clouds",&design);
   IntParameter("NDPARTICLE",0,"number of particle clouds",&design);
 
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& mor = list->sublist("MOR",false,"");
+
+  StringParameter("POD_MATRIX","none","filename of file containing projection matrix",&mor);
+
   /*----------------------------------------------------------------------*/
   /* Finally call the problem-specific SetValidParameter functions        */
   /*----------------------------------------------------------------------*/

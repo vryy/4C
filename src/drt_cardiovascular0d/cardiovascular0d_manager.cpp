@@ -30,6 +30,7 @@
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_condition.H"
+#include "../drt_mor/mor_pod.H"
 #include "cardiovascular0d.H"
 #include "cardiovascular0d_4elementwindkessel.H"
 #include "cardiovascular0d_arterialproxdist.H"
@@ -46,13 +47,14 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
   Teuchos::RCP<const Epetra_Vector> disp,
   Teuchos::ParameterList strparams,
   Teuchos::ParameterList cv0dparams,
-  LINALG::Solver& solver
+  LINALG::Solver& solver,
+  Teuchos::RCP<UTILS::MOR> mor
 )
 : actdisc_(discr),
   myrank_(actdisc_->Comm().MyPID()),
   dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor())),
-  cardiovascular0ddofset_(Teuchos::null),
-  cardiovascular0dmap_(Teuchos::null),
+  cardiovascular0ddofset_full_(Teuchos::null),
+  cardiovascular0dmap_full_(Teuchos::null),
   redcardiovascular0dmap_(Teuchos::null),
   cardvasc0dimpo_(Teuchos::null),
   cv0ddofincrement_(Teuchos::null),
@@ -106,7 +108,9 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
   linsolveerror_(0),
   strparams_(strparams),
   cv0dparams_(cv0dparams),
-  intstrat_(DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(strparams,"INT_STRATEGY"))
+  intstrat_(DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(strparams,"INT_STRATEGY")),
+  mor_(mor),
+  have_mor_(false)
 {
 
   //Check what kind of Cardiovascular0D boundary conditions there are
@@ -177,13 +181,21 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
     }
   }
 
+  // are we using model order reduction?
+  if(mor_ != Teuchos::null)
+    if(mor_->HaveMOR())
+      have_mor_ = true;
+
   if (cardvasc0d_4elementwindkessel_->HaveCardiovascular0D() or cardvasc0d_arterialproxdist_->HaveCardiovascular0D()
       or cardvasc0d_syspulcirculation_->HaveCardiovascular0D() or cardvascrespir0d_syspulperiphcirculation_->HaveCardiovascular0D())
   {
-    cardiovascular0ddofset_=Teuchos::rcp(new Cardiovascular0DDofSet());
-    cardiovascular0ddofset_->AssignDegreesOfFreedom(actdisc_,numCardiovascular0DID_,0);
+    cardiovascular0ddofset_ = Teuchos::rcp(new Cardiovascular0DDofSet());
+    cardiovascular0ddofset_->AssignDegreesOfFreedom(actdisc_,numCardiovascular0DID_,0,mor_);
+    cardiovascular0ddofset_full_=Teuchos::rcp(new Cardiovascular0DDofSet());
+    cardiovascular0ddofset_full_->AssignDegreesOfFreedom(actdisc_,numCardiovascular0DID_,0,Teuchos::null);
     offsetID_ = cardiovascular0ddofset_->FirstGID();
 
+    cardiovascular0dmap_full_=Teuchos::rcp(new Epetra_Map(*(cardiovascular0ddofset_full_->DofRowMap())));
     cardiovascular0dmap_=Teuchos::rcp(new Epetra_Map(*(cardiovascular0ddofset_->DofRowMap())));
     redcardiovascular0dmap_=LINALG::AllreduceEMap(*cardiovascular0dmap_);
     cardvasc0dimpo_=Teuchos::rcp(new Epetra_Export(*redcardiovascular0dmap_,*cardiovascular0dmap_));
@@ -901,7 +913,7 @@ int UTILS::Cardiovascular0DManager::Solve
 
   // define maps of standard dofs and additional pressures
   Teuchos::RCP<Epetra_Map> standrowmap = Teuchos::rcp(new Epetra_Map(mat_structstiff->RowMap()));
-  Teuchos::RCP<Epetra_Map> cardvasc0drowmap = Teuchos::rcp(new Epetra_Map(mat_cardvasc0dstiff->RowMap()));
+  Teuchos::RCP<Epetra_Map> cardvasc0drowmap = Teuchos::rcp(new Epetra_Map(*cardiovascular0dmap_full_));
 
 
   if(ptc_3d0d_)
@@ -935,10 +947,74 @@ int UTILS::Cardiovascular0DManager::Solve
   myMaps.push_back(cardvasc0drowmap);
   LINALG::MultiMapExtractor mapext(*mergedmap, myMaps);
 
-  // initialize BlockMatrix and Epetra_Vectors
-  Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > blockmat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(mapext,mapext,81,false,false));
-  Teuchos::RCP<Epetra_Vector> mergedrhs = Teuchos::rcp(new Epetra_Vector(*mergedmap));
-  Teuchos::RCP<Epetra_Vector> mergedsol = Teuchos::rcp(new Epetra_Vector(*mergedmap));
+  // initialize blockmat, mergedrhs, mergedsol and mapext to keep them in scope after the following if-condition
+  Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > blockmat;
+  Teuchos::RCP<Epetra_Vector> mergedrhs;
+  Teuchos::RCP<Epetra_Vector> mergedsol;
+  LINALG::MultiMapExtractor mapext_R;
+
+  if(have_mor_)
+  {
+    // reduce linear system
+    Teuchos::RCP<LINALG::SparseMatrix> mat_structstiff_R = mor_->ReduceDiagnoal(mat_structstiff);
+    Teuchos::RCP<LINALG::SparseMatrix> mat_dcardvasc0d_dd_R = mor_->ReduceOffDiagonal(mat_dcardvasc0d_dd);
+    Teuchos::RCP<LINALG::SparseMatrix> mat_dstruct_dcv0ddof_R = mor_->ReduceOffDiagonal(mat_dstruct_dcv0ddof);
+    Teuchos::RCP<Epetra_MultiVector> rhsstruct_R = mor_->ReduceRHS(rhsstruct);
+
+    // define maps of reduced standard dofs and additional pressures
+    Teuchos::RCP<Epetra_Map> structmap_R = Teuchos::rcp(new Epetra_Map(mor_->GetRedDim(),0,actdisc_->Comm()));
+    Teuchos::RCP<Epetra_Map> standrowmap_R = Teuchos::rcp(new Epetra_Map(*structmap_R));
+    Teuchos::RCP<Epetra_Map> cardvasc0drowmap_R = Teuchos::rcp(new Epetra_Map(mat_cardvasc0dstiff->RowMap()));
+
+    // merge maps of reduced standard dofs and additional pressures to one large map
+    Teuchos::RCP<Epetra_Map> mergedmap_R = LINALG::MergeMap(standrowmap_R,cardvasc0drowmap_R,false);
+
+    std::vector<Teuchos::RCP<const Epetra_Map> > myMaps_R;
+    myMaps_R.push_back(standrowmap_R);
+    myMaps_R.push_back(cardvasc0drowmap_R);
+    mapext_R.Setup(*mergedmap_R, myMaps_R);
+
+    // initialize BlockMatrix and Epetra_Vectors
+    blockmat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(mapext_R,mapext_R,81,false,false));
+    mergedrhs = Teuchos::rcp(new Epetra_Vector(*mergedmap_R));
+    mergedsol = Teuchos::rcp(new Epetra_Vector(*mergedmap_R));
+
+    // use BlockMatrix
+    blockmat->Assign(0,0,LINALG::View,*mat_structstiff_R);
+    blockmat->Assign(1,0,LINALG::View,*mat_dcardvasc0d_dd_R);
+    blockmat->Assign(0,1,LINALG::View,*mat_dstruct_dcv0ddof_R->Transpose());
+    blockmat->Assign(1,1,LINALG::View,*mat_cardvasc0dstiff);
+    blockmat->Complete();
+
+    // export 0D part of rhs
+    LINALG::Export(*rhscardvasc0d,*mergedrhs);
+    //make the 0D part of the rhs negative
+    mergedrhs -> Scale(-1.0);
+    // export reduced structure part of rhs -> no need to make it negative since this has been done by the structural time integrator already!
+    LINALG::Export(*rhsstruct_R,*mergedrhs);
+  }
+  else
+  {
+    // initialize BlockMatrix and Epetra_Vectors
+    blockmat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(mapext,mapext,81,false,false));
+    mergedrhs = Teuchos::rcp(new Epetra_Vector(*mergedmap));
+    mergedsol = Teuchos::rcp(new Epetra_Vector(*mergedmap));
+
+    // use BlockMatrix
+    blockmat->Assign(0,0,LINALG::View,*mat_structstiff);
+    blockmat->Assign(1,0,LINALG::View,*mat_dcardvasc0d_dd->Transpose());
+    blockmat->Assign(0,1,LINALG::View,*mat_dstruct_dcv0ddof);
+    blockmat->Assign(1,1,LINALG::View,*mat_cardvasc0dstiff);
+    blockmat->Complete();
+
+    // export 0D part of rhs
+    LINALG::Export(*rhscardvasc0d,*mergedrhs);
+    //make the 0D part of the rhs negative
+    mergedrhs -> Scale(-1.0);
+    // export structure part of rhs -> no need to make it negative since this has been done by the structural time integrator already!
+    LINALG::Export(*rhsstruct,*mergedrhs);
+  }
+
   // ONLY compatability
   // dirichtoggle_ changed and we need to rebuild associated DBC maps
   if (dirichtoggle_ != Teuchos::null)
@@ -995,20 +1071,6 @@ int UTILS::Cardiovascular0DManager::Solve
       dserror("Unknown 0D cardiovascular-structural solution technique!");
   }
 
-  // use BlockMatrix
-  blockmat->Assign(0,0,LINALG::View,*mat_structstiff);
-  blockmat->Assign(1,0,LINALG::View,*mat_dcardvasc0d_dd->Transpose());
-  blockmat->Assign(0,1,LINALG::View,*mat_dstruct_dcv0ddof);
-  blockmat->Assign(1,1,LINALG::View,*mat_cardvasc0dstiff);
-  blockmat->Complete();
-
-  // export 0D part of rhs
-  LINALG::Export(*rhscardvasc0d,*mergedrhs);
-  //make the 0D part of the rhs negative
-  mergedrhs -> Scale(-1.0);
-  // export structure part of rhs -> no need to make it negative since this has been done by the structural time integrator already!
-  LINALG::Export(*rhsstruct,*mergedrhs);
-
 #if 0
   const int myrank=(actdisc_->Comm().MyPID());
   const double cond_number = LINALG::Condest(static_cast<LINALG::SparseMatrix&>(*mergedmatrix),Ifpack_GMRES, 100);
@@ -1039,9 +1101,33 @@ int UTILS::Cardiovascular0DManager::Solve
   linsolveerror_ = solver_->Solve(blockmat,mergedsol,mergedrhs,true,counter_==0);
   solver_->ResetTolerance();
 
+  // initialize mergedsol_full to keep it in scope after the following if-condition
+  Teuchos::RCP<Epetra_Vector> mergedsol_full=Teuchos::rcp(new Epetra_Vector(*mergedmap));
+
+  if(have_mor_)
+  {
+    // initialize and write vector with reduced displacement dofs
+    Teuchos::RCP<Epetra_Vector> disp_R = Teuchos::rcp(new Epetra_Vector(*mapext_R.Map(0)));
+    mapext_R.ExtractVector(mergedsol,0,disp_R);
+
+    // initialize and write vector with pressure dofs, replace row map
+    Teuchos::RCP<Epetra_Vector> cv0ddof = Teuchos::rcp(new Epetra_Vector(*mapext_R.Map(1)));
+    mapext_R.ExtractVector(mergedsol,1,cv0ddof);
+    cv0ddof->ReplaceMap(*cardvasc0drowmap);
+
+    // extend reduced displacement dofs to high dimension
+    Teuchos::RCP<Epetra_Vector> disp_full = mor_->ExtendSolution(disp_R);
+
+    // assemble displacement and pressure dofs
+    mergedsol_full=mapext.InsertVector(disp_full,0);
+    mapext.AddVector(cv0ddof,1,mergedsol_full,1);
+  }
+  else
+    mergedsol_full=mergedsol;
+
   // store results in smaller vectors
-  mapext.ExtractVector(mergedsol,0,dispinc);
-  mapext.ExtractVector(mergedsol,1,cv0ddofincr);
+  mapext.ExtractVector(mergedsol_full,0,dispinc);
+  mapext.ExtractVector(mergedsol_full,1,cv0ddofincr);
 
   cv0ddofincrement_->Update(1.,*cv0ddofincr,0.);
 

@@ -73,7 +73,8 @@ void STR::MODELEVALUATOR::Cardiovascular0D::Setup()
       disnp_ptr_,
       DRT::Problem::Instance()->StructuralDynamicParams(),
       DRT::Problem::Instance()->Cardiovascular0DStructuralParams(),
-      *dummysolver));
+      *dummysolver,
+      Teuchos::null));
 
   // set flag
   issetup_ = true;

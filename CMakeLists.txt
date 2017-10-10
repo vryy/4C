@@ -2430,6 +2430,10 @@ src/drt_immersed_problem/ssi_partitioned_2wc_adhesiondynamics.cpp
 src/drt_immersed_problem/fsi_partitioned_immersed.cpp
 )
 
+set(OBJS_DRT_MOR
+  src/drt_mor/mor_pod.cpp
+)
+
 set(OBJS_DRT_PASI
 src/drt_pasi/pasi_dyn.cpp
 src/drt_pasi/pasi_partitioned.cpp
@@ -2671,6 +2675,7 @@ add_library(drt_cardiovascular0d ${OBJS_DRT_CARDIOVASCULAR0D})
 #add_library(drt_mortar SHARED ${OBJS_DRT_MORTAR})
 add_library(drt_mortar ${OBJS_DRT_MORTAR})
 add_library(drt_volmortar ${OBJS_DRT_VOLMORTAR})
+add_library(drt_mor ${OBJS_DRT_MOR})
 
 # material definitions
 add_library(drt_mat ${OBJS_DRT_MAT_LIB})
@@ -2702,6 +2707,7 @@ add_library(drt_lib_statinv_ana ${OBJS_STATINV_ANALYSIS_LIB})
 add_library(drt_lib_immersed ${OBJS_DRT_IMMERSED_LIB})
 add_library(drt_lib_xfem_manag ${OBJS_DRT_XFEM_MANAG_LIB})
 add_library(drt_lib_fiber ${OBJS_DRT_FIBER_LIB})
+add_library(alg_mor ${OBJS_DRT_MOR})
 
 
 set(SUPPORT_LIBRARIES
@@ -2769,6 +2775,7 @@ set(BACI_LIBRARIES
   drt_volmortar
   drt_constraint
   drt_cardiovascular0d
+  drt_mor
   drt_lib_register
   ${ELEMENT_LIBRARIES}
   ${SUPPORT_LIBRARIES}

@@ -66,6 +66,7 @@
 #include "../solver_nonlin/nln_problem_base.H"
 #include "../solver_nonlin/nln_problem_nox.H"
 #include "../solver_nonlin/nln_utils.H"
+#include "../drt_mor/mor_pod.H"
 #include "strtimint_noxgroup.H"
 
 /*----------------------------------------------------------------------*/
@@ -117,7 +118,9 @@ STR::TimIntImpl::TimIntImpl
   normcharforce_(0.0),
   normchardis_(0.0),
   normfres_(0.0),
+  normfresr_(0.0),
   normdisi_(0.0),
+  normdisir_(0.0),
   normcon_(0.0),
   normcardvasc0d_(0.0),
   normcardvasc0ddofincr_(0.0),
@@ -1301,7 +1304,10 @@ bool STR::TimIntImpl::Converged()
   switch (normtypedisi_)
   {
   case INPAR::STR::convnorm_abs:
-    convdis = normdisi_ < toldisi_;
+    if (mor_->HaveMOR())
+      convdis = normdisir_ < toldisi_;
+    else
+      convdis = normdisi_ < toldisi_;
     break;
   case INPAR::STR::convnorm_rel:
     convdis = normdisi_ < std::max(normchardis_*toldisi_,1e-15);
@@ -1318,7 +1324,10 @@ bool STR::TimIntImpl::Converged()
   switch (normtypefres_)
   {
   case INPAR::STR::convnorm_abs:
-    convfres = normfres_ < tolfres_;
+    if (mor_->HaveMOR())
+      convfres = normfresr_ < tolfres_;
+    else
+      convfres = normfres_ < tolfres_;
     break;
   case INPAR::STR::convnorm_rel:
     convfres = normfres_ < std::max(tolfres_*normcharforce_,1e-15);
@@ -2946,6 +2955,17 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
       }
       else
       {
+        if (mor_->HaveMOR())
+        {
+          // build residual force norm with reduced force residual
+          Teuchos::RCP<Epetra_Vector> fres_r = mor_->ReduceResidual(fres_);
+          normfresr_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_r);
+
+          // build residual displacement norm with reduced residual displacements
+          Teuchos::RCP<Epetra_Vector> disi_r = mor_->ReduceResidual(disi_);
+          normdisir_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_r);
+        }
+
         // build residual force norm
         normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
         // build residual displacement norm
@@ -3792,6 +3812,8 @@ void STR::TimIntImpl::PrintNewtonIterHeader( FILE* ofile )
     break;
   case INPAR::STR::convnorm_abs :
     oss <<std::setw(16)<< "abs-res-norm";
+    if (mor_->HaveMOR())
+      oss <<std::setw(16)<< "abs-res-norm-r";
     break;
   case INPAR::STR::convnorm_mix :
     oss <<std::setw(16)<< "mix-res-norm";
@@ -3821,6 +3843,8 @@ void STR::TimIntImpl::PrintNewtonIterHeader( FILE* ofile )
     break;
   case INPAR::STR::convnorm_abs :
     oss <<std::setw(16)<< "abs-dis-norm";
+    if (mor_->HaveMOR())
+      oss <<std::setw(16)<< "abs-dis-norm-r";
     break;
   case INPAR::STR::convnorm_mix :
     oss <<std::setw(16)<< "mix-dis-norm";
@@ -3964,6 +3988,8 @@ void STR::TimIntImpl::PrintNewtonIterText( FILE* ofile )
     break;
   case INPAR::STR::convnorm_abs :
     oss << std::setw(16) << std::setprecision(5) << std::scientific << normfres_;
+    if (mor_->HaveMOR())
+      oss << std::setw(16) << std::setprecision(5) << std::scientific << normfresr_;
     break;
   case INPAR::STR::convnorm_mix :
     oss << std::setw(16) << std::setprecision(5) << std::scientific << std::min(normfres_, normfres_/normcharforce_);
@@ -3993,6 +4019,8 @@ void STR::TimIntImpl::PrintNewtonIterText( FILE* ofile )
     break;
   case INPAR::STR::convnorm_abs :
     oss << std::setw(16) << std::setprecision(5) << std::scientific << normdisi_;
+    if (mor_->HaveMOR())
+      oss << std::setw(16) << std::setprecision(5) << std::scientific << normdisir_;
     break;
   case INPAR::STR::convnorm_mix :
     oss << std::setw(16) << std::setprecision(5) << std::scientific << std::min(normdisi_, normdisi_/normchardis_);

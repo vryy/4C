@@ -81,6 +81,11 @@ namespace IO
   class DiscretizationWriter;
 }
 
+namespace UTILS
+{
+  class MOR;
+}
+
 /*----------------------------------------------------------------------*/
 //! Structural Dynamics
 namespace STR
@@ -1262,6 +1267,8 @@ namespace STR
     //@{
     Teuchos::RCP<LINALG::MapExtractor> porositysplitter_;
     //@}
+
+    Teuchos::RCP<UTILS::MOR> mor_; //!< model order reduction
 
   private:
 

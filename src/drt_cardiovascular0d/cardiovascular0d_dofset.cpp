@@ -57,7 +57,8 @@ int UTILS::Cardiovascular0DDofSet::AssignDegreesOfFreedom
 (
     const Teuchos::RCP<DRT::Discretization> dis,
     const int ndofs,
-    const int start
+    const int start,
+    const Teuchos::RCP<UTILS::MOR> mor
 )
 {
   // A definite offset is currently not supported.
@@ -84,7 +85,12 @@ int UTILS::Cardiovascular0DDofSet::AssignDegreesOfFreedom
   // try to understand what you do.
 
   // Get highest GID used so far and add one
-  const int count = MaxGIDinList(dis->Comm()) + 1;
+  // (In case of POD-MOR, the highest GID will be projmatrix->NumVectors()-1 because indexing starts from 0. Therefore, there is no need to add anything.)
+  int count;
+  if (mor == Teuchos::null or not mor->HaveMOR())
+    count = MaxGIDinList(dis->Comm()) + 1;
+  else
+    count = mor->GetRedDim();
 
   // dofrowmap with index base = count, which is undesired
   Teuchos::RCP<Epetra_Map> dofrowmap = Teuchos::rcp(new Epetra_Map(ndofs,count,dis->Comm()));

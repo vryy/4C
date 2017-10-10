@@ -55,6 +55,7 @@ namespace UTILS
 {
 
   //forward declarations
+  class MOR;
   class Cardiovascular0D;
   class Cardiovascular0DDofSet;
 
@@ -71,7 +72,8 @@ namespace UTILS
       Teuchos::RCP<const Epetra_Vector> disp,  ///< current displacement
       Teuchos::ParameterList strparams,  ///<  parameterlist from structural time integration algorithm
       Teuchos::ParameterList cv0dparams,  ///<  parameterlist from cardiovascular0d
-      LINALG::Solver& solver  ///< Solver to solve linear subproblem in iteration
+      LINALG::Solver& solver,  ///< Solver to solve linear subproblem in iteration
+      Teuchos::RCP<UTILS::MOR> mor ///< model order reduction
     );
     /*!
         \brief Destructor
@@ -180,7 +182,7 @@ namespace UTILS
     */
     Teuchos::RCP<Epetra_Map> GetCardiovascular0DMap() const
     {
-      return cardiovascular0dmap_;
+      return cardiovascular0dmap_full_;
     };
 
     //! Return the additional rectangular matrix, constructed for pressure evaluation
@@ -403,8 +405,10 @@ namespace UTILS
     Teuchos::RCP<DRT::Discretization> actdisc_; ///< discretization where elements of cardiovascular0d boundary live in
     int myrank_; ///< processor
     Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;  ///< map for Dirichlet DOFs
-    Teuchos::RCP<Cardiovascular0DDofSet> cardiovascular0ddofset_; ///< degrees of freedom of pressures
-    Teuchos::RCP<Epetra_Map> cardiovascular0dmap_;  ///< unique map of Cardiovascular0D values
+    Teuchos::RCP<Cardiovascular0DDofSet> cardiovascular0ddofset_full_; ///< degrees of freedom of pressures
+    Teuchos::RCP<Cardiovascular0DDofSet> cardiovascular0ddofset_; ///< (reduced) degrees of freedom of pressures
+    Teuchos::RCP<Epetra_Map> cardiovascular0dmap_full_;  ///< unique map of Cardiovascular0D values
+    Teuchos::RCP<Epetra_Map> cardiovascular0dmap_;  ///< unique map of (reduced) Cardiovascular0D values
     Teuchos::RCP<Epetra_Map> redcardiovascular0dmap_;   ///< fully redundant map of Cardiovascular0D values
     Teuchos::RCP<Epetra_Export> cardvasc0dimpo_;  ///< importer for fully redundant Cardiovascular0D vector into distributed one
     Teuchos::RCP<Epetra_Vector> cv0ddofincrement_; ///< increment of cvdof
@@ -459,6 +463,8 @@ namespace UTILS
     Teuchos::ParameterList strparams_; ///< structure input parameters
     Teuchos::ParameterList cv0dparams_; ///< 0D cardiovascular input parameters
     INPAR::STR::IntegrationStrategy intstrat_; ///< structural time-integration strategy (old vs. standard)
+    Teuchos::RCP<UTILS::MOR> mor_; ///< model order reduction
+    bool have_mor_; ///< model order reduction is used
 
   }; //class
 }

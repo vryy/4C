@@ -350,6 +350,7 @@ public:
   const Teuchos::ParameterList& VolmortarParams() const { return getParameterList()->sublist("VOLMORTAR COUPLING"); }
   const Teuchos::ParameterList& NonlinearSolverParams() const { return getParameterList()()->sublist("NONLINEAR SOLVER"); }
   const Teuchos::ParameterList& TutorialParams()const { return getParameterList()()->sublist("TUTORIAL DYNAMIC"); };
+  const Teuchos::ParameterList& MORParams() const { return getParameterList()()->sublist("MOR"); };
 
   const Teuchos::ParameterList& SolverParams(int solverNr) const;
   const Teuchos::ParameterList& RandomFieldParams(int randomfieldNr) const;
