@@ -284,10 +284,9 @@ void PARTICLE::Rendering::UpdateRenderingVectors(
           disNbrRdgNode_k(dim) = ((*nbrRdgNode_k)->X())[dim];
         }
 
-        //In case particle i and rendering node k are close to two opposite periodic boundaries, the position of rendering node k is shifted correspondingly.
-        //It is sufficient to only shift disNbrRdgNode_k since the terms evaluated in the following do only depend on the relative distance between these two
-        //positions but not on the absolute positions.
-        interHandler_->ShiftPeriodicBoundaryPair(dis_i, disNbrRdgNode_k, radius_i, 0.0);
+        // have periodic boundary conditions
+        if (particle_algorithm_->BinStrategy()->HavePBC())
+          interHandler_->ShiftPeriodicBoundaryPair(dis_i, disNbrRdgNode_k, radius_i, 0.0);
 
         LINALG::Matrix<3,1> rRel(true);
         for (int dim=0; dim<3; ++dim)

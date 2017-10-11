@@ -274,9 +274,6 @@ namespace PARTICLE
 
   protected:
 
-    //! build periodic boundary conditions
-    virtual void BuildPeriodicBC();
-
     //! @name AddNewNeighbours - these functions are collected in AddNewNeighbours for faster search
     //@{
 
@@ -557,9 +554,6 @@ namespace PARTICLE
 
     /// static contact angle between fluid and solid phase in degree measure
     double staticContactAngle_;
-
-    // length of periodic box if appicable (=-1.0 if not)
-    double periodic_length_;
 
     // minimal distance (over all particles) between two particles
     double min_pvp_dist_;

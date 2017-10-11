@@ -64,7 +64,6 @@ PARTICLE::ParticleMeshFreeInteractionHandler::ParticleMeshFreeInteractionHandler
   damping_factor_(particledynparams.get<double>("VISCOUS_DAMPING")),
   xsph_dampfac_(particledynparams.get<double>("XSPH_DAMPFAC")),
   xsph_stiffac_(particledynparams.get<double>("XSPH_STIFFAC")),
-  periodic_length_(-1.0),
   min_pvp_dist_(1.0e10),
   min_pvw_dist_(1.0e10),
   min_pressure_(1.0e10),
@@ -82,6 +81,9 @@ PARTICLE::ParticleMeshFreeInteractionHandler::ParticleMeshFreeInteractionHandler
     if(extendedGhosting != INPAR::PARTICLE::BdryParticleGhosting and extendedGhosting != INPAR::PARTICLE::AddLayerGhosting)
       dserror("Extended ghosting is required if boundary particles are applied!");
   }
+
+  if(freeSurfaceType_!=INPAR::PARTICLE::FreeSurface_None and particle_algorithm_->BinStrategy()->HavePBC())
+    dserror("Periodic free surface flows not possible so far!");
 
   #ifndef PARTICLE_ONLYLAPLACETERM
   //Attention: The trace of a tensor as required to derive equation (28) from equation (25) in Espanol2003 depends
@@ -162,9 +164,6 @@ PARTICLE::ParticleMeshFreeInteractionHandler::ParticleMeshFreeInteractionHandler
     dserror("Pure mechanical problems, i.e. SOLVE_THERMAL_PROBLEM==No, are currently only considered as pure fluid problems. "
         "To remain consistent, the initial temperature has to be higher than the transition temperature!");
 
-  //Check if periodic boundary conditions are applied
-  BuildPeriodicBC();
-
   // initialize rendering handler
   const INPAR::PARTICLE::RenderingType renderingType = DRT::INPUT::IntegralValue<INPAR::PARTICLE::RenderingType>(particledynparams,"RENDERING");
   if (renderingType == INPAR::PARTICLE::StandardRendering or renderingType == INPAR::PARTICLE::NormalizedRendering)
@@ -181,73 +180,6 @@ PARTICLE::ParticleMeshFreeInteractionHandler::ParticleMeshFreeInteractionHandler
     dserror("If PARTICLE_REINITSHIFT != 2, the flag PARTICLE_BOUNDARYDENSITY is required!");
 #endif
 }
-
-/*----------------------------------------------------------------------*
- | build periodic boundary conditions                       meier 03/17 |
- *----------------------------------------------------------------------*/
-void PARTICLE::ParticleMeshFreeInteractionHandler::BuildPeriodicBC()
-{
-
-  std::istringstream periodicbc(Teuchos::getNumericStringParameter(
-      DRT::Problem::Instance()->BinningStrategyParams(),"PERIODICONOFF"));
-
-  bool periodic_bcs=false;
-
-  // loop over all spatial directions
-  for(int dim=0; dim<3; ++dim)
-  {
-    int val = -1;
-    if (periodicbc >> val)
-    {
-      if( val )
-      {
-        if(dim==0)
-        {
-          if(myrank_ == 0)
-            std::cout << "INFO: Periodic boundary conditions in x-direction are applied!" << std::endl;
-
-          periodic_bcs=true;
-        }
-        else
-          dserror("Periodic boundary conditions only possible in x-direction so far!");
-      }
-    }
-    else
-    {
-      dserror("Enter three values to specify each direction as periodic or non periodic (y and z value has to be zero). Fix input file ...");
-    }
-  }
-
-  if(periodic_bcs)
-  {
-    LINALG::Matrix<3,2> box(true);
-
-    // get bounding box specified in the input file
-    box.PutScalar(1.0e12);
-    std::istringstream xaabbstream( Teuchos::getNumericStringParameter(
-        DRT::Problem::Instance()->BinningStrategyParams(),"BOUNDINGBOX") );
-    for( int col = 0; col < 2; ++col )
-    {
-      for( int row = 0; row < 3; ++row )
-      {
-        double value = 1.0e12;
-        if( xaabbstream >> value )
-          box( row, col ) = value;
-        else
-          dserror(" Specify six values for bounding box in three dimensional problem."
-                  " Fix your input file.");
-      }
-    }
-
-    if(fabs(box(0,0)+box(0,1))>0 or box(0,0)>box(0,1))
-      dserror("Left and Right periodic boundary have to be of the form x_b=-periodic_length_/2 and x_b=periodic_length_/2!");
-    else
-      periodic_length_=2.0*fabs(box(0,1));
-  }
-
-  return;
-}
-
 
 /*----------------------------------------------------------------------*
  | set up internal variables for future computations       katta 12/16  |
@@ -866,10 +798,9 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_p(
       LINALG::Matrix<3,1> dis_i=particle_i.dis_;
       LINALG::Matrix<3,1> dis_j=particle_j.dis_;
 
-      //In case both particles i and j are close to two opposite periodic boundaries, the position of particle j is shifted correspondingly.
-      //It is sufficient to only shift dis_j since the terms evaluated in the following do only depend on the relative distance between two
-      //particles but not on the absolute positions.
-      ShiftPeriodicBoundaryPair(dis_i,dis_j,particle_i.radius_,particle_j.radius_);
+      // have periodic boundary conditions
+      if (particle_algorithm_->BinStrategy()->HavePBC())
+        ShiftPeriodicBoundaryPair(dis_i,dis_j,particle_i.radius_,particle_j.radius_);
 
       rRel_ij.Update(1.0, dis_i, -1.0, dis_j); // inward vector
       const double rRelNorm2 = rRel_ij.Norm2();
@@ -973,10 +904,9 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_op(
       LINALG::Matrix<3,1> dis_i=particle_i.dis_;
       LINALG::Matrix<3,1> dis_j=particle_j.dis_;
 
-      //In case both particles i and j are close to two opposite periodic boundaries, the position of particle j is shifted correspondingly.
-      //It is sufficient to only shift dis_j since the terms evaluated in the following do only depend on the relative distance between two
-      //particles but not on the absolut positions.
-      ShiftPeriodicBoundaryPair(dis_i,dis_j,particle_i.radius_,particle_j.radius_);
+      // have periodic boundary conditions
+      if (particle_algorithm_->BinStrategy()->HavePBC())
+        ShiftPeriodicBoundaryPair(dis_i,dis_j,particle_i.radius_,particle_j.radius_);
 
       rRel_ij.Update(1.0, dis_i, -1.0, dis_j); // inward vector
       rRelNorm2 = rRel_ij.Norm2();
@@ -1053,10 +983,9 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_bp(
       LINALG::Matrix<3,1> dis_i=particle_i.dis_;
       LINALG::Matrix<3,1> dis_j=particle_j.dis_;
 
-      //In case both particles i and j are close to two opposite periodic boundaries, the position of particle j is shifted correspondingly.
-      //It is sufficient to only shift dis_j since the terms evaluated in the following do only depend on the relative distance between two
-      //particles but not on the absolut positions.
-      ShiftPeriodicBoundaryPair(dis_i,dis_j,particle_i.radius_,particle_j.radius_);
+      // have periodic boundary conditions
+      if (particle_algorithm_->BinStrategy()->HavePBC())
+        ShiftPeriodicBoundaryPair(dis_i,dis_j,particle_i.radius_,particle_j.radius_);
 
       rRel_ij.Update(1.0, dis_i, -1.0, dis_j); // inward vector
       const double rRelNorm2 = rRel_ij.Norm2();
@@ -1143,9 +1072,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_fsp(
     LINALG::Matrix<3,1> dis_i=particle_i.dis_;
     LINALG::Matrix<3,1> dis_j=particle_j.dis_;
 
-    if(periodic_length_>0)
-      dserror("Periodic free surface flows not possible so far!");
-
     rRel_ij.Update(1.0, dis_i, -1.0, dis_j); // inward vector
     const double rRelNorm2 = rRel_ij.Norm2();
 
@@ -1229,7 +1155,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_hs(
 }
 
 /*---------------------------------------------------------------------------------*
- | Apply coordinate shift in case of periodic boundary conditions     meier 01/17  |
+ | apply coordinate shift in case of periodic boundary conditions    sfuchs 10/17  |
  *---------------------------------------------------------------------------------*/
 void PARTICLE::ParticleMeshFreeInteractionHandler::ShiftPeriodicBoundaryPair(
     const LINALG::Matrix<3,1>& dis_1,
@@ -1237,28 +1163,35 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::ShiftPeriodicBoundaryPair(
     const double& radius_1,
     const double& radius_2)
 {
-  // no periodic boundary conditions
-  if( periodic_length_ <= 0 )
-    return;
+  // in case both positions 1 and 2 are close to two opposite periodic boundaries, the position dis_2 is shifted correspondingly
+  // it is sufficient to only shift dis_2 if the terms evaluated do only depend on the relative distance between two positions
 
-  //We dont want to have particles that can interact directly AND across the periodic boundary
-  //(which would be possible in case of periodic_length_<4*particle_i.radius_)
-  //Update 05/24/2017: Actually, the factor 4 could be replaced by 2 in the SPH case since interaction
-  //is only possible for distances < radius (and not for distance < 2 radius as in DEM)!
-  if(periodic_length_<4.0*std::max(radius_1,radius_2))
-    dserror("The length periodic_length_ of the periodic box has to be larger than four times the particle radius!");
+  // maximum particle radius
+  double max_radius = std::max(radius_1,radius_2);
 
-  double x_coord_1=dis_1(0);
-  double x_coord_2=dis_2(0);
+  // get bounding box dimensions
+  LINALG::Matrix<3,2> xaabb = particle_algorithm_->BinStrategy()->XAABB();
 
-  if(x_coord_1>periodic_length_/2 or x_coord_1<-periodic_length_/2 or x_coord_2>periodic_length_/2 or x_coord_2<-periodic_length_/2)
-    dserror("Particle outside the periodic domain!");
+  // loop over all spatial directions
+  for(unsigned int dim=0; dim<3; ++dim)
+  {
+    // apply periodic boundary conditions in current spatial direction
+    if( particle_algorithm_->BinStrategy()->HavePBC(dim) )
+    {
+      // periodic length in current spatial direction
+      double pbc_length = particle_algorithm_->BinStrategy()->PBCDelta(dim);
 
-  //Within this method, only the position of particle 2 (required for interaction with particle 1) is shifted, while particle 1 remains untouched.
-  if(x_coord_1>=periodic_length_/2-std::max(radius_1,radius_2) and x_coord_2<=-periodic_length_/2+std::max(radius_1,radius_2))
-    dis_2(0)+=periodic_length_;
-  else if(x_coord_2>=periodic_length_/2-std::max(radius_1,radius_2) and x_coord_1<=-periodic_length_/2+std::max(radius_1,radius_2))
-    dis_2(0)-=periodic_length_;
+      // particles are not allowed to interact directly AND across the periodic boundary
+      // NOTE: in DEM the periodic length should be larger than four times the particle radius
+      if( pbc_length < 2.0*max_radius )
+        dserror("Particles are not allowed to interact directly AND across the periodic boundary. The minimal periodic length has to be larger than two time the maximum particle radius!");
+
+      if( dis_1(dim) >= (xaabb(dim,1)-max_radius) and dis_2(dim) <= (xaabb(dim,0)+max_radius) )
+        dis_2(dim) += pbc_length;
+      else if( dis_2(dim) >= (xaabb(dim,1)-max_radius) and dis_1(dim) <= (xaabb(dim,0)+max_radius) )
+        dis_2(dim) -= pbc_length;
+    }
+  }
 
   return;
 }
