@@ -27,19 +27,11 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_inpar/inpar_particle.H"
 #include "particle_node.H"
 #include "particle_interData.H"
 #include "particle_particle.H"
 #include "particleMeshFree_weightFunction.H"
-#include "../drt_lib/drt_element.H"
 #include <boost/unordered_map.hpp>
-#include "particle_enums.H"
-#include "../linalg/linalg_sparsematrix.H"
-
-#include <Sacado.hpp>
-typedef Sacado::Fad::DFad<double> FAD;
 
 // forward declarations
 namespace DRT
@@ -116,26 +108,6 @@ namespace PARTICLE
         Teuchos::RCP<const Epetra_Vector> radiusn,
         Teuchos::RCP<const Epetra_Vector> mass,
         Teuchos::RCP<const Epetra_Vector> specEnthalpyn);
-
-    virtual void Init(
-        const int step,
-        Teuchos::RCP<const Epetra_Vector> disn,
-        Teuchos::RCP<const Epetra_Vector> veln,
-        Teuchos::RCP<const Epetra_Vector> radiusn,
-        Teuchos::RCP<const Epetra_Vector> mass,
-        Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
-        Teuchos::RCP<const Epetra_Vector> temperature);
-
-    virtual void Init(
-        const int step,
-        Teuchos::RCP<const Epetra_Vector> disn,
-        Teuchos::RCP<const Epetra_Vector> veln,
-        Teuchos::RCP<const Epetra_Vector> radiusn,
-        Teuchos::RCP<const Epetra_Vector> mass,
-        Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
-        Teuchos::RCP<const Epetra_Vector> temperature,
-        Teuchos::RCP<const Epetra_Vector> densityn,
-        Teuchos::RCP<const Epetra_Vector> pressure);
 
     //! set up the ColParticles
     virtual void InitColParticles();

@@ -18,19 +18,10 @@
 #include "particleMeshFree_weightFunction.H"
 #include "particleMeshFree_rendering.H"
 #include "particle_algorithm.H"
-#include "particle_timint_centrdiff.H"
 #include "particle_timint_kickdrift.H"
 #include "particle_heatSource.H"
-#include "particle_utils.H"
-#include "../drt_adapter/ad_str_structure.H"
-#include "../drt_binstrategy/drt_meshfree_multibin.H"
-#include "../linalg/linalg_utils.H"
 #include "../drt_mat/extparticle_mat.H"
-#include "../drt_mat/matpar_bundle.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_geometry/searchtree_geometry_service.H"
-#include "../drt_geometry/position_array.H"
-#include "../drt_geometry/element_coordtrafo.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -38,7 +29,6 @@
 /*----------------------------------------------------------------------*
  | constructor for particle-MeshFree interaction           katta 10/16  |
  *----------------------------------------------------------------------*/
-
 PARTICLE::ParticleMeshFreeInteractionHandler::ParticleMeshFreeInteractionHandler(
   Teuchos::RCP<DRT::Discretization> discret,
   Teuchos::RCP<PARTICLE::Algorithm> particlealgorithm,
@@ -192,6 +182,8 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Init(
     Teuchos::RCP<const Epetra_Vector> mass,
     Teuchos::RCP<const Epetra_Vector> specEnthalpyn)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleMeshFreeInteractionHandler::Init");
+
   // check
   if (colParticles_.size() != 0 or colFADParticles_.size() != 0)
   {
@@ -224,50 +216,9 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Init(
 
   // set up the neighbours
   AddNewNeighbours(step);
+
+  return;
 }
-
-/*----------------------------------------------------------------------*
- | set up internal variables for future computations       katta 12/16  |
- *----------------------------------------------------------------------*/
-void PARTICLE::ParticleMeshFreeInteractionHandler::Init(
-    const int step,
-    Teuchos::RCP<const Epetra_Vector> disn,
-    Teuchos::RCP<const Epetra_Vector> veln,
-    Teuchos::RCP<const Epetra_Vector> radiusn,
-    Teuchos::RCP<const Epetra_Vector> mass,
-    Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
-    Teuchos::RCP<const Epetra_Vector> temperature)
-{
-  Init(step, disn, veln, radiusn, mass, specEnthalpyn);
-
-  // set the other state vectors
-  SetStateVector(temperature, PARTICLE::Temperature);
-}
-
-/*----------------------------------------------------------------------*
- | set up internal variables for future computations       katta 12/16  |
- *----------------------------------------------------------------------*/
-void PARTICLE::ParticleMeshFreeInteractionHandler::Init(
-    const int step,
-    Teuchos::RCP<const Epetra_Vector> disn,
-    Teuchos::RCP<const Epetra_Vector> veln,
-    Teuchos::RCP<const Epetra_Vector> radiusn,
-    Teuchos::RCP<const Epetra_Vector> mass,
-    Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
-    Teuchos::RCP<const Epetra_Vector> temperature,
-    Teuchos::RCP<const Epetra_Vector> densityn,
-    Teuchos::RCP<const Epetra_Vector> pressure)
-{
-
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleMeshFreeInteractionHandler::Init");
-
-  Init(step, disn, veln, radiusn, mass, specEnthalpyn, temperature);
-
-  // set the other state vectors
-  SetStateVector(densityn, PARTICLE::Density);
-  SetStateVector(pressure, PARTICLE::Pressure);
-}
-
 
 /*----------------------------------------------------------------------*
  | set all the neighbours                                  katta 12/16  |
