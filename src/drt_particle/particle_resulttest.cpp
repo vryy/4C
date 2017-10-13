@@ -37,6 +37,11 @@ PartResultTest::PartResultTest(PARTICLE::TimInt& tintegrator)
   if (tintegrator.Accnp() != Teuchos::null)
     acc_  = tintegrator.Accnp();
 
+  if (tintegrator.AngVelnp() != Teuchos::null)
+    angvel_  = tintegrator.AngVelnp();
+  if (tintegrator.AngAccnp() != Teuchos::null)
+    angacc_  = tintegrator.AngAccnp();
+
   if (tintegrator.Radiusnp() != Teuchos::null)
     radius_ = tintegrator.Radiusnp();
   else if (tintegrator.Radiusn() != Teuchos::null)
@@ -152,6 +157,50 @@ void PartResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
           if (lid < 0)
             dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx, actnode->Id());
           result = (*acc_)[lid];
+        }
+      }
+
+      // test angular velocities
+      if (angvel_ != Teuchos::null)
+      {
+        const Epetra_BlockMap& angvelnpmap = angvel_->Map();
+        int idx = -1;
+        if (position == "angvelx")
+          idx = 0;
+        else if (position == "angvely")
+          idx = 1;
+        else if (position == "angvelz")
+          idx = 2;
+
+        if (idx >= 0)
+        {
+          unknownpos = false;
+          int lid = angvelnpmap.LID(partdisc_->Dof(0,actnode,idx));
+          if (lid < 0)
+            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx, actnode->Id());
+          result = (*angvel_)[lid];
+        }
+      }
+
+      // test angular accelerations
+      if (angacc_ != Teuchos::null)
+      {
+        const Epetra_BlockMap& angaccnpmap = angacc_->Map();
+        int idx = -1;
+        if (position == "angaccx")
+          idx = 0;
+        else if (position == "angaccy")
+          idx = 1;
+        else if (position == "angaccz")
+          idx = 2;
+
+        if (idx >= 0)
+        {
+          unknownpos = false;
+          int lid = angaccnpmap.LID(partdisc_->Dof(0,actnode,idx));
+          if (lid < 0)
+            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx, actnode->Id());
+          result = (*angacc_)[lid];
         }
       }
 

@@ -81,6 +81,10 @@ private:
   Teuchos::RCP<const Epetra_Vector> vel_;
   //! global acceleration DOFs
   Teuchos::RCP<const Epetra_Vector> acc_;
+  //! global angular velocity DOFs
+  Teuchos::RCP<const Epetra_Vector> angvel_;
+  //! global angular acceleration DOFs
+  Teuchos::RCP<const Epetra_Vector> angacc_;
   //! global radius
   Teuchos::RCP<const Epetra_Vector> radius_;
   //! global density
