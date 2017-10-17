@@ -126,6 +126,46 @@ public:
     return (contactflag_ or nodalcontactflag_[0] or nodalcontactflag_[1]);
   };
 
+  /*!
+  \brief Get number of active contact point pairs on this element pair
+  */
+  virtual unsigned int GetNumAllActiveContactPointPairs() const
+  {
+    return 1;
+  }
+
+
+  /*!
+  \brief Get coordinates of all active contact points on element1 and element2
+  */
+  virtual inline void GetAllActiveContactPointCoordsElement1(
+      std::vector<LINALG::TMatrix<double,3,1> >& coords ) const
+  {
+    dserror("not implemented yet!");
+  }
+
+  virtual inline void GetAllActiveContactPointCoordsElement2(
+      std::vector<LINALG::TMatrix<double,3,1> >& coords ) const
+  {
+    dserror("not implemented yet!");
+  }
+
+  /*!
+  \brief Get all (scalar) contact forces of this contact pair
+  */
+  virtual inline void GetAllActiveContactForces( std::vector<double> & forces ) const
+  {
+    dserror("not implemented yet!");
+  }
+
+  /*!
+  \brief Get all (scalar) gap values of this contact pair
+  */
+  virtual void GetAllActiveContactGaps( std::vector<double> & gaps ) const
+  {
+    dserror("not implemented yet!");
+  }
+
   //@}
 
 

@@ -19,6 +19,8 @@
 
 namespace BEAMINTERACTION {
 
+class BeamToBeamContactRuntimeVtkParams;
+
   /*!
    *  */
   class BeamContactParams
@@ -138,6 +140,20 @@ namespace BEAMINTERACTION {
       return BTB_endpoint_penalty_;
     }
 
+    /// whether to write vtk output for beam contact
+    bool VtkRuntimeOutput() const
+    {
+      CheckInitSetup();
+      return vtk_output_beam_contact_;
+    };
+
+    /// get the data container for parameters regarding vtk output
+    Teuchos::RCP<const BEAMINTERACTION::BeamToBeamContactRuntimeVtkParams> GetBeamContactVtkParams() const
+    {
+      CheckInitSetup();
+      return params_runtime_vtk_BTB_contact_;
+    };
+
     // ********** Fixme: this needs to go to BeamToSphereContactParams ******************
     inline double BeamToSpherePenaltyParam() const
     {
@@ -193,6 +209,12 @@ namespace BEAMINTERACTION {
     //! flag indicating if the integration should take special care of physical
     //  end points of beams in order to avoid strong discontinuities
     bool BTB_endpoint_penalty_;
+
+    /// whether to write vtk output for beam contact at runtime
+    bool vtk_output_beam_contact_;
+
+    /// data container for input parameters related to VTK output of beam contact at runtime
+    Teuchos::RCP<BEAMINTERACTION::BeamToBeamContactRuntimeVtkParams> params_runtime_vtk_BTB_contact_;
 
     // ********** Fixme: this needs to go to BeamToSphereContactParams ******************
 

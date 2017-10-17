@@ -14,6 +14,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+#include "../linalg/linalg_fixedsizematrix.H"
+
 //forward declaration ...
 namespace LINALG {
   class SerialDenseVector;
@@ -117,16 +119,6 @@ public:
 //  virtual std::vector<int> GetContactType()=0;
 //
 //  /*!
-//  \brief Get vector of all gaps of this contact pair
-//  */
-//  virtual std::vector<double> GetGap()=0;
-//
-//  /*!
-//  \brief Get vector of all contact forces of this contact pair
-//  */
-//  virtual std::vector<double> GetContactForce()=0;
-//
-//  /*!
 //  \brief Get vector of all contact angles of this contact pair
 //  */
 //  virtual std::vector<double> GetContactAngle()=0;
@@ -149,17 +141,32 @@ public:
   /*!
   \brief Get flag indicating whether contact is active (true) or inactive (false)
   */
-  virtual bool GetContactFlag() const =0;
+  virtual bool GetContactFlag() const=0;
 
-//  /*!
-//  \brief Get coordinates of contact point of element1 and element2
-//  */
-//  virtual const std::vector<LINALG::Matrix<3,1> > GetX1()=0;
-//
-//  virtual const std::vector<LINALG::Matrix<3,1> > GetX2()=0;
-//
-//  virtual const Epetra_SerialDenseVector GetNormal()=0;
-//
+  /*!
+  \brief Get number of active contact point pairs on this element pair
+  */
+  virtual unsigned int GetNumAllActiveContactPointPairs() const=0;
+
+  /*!
+  \brief Get coordinates of all active contact points on element1 and element2
+  */
+  virtual void GetAllActiveContactPointCoordsElement1(
+      std::vector<LINALG::TMatrix<double,3,1> >& coords ) const=0;
+
+  virtual void GetAllActiveContactPointCoordsElement2(
+      std::vector<LINALG::TMatrix<double,3,1> >& coords ) const=0;
+
+  /*!
+  \brief Get all (scalar) contact forces of this contact pair
+  */
+  virtual void GetAllActiveContactForces( std::vector<double> & forces ) const=0;
+
+  /*!
+  \brief Get all (scalar) gap values of this contact pair
+  */
+  virtual void GetAllActiveContactGaps( std::vector<double> & gaps ) const=0;
+
 //  virtual LINALG::TMatrix<TYPE, 3, 1>* GetNormalOld()=0;
 //
 //  /*!

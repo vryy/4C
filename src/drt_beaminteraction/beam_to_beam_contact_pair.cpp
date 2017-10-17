@@ -4215,7 +4215,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetShapeF
     LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N,
     const TYPE& eta,
     int deriv,
-    const DRT::Element* ele)
+    const DRT::Element* ele) const
 {
   // get both discretization types
   const DRT::Element::DiscretizationType distype = ele->Shape();
@@ -4290,7 +4290,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetShapeF
 template<unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::AssembleShapefunctions(
     const LINALG::TMatrix<TYPE,1,numnodes*numnodalvalues>& N_i,
-    LINALG::TMatrix<TYPE,3,3*numnodes*numnodalvalues>& N)
+    LINALG::TMatrix<TYPE,3,3*numnodes*numnodalvalues>& N) const
 {
   //assembly_N is just an array to help assemble the matrices of the shape functions
   //it determines, which shape function is used in which column of N
@@ -4418,7 +4418,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::AssembleS
 template<unsigned int numnodes, unsigned int numnodalvalues>
 LINALG::TMatrix<TYPE,3,1> BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::r(
     const TYPE& eta,
-    const DRT::Element* ele)
+    const DRT::Element* ele) const
 {
 
   LINALG::TMatrix<TYPE,3,1> r(true);
@@ -5018,6 +5018,134 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::PrintSumm
     out << "\n";
   }
 
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template<unsigned int numnodes, unsigned int numnodalvalues>
+void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::
+GetAllActiveContactPointCoordsElement1(
+      std::vector<LINALG::TMatrix<double,3,1> >& coords ) const
+{
+  int size1 = cpvariables_.size();
+  int size2 = gpvariables_.size();
+  int size3 = epvariables_.size();
+
+  coords.resize( size1+size2+size3, LINALG::TMatrix<double,3,1>(true) );
+
+  for (int i=0; i<size1; ++i)
+  {
+    TYPE eta1 = cpvariables_[i]->GetCP().first;
+    for(int j=0;j<3;j++)
+      coords[i](j) = FADUTILS::CastToDouble( r(eta1,Element1())(j) );
+  }
+
+  for (int i=size1; i<size2+size1; ++i)
+  {
+    TYPE eta1 = gpvariables_[i-size1]->GetCP().first;
+    for(int j=0;j<3;j++)
+      coords[i](j) = FADUTILS::CastToDouble( r(eta1,Element1())(j) );
+  }
+
+  for (int i=size1+size2; i<size1+size2+size3; ++i)
+  {
+    TYPE eta1 = epvariables_[i-size1-size2]->GetCP().first;
+    for(int j=0;j<3;j++)
+      coords[i](j) = FADUTILS::CastToDouble( r(eta1,Element1())(j) );
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template<unsigned int numnodes, unsigned int numnodalvalues>
+void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::
+GetAllActiveContactPointCoordsElement2(
+      std::vector<LINALG::TMatrix<double,3,1> >& coords ) const
+{
+  int size1 = cpvariables_.size();
+  int size2 = gpvariables_.size();
+  int size3 = epvariables_.size();
+
+  coords.resize( size1+size2+size3, LINALG::TMatrix<double,3,1>(true) );
+
+  for (int i=0; i<size1; ++i)
+  {
+    TYPE eta2 = cpvariables_[i]->GetCP().second;
+    for(int j=0;j<3;j++)
+      coords[i](j) = FADUTILS::CastToDouble( r(eta2,Element2())(j) );
+  }
+
+  for (int i=size1; i<size2+size1; ++i)
+  {
+    TYPE eta2 = gpvariables_[i-size1]->GetCP().second;
+    for(int j=0;j<3;j++)
+      coords[i](j) = FADUTILS::CastToDouble( r(eta2,Element2())(j) );
+  }
+
+  for (int i=size1+size2; i<size1+size2+size3; ++i)
+  {
+    TYPE eta2 = epvariables_[i-size1-size2]->GetCP().second;
+    for(int j=0;j<3;j++)
+      coords[i](j) = FADUTILS::CastToDouble( r(eta2,Element2())(j) );
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template<unsigned int numnodes, unsigned int numnodalvalues>
+void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::
+GetAllActiveContactForces( std::vector<double> & forces ) const
+{
+  int size1 = cpvariables_.size();
+  int size2 = gpvariables_.size();
+  int size3 = epvariables_.size();
+
+  forces.resize( size1+size2+size3, 0.0 );
+
+  for (int i=0;i<size1;i++)
+  {
+    forces[i] = FADUTILS::CastToDouble(cpvariables_[i]->Getfp()*cpvariables_[i]->GetPPfac());
+  }
+
+  for (int i=size1;i<size2+size1;i++)
+  {
+    forces[i] = FADUTILS::CastToDouble(gpvariables_[i-size1]->Getfp()*
+        gpvariables_[i-size1]->GetPPfac());
+  }
+
+  for (int i=size1+size2;i<size1+size2+size3;i++)
+  {
+    forces[i] = FADUTILS::CastToDouble(epvariables_[i-size1-size2]->Getfp()*
+        epvariables_[i-size1-size2]->GetPPfac());
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template<unsigned int numnodes, unsigned int numnodalvalues>
+void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::
+GetAllActiveContactGaps( std::vector<double> & gaps ) const
+{
+  int size1 = cpvariables_.size();
+  int size2 = gpvariables_.size();
+  int size3 = epvariables_.size();
+
+  gaps.resize( size1+size2+size3, 0.0 );
+
+  for (int i=0;i<size1;i++)
+  {
+    gaps[i] = FADUTILS::CastToDouble( cpvariables_[i]->GetGap() );
+  }
+
+  for (int i=size1;i<size2+size1;i++)
+  {
+    gaps[i] = FADUTILS::CastToDouble( gpvariables_[i-size1]->GetGap() );
+  }
+
+  for (int i=size1+size2;i<size1+size2+size3;i++)
+  {
+    gaps[i] = FADUTILS::CastToDouble( epvariables_[i-size1-size2]->GetGap() );
+  }
 }
 
 #ifdef FADCHECKS

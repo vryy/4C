@@ -142,4 +142,49 @@ void INPAR::BEAMCONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   IntParameter("BEAMS_BOXESINOCT",8,"max number of bounding boxes in any leaf octant",&beamcontact);
 
 
+  /*------------------------------------------------------------------------*/
+  /* parameters for visualization of beam contact via vtk output at runtime */
+
+  Teuchos::ParameterList& beamcontact_vtk_sublist =
+      beamcontact.sublist("RUNTIME VTK OUTPUT",false,"");
+
+
+  // whether to write vtk output for beam contact
+  setStringToIntegralParameter<int>("VTK_OUTPUT_BEAM_CONTACT","No",
+                               "write vtp output for beam contact",
+                               yesnotuple, yesnovalue, &beamcontact_vtk_sublist);
+
+  // output interval regarding steps: write output every INTERVAL_STEPS steps
+  IntParameter( "INTERVAL_STEPS", -1,
+      "write VTK output at runtime every INTERVAL_STEPS steps", &beamcontact_vtk_sublist );
+
+  // data format for written numeric data
+  setStringToIntegralParameter<int>(
+    "OUTPUT_DATA_FORMAT", "binary", "data format for written numeric data",
+    tuple<std::string>(
+      "binary",
+      "Binary",
+      "ascii",
+      "ASCII"),
+    tuple<int>(
+      INPAR::BEAMCONTACT::binary,
+      INPAR::BEAMCONTACT::binary,
+      INPAR::BEAMCONTACT::ascii,
+      INPAR::BEAMCONTACT::ascii),
+    &beamcontact_vtk_sublist);
+
+  // whether to write output in every iteration of the nonlinear solver
+  setStringToIntegralParameter<int>("EVERY_ITERATION","No",
+                               "write output in every iteration of the nonlinear solver",
+                               yesnotuple, yesnovalue, &beamcontact_vtk_sublist);
+
+  // whether to write vtp output for contact forces
+  setStringToIntegralParameter<int>("CONTACT_FORCES","No",
+                               "write vtp output for contact forces",
+                               yesnotuple, yesnovalue, &beamcontact_vtk_sublist);
+
+  // whether to write vtp output for gaps
+  setStringToIntegralParameter<int>("GAPS","No",
+                               "write vtp output for gap, i.e. penetration",
+                               yesnotuple, yesnovalue, &beamcontact_vtk_sublist);
 }

@@ -113,9 +113,36 @@ public:
   */
   virtual inline bool GetContactFlag() const
   {
-    //The element pair is assumed to be active when we have at least one active contact point
+    // The element pair is assumed to be active when we have at least one active contact point
     return (cpvariables_.size()+gpvariables_.size()+epvariables_.size());
-  };
+  }
+
+  /*!
+  \brief Get number of active contact point pairs on this element pair
+  */
+  virtual unsigned int GetNumAllActiveContactPointPairs() const
+  {
+    return (unsigned int) (cpvariables_.size() + gpvariables_.size() + epvariables_.size());
+  }
+
+  /*!
+  \brief Get coordinates of all active contact points on element1 and element2
+  */
+  virtual void GetAllActiveContactPointCoordsElement1(
+      std::vector<LINALG::TMatrix<double,3,1> >& coords ) const;
+
+  virtual void GetAllActiveContactPointCoordsElement2(
+      std::vector<LINALG::TMatrix<double,3,1> >& coords ) const;
+
+  /*!
+  \brief Get all (scalar) contact forces of this contact pair
+  */
+  virtual void GetAllActiveContactForces( std::vector<double> & forces ) const;
+
+  /*!
+  \brief Get all (scalar) gap values of this contact pair
+  */
+  virtual void GetAllActiveContactGaps( std::vector<double> & gaps ) const;
 
   //@}
 
@@ -505,7 +532,7 @@ private:
   void GetShapeFunctions( LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N,
                           const TYPE& eta,
                           int deriv,
-                          const DRT::Element* ele);
+                          const DRT::Element* ele) const;
 
   /*!
   \brief Assemble the shape functions into corresponding matrices
@@ -521,12 +548,12 @@ private:
   \brief Assemble shape functions for one given matrix
   */
   void AssembleShapefunctions(const LINALG::TMatrix<TYPE,1,numnodes*numnodalvalues>& N_i,
-                              LINALG::TMatrix<TYPE,3,3*numnodes*numnodalvalues>& N);
+                              LINALG::TMatrix<TYPE,3,3*numnodes*numnodalvalues>& N) const;
 
   /*!
   \brief compute coordinate at given curve point
   */
-  LINALG::TMatrix<TYPE,3,1> r(const TYPE& eta, const DRT::Element* ele);
+  LINALG::TMatrix<TYPE,3,1> r(const TYPE& eta, const DRT::Element* ele) const;
 
   /*!
   \brief compute derivative at given curve point

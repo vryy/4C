@@ -11,6 +11,7 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 #include "beam_contact_params.H"
+#include "beam_contact_runtime_vtk_output_params.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -36,6 +37,8 @@ BEAMINTERACTION::BeamContactParams::BeamContactParams()
   num_integration_intervals_(0),
   BTB_basicstiff_gap_(-1.0),
   BTB_endpoint_penalty_(false),
+  vtk_output_beam_contact_(false),
+  params_runtime_vtk_BTB_contact_(Teuchos::null),
   BTSPH_penalty_param_(-1.0)
 {
   // empty constructor
@@ -165,6 +168,22 @@ void BEAMINTERACTION::BeamContactParams::Init()
   BTB_endpoint_penalty_ =
       DRT::INPUT::IntegralValue<int>(beam_contact_params_list,"BEAMS_ENDPOINTPENALTY");
 
+  /****************************************************************************/
+  // check for vtk output which is to be handled by an own writer object
+  vtk_output_beam_contact_ =
+      (bool) DRT::INPUT::IntegralValue<int>(beam_contact_params_list.sublist("RUNTIME VTK OUTPUT"),
+          "VTK_OUTPUT_BEAM_CONTACT");
+
+  // create and initialize parameter container object for beam contact specific runtime vtk output
+  if ( vtk_output_beam_contact_ )
+  {
+    params_runtime_vtk_BTB_contact_ = Teuchos::rcp(
+        new BEAMINTERACTION::BeamToBeamContactRuntimeVtkParams );
+
+    params_runtime_vtk_BTB_contact_->Init(
+        beam_contact_params_list.sublist("RUNTIME VTK OUTPUT") );
+    params_runtime_vtk_BTB_contact_->Setup();
+  }
 
 
   // ********** Fixme: this needs to go to BeamToSphereContactParams ******************

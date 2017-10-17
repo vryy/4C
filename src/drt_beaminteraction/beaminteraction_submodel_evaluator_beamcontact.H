@@ -20,6 +20,8 @@
 #include "beaminteraction_submodel_evaluator_generic.H"
 
 //forward declaration ...
+class RuntimeVtpWriter;
+
 namespace DRT {
   class Element;
 }
@@ -118,6 +120,17 @@ namespace SUBMODELEVALUATOR {
     //! @}
 
   private:
+    //!@name routines that handle visualization output for contact forces
+    //! @{
+
+    //! writes output for contact forces in VTP format
+    void WriteOutputRuntimeVtpBeamContact() const;
+
+    //! init output for contact forces in VTP format
+    void InitOutputRuntimeVtpBeamContact();
+
+    //! @}
+
     //!@name routines that are not derived and handle beam to beam contact
     //! @{
 
@@ -151,6 +164,9 @@ namespace SUBMODELEVALUATOR {
 
     //! mapping beam ele (elegid) to set of spatially proximal eles (pointer to elements)
     std::map<int, std::set<DRT::Element*> > nearby_elements_map_;
+
+    //! runtime vtp writer for visualization of contact forces
+    Teuchos::RCP<RuntimeVtpWriter> vtp_writer_ptr_;
 
   };
 

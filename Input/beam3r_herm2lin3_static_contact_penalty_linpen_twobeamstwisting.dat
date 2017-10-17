@@ -21,6 +21,16 @@ OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 FILESTEPS                       1000
 VERBOSITY                       standard
+----------------------------------------------------------IO/RUNTIME VTK OUTPUT
+OUTPUT_DATA_FORMAT              binary
+INTERVAL_STEPS                  1
+EVERY_ITERATION                 No
+----------------------------------------------------------IO/RUNTIME VTK OUTPUT/BEAMS
+OUTPUT_BEAMS                    Yes
+DISPLACEMENT                    Yes
+USE_ABSOLUTE_POSITIONS          Yes
+TRIAD_VISUALIZATIONPOINT        Yes
+STRAINS_GAUSSPOINT              Yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
@@ -63,6 +73,13 @@ BEAMS_MAXDELTADISSCALEFAC       -1.0  //3.0
 //BEAMS_OCTREE                    octree_spherical
 BEAMS_ADDITEXT                  Yes
 BEAMS_EXTVAL                    0.02
+---------------------------------------------BEAM CONTACT/RUNTIME VTK OUTPUT
+VTK_OUTPUT_BEAM_CONTACT         yes
+OUTPUT_DATA_FORMAT              binary
+INTERVAL_STEPS                  1
+EVERY_ITERATION                 no
+CONTACT_FORCES                  yes
+GAPS                            yes
 --------------------------------------------------------------------BINNING STRATEGY
 DEFINEBINSPER                   cutoff
 CUTOFF_RADIUS                   1.0

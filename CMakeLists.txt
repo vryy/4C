@@ -890,6 +890,7 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/beam3contact_utils.cpp
   src/drt_beaminteraction/beam3contact_tangentsmoothing.cpp
   src/drt_beaminteraction/beam_contact_params.cpp
+  src/drt_beaminteraction/beam_contact_runtime_vtk_output_params.cpp
   src/drt_beaminteraction/beam_contact_pair.cpp
   src/drt_beaminteraction/beam_to_beam_contact_pair.cpp
   src/drt_beaminteraction/beam_to_beam_contact_variables.cpp
