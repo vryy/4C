@@ -1050,7 +1050,8 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
     //*************************************************************************************************************
     // 2) coupling terms in continuity equation
 
-    my::FillMatrixContiOD(  timefacfacpre,
+    my::FillMatrixContiOD(
+                        timefacfacpre,
                         dphi_dp,
                         dphi_dJ,
                         dphi_dJJ,

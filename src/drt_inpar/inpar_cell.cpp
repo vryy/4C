@@ -69,6 +69,19 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                     &celldyn);
 
   setStringToIntegralParameter<int>(
+                                    "ARTIFICIAL_FLUID_MOD","simplified",
+                                    "Full, simplified, or no modification of artificial flow",
+                                    tuple<std::string>(
+                                        "none",
+                                        "simplified",
+                                        "full"),
+                                    tuple<int>(
+                                        mod_none,
+                                        mod_simplified,
+                                        mod_full),
+                                    &celldyn);
+
+  setStringToIntegralParameter<int>(
                                     "SIMTYPE","pureFSI",
                                     "Simulation Type",
                                     tuple<std::string>(

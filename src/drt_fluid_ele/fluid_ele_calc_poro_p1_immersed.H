@@ -8,7 +8,7 @@
              http://www.lnm.mw.tum.de
              089 - 289 -15240
 
-\level 2
+\level 1
 
 *----------------------------------------------------------------------*/
 
@@ -30,7 +30,7 @@ namespace ELEMENTS
 class FluidImmersedBase;
 
 /*!
-  \brief Class for Evaluating special terms in case of immersed problems.
+  \brief Class for evaluating modifications terms in case of immersed problems.
 
   If a deformable structure is immersed in the porous medium, we have to make sure, that
   the compressibility of this structure is compatible with the compressibilities of the
@@ -197,12 +197,70 @@ protected:
       LINALG::Matrix<my::nen_,my::nen_>&            ppmat,
       LINALG::Matrix<my::nen_,1>&                   preforce);
 
+  /*!
+    \brief Gauss point loop for evaluation of off-diagonal terms
+
+    \param params             (i) element parameter list
+    \param evelaf             (i) nodal velocities at n+alpha_F/n+1
+    \param evelnp             (i) nodal velocities at n+1 (np_genalpha)
+    \param epreaf             (i) nodal pressure at n+alpha_F/n+1
+    \param eprenp             (i) nodal pressure at n+alpha_F/n+1
+    \param epressnp_timederiv (i) nodal pressure time derivative at n+alpha_F/n+1
+    \param eaccam             (i) nodal accelerations at n+alpha_M
+    \param edispnp            (i) nodal displacements at n+1 (on moving mesh)
+    \param egridv             (i) grid velocity at n+1
+    \param escaaf             (i) nodal scalar at n+alpha_F/n+1
+    \param eporositynp        (i) nodal porosity at n+alpha_F/n+1
+    \param eforce             (o) coupling rhs force vector
+    \param ecoupl_u           (o) coupling element matrix for fluid velocity
+    \param ecoupl_p           (o) coupling element matrix for fluid pressure
+    \param ecouplp1_u         (o) coupling element matrix for fluid velocity (porosity dependent terms)
+    \param ecouplp1_p         (o) coupling element matrix for fluid pressure (porosity dependent terms)
+    \param material           (i) fluid material
+    \param intpoints          (i) Gaussian integration points
+  */
+  virtual void GaussPointLoopP1OD(
+                          Teuchos::ParameterList&                                         params,
+                          const LINALG::Matrix<my::nsd_,my::nen_>&                        ebofoaf,
+                          const LINALG::Matrix<my::nsd_, my::nen_>&                       evelaf,
+                          const LINALG::Matrix<my::nsd_, my::nen_>&                       evelnp,
+                          const LINALG::Matrix<my::nsd_, my::nen_>&                       eveln,
+                          const LINALG::Matrix<my::nen_, 1>&                              epreaf,
+                          const LINALG::Matrix<my::nen_, 1>&                              eprenp,
+                          const LINALG::Matrix<my::nen_, 1>&                              epren,
+                          const LINALG::Matrix<my::nsd_,my::nen_> &                       emhist,
+                          const LINALG::Matrix<my::nen_,1>&                               echist,
+                          const LINALG::Matrix<my::nen_, 1> &                             epressnp_timederiv,
+                          const LINALG::Matrix<my::nen_, 1> &                             epressam_timederiv,
+                          const LINALG::Matrix<my::nen_, 1> &                             epressn_timederiv,
+                          const LINALG::Matrix<my::nsd_,my::nen_>&                        eaccam,
+                          const LINALG::Matrix<my::nsd_, my::nen_>&                       edispnp,
+                          const LINALG::Matrix<my::nsd_, my::nen_>&                       edispn,
+                          const LINALG::Matrix<my::nsd_, my::nen_>&                       egridv,
+                          const LINALG::Matrix<my::nsd_, my::nen_>&                       egridvn,
+                          const LINALG::Matrix<my::nen_,1>&                               escaaf,
+                          const LINALG::Matrix<my::nen_,1>*                               eporositynp,
+                          LINALG::Matrix<(my::nsd_ + 1) * my::nen_, 1>&                   eforce,
+                          LINALG::Matrix<my::nen_ * my::nsd_, my::nen_ * my::nsd_>&       ecoupl_u,
+                          LINALG::Matrix<my::nen_, my::nen_ * my::nsd_>&                  ecoupl_p,
+                          LINALG::Matrix<my::nen_ * my::nsd_, my::nen_>&                  ecouplp1_u,
+                          LINALG::Matrix<my::nen_, my::nen_>&                             ecouplp1_p,
+                          Teuchos::RCP<const MAT::Material>                               material,
+                          const DRT::UTILS::GaussIntegration &                            intpoints);
 
   /// current immersed element
   DRT::ELEMENTS::FluidImmersedBase* immersedele_;
-
   /// id of current gp
   int gp_iquad_;
+  /// modification type of flow equation in artifical domain
+  int artifical_flow_mod_type;
+  /*!
+    \brief multiplicator is 0 for simplified formulation and 1 for full formulation
+
+      use full formulation in case you expect porosity gradients and temporal
+      changes in porosity which are not negligible.
+    */
+  double mod_type_multiplicator_;
 
 }; // class FluidEleCalcPoroP1Immersed
 }  // namespace ELEMENTS

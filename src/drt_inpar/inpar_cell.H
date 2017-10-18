@@ -56,6 +56,13 @@ typedef enum _SIM_TYPE
   sim_type_multiphysics=6
 } SIM_TYPE;
 
+typedef enum _ART_FLUID_MOD
+{
+  mod_none=0,
+  mod_simplified=1,
+  mod_full=2
+} ART_FLUID_MOD;
+
 typedef enum _SEGREGATION_BY_TYPE
 {
   segregation_by_undefined=0,

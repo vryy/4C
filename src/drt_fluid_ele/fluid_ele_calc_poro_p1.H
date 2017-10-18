@@ -252,7 +252,7 @@ protected:
       \param material           (i) fluid material
       \param intpoints          (i) Gaussian integration points
     */
-    void GaussPointLoopP1OD(
+    virtual void GaussPointLoopP1OD(
                             Teuchos::ParameterList&                                         params,
                             const LINALG::Matrix<my::nsd_,my::nen_>&                        ebofoaf,
                             const LINALG::Matrix<my::nsd_, my::nen_>&                       evelaf,
