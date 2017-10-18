@@ -16,6 +16,9 @@ Tests the adaption of the poro continuity equation to the deformation
 of the immersed solid. Note that in this example 1000 Gauss points
 are evaluated in the cut elements.
 
+The ECM solid phase is compressible w.r.t. the pore pressure and
+ARTIFICIAL_FLUID_MOD = 'full' is requested.
+
 One-way coupled pure FSI Simulation with Cell Migration Framework.
 One-way-coupled because the immersed cylinder is controlled entirely
 by Dirichlet conditions.
@@ -174,7 +177,7 @@ PREDICTOR                       d(n)
 -------------------------------------------------------CELL DYNAMIC
 PSEUDO2D                        yes
 SIMTYPE                         pureFSI
-ARTIFICIAL_FLUID_MOD            simplified
+ARTIFICIAL_FLUID_MOD            full
 MIGRATIONTYPE                   ameboid
 ECM_INTERACTION                 no
 FLUID_INTERACTION               yes
@@ -184,7 +187,7 @@ NUMSTEP                         3
 RESULTSEVRY                     1
 RESTARTEVRY                     9999
 TIMESTEP                        0.05
-MAXTIME                         20.0
+MAXTIME                         0.15
 -------------------------------CELL DYNAMIC/FLOW INTERACTION MODULE
 COUPALGO                        iter_stagg_AITKEN_rel_param
 COUPVARIABLE                    Force
@@ -241,7 +244,8 @@ MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1500.0 NUE 0.3 DENS 1300.0
 MAT 3 MAT_StructPoro MATID 30 POROLAWID 300 INITPOROSITY 0.9
 MAT 30 MAT_ElastHyper NUMMAT 1 MATIDS 31 DENS 1300.0
 MAT 31 ELAST_CoupNeoHooke YOUNG 1500.0 NUE 0.3
-MAT 300 MAT_PoroLawConstant
+//MAT 300 MAT_PoroLawConstant
+MAT 300 MAT_PoroLawNeoHooke BULKMODULUS 2.0e5 PENALTYPARAMETER 0.001
 MAT 301 MAT_FluidPoro DYNVISCOSITY 0.001 DENSITY 1000.0 PERMEABILITY 1.0 TYPE Darcy-Brinkman
 
 MAT 4 MAT_matlist LOCAL No NUMMAT 1 MATIDS 40 END   // surface scatra material (slave)(membrane)
@@ -279,13 +283,13 @@ VARIABLE 0 NAME ex3 TYPE multifunction NUMPOINTS 2 TIMES 0.0 300.0 DESCRIPTION 1
 -------------------------------------------------------------FUNCT6
 COMPONENT 0 FUNCTION 0.9
 -------------------------------------------------RESULT DESCRIPTION
-FLUID DIS porofluid NODE 255 QUANTITY velx VALUE 5.65275617616953219e-03  TOLERANCE 1e-11
-FLUID DIS porofluid NODE 274 QUANTITY vely VALUE 3.83234099782247586e-06  TOLERANCE 1e-11
-FLUID DIS porofluid NODE 290 QUANTITY velx VALUE 5.75465914256533678e-03  TOLERANCE 1e-11
-FLUID DIS porofluid NODE 492 QUANTITY vely VALUE -3.83234099782594361e-06 TOLERANCE 1e-11
-FLUID DIS porofluid NODE 731 QUANTITY velx VALUE 5.97028906624303898e-03  TOLERANCE 1e-11
-FLUID DIS porofluid NODE 743 QUANTITY velx VALUE 5.99278442955869864e-03  TOLERANCE 1e-11
-FLUID DIS porofluid NODE 747 QUANTITY vely VALUE -4.16983465693427087e-05 TOLERANCE 1e-11
+FLUID DIS porofluid NODE 255 QUANTITY velx VALUE 1.21995223887490603e-03  TOLERANCE 1e-11
+FLUID DIS porofluid NODE 274 QUANTITY vely VALUE -2.08068416867518267e-06  TOLERANCE 1e-11
+FLUID DIS porofluid NODE 290 QUANTITY velx VALUE 1.44040878878974338e-03  TOLERANCE 1e-11
+FLUID DIS porofluid NODE 492 QUANTITY vely VALUE 2.08068416489376120e-06 TOLERANCE 1e-11
+FLUID DIS porofluid NODE 731 QUANTITY velx VALUE 1.77020847983511923e-03  TOLERANCE 1e-11
+FLUID DIS porofluid NODE 743 QUANTITY velx VALUE 1.84072557653598180e-03  TOLERANCE 1e-11
+FLUID DIS porofluid NODE 747 QUANTITY vely VALUE -1.75575463960986219e-05 TOLERANCE 1e-11
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  7
