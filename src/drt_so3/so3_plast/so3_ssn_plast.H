@@ -504,6 +504,7 @@ enum So3Plast_EASType  // with meaningful value for matrix size info
     //! calculate internal elastic energy
     double CalcIntEnergy(
         std::vector<double>&   disp,
+        std::vector<double>&   temp,
         Teuchos::ParameterList&         params);
 
     //@}

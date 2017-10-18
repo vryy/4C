@@ -635,7 +635,7 @@ void MAT::PlasticElastHyper::EvaluateElast(
 /*----------------------------------------------------------------------*
  |  evaluate elastic strain energy                          seitz 03/16 |
  *----------------------------------------------------------------------*/
-double MAT::PlasticElastHyper::StrainEnergy(const LINALG::Matrix<3,3>& defgrd,const int gp,const int eleGID)
+double MAT::PlasticElastHyper::StrainEnergyTSI(const LINALG::Matrix<3,3>& defgrd,const int gp,const int eleGID, const double temp)
 {
   double psi=0.;
 
@@ -663,6 +663,13 @@ double MAT::PlasticElastHyper::StrainEnergy(const LINALG::Matrix<3,3>& defgrd,co
   glstrain.Update(-0.5,idv,1.0);
   for (unsigned int p=0; p<potsum_.size(); ++p)
     potsum_[p]->AddStrainEnergy(psi,prinv,modinv,glstrain, eleGID);
+
+  double dPj1=0.;
+  for (unsigned int p=0; p<potsum_.size(); ++p)
+      potsum_[p]->AddCoupDerivVol(sqrt(prinv(0)),&dPj1,NULL,NULL,NULL);
+  psi-=3.*Cte()*(temp-InitTemp())*dPj1;
+
+
 
   return psi;
 }

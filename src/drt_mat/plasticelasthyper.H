@@ -365,7 +365,9 @@ private:
       return;
     }
 
-    virtual double StrainEnergy(const LINALG::Matrix<3,3>& defgrd,const int gp,const int eleGID);
+    virtual double StrainEnergy(const LINALG::Matrix<3,3>& defgrd,const int gp,const int eleGID)
+      { return StrainEnergyTSI(defgrd,gp,eleGID,MatParams()->inittemp_);}
+    virtual double StrainEnergyTSI(const LINALG::Matrix<3,3>& defgrd,const int gp,const int eleGID, const double temp);
 
     /// setup material data
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);

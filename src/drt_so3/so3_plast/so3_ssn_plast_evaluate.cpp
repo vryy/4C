@@ -441,7 +441,23 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(
     std::vector<double> mydisp(la[0].lm_.size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
 
-    elevec1_epetra(0) = CalcIntEnergy(mydisp,params);
+    std::vector<double> mytempnp(0);
+    if (discretization.HasState(1,"temperature"))
+    {
+      Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(1,"temperature");
+      if (tempnp==Teuchos::null)
+        dserror("Cannot get state vector 'tempnp'");
+
+      // the temperature field has only one dof per node, disregarded by the dimension of the problem
+      const int numdofpernode_thr = discretization.NumDof(1,Nodes()[0]);
+      if (la[1].Size() != nen_*numdofpernode_thr)
+        dserror("Location vector length for temperature does not match!");
+      // extract the current temperatures
+      mytempnp.resize( ( (la[0].lm_).size() )/nsd_, 0.0 );
+      DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
+    }
+
+    elevec1_epetra(0) = CalcIntEnergy(mydisp,mytempnp,params);
   }
   break;
 
@@ -1808,7 +1824,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::UpdatePlasticDeformation_nln(PlSpinType 
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::So3_Plast<distype>::CalcIntEnergy(
-  std::vector<double>&   disp          , // current displacements
+    std::vector<double>&   disp          , // current displacements
+    std::vector<double>&   temp          , // current temperatuere
   Teuchos::ParameterList&         params        ) // strain output option
 {
   InvalidEleData();
@@ -1816,7 +1833,7 @@ double DRT::ELEMENTS::So3_Plast<distype>::CalcIntEnergy(
   double energy=0.;
 
   std::vector<double> bla;
-  FillPositionArrays(disp,bla,bla);
+  FillPositionArrays(disp,bla,temp);
 
   if(fbar_ || eastype_!=soh8p_easnone)
     EvaluateCenter();  // deformation gradient at centroid of element
@@ -1836,11 +1853,15 @@ double DRT::ELEMENTS::So3_Plast<distype>::CalcIntEnergy(
   /* =========================================================================*/
   for (int gp=0; gp<numgpt_; ++gp)
   {
+    InvalidGpData();
+
     // shape functions (shapefunct) and their first derivatives (deriv)
-    DRT::UTILS::shape_function<distype>(xsi_[gp],SetShapeFunction());
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],SetDerivShapeFunction());
+    EvaluateShape(xsi_[gp]);
+    EvaluateShapeDeriv(xsi_[gp]);
 
     Kinematics(gp);
+
+    double gp_temp = ShapeFunction().Dot(Temp());
 
     // EAS technology: "enhance the strains"  ----------------------------- EAS
     if (eastype_ != soh8p_easnone)
@@ -1854,7 +1875,7 @@ double DRT::ELEMENTS::So3_Plast<distype>::CalcIntEnergy(
     else
       SetDefgrdMod()=Defgrd();
 
-    const double psi = plmat->StrainEnergy(DefgrdMod(),gp,Id());
+    const double psi = plmat->StrainEnergyTSI(DefgrdMod(),gp,Id(),gp_temp);
 
     const double detJ_w = DetJ()*wgt_[gp];
     energy += detJ_w*psi;
