@@ -171,6 +171,28 @@ namespace PARTICLE
         const Teuchos::RCP<Epetra_Vector> acc_A = Teuchos::null,
         const double time = -1.0);
 
+    /// compute the momentum part of the particle vs particle interactions
+    virtual void Inter_fspvp_acc1(
+        const Teuchos::RCP<Epetra_Vector> accn,
+        const Teuchos::RCP<Epetra_Vector> curvature,
+        double time);
+
+    /// compute the momentum part of the particle vs particle interactions
+    virtual void Inter_fspvp_acc1b(
+        const Teuchos::RCP<Epetra_Vector> accn,
+        const Teuchos::RCP<Epetra_Vector> curvature,
+        double time);
+
+    /// compute the momentum part of the particle vs particle interactions
+    virtual void Inter_fspvp_acc2(
+        const Teuchos::RCP<Epetra_Vector> accn,
+        double time);
+
+    /// compute the momentum part of the particle vs particle interactions
+    virtual void Inter_fspvp_acc2b(
+        const Teuchos::RCP<Epetra_Vector> accn,
+        double time);
+
     ///Computes Gradient of divergence operator for vector v - pvp
     virtual void Inter_pvp_Laplace_x(
         const ParticleMF& particle_j,
@@ -204,13 +226,18 @@ namespace PARTICLE
     virtual void MF_mW(
         const Teuchos::RCP<Epetra_Vector> mW,
         const Teuchos::RCP<Epetra_Vector> unity_vec = Teuchos::null,
+        const Teuchos::RCP<Epetra_Vector> unity_vec_grad = Teuchos::null,
         const double extMulti = 1.0);
 
     /// compute density - mesh free sense - boundary particle contributions
     virtual void MF_mW_Boundary(
         const Teuchos::RCP<Epetra_Vector> mW,
         const Teuchos::RCP<Epetra_Vector> unity_vec,
+        const Teuchos::RCP<Epetra_Vector> unity_vec_grad,
         const double extMulti = 1.0);
+
+    void MF_SmoothedCFG(
+        const Teuchos::RCP<Epetra_Vector> unity_vec_grad);
 
     /// re-initialize density in case of free-surface flow - mesh free sense
     virtual void MF_ReInitDensity(
@@ -523,6 +550,9 @@ namespace PARTICLE
 
     /// surface tension between fluid and void phase
     double surfaceTension_;
+
+    /// type of surface tension model
+    const INPAR::PARTICLE::SurfaceTensionType surfaceTensionType_;
 
     /// static contact angle between fluid and solid phase in degree measure
     double staticContactAngle_;

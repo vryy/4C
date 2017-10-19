@@ -54,6 +54,7 @@ PARTICLE::ParticleMeshFreeInteractionHandler::ParticleMeshFreeInteractionHandler
   damping_factor_(particledynparams.get<double>("VISCOUS_DAMPING")),
   xsph_dampfac_(particledynparams.get<double>("XSPH_DAMPFAC")),
   xsph_stiffac_(particledynparams.get<double>("XSPH_STIFFAC")),
+  surfaceTensionType_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::SurfaceTensionType>(particledynparams,"SURFACE_TENSION_TYPE")),
   min_pvp_dist_(1.0e10),
   min_pvw_dist_(1.0e10),
   min_pressure_(1.0e10),
@@ -435,6 +436,8 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::SetStateVector(Teuchos::RCP<c
     case PARTICLE::Vel :
     case PARTICLE::VelConv :
     case PARTICLE::Acc :
+    case PARTICLE::ColorFieldGrad :
+    case PARTICLE::SmoothedColorFieldGrad :
     {
       stateVectorCol = LINALG::CreateVector(*discret_->DofColMap(),false);
       break;
@@ -475,6 +478,16 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::SetStateVector(Teuchos::RCP<c
       case PARTICLE::Acc :
       {
         DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*stateVectorCol, data.boundarydata_.acc_, data.lm_);
+        break;
+      }
+      case PARTICLE::ColorFieldGrad :
+      {
+        DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*stateVectorCol, data.freesurfacedata_.colorFieldGrad_, data.lm_);
+        break;
+      }
+      case PARTICLE::SmoothedColorFieldGrad :
+      {
+        DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*stateVectorCol, data.freesurfacedata_.smoothedColorFieldGrad_, data.lm_);
         break;
       }
       // node based vectors
@@ -1392,7 +1405,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc(
         Inter_artificialViscosity(&sumj_accn_ij, &accn_ji, density_i, mass_i, radius_i, particle_j, vRel_ij, interData_ij);
 
       // ********** surface tension **********
-      if(surfaceTension_>0.0)
+      if(surfaceTension_>0.0 and (surfaceTensionType_==INPAR::PARTICLE::ST_VDW_DIRECT or surfaceTensionType_==INPAR::PARTICLE::ST_VDW_INDIRECT))
         Inter_surfaceTension(&sumj_accn_ij, &accn_ji, density_i, mass_i, radius_i, particle_j, interData_ij, time);
 
       // assemble all contributions to particle j
@@ -1526,7 +1539,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_bpvp_acc(
       }
 
       // ********** surface tension **********
-      if(surfaceTension_>0.0)
+      if(surfaceTension_>0.0 and (surfaceTensionType_==INPAR::PARTICLE::ST_VDW_DIRECT or surfaceTensionType_==INPAR::PARTICLE::ST_VDW_INDIRECT))
         Inter_surfaceTension(NULL, &accn_ji, density_i, mass_i, radius_i, particle_j, interData_ij, time);
 
       // assemble all contributions to particle j
@@ -1728,6 +1741,7 @@ for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_hs_.size(); ++lid
 void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mW(
     const Teuchos::RCP<Epetra_Vector> mW,
     const Teuchos::RCP<Epetra_Vector> unity_vec,
+    const Teuchos::RCP<Epetra_Vector> unity_vec_grad,
     const double extMulti)
 {
 
@@ -1744,6 +1758,9 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mW(
 
   if(unity_vec!=Teuchos::null)
     unity_vec->PutScalar(0.0);
+
+  if(unity_vec_grad!=Teuchos::null)
+    unity_vec_grad->PutScalar(0.0);
 
   // loop over the particles (no superpositions)
   for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_p_.size(); ++lidNodeRow_i)
@@ -1771,6 +1788,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mW(
 
     double sumj_mW_ij=0.0;
     double sumj_m_rho_W_ij=0.0;
+    LINALG::Matrix<3,1> sumj_m_rho_dW_ij(true);
 
     // loop over the interaction particle list
     for (boost::unordered_map<int, InterDataPvP>::const_iterator jj = neighbours_p_[lidNodeRow_i].begin(); jj != neighbours_p_[lidNodeRow_i].end(); ++jj)
@@ -1795,6 +1813,10 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mW(
         {
           sumj_m_rho_W_ij+=mW_ij/particle_j.density_;
         }
+        if(unity_vec_grad!=Teuchos::null)
+        {
+          sumj_m_rho_dW_ij.Update(particle_j.mass_/particle_j.density_*interData_ij.dw_ij_,interData_ij.rRelVersor_ij_,1.0);
+        }
       }
 
       // write on particle j if appropriate specializing the quantities
@@ -1810,16 +1832,24 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mW(
           unity_vec_aux=mW_ji/particle_i.density_;
           LINALG::Assemble(*unity_vec, unity_vec_aux, particle_j.gid_, particle_j.owner_);
         }
+        if(unity_vec_grad!=Teuchos::null)
+        {
+          LINALG::Matrix<3,1> unity_vec_grad_aux(true);
+          unity_vec_grad_aux.Update(-particle_i.mass_/particle_i.density_*interData_ij.dw_ij_,interData_ij.rRelVersor_ij_,1.0);
+          LINALG::Assemble(*unity_vec_grad, unity_vec_grad_aux, particle_j.lm_, particle_j.owner_);
+        }
       }
     }//loop over j
     //Assemble all contributions to particle i (we do this at once outside the j-loop since the assemble operation is expensive!)
     LINALG::Assemble(*mW, sumj_mW_ij, particle_i.gid_, particle_i.owner_);
     if(unity_vec!=Teuchos::null)
       LINALG::Assemble(*unity_vec, sumj_m_rho_W_ij, particle_i.gid_, particle_i.owner_);
+    if(unity_vec_grad!=Teuchos::null)
+      LINALG::Assemble(*unity_vec_grad, sumj_m_rho_dW_ij, particle_i.lm_, particle_i.owner_);
   }//loop over i
 
   if(wallInteractionType_==INPAR::PARTICLE::BoundarParticle_NoSlip or wallInteractionType_==INPAR::PARTICLE::BoundarParticle_FreeSlip)
-    MF_mW_Boundary(mW,unity_vec,extMulti);
+    MF_mW_Boundary(mW,unity_vec,unity_vec_grad,extMulti);
 
   return;
 }
@@ -1830,6 +1860,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mW(
 void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mW_Boundary(
     const Teuchos::RCP<Epetra_Vector> mW,
     const Teuchos::RCP<Epetra_Vector> unity_vec,
+    const Teuchos::RCP<Epetra_Vector> unity_vec_grad,
     const double extMulti)
 {
 
@@ -1866,6 +1897,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mW_Boundary(
         double mW_ji = interData_ij.w_ji_ * particle_i->mass_;
         mW_ji *= extMulti;
         LINALG::Assemble(*mW, mW_ji, particle_j.gid_, particle_j.owner_);
+
         if(unity_vec!=Teuchos::null)
         {
           double unity_vec_aux=0.0;
@@ -1874,9 +1906,20 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mW_Boundary(
 #else
           unity_vec_aux=mW_ji/particle_i->boundarydata_.densityMod_;
 #endif
-
-
           LINALG::Assemble(*unity_vec, unity_vec_aux, particle_j.gid_, particle_j.owner_);
+        }
+        if(unity_vec_grad!=Teuchos::null)
+        {
+          LINALG::Matrix<3,1> unity_vec_grad_aux(true);
+          double density_i=1.0;
+          #ifndef PARTICLE_BOUNDARYDENSITY
+            density_i=initDensity_;
+          #else
+            density_i=particle_i->boundarydata_.densityMod_;
+          #endif
+
+          unity_vec_grad_aux.Update(-particle_i->mass_/density_i*interData_ij.dw_ij_,interData_ij.rRelVersor_ij_,1.0);
+          LINALG::Assemble(*unity_vec_grad, unity_vec_grad_aux, particle_j.lm_, particle_j.owner_);
         }
       }
     }
@@ -1899,6 +1942,74 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mW_Boundary(
       LINALG::Assemble(*unity_vec, unity, particle_i->gid_, particle_i->owner_);
     }
   }
+
+  return;
+}
+
+/*------------------------------------------------------------------------------------------*
+ | Calculate a smoothed version of the color field gradient - mesh free style  meier 10/17  |
+ *------------------------------------------------------------------------------------------*/
+void PARTICLE::ParticleMeshFreeInteractionHandler::MF_SmoothedCFG(
+    const Teuchos::RCP<Epetra_Vector> unity_vec_grad)
+{
+
+  //checks
+  if (unity_vec_grad == Teuchos::null)
+  {
+    dserror("unity_vec_grad");
+  }
+
+  // loop over the particles (no superpositions)
+  for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_p_.size(); ++lidNodeRow_i)
+  {
+    // determine the particle_i
+    const int gid_i = discret_->NodeRowMap()->GID(lidNodeRow_i);
+    const int lidNodeCol_i = discret_->NodeColMap()->LID(gid_i);
+    const ParticleMF& particle_i = colParticles_[lidNodeCol_i];
+
+    //Boundary particles are not considered here
+    if(particle_i.boundarydata_.boundaryparticle_==true)
+      continue;
+
+    LINALG::Matrix<3,1> sumj_m_rho_dW_ij(true);
+
+    // loop over the interaction particle list
+    for (boost::unordered_map<int, InterDataPvP>::const_iterator jj = neighbours_p_[lidNodeRow_i].begin(); jj != neighbours_p_[lidNodeRow_i].end(); ++jj)
+    {
+      // extract data for faster access
+      const int& lidNodeCol_j = jj->first;
+      const InterDataPvP& interData_ij = jj->second;
+      const ParticleMF& particle_j = colParticles_[lidNodeCol_j];
+
+      //Boundary particles are not considered here
+      if(particle_j.boundarydata_.boundaryparticle_==true)
+        continue;
+
+      // see Morris et al. 2000 for the definition of this smoothed color field gradient!
+      // write on particle i if appropriate specializing the quantities
+      if (interData_ij.w_ij_ != 0)
+      {
+        if(unity_vec_grad!=Teuchos::null)
+        {
+          sumj_m_rho_dW_ij.Update(particle_j.mass_/particle_j.density_*(particle_j.freesurfacedata_.color_field_-particle_i.freesurfacedata_.color_field_)*interData_ij.dw_ij_,interData_ij.rRelVersor_ij_,1.0);
+        }
+      }
+
+      // write on particle j if appropriate specializing the quantities
+      if (interData_ij.w_ji_ != 0)
+      {
+        if(unity_vec_grad!=Teuchos::null)
+        {
+          LINALG::Matrix<3,1> unity_vec_grad_aux(true);
+          unity_vec_grad_aux.Update(-particle_i.mass_/particle_i.density_*(particle_i.freesurfacedata_.color_field_-particle_j.freesurfacedata_.color_field_)*interData_ij.dw_ij_,interData_ij.rRelVersor_ij_,1.0);
+          LINALG::Assemble(*unity_vec_grad, unity_vec_grad_aux, particle_j.lm_, particle_j.owner_);
+        }
+      }
+    }//loop over j
+    //Assemble all contributions to particle i (we do this at once outside the j-loop since the assemble operation is expensive!)
+    if(unity_vec_grad!=Teuchos::null)
+      LINALG::Assemble(*unity_vec_grad, sumj_m_rho_dW_ij, particle_i.lm_, particle_i.owner_);
+  }//loop over i
 
   return;
 }
@@ -2061,6 +2172,66 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::InitFreeSurfaceParticles(
   //these particles are classified as free-surface particles of type FS_INDIRECT. These get no extra entries in freesurfaceparticles_ and neighbours_fsp_ so far!
 
   const int numcolelements = discret_->NodeColMap()->NumMyElements();
+
+#ifdef PARTICLE_MODFSPTYPE
+  // loop over the particles (no superpositions)
+  for (unsigned int lidNodeCol_i = 0; lidNodeCol_i != (unsigned int)(numcolelements); ++lidNodeCol_i)
+  {
+    // determine the particle_i
+    ParticleMF& particle_i = colParticles_[lidNodeCol_i];
+
+    particle_i.freesurfacedata_.freesurfaceparticletype_=FS_DIRECT;
+    freesurfaceparticles_[particle_i.gid_]=&colParticles_[lidNodeCol_i];
+
+    //Decide if norm of colorFieldGrad_ is large enough to yield a reasonable approximation for the surface normal, which is not dominated by numerical noise.
+    //A similar criterion is suggested by Morris et al. 2000, Eq.(20)
+    if(particle_i.freesurfacedata_.smoothedColorFieldGrad_.Norm2()>PARTICLE_COLORGRADLIMIT/particle_i.radius_)
+      particle_i.freesurfacedata_.validNormal_=true;
+  }
+
+  //************loop over free surface particles and search for neighbors (for free-surface particles we need superposition --> column map)********
+  // bin checker
+  std::set<int> examinedbins;
+
+  // loop over the boundary particles
+  for (std::map<int,ParticleMF* >::iterator ii = freesurfaceparticles_.begin(); ii!=freesurfaceparticles_.end(); ++ii)
+  {
+    int id_i = ii->first;
+    // extract the node underlying the particle
+    DRT::Node *currparticle = discret_->gNode(id_i);
+
+    //find the bin it belongs to
+    DRT::Element* currentBin = currparticle->Elements()[0];
+
+    const int binId = currentBin->Id();
+
+    // if a bin has already been examined --> continue with next particle
+    if( examinedbins.find(binId) != examinedbins.end() )
+      continue;
+    //else: bin is examined for the first time --> new entry in examinedbins2_
+    examinedbins.insert(binId);
+
+    // extract the pointer to the particles
+    DRT::Node** currentBinParticles = currentBin->Nodes();
+
+    // list of particles in Bin
+    std::list<DRT::Node*> neighboursLinf_p;
+
+    // first neighbours_ round
+    particle_algorithm_->GetNeighbouringItems(binId, neighboursLinf_p);
+
+    // loop over all particles in CurrentBin
+    for(int i=0; i<currentBin->NumNode(); ++i)
+    {
+      // determine the particle we are analizing the the important addresses
+      const int lidNodeCol_i = currentBinParticles[i]->LID();
+      const ParticleMF& particle_i = colParticles_[lidNodeCol_i];
+
+      AddNewNeighbours_fsp(particle_i, neighboursLinf_p, false);
+    }
+  }
+  //***********************************************************************************************************************************************
+#else
   // loop over the particles (no superpositions)
   for (unsigned int lidNodeCol_i = 0; lidNodeCol_i != (unsigned int)(numcolelements); ++lidNodeCol_i)
   {
@@ -2072,6 +2243,11 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::InitFreeSurfaceParticles(
       particle_i.freesurfacedata_.freesurfaceparticletype_=FS_DIRECT;
       freesurfaceparticles_[particle_i.gid_]=&colParticles_[lidNodeCol_i];
     }
+
+    //Decide if norm of colorFieldGrad_ is large enough to yield a reasonable approximation for the surface normal, which is not dominated by numerical noise.
+    //A similar criterion is suggested by Morris et al. 2000, Eq.(20)
+    if(particle_i.freesurfacedata_.smoothedColorFieldGrad_.Norm2()>PARTICLE_COLORGRADLIMIT/particle_i.radius_)
+      particle_i.freesurfacedata_.validNormal_=true;
   }
 
   //************loop over free surface particles and search for neighbors (for free-surface particles we need superposition --> column map)********
@@ -2181,6 +2357,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::InitFreeSurfaceParticles(
     }
   }
   //***********************************************************************************************************************************************
+#endif
 
   // write free-surface particle type in global vector (required for paraview output)
   if(fspType!=Teuchos::null)
@@ -2522,13 +2699,23 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_surfaceTension(
 
     // pair-wise interaction force scaling parameter
     double s_ij = 0.0;
-    if (accn_ij != NULL)
-      s_ij = 0.5*std::pow(n_ij,-2)*(surfaceTension_/lambda);
-    else
+    if (accn_ij != NULL) // case of fluid-fluid interaction
     {
-      // convert static contact anglee in radians
-      double theta_0 = staticContactAngle_*PI/180.0;
-      s_ij = 0.5*std::pow(n_ij,-2)*(surfaceTension_/lambda)*(1+0.5*std::cos(theta_0));
+      if(surfaceTensionType_==INPAR::PARTICLE::ST_VDW_DIRECT)
+        s_ij = 0.5*std::pow(n_ij,-2)*(surfaceTension_/lambda);
+      else
+        s_ij = surfaceTension_;
+    }
+    else // case of fluid-solid interaction
+    {
+      if(surfaceTensionType_==INPAR::PARTICLE::ST_VDW_DIRECT)
+      {
+        // convert static contact angle in radians
+        double theta_0 = staticContactAngle_*PI/180.0;
+        s_ij = 0.5*std::pow(n_ij,-2)*(surfaceTension_/lambda)*(1+0.5*std::cos(theta_0));
+      }
+      else
+        s_ij = staticContactAngle_;
     }
 
     // pair-wise interaction force
@@ -2571,26 +2758,29 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::SurfTensionInterPot(
   // range of repulsive part
   double radius0 = ratio*radius;
 
-  switch (WF_DIM_)
+  if(surfaceTensionType_==INPAR::PARTICLE::ST_VDW_DIRECT)
   {
-  case INPAR::PARTICLE::WF_3D :
-  {
-    lambda = (7.0*81.0)/(324.0*359.0) * ( -A*std::pow(radius0, 2) + B*std::pow(radius, 2) );
-    break;
-  }
-  case INPAR::PARTICLE::WF_2D :
-  {
-    lambda = (2771.0*63.0)/(20412.0*478.0*PI) * ( -A*std::pow(radius0, 2) + B*std::pow(radius, 2) );
-    break;
-  }
-  default :
-  {
-    dserror("Pairwise interaction force currently just possible for dimension 2 and 3!");
-  }
-  }
+    switch (WF_DIM_)
+    {
+      case INPAR::PARTICLE::WF_3D :
+      {
+        lambda = (7.0*81.0)/(324.0*359.0) * ( -A*std::pow(radius0, 2) + B*std::pow(radius, 2) );
+        break;
+      }
+      case INPAR::PARTICLE::WF_2D :
+      {
+        lambda = (2771.0*63.0)/(20412.0*478.0*PI) * ( -A*std::pow(radius0, 2) + B*std::pow(radius, 2) );
+        break;
+      }
+      default :
+      {
+        dserror("Pairwise interaction force currently just possible for dimension 2 and 3!");
+      }
+    }
 
-  if(lambda <= 0.0)
-    dserror("The parameter lambda in the pairwise interaction force should be positive!");
+    if(lambda <= 0.0)
+      dserror("The parameter lambda in the pairwise interaction force should be positive!");
+  }
 
   potential = -A*weightFunction->W(rRelNorm2, radius0) + B*weightFunction->W(rRelNorm2, radius);
 
@@ -2612,6 +2802,405 @@ double PARTICLE::ParticleMeshFreeInteractionHandler::SurfTensionTimeFac(const do
 
   return fac;
 }
+
+/*------------------------------------------------------------------------*
+ | Calculate surface forces                                   meier 10/17 |
+ *------------------------------------------------------------------------*/
+void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_fspvp_acc1(
+    const Teuchos::RCP<Epetra_Vector> accn,
+    const Teuchos::RCP<Epetra_Vector> curvature,
+    double time)
+{
+  if(curvature!=Teuchos::null)
+  {
+    curvature->PutScalar(0.0);
+  }
+
+  // loop over the free surface particles (with superpositions -> pairs ij and ji evaluted seperately!)
+  // Calculate surface curvature according to Adami et al. 2010, Eq.(20)
+  for (std::map<int,std::map<int, InterDataPvP> >::iterator ii = neighbours_fsp_.begin(); ii!=neighbours_fsp_.end(); ++ii)
+  {
+
+    int id_i = ii->first;
+    ParticleMF *particle_i = freesurfaceparticles_[id_i];
+
+    //Only particles, whose color field gradient is large enough (in order to avoid the noise of small contributions). --> See Morris et al. 2000, Eq.(20)
+    if(particle_i->freesurfacedata_.validNormal_==false or particle_i->boundarydata_.boundaryparticle_==true)
+      continue;
+
+    double sum_nij_eij_dWij = 0.0; //numerator of Eq. (20)
+    double sum_rij_dWij = 0.0; //denominator of Eq. (20)
+
+    //denominator according to Morris et al. 2000, Eq. (24). Attention: Here we need a special color field and cannot reuse the color field already calculated earlier,
+    //since here only the particle with a sufficiently high color field gradient are considered!!!
+    double sum_Wij = 0.0;
+    //auto contribution
+    sum_Wij+=weightFunctionHandler_->W0(particle_i->radius_) * particle_i->mass_ /particle_i->density_;
+
+    //unity normal vector
+    LINALG::Matrix<3,1> n_i(particle_i->freesurfacedata_.smoothedColorFieldGrad_);
+    double norm_n_i=n_i.Norm2();
+    n_i.Scale(1.0/norm_n_i);
+
+    // loop over the boundary particles
+    for (std::map<int, InterDataPvP>::iterator jj = neighbours_fsp_[id_i].begin(); jj!=neighbours_fsp_[id_i].end(); ++jj)
+    {
+      int id_j = jj->first;
+      int lidNodeCol_j = discret_->NodeColMap()->LID(id_j);
+      const ParticleMF& particle_j = colParticles_[lidNodeCol_j];
+      const InterDataPvP& interData_ij =(neighbours_fsp_[id_i])[id_j];
+
+      //Here, only neighbors are required which are free-surface particles as well.
+      //Only particles, whose color field gradient is large enough (in order to avoid the noise of small contributions). --> See Morris et al. 2000, Eq.(20)
+      if(particle_j.freesurfacedata_.validNormal_==false or particle_j.boundarydata_.boundaryparticle_==true)
+        continue;
+
+      if (interData_ij.dw_ij_ != 0)
+      {
+        //unity normal vector
+        LINALG::Matrix<3,1> n_j(particle_j.freesurfacedata_.smoothedColorFieldGrad_);
+        double norm_n_j=n_j.Norm2();
+        n_j.Scale(1.0/norm_n_j);
+
+        double V_j=particle_j.mass_/particle_j.density_;
+        sum_nij_eij_dWij+=(n_i.Dot(interData_ij.rRelVersor_ij_)-n_j.Dot(interData_ij.rRelVersor_ij_))*V_j*interData_ij.dw_ij_;
+        sum_rij_dWij+=interData_ij.rRelNorm2_*V_j*interData_ij.dw_ij_;
+        sum_Wij+=V_j*interData_ij.w_ij_;
+      }
+    }
+
+    double kappa_i=0.0;
+    if(abs(sum_Wij)>1.0e-10)
+      kappa_i=-sum_nij_eij_dWij/sum_Wij;
+
+    //TODO: Alternative normalization according to Adami et al. 2010 (uncomment if required)
+//    double dim=(double)(WF_DIM_)+1.0;
+//    if(abs(sum_rij_dWij)>1.0e-10)
+//      kappa_i=dim*sum_nij_eij_dWij/sum_rij_dWij;
+
+    //TODO: The scaling below applies the color_field_. Currently, boundary particle contributions have been considered in the color_field_.
+    // The same applies to the colorFieldGrad_, but not to the smoothedColorFieldGrad_.
+    // However, consideration of boundary particles might not always be reasonable (e.g. when a drop is falling down on a rigid surface).
+    LINALG::Matrix<3,1> acc_i(particle_i->freesurfacedata_.smoothedColorFieldGrad_);
+    double expfac=1.0;
+#ifdef PARTICLE_SFEXP
+    expfac=1.0/std::pow(abs(particle_i->freesurfacedata_.color_field_),PARTICLE_SFEXP);
+#endif
+
+    if(surfaceTension_>0.0)
+    {
+      double timefac = 1.0;
+      if(time >= 0.0)
+        timefac = SurfTensionTimeFac(time);
+
+      acc_i.Scale(-expfac*timefac*kappa_i*surfaceTension_/particle_i->mass_);
+
+      LINALG::Assemble(*curvature, kappa_i, particle_i->gid_, particle_i->owner_);
+      LINALG::Assemble(*accn, acc_i, particle_i->lm_, particle_i->owner_);
+    }
+
+  }
+}
+
+/*------------------------------------------------------------------------*
+ | Calculate surface forces                                   meier 10/17 |
+ *------------------------------------------------------------------------*/
+void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_fspvp_acc1b(
+    const Teuchos::RCP<Epetra_Vector> accn,
+    const Teuchos::RCP<Epetra_Vector> curvature,
+    double time)
+{
+  if(curvature!=Teuchos::null)
+  {
+    curvature->PutScalar(0.0);
+  }
+
+  // loop over the free surface particles (with superpositions -> pairs ij and ji evaluted seperately!)
+  // Calculate surface curvature according to Adami et al. 2010, Eq.(20)
+  for (std::map<int,std::map<int, InterDataPvP> >::iterator ii = neighbours_fsp_.begin(); ii!=neighbours_fsp_.end(); ++ii)
+  {
+    int id_i = ii->first;
+    ParticleMF *particle_i = freesurfaceparticles_[id_i];
+
+    //Only particles, whose color field gradient is large enough (in order to avoid the noise of small contributions). --> See Morris et al. 2000, Eq.(20)
+    if(particle_i->freesurfacedata_.validNormal_==false or particle_i->boundarydata_.boundaryparticle_==true)
+      continue;
+
+    LINALG::Matrix<3,3> sum_nij_eij_dWij(true);
+    LINALG::Matrix<3,3> projection_mat(true);
+    LINALG::Matrix<3,3> grad_nbar_i(true);
+
+    //denominator according to Morris et al. 2000, Eq. (24). Attention: Here we need a special color field and cannot reuse the color field already calculated earlier,
+    //since here only the particle with a sufficiently high color field gradient are considered!!!
+    double sum_Wij = 0.0;
+    //auto contribution
+    sum_Wij+=weightFunctionHandler_->W0(particle_i->radius_) * particle_i->mass_ /particle_i->density_;
+
+    //unity normal vector
+    LINALG::Matrix<3,1> n_i(particle_i->freesurfacedata_.smoothedColorFieldGrad_);
+    LINALG::Matrix<3,1> nbar_i(n_i);
+    double norm_n_i=n_i.Norm2();
+    nbar_i.Scale(1.0/norm_n_i);
+
+    projection_mat.MultiplyNT(nbar_i,nbar_i);
+    for(int k=0;k<3;k++)
+      projection_mat(k,k)-=1.0;
+
+    projection_mat.Scale(-1.0/norm_n_i);
+
+    // loop over the boundary particles
+    for (std::map<int, InterDataPvP>::iterator jj = neighbours_fsp_[id_i].begin(); jj!=neighbours_fsp_[id_i].end(); ++jj)
+    {
+      int id_j = jj->first;
+      int lidNodeCol_j = discret_->NodeColMap()->LID(id_j);
+      const ParticleMF& particle_j = colParticles_[lidNodeCol_j];
+      const InterDataPvP& interData_ij =(neighbours_fsp_[id_i])[id_j];
+
+      //Here, only neighbors are required which are free-surface particles as well.
+      //Only particles, whose color field gradient is large enough (in order to avoid the noise of small contributions). --> See Morris et al. 2000, Eq.(20)
+      if(particle_j.freesurfacedata_.validNormal_==false or particle_j.boundarydata_.boundaryparticle_==true)
+        continue;
+
+      // write on particle j if appropriate specializing the quantities
+      if (interData_ij.dw_ij_ != 0)
+      {
+        //unity normal vector
+        LINALG::Matrix<3,1> n_j(particle_j.freesurfacedata_.smoothedColorFieldGrad_);
+        LINALG::Matrix<3,1> nbar_j(n_j);
+        double norm_n_j=n_j.Norm2();
+        nbar_j.Scale(1.0/norm_n_j);
+
+        LINALG::Matrix<3,1> n_ij(n_i);
+        n_ij.Update(-1.0,n_j,1.0);
+
+        double V_j=particle_j.mass_/particle_j.density_;
+        LINALG::Matrix<3,3> nij_eij_dWij(true);
+        nij_eij_dWij.MultiplyNT(n_ij,interData_ij.rRelVersor_ij_);
+        sum_nij_eij_dWij.Update(V_j*interData_ij.dw_ij_,nij_eij_dWij,1.0);
+
+        sum_Wij+=V_j*interData_ij.w_ij_;
+      }
+    }
+
+    grad_nbar_i.Multiply(projection_mat,sum_nij_eij_dWij);
+    double kappa_i=0.0;
+    for(int k=0;k<3;k++)
+      kappa_i+=grad_nbar_i(k,k);
+
+    kappa_i=kappa_i/sum_Wij;
+    //TODO
+    kappa_i=kappa_i*particle_i->dis_.Norm2();
+
+    LINALG::Matrix<3,1> acc_i(particle_i->freesurfacedata_.smoothedColorFieldGrad_);
+    double expfac=1.0;
+    #ifdef PARTICLE_SFEXP
+      expfac=1.0/std::pow(abs(particle_i->freesurfacedata_.color_field_),PARTICLE_SFEXP);
+    #endif
+
+    if(surfaceTension_>0.0)
+    {
+      double timefac = 1.0;
+      if(time >= 0.0)
+        timefac = SurfTensionTimeFac(time);
+      acc_i.Scale(expfac*timefac*kappa_i*surfaceTension_/particle_i->mass_);
+
+      LINALG::Assemble(*curvature, kappa_i, particle_i->gid_, particle_i->owner_);
+      LINALG::Assemble(*accn, acc_i, particle_i->lm_, particle_i->owner_);
+    }
+  }
+}
+
+/*------------------------------------------------------------------------*
+ | Calculate surface forces                                   meier 10/17 |
+ *------------------------------------------------------------------------*/
+void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_fspvp_acc2(
+    const Teuchos::RCP<Epetra_Vector> accn,
+    double time)
+{
+  double dim=(double)(WF_DIM_)+1.0;
+
+  // loop over the free surface particles (with superpositions -> pairs ij and ji evaluted seperately!)
+  // Calculate surface curvature according to Adami et al. 2010, Eq.(20)
+  for (std::map<int,std::map<int, InterDataPvP> >::iterator ii = neighbours_fsp_.begin(); ii!=neighbours_fsp_.end(); ++ii)
+  {
+    int id_i = ii->first;
+    ParticleMF *particle_i = freesurfaceparticles_[id_i];
+
+    if(particle_i->boundarydata_.boundaryparticle_==true)
+      continue;
+
+    LINALG::Matrix<3,1> acc_i(true);
+    //TODO
+    //LINALG::Matrix<3,1> gradC_i(particle_i->freesurfacedata_.colorFieldGrad_);
+    LINALG::Matrix<3,1> gradC_i(particle_i->freesurfacedata_.smoothedColorFieldGrad_);
+    double norm_gradC_i=gradC_i.Norm2();
+    LINALG::Matrix<3,3> Pi_i(true);
+    Pi_i.MultiplyNT(gradC_i,gradC_i);
+    Pi_i.Scale(-1.0);
+    for(int k=0;k<3;k++)
+      Pi_i(k,k)+=norm_gradC_i*norm_gradC_i/dim;
+
+    Pi_i.Scale(surfaceTension_/norm_gradC_i);
+
+    // loop over the boundary particles
+    for (std::map<int, InterDataPvP>::iterator jj = neighbours_fsp_[id_i].begin(); jj!=neighbours_fsp_[id_i].end(); ++jj)
+    {
+      int id_j = jj->first;
+      int lidNodeCol_j = discret_->NodeColMap()->LID(id_j);
+      const ParticleMF& particle_j = colParticles_[lidNodeCol_j];
+      const InterDataPvP& interData_ij =(neighbours_fsp_[id_i])[id_j];
+
+      if(particle_j.boundarydata_.boundaryparticle_==true)
+        continue;
+
+      // write on particle j if appropriate specializing the quantities
+      if (interData_ij.dw_ij_ != 0)
+      {
+        //TODO
+        //LINALG::Matrix<3,1> gradC_j(particle_j.freesurfacedata_.colorFieldGrad_);
+        LINALG::Matrix<3,1> gradC_j(particle_j.freesurfacedata_.smoothedColorFieldGrad_);
+        double norm_gradC_j=gradC_j.Norm2();
+        LINALG::Matrix<3,3> Pi_j(true);
+        Pi_j.MultiplyNT(gradC_j,gradC_j);
+        Pi_j.Scale(-1.0);
+        for(int k=0;k<3;k++)
+          Pi_j(k,k)+=norm_gradC_j*norm_gradC_j/dim;
+
+        Pi_j.Scale(surfaceTension_/norm_gradC_j);
+
+        LINALG::Matrix<3,1> eij_Pi_i(true);
+        eij_Pi_i.Multiply(Pi_i,interData_ij.rRelVersor_ij_);
+        LINALG::Matrix<3,1> eij_Pi_j(true);
+        eij_Pi_j.Multiply(Pi_j,interData_ij.rRelVersor_ij_);
+        double sigma_i=particle_i->density_/particle_i->mass_;
+        double sigma_j=particle_j.density_/particle_j.mass_;
+
+        acc_i.Update(interData_ij.dw_ij_/(sigma_i*sigma_i*particle_i->mass_),eij_Pi_i,1.0);
+        acc_i.Update(interData_ij.dw_ij_/(sigma_j*sigma_j*particle_i->mass_),eij_Pi_j,1.0);
+      }
+    }
+    double timefac = 1.0;
+    if(time >= 0.0)
+      timefac = SurfTensionTimeFac(time);
+    acc_i.Scale(timefac);
+
+    LINALG::Assemble(*accn, acc_i, particle_i->lm_, particle_i->owner_);
+  }
+}
+
+/*------------------------------------------------------------------------*
+ | Calculate surface forces                                   meier 10/17 |
+ *------------------------------------------------------------------------*/
+void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_fspvp_acc2b(
+    const Teuchos::RCP<Epetra_Vector> accn,
+    double time)
+{
+
+  double dim=(double)(WF_DIM_)+1.0;
+  if(dim!=2)
+    dserror("This method is only implemented for 2D so far!");
+
+  // loop over the free surface particles (with superpositions -> pairs ij and ji evaluted seperately!)
+  // Calculate surface curvature according to Adami et al. 2010, Eq.(20)
+  for (std::map<int,std::map<int, InterDataPvP> >::iterator ii = neighbours_fsp_.begin(); ii!=neighbours_fsp_.end(); ++ii)
+  {
+    int id_i = ii->first;
+    ParticleMF *particle_i = freesurfaceparticles_[id_i];
+
+    if(particle_i->boundarydata_.boundaryparticle_==true)
+      continue;
+
+    LINALG::Matrix<2,1> acc2D_i(true);
+    LINALG::Matrix<3,1> acc_i(true);
+    LINALG::Matrix<2,2> Pi_dWdx(true);
+    LINALG::Matrix<2,2> Pi_dWdy(true);
+    LINALG::Matrix<2,2> B(true);
+    LINALG::Matrix<2,2> B_inv(true);
+
+    //TODO
+    LINALG::Matrix<3,1> gradC_i(particle_i->freesurfacedata_.colorFieldGrad_);
+    //LINALG::Matrix<3,1> gradC_i(particle_i->freesurfacedata_.smoothedColorFieldGrad_);
+    double norm_gradC_i=gradC_i.Norm2();
+    LINALG::Matrix<3,3> Pi_i(true);
+    Pi_i.MultiplyNT(gradC_i,gradC_i);
+    Pi_i.Scale(-1.0);
+    for(int k=0;k<3;k++)
+      Pi_i(k,k)+=norm_gradC_i*norm_gradC_i/dim;
+
+    Pi_i.Scale(surfaceTension_/norm_gradC_i);
+
+    // loop over the boundary particles
+    for (std::map<int, InterDataPvP>::iterator jj = neighbours_fsp_[id_i].begin(); jj!=neighbours_fsp_[id_i].end(); ++jj)
+    {
+      int id_j = jj->first;
+      int lidNodeCol_j = discret_->NodeColMap()->LID(id_j);
+      const ParticleMF& particle_j = colParticles_[lidNodeCol_j];
+      const InterDataPvP& interData_ij =(neighbours_fsp_[id_i])[id_j];
+
+      if(particle_j.boundarydata_.boundaryparticle_==true)
+        continue;
+
+      // write on particle j if appropriate specializing the quantities
+      if (interData_ij.dw_ij_ != 0)
+      {
+        //TODO
+        LINALG::Matrix<3,1> gradC_j(particle_j.freesurfacedata_.colorFieldGrad_);
+        //LINALG::Matrix<3,1> gradC_j(particle_j.freesurfacedata_.smoothedColorFieldGrad_);
+        double norm_gradC_j=gradC_j.Norm2();
+        LINALG::Matrix<3,3> Pi_j(true);
+        Pi_j.MultiplyNT(gradC_j,gradC_j);
+        Pi_j.Scale(-1.0);
+        for(int k=0;k<3;k++)
+          Pi_j(k,k)+=norm_gradC_j*norm_gradC_j/dim;
+
+        Pi_j.Scale(surfaceTension_/norm_gradC_j);
+
+        LINALG::Matrix<2,2> Pidiff_2D(true);
+        for(int k=0;k<2;k++)
+          for(int l=0;l<2;l++)
+            Pidiff_2D(k,l)=Pi_i(k,l)-Pi_j(k,l);
+
+        Pi_dWdx.Update(particle_j.mass_/particle_j.density_*interData_ij.dw_ij_*interData_ij.rRelVersor_ij_(0),Pidiff_2D,1.0);
+        Pi_dWdy.Update(particle_j.mass_/particle_j.density_*interData_ij.dw_ij_*interData_ij.rRelVersor_ij_(1),Pidiff_2D,1.0);
+
+        for(int k=0;k<2;k++)
+          for(int l=0;l<2;l++)
+            B(k,l)+=particle_j.mass_/particle_j.density_*interData_ij.dw_ij_*(particle_i->dis_(k)-particle_j.dis_(k))*interData_ij.rRelVersor_ij_(l);
+      }
+    }
+    B_inv(0,0)=B(1,1);
+    B_inv(1,1)=B(0,0);
+    B_inv(0,1)=-B(0,1);
+    B_inv(1,0)=-B(1,0);
+    double det_B=B(0,0)*B(1,1)-B(0,1)*B(1,0);
+
+    //TODO: The existence of the inverse B_inv is not always guaranteed. Procedures to solve this problem should be available in the literature (see e.g. Randles et al. 1996).
+    if(abs(det_B)<1.0e-12)
+      std::cout << "Warming: small det_B: " << det_B << std::endl;
+
+    B_inv.Scale(1.0/det_B);
+
+    for(int alpha=0;alpha<2;alpha++)
+      for(int beta=0;beta<2; beta++)
+      {
+        acc2D_i(alpha)+=Pi_dWdx(alpha,beta)*B_inv(0,beta);
+        acc2D_i(alpha)+=Pi_dWdy(alpha,beta)*B_inv(1,beta);
+      }
+
+    double timefac = 1.0;
+    if(time >= 0.0)
+      timefac = SurfTensionTimeFac(time);
+
+    acc2D_i.Scale(timefac/particle_i->density_);
+
+    for(int k=0;k<2;k++)
+      acc_i(k)=acc2D_i(k);
+
+    LINALG::Assemble(*accn, acc_i, particle_i->lm_, particle_i->owner_);
+  }
+}
+
+
 
 /*------------------------------------------------------------------------------*
  | wrapper                                                         katta 01/17  |

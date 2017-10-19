@@ -581,10 +581,13 @@ void ParticleFilter::WriteAllResults(PostField* field)
   writer_->WriteResult("density", "density", nodebased, 1);
   writer_->WriteResult("pressure", "pressure", nodebased, 1);
   writer_->WriteResult("temperature", "temperature", nodebased, 1);
-  //TODO COLORFIELD
   writer_->WriteResult("specEnthalpy", "specEnthalpy", nodebased, 1);
+
   writer_->WriteResult("colorField", "colorField", nodebased, 1);
+  writer_->WriteResult("colorFieldGrad", "colorFieldGrad", dofbased, 1);
+  writer_->WriteResult("accSF", "accSF", dofbased, 1);
   writer_->WriteResult("fspType", "fspType", nodebased, 1);
+  writer_->WriteResult("curvature", "curvature", nodebased, 1);
 
   writer_->WriteResult("sign", "sign", nodebased, 1);
   writer_->WriteResult("orientation", "orientation", dofbased, field->problem()->num_dim(), 0);

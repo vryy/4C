@@ -219,14 +219,20 @@ namespace PARTICLE
   FreeSurfaceData(FreeSurfaceParticleType freesurfaceparticletype) :
     freesurfaceparticletype_(freesurfaceparticletype),
     color_field_(-1000),
-    density_sum_(-1000)
+    colorFieldGrad_(LINALG::Matrix<3,1>(true)),
+    smoothedColorFieldGrad_(LINALG::Matrix<3,1>(true)),
+    density_sum_(-1000),
+    validNormal_(false)
   {
   }
 
   /// internal variables
   FreeSurfaceParticleType freesurfaceparticletype_;         //which type of free surface particle do we have (none, direct or indirect)?
   double color_field_;                      //small values of the color_function \in [0;\approx 1] indicate (direct) surface particles
+  LINALG::Matrix<3,1> colorFieldGrad_;       //gradient of color field above (required as surface normal)
+  LINALG::Matrix<3,1> smoothedColorFieldGrad_;    //gradient of smoothed color field (alternative for surface normal)
   double density_sum_;                      //particle density determined via naiv summation (also for free-surface particles)
+  bool validNormal_;
 
   }; // FreeSurfaceData
 

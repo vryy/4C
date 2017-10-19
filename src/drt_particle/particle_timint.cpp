@@ -125,7 +125,10 @@ PARTICLE::TimInt::TimInt
   f_structure_(Teuchos::null),
 
   colorField_(Teuchos::null),
+  colorFieldGrad_(Teuchos::null),
+  accSF_(Teuchos::null),
   fspType_(Teuchos::null),
+  curvature_(Teuchos::null),
 
   initDensity_(-1.0),
   restDensity_(-1.0),
@@ -186,7 +189,10 @@ void PARTICLE::TimInt::Init()
 
 #ifdef PARTICLE_WRITECOLORFIELD
     colorField_ = LINALG::CreateVector(*NodeRowMapView(), true);
+    colorFieldGrad_ = LINALG::CreateVector(*DofRowMapView(), true);
+    accSF_ = LINALG::CreateVector(*DofRowMapView(), true);
     fspType_ = LINALG::CreateVector(*NodeRowMapView(), true);
+    curvature_ = LINALG::CreateVector(*NodeRowMapView(), true);
 #endif
   }// no break
   case INPAR::PARTICLE::Normal_DEM_thermo :
@@ -729,10 +735,22 @@ void PARTICLE::TimInt::DetermineMeshfreeDensAndAcc(Teuchos::RCP<Epetra_Vector> a
     density_sum->PutScalar(0.0);
     Teuchos::RCP<Epetra_Vector> colorField = Teuchos::rcp(new Epetra_Vector(*densityn_));
     colorField->PutScalar(0.0);
+    Teuchos::RCP<Epetra_Vector> colorFieldGrad = Teuchos::rcp(new Epetra_Vector(*veln_));
+    colorFieldGrad->PutScalar(0.0);
 
-    interHandler_->MF_mW(density_sum,colorField);
+    interHandler_->MF_mW(density_sum,colorField,colorFieldGrad);
     interHandler_->SetStateVector(colorField, PARTICLE::ColorField);
     interHandler_->SetStateVector(density_sum, PARTICLE::DensitySum);
+    interHandler_->SetStateVector(colorFieldGrad, PARTICLE::ColorFieldGrad);
+
+    const INPAR::PARTICLE::SurfaceTensionType surfaceTensionType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::SurfaceTensionType>(DRT::Problem::Instance()->ParticleParams(),"SURFACE_TENSION_TYPE");
+    if(surfaceTensionType==INPAR::PARTICLE::ST_CONTI_ADAMI or surfaceTensionType==INPAR::PARTICLE::ST_CONTI_HU)
+    {
+      Teuchos::RCP<Epetra_Vector> smoothedColorFieldGrad = Teuchos::rcp(new Epetra_Vector(*veln_));
+      smoothedColorFieldGrad->PutScalar(0.0);
+      interHandler_->MF_SmoothedCFG(smoothedColorFieldGrad);
+      interHandler_->SetStateVector(smoothedColorFieldGrad, PARTICLE::SmoothedColorFieldGrad);
+    }
 
     //Determine free-surface particles
     interHandler_->InitFreeSurfaceParticles(fspType_);
@@ -743,6 +761,9 @@ void PARTICLE::TimInt::DetermineMeshfreeDensAndAcc(Teuchos::RCP<Epetra_Vector> a
 
     if(colorField_!=Teuchos::null)
       colorField_->Update(1.0,*colorField,0.0);
+
+    if(colorFieldGrad_!=Teuchos::null)
+      colorFieldGrad_->Update(1.0,*colorFieldGrad,0.0);
   }
 
   // determine also the new pressure and set state vector
@@ -767,6 +788,29 @@ void PARTICLE::TimInt::DetermineMeshfreeDensAndAcc(Teuchos::RCP<Epetra_Vector> a
 
   // acceleration contributions due to internal forces (pressure, viscosity, etc.)
   interHandler_->Inter_pvp_acc(acc,accmod,acc_A,time);
+
+  const INPAR::PARTICLE::SurfaceTensionType surfaceTensionType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::SurfaceTensionType>(DRT::Problem::Instance()->ParticleParams(),"SURFACE_TENSION_TYPE");
+  if(surfaceTensionType==INPAR::PARTICLE::ST_CONTI_ADAMI or surfaceTensionType==INPAR::PARTICLE::ST_CONTI_HU)
+  {
+    Teuchos::RCP<Epetra_Vector> kappa = Teuchos::rcp(new Epetra_Vector(*densityn_));
+    kappa->PutScalar(0.0);
+    Teuchos::RCP<Epetra_Vector> accSF = Teuchos::rcp(new Epetra_Vector(*acc));
+    accSF->PutScalar(0.0);
+
+    if(surfaceTensionType==INPAR::PARTICLE::ST_CONTI_ADAMI)
+      interHandler_->Inter_fspvp_acc1(accSF,kappa,time);
+
+    if(surfaceTensionType==INPAR::PARTICLE::ST_CONTI_HU)
+      interHandler_->Inter_fspvp_acc2b(accSF,time);
+
+    acc->Update(1.0,*accSF,1.0);
+
+    if(accSF_!=Teuchos::null)
+      accSF_->Update(1.0,*accSF,0.0);
+
+    if(curvature_!=Teuchos::null)
+      curvature_->Update(1.0,*kappa,0.0);
+  }
 
   // clear vectors, keep memory
   interHandler_->Clear();
@@ -859,8 +903,17 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
   if(colorField_!=Teuchos::null)
     UpdateStateVectorMap(colorField_,true);
 
+  if(colorFieldGrad_!=Teuchos::null)
+    UpdateStateVectorMap(colorFieldGrad_);
+
+  if(accSF_!=Teuchos::null)
+    UpdateStateVectorMap(accSF_);
+
   if(fspType_!=Teuchos::null)
     UpdateStateVectorMap(fspType_,true);
+
+  if(curvature_!=Teuchos::null)
+    UpdateStateVectorMap(curvature_,true);
 }
 
 /*----------------------------------------------------------------------*/
@@ -1069,8 +1122,17 @@ void PARTICLE::TimInt::OutputRestart
   if(colorField_!=Teuchos::null)
     WriteVector("colorField", colorField_, false);
 
+  if(colorFieldGrad_!=Teuchos::null)
+    WriteVector("colorFieldGrad", colorFieldGrad_);
+
+  if(accSF_!=Teuchos::null)
+    WriteVector("accSF", accSF_);
+
   if(fspType_!=Teuchos::null)
     WriteVector("fspType", fspType_, false);
+
+  if(curvature_!=Teuchos::null)
+    WriteVector("curvature", curvature_, false);
 
   if(variableradius_)
   {
@@ -1138,14 +1200,22 @@ void PARTICLE::TimInt::OutputState
   WriteVector("pressure", pressure_, false);
   //WriteVector("densityapprox", densityapproxn_, false);
   WriteVector("density", density_, false);
-  //TODO COLORFIELD
   WriteVector("specEnthalpy", specEnthalpy_, false);
 
   if(colorField_!=Teuchos::null)
     WriteVector("colorField", colorField_, false);
 
+  if(colorFieldGrad_!=Teuchos::null)
+    WriteVector("colorFieldGrad", colorFieldGrad_);
+
+  if(accSF_!=Teuchos::null)
+    WriteVector("accSF", accSF_);
+
   if(fspType_!=Teuchos::null)
     WriteVector("fspType", fspType_, false);
+
+  if(curvature_!=Teuchos::null)
+    WriteVector("curvature", curvature_, false);
 
   WriteVector("temperature", temperature_, false);
 

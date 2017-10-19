@@ -105,9 +105,9 @@ namespace INPAR
     /// Number of weight function space dimensions for MeshFree interactions
     enum WeightFunctionDim
     {
-      WF_3D,
+      WF_1D,
       WF_2D,
-      WF_1D
+      WF_3D
     };
 
     enum ExtendedGhosting
@@ -134,6 +134,16 @@ namespace INPAR
       InteriorReinitialization,       //density via time integration and re-initialization in the interior via density summation (in every time step)
       NormalizedReinitialization,     //like 'InteriorReinitialization' but with additional re-initialization of free-surface particles via normalized density summation (Shepard Filter)
       RandlesReinitialization         //like 'NormalizedReinitialization' but with re-initialization of free-surface particles inspired by Randles 1996 instead of Shepard Filter
+    };
+
+    /// type of surface tension forces for MeshFree interactions
+    enum SurfaceTensionType
+    {
+      ST_NONE,             //no surface tension
+      ST_VDW_DIRECT,       //surface tension via van der Waals forces according to Tartakovsky et al. 2016, direct definition of surface tension and contact angle
+      ST_VDW_INDIRECT,     //surface tension via van der Waals forces according to Tartakovsky et al. 2016, definition of surface tension and contact angle via s_ff, s_sf
+      ST_CONTI_ADAMI,      //surface tension via continuum approach (pressure jump ~ interface curvature) according to Adami et al. 2010
+      ST_CONTI_HU          //surface tension via continuum approach (pressure jump ~ interface curvature) according to Adami et al. 2010
     };
 
     /// rendering for smoothed particle hydrodynamics

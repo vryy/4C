@@ -202,6 +202,25 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                  ),
                                &particledyn);
 
+   setStringToIntegralParameter<int>(
+                               "SURFACE_TENSION_TYPE","ST_NONE",
+                               "type of surface tension forces for MeshFree interactions",
+                               tuple<std::string>(
+                                 "ST_NONE",
+                                 "ST_VDW_DIRECT",
+                                 "ST_VDW_INDIRECT",
+                                 "ST_CONTI_ADAMI",
+                                 "ST_CONTI_HU"
+                                 ),
+                               tuple<int>(
+                                 INPAR::PARTICLE::ST_NONE,
+                                 INPAR::PARTICLE::ST_VDW_DIRECT,
+                                 INPAR::PARTICLE::ST_VDW_INDIRECT,
+                                 INPAR::PARTICLE::ST_CONTI_ADAMI,
+                                 INPAR::PARTICLE::ST_CONTI_HU
+                                 ),
+                               &particledyn);
+
    IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for structural problems",&particledyn);
    DoubleParameter("ERROR_TOLL",1e-6,"tolerance of the error for implicit schemes",&particledyn);
    IntParameter("ITER_MAX",10,"maximum iteration per time step for implicit schemes",&particledyn);

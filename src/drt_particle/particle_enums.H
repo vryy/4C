@@ -32,6 +32,8 @@ namespace PARTICLE
     Pressure,
     Temperature,
     ColorField,
+    ColorFieldGrad,
+    SmoothedColorFieldGrad,
     DensitySum
   };
 

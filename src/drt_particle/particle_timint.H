@@ -670,8 +670,14 @@ namespace PARTICLE
 
     //! color field
     Teuchos::RCP<Epetra_Vector> colorField_;
+    //! gradient of color field
+    Teuchos::RCP<Epetra_Vector> colorFieldGrad_;
+    //! acceleration contribution of surface tension
+    Teuchos::RCP<Epetra_Vector> accSF_;
     //! free-surface particle type
     Teuchos::RCP<Epetra_Vector> fspType_;
+    //! curvature of free surface
+    Teuchos::RCP<Epetra_Vector> curvature_;
 
     //! initial density for meshFree-pressure dynamics
     double initDensity_;
