@@ -798,10 +798,10 @@ void PARTICLE::TimInt::DetermineMeshfreeDensAndAcc(Teuchos::RCP<Epetra_Vector> a
     accSF->PutScalar(0.0);
 
     if(surfaceTensionType==INPAR::PARTICLE::ST_CONTI_ADAMI)
-      interHandler_->Inter_fspvp_acc1(accSF,kappa,time);
+      interHandler_->Inter_fspvp_Adami(accSF,kappa,time);
 
     if(surfaceTensionType==INPAR::PARTICLE::ST_CONTI_HU)
-      interHandler_->Inter_fspvp_acc2b(accSF,time);
+      interHandler_->Inter_fspvp_Hu(accSF,time);
 
     acc->Update(1.0,*accSF,1.0);
 

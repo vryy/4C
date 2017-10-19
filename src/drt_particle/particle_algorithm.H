@@ -47,14 +47,10 @@
                                                     //2: Apply shifting criterion for free-surface particles according to colorfield<1 (see Zhang et al. 2017)
                                                     //3: Apply reinitialization everywhere
 
-//wird durch input parameter surface tension continuum ersetzt
-#define PARTICLE_MODFSPTYPE                         // All particles are categorized as free-surface particles at the first place
-
 //Usefull defines (additional functionalities and debugging tools)
-//#define PARTICLE_OVERLAPPINGNEIGHBORS             //Determine also fully overlapping variant of neighbors vectors
 //#define PARTICLE_ONLYLAPLACETERM                  //Apply only Laplace term in viscous force calculation according to variant 1 (this is sufficient for incompressible flows)
-//#define PARTICLE_MINMAXOUTPUT_EVRY 100              //Ouput of minimal/maximal pressures, particle distances etc. every PARTICLE_MINMAXOUTPUT_EVRY time steps
 //#define PARTICLE_BOUNDARYDENSITY                  //Determine the density of boundary particles required for colorfield and density reinitialization on the basis of pressure extrapolation (similar to Adami et al. 2012)
+//#define PARTICLE_MINMAXOUTPUT_EVRY 100              //Ouput of minimal/maximal pressures, particle distances etc. every PARTICLE_MINMAXOUTPUT_EVRY time steps
 #define PARTICLE_WRITECOLORFIELD                    //Output of colorField_ and fspType_ (free-surface particle type) for paraview
 
 /*----------------------------------------------------------------------*

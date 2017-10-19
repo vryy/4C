@@ -149,7 +149,7 @@ int PARTICLE::TimIntKickDrift::IntegrateStep()
 
   double maxvel=0.0;
   veln_->NormInf(&maxvel);
-  std::cout << std::setprecision(16) <<"maxvel: " << maxvel << std::endl;
+  //std::cout << std::setprecision(16) <<"maxvel: " << maxvel << std::endl;
 
   return 0;
 }

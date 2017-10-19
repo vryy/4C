@@ -171,25 +171,25 @@ namespace PARTICLE
         const Teuchos::RCP<Epetra_Vector> acc_A = Teuchos::null,
         const double time = -1.0);
 
-    /// compute the momentum part of the particle vs particle interactions
-    virtual void Inter_fspvp_acc1(
+    /// compute surface tension interaction according to continuum model by Adami et al. 2010
+    virtual void Inter_fspvp_Adami(
         const Teuchos::RCP<Epetra_Vector> accn,
         const Teuchos::RCP<Epetra_Vector> curvature,
         double time);
 
-    /// compute the momentum part of the particle vs particle interactions
-    virtual void Inter_fspvp_acc1b(
+    /// compute surface tension interaction according to continuum model by Adami et al. 2010 (modified version)
+    virtual void Inter_fspvp_Adami_b(
         const Teuchos::RCP<Epetra_Vector> accn,
         const Teuchos::RCP<Epetra_Vector> curvature,
         double time);
 
-    /// compute the momentum part of the particle vs particle interactions
-    virtual void Inter_fspvp_acc2(
+    /// compute surface tension interaction according to continuum model by Hu et al. 2006
+    virtual void Inter_fspvp_Hu(
         const Teuchos::RCP<Epetra_Vector> accn,
         double time);
 
-    /// compute the momentum part of the particle vs particle interactions
-    virtual void Inter_fspvp_acc2b(
+    /// compute surface tension interaction according to continuum model by Hu et al. 2006 (modified version)
+    virtual void Inter_fspvp_Hu_b(
         const Teuchos::RCP<Epetra_Vector> accn,
         double time);
 
@@ -278,12 +278,6 @@ namespace PARTICLE
 
     //! add to the neighbour maps the neighbours of the present time step - particles
     virtual void AddNewNeighbours_p(
-        const ParticleMF& particle_i,
-        const std::list<DRT::Node*>& neighboursLinf_p,
-        const int step);
-
-    //! add to the neighbour maps the neighbours of the present time step - particles (overlapping vector)
-    virtual void AddNewNeighbours_op(
         const ParticleMF& particle_i,
         const std::list<DRT::Node*>& neighboursLinf_p,
         const int step);
@@ -472,9 +466,6 @@ namespace PARTICLE
 
     /// neighbours - particles
     std::vector<boost::unordered_map<int, InterDataPvP> > neighbours_p_;
-
-    /// neighbours - particles (overlapping storage)
-    std::vector<boost::unordered_map<int, InterDataPvP> > overlappingneighbours_p_;
 
     /// neighbours - heat sources
     std::vector<boost::unordered_map<int, Teuchos::RCP<HeatSource> > > neighbours_hs_;
