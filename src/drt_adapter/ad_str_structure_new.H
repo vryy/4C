@@ -307,9 +307,6 @@ namespace ADAPTER {
       Teuchos::RCP<std::vector<char> > nodedata
     ) = 0;
 
-    /// set the state of the nox group and the global state data container (implicit only)
-    virtual void SetState(const Teuchos::RCP<Epetra_Vector> & x) = 0;
-
     /// wrapper for things that should be done before PrepareTimeStep is called
     virtual void PrePredict() = 0;
 
@@ -500,6 +497,52 @@ namespace ADAPTER {
 
     ///@}
 
+    /// @name Multiphysics related stuff
+    ///@{
+
+    /** \brief Set the state of the NOX group and the global state data container.
+     *
+     * This method is needed because there are two parallel ways to handle the
+     * global state in the 'new' structural time integration.
+     *
+     * 1) The current state is held in the global state data container:
+     *    \ref STR::TIMINT::BaseDataGlobalState
+     *
+     * 2) Also the NOX group (that means the nonlinear solver) has its
+     *    own state vector (called 'X').
+     *
+     * This method sets the provided state consistently in both objects.
+     *
+     * This is useful for multiphysics in case a manipulated state needs
+     * to be set from outside:
+     *
+     *   For example, see the class:
+     *   \ref IMMERSED::ImmersedPartitionedAdhesionTraction
+     *
+     *   There, see the method
+     *   \ref IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedOp
+     *
+     *   First, the displacement state with write access is request from
+     *   the time integrator via the corresponding adapter.
+     *
+     *   Then, the displacement state is manipulated.
+     *
+     *   Finally, the displacement state is handed over to this method in
+     *   order to apply the new state to both (i) the global state object;
+     *   and (ii) the NOX group.
+     *
+     *   \note velocities and accelerations are recalculated inside by invoking
+     *   SetState(x) on the concrete time integrator (e.g. OST, GenAlpha, etc.)
+     *   It never makes any sense to call velocities or displacements as WriteAccess
+     *   variant from outside, because these vectors should always be consistent with
+     *   our primary variable (i.e. the displacements).
+     *
+     *  \author rauch
+     *  \date 10/17
+     */
+    virtual void SetState(const Teuchos::RCP<Epetra_Vector> & x) = 0;
+
+    ///@}
 
     /// @name XFEM related methods
     ///@{

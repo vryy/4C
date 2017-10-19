@@ -73,7 +73,7 @@ void STR::TIMINT::Explicit::SetState(const Teuchos::RCP<Epetra_Vector> & x)
 {
   dserror("All coupled problems work with implicit time "
       "integration schemes. Thus, calling SetState() in an explicit scheme "
-      "is not possible.");
+      "is not considered, yet.");
 }
 
 /*----------------------------------------------------------------------------*

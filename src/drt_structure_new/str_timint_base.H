@@ -182,10 +182,23 @@ namespace TIMINT {
       return dataglobalstate_->GetDisNp();
     }
 
-    /// write access to displacements at \f$t^{n+1}\f$
+    /* \brief write access to displacements at \f$t^{n+1}\f$
+     *
+     * Calling this method makes only sense if state is supposed
+     * to be manipulated. We must not forget to synchronize the
+     * manipulated state with the NOX group.
+     * Otherwise, the manipulations will be overwritten by NOX.
+     * Therefore, we set the flag state_is_insync_with_noxgroup_
+     * to false.
+     * This will be checked:
+     * See \ref CheckStateInSyncWithNOXGroup
+     *
+     * See also \ref ADAPTER::StructureNew::SetState
+     */
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispNp()
     {
       CheckInit();
+      SetStateInSyncWithNOXGroup(false);
       return dataglobalstate_->GetMutableDisNp();
     }
 
@@ -562,7 +575,9 @@ namespace TIMINT {
     virtual void PrepareTimeStep() = 0;
     /// specific method for iterative staggered partitioned TSI (implicit and explicit)
     virtual void PreparePartitionStep() = 0;
-    /// set the state of the nox group and the global state data container (implicit only)
+    /// set the state of the nox group and the global state data container
+    /// see class \ref ADAPTER::StructureNew for detailed documentation.
+    /// \note implemented only for implicit
     virtual void SetState(const Teuchos::RCP<Epetra_Vector> & x) = 0;
     /// update displacement and evaluate elements (implicit only)
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) = 0;
@@ -835,6 +850,27 @@ namespace TIMINT {
 
     /// flag indicating that the simulation is currently restarting
     bool isrestarting_;
+
+    /// flag indicating that displacement state was manipulated
+    /// but NOX group has not been informed.
+    bool state_is_insync_with_noxgroup_;
+
+  protected:
+
+    inline void SetStateInSyncWithNOXGroup(const bool insync)
+    {
+      state_is_insync_with_noxgroup_=insync;
+    }
+
+    inline void ThrowIfStateNotInSyncWithNOXGroup() const
+    {
+      if (!state_is_insync_with_noxgroup_)
+        dserror("Mutable state has been requested but the manipulated state has\n"
+                "not been communicated to NOX.\n"
+                "Manipulations made in the state vector will have no effect.\n"
+                "Call SetState(x) to synchronize the states stored in the global\n"
+                "state object and in the NOX group!");
+    }
 
   private:
     /// pointer to the different data containers

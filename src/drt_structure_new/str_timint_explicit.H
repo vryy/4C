@@ -48,6 +48,7 @@ namespace TIMINT {
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc);
 
     /// set the state of the nox group and the global state data container
+    /// see class \ref ADAPTER::StructureNew for detailed documentation.
     virtual void SetState(const Teuchos::RCP<Epetra_Vector> & x);
 
     /*! Do the nonlinear solve, i.e. (multiple) corrector,

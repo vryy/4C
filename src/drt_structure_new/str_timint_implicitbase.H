@@ -102,7 +102,8 @@ namespace TIMINT {
     virtual void PrepareTimeStep() = 0;
     /// specific method for iterative staggered partitioned TSI
     virtual void PreparePartitionStep() = 0;
-    /// set the state of the nox group and the global state data container (implicit only)
+    /// set the state of the nox group and the global state data container
+    /// see class \ref ADAPTER::StructureNew for detailed documentation.
     virtual void SetState(const Teuchos::RCP<Epetra_Vector> & x) = 0;
     /// @}
 

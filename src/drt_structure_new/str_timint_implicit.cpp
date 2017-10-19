@@ -107,6 +107,7 @@ void STR::TIMINT::Implicit::SetState(const Teuchos::RCP<Epetra_Vector> & x)
   IntegratorPtr()->SetState(*x);
   NOX::Epetra::Vector x_nox(x, NOX::Epetra::Vector::CreateView);
   NlnSolver().SolutionGroup().setX(x_nox);
+  SetStateInSyncWithNOXGroup(true);
 }
 
 /*----------------------------------------------------------------------------*
@@ -162,6 +163,7 @@ int STR::TIMINT::Implicit::IntegrateStep()
 INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::Solve()
 {
   CheckInitSetup();
+  ThrowIfStateNotInSyncWithNOXGroup();
   // reset the non-linear solver
   NlnSolver().Reset();
   // solve the non-linear problem
@@ -177,6 +179,7 @@ void STR::TIMINT::Implicit::Evaluate(
     Teuchos::RCP<const Epetra_Vector> disiterinc)
 {
   CheckInitSetup();
+  ThrowIfStateNotInSyncWithNOXGroup();
   NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
 
   NOX::NLN::Group* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
@@ -204,6 +207,7 @@ void STR::TIMINT::Implicit::Evaluate(
 void STR::TIMINT::Implicit::Evaluate()
 {
   CheckInitSetup();
+  ThrowIfStateNotInSyncWithNOXGroup();
   NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
 
   NOX::NLN::Group* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);

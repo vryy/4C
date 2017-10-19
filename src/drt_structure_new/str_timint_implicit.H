@@ -64,7 +64,8 @@ namespace TIMINT {
 
     virtual int IntegrateStep();
 
-    /// set the state of the nox group and the global state data container (implicit only)
+    /// set the state of the nox group and the global state data container
+    /// see class \ref ADAPTER::StructureNew for a detailed documentation.
     virtual void SetState(const Teuchos::RCP<Epetra_Vector> & x);
 
     /*! \brief nonlinear solve

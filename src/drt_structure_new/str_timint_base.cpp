@@ -48,6 +48,7 @@ STR::TIMINT::Base::Base()
       isinit_(false),
       issetup_(false),
       isrestarting_(false),
+      state_is_insync_with_noxgroup_(true),
       dataio_(Teuchos::null),
       datasdyn_(Teuchos::null),
       dataglobalstate_(Teuchos::null),
