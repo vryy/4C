@@ -326,9 +326,9 @@ namespace ADAPTER
     //! overloadable function to apply external actions (i.e. forces, accelerations, etc) and to erase outdated vectors
     virtual void UpdateExtActions(bool init = false) = 0;
 
-    virtual void GravityForces(Teuchos::RCP<Epetra_Vector> stateVector, const double extMulti) = 0;
+    virtual void GravityForces(Teuchos::RCP<Epetra_Vector> stateVector) = 0;
 
-    virtual void GravityAcc(Teuchos::RCP<Epetra_Vector> stateVector, const double extMulti, const double time) = 0;
+    virtual void GravityAcc(Teuchos::RCP<Epetra_Vector> stateVector, const double time) = 0;
 
     //@}
 

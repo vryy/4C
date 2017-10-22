@@ -102,7 +102,6 @@ namespace PARTICLE
 
     //! set up the object for the interaction computations
     virtual void Init(
-        const int step,
         Teuchos::RCP<const Epetra_Vector> disn,
         Teuchos::RCP<const Epetra_Vector> veln,
         Teuchos::RCP<const Epetra_Vector> radiusn,
@@ -118,8 +117,8 @@ namespace PARTICLE
         const LINALG::Matrix<3,1>& g,
         double &bpintergy);
 
-    //! add to the neighbour maps the neighbours of the present time step
-    virtual void AddNewNeighbours(const int step);
+    //! add to the neighbour maps the current neighbours
+    virtual void AddNewNeighbours();
 
     //! set state vector in ColParticles
     virtual void SetStateVector(
@@ -131,9 +130,6 @@ namespace PARTICLE
 
     //! clear content, keep memory
     virtual void Clear();
-
-    //! clear content, keep memory and keep interactions up to step-memory
-    virtual void Clear(const int step, const int memory);
 
     //! Apply coordinate shift in case of periodic boundary conditions
     virtual void ShiftPeriodicBoundaryPair(
@@ -149,23 +145,10 @@ namespace PARTICLE
 
     /// compute the density part of the particle vs particle interactions
     virtual void Inter_pvp_densityDot(
-        const Teuchos::RCP<Epetra_Vector> densityDotn,
-        const double extMulti = 1.0);
-
-    /// compute the density part of the boundary particle vs particle interactions
-    virtual void Inter_bpvp_densityDot(
-        const Teuchos::RCP<Epetra_Vector> densityDotn,
-        const double extMulti = 1.0);
+        const Teuchos::RCP<Epetra_Vector> densityDotn);
 
     /// compute the momentum part of the particle vs particle interactions
     virtual void Inter_pvp_acc(
-        const Teuchos::RCP<Epetra_Vector> accn,
-        const Teuchos::RCP<Epetra_Vector> trvl_acc = Teuchos::null,
-        const Teuchos::RCP<Epetra_Vector> acc_A = Teuchos::null,
-        const double time = -1.0);
-
-    /// compute the momentum part of the boundary particle vs particle interactions
-    virtual void Inter_bpvp_acc(
         const Teuchos::RCP<Epetra_Vector> accn,
         const Teuchos::RCP<Epetra_Vector> trvl_acc = Teuchos::null,
         const Teuchos::RCP<Epetra_Vector> acc_A = Teuchos::null,
@@ -209,32 +192,22 @@ namespace PARTICLE
 
     /// compute the heat of the particle vs particle interactions
     virtual void Inter_pvp_specEnthalpyDot(
-        const Teuchos::RCP<Epetra_Vector> specEnthalpyDotn,
-        const double extMulti = 1.0);
+        const Teuchos::RCP<Epetra_Vector> specEnthalpyDotn);
 
     /// compute the heat of the particle vs heat sources interactions
     virtual void Inter_pvhs_specEnthalpyDot(
-        const Teuchos::RCP<Epetra_Vector> specEnthalpyDotn,
-        const double extMulti = 1.0);
+        const Teuchos::RCP<Epetra_Vector> specEnthalpyDotn);
 
     //@}
 
     //! @name mesh free fields
     //@{
 
-    /// compute density - mesh free sense
+    /// compute \sum m * W (usually the density)
     virtual void MF_mW(
         const Teuchos::RCP<Epetra_Vector> mW,
         const Teuchos::RCP<Epetra_Vector> unity_vec = Teuchos::null,
-        const Teuchos::RCP<Epetra_Vector> unity_vec_grad = Teuchos::null,
-        const double extMulti = 1.0);
-
-    /// compute density - mesh free sense - boundary particle contributions
-    virtual void MF_mW_Boundary(
-        const Teuchos::RCP<Epetra_Vector> mW,
-        const Teuchos::RCP<Epetra_Vector> unity_vec,
-        const Teuchos::RCP<Epetra_Vector> unity_vec_grad,
-        const double extMulti = 1.0);
+        const Teuchos::RCP<Epetra_Vector> unity_vec_grad = Teuchos::null);
 
     void MF_SmoothedCFG(
         const Teuchos::RCP<Epetra_Vector> unity_vec_grad);
@@ -276,29 +249,26 @@ namespace PARTICLE
     //! @name AddNewNeighbours - these functions are collected in AddNewNeighbours for faster search
     //@{
 
-    //! add to the neighbour maps the neighbours of the present time step - particles
+    //! set the neighbours - particles
     virtual void AddNewNeighbours_p(
         const ParticleMF& particle_i,
-        const std::list<DRT::Node*>& neighboursLinf_p,
-        const int step);
+        const std::list<DRT::Node*>& neighboursLinf_p);
 
-    //! add to the neighbour maps the neighbours of the present time step - boundary particles
+    //! set the neighbours - boundary particles
     virtual void AddNewNeighbours_bp(
         const ParticleMF& particle_i,
-        const std::list<DRT::Node*>& neighboursLinf_p,
-        const int step);
+        const std::list<DRT::Node*>& neighboursLinf_p);
 
-    //! add to the neighbour maps the neighbours of the present time step - free-surface particles
+    //! set the neighbours - free-surface particles
     virtual void AddNewNeighbours_fsp(
         const ParticleMF& particle_i,
         const std::list<DRT::Node*>& neighboursLinf_p,
-        const bool mark_fs_indirect=false,
-        const int step=1);
+        const bool mark_fs_indirect=false);
 
-    //! add to the neighbour maps the neighbours of the present time step - heat sources
+    //! set the neighbours - heat sources
     virtual void AddNewNeighbours_hs(
         const ParticleMF& particle_i,
-        const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > >& neighboring_heatSources);
+        const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > >& neighbouring_heatSources);
 
     /// template to print neighbours
     template <typename obj>
@@ -327,12 +297,9 @@ namespace PARTICLE
     //! @name interaction methods
     //@{
 
-    //! construct the specific coefficients
-    virtual void Inter_generalCoeff(
-        double& generalCoeff_ij,
-        double& generalCoeff_ji,
-        const double& density_i,
-        const double& mass_i,
+    //! construct the specific coefficient
+    virtual double Inter_generalCoeff_ij(
+        const ParticleMF& particle_i,
         const ParticleMF& particle_j,
         const InterDataPvP& interData_ij
         );
@@ -340,11 +307,8 @@ namespace PARTICLE
     //! evaluate pressure
     virtual void Inter_pressure(
         LINALG::Matrix<3,1>* accn_ij,
-        LINALG::Matrix<3,1>* accn_ji,
         const double& generalCoeff_ij,
-        const double& generalCoeff_ji,
-        const double& density_i,
-        const double& pressure_i,
+        const ParticleMF& particle_i,
         const ParticleMF& particle_j,
         const InterDataPvP& interData_ij
         );
@@ -352,13 +316,8 @@ namespace PARTICLE
     //! evaluate background pressure
     virtual void Inter_backgroundPressure(
         LINALG::Matrix<3,1>* trvl_accn_ij,
-        LINALG::Matrix<3,1>* trvl_accn_ji,
         const double& generalCoeff_ij,
-        const double& generalCoeff_ji,
-        const double& density_i,
-        const double& mass_i,
-        const double& radius_i,
-        const double& pressure_i,
+        const ParticleMF& particle_i,
         const ParticleMF& particle_j,
         const InterDataPvP& interData_ij
         );
@@ -366,26 +325,17 @@ namespace PARTICLE
     //! evaluate xsph contribution
     virtual void Inter_xsph(
         LINALG::Matrix<3,1>* trvl_accn_ij,
-        LINALG::Matrix<3,1>* trvl_accn_ji,
-        const double& density_i,
-        const double& mass_i,
-        const double& radius_i,
+        const ParticleMF& particle_i,
         const ParticleMF& particle_j,
-        const LINALG::Matrix<3,1>& vRel_ij,
         const InterDataPvP& interData_ij
         );
 
     //! evaluate additional term divA due to transport velocity
     virtual void Inter_transportVelocity_divA(
         LINALG::Matrix<3,1>* accn_ij,
-        LINALG::Matrix<3,1>* accn_ji,
         LINALG::Matrix<3,1>* accn_ij_A,
-        LINALG::Matrix<3,1>* accn_ji_A,
         const double& generalCoeff_ij,
-        const double& generalCoeff_ji,
-        const double& density_i,
-        const LINALG::Matrix<3,1>& vel_i,
-        const LINALG::Matrix<3,1>& velConv_i,
+        const ParticleMF& particle_i,
         const ParticleMF& particle_j,
         const InterDataPvP& interData_ij
         );
@@ -393,34 +343,24 @@ namespace PARTICLE
     //! evaluate laminar viscosity
     virtual void Inter_laminarViscosity(
         LINALG::Matrix<3,1>* accn_ij,
-        LINALG::Matrix<3,1>* accn_ji,
         const double& generalCoeff_ij,
-        const double& generalCoeff_ji,
-        const double& density_i,
+        const ParticleMF& particle_i,
         const ParticleMF& particle_j,
-        const LINALG::Matrix<3,1>& vRel_ij,
         const InterDataPvP& interData_ij
         );
 
     //! evaluate artificial viscosity
     virtual void Inter_artificialViscosity(
         LINALG::Matrix<3,1>* accn_ij,
-        LINALG::Matrix<3,1>* accn_ji,
-        const double& density_i,
-        const double& mass_i,
-        const double& radius_i,
+        const ParticleMF& particle_i,
         const ParticleMF& particle_j,
-        const LINALG::Matrix<3,1>& vRel_ij,
         const InterDataPvP& interData_ij
         );
 
     //! evaluate surface tension
     virtual void Inter_surfaceTension(
         LINALG::Matrix<3,1>* accn_ij,
-        LINALG::Matrix<3,1>* accn_ji,
-        const double& density_i,
-        const double& mass_i,
-        const double& radius_i,
+        const ParticleMF& particle_i,
         const ParticleMF& particle_j,
         const InterDataPvP& interData_ij,
         const double& time

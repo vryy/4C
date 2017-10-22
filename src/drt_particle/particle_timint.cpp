@@ -689,7 +689,7 @@ void PARTICLE::TimInt::DetermineMeshfreeDensAndAcc(Teuchos::RCP<Epetra_Vector> a
 {
 
   //Initialize all columns and boundary particles. Set sate vectors disn_ and veln_
-  interHandler_->Init(stepn_, disn_, veln_, radiusn_, mass_, Teuchos::null);
+  interHandler_->Init(disn_, veln_, radiusn_, mass_, Teuchos::null);
   //Set also state vector velConv
   if(velConv!=Teuchos::null)
     interHandler_->SetStateVector(velConv, PARTICLE::VelConv);
@@ -774,17 +774,15 @@ void PARTICLE::TimInt::DetermineMeshfreeDensAndAcc(Teuchos::RCP<Epetra_Vector> a
   // assign accelerations, modified pressures and modified velocities for boundary particles and calculate their mechanical energy contribution
   const INPAR::PARTICLE::WallInteractionType wallInteractionType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallInteractionType>(DRT::Problem::Instance()->ParticleParams(),"WALL_INTERACTION_TYPE");
   if(wallInteractionType==INPAR::PARTICLE::BoundarParticle_NoSlip or wallInteractionType==INPAR::PARTICLE::BoundarParticle_FreeSlip)
-  {
     interHandler_->InitBoundaryData(acc,particle_algorithm_->GetGravityAcc(time),bpintergy_);
-  }
 
-  // acceleration contributions due to gravity forces
+  // clear acceleration states
   acc->PutScalar(0.0);
   if(accmod!=Teuchos::null)
-  {
     accmod->PutScalar(0.0);
-  }
-  GravityAcc(acc,1.0,time);
+
+  // acceleration contributions due to gravity forces
+  GravityAcc(acc,time);
 
   // acceleration contributions due to internal forces (pressure, viscosity, etc.)
   interHandler_->Inter_pvp_acc(acc,accmod,acc_A,time);
@@ -1906,7 +1904,7 @@ void PARTICLE::TimInt::UpdateExtActions(bool init)
 /*----------------------------------------------------------------------*
  | calculate and ADD gravity forces (no reset)             katta 01/17  |
  *----------------------------------------------------------------------*/
-void PARTICLE::TimInt::GravityForces(Teuchos::RCP<Epetra_Vector> force, const double extMulti)
+void PARTICLE::TimInt::GravityForces(Teuchos::RCP<Epetra_Vector> force)
 {
   if (force != Teuchos::null)
   {
@@ -1917,7 +1915,7 @@ void PARTICLE::TimInt::GravityForces(Teuchos::RCP<Epetra_Vector> force, const do
       //// gravity acc = mass_p * g
       for(int dim=0; dim<3; ++dim)
       {
-        (*force)[i*3+dim] = extMulti * (*mass_)[i] * gravity_acc(dim);
+        (*force)[i*3+dim] = (*mass_)[i] * gravity_acc(dim);
       }
       /*------------------------------------------------------------------*/
     }
@@ -1931,7 +1929,7 @@ void PARTICLE::TimInt::GravityForces(Teuchos::RCP<Epetra_Vector> force, const do
 /*----------------------------------------------------------------------*
  | calculate and ADD gravity forces (no reset)             katta 01/17  |
  *----------------------------------------------------------------------*/
-void PARTICLE::TimInt::GravityAcc(Teuchos::RCP<Epetra_Vector> acc, const double extMulti, const double time)
+void PARTICLE::TimInt::GravityAcc(Teuchos::RCP<Epetra_Vector> acc, const double time)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::TimInt::GravityAcc");
 
@@ -1945,7 +1943,7 @@ void PARTICLE::TimInt::GravityAcc(Teuchos::RCP<Epetra_Vector> acc, const double 
       //// gravity acc = g
       for(int dim=0; dim<3; ++dim)
       {
-        (*acc)[i*3+dim] = extMulti * gravity_acc(dim);
+        (*acc)[i*3+dim] = gravity_acc(dim);
       }
       /*------------------------------------------------------------------*/
     }
