@@ -439,20 +439,10 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::UpdateSpatConf()
   // update per absolute vector
   dispnp->Update(1.0, *disalenp, 0.0);
 
-  // also update velocity to be consistent with new dispnp
-  // time step size
-  const double dt = Dt();
-  // OST Parameter
-  const double theta = DRT::Problem::Instance()->CellMigrationParams().sublist("STRUCTURAL DYNAMIC").sublist("ONESTEPTHETA").get<double>("THETA");
-  if(theta!=1.0)
-    dserror("algorithm has not been tested with theta != 1.0");
+  // synchronize nox state and global state
+  // update velocities and accelerations
+  StructureField()->SetState(dispnp);
 
-  // new end-point velocities
-  StructureField()->WriteAccessVelnp()->Update(1.0/(theta*dt), *dispnp,
-                                              -1.0/(theta*dt), *((StructureField()->Dispn())),
-                                               0.0);
-  StructureField()->WriteAccessVelnp()->Update(-(1.0-theta)/theta, *((StructureField()->Veln())),
-                                               1.0);
   return;
 }
 
