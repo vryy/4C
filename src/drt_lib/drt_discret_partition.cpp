@@ -706,6 +706,33 @@ void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap,
 }
 
 /*----------------------------------------------------------------------*
+ |  redistribute discretization (public)                     rauch 10/17|
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap,
+                                       const Epetra_Map& nodecolmap,
+                                       const Epetra_Map& elerowmap,
+                                       const Epetra_Map& elecolmap,
+                                       bool assigndegreesoffreedom ,
+                                       bool initelements           ,
+                                       bool doboundaryconditions,
+                                       bool killdofs,
+                                       bool killcond)
+{
+  // export nodes and elements to the new maps
+  ExportRowNodes(noderowmap,killdofs,killcond);
+  ExportColumnNodes(nodecolmap,killdofs,killcond);
+  ExportRowElements(elerowmap,killdofs,killcond);
+  ExportColumnElements(elecolmap,killdofs,killcond);
+
+  // these exports have set Filled()=false as all maps are invalid now
+  int err = FillComplete(assigndegreesoffreedom,initelements,doboundaryconditions);
+
+  if (err) dserror("FillComplete() returned err=%d",err);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  ghost elements according to element column map (public)  rauch 10/13|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap,

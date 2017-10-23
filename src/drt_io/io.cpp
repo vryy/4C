@@ -201,6 +201,10 @@ void IO::DiscretizationReader::ReadHistoryData(int step)
   Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::rcp(new Epetra_Map(*dis_->NodeRowMap()));
   Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::rcp(new Epetra_Map(*dis_->NodeColMap()));
 
+  // before we unpack nodes/elements we store a copy of the nodal row/col map
+  Teuchos::RCP<Epetra_Map> elerowmap = Teuchos::rcp(new Epetra_Map(*dis_->ElementRowMap()));
+  Teuchos::RCP<Epetra_Map> elecolmap = Teuchos::rcp(new Epetra_Map(*dis_->ElementColMap()));
+
   // unpack nodes and elements and redistributed to current layout
 
   // take care --- we are just adding elements to the discretisation
@@ -211,7 +215,7 @@ void IO::DiscretizationReader::ReadHistoryData(int step)
   // so everything should be OK
   dis_->UnPackMyNodes(nodedata);
   dis_->UnPackMyElements(elementdata);
-  dis_->Redistribute(*noderowmap,*nodecolmap);
+  dis_->Redistribute(*noderowmap,*nodecolmap,*elerowmap,*elecolmap);
   return;
 }
 

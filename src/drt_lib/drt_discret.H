@@ -1052,6 +1052,36 @@ public:
                             bool killcond              =true);
 
   /*!
+  \brief Redistribute the discretization according to provided maps
+         (Filled()==NOT true prerequisite)
+
+  \param noderowmap (in): new node map the discretization shall have on exit
+  \param nodecolmap (in): new column map the discretization shall have on exit
+  \param elerowmap  (in): new element row map the discretization shall have on exit
+  \param elecolmap  (in): new element column map the discretization shall have on exit
+
+  \param assigndegreesoffreedom (in) : if true, resets existing dofsets and performs
+                                       assigning of degrees of freedoms to nodes and
+                                       elements.
+  \param initelements           (in) : if true, build element register classes and
+                                       call Initialize() on each type of finite element
+                                       present
+  \param doboundaryconditions   (in) : if true, build geometry of boundary conditions
+                                       present.
+
+  \note Filled()==true is a prerequisite, Filled()==true on exit
+  */
+  virtual void Redistribute(const Epetra_Map& noderowmap,
+                            const Epetra_Map& nodecolmap,
+                            const Epetra_Map& elerowmap,
+                            const Epetra_Map& elecolmap,
+                            bool assigndegreesoffreedom=true,
+                            bool initelements          =true,
+                            bool doboundaryconditions  =true,
+                            bool killdofs              =true,
+                            bool killcond              =true);
+
+  /*!
     \brief Ghost elements on processors according to provided element column map
 
     Steps taken in this method are:<br>
