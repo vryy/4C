@@ -68,6 +68,9 @@ public:
   /// initialize search tree for structure discretization
   void SetupStructuralDiscretization();
 
+  /// read restart data
+  virtual void ReadRestart(int step);
+
 protected:
 
   /*!

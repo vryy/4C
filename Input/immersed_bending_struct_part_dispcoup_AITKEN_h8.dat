@@ -28,7 +28,7 @@ RANDSEED                        -1
 -----------------------------------------------------------------IO
 OUTPUT_BIN                      yes
 STRUCT_DISP                     yes
-STRUCT_VEL_ACC                  no
+STRUCT_VEL_ACC                  yes
 STRUCT_STRESS                   no
 FLUID_SOL                       yes
 FLUID_VIS                       yes
@@ -100,7 +100,7 @@ MAXTIME                         1.5
 TIMESTEP                        0.5
 NUMSTEP                         2000
 RESULTSEVRY                     1
-RESTARTEVRY                     0
+RESTARTEVRY                     2
 COUPALGO                        iter_stagg_AITKEN_rel_param
 -------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 PREDICTOR                       d(n)

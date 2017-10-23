@@ -31,6 +31,7 @@
 /*----------------------------------------------------------------------*/
 FSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   : AlgorithmBase(comm,DRT::Problem::Instance()->FSIDynamicParams()),
+    adapterbase_ptr_(Teuchos::null),
     use_old_structure_(false)
 {
   // empty constructor

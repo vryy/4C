@@ -37,6 +37,10 @@ NOX::FSI::AitkenRelaxation::AitkenRelaxation(const Teuchos::RCP<NOX::Utils>& uti
     nu_ = 1.0-maxstep_;
 
   minstep_ = p.get("min step size", -1.0);
+
+  restart_ = p.get<int>("restart",0);
+
+  restart_omega_ = p.get<double>("restart_omega",0.0);
 }
 
 
@@ -93,7 +97,12 @@ bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
   const double top = del2_->innerProduct(*del_);
   const double den = del2_->innerProduct(*del2_);
 
-  nu_ = nu_ + (nu_ - 1.)*top/den;
+  // in case of a restart, we use the omega that
+  // was written as restart output
+  if(not restart_)
+    nu_ = nu_ + (nu_ - 1.)*top/den;
+  else
+    nu_=1.0-restart_omega_;
 
   // check constraints for step size
   if (maxstep_ > 0.0 && maxstep_ < 1.0-nu_)
@@ -145,11 +154,14 @@ bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
     out->flush();
   }
 
+  // reset restart flag
+  restart_=false;
+
   return true;
 }
 
 
-double NOX::FSI::AitkenRelaxation::getOmega()
+double NOX::FSI::AitkenRelaxation::GetOmega()
 {
   return 1.-nu_;
 }

@@ -85,6 +85,22 @@ int IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Init(const Teuchos::Parame
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ReadRestart(int step)
+{
+  FSI::Partitioned::ReadRestart(step);
+
+  SetupStructuralDiscretization();
+
+  if(not displacementcoupling_)
+  {
+    CalcArtificialVelocity();
+    CalcFluidTractionsOnStructure();
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Setup()
 {
   // make sure Init(...) was called first

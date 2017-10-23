@@ -63,8 +63,8 @@ UPDATEMATRIX                    no
 MAXTIME                         1
 TIMESTEP                        0.1
 NUMSTEP                         10
-RESULTSEVRY                           1
-RESTARTEVRY                     1
+RESULTSEVRY                     1
+RESTARTEVRY                     7
 COUPALGO                        iter_stagg_AITKEN_rel_param
 --------------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 CONVTOL                         1.0E-7

@@ -34,6 +34,7 @@
 #include <NOX_Epetra_LinearSystem_AztecOO.H>
 
 #include "fsi_algorithm.H"
+#include "../drt_io/io.H"
 
 // forward declarations
 namespace ADAPTER
@@ -81,11 +82,14 @@ public:
   /// return true if nodes at interface are matching
   bool matchingnodes() {return matchingnodes_; }
 
-  /// Open door in the time loop for sliding ale algo to do remeshing
+  /// open door in the time loop for sliding ale algo to do remeshing
   virtual void Remeshing();
 
-  /// Setup of coupling at fsi interface
+  /// setup of coupling at fsi interface
   virtual void SetupCoupling(const Teuchos::ParameterList& fsidyn ,const Epetra_Comm& comm);
+
+  /// read restart data
+  virtual void ReadRestart(int step);
 
 protected:
 
@@ -177,6 +181,9 @@ protected:
 
   /// setup list with default parameters
   virtual void SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
+
+  /// write output
+  virtual void Output();
 
 private:
 

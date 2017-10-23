@@ -13,13 +13,6 @@ Structure:                      One_Step_Theta
 //ELEMENTS    6513
 //NODES       13504
 DIM           3
------------------------------------------------------DISCRETISATION
-NUMFLUIDDIS                     1
-NUMSTRUCDIS                     1
-NUMALEDIS                       0
-NUMARTNETDIS                    0
-NUMTHERMDIS                     0
-NUMAIRWAYSDIS                   0
 --------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Immersed_FSI
 RESTART                         0

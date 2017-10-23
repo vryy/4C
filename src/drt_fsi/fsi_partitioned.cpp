@@ -24,6 +24,7 @@
 #include "../drt_adapter/ad_fld_fluid.H"
 #include "../drt_adapter/ad_fld_fluid_xfsi.H"
 #include "../drt_adapter/ad_ale_fluid.H"
+#include "../drt_adapter/ad_fld_fluid_immersed.H"
 
 #include "../drt_fluid_xfluid/xfluid.H"
 
@@ -934,4 +935,74 @@ void FSI::Partitioned::ExtractPreviousInterfaceSolution()
 {
   idispn_ = StructureField()->ExtractInterfaceDispn();
   iveln_  = FluidToStruct(MBFluidField()->ExtractInterfaceVeln());
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::Partitioned::Output()
+{
+  // call base class version
+  FSI::Algorithm::Output();
+
+  switch (DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->FSIDynamicParams(),"COUPALGO"))
+  {
+  case fsi_iter_stagg_AITKEN_rel_param:
+  {
+    Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> linesearchfactory =
+        noxparameterlist_.sublist("Line Search").
+        get<Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> >("User Defined Line Search Factory");
+    if(linesearchfactory==Teuchos::null)
+      dserror("Could not get UserDefinedFactory from noxparameterlist_");
+    Teuchos::RCP<NOX::FSI::AitkenFactory> aitkenfactory =
+        Teuchos::rcp_dynamic_cast<NOX::FSI::AitkenFactory>(linesearchfactory,true);
+
+    // write aitken relaxation parameter
+    MBFluidField()->FluidField()->DiscWriter()->WriteDouble("omega",aitkenfactory->GetAitken()->GetOmega());
+
+    break;
+  } // AITKEN case
+
+  } // switch-case to be extended for other solver variants if necessary
+
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::Partitioned::ReadRestart(int step)
+{
+  // call base class version
+  FSI::Algorithm::ReadRestart(step);
+
+  switch (DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->FSIDynamicParams(),"COUPALGO"))
+  {
+  case fsi_iter_stagg_AITKEN_rel_param:
+  {
+    double omega = -1234.0;
+
+    if(Teuchos::rcp_dynamic_cast<ADAPTER::FluidImmersed>(MBFluidField()) != Teuchos::null)
+    {
+      IO::DiscretizationReader
+      reader(MBFluidField()->FluidField()->Discretization(),step);
+      omega = reader.ReadDouble("omega");
+    }
+    else if (Teuchos::rcp_dynamic_cast<ADAPTER::FluidAle>(MBFluidField()) != Teuchos::null)
+    {
+      Teuchos::RCP<ADAPTER::FluidAle> fluidale =
+          Teuchos::rcp_dynamic_cast<ADAPTER::FluidAle>(MBFluidField());
+      IO::DiscretizationReader
+      reader(Teuchos::rcp_const_cast<DRT::Discretization>(fluidale->AleField()->Discretization()),step);
+      omega = reader.ReadDouble("omega");
+    }
+    else
+    dserror("You want to restart a partitioned FSI scheme with AITKEN relaxation.\n"
+        "This is only tested for standard ALE FSI and Immersed FSI.\n"
+        "Check the implementation of FSI::Partitioned::ReadRestart.");
+
+    noxparameterlist_.sublist("Line Search").sublist("Aitken").set<int>("restart", step);
+    noxparameterlist_.sublist("Line Search").sublist("Aitken").set<double>("restart_omega", omega);
+
+    break;
+  } // AITKEN case
+
+  } // switch-case to be extended for other solver variants if necessary
 }

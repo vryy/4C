@@ -75,7 +75,7 @@ UPDATEMATRIX                    no
 MAXTIME                         1000.0
 TIMESTEP                        0.1
 NUMSTEP                         2
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 RESTARTEVRY                     1
 COUPALGO                        iter_stagg_AITKEN_rel_param
 --------------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER

@@ -138,11 +138,8 @@ void immersed_problem_drt()
       // read restart step
       const int restart = DRT::Problem::Instance()->Restart();
       if (restart)
-      {
-        // read the restart information, set vectors and variables
         algo->ReadRestart(restart);
-      }
-
+      else
       // additional setup for structural search tree, etc.
       algo->SetupStructuralDiscretization();
 

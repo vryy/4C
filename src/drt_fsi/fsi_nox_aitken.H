@@ -48,8 +48,8 @@ namespace NOX {
           const NOX::Abstract::Vector& dir,
           const NOX::Solver::Generic& s);
 
-      // return relaxation parameter
-      double getOmega();
+      //! return relaxation parameter
+      double GetOmega();
 
     private:
 
@@ -67,6 +67,12 @@ namespace NOX {
 
       //! min step size
       double minstep_;
+
+      //! flag for restart
+      bool restart_;
+
+      //! first omega after restart
+      double restart_omega_;
 
       //! Printing utilities
       Teuchos::RCP<NOX::Utils> utils_;
