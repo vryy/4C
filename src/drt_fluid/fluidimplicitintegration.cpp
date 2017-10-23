@@ -3408,6 +3408,9 @@ void FLD::FluidImplicitTimeInt::Output()
       // (FluidBaseAlgorithm already wrote the mesh) -> HDF5 writer will claim!
       if ((step_!=0) and ((params_->sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("TDS")) != "quasistatic"))
         output_->WriteMesh(step_,time_);
+
+      if(discret_->Comm().MyPID() == 0)
+        std::cout << "====== Restart for field '"<<discret_->Name()<<"' written in step "<< step_ << std::endl;
     }
 
   }
