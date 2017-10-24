@@ -75,6 +75,9 @@ namespace PARTICLE
    /// Front-end for particle dynamics for integrating in time.
   class TimInt : public ADAPTER::Particle
   {
+    // everybody needs friends!
+    friend class TimIntStrategyEllipsoids;
+    friend class TimIntStrategySpheres;
 
   public:
 
@@ -290,7 +293,7 @@ namespace PARTICLE
     virtual Teuchos::RCP<const Epetra_Vector> AngAccn() { return (*angAcc_)(0); }
 
     //! Read-only radii \f$R_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Radiusn() { return (*radius_)(0); }
+    virtual Teuchos::RCP<const Epetra_Vector> Radiusn() { return radius_ != Teuchos::null ? (*radius_)(0) : Teuchos::null; }
 
     //! Read-only densities \f$\rho_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Densityn() { return (*density_)(0); }
@@ -381,6 +384,9 @@ namespace PARTICLE
 
     //! return maximum particle-particle or particle-wall penetration
     double MaximumPenetration() const;
+
+    //! time integration strategy
+    const Teuchos::RCP<const PARTICLE::TimIntStrategyBase>& Strategy() const {return strategy_;};
     //@}
 
     //! @name Extract methods
@@ -490,6 +496,9 @@ namespace PARTICLE
     //! @name General purpose algorithm members
     //@{
 
+    //! Output displacement
+    virtual void OutputDisplacement() const;
+
     //! Set initial fields
     virtual void SetInitialFields();
 
@@ -517,20 +526,14 @@ namespace PARTICLE
     //! Read-only temperatures \f$P_{n+1}\f$
     virtual void UpdatePressure();
 
-    //! initialization of vector for visualization of the particle orientation
-    virtual void InitializeOrientVector();
-
-    //! update of vector for visualization of the particle orientation
-    virtual void RotateOrientVector(double dt);
+    //! wrapper. On top of the output_->WriteVector() it checks that the pointer is not null. In case, it does not write
+    virtual void WriteVector(const std::string name, Teuchos::RCP<Epetra_Vector> vec, const bool isdof = true) const;
 
     //! wrapper. On top of the output_->WriteVector() it checks that the pointer is not null. In case, it does not write
-    virtual void WriteVector(const std::string name, Teuchos::RCP<Epetra_Vector> vec, const bool isdof = true);
+    virtual void WriteVector(const std::string name, Teuchos::RCP<Epetra_MultiVector> vec, const bool isdof = true) const;
 
     //! wrapper. On top of the output_->WriteVector() it checks that the pointer is not null. In case, it does not write
-    virtual void WriteVector(const std::string name, Teuchos::RCP<Epetra_MultiVector> vec, const bool isdof = true);
-
-    //! wrapper. On top of the output_->WriteVector() it checks that the pointer is not null. In case, it does not write
-    virtual void WriteVector(const std::string name, Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > vec, const bool isdof = true);
+    virtual void WriteVector(const std::string name, Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > vec, const bool isdof = true) const;
 
     //! smart wrapper, the update happens only when vectors exist
     inline virtual void UpdateStateVector(const Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> >& stateVector,
@@ -554,6 +557,7 @@ namespace PARTICLE
                                                   //!< map of global DOFs on Dirichlet
                                                   //!< boundary conditions
     Teuchos::RCP<Epetra_Vector> dbcdofs_;         //!< vector of dirichlet bc dofs
+    Teuchos::RCP<const TimIntStrategyBase> strategy_; //!< time integration strategy
     //@}
 
     //! @name Printing and output

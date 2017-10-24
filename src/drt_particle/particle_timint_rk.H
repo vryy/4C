@@ -70,14 +70,6 @@ namespace PARTICLE
     //! state vectors are updated according to the new distribution of particles
     virtual void UpdateStatesAfterParticleTransfer();
 
-    //! update at the end of the time step
-    virtual void Update()
-    {
-      UpdateStepState();
-      UpdateStepTime();
-      return;
-    }
-
     //! write restart
     virtual void OutputRestart
     (
@@ -92,9 +84,6 @@ namespace PARTICLE
       bool& datawritten  //!< (in/out) read and append if
                          //!< it was written at this time step
     );
-
-    //! add restart information to OutputState
-    virtual void AddRestartToOutputState();
 
     //! read and set restart state
     virtual void ReadRestartState();
@@ -125,10 +114,10 @@ namespace PARTICLE
     //! Runge-Kutta scheme 4th order
     void Integrate_RK_Fourth();
 
-    //! update step
-    virtual void UpdateStepState();
-
   private:
+
+    //! output displacement
+    virtual void OutputDisplacement() const;
 
     //! @name General method parameters
     //@{

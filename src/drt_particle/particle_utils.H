@@ -77,6 +77,7 @@ namespace PARTICLE
        default :
        {
          dserror("Only the weight function / problem dimensions 1, 2 and 3 are possible!");
+         break;
        }
      }
      return effectiveDistance;
@@ -84,15 +85,6 @@ namespace PARTICLE
 
     //! inertia, sphere-like particles (I = 2/5 * m * r^2)
     static double ComputeInertia(const double &radius, const double &mass) { return 0.4 * mass * radius * radius; }
-
-    //! Compute the inertia vector
-    //! The most updated radius is used (radius_ vs radiusn_)
-    //! Inertia-vector -> sphere: I = 2/5 * m * r^2
-    static void ComputeInertia(
-      const Teuchos::RCP<const Epetra_Vector> radius,
-      const Teuchos::RCP<const Epetra_Vector> mass,
-      Teuchos::RCP<Epetra_Vector> &inertia,
-      bool trg_createInertiaVector = false);
 
     //! Compute the pressure from the proper speed of sound and the density (small density variation hypothesis)
     static double Density2Pressure(const double& speedOfSound, const double& restDensity, const double& refdensfac, const double& density, const double& exponent)

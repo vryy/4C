@@ -111,6 +111,7 @@ namespace INPAR
       m_newman_multiscale,                     ///< properties of an ion species in an electrolyte solution for multi-scale approach
       m_opti_dens,                             ///< density field for topology optimization
       m_particlemat,                           ///< particle material
+      m_particlemat_ellipsoids,                ///< particle material for ellipsoidal particles
       m_extparticlemat,                        ///< particle/meshfree material, support for thermodynamics, can be meshfree or particle depending on the contact laws
       m_permeable_fluid,                       ///< permeable fluid
       m_plelasthyper,                          ///< general hyperelastic material for finite strain von-Mises plasticity using a semi-smooth Newton strategy (only in combination with such elements!)

@@ -17,6 +17,7 @@
  | headers                                                  ghamm 09/12 |
  *----------------------------------------------------------------------*/
 #include "particle_algorithm.H"
+#include "particle_timint_strategy.H"
 #include "particle_utils.H"
 #include "particleMeshFree_rendering.H"
 #include "particleMeshFree_interaction.H"
@@ -371,6 +372,10 @@ void PARTICLE::Algorithm::InitMaterials()
   default :
   {
     id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat);
+    if(id < 0)
+      id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat_ellipsoids);
+    else if(DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat_ellipsoids) >= 0)
+      dserror("Cannot have materials for spherical and ellipsoidal particles at the same time!");
     break;
   }
   }
@@ -578,7 +583,7 @@ void PARTICLE::Algorithm::BinSizeSafetyCheck(const double dt)
     }
     default :
     {
-      particles_->Radiusn()->MaxValue(&maxrad);
+      maxrad = particles_->Strategy()->MaxRadius();
       break;
     }
     }
@@ -631,7 +636,7 @@ Teuchos::RCP<std::list<int> > PARTICLE::Algorithm::TransferParticles(const bool 
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::TransferParticles");
 
   // leave here in case nothing to do
-  if(particles_->Radiusn()->GlobalLength() == 0)
+  if(particles_->Radiusn() != Teuchos::null and particles_->Radiusn()->GlobalLength() == 0)
     return Teuchos::rcp(new std::list<int>(0));
 
   // Get current displacements

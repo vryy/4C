@@ -61,24 +61,18 @@ PARTICLE::TimIntKickDrift::TimIntKickDrift(
 /* mostly init of collision handling  */
 void PARTICLE::TimIntKickDrift::Init()
 {
+  // preliminary safety checks
+  if(particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::MeshFree)
+    dserror("The kick-drift-kick time integrator can currently exclusively be used for SPH/Meshfree applications!");
   if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM"))
     dserror("No thermal problem possible in kick-drift scheme!");
-
   if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"NO_VELDIFF_TERM")==true and DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"TRANSPORT_VELOCITY")==false)
       dserror("The parameter NO_VELDIFF_TERM only makes sense in combination with TRANSPORT_VELOCITY!");
 
   // call base class init
   PARTICLE::TimIntExpl::Init();
 
-  // decide whether there is particle contact
-  const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
-
-  if(particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::MeshFree)
-  {
-    interHandler_ = Teuchos::rcp(new PARTICLE::ParticleMeshFreeInteractionHandler(discret_, particle_algorithm_, particleparams, initDensity_, restDensity_, refdensfac_));
-  }
-  else
-    dserror("The kick-drift-kick time integrator can currently exclusively be used for SPH/Meshfree applications!");
+  return;
 }
 
 /*----------------------------------------------------------------------*/

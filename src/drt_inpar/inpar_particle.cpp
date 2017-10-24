@@ -229,6 +229,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    DoubleParameter("REL_PENETRATION",-1.0,"relative particle-particle penetration",&particledyn);
    DoubleParameter("REL_PENETRATION_WALL",-1.0,"relative particle-wall penetration",&particledyn);
    DoubleParameter("MAX_VELOCITY",-1.0,"highest particle velocity",&particledyn);
+   DoubleParameter("MAX_ANGULAR_VELOCITY",-1.0,"highest particle angular velocity",&particledyn);
    DoubleParameter("COEFF_RESTITUTION",-1.0,"coefficient of restitution",&particledyn);
    DoubleParameter("COEFF_RESTITUTION_WALL",-1.0,"coefficient of restitution (wall)",&particledyn);
    DoubleParameter("FRICT_COEFF_WALL",-1.0,"friction coefficient for contact particle-wall",&particledyn);

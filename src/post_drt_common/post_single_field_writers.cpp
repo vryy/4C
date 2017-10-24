@@ -591,6 +591,7 @@ void ParticleFilter::WriteAllResults(PostField* field)
 
   writer_->WriteResult("sign", "sign", nodebased, 1);
   writer_->WriteResult("orientation", "orientation", dofbased, field->problem()->num_dim(), 0);
+  writer_->WriteResult("orientation_tensor", "orientation_tensor", nodebased, 9);
 
   // crosslinker stuff
   writer_->WriteResult("numbond", "numbond", nodebased, 1);

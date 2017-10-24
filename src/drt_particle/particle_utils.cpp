@@ -16,28 +16,6 @@
 #include "../drt_mat/particle_mat.H"
 #include "../drt_mat/extparticle_mat.H"
 
-/*-----------------------------------------------------------------------------*/
-/* Compute the inertia vector */
-void PARTICLE::Utils::ComputeInertia(
-  const Teuchos::RCP<const Epetra_Vector> radius,
-  const Teuchos::RCP<const Epetra_Vector> mass,
-  Teuchos::RCP<Epetra_Vector> &inertia,
-  bool trg_createInertiaVector)
-{
-  // checks
-  if (radius == Teuchos::null ||
-      mass == Teuchos::null)
-    dserror("radius or mass vectors are empty");
-
-  // rebuild the inertia vector
-  if (trg_createInertiaVector || inertia == Teuchos::null)
-    inertia = Teuchos::rcp(new Epetra_Vector(mass->Map(), true));
-
-  // compute inertia for every particle
-  for (int lidNode = 0; lidNode < mass->MyLength(); ++lidNode)
-    (*inertia)[lidNode] = ComputeInertia((*radius)[lidNode], (*mass)[lidNode]);
-}
-
 
 /*----------------------------------------------------------------------*/
 /* compute temperature from the specEnthalpy

@@ -19,6 +19,7 @@
 #include "particle_contact.H"
 #include "particle_resulttest.H"
 #include "particle_radius_node.H"
+#include "particle_timint_strategy.H"
 #include "particleMeshFree_interaction.H"
 #include "particleMeshFree_weightFunction.H"
 #include "particleMeshFree_rendering.H"
@@ -28,6 +29,7 @@
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/extparticle_mat.H"
+#include "../drt_mat/matpar_bundle.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -58,6 +60,7 @@ PARTICLE::TimInt::TimInt
   myrank_(actdis->Comm().MyPID()),
   dbcmaps_(Teuchos::null),
   dbcdofs_(Teuchos::null),
+  strategy_(Teuchos::null),
   output_(output),
   printlogo_(true),
   printscreen_(ioparams.get<int>("STDOUTEVRY")),
@@ -172,11 +175,16 @@ PARTICLE::TimInt::TimInt
 /* initialization of time integration */
 void PARTICLE::TimInt::Init()
 {
+  // initialize time integration strategy
+  if(DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat_ellipsoids) >= 0)
+    strategy_ = Teuchos::rcp(new TimIntStrategyEllipsoids(this));
+  else
+    strategy_ = Teuchos::rcp(new TimIntStrategySpheres(this));
+
   // initialize the vectors
   dis_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   vel_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   acc_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
-  radius_  = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
   fifc_ = LINALG::CreateVector(*DofRowMapView(), true);
   mass_ = LINALG::CreateVector(*NodeRowMapView(), true);
 
@@ -274,14 +282,11 @@ void PARTICLE::TimInt::Init()
     angAccn_ = LINALG::CreateVector(*DofRowMapView(),true);
 
     if(writeorientation_)
-    {
       // initialize orientation-vector for visualization
-      orient_ = LINALG::CreateVector(*DofRowMapView(),true);
-      InitializeOrientVector();
-    }
+      orient_ = LINALG::CreateVector(*DofRowMapView());
 
     // create and fill inertia
-    PARTICLE::Utils::ComputeInertia((*radius_)(0), mass_, inertia_, true);
+    strategy_->ComputeInertia();
   }
 
   // output file for energy
@@ -302,24 +307,16 @@ void PARTICLE::TimInt::SetInitialFields()
   // -----------------------------------------//
   // set material properties
   // -----------------------------------------//
-
-  // extract initial particle radius
-  const double initRadius = particle_algorithm_->ParticleMat()->initRadius_;
-
-  // set initial particle radii to initial or specified values
-  for(int i=0; i<discret_->NumMyRowNodes(); ++i)
-  {
-    const ParticleRadiusNode* const particle = dynamic_cast<const ParticleRadiusNode* const>(discret_->lRowNode(i));
-    (*(*radius_)(0))[i] = particle == NULL ? initRadius : particle->Radius();
-  }
+  // set initial particle radii
+  strategy_->SetInitialRadii();
 
   // extract particle density (for now, all particles have identical density)
-  const double initDensity = particle_algorithm_->ParticleMat()->initDensity_;
+  const MAT::PAR::ParticleMat* const particlemat = particle_algorithm_->ParticleMat();
+  const double initDensity = particlemat != NULL ? particlemat->initDensity_ : 0.;
 
   double consistent_problem_volume=DRT::Problem::Instance()->ParticleParams().get<double>("CONSISTENT_PROBLEM_VOLUME");
-  if(consistent_problem_volume<0.0) // particle mass via m = rho * 4/3 * PI *r^3
-    for(int i=0; i<discret_->NumMyRowNodes(); ++i)
-      (*mass_)[i] = initDensity * PARTICLE::Utils::Radius2Volume((*(*radius_)(0))[i]);
+  if(consistent_problem_volume<0.0)
+    strategy_->ComputeMass();
   else // particle mass via problem volume and density
   {
     //boundary particles are excluded for determination of particle mass since they are also not part of the consistent_problem_volume
@@ -424,7 +421,8 @@ void PARTICLE::TimInt::SetInitialFields()
   // initialize displacement field
   // -----------------------------------------//
 
-  double amplitude = DRT::Problem::Instance()->ParticleParams().get<double>("RANDOM_AMPLITUDE");
+  const double amplitude = DRT::Problem::Instance()->ParticleParams().get<double>("RANDOM_AMPLITUDE");
+  const double initRadius = particlemat != NULL ? particlemat->initRadius_ : 0.;
 
   for(int n=0; n<discret_->NumMyRowNodes(); ++n)
   {
@@ -652,12 +650,8 @@ void PARTICLE::TimInt::ComputeAcc(
     }
 
     // compute angular acceleration
-    for(int i=0; i<numrownodes; ++i)
-    {
-      const double invinertia = 1.0/(*inertia_)[i];
-      for(int dim=0; dim<3; ++dim)
-        (*global_angAcc)[i*3+dim] = invinertia * (*m_contact)[i*3+dim];
-    }
+    if(global_angAcc != Teuchos::null)
+      strategy_->ComputeAngularAcceleration(*global_angAcc,*m_contact);
   }
 
   // zero out non-planar entries in case of 2D
@@ -861,7 +855,7 @@ void PARTICLE::TimInt::UpdateStepTime()
 
 void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
 {
-  UpdateExportersIfNecessary((*radius_)(0)->Map(),(*dis_)(0)->Map());
+  UpdateExportersIfNecessary(mass_->Map(),(*dis_)(0)->Map());
 
   UpdateStateVectorMap(dis_);
   UpdateStateVectorMap(vel_);
@@ -894,7 +888,7 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
   UpdateStateVectorMap(radius0_,true);
   UpdateStateVectorMap(radiusDot_,true);
   UpdateStateVectorMap(mass_,true);
-  UpdateStateVectorMap(inertia_,true);
+  strategy_->UpdateInertiaVectorMap();
   UpdateStateVectorMap(temperature_,true);
   UpdateStateVectorMap(pressure_,true);
 
@@ -978,8 +972,9 @@ void PARTICLE::TimInt::ReadRestartState()
   reader.ReadVector(mass_, "mass");
 
 
-  if (particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::MeshFree ||
-      particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::Normal_DEM_thermo)
+  if ((particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::MeshFree ||
+       particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::Normal_DEM_thermo) &&
+       DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat_ellipsoids) < 0)
   {
     // create a dummy vector to extract the radius vector (radiusn_ does not exist)
     Teuchos::RCP<Epetra_Vector> radius = LINALG::CreateVector(*discret_->NodeRowMap(), true);
@@ -997,7 +992,7 @@ void PARTICLE::TimInt::ReadRestartState()
   if(collhandler_ != Teuchos::null)
   {
     // initialize inertia
-    PARTICLE::Utils::ComputeInertia((*radius_)(0), mass_, inertia_, true);
+    strategy_->ComputeInertia();
 
     reader.ReadVector(angVeln_, "ang_velocity");
     angVel_->UpdateSteps(*angVeln_);
@@ -1021,6 +1016,15 @@ void PARTICLE::TimInt::ReadRestartState()
 void PARTICLE::TimInt::PrepareOutput()
 {
   DetermineEnergy();
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* output displacement */
+void PARTICLE::TimInt::OutputDisplacement() const
+{
+  WriteVector("displacement", dis_);
+
   return;
 }
 
@@ -1096,7 +1100,7 @@ void PARTICLE::TimInt::OutputRestart
   output_->ParticleOutput(step_, (*time_)[0], true);
   output_->NewStep(step_, (*time_)[0]);
 
-  WriteVector("displacement", dis_);
+  OutputDisplacement();
   WriteVector("velocity", vel_);
   WriteVector("acceleration", acc_);
 
@@ -1146,8 +1150,7 @@ void PARTICLE::TimInt::OutputRestart
       WriteVector("ang_acceleration", (*angAcc_)(0));
     }
 
-    if(writeorientation_)
-      WriteVector("orientation", orient_);
+    strategy_->OutputOrientation();
   }
 
   // maps are rebuild in every step so that reuse is not possible
@@ -1185,7 +1188,7 @@ void PARTICLE::TimInt::OutputState
   output_->ParticleOutput(step_, (*time_)[0], false);
   output_->NewStep(step_, (*time_)[0]);
 
-  WriteVector("displacement", dis_);
+  OutputDisplacement();
   WriteVector("velocity", vel_);
   WriteVector("radius", radius_, false);
 
@@ -1219,8 +1222,9 @@ void PARTICLE::TimInt::OutputState
 
   WriteVector("modified_velocity", velmod_);
 
-  if(collhandler_ != Teuchos::null and writeorientation_)
-    WriteVector("orientation", orient_);
+  if(collhandler_ != Teuchos::null)
+    strategy_->OutputOrientation();
+
   // maps are rebuild in every step so that reuse is not possible
   // keeps memory usage bounded
   output_->ClearMapCache();
@@ -1237,34 +1241,22 @@ void PARTICLE::TimInt::DetermineEnergy()
   {
     LINALG::Matrix<3,1> gravity_acc = particle_algorithm_->GetGravityAcc(timen_);
 
-    // total kinetic energy
-    kinergy_ = 0.0;
-
     int numrownodes = discret_->NodeRowMap()->NumMyElements();
 
     //energy for all cases besides SPH
     if (collhandler_ != Teuchos::null and particle_algorithm_->ParticleInteractionType()!=INPAR::PARTICLE::MeshFree )
     {
+      // total kinetic energy
+      kinergy_ = strategy_->ComputeKineticEnergy();
+
       for(int i=0; i<numrownodes; ++i)
       {
         double specific_energy = 0.0;
-        double kinetic_energy = 0.0;
-        double rot_energy = 0.0;
 
         for(int dim=0; dim<3; ++dim)
-        {
-          // gravitation
           specific_energy -=  gravity_acc(dim) * (*disn_)[i*3+dim];
 
-          // kinetic energy
-          kinetic_energy += pow((*veln_)[i*3+dim], 2.0 );
-
-          // rotation
-          rot_energy += pow((*angVeln_)[i*3+dim], 2.0);
-        }
-
         intergy_ += (*mass_)[i] * specific_energy;
-        kinergy_ += 0.5 * ((*mass_)[i] * kinetic_energy + (*inertia_)[i] * rot_energy);
       }
       // total external energy not available
       extergy_ = 0.0;
@@ -1635,19 +1627,6 @@ void PARTICLE::TimInt::UpdateStateVectorMap(Teuchos::RCP<Epetra_MultiVector> &st
 }
 
 /*----------------------------------------------------------------------*/
-/* initialization of vector for visualization of the particle orientation */
-void PARTICLE::TimInt::InitializeOrientVector()
-{
-  int numrownodes = discret_->NodeRowMap()->NumMyElements();
-  for(int i=0; i<numrownodes; ++i)
-  {
-    (*orient_)[i*3] = 0.0;
-    (*orient_)[i*3+1] = 0.0;
-    (*orient_)[i*3+2] = 1.0;
-  }
-}
-
-/*----------------------------------------------------------------------*/
 //! update temperatures \f$T_{n}\f$
 void PARTICLE::TimInt::UpdateTemperaturen()
 {
@@ -1747,69 +1726,12 @@ void PARTICLE::TimInt::UpdateStepState()
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* update of vector for visualization of the particle orientation */
-void PARTICLE::TimInt::RotateOrientVector(double dt)
-{
-  int numrownodes = discret_->NodeRowMap()->NumMyElements();
-  for(int i=0; i<numrownodes; ++i)
-  {
-    double angVel[3];
-    double r[3];
-
-    for(int dim=0; dim<3; ++dim)
-    {
-      angVel[dim] = (*angVeln_)[i*3+dim];
-      r[dim] = (*orient_)[i*3+dim];
-    }
-
-    // visualization only valid for 2D when rotating around y-axis
-
-    // simplified/linearized orient vector - just for visualization
-    // delta_r = \Delta t * (ang_vel x r)
-    (*orient_)[i*3]   += dt * (angVel[1] * r[2] - angVel[2] * r[1]);
-    (*orient_)[i*3+1] += dt * (angVel[2] * r[0] - angVel[0] * r[2]);
-    (*orient_)[i*3+2] += dt * (angVel[0] * r[1] - angVel[1] * r[0]);
-    //--------------------------------------------------------------
-
-    //more exactly------------------------------------------------
-//    double d[3];
-//    double norm_ang_vel=0.0;
-//    //norm ang_vel
-//    for(int dim=0; dim<3; ++dim)
-//    {
-//      norm_ang_vel += ang_vel[dim]*ang_vel[dim];
-//    }
-//    norm_ang_vel = sqrt(norm_ang_vel);
-//
-//    if(norm_ang_vel > 1E-10)
-//    {
-//      double scalar = 0.0;
-//      double invnorm_ang_vel = 1.0 / norm_ang_vel;
-//      for(int dim=0; dim<3; ++dim)
-//      {
-//        d[dim] = invnorm_ang_vel * ang_vel[dim];
-//        scalar += d[dim] * r[dim];
-//      }
-//
-//      for(int dim=0; dim<3; ++dim)
-//      {
-//        (*orient_)[i*3+dim] += (1-cos(norm_ang_vel*dt)) * scalar * d[dim] - (1-cos(norm_ang_vel*dt)) * r[dim]
-//              + sin(norm_ang_vel*dt) * ( d[(dim+1)%3] * r[(dim+2)%3] - d[(dim+2)%3] * r[(dim+1)%3] );
-//      }
-//    }
-    //--------------------------------------------------------------
-
-  }
-
-  return;
-}
 
 /*----------------------------------------------------------------------*/
 // wrapper. On top of the output_->WriteVector() it checks that the pointer is not null. In case, it does not write
 void PARTICLE::TimInt::WriteVector(const std::string name,
                                            Teuchos::RCP<Epetra_Vector> vec,
-                                           const bool isdof)
+                                           const bool isdof) const
 {
   if (vec != Teuchos::null)
   {
@@ -1828,7 +1750,7 @@ void PARTICLE::TimInt::WriteVector(const std::string name,
 // wrapper. On top of the output_->WriteVector() it checks that the pointer is not null. In case, it does not write
 void PARTICLE::TimInt::WriteVector(const std::string name,
                                            Teuchos::RCP<Epetra_MultiVector> vec,
-                                           const bool isdof)
+                                           const bool isdof) const
 {
   if (vec != Teuchos::null)
   {
@@ -1847,7 +1769,7 @@ void PARTICLE::TimInt::WriteVector(const std::string name,
 // wrapper. On top of the output_->WriteVector() it checks that the pointer is not null. In case, it does not write
 void PARTICLE::TimInt::WriteVector(const std::string name,
                                    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > vec,
-                                   const bool isdof)
+                                   const bool isdof) const
 {
   if (vec != Teuchos::null && (*vec)(0) != Teuchos::null)
   {

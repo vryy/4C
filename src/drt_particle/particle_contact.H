@@ -17,6 +17,7 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
+#include "../drt_geometry/searchtree_nearestobject.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_inpar/inpar_particle.H"
 #include "particle_node.H"
@@ -82,7 +83,8 @@ namespace PARTICLE
         Teuchos::RCP<Epetra_Vector> disn,
         Teuchos::RCP<Epetra_Vector> veln,
         Teuchos::RCP<Epetra_Vector> angVeln,
-        Teuchos::RCP<Epetra_Vector> radiusn,
+        Teuchos::RCP<const Epetra_Vector> radiusn,
+        Teuchos::RCP<Epetra_Vector> anglen,
         Teuchos::RCP<Epetra_Vector> mass,
         Teuchos::RCP<Epetra_Vector> densityn = Teuchos::null,
         Teuchos::RCP<Epetra_Vector> specEnthalpyn = Teuchos::null);
@@ -132,9 +134,9 @@ namespace PARTICLE
     double young_;
 
     /// minimum expected radius
-    const double r_min_;
+    double r_min_;
     /// maximum expected radius
-    const double r_max_;
+    double r_max_;
     /// dismember radius in case of thermodynamics
     double r_dismember_;
     /// max expected particle velocity
@@ -222,9 +224,6 @@ namespace PARTICLE
     //! @name Global properties in col layout at \f$t_{n+1}\f$ for collision detection
     //@{
     std::vector<ParticleCollData> particleData_;   ///< temporary storage for all particle collision relevant data
-
-    int contactcounter_;
-
   };  // class ParticleCollisionHandlerBase
 
   /*====================================================================*/
@@ -268,33 +267,33 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_FEVector> f_structure);
 
   /// calculate contact with neighboring particles
-  virtual void CalcNeighboringParticlesContact(
-    DRT::Node* particle_i,
-    const ParticleCollData& data_i,
-    const std::list<DRT::Node*>& neighboring_particles,
-    const bool havepbc,
-    const double dt,
-    const Teuchos::RCP<Epetra_Vector>& f_contact,
-    const Teuchos::RCP<Epetra_Vector>& m_contact,
-    const Teuchos::RCP<Epetra_Vector>& specEnthalpyDotn);
+  void CalcNeighboringParticlesContact(
+      DRT::Node*                           particle_i,              //!< i-th particle
+      const ParticleCollData&              data_i,                  //!< collision data associated with i-th particle
+      const std::list<DRT::Node*>&         neighboring_particles,   //!< list of particles adjacent to i-th particle
+      const bool                           havepbc,                 //!< flag indicating periodic boundaries
+      const double                         dt,                      //!< time step size
+      const Teuchos::RCP<Epetra_Vector>&   f_contact,               //!< global force vector
+      const Teuchos::RCP<Epetra_Vector>&   m_contact,               //!< global moment vector
+      const Teuchos::RCP<Epetra_Vector>&   specEnthalpyDotn         //!< global enthalpy vector
+      );
 
   /// calculate contact with neighboring walls
-  virtual void CalcNeighboringWallsContact(
-    DRT::Node* particle_i,
-    const ParticleCollData& data_i,
-    const boost::unordered_map<int, DRT::Element*>& neighboring_walls,
-    const double dt,
-    const Teuchos::RCP<DRT::Discretization>& walldiscret,
-    const Teuchos::RCP<const Epetra_Vector>& walldisn,
-    const Teuchos::RCP<const Epetra_Vector>& wallveln,
-    const Teuchos::RCP<Epetra_Vector>& f_contact,
-    const Teuchos::RCP<Epetra_Vector>& m_contact,
-    const Teuchos::RCP<Epetra_FEVector>& f_structure
-    );
+  void CalcNeighboringWallsContact(
+      DRT::Node*                                        particle_i,          //!< i-th particle
+      const ParticleCollData&                           data_i,              //!< collision data associated with i-th particle
+      const boost::unordered_map<int,DRT::Element*>&    neighboring_walls,   //!< map of wall elements adjacent to i-th particle
+      const double                                      dt,                  //!< time step size
+      const Teuchos::RCP<DRT::Discretization>&          walldiscret,         //!< wall discretization
+      const Teuchos::RCP<const Epetra_Vector>&          walldisn,            //!< wall displacement
+      const Teuchos::RCP<const Epetra_Vector>&          wallveln,            //!< wall velocity
+      const Teuchos::RCP<Epetra_Vector>&                f_contact,           //!< global force vector
+      const Teuchos::RCP<Epetra_Vector>&                m_contact,           //!< global moment vector
+      const Teuchos::RCP<Epetra_FEVector>&              f_structure          //!< global wall force vector
+      );
 
-  ///calculate contact with neighboring heat sources
+  /// calculate contact with neighboring heat sources
   void CalcNeighboringHeatSourcesContact(
-    DRT::Node* particle_i,
     const ParticleCollData& data_i,
     const Teuchos::RCP<boost::unordered_map<int, Teuchos::RCP<HeatSource> > > neighboring_heatSources,
     const Teuchos::RCP<Epetra_Vector>& specEnthalpyDotn);
@@ -328,7 +327,45 @@ namespace PARTICLE
   bool ConsiderNormalAdhesion(const double normalgap) const;
   //@}
 
-  private:
+  protected:
+
+  /// compute contact normal, contact gap, and vectors from particle centers to contact point
+  virtual void ComputeContactPointAndNormalAndGap(
+      LINALG::Matrix<3,1>&      r_iC,     //!< vector from center of particle i to contact point C
+      LINALG::Matrix<3,1>&      r_jC,     //!< vector from center of particle j to contact point C
+      LINALG::Matrix<3,1>&      normal,   //!< contact normal
+      double&                   gap,      //!< contact gap
+      const ParticleCollData&   data_i,   //!< collision data for particle i
+      const ParticleCollData&   data_j    //!< collision data for particle j
+      ) const;
+
+  /// compute contact normal, contact gap, contact point on wall element, and type of nearest contact object
+  virtual void ComputeContactPointAndNormalAndGapAndObjectType(
+      LINALG::Matrix<3,1>&                        C,              //!< contact point on wall element
+      GEO::ObjectType&                            objecttype,     //!< type of nearest contact object
+      LINALG::Matrix<3,1>&                        normal,         //!< contact normal
+      double&                                     gap,            //!< contact gap
+      DRT::Element*                               wallele,        //!< wall element
+      const std::map<int,LINALG::Matrix<3,1> >&   nodecoord,      //!< node coordinates of wall element
+      const ParticleCollData&                     data            //!< particle collision data
+      ) const;
+
+  /// compute relative velocity in contact point between two particles
+  void ComputeRelativeVelocity(
+      LINALG::Matrix<3,1>&         v_rel,    //!< relative velocity between two particles
+      const LINALG::Matrix<3,1>&   r_iC,     //!< vector from center of particle i to contact point C
+      const LINALG::Matrix<3,1>&   r_jC,     //!< vector from center of particle j to contact point C
+      const ParticleCollData&      data_i,   //!< collision data for particle i
+      const ParticleCollData&      data_j    //!< collision data for particle j
+      ) const;
+
+  /// compute relative velocity in contact point between particle and wall element
+  void ComputeRelativeVelocity(
+      LINALG::Matrix<3,1>&         v_rel,   //!< relative velocity between particle and wall element
+      const LINALG::Matrix<3,1>&   r_C,     //!< vector from center of particle to contact point C on wall element
+      const LINALG::Matrix<3,1>&   v_C,     //!< velocity of contact point C on wall element
+      const ParticleCollData&      data     //!< particle collision data
+      ) const;
 
   //! gather *.csv files with normal particle-particle and particle-wall contact forces across all processors
   void GatherNormalContactForcesToFile() const;
@@ -342,6 +379,119 @@ namespace PARTICLE
   //! write particle-particle and particle-wall contact forces into *.csv file every given step
   const int writecontactforcesevery_;
    };  // class ParticleCollisionHandlerDEM
+
+
+  /*====================================================================*/
+  /*!
+   * \brief collision handling with the discrete element method, assuming rigid, ellipsoidal particles
+   *        (for details see bachelor thesis by Christoph Haslinger)
+   * \author fang
+   * \date 09/17
+   */
+  class ParticleCollisionHandlerDEMEllipsoids : public PARTICLE::ParticleCollisionHandlerDEM
+  {
+    public:
+
+      //! constructor
+      ParticleCollisionHandlerDEMEllipsoids(
+          Teuchos::RCP<DRT::Discretization>   discret,             //!< particle discretization
+          Teuchos::RCP<PARTICLE::Algorithm>   particlealgorithm,   //!< particle algorithm
+          const Teuchos::ParameterList&       particledynparams    //!< parameter list
+          );
+
+      //! destructor
+      virtual ~ParticleCollisionHandlerDEMEllipsoids(){return;};
+
+    private:
+
+      //! check whether two ellipsoids collide
+      bool CollisionCheck(
+          const LINALG::Matrix<4,4>&   E_i,   //!< first ellipsoid matrix in homogeneous coordinates
+          const LINALG::Matrix<4,4>&   E_j    //!< second ellipsoid matrix in homogeneous coordinates
+          ) const;
+
+      //! determine whether the generalized eigenproblem A*x = lambda B*x exhibits complex eigenvalues
+      bool ComplexEigenValues(
+          const LINALG::Matrix<4,4>&   A,   //!< first matrix of generalized eigenproblem
+          const LINALG::Matrix<4,4>&   B    //!< second matrix of generalized eigenproblem
+          ) const;
+
+      //! compute contact point on particle surface
+      void ComputeContactPoint(
+          LINALG::Matrix<1,4>&         C_particle,   //!< contact point on particle surface
+          const LINALG::Matrix<4,4>&   T,            //!< translation matrix
+          const LINALG::Matrix<4,4>&   R,            //!< rotation matrix
+          const LINALG::Matrix<1,4>&   C,            //!< contact point inside contact plane
+          const LINALG::Matrix<1,4>&   d             //!< direction vector of contact line
+          ) const;
+
+      //! compute contact normal, contact gap, and vectors from particle centers to contact point
+      void ComputeContactPointAndNormalAndGap(
+          LINALG::Matrix<3,1>&      r_iC,     //!< vector from center of particle i to contact point C
+          LINALG::Matrix<3,1>&      r_jC,     //!< vector from center of particle j to contact point C
+          LINALG::Matrix<3,1>&      normal,   //!< contact normal
+          double&                   gap,      //!< contact gap
+          const ParticleCollData&   data_i,   //!< collision data for particle i
+          const ParticleCollData&   data_j    //!< collision data for particle j
+          ) const;
+
+      //! compute contact normal, contact gap, contact point on wall element, and type of nearest contact object
+      void ComputeContactPointAndNormalAndGapAndObjectType(
+          LINALG::Matrix<3,1>&                        C,              //!< contact point on wall element
+          GEO::ObjectType&                            objecttype,     //!< type of nearest contact object
+          LINALG::Matrix<3,1>&                        normal,         //!< contact normal
+          double&                                     gap,            //!< contact gap
+          DRT::Element*                               wallele,        //!< wall element
+          const std::map<int,LINALG::Matrix<3,1> >&   nodecoord,      //!< node coordinates of wall element
+          const ParticleCollData&                     data            //!< particle collision data
+          ) const;
+
+      //! compute eigenvectors of B^-1 * A and determine whether there are complex eigenvalues
+      bool ComputeEigenVectors(
+          const LINALG::Matrix<4,4>&   A,    //!< first matrix of generalized eigenproblem
+          const LINALG::Matrix<4,4>&   B,    //!< second matrix of generalized eigenproblem
+          LINALG::Matrix<3,1>&         V0,   //!< first eigenvector of generalized eigenproblem
+          LINALG::Matrix<3,1>&         V1,   //!< second eigenvector of generalized eigenproblem
+          LINALG::Matrix<3,1>&         V2,   //!< third eigenvector of generalized eigenproblem
+          LINALG::Matrix<3,1>&         V3    //!< fourth eigenvector of generalized eigenproblem
+          ) const;
+
+      //! compute ellipsoid matrix expressed in homogeneous coordinates
+      void ComputeEllipsoidMatrix(
+          LINALG::Matrix<4,4>&         E,   //!< ellipsoid matrix
+          const LINALG::Matrix<4,4>&   T,   //!< translation matrix
+          const LINALG::Matrix<4,4>&   R    //!< rotation matrix
+          ) const;
+
+      //! compute rotation matrix expressed in homogeneous coordinates
+      void ComputeRotationMatrix(
+          LINALG::Matrix<4,4>&         R,      //!< rotation matrix
+          const LINALG::Matrix<3,1>&   angle   //!< rotation angle vector
+          ) const;
+
+      //! compute matrix transforming an ellipsoid to a unit sphere centered at the origin of the coordinate system
+      void ComputeTransformationMatrix(
+          LINALG::Matrix<4,4>&         M,   //!< transformation matrix
+          const LINALG::Matrix<4,4>&   T,   //!< translation matrix
+          const LINALG::Matrix<4,4>&   R    //!< rotation matrix
+          ) const;
+
+
+      //! compute translation matrix expressed in homogeneous coordinates
+      void ComputeTranslationMatrix(
+          LINALG::Matrix<4,4>&         T,             //!< translation matrix
+          const LINALG::Matrix<3,1>&   displacement   //!< displacement vector
+          ) const;
+
+      //! plain ellipsoid matrix without considering translation and rotation
+      LINALG::Matrix<4,4> ellipsoid_;
+
+      //! scaling matrix S to affinely transform a plain ellipsoid to a plain unit sphere
+      LINALG::Matrix<4,4> S_;
+
+      //! semi-axes of ellipsoidal particles
+      LINALG::Matrix<3,1> semiaxes_;
+  }; // class ParticleCollisionHandlerDEMEllipsoids
 
 
   // event to store future inter-particle collision
@@ -613,6 +763,7 @@ namespace PARTICLE
   struct WallContactPoint {
    int eleid;
    LINALG::Matrix<3,1> point;
+   LINALG::Matrix<3,1> normal;
    double penetration;
    std::map<int,LINALG::Matrix<3,1> > nodalCoordinates;
    std::vector<int> lm;
@@ -623,6 +774,7 @@ namespace PARTICLE
   struct ParticleCollData {
     LINALG::Matrix<3,1> dis;
     LINALG::Matrix<3,1> vel;
+    LINALG::Matrix<3,1> ang;
     LINALG::Matrix<3,1> angvel;
     double ddt;
     double rad;
@@ -631,6 +783,7 @@ namespace PARTICLE
     double specEnthalpy;
     std::vector<int> lm;
     int owner;
+    int id;
   };
 
   //@}

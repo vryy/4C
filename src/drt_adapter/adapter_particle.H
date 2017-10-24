@@ -54,6 +54,7 @@ namespace PARTICLE
 {
   class Algorithm;
   class ParticleMeshFreeInteractionHandler;
+  class TimIntStrategyBase;
 }
 
 namespace MAT
@@ -238,6 +239,8 @@ namespace ADAPTER
     //! check state vector
     virtual void CheckStateVector(std::string vecName, const Teuchos::RCP<const Epetra_Vector> vec, bool trg_showVec) = 0;
 
+    //! access time integration strategy
+    virtual const Teuchos::RCP<const PARTICLE::TimIntStrategyBase>& Strategy() const = 0;
     //@}
 
     //! @name Extract methods

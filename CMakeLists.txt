@@ -652,6 +652,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/hemoglobin_0d_O2_saturation.cpp
   src/drt_mat/air_0d_O2_saturation.cpp
   src/drt_mat/particle_mat.cpp
+  src/drt_mat/particle_mat_ellipsoids.cpp
   src/drt_mat/extparticle_mat.cpp
   src/drt_mat/acoustic.cpp
   src/drt_mat/acoustic_sol.cpp
@@ -1801,6 +1802,7 @@ set(OBJS_DRT_PARTICLE
   src/drt_particle/particle_timint_kickdrift.cpp
   src/drt_particle/particle_timint_expleuler.cpp
   src/drt_particle/particle_timint_rk.cpp
+  src/drt_particle/particle_timint_strategy.cpp
   src/drt_particle/particle_handler.cpp
   src/drt_particle/particle_algorithm.cpp
   src/drt_particle/particle_contact.cpp

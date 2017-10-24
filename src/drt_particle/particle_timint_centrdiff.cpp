@@ -18,6 +18,7 @@
 #include "particle_algorithm.H"
 #include "particle_contact.H"
 #include "particle_heatSource.H"
+#include "particle_timint_strategy.H"
 #include "particle_utils.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/extparticle_mat.H"
@@ -54,56 +55,14 @@ PARTICLE::TimIntCentrDiff::TimIntCentrDiff(
 /* mostly init of collision handling  */
 void PARTICLE::TimIntCentrDiff::Init()
 {
+  // safety checks
+  if(particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
+    dserror("Meshfree particle interaction (SPH) not possible with Central Difference Time Integrator anymore. Choose Kick-Drift scheme!");
+  if(particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_MD)
+    dserror("central difference time integrator cannot be combined with molecular dynamics collision mechanism");
+
   // call base class init
   PARTICLE::TimIntExpl::Init();
-
-  // decide whether there is particle contact
-  const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
-
-  switch(particle_algorithm_->ParticleInteractionType())
-  {
-  case INPAR::PARTICLE::Normal_DEM:
-  case INPAR::PARTICLE::Normal_DEM_thermo:
-  case INPAR::PARTICLE::NormalAndTang_DEM:
-  {
-    collhandler_ = Teuchos::rcp(new PARTICLE::ParticleCollisionHandlerDEM(discret_, particle_algorithm_, particleparams));
-    break;
-  }
-  case INPAR::PARTICLE::MeshFree:
-  {
-    dserror("Meshfree particle interaction (SPH) not possible with Central Difference Time Integrator anymore. Choose Kick-Drift scheme!");
-    break;
-  }
-  case INPAR::PARTICLE::Normal_MD:
-  {
-    dserror("central difference time integrator cannot be combined with molecular dynamics collision mechanism");
-    break;
-  }
-  default:
-  {
-    if(myrank_ == 0)
-      std::cout << "central difference time integrator is not combined with a collision model" << std::endl;
-    break;
-  }
-  }
-
-  // check for validity of input data
-  if(collhandler_ != Teuchos::null)
-  {
-    const int numparticle = (*radius_)(0)->GlobalLength();
-    if(numparticle > 0)
-    {
-      double maxradius = 1.0e12;
-      (*radius_)(0)->MaxValue(&maxradius);
-      if(maxradius > collhandler_->GetMaxRadius())
-        dserror("Input parameter MAX_RADIUS invalid");
-
-      double minradius = -1.0;
-      (*radius_)(0)->MinValue(&minradius);
-      if(minradius < collhandler_->GetMinRadius())
-        dserror("Input parameter MIN_RADIUS invalid");
-    }
-  }
 
   // simple check if the expansion speed is too elevated
   const MAT::PAR::ExtParticleMat* extParticleMat = particle_algorithm_->ExtParticleMat();
@@ -120,6 +79,7 @@ void PARTICLE::TimIntCentrDiff::Init()
     const double thermalExpansionT = extParticleMat->thermalExpansionT_;
 
     // extract the boundaries
+    const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
     const double v_max = particleparams.get<double>("MAX_VELOCITY");
     const double r_max = particleparams.get<double>("MAX_RADIUS");
 
@@ -195,18 +155,19 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
     // new angular-velocities \f$ang_V_{n+1/2}\f$
     angVeln_->Update(dthalf, *(*angAcc_)(0), 1.0);
 
+    // update orientation vector
+    if(writeorientation_)
+      strategy_->RotateOrientVector(dt);
+
     // initialize vectors for contact force and moment
     f_contact = LINALG::CreateVector(*(discret_->DofRowMap()),true);
     m_contact = LINALG::CreateVector(*(discret_->DofRowMap()),true);
 
     if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
-    {
-      collhandler_->Init(disn_, veln_, angVeln_, radiusn_, mass_, densityn_, specEnthalpyn_);
-    }
+      collhandler_->Init(disn_, veln_, angVeln_, radiusn_, orient_, mass_, densityn_, specEnthalpyn_);
     else
-    {
-      collhandler_->Init(disn_, veln_, angVeln_, (*radius_)(0), mass_);
-    }
+      collhandler_->Init(disn_, veln_, angVeln_, Radiusn(), orient_, mass_);
+
     intergy_ = collhandler_->EvaluateParticleContact(dt, f_contact, m_contact, specEnthalpyDotn_, f_structure_);
   }
   //--------------------------------------------------------------
@@ -222,12 +183,7 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
     specEnthalpyn_->Update(dt, *specEnthalpyDotn_, 1.0);
 
   if(collhandler_ != Teuchos::null)
-  {
     angVeln_->Update(dthalf,*angAccn_,1.0);
-    // for visualization of orientation vector
-    if(writeorientation_)
-      RotateOrientVector(dt);
-  }
 
   // apply Dirichlet BCs
   ApplyDirichletBC(timen_, Teuchos::null, veln_, accn_, false);

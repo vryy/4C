@@ -44,26 +44,11 @@ PARTICLE::TimIntExplEuler::TimIntExplEuler(
 /* mostly init of collision handling  */
 void PARTICLE::TimIntExplEuler::Init()
 {
-  // decide whether there is particle contact
-  const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
-
-  switch(particle_algorithm_->ParticleInteractionType())
-  {
-  case INPAR::PARTICLE::Normal_DEM:
-  case INPAR::PARTICLE::Normal_DEM_thermo:
-  case INPAR::PARTICLE::NormalAndTang_DEM:
+  // safety check
+  if(particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM or
+     particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo or
+     particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
     dserror("explicit euler time integrator is not yet combined with discrete element collision mechanism");
-  break;
-  case INPAR::PARTICLE::Normal_MD:
-    collhandler_ = Teuchos::rcp(new PARTICLE::ParticleCollisionHandlerMD(discret_, particle_algorithm_, particleparams));
-  break;
-  default:
-  {
-    if(myrank_ == 0)
-      std::cout << "explicit euler time integrator is not combined with a collision model" << std::endl;
-  }
-  break;
-  }
 
   // call base class init
   PARTICLE::TimIntExpl::Init();
@@ -99,7 +84,7 @@ int PARTICLE::TimIntExplEuler::IntegrateStep()
 //    // angular-velocities \f$ang_V_{n}\f$
 //    ang_veln_->Update(1.0, *(*ang_vel_)(0), 0.0);
 
-    collhandler_->Init(disn_, veln_, angVeln_, (*radius_)(0), mass_);
+    collhandler_->Init(disn_, veln_, angVeln_, (*radius_)(0), orient_, mass_);
 
     intergy_ = collhandler_->EvaluateParticleContact(dt, disn_, veln_);
   }
@@ -112,7 +97,7 @@ int PARTICLE::TimIntExplEuler::IntegrateStep()
 //  if(writeorientation_)
 //  {
 //    // for visualization of orientation vector
-//    RotateOrientVector(dt);
+//    strategy_->RotateOrientVector(dt);
 //  }
 
   return 0;

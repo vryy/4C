@@ -3066,6 +3066,24 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
+  // particle material for ellipsoidal particles
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_Particle_Ellipsoids",
+                                            "particle material for ellipsoidal particles",
+                                            INPAR::MAT::m_particlemat_ellipsoids));
+
+    AddNamedReal(m,"DENSITY","initial mass density");
+    AddNamedInt(m,"DIM","number of spatial dimensions (must be 3 at the moment)");
+    AddNamedRealVector(m,"SEMI-AXES","initial semi-axes of particle","DIM");
+    AddNamedReal(m,"INITRADIUS","initial radius of particle",0.0,true);
+    AddNamedReal(m,"NUE","Poisson ratio",0.0,true);
+    AddNamedReal(m,"YOUNG","Young's modulus",0.0,true);
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // multipurpose meshfree-particle material for additive manufacturing
   {
     Teuchos::RCP<MaterialDefinition> m

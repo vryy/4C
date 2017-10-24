@@ -161,6 +161,9 @@ void PARTICLE::ScatraParticleCoupling::Init(bool restarted)
   // set particle algorithm into time integration
   particles_->SetParticleAlgorithm(Teuchos::rcp(this,false));
 
+  // initialize particle field
+  particles_->Init();
+
   // -------------------------------------------------------------------
   //               initialize all members
   // -------------------------------------------------------------------

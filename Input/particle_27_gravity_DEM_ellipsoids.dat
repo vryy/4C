@@ -8,75 +8,41 @@
                   General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
-Test case for particle DEM:
-- box containing 27 spherical particles with random, normally distributed size
+Test case for particle DEM involving ellipsoids:
+- box containing 27 spherical particles, i.e., ellipsoidal particles with identical
+  semi-axes, with equal size
 - gravitational acceleration in negative z-direction
-- coefficient of restitution e = 0.8 for particle-particle and particle-wall contact
+- ideally elastic particle-particle and particle-wall contact
 - particles fall down initially and then begin to collide with walls and each other
+----------------------------------------------------------------PROBLEM SIZE
+DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Particle
 SHAPEFCT                        Meshfree
-RANDSEED                        1
---------------------------------------------------------------------BINNING STRATEGY
-CUTOFF_RADIUS                   0.035
-BOUNDINGBOX                     -0.050001 -0.050001 -0.080001 0.050001 0.050001 0.080001
-----------------------------------------------------------STRUCTURAL DYNAMIC
-LINEAR_SOLVER                   1
+------------------------------------------------------------BINNING STRATEGY
+CUTOFF_RADIUS                   0.025
+BOUNDINGBOX                     -0.100001 -0.100001 -0.100001 0.100001 0.100001 0.100001
 ------------------------------------------------------------PARTICLE DYNAMIC
 RESULTSEVRY                     10
-RESTARTEVRY                     500
+RESTARTEVRY                     2500
 RESEVRYERGY                     3000
 TIMESTEP                        1.e-4
 NUMSTEP                         3000
 GRAVITY_ACCELERATION            0.0 0.0 -9.81
 PARTICLE_INTERACTION            NormalContact_DEM
-NORMAL_CONTACT_LAW              LinearSpringDamp
-MIN_RADIUS                      0.005
-MAX_RADIUS                      0.015
-REL_PENETRATION_WALL            0.05
+NORMAL_CONTACT_LAW              LinearSpring
+MIN_RADIUS                      0.0
+MAX_RADIUS                      0.0
 MAX_VELOCITY                    1.0
-NORMAL_STIFF                    98646.0
-COEFF_RESTITUTION               0.8
-COEFF_RESTITUTION_WALL          0.8
-YOUNG_WALL                      210.0e9
+NORMAL_STIFF                    6.5764006215146321e+04
+NORMAL_STIFF_WALL               6.5764006215146321e+04
+YOUNG_WALL                      210.e9
 NUE_WALL                        0.3
-RADIUS_DISTRIBUTION             Normal
-RADIUS_DISTRIBUTION_SIGMA       0.004
---------------------------------------------------------------------SOLVER 1
-SOLVER                          UMFPACK
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDSURF                          1
 ------------------------------------------------DESIGN SURFACE PARTICLE WALL
 DSURF                           1
 E 1 - 1
--------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 210.0e9 NUE 0.3 DENS 1.0
-MAT 2 MAT_Particle DENSITY 7.85e3 INITRADIUS 0.01 NUE 0.3 YOUNG 210.0e9
-----------------------------------------------------------RESULT DESCRIPTION
-PARTICLE DIS particle NODE 1 QUANTITY velx VALUE -7.17884375984409739e-02 TOLERANCE 1.e-11
-PARTICLE DIS particle NODE 1 QUANTITY vely VALUE -1.72615733756182832e-01 TOLERANCE 1.e-10
-PARTICLE DIS particle NODE 1 QUANTITY velz VALUE -9.17240863613028451e-02 TOLERANCE 1.e-11
-PARTICLE DIS particle NODE 1 QUANTITY dispx VALUE 9.49119574252316883e-03 TOLERANCE 1.e-12
-PARTICLE DIS particle NODE 1 QUANTITY dispy VALUE 2.97238091215546139e-02 TOLERANCE 1.e-11
-PARTICLE DIS particle NODE 1 QUANTITY dispz VALUE -6.32721870706471623e-02 TOLERANCE 1.e-11
-PARTICLE DIS particle NODE 1 QUANTITY radius VALUE 1.49999999999999994e-02 TOLERANCE 1.e-11
-PARTICLE DIS particle NODE 11 QUANTITY velx VALUE -1.69029308512745668e-01 TOLERANCE 1.e-10
-PARTICLE DIS particle NODE 11 QUANTITY vely VALUE -3.20953795417829257e-01 TOLERANCE 1.e-10
-PARTICLE DIS particle NODE 11 QUANTITY velz VALUE -6.15766287491202435e-01 TOLERANCE 1.e-10
-PARTICLE DIS particle NODE 11 QUANTITY dispx VALUE 3.11973642668083237e-02 TOLERANCE 1.e-11
-PARTICLE DIS particle NODE 11 QUANTITY dispy VALUE 9.93259898809079750e-03 TOLERANCE 1.e-12
-PARTICLE DIS particle NODE 11 QUANTITY dispz VALUE 6.65795437741284052e-02 TOLERANCE 1.e-11
-PARTICLE DIS particle NODE 11 QUANTITY radius VALUE 6.30749877447981701e-03 TOLERANCE 1.e-12
-PARTICLE DIS particle NODE 21 QUANTITY velx VALUE 2.08760704511702679e-02 TOLERANCE 1.e-11
-PARTICLE DIS particle NODE 21 QUANTITY vely VALUE -4.47965087751072966e-01 TOLERANCE 1.e-10
-PARTICLE DIS particle NODE 21 QUANTITY velz VALUE -5.20842936075631216e-02 TOLERANCE 1.e-11
-PARTICLE DIS particle NODE 21 QUANTITY dispx VALUE -3.21887528592664923e-02 TOLERANCE 1.e-11
-PARTICLE DIS particle NODE 21 QUANTITY dispy VALUE 1.36085631906955259e-02 TOLERANCE 1.e-11
-PARTICLE DIS particle NODE 21 QUANTITY dispz VALUE -7.18350249105825650e-02 TOLERANCE 1.e-11
-PARTICLE DIS particle NODE 21 QUANTITY radius VALUE 8.03748315350422127e-03 TOLERANCE 1.e-12
-PARTICLE SPECIAL QUANTITY kineticenergy VALUE 7.15996614511214824e-02 TOLERANCE 1.e-11
-PARTICLE SPECIAL QUANTITY internalenergy VALUE -6.22485580569272834e-01 TOLERANCE 1.e-10
-PARTICLE SPECIAL QUANTITY externalenergy VALUE 0.0 TOLERANCE 1.e-20
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1
@@ -124,4 +90,30 @@ NODE 7 COORD 0.0500000000000001e+00 0.0500000000000001e+00 -0.0800000000000001e+
 NODE 8 COORD 0.0500000000000001e+00 0.0500000000000001e+00 0.0800000000000001e+00
 ----------------------------------------------------------STRUCTURE ELEMENTS
 1 SOLIDH8 HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear EAS none
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 210.e9 NUE 0.3 DENS 1.0
+MAT 2 MAT_Particle_Ellipsoids DENSITY 7.85e3 DIM 3 SEMI-AXES 0.01 0.01 0.01 NUE 0.3 YOUNG 210.e9
+----------------------------------------------------------RESULT DESCRIPTION
+PARTICLE DIS particle NODE 1 QUANTITY dispx VALUE -3.22857240629941845e-03 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 1 QUANTITY dispy VALUE -2.31705210538395504e-02 TOLERANCE 1.0e-11
+PARTICLE DIS particle NODE 1 QUANTITY dispz VALUE -7.00739695406903118e-02 TOLERANCE 1.0e-11
+PARTICLE DIS particle NODE 1 QUANTITY velx VALUE 1.25114546677315852e+00 TOLERANCE 1.0e-09
+PARTICLE DIS particle NODE 1 QUANTITY vely VALUE 6.16287762345186452e-01 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 1 QUANTITY velz VALUE -4.43076903825397994e-01 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 11 QUANTITY dispx VALUE 3.02028604270422399e-02 TOLERANCE 1.e-11
+PARTICLE DIS particle NODE 11 QUANTITY dispy VALUE -3.24610932561518531e-02 TOLERANCE 1.e-11
+PARTICLE DIS particle NODE 11 QUANTITY dispz VALUE 1.69518694982976684e-02 TOLERANCE 1.e-11
+PARTICLE DIS particle NODE 11 QUANTITY velx VALUE -2.21947930356891809e-01 TOLERANCE 1.e-10
+PARTICLE DIS particle NODE 11 QUANTITY vely VALUE 7.50020739136855408e-01 TOLERANCE 1.e-10
+PARTICLE DIS particle NODE 11 QUANTITY velz VALUE -1.82818251711705348e-01 TOLERANCE 1.e-10
+PARTICLE DIS particle NODE 21 QUANTITY dispx VALUE -2.96488986218338031e-02 TOLERANCE 1.e-11
+PARTICLE DIS particle NODE 21 QUANTITY dispy VALUE -7.19073185953659350e-04 TOLERANCE 1.e-13
+PARTICLE DIS particle NODE 21 QUANTITY dispz VALUE -6.02845992587146273e-02 TOLERANCE 1.e-11
+PARTICLE DIS particle NODE 21 QUANTITY velx VALUE 1.66719679862744996e-01 TOLERANCE 1.e-10
+PARTICLE DIS particle NODE 21 QUANTITY vely VALUE 2.70791042760345768e-01 TOLERANCE 1.e-10
+PARTICLE DIS particle NODE 21 QUANTITY velz VALUE -1.47948687936196199e-01 TOLERANCE 1.e-10
+PARTICLE SPECIAL QUANTITY kineticenergy VALUE 4.02485866473079157e-01 TOLERANCE 1.e-10
+PARTICLE SPECIAL QUANTITY internalenergy VALUE -1.42088366534492361e-01 TOLERANCE 1.e-10
+PARTICLE SPECIAL QUANTITY externalenergy VALUE 0.0 TOLERANCE 1.e-20
+PARTICLE SPECIAL QUANTITY maxpenetration VALUE 3.09838441372237150e-04 TOLERANCE 1.e-13
 -------------------------------------------------------------------------END
