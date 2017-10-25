@@ -2109,7 +2109,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::SurfTensionInterPot(
   // scale factor of repulsive part
   double A = DRT::Problem::Instance()->ParticleParams().get<double>("SURFTENSION_POT_A");
   // scale factor of attractive part
-  double B = DRT::Problem::Instance()->ParticleParams().get<double>("SURFTENSION_POT_A");
+  double B = DRT::Problem::Instance()->ParticleParams().get<double>("SURFTENSION_POT_B");
 
   // ratio of repulsive and attractive parts
   double ratio = DRT::Problem::Instance()->ParticleParams().get<double>("SURFTENSION_POT_RATIO");
