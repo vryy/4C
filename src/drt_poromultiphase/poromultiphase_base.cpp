@@ -209,7 +209,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::PrepareTimeStep()
 {
   IncrementTimeAndStep();
 
-  SetSolidPressure(FluidField()->SolidPressure());
+  StructureField()->Discretization()->SetState(1,"porofluid",FluidField()->Phinp());
 
   if(solve_structure_)
   {
@@ -271,16 +271,6 @@ void POROMULTIPHASE::PoroMultiPhaseBase::SetMeshDisp(
     Teuchos::RCP<const Epetra_Vector> disp )
 {
   fluid_->ApplyMeshMovement(disp);
-}
-
-/*------------------------------------------------------------------------*
- | communicate the pressure of the fluid to the structure    vuong 08/16  |
- *------------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhaseBase::SetSolidPressure(
-    Teuchos::RCP<const Epetra_Vector> pressure )
-{
-  const int nds_solidpressure = fluid_->GetDofSetNumberOfSolidPressure();
-  structure_->Discretization()->SetState(nds_solidpressure,"solid_pressure",pressure);
 }
 
 /*----------------------------------------------------------------------*

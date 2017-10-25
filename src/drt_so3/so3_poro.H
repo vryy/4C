@@ -387,10 +387,10 @@ protected:
       );
 
   //! Calculate nonlinear stiffness and internal force for poroelasticity problems (pressure based formulation)
-  void nlnstiff_poroelast_presbased(
+  virtual void nlnstiff_poroelast_presbased(
       std::vector<int>&                   lm,           ///< location matrix
       LINALG::Matrix<numdim_, numnod_>&   disp,         //< current displacements
-      LINALG::Matrix<numnod_,1> &         epreaf,       //< fluid pressure of element
+      const std::vector<double>&          ephi,         //< current primary variable for poro-multiphase flow
       LINALG::Matrix<numdof_,numdof_>*    stiffmatrix,  //< element stiffness matrix
       LINALG::Matrix<numdof_,1>*          force,        //< element internal force vector
       Teuchos::ParameterList&             params        //< algorithmic parameters e.g. time
@@ -413,7 +413,7 @@ protected:
   virtual void coupling_poroelast_presbased(
       std::vector<int>&                            lm,          ///< location matrix
       LINALG::Matrix<numdim_, numnod_>&            disp,        //< current displacements
-      Epetra_SerialDenseMatrix&                    phi,         ///< current primary variable for poro-multiphase flow
+      const std::vector<double>&                   ephi,         // current primary variable for poro-multiphase flow
       Epetra_SerialDenseMatrix&                    couplmat,    ///< element stiffness matrix
       Teuchos::ParameterList&                      params       ///< algorithmic parameters e.g. time
       );
@@ -443,13 +443,13 @@ protected:
                                       LINALG::Matrix<numdof_,1>*              force
                                           );
 
-  //! Gauss Point Loop evaluating stiffness and force for pressure-based formulation
+  //! Gauss Point Loop evaluating stiffness and force
   void GaussPointLoop_presbased(
       Teuchos::ParameterList& params,
       const LINALG::Matrix<numdim_,numnod_>&  xrefe,
       const LINALG::Matrix<numdim_,numnod_>&  xcurr,
       const LINALG::Matrix<numdim_,numnod_>&  nodaldisp,
-      const LINALG::Matrix<numnod_,1> &       epreaf,
+      const std::vector<double>&              ephi,
       LINALG::Matrix<numdof_, numdof_>*       stiffmatrix,
       LINALG::Matrix<numdof_,1>*              force
           );
@@ -460,7 +460,7 @@ protected:
       const LINALG::Matrix<numdim_,numnod_>&  xrefe,
       const LINALG::Matrix<numdim_,numnod_>&  xcurr,
       const LINALG::Matrix<numdim_,numnod_>&  nodaldisp,
-      Epetra_SerialDenseMatrix&               phi,
+      const std::vector<double>&              ephi,
       Epetra_SerialDenseMatrix&               couplmat
                                           );
 
@@ -544,7 +544,7 @@ protected:
       const double&                           J,
       const LINALG::Matrix<numstr_,numdof_>&  bop,
       const LINALG::Matrix<numdim_,numdim_>&  C_inv,
-      const Epetra_SerialDenseMatrix&         solpressderiv,
+      const std::vector<double>&              solpressderiv,
       Epetra_SerialDenseMatrix&               couplmat);
 
   //! fill stiffness matrix and rhs vector for darcy brinkman flow (off diagonal terms)
@@ -602,12 +602,25 @@ protected:
   //! get materials (solid and fluid) for pressure based formulation
   void GetMaterials_presbased();
 
-  //! Compute Solid-pressure derivative w.r.t. primary variable phi at node
+  //! Compute Solid-pressure derivative w.r.t. primary variable at GP
   void ComputeSolPressureDeriv(
-    const Epetra_SerialDenseMatrix&  phi,           ///<< phi at nodes
-    const int&                       numphases,     ///<< number of fluid phases
-    Epetra_SerialDenseMatrix&        solpressderiv  ///<< solid pressure derivative at GP
+    const std::vector<double>&       phiAtGP,           ///<< primary variable
+    const int                        numphases,         ///<< number of fluid phases
+    std::vector<double>&             solidpressderiv    ///<< solid pressure derivative at GP
     );
+
+  //! Compute solid pressure at GP
+  double ComputeSolPressureAtGP(
+      const std::vector<double>&                      phiAtGP
+      );
+
+  //! Compute primary variable for multiphase flow at GP
+  void ComputePrimaryVariableAtGP(
+      const std::vector<double>&                ephi,
+      const int&                                numphases,
+      const LINALG::Matrix<numnod_,1>&          shapefct,
+      std::vector<double>&                      phiAtGP
+  );
 
   //! evaluate shape functions and their derivatives at gauss point
   void ComputeShapeFunctionsAndDerivatives(

@@ -82,8 +82,8 @@ namespace POROMULTIPHASE
     //! calculate relaxation parameter omega
     virtual void CalcOmega(Teuchos::RCP<const Epetra_Vector> phi);
 
-    /// set (relaxed) solid pressure on structure field
-    void SetRelaxedSolidPressure(const double omega) ;
+    /// set (relaxed) fluid solution on structure field
+    void SetRelaxedFluidSolution(const double omega) ;
 
     /// perform aitken
     void AitkenRelaxation(double& omega) ;
@@ -93,14 +93,14 @@ namespace POROMULTIPHASE
     //! displacement increment of the outer loop
     Teuchos::RCP<Epetra_Vector> dispincnp_;
 
-    //! solid pressure at time n+1, iteration i+1
-    Teuchos::RCP<Epetra_Vector> solidpressurenp_;
-    //! solid pressure at time n+1, iteration i
-    Teuchos::RCP<Epetra_Vector> solidpressureoldnp_;
-    //! solide pressure increment: p_s,n+1^i+1 - p_s,n+1^i
-    Teuchos::RCP<Epetra_Vector> solidpressureincnp_;
-    //! solide pressure increment: p_s,n+1^i+1 - p_s,n+1^i
-    Teuchos::RCP<Epetra_Vector> solidpressureincnpold_;
+    //! fluid primary variable at time n+1, iteration i+1
+    Teuchos::RCP<Epetra_Vector> fluidphinp_;
+    //! fluid primary variable at time n+1, iteration i
+    Teuchos::RCP<Epetra_Vector> fluidphioldnp_;
+    //! fluid primary variable increment: phi,n+1^i+1 - phi,n+1^i
+    Teuchos::RCP<Epetra_Vector> fluidphiincnp_;
+    //! old fluid primary variablee increment: phi,n+1^i+1 - phi,n+1^i
+    Teuchos::RCP<Epetra_Vector> fluidphiincnpold_;
 
     //! convergence tolerance
     double ittol_;

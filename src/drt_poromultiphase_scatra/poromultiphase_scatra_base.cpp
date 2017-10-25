@@ -233,6 +233,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::UpdateAndOutput()
   scatra_->ScaTraField()->Update();
   scatra_->ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
   scatra_->ScaTraField()->Output();
+  if (Comm().MyPID()==0)
+  {
+    std::cout<<"Finished POROMULTIPHASESCATRA STEP " << std::setw(5) << std::setprecision(4) << std::scientific << Step() << "/"
+        << std::setw(5) << std::setprecision(4) << std::scientific << NStep() << ": dtstep = " << dttimestep_ << std::endl;
+  }
 }
 
 /*----------------------------------------------------------------------*

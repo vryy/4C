@@ -100,9 +100,6 @@ namespace POROMULTIPHASE
     void SetStructSolution( Teuchos::RCP<const Epetra_Vector> disp,
                             Teuchos::RCP<const Epetra_Vector> vel ) ;
 
-    /// set solid pressure on structure field
-    void SetSolidPressure( Teuchos::RCP<const Epetra_Vector> phi ) ;
-
     /// set scatra solution on fluid field
     void SetScatraSolution(unsigned nds, Teuchos::RCP<const Epetra_Vector> scalars ) ;
 

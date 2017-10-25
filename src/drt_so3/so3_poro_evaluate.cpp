@@ -302,14 +302,15 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
           params);
       }
       else if (la.Size()>2)
-        if(discretization.HasState(2,"solid_pressure"))
+        if(discretization.HasState(1,"porofluid"))
         {
-          // extract local values of the global vectors
-          LINALG::Matrix<numnod_,1> myepreaf(true);
-          ExtractValuesFromGlobalVector(discretization,2,la[2].lm_, NULL, &myepreaf,"solid_pressure");
+          // get primary variables of multiphase porous medium flow
+          std::vector<double> myephi(la[1].Size());
+          Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1,"porofluid");
+          DRT::UTILS::ExtractMyValues(*matrix_state,myephi,la[1].lm_);
 
           //calculate tangent stiffness matrix
-          nlnstiff_poroelast_presbased(lm,mydisp,myepreaf,matptr,&elevec1,params);
+          nlnstiff_poroelast_presbased(lm,mydisp,myephi,matptr,&elevec1,params);
         }
     }
   }
@@ -377,12 +378,15 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
           params);
       }
       else if (la.Size()>2)
-        if(discretization.HasState(2,"solid_pressure"))
+        if(discretization.HasState(1,"porofluid"))
         {
-          // extract local values of the global vectors
-          ExtractValuesFromGlobalVector(discretization,2,la[2].lm_, NULL, &myepreaf,"solid_pressure");
+          // get primary variables of multiphase porous medium flow
+          std::vector<double> myephi(la[1].Size());
+          Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1,"porofluid");
+          DRT::UTILS::ExtractMyValues(*matrix_state,myephi,la[1].lm_);
 
-          nlnstiff_poroelast_presbased(lm,mydisp,myepreaf,matptr,&elevec1,params);
+          //calculate tangent stiffness matrix
+          nlnstiff_poroelast_presbased(lm,mydisp,myephi,matptr,&elevec1,params);
         }
     }
 
@@ -436,27 +440,18 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
     }
     else if (la.Size()>2)
     {
-      if(discretization.HasState(2,"solid_pressure") && discretization.HasState(1,"porofluid"))
+      if(discretization.HasState(1,"porofluid"))
       {
-        //TODO: move this to function, once split is performed
+        // get primary variables of multiphase porous medium flow
         std::vector<double> myephi(la[1].Size());
         Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1,"porofluid");
         DRT::UTILS::ExtractMyValues(*matrix_state,myephi,la[1].lm_);
-        GetMaterials_presbased();
-        const int numphases = fluidmultimat_->NumMat();
-        Epetra_SerialDenseMatrix ephi(numphases, numnod_,true);
 
-        for (int i = 0; i < numnod_; i++)
-        {
-          for (int j = 0; j < numphases; j++)
-          {
-            ephi(j,i) = myephi[i*numphases+j];
-          }
-        }
         LINALG::Matrix<numdim_,numnod_> mydisp(true);
         ExtractValuesFromGlobalVector(discretization,0,la[0].lm_, &mydisp, NULL,"displacement");
 
-        coupling_poroelast_presbased(lm,mydisp,ephi,elemat1_epetra,params);
+        // calculate OD-Matrix
+        coupling_poroelast_presbased(lm,mydisp,myephi,elemat1_epetra,params);
       }
       else
         dserror("cannot find global states displacement or solidpressure");
@@ -502,14 +497,15 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
           params);
     }
     else if (la.Size()>2)
-      if(discretization.HasState(2,"solid_pressure"))
+      if(discretization.HasState(1,"porofluid"))
       {
-        // extract local values of the global vectors
-        LINALG::Matrix<numnod_,1> myepreaf(true);
-        ExtractValuesFromGlobalVector(discretization,2,la[2].lm_, NULL, &myepreaf,"solid_pressure");
+        // get primary variables of multiphase porous medium flow
+        std::vector<double> myephi(la[1].Size());
+        Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1,"porofluid");
+        DRT::UTILS::ExtractMyValues(*matrix_state,myephi,la[1].lm_);
 
         //calculate tangent stiffness matrix
-        nlnstiff_poroelast_presbased(lm,mydisp,myepreaf,NULL,&elevec1,params);
+        nlnstiff_poroelast_presbased(lm,mydisp,myephi,NULL,&elevec1,params);
       }
   }
   break;
@@ -566,20 +562,36 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
                                 iocouplingstress);
         }
         else if (la.Size()>2)
-          if(discretization.HasState(2,"solid_pressure"))
+          if(discretization.HasState(1,"porofluid"))
           {
             // extract local values of the global vectors
-            LINALG::Matrix<numdim_,numnod_> myfluidvel(true);
-            LINALG::Matrix<numnod_,1> myepreaf(true);
-            ExtractValuesFromGlobalVector(discretization,2,la[2].lm_, NULL, &myepreaf,"solid_pressure");
+            //LINALG::Matrix<numdim_,numnod_> myfluidvel(true);
+            //TODO: move this to function, once split is performed
+            //std::vector<double> myephi(la[1].Size());
+            //Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1,"porofluid");
+            //DRT::UTILS::ExtractMyValues(*matrix_state,myephi,la[1].lm_);
 
-            couplstress_poroelast(mydisp,
+            //const int numphases = fluidmultimat_->NumMat();
+            //Epetra_SerialDenseMatrix ephi(numphases, numnod_,true);
+
+            //for (int i = 0; i < numnod_; i++)
+            //{
+            //  for (int j = 0; j < numphases; j++)
+            //  {
+            //    ephi(j,i) = myephi[i*numphases+j];
+            //  }
+            //}
+
+            //LINALG::Matrix<numnod_,1> myepreaf(true);
+            dserror("coupl stress poroelast not yet implemented for pressure-based variant");
+            // TODO:
+            /*couplstress_poroelast(mydisp,
                                   myfluidvel,
                                   myepreaf,
                                   &couplstress,
                                   NULL,
                                   params,
-                                  iocouplingstress);
+                                  iocouplstress);*/
           }
       }
 
@@ -682,7 +694,7 @@ template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast_presbased(
     std::vector<int>&                  lm,           // location matrix
     LINALG::Matrix<numdim_, numnod_>&  disp,         // current displacements
-    LINALG::Matrix<numnod_, 1> &       epreaf,       // current fluid pressure
+    const std::vector<double>&         ephi,         // primary variable for poro-multiphase flow
     LINALG::Matrix<numdof_, numdof_>*  stiffmatrix,  // element stiffness matrix
     LINALG::Matrix<numdof_, 1>*        force,        // element internal force vector
     Teuchos::ParameterList&            params        // algorithmic parameters e.g. time
@@ -713,7 +725,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast_presbased(
                         xrefe,
                         xcurr,
                         disp,
-                        epreaf,
+                        ephi,
                         stiffmatrix,
                         force);
 
@@ -889,7 +901,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoop_presbased(
                                     const LINALG::Matrix<numdim_,numnod_>&  xrefe,
                                     const LINALG::Matrix<numdim_,numnod_>&  xcurr,
                                     const LINALG::Matrix<numdim_,numnod_>&  nodaldisp,
-                                    const LINALG::Matrix<numnod_,1> &       epreaf,
+                                    const std::vector<double>&              ephi,
                                     LINALG::Matrix<numdof_, numdof_>*       stiffmatrix,
                                     LINALG::Matrix<numdof_,1>*              force
                                         )
@@ -921,6 +933,11 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoop_presbased(
   LINALG::Matrix<numnod_,1> shapefct;
   // first derivatives at gp w.r.t. reference coordinates
   LINALG::Matrix<numdim_,numnod_> deriv ;
+
+  // primary variable at GP
+  const int numphases = fluidmultimat_->NumMat();
+  std::vector<double> phiAtGP(numphases);
+
 
   for (int gp=0; gp<numgpt_; ++gp)
   {
@@ -962,7 +979,8 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoop_presbased(
 
     //----------------------------------------------------
     // pressure at integration point
-    double press = shapefct.Dot(epreaf);
+    ComputePrimaryVariableAtGP(ephi,numphases,shapefct,phiAtGP);
+    const double press = ComputeSolPressureAtGP(phiAtGP);
 
     // Right Cauchy-Green tensor = F^T * F
     LINALG::Matrix<numdim_,numdim_> cauchygreen;
@@ -1068,8 +1086,8 @@ template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::coupling_poroelast_presbased(
     std::vector<int>&                                 lm,            // location matrix
     LINALG::Matrix<numdim_, numnod_>&                 disp,          // current displacements
-    Epetra_SerialDenseMatrix&                         phi,           // current primary variable for poro-multiphase flow
-    Epetra_SerialDenseMatrix&                         couplmat,   // element stiffness matrix
+    const std::vector<double>&                        ephi,          // current primary variable for poro-multiphase flow
+    Epetra_SerialDenseMatrix&                         couplmat,      // element stiffness matrix
     Teuchos::ParameterList&                           params)        // algorithmic parameters e.g. time
 {
 
@@ -1100,7 +1118,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::coupling_poroelast_presbased(
                        xrefe,
                        xcurr,
                        disp,
-                       phi,
+                       ephi,
                        couplmat);
 
   return;
@@ -1249,7 +1267,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoopOD_presbased(
     const LINALG::Matrix<numdim_,numnod_>&  xrefe,
     const LINALG::Matrix<numdim_,numnod_>&  xcurr,
     const LINALG::Matrix<numdim_,numnod_>&  nodaldisp,
-    Epetra_SerialDenseMatrix&               phi,
+    const std::vector<double>&              ephi,
     Epetra_SerialDenseMatrix&               couplmat
     )
 {
@@ -1264,10 +1282,10 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoopOD_presbased(
   LINALG::Matrix<numnod_,1> shapefct;           //  shape functions evalulated at gauss point
   LINALG::Matrix<numdim_,numnod_> deriv(true);  //  first derivatives at gausspoint w.r.t. r,s,t
 
-  const int numphases = phi.RowDim();
-  Epetra_SerialDenseMatrix solpressderiv(numnod_,numphases);
-  // compute derivative of solid pressure w.r.t primary variable phi at node
-  ComputeSolPressureDeriv(phi,numphases,solpressderiv);
+  // primary variable and solidpressure derivative at GP
+  const int numphases = fluidmultimat_->NumMat();
+  std::vector<double> phiAtGP(numphases);
+  std::vector<double> solpressderiv(numphases);
 
   //LINALG::Matrix<numdim_,1> xsi;
   for (int gp=0; gp<numgpt_; ++gp)
@@ -1302,6 +1320,10 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoopOD_presbased(
     // inverse Right Cauchy-Green tensor
     LINALG::Matrix<numdim_,numdim_> C_inv(false);
     C_inv.Invert(cauchygreen);
+
+    // compute derivative of solid pressure w.r.t primary variable phi at node
+    ComputePrimaryVariableAtGP(ephi,numphases,shapefct,phiAtGP);
+    ComputeSolPressureDeriv(phiAtGP,numphases,solpressderiv);
 
     // **********************evaluate stiffness matrix and force vector+++++++++++++++++++++++++
 
@@ -1712,71 +1734,116 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ExtractValuesFromGlobalVector(
 }
 
 /*----------------------------------------------------------------------*
- *                                                     kremheller  03/17|
+ * derivative of sol. pres. at GP for multiphase flow   kremheller 10/17|
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeSolPressureDeriv
-(   const Epetra_SerialDenseMatrix&  phi,
-    const int&                       numphases,
-    Epetra_SerialDenseMatrix&        solpressderiv
+void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeSolPressureDeriv(
+    const std::vector<double>&                phiAtGP,
+    const int                                 numphases,
+    std::vector<double>&                      solidpressderiv
+)
+{
+  // zero out everything
+  std::fill(solidpressderiv.begin(), solidpressderiv.end(), 0.0);
+
+  // initialize auxiliary variables
+  std::vector<double> genpress(numphases);
+  std::vector<double> press(numphases);
+  std::vector<double> sat(numphases);
+  Epetra_SerialDenseMatrix helpderiv(numphases,numphases,true);
+  Epetra_SerialDenseMatrix satderiv(numphases,numphases,true);
+  Epetra_SerialDenseMatrix pressderiv(numphases,numphases,true);
+
+  // evaluate the pressures
+  fluidmultimat_->EvaluateGenPressure(genpress,phiAtGP);
+
+  //! transform generalized pressures to true pressure values
+  fluidmultimat_->TransformGenPresToTruePres(genpress,press);
+
+  // explicit evaluation of saturation
+  fluidmultimat_->EvaluateSaturation(sat,phiAtGP,press);
+
+  // calculate the derivative of the pressure (actually first its inverse)
+  fluidmultimat_->EvaluateDerivOfDofWrtPressure(pressderiv,phiAtGP);
+
+  // now invert the derivatives of the dofs w.r.t. pressure to get the derivatives
+  // of the pressure w.r.t. the dofs
+  {
+    Epetra_SerialDenseSolver inverse;
+    inverse.SetMatrix(pressderiv);
+    int err = inverse.Invert();
+    if (err != 0)
+      dserror("Inversion of matrix for pressure derivative failed with error code %d.",err);
+  }
+
+  // calculate derivatives of saturation w.r.t. pressure
+  fluidmultimat_->EvaluateDerivOfSaturationWrtPressure(helpderiv,press);
+
+  // chain rule: the derivative of saturation w.r.t. dof =
+  // (derivative of saturation w.r.t. pressure) * (derivative of pressure w.r.t. dof)
+  satderiv.Multiply('N','N',1.0,helpderiv,pressderiv,0.0);
+
+  // compute derivative of solid pressure w.r.t. dofs with product rule
+  for(int iphase=0; iphase<numphases; iphase++)
+    for(int jphase=0; jphase<numphases; jphase++)
+      solidpressderiv[iphase] +=   pressderiv(jphase,iphase)*sat[jphase]
+                                 + satderiv(jphase,iphase)*press[jphase];
+
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *                                                      kremheller 10/17|
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+double DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeSolPressureAtGP(
+    const std::vector<double>&                   phiAtGP
 )
 {
 
-  //TODO: do we really have to do this inside the solid element
-  //      maybe give the solpressurederive directly to solid element
-  solpressderiv.Scale(0.0);
+  const int numphases = fluidmultimat_->NumMat();
 
-  for (int inode=0; inode < numnod_;inode++)
-  {
-    std::vector<double> phiVec(numphases);
-    std::vector<double> genpress(numphases);
-
-    std::vector<double> press(numphases);
-    std::vector<double> sat(numphases);
-    Epetra_SerialDenseMatrix helpderiv(numphases,numphases,true);
-    Epetra_SerialDenseMatrix satderiv(numphases,numphases,true);
-    Epetra_SerialDenseMatrix pressderiv(numphases,numphases,true);
-
-    // compute phi at node
-    for (int j=0; j < numphases;j++)
-    {
-      phiVec[j]=(phi(j,inode));
-    }
+  // initialize auxiliary variables
+  std::vector<double> genpress(numphases, 0.0);
+  std::vector<double> sat(numphases, 0.0);
+  std::vector<double> press(numphases, 0.0);
 
     // evaluate the pressures
-    fluidmultimat_->EvaluateGenPressure(genpress,phiVec);
+  fluidmultimat_->EvaluateGenPressure(genpress,phiAtGP);
 
-    //! transform generalized pressures to true pressure values
-    fluidmultimat_->TransformGenPresToTruePres(genpress,press);
+  //! transform generalized pressures to true pressure values
+  fluidmultimat_->TransformGenPresToTruePres(genpress,press);
 
-    // explicit evaluation of saturation
-    fluidmultimat_->EvaluateSaturation(sat,phiVec,press);
+  // explicit evaluation of saturation
+  fluidmultimat_->EvaluateSaturation(sat,phiAtGP,press);
 
-    // calculate the derivative of the pressure (actually first its inverse)
-    fluidmultimat_->EvaluateDerivOfDofWrtPressure(pressderiv,phiVec);
+  // solid pressure = sum (S_i*p_i)
+  const double solidpressure = std::inner_product(sat.begin(),sat.end(),press.begin(),0.0);
 
-    // now invert the derivatives of the dofs w.r.t. pressure to get the derivatives
-    // of the pressure w.r.t. the dofs
+  return solidpressure;
+}
+
+/*----------------------------------------------------------------------*
+ * compute primary variable at GP for multiphase flow   kremheller 10/17|
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputePrimaryVariableAtGP(
+    const std::vector<double>&                ephi,
+    const int&                                numphases,
+    const LINALG::Matrix<numnod_,1>&          shapefct,
+    std::vector<double>&                      phiAtGP
+)
+{
+  // zero out everything
+  std::fill(phiAtGP.begin(), phiAtGP.end(), 0.0);
+  // compute phi at GP = phi * shapefunction
+  for (int i = 0; i < numnod_; i++)
+  {
+    for (int j = 0; j < numphases; j++)
     {
-      Epetra_SerialDenseSolver inverse;
-      inverse.SetMatrix(pressderiv);
-      int err = inverse.Invert();
-      if (err != 0)
-        dserror("Inversion of matrix for pressure derivative failed with error code %d.",err);
+      phiAtGP[j] += shapefct(i)*ephi[i*numphases+j];
     }
-
-    // calculate derivatives of saturation w.r.t. pressure
-    fluidmultimat_->EvaluateDerivOfSaturationWrtPressure(helpderiv,phiVec);
-
-    // chain rule: the derivative of saturation w.r.t. dof =
-    // (derivative of saturation w.r.t. pressure) * (derivative of pressure w.r.t. dof)
-    satderiv.Multiply('N','N',1.0,helpderiv,pressderiv,0.0);
-
-    // compute derivative of solid pressure w.r.t. dofs with product rule
-    for(int iphase=0; iphase<numphases; iphase++)
-      for(int jphase=0; jphase<numphases; jphase++)
-        solpressderiv(inode,iphase) +=   pressderiv(jphase,iphase)*sat[jphase]
-                                        + satderiv(jphase,iphase)*press[jphase];
   }
 
   return;
@@ -2992,7 +3059,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectorsOD_presbased(
     const double&                           J,
     const LINALG::Matrix<numstr_,numdof_>&  bop,
     const LINALG::Matrix<numdim_,numdim_>&  C_inv,
-    const Epetra_SerialDenseMatrix&         solpressderiv,
+    const std::vector<double>&              solpressderiv,
     Epetra_SerialDenseMatrix&               couplmat)
 {
 
@@ -3008,7 +3075,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectorsOD_presbased(
   static LINALG::Matrix<numdof_,1> cinvb(true);
   cinvb.MultiplyTN(bop,C_inv_vec);
 
-  const int numphases = solpressderiv.ColDim();
+  const int numphases = fluidmultimat_->NumMat();
 
   {
     for (int i=0; i<numnod_; i++)
@@ -3026,7 +3093,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectorsOD_presbased(
             /*-------structure- fluid pressure coupling: "stress term"
              -B^T . ( -1*J*C^-1 ) * Dp
              */
-            couplmat(fi+j, fk_press) +=   detJ_w * cinvb(fi+j) * ( -1.0) * J * shapefct(k) * solpressderiv(k,iphase)
+            couplmat(fi+j, fk_press) +=   detJ_w * cinvb(fi+j) * ( -1.0) * J * shapefct(k) * solpressderiv[iphase]
                                                 ;
           }
         }
