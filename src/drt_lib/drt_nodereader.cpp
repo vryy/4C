@@ -20,6 +20,7 @@
 #include "../drt_nurbs_discret/drt_control_point.H"
 #include "../drt_immersed_problem/immersed_node.H"
 #include "../drt_particle/particle_node.H"
+#include "../drt_particle/particle_ellipsoid_node.H"
 #include "../drt_particle/particle_radius_node.H"
 #include "../drt_fiber/drt_fiber_node.H"
 #include "../drt_io/io_pstream.H"
@@ -328,13 +329,13 @@ void NodeReader::Read()
                 break;
               }
           }
-          // this node is a particle (with or without specified radius)
-          else if (tmp=="PARTICLE" or tmp=="RPARTICLE")
+          // this node is a spherical particle (with or without specified radius) or an ellipsoidal particle
+          else if (tmp=="PARTICLE" or tmp=="RPARTICLE" or tmp=="ELLIPSOID")
           {
             double coords[3];
             int nodeid;
             file >> nodeid >> tmp2 >> coords[0] >> coords[1] >> coords[2];
-            nodeid--;
+            --nodeid;
             maxnodeid = std::max(maxnodeid, nodeid)+1;
             if (tmp2!="COORD") dserror("failed to read node %d",nodeid);
             Teuchos::RCP<DRT::Discretization> diss = DRT::Problem::Instance()->GetDis("particle");
@@ -343,13 +344,42 @@ void NodeReader::Read()
             Teuchos::RCP<DRT::Node> particle;
             if(tmp=="PARTICLE")
               particle = Teuchos::rcp(new PARTICLE::ParticleNode(nodeid,coords,myrank));
-            else
+            else if(tmp=="RPARTICLE")
             {
               double radius(0.);
               file >> tmp2 >> radius;
               if(tmp2!="RADIUS")
                 dserror("Invalid syntax for RPARTICLE!");
               particle = Teuchos::rcp(new PARTICLE::ParticleRadiusNode(nodeid,coords,radius,myrank));
+            }
+            else
+            {
+              double semiaxes[3] = {0.,0.,0.}, orientation[3] = {0.,0.,0.};
+              int length = file.tellg();
+              file >> tmp2;
+              if(tmp2=="SEMI-AXES")
+              {
+                file >> semiaxes[0] >> semiaxes[1] >> semiaxes[2];
+                length = file.tellg();
+                file >> tmp;
+                if(tmp=="ORIENT")
+                  file >> orientation[0] >> orientation[1] >> orientation[2];
+                else
+                  file.seekg(length);
+              }
+              else if(tmp2=="ORIENT")
+              {
+                file >> orientation[0] >> orientation[1] >> orientation[2];
+                length = file.tellg();
+                file >> tmp;
+                if(tmp=="SEMI-AXES")
+                  file >> semiaxes[0] >> semiaxes[1] >> semiaxes[2];
+                else
+                  file.seekg(length);
+              }
+              else
+                file.seekg(length);
+              particle = Teuchos::rcp(new PARTICLE::ParticleEllipsoidNode(nodeid,coords,semiaxes,orientation,myrank));
             }
             diss->AddNode(particle);
 

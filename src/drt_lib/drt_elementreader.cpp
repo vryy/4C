@@ -519,7 +519,7 @@ void ParticleReader::Partition()
           nodeid -= 1;
 
           // this node is a particle
-          if (nodetype=="PARTICLE" or nodetype=="RPARTICLE")
+          if (nodetype=="PARTICLE" or nodetype=="RPARTICLE" or nodetype=="ELLIPSOID")
           {
             particleids.push_back(nodeid);
           }
