@@ -293,7 +293,7 @@ namespace PARTICLE
     virtual Teuchos::RCP<const Epetra_Vector> AngAccn() { return (*angAcc_)(0); }
 
     //! Read-only radii \f$R_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Radiusn() { return radius_ != Teuchos::null ? (*radius_)(0) : Teuchos::null; }
+    virtual Teuchos::RCP<const Epetra_Vector> Radiusn() { return (*radius_)(0); }
 
     //! Read-only densities \f$\rho_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Densityn() { return (*density_)(0); }

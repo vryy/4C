@@ -16,6 +16,7 @@
 /*--------------------------------------------------------------------------*/
 #include "particle_timint_strategy.H"
 
+#include "particle_ellipsoid_node.H"
 #include "particle_radius_node.H"
 #include "particle_timint.H"
 
@@ -139,17 +140,6 @@ void PARTICLE::TimIntStrategySpheres::ComputeMass() const
 
 
 /*----------------------------------------------------------------------*
- | extract maximum particle radius                           fang 10/17 |
- *----------------------------------------------------------------------*/
-double PARTICLE::TimIntStrategySpheres::MaxRadius() const
-{
-  double maxradius(0.);
-  timint_->Radiusn()->MaxValue(&maxradius);
-  return maxradius;
-}
-
-
-/*----------------------------------------------------------------------*
  | output particle orientation                               fang 10/17 |
  *----------------------------------------------------------------------*/
 void PARTICLE::TimIntStrategySpheres::OutputOrientation() const
@@ -246,6 +236,17 @@ void PARTICLE::TimIntStrategySpheres::RotateOrientVector(
 
 
 /*----------------------------------------------------------------------*
+ | set initial particle orientation                          fang 10/17 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::TimIntStrategySpheres::SetInitialOrientation() const
+{
+  dserror("Function not yet implemented for spherical particles!");
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | set initial particle radii                                fang 10/17 |
  *----------------------------------------------------------------------*/
 void PARTICLE::TimIntStrategySpheres::SetInitialRadii() const
@@ -277,62 +278,35 @@ void PARTICLE::TimIntStrategySpheres::UpdateInertiaVectorMap() const
 
 
 /*----------------------------------------------------------------------*
+ | update map of radius vector                               fang 10/17 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::TimIntStrategySpheres::UpdateRadiusVectorMap() const
+{
+  timint_->UpdateStateVectorMap(timint_->radius_,true);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | constructor                                               fang 10/17 |
  *----------------------------------------------------------------------*/
 PARTICLE::TimIntStrategyEllipsoids::TimIntStrategyEllipsoids(
     TimInt* const   timint   //!< time integrator
     ) :
     // call base class constructor
-    TimIntStrategyBase(timint),
-    semiaxes_(true)
+    TimIntStrategyBase(timint)
 {
+  // safety checks
+  if(DRT::INPUT::IntegralValue<INPAR::PARTICLE::DynamicType>(DRT::Problem::Instance()->ParticleParams(),"DYNAMICTYP") != INPAR::PARTICLE::dyna_centrdiff and
+     DRT::INPUT::IntegralValue<INPAR::PARTICLE::DynamicType>(DRT::Problem::Instance()->ParticleParams(),"DYNAMICTYP") != INPAR::PARTICLE::dyna_rk2)
+    dserror("Only central differencing and RK2 available for ellipsoids!");
+
   // set flag in time integrator
   timint_->writeorientation_ = true;
 
-  // extract material parameters for ellipsoidal particles
-  const int matid = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat_ellipsoids);
-  if(matid < 0)
-    dserror("Invalid material ID!");
-  const MAT::PAR::ParticleMatEllipsoids* const particlematellipsoids = dynamic_cast<const MAT::PAR::ParticleMatEllipsoids* const>(DRT::Problem::Instance()->Materials()->ParameterById(matid));
-  if(particlematellipsoids == NULL)
-    dserror("Couldn't extract material parameters for ellipsoidal particles!");
-
-  // extract semi-axes of ellipsoidal particles
-  semiaxes_ = particlematellipsoids->SemiAxes();
-
-  // check semi-axes
-  if(semiaxes_(0) <= 0. or semiaxes_(1) <= 0. or semiaxes_(2) <= 0.)
-    dserror("Must have positive semi-axes!");
-
-  // additional safety checks
-  switch(DRT::INPUT::IntegralValue<INPAR::PARTICLE::DynamicType>(DRT::Problem::Instance()->ParticleParams(),"DYNAMICTYP"))
-  {
-    case INPAR::PARTICLE::dyna_centrdiff:
-    {
-      if(semiaxes_(0) != semiaxes_(1) and semiaxes_(0) != semiaxes_(2) and semiaxes_(1) != semiaxes_(2))
-        dserror("For ellipsoids with three different semi-axes, central differencing is unstable! Use RK2 time integration instead!");
-      if(timint->particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM and
-        (semiaxes_(0) != semiaxes_(1) or semiaxes_(0) != semiaxes_(2) or semiaxes_(1) != semiaxes_(2)))
-        dserror("For ellipsoids with tangential contact forces, central differencing is unstable! Use RK2 time integration instead!");
-      break;
-    }
-
-    case INPAR::PARTICLE::dyna_rk2:
-    {
-      if(semiaxes_(0) == semiaxes_(1) and semiaxes_(0) == semiaxes_(2))
-        dserror("For spherical particles, better use central differencing!");
-      if(timint->particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM and
-        (semiaxes_(0) == semiaxes_(1) or semiaxes_(0) == semiaxes_(2) or semiaxes_(1) == semiaxes_(2)))
-        dserror("For spheroids with normal contact, better use central differencing!");
-      break;
-    }
-
-    default:
-    {
-      dserror("Only central differencing and RK2 available for ellipsoids!");
-      break;
-    }
-  }
+  // initialize radius vector to store semi-axes of ellipsoidal particles
+  timint->radius_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0,0,timint->DofRowMapView(),true));
 
   return;
 };
@@ -404,21 +378,20 @@ void PARTICLE::TimIntStrategyEllipsoids::ComputeInertia() const
   // initialize inertia vector
   timint_->inertia_ = Teuchos::rcp(new Epetra_Vector(*timint_->discret_->DofRowMap(),true));
 
-  // precompute quantities
-  const double semiaxes_0_sq = semiaxes_(0)*semiaxes_(0);
-  const double semiaxes_1_sq = semiaxes_(1)*semiaxes_(1);
-  const double semiaxes_2_sq = semiaxes_(2)*semiaxes_(2);
-  const double inertia_0 = semiaxes_1_sq+semiaxes_2_sq;
-  const double inertia_1 = semiaxes_0_sq+semiaxes_2_sq;
-  const double inertia_2 = semiaxes_0_sq+semiaxes_1_sq;
-
   // compute inertia for every particle
   for(int inode=0; inode<timint_->mass_->MyLength(); ++inode)
   {
+    // precompute quantities
     const double prefactor = .2*(*timint_->mass_)[inode];
-    (*timint_->inertia_)[inode*3] = prefactor*inertia_0;
-    (*timint_->inertia_)[inode*3+1] = prefactor*inertia_1;
-    (*timint_->inertia_)[inode*3+2] = prefactor*inertia_2;
+    const double semiaxis_0 = (*(*timint_->radius_)(0))[inode*3];
+    const double semiaxis_1 = (*(*timint_->radius_)(0))[inode*3+1];
+    const double semiaxis_2 = (*(*timint_->radius_)(0))[inode*3+2];
+    const double semiaxis_0_sq = semiaxis_0*semiaxis_0;
+    const double semiaxis_1_sq = semiaxis_1*semiaxis_1;
+    const double semiaxis_2_sq = semiaxis_2*semiaxis_2;
+    (*timint_->inertia_)[inode*3] = prefactor*(semiaxis_1_sq+semiaxis_2_sq);
+    (*timint_->inertia_)[inode*3+1] = prefactor*(semiaxis_0_sq+semiaxis_2_sq);
+    (*timint_->inertia_)[inode*3+2] = prefactor*(semiaxis_0_sq+semiaxis_1_sq);
   }
 
   return;
@@ -477,18 +450,12 @@ double PARTICLE::TimIntStrategyEllipsoids::ComputeKineticEnergy() const
  *----------------------------------------------------------------------*/
 void PARTICLE::TimIntStrategyEllipsoids::ComputeMass() const
 {
-  timint_->mass_->PutScalar(timint_->particle_algorithm_->ParticleMat()->initDensity_*4./3.*M_PI*semiaxes_(0)*semiaxes_(1)*semiaxes_(2));
+  // loop over all particles
+  for(int i=0; i<timint_->discret_->NumMyRowNodes(); ++i)
+    // particle mass: m = rho * 4/3 * PI * r1 * r2 * r3
+    (*timint_->mass_)[i] = timint_->particle_algorithm_->ParticleMat()->initDensity_*4./3.*M_PI*(*(*timint_->radius_)(0))[i*3]*(*(*timint_->radius_)(0))[i*3+1]*(*(*timint_->radius_)(0))[i*3+2];
 
   return;
-}
-
-
-/*----------------------------------------------------------------------*
- | extract maximum particle radius                           fang 10/17 |
- *----------------------------------------------------------------------*/
-double PARTICLE::TimIntStrategyEllipsoids::MaxRadius() const
-{
-  return semiaxes_.MaxValue();
 }
 
 
@@ -507,14 +474,14 @@ void PARTICLE::TimIntStrategyEllipsoids::OutputOrientation() const
   static LINALG::Matrix<3,1> orient;
   static LINALG::Matrix<3,3> E, E_rot, R, temp;
 
-  // construct plain ellipsoid matrix without considering translation and rotation
-  E.Clear();
-  for(unsigned i=0; i<3; ++i)
-    E(i,i) = semiaxes_(i);
-
   // loop over all particles
   for(int inode=0; inode<timint_->discret_->NodeRowMap()->NumMyElements(); ++inode)
   {
+    // construct plain ellipsoid matrix without considering translation and rotation
+    E.Clear();
+    for(unsigned dim=0; dim<3; ++dim)
+      E(dim,dim) = (*(*timint_->radius_)(0))[inode*3+dim];
+
     // extract orientation of current particle
     for(int dim=0; dim<3; ++dim)
       orient(dim) = (*timint_->orient_)[inode*3+dim];
@@ -640,10 +607,10 @@ void PARTICLE::TimIntStrategyEllipsoids::RotateOrientVector(
       const double sinphi = sin(phi);
 
       // express rotation angle increment as quaternion
-      qinc(0)= sinphi*angVeln(0)*angVelinv;
-      qinc(1)= sinphi*angVeln(1)*angVelinv;
-      qinc(2)= sinphi*angVeln(2)*angVelinv;
-      qinc(3)= cos(phi);
+      qinc(0) = sinphi*angVeln(0)*angVelinv;
+      qinc(1) = sinphi*angVeln(1)*angVelinv;
+      qinc(2) = sinphi*angVeln(2)*angVelinv;
+      qinc(3) = cos(phi);
 
       // add rotation angle increment via quaternion product
       LARGEROTATIONS::quaternionproduct(q,qinc,qn);
@@ -662,11 +629,72 @@ void PARTICLE::TimIntStrategyEllipsoids::RotateOrientVector(
 
 
 /*----------------------------------------------------------------------*
+ | set initial particle orientation                          fang 10/17 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::TimIntStrategyEllipsoids::SetInitialOrientation() const
+{
+  // safety check
+  if(timint_->orient_ == Teuchos::null)
+    dserror("Particle orientation vector has not yet been initialized!");
+
+  // loop over all particles
+  for(int i=0; i<timint_->discret_->NumMyRowNodes(); ++i)
+  {
+    // extract current particle
+    const ParticleEllipsoidNode* const particle = dynamic_cast<const ParticleEllipsoidNode* const>(timint_->discret_->lRowNode(i));
+    if(particle == NULL)
+      dserror("Couldn't extract ellipsoidal particle!");
+
+    // set initial orientation of current particle
+    for(unsigned dim=0; dim<3; ++dim)
+      (*timint_->orient_)[i*3+dim] = particle->Orientation()(dim);
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | set initial particle radii                                fang 10/17 |
  *----------------------------------------------------------------------*/
 void PARTICLE::TimIntStrategyEllipsoids::SetInitialRadii() const
 {
-  // nothing here at the moment
+  // extract material parameters for ellipsoidal particles
+  const int matid = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat_ellipsoids);
+  if(matid < 0)
+    dserror("Invalid material ID!");
+  const MAT::PAR::ParticleMatEllipsoids* const particlematellipsoids = dynamic_cast<const MAT::PAR::ParticleMatEllipsoids* const>(DRT::Problem::Instance()->Materials()->ParameterById(matid));
+  if(particlematellipsoids == NULL)
+    dserror("Couldn't extract material parameters for ellipsoidal particles!");
+
+  // initialize pointer to semi-axes of ellipsoidal particles
+  const LINALG::Matrix<3,1>* semiaxes(NULL);
+
+  // set initial particle semi-axes to default or individually specified values
+  for(int i=0; i<timint_->discret_->NumMyRowNodes(); ++i)
+  {
+    // extract current particle
+    const ParticleEllipsoidNode* const particle = dynamic_cast<const ParticleEllipsoidNode* const>(timint_->discret_->lRowNode(i));
+    if(particle == NULL)
+      dserror("Couldn't extract ellipsoidal particle!");
+
+    // first case: individually specified semi-axes
+    if(particle->SemiAxes()(0) > 0. and particle->SemiAxes()(1) > 0. and particle->SemiAxes()(2) > 0.)
+      semiaxes = &particle->SemiAxes();
+
+    // second case: default semi-axes
+    else if(abs(particle->SemiAxes()(0)) < 1.e-16 and abs(particle->SemiAxes()(1)) < 1.e-16 and abs(particle->SemiAxes()(2)) < 1.e-16
+        and particlematellipsoids->SemiAxes()(0) > 0. and particlematellipsoids->SemiAxes()(1) > 0. and particlematellipsoids->SemiAxes()(2) > 0.)
+      semiaxes = &particlematellipsoids->SemiAxes();
+
+    // third case: invalid semi-axes
+    else
+      dserror("Must have positive semi-axes!");
+
+    // set semi-axes
+    for(unsigned dim=0; dim<3; ++dim)
+      (*(*timint_->radius_)(0))[i*3+dim] = (*semiaxes)(dim);
+  }
 
   return;
 }
@@ -678,6 +706,17 @@ void PARTICLE::TimIntStrategyEllipsoids::SetInitialRadii() const
 void PARTICLE::TimIntStrategyEllipsoids::UpdateInertiaVectorMap() const
 {
   timint_->UpdateStateVectorMap(timint_->inertia_);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | update map of radius vector                               fang 10/17 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::TimIntStrategyEllipsoids::UpdateRadiusVectorMap() const
+{
+  timint_->UpdateStateVectorMap(timint_->radius_);
 
   return;
 }

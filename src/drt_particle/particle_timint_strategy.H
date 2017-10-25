@@ -67,9 +67,6 @@ namespace PARTICLE
       //! compute mass vector
       virtual void ComputeMass() const = 0;
 
-      //! extract maximum particle radius
-      virtual double MaxRadius() const = 0;
-
       //! output particle orientation
       virtual void OutputOrientation() const = 0;
 
@@ -85,11 +82,17 @@ namespace PARTICLE
           const double   dt   //!< time step size
           ) const = 0;
 
+      //! set initial particle orientation
+      virtual void SetInitialOrientation() const = 0;
+
       //! set initial particle radii
       virtual void SetInitialRadii() const = 0;
 
       //! update map of inertia vector
       virtual void UpdateInertiaVectorMap() const = 0;
+
+      //! update map of radius vector
+      virtual void UpdateRadiusVectorMap() const = 0;
 
     protected:
 
@@ -133,9 +136,6 @@ namespace PARTICLE
       //! compute mass vector
       void ComputeMass() const;
 
-      //! extract maximum particle radius
-      double MaxRadius() const;
-
       //! output particle orientation
       void OutputOrientation() const;
 
@@ -151,11 +151,17 @@ namespace PARTICLE
           const double   dt   //!< time step size
           ) const;
 
+      //! set initial particle orientation
+      void SetInitialOrientation() const;
+
       //! set initial particle radii
       void SetInitialRadii() const;
 
       //! update map of inertia vector
       void UpdateInertiaVectorMap() const;
+
+      //! update map of radius vector
+      void UpdateRadiusVectorMap() const;
   }; // class TimIntStrategySpheres
 
 
@@ -194,9 +200,6 @@ namespace PARTICLE
       //! compute mass vector
       void ComputeMass() const;
 
-      //! extract maximum particle radius
-      double MaxRadius() const;
-
       //! output particle orientation
       void OutputOrientation() const;
 
@@ -212,16 +215,17 @@ namespace PARTICLE
           const double   dt   //!< time step size
           ) const;
 
+      //! set initial particle orientation
+      void SetInitialOrientation() const;
+
       //! set initial particle radii
       void SetInitialRadii() const;
 
       //! update map of inertia vector
       void UpdateInertiaVectorMap() const;
 
-    private:
-
-      //! semi-axes of ellipsoidal particles
-      LINALG::Matrix<3,1> semiaxes_;
+      //! update map of radius vector
+      void UpdateRadiusVectorMap() const;
   }; // class TimIntStrategyEllipsoids
 } // namespace PARTICLE
 #endif // #ifndef PARTICLE_TIMINT_STRATEGY_H

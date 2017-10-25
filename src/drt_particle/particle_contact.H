@@ -419,6 +419,7 @@ namespace PARTICLE
       //! compute contact point on particle surface
       void ComputeContactPoint(
           LINALG::Matrix<1,4>&         C_particle,   //!< contact point on particle surface
+          const LINALG::Matrix<3,1>&   semiaxes,     //!< particle semi-axes
           const LINALG::Matrix<4,4>&   T,            //!< translation matrix
           const LINALG::Matrix<4,4>&   R,            //!< rotation matrix
           const LINALG::Matrix<1,4>&   C,            //!< contact point inside contact plane
@@ -458,9 +459,10 @@ namespace PARTICLE
 
       //! compute ellipsoid matrix expressed in homogeneous coordinates
       void ComputeEllipsoidMatrix(
-          LINALG::Matrix<4,4>&         E,   //!< ellipsoid matrix
-          const LINALG::Matrix<4,4>&   T,   //!< translation matrix
-          const LINALG::Matrix<4,4>&   R    //!< rotation matrix
+          LINALG::Matrix<4,4>&         E,          //!< ellipsoid matrix
+          const LINALG::Matrix<3,1>&   semiaxes,   //!< ellipsoid semi-axes
+          const LINALG::Matrix<4,4>&   T,          //!< translation matrix
+          const LINALG::Matrix<4,4>&   R           //!< rotation matrix
           ) const;
 
       //! compute rotation matrix expressed in homogeneous coordinates
@@ -471,9 +473,10 @@ namespace PARTICLE
 
       //! compute matrix transforming an ellipsoid to a unit sphere centered at the origin of the coordinate system
       void ComputeTransformationMatrix(
-          LINALG::Matrix<4,4>&         M,   //!< transformation matrix
-          const LINALG::Matrix<4,4>&   T,   //!< translation matrix
-          const LINALG::Matrix<4,4>&   R    //!< rotation matrix
+          LINALG::Matrix<4,4>&         M,          //!< transformation matrix
+          const LINALG::Matrix<3,1>&   semiaxes,   //!< ellipsoid semi-axes
+          const LINALG::Matrix<4,4>&   T,          //!< translation matrix
+          const LINALG::Matrix<4,4>&   R           //!< rotation matrix
           ) const;
 
 
@@ -482,15 +485,6 @@ namespace PARTICLE
           LINALG::Matrix<4,4>&         T,             //!< translation matrix
           const LINALG::Matrix<3,1>&   displacement   //!< displacement vector
           ) const;
-
-      //! plain ellipsoid matrix without considering translation and rotation
-      LINALG::Matrix<4,4> ellipsoid_;
-
-      //! scaling matrix S to affinely transform a plain ellipsoid to a plain unit sphere
-      LINALG::Matrix<4,4> S_;
-
-      //! semi-axes of ellipsoidal particles
-      LINALG::Matrix<3,1> semiaxes_;
   }; // class ParticleCollisionHandlerDEMEllipsoids
 
 
@@ -776,6 +770,7 @@ namespace PARTICLE
     LINALG::Matrix<3,1> vel;
     LINALG::Matrix<3,1> ang;
     LINALG::Matrix<3,1> angvel;
+    LINALG::Matrix<3,1> semiaxes;
     double ddt;
     double rad;
     double mass;

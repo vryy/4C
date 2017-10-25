@@ -187,6 +187,8 @@ void PARTICLE::TimInt::Init()
   acc_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   fifc_ = LINALG::CreateVector(*DofRowMapView(), true);
   mass_ = LINALG::CreateVector(*NodeRowMapView(), true);
+  if(writeorientation_)
+    orient_ = LINALG::CreateVector(*DofRowMapView());
 
   switch (particle_algorithm_->ParticleInteractionType())
   {
@@ -280,10 +282,6 @@ void PARTICLE::TimInt::Init()
     // copy the vectors to the (n+1) state vectors
     angVeln_ = LINALG::CreateVector(*DofRowMapView(),true);
     angAccn_ = LINALG::CreateVector(*DofRowMapView(),true);
-
-    if(writeorientation_)
-      // initialize orientation-vector for visualization
-      orient_ = LINALG::CreateVector(*DofRowMapView());
 
     // create and fill inertia
     strategy_->ComputeInertia();
@@ -443,6 +441,12 @@ void PARTICLE::TimInt::SetInitialFields()
       }
     }
   }
+
+  // -----------------------------------------//
+  // initialize orientation field
+  // -----------------------------------------//
+  if(writeorientation_)
+    strategy_->SetInitialOrientation();
 
   // -----------------------------------------//
   // set initial velocity field if existing
@@ -864,7 +868,7 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
   UpdateStateVectorMap(accmod_);
   UpdateStateVectorMap(angVel_);
   UpdateStateVectorMap(angAcc_);
-  UpdateStateVectorMap(radius_,true);
+  strategy_->UpdateRadiusVectorMap();
   UpdateStateVectorMap(density_,true);
   UpdateStateVectorMap(densityDot_,true);
   UpdateStateVectorMap(specEnthalpy_,true);

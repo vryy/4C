@@ -225,7 +225,7 @@ void PARTICLE::TimIntRK::UpdateStatesAfterParticleTransfer()
       LINALG::Export(*old, *disn_);
     }
 
-    if (radius_ != Teuchos::null && (*radius_)(0) != Teuchos::null)
+    if (radius_ != Teuchos::null)
     {
       old = Teuchos::rcp(new Epetra_Vector(*(*radius_)(0)));
       radius_->ReplaceMaps(NodeRowMapView());

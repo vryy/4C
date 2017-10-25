@@ -173,7 +173,7 @@ namespace PARTICLE
                     const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > neighboursLinf_hs = Teuchos::null) const;
 
     /// link to timInt
-    virtual const Teuchos::RCP<ADAPTER::Particle> AdapterParticle() { return particles_; }
+    virtual const Teuchos::RCP<ADAPTER::Particle> AdapterParticle() const { return particles_; }
 
     /// map that links bins to heat sources
     virtual std::map<int,std::list<Teuchos::RCP<HeatSource> > > & Bins2HeatSources() {return bins2heatSources_; }

@@ -82,7 +82,7 @@ void PARTICLE::TimIntExpl::Init()
   }
 
   // check for validity of input data
-  if(radius_ != Teuchos::null and collhandler_ != Teuchos::null)
+  if(collhandler_ != Teuchos::null)
   {
     const int numparticle = (*radius_)(0)->GlobalLength();
     if(numparticle > 0)

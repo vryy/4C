@@ -443,17 +443,29 @@ void PARTICLE::ParticleCollisionHandlerBase::Init(
   if (err)
     dserror("Export using importer failed for dof based Epetra_Vector: return value != 0");
 
-  // node based vectors
-  Teuchos::RCP<Epetra_Vector> radiusnCol(Teuchos::null);
-  if(radiusn != Teuchos::null)
-    radiusnCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
+  // node based vector
   Teuchos::RCP<Epetra_Vector> massCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
 
-  // setup importer for node based vectors once in the beginning and reuse it
+  // setup importer for node based vector once in the beginning and reuse it
   Epetra_Import nodeimporter(*discret_->NodeColMap(), *discret_->NodeRowMap());
-  if(radiusn != Teuchos::null)
-    err += radiusnCol->Import(*radiusn, nodeimporter, Insert);
   err += massCol->Import(*mass, nodeimporter, Insert);
+
+  // export radius vector
+  bool radius_nodebased(true);
+  Teuchos::RCP<Epetra_Vector> radiusnCol(Teuchos::null);
+  if(radiusn->Map().SameAs(*discret_->NodeRowMap()))
+  {
+    radiusnCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
+    err += radiusnCol->Import(*radiusn, nodeimporter, Insert);
+  }
+  else if(radiusn->Map().SameAs(*discret_->DofRowMap()))
+  {
+    radius_nodebased = false;
+    radiusnCol = LINALG::CreateVector(*discret_->DofColMap(),false);
+    err += radiusnCol->Import(*radiusn, dofimporter, Insert);
+  }
+  else
+    dserror("You have a very strange radius vector...");
 
   Teuchos::RCP<Epetra_Vector> densityCol, specEnthalpyCol;
   if (densityn != Teuchos::null)
@@ -492,8 +504,13 @@ void PARTICLE::ParticleCollisionHandlerBase::Init(
       DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*orientnCol,data.ang,lm);
 
     const int lid = particle->LID();
-    // radius and mass of particle
-    data.rad = radiusn == Teuchos::null ? r_max_ : (*radiusnCol)[lid];
+    if(radius_nodebased)
+      data.rad = (*radiusnCol)[lid];
+    else
+    {
+      data.rad = r_max_;
+      DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*radiusnCol,data.semiaxes,lm);
+    }
     data.mass = (*massCol)[lid];
     if (densityn != Teuchos::null)
     {
@@ -1826,34 +1843,26 @@ PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ParticleCollisionHandlerDEMElli
     const Teuchos::ParameterList&       particledynparams    //!< parameter list
     ) :
     // call base class constructor
-    ParticleCollisionHandlerDEM(discret,particlealgorithm,particledynparams),
-    ellipsoid_(true),
-    S_(true),
-    semiaxes_(true)
+    ParticleCollisionHandlerDEM(discret,particlealgorithm,particledynparams)
 {
+  // safety check
+  if(normal_adhesion_ != INPAR::PARTICLE::adhesion_none)
+    dserror("Adhesion not yet implemented for ellipsoidal particles!");
+
+  // store minimum and maximum radii
+  particle_algorithm_->AdapterParticle()->Radiusn()->MinValue(&r_min_);
+  particle_algorithm_->AdapterParticle()->Radiusn()->MaxValue(&r_max_);
+
+  // the following code solely serves to estimate the penalty contact stiffness
+  // to be explicitly prescribed in the *.dat file prior to the actual simulation
+
   // extract material parameters for ellipsoidal particles
   const MAT::PAR::ParticleMatEllipsoids* const particlematellipsoids = dynamic_cast<const MAT::PAR::ParticleMatEllipsoids* const>(particle_algorithm_->ParticleMat());
   if(particlematellipsoids == NULL)
     dserror("Couldn't extract material parameters for ellipsoidal particles!");
 
   // extract semi-axes of ellipsoidal particles
-  semiaxes_ = particlematellipsoids->SemiAxes();
-
-  // store minimum and maximum radii
-  r_min_ = semiaxes_.MinValue();
-  r_max_ = semiaxes_.MaxValue();
-
-  // assemble scaling matrix S
-  S_(0,0) = 1./(semiaxes_(0));
-  S_(1,1) = 1./(semiaxes_(1));
-  S_(2,2) = 1./(semiaxes_(2));
-  S_(3,3) = 1.;
-
-  // assemble plain ellipsoid matrix
-  ellipsoid_(0,0) = S_(0,0)*S_(0,0);
-  ellipsoid_(1,1) = S_(1,1)*S_(1,1);
-  ellipsoid_(2,2) = S_(2,2)*S_(2,2);
-  ellipsoid_(3,3) = -1.;
+  const LINALG::Matrix<3,1>& semiaxes = particlematellipsoids->SemiAxes();
 
   // safety checks
   switch(normal_contact_)
@@ -1869,7 +1878,7 @@ PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ParticleCollisionHandlerDEMElli
         const double angVel_max = particledynparams.get<double>("MAX_ANGULAR_VELOCITY");
 
         // compute equivalent radius
-        const double r_equiv = pow(semiaxes_(0)*semiaxes_(1)*semiaxes_(2),1./3.);
+        const double r_equiv = pow(semiaxes(0)*semiaxes(1)*semiaxes(2),1./3.);
 
         // compute square of maximum rotational velocity
         const double v_rot_sq = .2*angVel_max*angVel_max*(r_max_*r_max_+r_equiv*r_equiv/(r_max_*r_max_*r_min_*r_min_));
@@ -2117,6 +2126,7 @@ bool PARTICLE::ParticleCollisionHandlerDEMEllipsoids::CollisionCheck(
  *----------------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeContactPoint(
     LINALG::Matrix<1,4>&         C_particle,   //!< contact point on particle surface
+    const LINALG::Matrix<3,1>&   semiaxes,     //!< particle semi-axes
     const LINALG::Matrix<4,4>&   T,            //!< translation matrix
     const LINALG::Matrix<4,4>&   R,            //!< rotation matrix
     const LINALG::Matrix<1,4>&   C,            //!< contact point inside contact plane
@@ -2145,7 +2155,7 @@ void PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeContactPoint(
 
   // compute overall transformation matrix M
   static LINALG::Matrix<4,4> M;
-  ComputeTransformationMatrix(M,T,R);
+  ComputeTransformationMatrix(M,semiaxes,T,R);
 
   // step 2.)
 
@@ -2259,18 +2269,25 @@ bool PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeEigenVectors(
  | compute ellipsoid matrix expressed in homogeneous coordinates   fang 10/17 |
  *----------------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeEllipsoidMatrix(
-    LINALG::Matrix<4,4>&         E,   //!< ellipsoid matrix
-    const LINALG::Matrix<4,4>&   T,   //!< translation matrix
-    const LINALG::Matrix<4,4>&   R    //!< rotation matrix
+    LINALG::Matrix<4,4>&         E,          //!< ellipsoid matrix
+    const LINALG::Matrix<3,1>&   semiaxes,   //!< ellipsoid semi-axes
+    const LINALG::Matrix<4,4>&   T,          //!< translation matrix
+    const LINALG::Matrix<4,4>&   R           //!< rotation matrix
     ) const
 {
   // clear ellipsoid matrix
   E.Clear();
 
+  // assemble plain ellipsoid matrix without considering translation and rotation
+  E(0,0) = 1./(semiaxes(0)*semiaxes(0));
+  E(1,1) = 1./(semiaxes(1)*semiaxes(1));
+  E(2,2) = 1./(semiaxes(2)*semiaxes(2));
+  E(3,3) = -1.;
+
   // compute ellipsoid matrix expressed in homogeneous coordinates:
   // E = T * R * S * R^T * T^T, where S is the plain ellipsoid matrix without considering translation and rotation
   static LINALG::Matrix<4,4> temp4x4;
-  temp4x4.MultiplyNT(ellipsoid_,R);
+  temp4x4.MultiplyNT(E,R);
   E.Multiply(R,temp4x4);
   temp4x4.MultiplyNT(E,T);
   E.Multiply(T,temp4x4);
@@ -2299,10 +2316,10 @@ void PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeContactPointAndNorm
   // assemble translation, rotation, and ellipsoid matrices for ellipsoids i and j
   ComputeTranslationMatrix(T_i,data_i.dis);
   ComputeRotationMatrix(R_i,data_i.ang);
-  ComputeEllipsoidMatrix(E_i,T_i,R_i);
+  ComputeEllipsoidMatrix(E_i,data_i.semiaxes,T_i,R_i);
   ComputeTranslationMatrix(T_j,data_j.dis);
   ComputeRotationMatrix(R_j,data_j.ang);
-  ComputeEllipsoidMatrix(E_j,T_j,R_j);
+  ComputeEllipsoidMatrix(E_j,data_j.semiaxes,T_j,R_j);
 
   // perform collision check
   if(CollisionCheck(E_i,E_j))
@@ -2394,11 +2411,11 @@ void PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeContactPointAndNorm
 
     // step 2.)
     static LINALG::Matrix<1,4> C_i;
-    ComputeContactPoint(C_i,T_i,R_i,C_hom,d_hom);
+    ComputeContactPoint(C_i,data_i.semiaxes,T_i,R_i,C_hom,d_hom);
 
     // step 3.)
     static LINALG::Matrix<1,4> C_j;
-    ComputeContactPoint(C_j,T_j,R_j,C_hom,d_hom);
+    ComputeContactPoint(C_j,data_j.semiaxes,T_j,R_j,C_hom,d_hom);
 
     // compute contact gap: gap = || C_i - C_j ||
     C_i -= C_j;
@@ -2447,7 +2464,7 @@ void PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeContactPointAndNorm
   static LINALG::Matrix<4,4> T, R, M;
   ComputeTranslationMatrix(T,data.dis);
   ComputeRotationMatrix(R,data.ang);
-  ComputeTransformationMatrix(M,T,R);
+  ComputeTransformationMatrix(M,data.semiaxes,T,R);
 
   // step 2.)
   // transform the node coordinates of the wall element
@@ -2528,17 +2545,27 @@ void PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeRotationMatrix(
  | compute matrix transforming an ellipsoid to a unit sphere centered at the origin of the coordinate system   fang 10/17 |
  *------------------------------------------------------------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeTransformationMatrix(
-    LINALG::Matrix<4,4>&         M,   //!< transformation matrix
-    const LINALG::Matrix<4,4>&   T,   //!< translation matrix
-    const LINALG::Matrix<4,4>&   R    //!< rotation matrix
+    LINALG::Matrix<4,4>&         M,          //!< transformation matrix
+    const LINALG::Matrix<3,1>&   semiaxes,   //!< ellipsoid semi-axes
+    const LINALG::Matrix<4,4>&   T,          //!< translation matrix
+    const LINALG::Matrix<4,4>&   R           //!< rotation matrix
     ) const
 {
-  // multiply translation matrix T by rotation matrix R
-  static LINALG::Matrix<4,4> temp4x4;
-  temp4x4.Multiply(T,R);
+  // clear transformation matrix
+  M.Clear();
 
-  // multiply result T * R by scaling matrix S
-  M.Multiply(temp4x4,S_);
+  // assemble scaling matrix to affinely transform a plain ellipsoid to a plain unit sphere
+  M(0,0) = 1./(semiaxes(0));
+  M(1,1) = 1./(semiaxes(1));
+  M(2,2) = 1./(semiaxes(2));
+  M(3,3) = 1.;
+
+  // multiply rotation matrix R by scaling matrix
+  static LINALG::Matrix<4,4> temp4x4;
+  temp4x4.Multiply(R,M);
+
+  // multiply translation matrix T by result R * M
+  M.Multiply(T,temp4x4);
 
   return;
 }

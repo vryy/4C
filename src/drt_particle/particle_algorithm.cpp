@@ -583,7 +583,7 @@ void PARTICLE::Algorithm::BinSizeSafetyCheck(const double dt)
     }
     default :
     {
-      maxrad = particles_->Strategy()->MaxRadius();
+      particles_->Radiusn()->MaxValue(&maxrad);
       break;
     }
     }
@@ -636,7 +636,7 @@ Teuchos::RCP<std::list<int> > PARTICLE::Algorithm::TransferParticles(const bool 
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::TransferParticles");
 
   // leave here in case nothing to do
-  if(particles_->Radiusn() != Teuchos::null and particles_->Radiusn()->GlobalLength() == 0)
+  if(particles_->Radiusn()->GlobalLength() == 0)
     return Teuchos::rcp(new std::list<int>(0));
 
   // Get current displacements
