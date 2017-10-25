@@ -77,7 +77,7 @@ MAT 1   MAT_ViscoElastHyper   NUMMAT 5 MATIDS 2 3 4 5 6 DENS 0.0002
 MAT 2   ELAST_VolOgden   KAPPA 9319.236448 BETA -6
 MAT 3   ELAST_Iso1Pow C 1330.545086 D 1
 MAT 4   ELAST_Iso1Pow C 5303.961917 D 4
-MAT 5   VISCO_GenMax       TAU 0.1 BETA 1
+MAT 5   VISCO_GenMax       TAU 0.1 BETA 1 SOLVE OST
 MAT 6   VISCO_IsoRateDep   N 1
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a

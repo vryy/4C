@@ -370,7 +370,8 @@ private:
         const LINALG::Matrix<3,1>& prinv,
         LINALG::Matrix<3,1>& dPI,
         LINALG::Matrix<6,1>& ddPII,
-        int eleGID
+        int eleGID,
+        const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand> >& potsum
         );
 
     /// converts the derivatives with respect to the modified invariants in derivatives with respect to principal invariants.

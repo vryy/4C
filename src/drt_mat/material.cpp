@@ -773,6 +773,9 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::mes_coupmyocard:
   case INPAR::MAT::mes_isoratedep:
   case INPAR::MAT::mes_genmax:
+  case INPAR::MAT::mes_generalizedgenmax:
+  case INPAR::MAT::mes_viscopart:
+  case INPAR::MAT::mes_viscobranch:
   case INPAR::MAT::mes_remodelfiber:
   case INPAR::MAT::m_growth_aniso_strain:
   case INPAR::MAT::m_growth_aniso_stress:

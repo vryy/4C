@@ -139,8 +139,9 @@ namespace ELASTIC
 
     /// Indicator for the chosen viscoelastic formulations
     virtual void SpecifyViscoFormulation(
-        bool& isovisco, ///< global indicator for isotropic, splitted and viscous formulation
-        bool& viscogenmax  ///< global indicator for viscous contribution according the SLS-Model
+        bool& isovisco,    ///< global indicator for isotropic, splitted and viscous formulation
+        bool& viscogenmax, ///< global indicator for viscous contribution according the SLS-Model
+        bool& viscogeneralizedgenmax ///< global indicator for viscoelastic contribution according to the generalized Maxwell Model
     )
     {
       isovisco = true;

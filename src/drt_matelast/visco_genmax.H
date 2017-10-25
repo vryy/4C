@@ -9,7 +9,7 @@ SLS-Model.
 Depending on the other stresses this viscous part is added, always using
 the same tau and beta.
 The input line should read
-  MAT 1 VISCO_GenMax TAU 0.1 BETA 1
+  MAT 1 VISCO_GenMax TAU 0.1 BETA 1 SOLVE THETA
 
 \level 1
 
@@ -39,7 +39,8 @@ namespace ELASTIC
     /// material parameters for viscous contribution according the SLS-model
     ///
     /// <h3>Input line</h3>
-    /// MAT 1 VISCO_GenMax TAU 0.1 BETA 1
+    /// MAT 1 VISCO_GenMax TAU 0.1 BETA 1 SOLVE OST
+    /// MAT 1 VISCO_GenMax TAU 0.1 BETA 1 SOLVE CONVOL
     class GenMax : public MAT::PAR::Parameter
     {
     public:
@@ -58,6 +59,7 @@ namespace ELASTIC
       /// material parameters
       double tau_;
       double beta_;
+      std::string solve_;
 
       //@}
 
@@ -75,6 +77,7 @@ namespace ELASTIC
       //@{
       void SetTau(const double tau) { tau_ = tau; }
       void SetBeta(const double beta) { beta_ = beta; }
+      void SetSolve (const std::string solve) { solve_ = solve; }
       //@}
 
     };  // class GenMax
@@ -141,22 +144,24 @@ namespace ELASTIC
     /// Read material parameters
     virtual void ReadMaterialParameters(
       double& tau, ///< relaxation parameter tau
-      double& beta ///< emphasis of viscous to elastic part
+      double& beta, ///< emphasis of viscous to elastic part
+      std::string& solve ///< variant of the solution of the evolution integral
       );
 
     /// @name Access methods
     //@{
     double Tau() const { return params_->tau_; }
     double Beta() const { return params_->beta_; }
+    std::string Solve() const { return params_ -> solve_;}
 
     //@}
 
     /// Indicator for formulation
     virtual void SpecifyFormulation(
-        bool& isoprinc, ///< global indicator for isotropic principal formulation
-        bool& isomod, ///< global indicator for isotropic splitted formulation
+        bool& isoprinc,   ///< global indicator for isotropic principal formulation
+        bool& isomod,     ///< global indicator for isotropic splitted formulation
         bool& anisoprinc, ///< global indicator for anisotropic principal formulation
-        bool& anisomod, ///< global indicator for anisotropic splitted formulation
+        bool& anisomod,   ///< global indicator for anisotropic splitted formulation
         bool& viscogeneral       ///< general indicator, if one viscoelastic formulation is used
       )
     {
@@ -166,11 +171,13 @@ namespace ELASTIC
 
     /// Indicator for the chosen viscoelastic formulations
     virtual void SpecifyViscoFormulation(
-        bool& isovisco, ///< global indicator for isotropic, splitted and viscous formulation
-        bool& viscogenmax  ///< global indicator for viscous contribution according the SLS-Model
+        bool& isovisco,    ///< global indicator for isotropic, splitted and viscous formulation
+        bool& viscogenmax, ///< global indicator for viscous contribution according the SLS-Model
+        bool& viscogeneralizedgenmax ///< global indicator for viscoelastic contribution according to the generalized Maxwell Model
     )
     {
       viscogenmax = true;
+
       return;
     };
 
@@ -181,6 +188,7 @@ namespace ELASTIC
     MAT::ELASTIC::PAR::GenMax* params_;
 
   };
+
 
 }  // namespace ELAST
 }  // namespace MAT

@@ -614,7 +614,7 @@ void MAT::PlasticElastHyper::EvaluateElast(
   LINALG::Matrix<6,1> ddPII(true);
 
   EvaluateKinQuantElast(defgrd,deltaLp,gp);
-  EvaluateInvariantDerivatives(prinv_,dPI,ddPII,eleGID);
+  EvaluateInvariantDerivatives(prinv_,dPI,ddPII,eleGID,potsum_);
 
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
@@ -861,7 +861,7 @@ void MAT::PlasticElastHyper::EvaluatePlast(
 
   if (EvaluateKinQuantPlast(defgrd,deltaDp,gp,params))
     return;
-  EvaluateInvariantDerivatives(prinv_,dPI,ddPII,eleGID);
+  EvaluateInvariantDerivatives(prinv_,dPI,ddPII,eleGID,potsum_);
   if (temp && cauchy)
     AddThermalExpansionDerivs(prinv_,dPI,ddPII,eleGID,*temp);
   CalculateGammaDelta(gamma,delta,prinv_,dPI,ddPII);
@@ -1401,7 +1401,7 @@ void MAT::PlasticElastHyper::EvaluatePlast(
   if (EvaluateKinQuantPlast(defgrd,deltaLp,gp,params))
     return;
 
-  EvaluateInvariantDerivatives(prinv_,dPI,ddPII,eleGID);
+  EvaluateInvariantDerivatives(prinv_,dPI,ddPII,eleGID,potsum_);
   CalculateGammaDelta(gamma,delta,prinv_,dPI,ddPII);
 
   // blank resulting quantities

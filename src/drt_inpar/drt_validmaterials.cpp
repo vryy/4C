@@ -1877,9 +1877,54 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AddNamedReal(m,"TAU","relaxation parameter");
     AddNamedReal(m,"BETA","emphasis of viscous to elastic part");
+    AddNamedString(m,"SOLVE","Solution of evolution equation via: OST or CONVOL (convolution integral)","CONVOL");
+
 
     AppendMaterialDefinition(matlist,m);
   }
+
+  /*--------------------------------------------------------------------*/
+  // viscous contribution of a branch of a generalized Maxwell model
+  {
+      Teuchos::RCP<MaterialDefinition> m
+        = Teuchos::rcp(new MaterialDefinition("VISCO_PART",
+                                              "Viscous contribution of a viscoelastic Branch",
+                                              INPAR::MAT::mes_viscopart));
+
+      AddNamedReal(m,"TAU","dynamic viscosity divided by young's modulus of the branch");
+
+      AppendMaterialDefinition(matlist,m);
+    }
+  /*--------------------------------------------------------------------*/
+    // viscoelatic branches of a generalized Maxwell model
+    {
+        Teuchos::RCP<MaterialDefinition> m
+          = Teuchos::rcp(new MaterialDefinition("VISCO_GeneralizedGenMax",
+                                                "Viscoelastic Branches of generalized Maxwell",
+                                                INPAR::MAT::mes_generalizedgenmax));
+
+        AddNamedInt(m,"NUMBRANCH","number of viscoelastic branches");
+        AddNamedIntVector(m,"MATIDS","the list material IDs","NUMBRANCH");
+        AddNamedString(m,"SOLVE","Solution for evolution equation: OST or CONVOL (convolution integral)","CONVOL");
+
+        AppendMaterialDefinition(matlist,m);
+      }
+
+    /*--------------------------------------------------------------------*/
+      // description of a viscoelatic branch of a generalized Maxwell model
+      {
+          Teuchos::RCP<MaterialDefinition> m
+            = Teuchos::rcp(new MaterialDefinition("VISCO_BRANCH",
+                                                  "Viscoelastic Branch (viscous and elastic contribution)",
+                                                  INPAR::MAT::mes_viscobranch));
+
+          AddNamedInt(m,"NUMMAT","number of materials in the viscoelastic branch");
+          AddNamedIntVector(m,"MATIDS","the list material IDs","NUMMAT");
+
+          AppendMaterialDefinition(matlist,m);
+        }
+
+
   /*--------------------------------------------------------------------*/
 
   /*----------------------------------------------------------------------*/

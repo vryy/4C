@@ -692,7 +692,7 @@ void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   LINALG::Matrix<6,1> ddPII(true);
 
   EvaluateKinQuant(*glstrain,id2,scg,rcg,icg,id4,id4sharp,prinv);
-  EvaluateInvariantDerivatives(prinv,dPI,ddPII,eleGID);
+  EvaluateInvariantDerivatives(prinv,dPI,ddPII,eleGID,potsum_);
 
   // check if system is polyconvex (set "POLYCONVEX 1" in material input-line)
   if (params_!=NULL)
@@ -1233,7 +1233,8 @@ void MAT::ElastHyper::EvaluateInvariantDerivatives(
     const LINALG::Matrix<3,1>& prinv,
     LINALG::Matrix<3,1>& dPI,
     LINALG::Matrix<6,1>& ddPII,
-    int eleGID
+    int eleGID,
+    const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand> >& potsum
     )
 
 {
@@ -1241,23 +1242,24 @@ void MAT::ElastHyper::EvaluateInvariantDerivatives(
   if (isoprinc_)
   {
     // loop map of associated potential summands
-    for (unsigned int p=0; p<potsum_.size(); ++p)
+    for (unsigned int p=0; p<potsum.size(); ++p)
     {
-      potsum_[p]->AddDerivativesPrincipal(dPI,ddPII,prinv,eleGID);
+      potsum[p]->AddDerivativesPrincipal(dPI,ddPII,prinv,eleGID);
+
     }
   }
-
   // derivatives of decoupled (volumetric or isochoric) materials
   if (isomod_)
   {
+
     LINALG::Matrix<3,1> modinv;
     InvariantsModified(modinv,prinv);
     LINALG::Matrix<3,1> dPmodI;
     LINALG::Matrix<6,1> ddPmodII;
     // loop map of associated potential summands
-    for (unsigned int p=0; p<potsum_.size(); ++p)
+    for (unsigned int p=0; p<potsum.size(); ++p)
     {
-      potsum_[p]->AddDerivativesModified(dPmodI,ddPmodII,modinv,eleGID);
+      potsum[p]->AddDerivativesModified(dPmodI,ddPmodII,modinv,eleGID);
     }
     // convert decoupled derivatives to principal derivatives
     ConvertModToPrinc(prinv,dPmodI,ddPmodII,dPI,ddPII);

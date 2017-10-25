@@ -38,7 +38,8 @@ MAT::ELASTIC::PAR::GenMax::GenMax(
   )
 : Parameter(matdata),
   tau_(matdata->GetDouble("TAU")),
-  beta_(matdata->GetDouble("BETA"))
+  beta_(matdata->GetDouble("BETA")),
+  solve_(*matdata->Get<std::string>("SOLVE"))
 {
 }
 
@@ -54,14 +55,14 @@ MAT::ELASTIC::GenMax::GenMax(MAT::ELASTIC::PAR::GenMax* params)
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::GenMax::ReadMaterialParameters(
   double& tau,
-  double& beta
+  double& beta,
+  std::string& solve
   )
 {
-  tau = params_ -> tau_;
-  beta = params_ -> beta_;
+  tau   = params_ -> tau_;
+  beta  = params_ -> beta_;
+  solve = params_ -> solve_;
 
   return;
 }
 
-
-/*----------------------------------------------------------------------*/

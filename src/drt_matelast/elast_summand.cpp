@@ -58,6 +58,7 @@ Interface class for materials of (visco)elasthyper toolbox.
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "elast_anisoactivestress_evolution.H"
+#include "visco_generalizedgenmax.H"
 #include "elast_couptransverselyisotropic.H"
 
 /*----------------------------------------------------------------------*
@@ -77,8 +78,10 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
   // retrieve validated input line of material ID in question
   Teuchos::RCP<MAT::PAR::Material> curmat = DRT::Problem::Instance(probinst)->Materials()->ById(matnum);
 
+
   // check what was read
-  //cout << *curmat << endl;
+  //std::cout << *curmat << std::endl;
+
 
   switch (curmat->Type())
   {
@@ -361,6 +364,27 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
       curmat->SetParameter(new MAT::ELASTIC::PAR::GenMax(curmat));
     MAT::ELASTIC::PAR::GenMax* params = static_cast<MAT::ELASTIC::PAR::GenMax*>(curmat->Parameter());
     return Teuchos::rcp(new GenMax(params));
+  }
+  case INPAR::MAT::mes_viscopart:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::ViscoPart(curmat));
+    MAT::ELASTIC::PAR::ViscoPart* params = static_cast<MAT::ELASTIC::PAR::ViscoPart*>(curmat->Parameter());
+    return Teuchos::rcp(new ViscoPart(params));
+  }
+  case INPAR::MAT::mes_generalizedgenmax:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::GeneralizedGenMax(curmat));
+    MAT::ELASTIC::PAR::GeneralizedGenMax* params = static_cast<MAT::ELASTIC::PAR::GeneralizedGenMax*>(curmat->Parameter());
+    return Teuchos::rcp(new GeneralizedGenMax(params));
+  }
+  case INPAR::MAT::mes_viscobranch:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::ViscoBranch(curmat));
+    MAT::ELASTIC::PAR::ViscoBranch* params = static_cast<MAT::ELASTIC::PAR::ViscoBranch*>(curmat->Parameter());
+    return Teuchos::rcp(new ViscoBranch(params));
   }
   default:
     dserror("cannot deal with type %d", curmat->Type());

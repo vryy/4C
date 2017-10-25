@@ -1410,6 +1410,8 @@ baci_test(viscoAnisotropic_creep 2 60)
 baci_test(viscoelasthyper 1 "")
 baci_test(viscoelasthyper 2 50)
 baci_test(viscoNeoHooke_creep 2 60)
+baci_test(viscogenmax_fdtangent 2 "")
+baci_test(visco_generalized_genmax_ost_h8 2 "200")
 baci_test(volmortar2D_fsi 2 "")
 baci_test(volmortar2D_f2_ale_moved_tapering 2 "")
 baci_test(volmortar3D_tsi_error 1 "")
@@ -1771,7 +1773,6 @@ baci_test(immersed_poro_oscillating_cylinder_h8 3 "")
 baci_test(immersed_poro_plate_with_pseudo_hole_h8 3 "")
 baci_test(activefiber_square_cell_dashpot_h8 2 "")
 baci_test(activefiber_rectangle_cell_dirich_h8 2 "")
-baci_test(viscogenmax_fdtangent 2 "")
 
 
 # testing the whole framework: from cubit via pre_exodus and baci to the post-filter:

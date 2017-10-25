@@ -35,20 +35,13 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      OneStepTheta
 INT_STRATEGY                    Standard
 RESULTSEVRY                     1
-RESTARTEVRY                     100000
+RESTARTEVRY                     0
 TIMESTEP                        0.025
-NUMSTEP                         9999999
+NUMSTEP                         260
 MAXTIME                         6.5
-DAMPING                         No
-M_DAMP                          0.0
-K_DAMP                          0.0
 TOLDISP                         1.0e-9
 TOLRES                          1.0e-6
-MAXITER                         50
 MINITER                         2
-NLNSOL                          fullnewton
-PREDICT                         ConstDis
-MATERIALTANGENT                 analytical // finitedifferences analytical
 ------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
 -----------------------------------------------------STRUCT NOX/Printing

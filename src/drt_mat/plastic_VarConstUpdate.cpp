@@ -1117,7 +1117,7 @@ void MAT::PlasticElastHyperVCU::EvaluateKinQuantPlast(
 
   LINALG::Matrix<3,1> dPI;
   LINALG::Matrix<6,1> ddPII;
-  EvaluateInvariantDerivatives(prinv,dPI,ddPII,eleGID);
+  EvaluateInvariantDerivatives(prinv,dPI,ddPII,eleGID,potsum_);
   CalculateGammaDelta(gamma,delta,prinv,dPI,ddPII);
 
   // inverse plastic right Cauchy-Green

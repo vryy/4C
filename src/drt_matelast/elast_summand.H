@@ -420,8 +420,8 @@ namespace MAT
       ///\f]
       virtual void AddStressAnisoPrincipal(
         const LINALG::Matrix<6,1>& rcg,  ///<right Cauchy Green Tensor
-        LINALG::Matrix<6,6>& cmat,  ///< material stiffness matrix
-        LINALG::Matrix<6,1>& stress,  ///< 2nd PK-stress
+        LINALG::Matrix<6,6>& cmat,       ///< material stiffness matrix
+        LINALG::Matrix<6,1>& stress,     ///< 2nd PK-stress
         Teuchos::ParameterList& params,
         const int eleGID
         )
@@ -431,10 +431,10 @@ namespace MAT
 
       virtual void AddCoefficientsViscoPrincipal(
        const LINALG::Matrix<3,1>& inv,  ///< invariants of right Cauchy-Green tensor
-        LINALG::Matrix<8,1>& mu,  ///< see above
-        LINALG::Matrix<33,1>& xi,  ///< see above
-        LINALG::Matrix<7,1>& rateinv,
-        Teuchos::ParameterList& params,
+       LINALG::Matrix<8,1>& mu,   ///< see above
+       LINALG::Matrix<33,1>& xi,  ///< see above
+       LINALG::Matrix<7,1>& rateinv,
+       Teuchos::ParameterList& params,
         const int eleGID
         )
       {
@@ -443,33 +443,54 @@ namespace MAT
 
       virtual void AddCoefficientsViscoModified(
        const LINALG::Matrix<3,1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
-        LINALG::Matrix<8,1>& modmu,  ///< see above
-        LINALG::Matrix<33,1>& modxi,  ///< see above
-        LINALG::Matrix<7,1>& modrateinv,
-        Teuchos::ParameterList& params,
-        const int eleGID
+       LINALG::Matrix<8,1>& modmu,   ///< see above
+       LINALG::Matrix<33,1>& modxi,  ///< see above
+       LINALG::Matrix<7,1>& modrateinv,
+       Teuchos::ParameterList& params,
+       const int eleGID
         )
       {
         return;  // do nothing
       };
 
+      //! GenMax
       virtual void ReadMaterialParameters(
-        double& tau, ///< relaxation parameter tau
-        double& beta ///< emphasis of viscous to elastic part
+        double& tau,       //!< relaxation parameter tau
+        double& beta,      //!< emphasis of viscous to elastic part
+        std::string& solve //!< solution variant for time evolution of viscous stress
         )
       {
-        return;  // do nothing
+        return; // not implemented in base class. May be overridden in subclass.
+      };
+
+      //! GeneralizedGenMax
+      virtual void ReadMaterialParameters(
+          int& numbranch,                   //!< number of visco branches
+          const std::vector<int>*& matids,   //!< material ids of visco branches
+          std::string& solve          //!< solution variant for time evolution of viscous stress
+        )
+      {
+        return; // not implemented in base class. May be overridden in subclass.
+      };
+
+      //! GeneralizedGenMax
+      virtual void ReadMaterialParameters(
+        double& nummat,                //!< number of visco branches
+        const std::vector<int>*& matids //!< material ids of visco branches
+        )
+      {
+        return; // not implemented in base class. May be overridden in subclass.
       };
 
       /// retrieve stress and cmat
       /// of summand for fiber directions with respect to modified strains
       virtual void AddStressAnisoModified(
-        const LINALG::Matrix<6,1>& rcg,  ///<right Cauchy Green Tensor
+        const LINALG::Matrix<6,1>& rcg,  ///< right Cauchy Green Tensor
         const LINALG::Matrix<6,1>& icg,  ///< inverse of right Cauchy Green Tensor
-        LINALG::Matrix<6,6>& cmat,  ///< material stiffness matrix
-        LINALG::Matrix<6,1>& stress,  ///< 2nd PK-stress
-        double I3,   ///< third principal invariant
-        const int eleGID ///<element GID
+        LINALG::Matrix<6,6>& cmat,       ///< material stiffness matrix
+        LINALG::Matrix<6,1>& stress,     ///< 2nd PK-stress
+        double I3,                       ///< third principal invariant
+        const int eleGID                 ///< element GID
       )
       {
         return;  // do nothing
@@ -540,7 +561,7 @@ namespace MAT
       /// Set fiber directions
       virtual void SetFiberVecs(
           const double newgamma,   ///< new angle
-          const LINALG::Matrix<3,3>& locsys,   ///< local coordinate system
+          const LINALG::Matrix<3,3>& locsys,  ///< local coordinate system
           const LINALG::Matrix<3,3>& defgrd   ///< deformation gradient
       )
       {
@@ -549,7 +570,7 @@ namespace MAT
 
       /// Set fiber directions
       virtual void SetFiberVecs(
-          const LINALG::Matrix<3,1> fibervec ///< new fiber vector
+          const LINALG::Matrix<3,1>& fibervec ///< new fiber vector
       )
       {
         dserror("Not implemented yet for this type of anisotropic material;");
@@ -564,8 +585,8 @@ namespace MAT
       };
 
       void SetupStructuralTensor(
-          LINALG::Matrix<3,1> &fiber_vector,
-          LINALG::Matrix<6,1> &structural_tensor
+          LINALG::Matrix<3,1>& fiber_vector,
+          LINALG::Matrix<6,1>& structural_tensor
       );
 
       /// Read FIBERn
@@ -583,17 +604,18 @@ namespace MAT
 
       /// Indicator for the chosen formulations
       virtual void SpecifyFormulation(
-          bool& isoprinc, ///< global indicator for isotropic principal formulation
-          bool& isomod, ///< global indicator for isotropic splitted formulation
-          bool& anisoprinc, ///< global indicator for anisotropic principal formulation
-          bool& anisomod, ///< global indicator for anisotropic splitted formulation
-          bool& viscogeneral       ///< global indicator, if one viscoelastic formulation is used
+          bool& isoprinc,    ///< global indicator for isotropic principal formulation
+          bool& isomod,      ///< global indicator for isotropic splitted formulation
+          bool& anisoprinc,  ///< global indicator for anisotropic principal formulation
+          bool& anisomod,    ///< global indicator for anisotropic splitted formulation
+          bool& viscogeneral ///< global indicator, if one viscoelastic formulation is used
         ) = 0;
 
       /// Indicator for the chosen viscoelastic formulations
       virtual void SpecifyViscoFormulation(
-          bool& isovisco, ///< global indicator for isotropic, splitted and viscous formulation
-          bool& viscogenmax  ///< global indicator for viscous contribution according the SLS-Model
+          bool& isovisco,    ///< global indicator for isotropic, splitted and viscous formulation
+          bool& viscogenmax, ///< global indicator for viscous contribution according to the SLS-Model
+          bool& viscogeneralizedgenmax ///< global indicator for viscoelastic contribution according to the generalized Maxwell Model
       )
       {        /* do nothing for non viscoelastic material models */      };
 

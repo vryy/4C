@@ -176,7 +176,10 @@ namespace INPAR
       mes_coupSVK,                             ///< Saint-Venant-Kirchhoff material
       mes_coupsimopister,                      ///< Simo-Pister type material
       mes_coupvarga,                           ///< isotropic Varga material
-      mes_genmax,                              ///< viscous contribution according to SLS-Model
+      mes_genmax,                              ///< viscous contribution according to SLS-Model,
+      mes_generalizedgenmax,                   ///< viscoelastic branches of the generalized Maxwell Model
+      mes_viscopart,                           ///< viscous part of generalized Maxwell Model
+      mes_viscobranch,                         ///< viscoelastic branch of generalized Maxwell Model
       mes_iso1pow,                             ///< isochoric general power hyperelastic potential summand for modinv I
       mes_iso2pow,                             ///< isochoric general power hyperelastic potential summand for modiinv II
       mes_isoanisoexpo,                        ///< isochoric anisotropic single fiber material

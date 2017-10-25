@@ -1,24 +1,12 @@
 //
-// Maintainer: XXX YYY
-// XXX
-// XXX
+// Maintainer: Andreas Rauch
 //
-==================================================================
-General Data File BACI
-==================================================================
 -----------------------------------------------------------------------TITLE
 created by pre_exodus
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      1210
 //NODES                         1656
 DIM                             3
---------------------------------------------------------------DISCRETISATION
-NUMAIRWAYSDIS                   1
-NUMALEDIS                       1
-NUMARTNETDIS                    1
-NUMFLUIDDIS                     1
-NUMSTRUCDIS                     1
-NUMTHERMDIS                     1
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 545 QUANTITY dispx VALUE 2.47095224531973912e-01 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 545 QUANTITY dispy VALUE -1.73151016707544791e-01 TOLERANCE 1e-6
@@ -136,7 +124,7 @@ MAT 2   ELAST_VolOgden KAPPA 8.198272e+04 BETA -2.0
 MAT 3   ELAST_IsoNeoHooke MUE 3.939437e+03
 MAT 4   ELAST_Iso1Pow C 2.591038e+04 D 3
 //MAT 4   ELAST_IsoCub C 2.591038e+04
-MAT 5   VISCO_GenMax TAU 0.1 BETA 1
+MAT 5   VISCO_GenMax TAU 0.1 BETA 1 SOLVE CONVOL
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 4.479155e+00 1.817528e+00 0.000000e+00
 NODE 2 COORD 4.676285e+00 1.814495e+00 0.000000e+00

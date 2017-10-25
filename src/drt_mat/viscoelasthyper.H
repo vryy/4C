@@ -31,7 +31,6 @@ MAT 0   MAT_ViscoElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 #include "matpar_parameter.H"
 #include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
-
 #include "elasthyper.H"
 
 // forward declaration due to avoid header definition
@@ -199,32 +198,35 @@ private:
                           LINALG::Matrix<6,6>* cmat,
                           const int eleGID);         ///< Constitutive matrix
 
+    /// setup material description
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 
+    /// reset all history variables
     virtual void ResetAll(const int numgp);
-    virtual void SetupTimeVariables(){;};
 
+    /// update history variables
     virtual void Update();
 
   protected:
+
     /// calculates the kinematic quantities and tensors used afterwards for viscous part
     virtual void EvaluateKinQuantVis(
-        LINALG::Matrix<6,1> rcg,
-        LINALG::Matrix<6,1> scg,
+        LINALG::Matrix<6,1>& rcg,
+        LINALG::Matrix<6,1>& scg,
+        LINALG::Matrix<6,1>& icg,
+        LINALG::Matrix<3,1>& prinv,
+        LINALG::Matrix<7,1>& rateinv,
         LINALG::Matrix<6,1>& modrcg,
-        LINALG::Matrix<6,1> icg,
         Teuchos::ParameterList& params,
-        LINALG::Matrix<3,1> prinv,
         LINALG::Matrix<6,1>& scgrate,
         LINALG::Matrix<6,1>& modrcgrate,
-        LINALG::Matrix<7,1>& rateinv,
         LINALG::Matrix<7,1>& modrateinv
       );
 
     /// calculates the factors associated to the viscous laws
     virtual void EvaluateMuXi(
-        LINALG::Matrix<3,1> inv,
-        LINALG::Matrix<3,1> modinv,
+        LINALG::Matrix<3,1>& inv,
+        LINALG::Matrix<3,1>& modinv,
         LINALG::Matrix<8,1>& mu,
         LINALG::Matrix<8,1>& modmu,
         LINALG::Matrix<33,1>& xi,
@@ -237,12 +239,12 @@ private:
 
     /// calculates the isotropic stress and elasticity tensor for viscous principal configuration
     virtual void EvaluateIsoViscoPrincipal(
-        LINALG::Matrix<6,1>& stress,
-        LINALG::Matrix<6,6>& cmat,
-        LINALG::Matrix<8,1> mu,
-        LINALG::Matrix<33,1> xi,
-        LINALG::Matrix<6,6> id4sharp,
-        LINALG::Matrix<6,1> scgrate
+        LINALG::Matrix<6,1>&  stress,
+        LINALG::Matrix<6,6>&  cmat,
+        LINALG::Matrix<8,1>&  mu,
+        LINALG::Matrix<33,1>& xi,
+        LINALG::Matrix<6,6>&  id4sharp,
+        LINALG::Matrix<6,1>&  scgrate
         );
 
     /// calculates the isotropic stress and elasticity tensor for viscous decoupled configuration
@@ -251,15 +253,15 @@ private:
         LINALG::Matrix<6,1>& stressisomodvolvisco,
         LINALG::Matrix<6,6>& cmatisomodisovisco,
         LINALG::Matrix<6,6>& cmatisomodvolvisco,
-        LINALG::Matrix<3,1> prinv,
-        LINALG::Matrix<3,1> modinv,
-        LINALG::Matrix<8,1> modmu,
-        LINALG::Matrix<33,1> modxi,
-        LINALG::Matrix<6,1> rcg,
-        LINALG::Matrix<6,1> id2,
-        LINALG::Matrix<6,1> icg,
-        LINALG::Matrix<6,6> id4,
-        LINALG::Matrix<6,1> modrcgrate
+        LINALG::Matrix<3,1>& prinv,
+        LINALG::Matrix<3,1>& modinv,
+        LINALG::Matrix<8,1>& modmu,
+        LINALG::Matrix<33,1>& modxi,
+        LINALG::Matrix<6,1>& rcg,
+        LINALG::Matrix<6,1>& id2,
+        LINALG::Matrix<6,1>& icg,
+        LINALG::Matrix<6,6>& id4,
+        LINALG::Matrix<6,1>& modrcgrate
         );
 
     /// calculates the stress and elasticitiy tensor for the viscous Genmax-material
@@ -267,19 +269,28 @@ private:
     /// (volumetric and isochoric equal treaded) or anisotropic stresses and elasticity
     /// tensors are added
     virtual void EvaluateViscoGenMax(
-        LINALG::Matrix<6,1> stress,
-        LINALG::Matrix<6,6> cmat,
+        LINALG::Matrix<6,1>* stress,
+        LINALG::Matrix<6,6>* cmat,
         LINALG::Matrix<6,1>& Q,
         LINALG::Matrix<6,6>& cmatq,
-        double tau,
-        double beta,
         Teuchos::ParameterList& params
         );
 
+    /// calculates the stress and elasticitiy tensor for the GeneneralizedMax-material
+    virtual void EvaluateViscoGeneralizedGenMax(
+        LINALG::Matrix<6,1>& Q,
+        LINALG::Matrix<6,6>& cmatq,
+        Teuchos::ParameterList& params,
+        const LINALG::Matrix<6,1>* glstrain,
+        const int eleGID
+        );
+
+
     /// @name Flags to specify the viscous formulations
     //@{
-    bool isovisco_ ; ///< global indicator for isotropic splitted viscous formulation
+    bool isovisco_ ;    ///< global indicator for isotropic splitted viscous formulation
     bool viscogenmax_ ; ///< global indicator for viscous contribution according the SLS-Model
+    bool viscogeneralizedgenmax_; ///< global indicator for viscous contribution of the branches according to the generalized Maxwell model
     //@}
 
   private:
@@ -293,9 +304,13 @@ private:
     Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstresslast_; ///< stress of last converged state
     Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histartstresscurr_; ///< current stress
     Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histartstresslast_; ///< stress of last converged state
+    Teuchos::RCP<std::vector<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > > histbranchstresscurr_; ///< current stress of the branches
+    Teuchos::RCP<std::vector<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > > histbranchstresslast_; ///< stress of the branches of last converged state
+    Teuchos::RCP<std::vector<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > > histbranchelaststresscurr_; ///< current elastic stress of the branches
+    Teuchos::RCP<std::vector<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > > histbranchelaststresslast_; ///< elastic stress of the branches of last converged state
 
     bool isinitvis_;  ///< indicates if #Initialized routine has been called
-  };
+  }; // class ViscoElastHyper
 
 }
 
