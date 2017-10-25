@@ -1507,6 +1507,7 @@ set(OBJS_DRT_NURBS_DISCRET_LIB
 )
 set(OBJS_DRT_BINSTRATEGY_DISCRET_LIB
   src/drt_beaminteraction/crosslinker_node.cpp
+  src/drt_particle/particle_ellipsoid_node.cpp
   src/drt_particle/particle_node.cpp
   src/drt_particle/particle_radius_node.cpp
 )
