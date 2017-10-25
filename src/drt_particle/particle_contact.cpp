@@ -2220,7 +2220,7 @@ bool PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeEigenVectors(
   // compute eigenvectors of matrix B^-1 * A
   LINALG::Matrix<1,4> WR(true);        // real eigenvalue parts
   static LINALG::Matrix<1,4> WI;   // imaginary eigenvalue parts
-  double work[16] = {};
+  double work[16];
   int info;
   Epetra_LAPACK lapack;
   lapack.GEEV('N','V',4,Binv_A.A(),4,WR.A(),WI.A(),NULL,4,temp4x4.A(),4,work,16,&info);
@@ -2589,8 +2589,8 @@ bool PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComplexEigenValues(
   // step 1: transform matrix B to upper triangluar matrix via QR factorization
   //
 
-  int jpvt[N] = {};     // order of permutation matrix
-  double tau[N] = {};   // factor for calculation of orthogonal matrix Q
+  int jpvt[N];     // order of permutation matrix
+  double tau[N];   // factor for calculation of orthogonal matrix Q
   int lwork(3*N+1), info;
   double dummy_lwork[lwork];
   dgeqp3(&N,&N,B_temp.A(),&N,jpvt,tau,dummy_lwork,&lwork,&info);
@@ -2636,7 +2636,7 @@ bool PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComplexEigenValues(
 
   char job = 'P';
   int ilo, ihi;
-  double dummy_N[N] = {}, dummy_6N[6*N] = {};
+  double dummy_N[N], dummy_6N[6*N];
   dggbal(&job,&N,A_temp.A(),&N,B_temp.A(),&N,&ilo,&ihi,dummy_N,dummy_N,dummy_6N,&info);
   if(info)
     dserror("LAPACK algorithm dggbal threw error code %d!",info);
@@ -2652,7 +2652,7 @@ bool PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComplexEigenValues(
   //
 
   // vectors containing eigenvalues of generalized eigenproblem
-  double alphar[N] = {}, alphai[N] = {}, beta[N] = {};
+  double alphar[N], alphai[N], beta[N];
 
   job ='E';
   comp = 'V';
