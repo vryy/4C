@@ -297,7 +297,7 @@ void MAT::ELASTIC::CoupAnisoExpo::SetFiberVecs(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoExpo::SetFiberVecs(
-    const LINALG::Matrix<3,1> fibervec
+    const LINALG::Matrix<3,1>& fibervec
 )
 {
   a_.Update(1.0/fibervec.Norm2(),fibervec);

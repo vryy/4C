@@ -221,7 +221,7 @@ namespace ELASTIC
 
     /// Set fiber directions
     virtual void SetFiberVecs(
-        const LINALG::Matrix<3,1> fibervec ///< new fiber vector
+        const LINALG::Matrix<3,1>& fibervec ///< new fiber vector
     );
 
     /// Get fiber directions
