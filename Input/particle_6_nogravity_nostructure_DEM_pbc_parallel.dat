@@ -1,0 +1,124 @@
+//
+// Maintainer: Rui Fang
+// fang@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de/
+// 089 - 289-15251
+//
+==================================================================
+General Data File BACI
+==================================================================
+-----------------------------------------------------------------------TITLE
+Test case for particle DEM:
+- fully periodic box containing 6 spherical particles of equal size
+- size of periodic box determined implicitly by size of bounding box
+- particles form three separate collision pairs, each aligned with one spatial
+  dimension and not interacting with the two other pairs
+- two paired particles have opposite initial velocity of same magnitude and bounce
+  back and forth by colliding with each other both in the middle of the periodic box
+  and near one of the periodic surfaces of the box
+- the pair in x-direction is perfectly centered, such that the peripheral collision
+  occurs exactly at the periodic surface
+- the pair in y-direction is slightly off-center, such that the peripheral collision
+  occurs across the periodic surface with an offset
+- the pair in z-direction is significantly off-center, such that one particle crosses
+  the periodic surface to the other side of the box and hits the other particle there
+- no gravitational acceleration
+- no physical walls
+- perfectly elastic particle-particle collisions with coefficient of restitution e = 1.0
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Particle
+SHAPEFCT                        Meshfree
+--------------------------------------------------------------------BINNING STRATEGY
+DEFINEBINSPER                   cutoff
+DEFINEXAABBPER                  input
+CUTOFF_RADIUS                   0.3
+PERIODICONOFF                   1 1 1
+BOUNDINGBOX                     -0.5 -0.5 -0.5 0.5 0.5 0.5
+------------------------------------------------------------PARTICLE DYNAMIC
+RESULTSEVRY                     10
+RESTARTEVRY                     3000
+TIMESTEP                        0.001
+NUMSTEP                         3000
+MAXTIME                         3.0
+PARTICLE_INTERACTION            NormalContact_DEM
+NORMAL_CONTACT_LAW              LinearSpring
+MIN_RADIUS                      0.12
+MAX_RADIUS                      0.12
+REL_PENETRATION                 0.05
+MAX_VELOCITY                    1.0
+----------------------------------------------------------------------FUNCT1
+// initial velocity of particle 1
+COMPONENT 0 FUNCTION -1.0
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
+----------------------------------------------------------------------FUNCT2
+// initial velocity of particle 2
+COMPONENT 0 FUNCTION 1.0
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
+----------------------------------------------------------------------FUNCT3
+// initial velocity of particle 3
+COMPONENT 0 FUNCTION 0.0
+COMPONENT 1 FUNCTION -1.0
+COMPONENT 2 FUNCTION 0.0
+----------------------------------------------------------------------FUNCT4
+// initial velocity of particle 4
+COMPONENT 0 FUNCTION 0.0
+COMPONENT 1 FUNCTION 1.0
+COMPONENT 2 FUNCTION 0.0
+----------------------------------------------------------------------FUNCT5
+// initial velocity of particle 5
+COMPONENT 0 FUNCTION 0.0
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION -1.0
+----------------------------------------------------------------------FUNCT6
+// initial velocity of particle 6
+COMPONENT 0 FUNCTION 0.0
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 1.0
+----------------------------------------------------------DESIGN DESCRIPTION
+NDPARTICLE                      7
+------------------------------------DESIGN PARTICLE INITIAL FIELD CONDITIONS
+DPARTICLE                       6
+E 1 - Velocity 1
+E 2 - Velocity 2
+E 3 - Velocity 3
+E 4 - Velocity 4
+E 5 - Velocity 5
+E 6 - Velocity 6
+-----------------------------------------------------DPARTICLE-NODE TOPOLOGY
+NODE 1 DPARTICLE 1
+NODE 2 DPARTICLE 2
+NODE 3 DPARTICLE 3
+NODE 4 DPARTICLE 4
+NODE 5 DPARTICLE 5
+NODE 6 DPARTICLE 6
+-----------------------------------------------------------------NODE COORDS
+PARTICLE 1 COORD -0.25 -0.25 -0.25
+PARTICLE 2 COORD 0.25 -0.25 -0.25
+PARTICLE 3 COORD 0.25 -0.35 0.25
+PARTICLE 4 COORD 0.25 0.15 0.25
+PARTICLE 5 COORD -0.25 0.25 -0.45
+PARTICLE 6 COORD -0.25 0.25 0.05
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_Particle DENSITY 7.85e3 INITRADIUS 0.12 NUE 0.3 YOUNG 210.0e9
+----------------------------------------------------------RESULT DESCRIPTION
+PARTICLE DIS particle NODE 1 QUANTITY dispx VALUE -3.13392691010688562e-01 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 1 QUANTITY dispy VALUE -2.50000000000000000e-01 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 1 QUANTITY dispz VALUE -2.50000000000000000e-01 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 2 QUANTITY dispx VALUE 3.13392691010688562e-01 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 2 QUANTITY dispy VALUE -2.50000000000000000e-01 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 2 QUANTITY dispz VALUE -2.50000000000000000e-01 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 3 QUANTITY dispx VALUE 2.50000000000000000e-01 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 3 QUANTITY dispy VALUE -4.13392691011324753e-01 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 3 QUANTITY dispz VALUE 2.50000000000000000e-01 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 4 QUANTITY dispx VALUE 2.50000000000000000e-01 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 4 QUANTITY dispy VALUE 2.13392691011311142e-01 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 4 QUANTITY dispz VALUE 2.50000000000000000e-01 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 5 QUANTITY dispx VALUE -2.50000000000000000e-01 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 5 QUANTITY dispy VALUE 2.50000000000000000e-01 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 5 QUANTITY dispz VALUE 4.86607308989077725e-01 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 6 QUANTITY dispx VALUE -2.50000000000000000e-01 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 6 QUANTITY dispy VALUE 2.50000000000000000e-01 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 6 QUANTITY dispz VALUE 1.13392691010910679e-01 TOLERANCE 1.0e-10
+-------------------------------------------------------------------------END

@@ -31,12 +31,12 @@ SHAPEFCT                        Meshfree
 --------------------------------------------------------------------BINNING STRATEGY
 DEFINEBINSPER                   cutoff
 DEFINEXAABBPER                  input
-CUTOFF_RADIUS                   0.3
+CUTOFF_RADIUS                   1.0
 PERIODICONOFF                   1 1 1
 BOUNDINGBOX                     -0.5 -0.5 -0.5 0.5 0.5 0.5
 ------------------------------------------------------------PARTICLE DYNAMIC
-RESULTSEVRY                     1000
-RESTARTEVRY                     1000
+RESULTSEVRY                     10
+RESTARTEVRY                     3000
 TIMESTEP                        0.001
 NUMSTEP                         3000
 MAXTIME                         3.0

@@ -508,8 +508,8 @@ void PARTICLE::ParticleCollisionHandlerBase::Init(
       data.rad = (*radiusnCol)[lid];
     else
     {
-      data.rad = r_max_;
       DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*radiusnCol,data.semiaxes,lm);
+      data.rad = data.semiaxes.MaxValue();
     }
     data.mass = (*massCol)[lid];
     if (densityn != Teuchos::null)
@@ -762,21 +762,26 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
       const double m_eff = data_i.mass * data_j.mass / (data_i.mass + data_j.mass);
 
       // might need to shift position of particle j in the presence of periodic boundary conditions
+      static LINALG::Matrix<3,1> data_j_dis;
       if(havepbc)
       {
-        static int ijk_i[3], ijk_j[3];
-        particle_algorithm_->BinStrategy().ConvertPosToijk(data_i.dis,ijk_i);
-        particle_algorithm_->BinStrategy().ConvertPosToijk(data_j.dis,ijk_j);
+        // store original position of particle j
+        data_j_dis.SetCopy(data_j.dis);
+
+        // perform shifting if necessary
         for(unsigned idim=0; idim<3; ++idim)
-        {
           if(particle_algorithm_->BinStrategy().HavePBC(idim))
           {
-            if(ijk_i[idim] - ijk_j[idim] < -1)
-              data_j.dis(idim) -= particle_algorithm_->BinStrategy().PBCDelta(idim);
-            else if(ijk_i[idim] - ijk_j[idim] > 1)
-              data_j.dis(idim) += particle_algorithm_->BinStrategy().PBCDelta(idim);
+            const double distance = abs(data_j.dis(idim) - data_i.dis(idim));
+            const double contactdistance = data_i.rad + data_j.rad;
+            const double pbcdelta = particle_algorithm_->BinStrategy().PBCDelta(idim);
+            if(distance > contactdistance)
+              // no interior contact in periodic direction --> shift particle to check for exterior contact
+              data_j.dis(idim) += ((data_j.dis(idim) < data_i.dis(idim)) - (data_j.dis(idim) > data_i.dis(idim))) * pbcdelta;
+            else if(distance > pbcdelta - contactdistance)
+              // interior contact in periodic direction --> make sure that there is no exterior contact at the same time
+              dserror("Cannot have interior and exterior contact in periodic direction at the same time!");
           }
-        }
       }
 
       // compute contact normal, contact gap, and vectors from particle centers to contact point C
@@ -894,6 +899,10 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
         history_particle_i.erase(data_j.id);
         history_particle_j.erase(data_i.id);
       }
+
+      // undo periodic shift of position of particle j if necessary
+      if(havepbc)
+        data_j.dis.SetCopy(data_j_dis);
     }
   }  // loop over neighboring particles
 
