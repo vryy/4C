@@ -2,7 +2,12 @@
 // Maintainer: Andreas Rauch
 //
 -----------------------------------------------------------------------TITLE
-created by pre_exodus
+Test hex8 element with finite difference material tangent.
+
+Parameter:
+
+MATERIALTANGENT                 finitedifferences
+
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      1210
 //NODES                         1656
@@ -12,119 +17,31 @@ STRUCTURE DIS structure NODE 545 QUANTITY dispx VALUE 2.47095224531973912e-01 TO
 STRUCTURE DIS structure NODE 545 QUANTITY dispy VALUE -1.73151016707544791e-01 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 1641 QUANTITY dispx VALUE 5.17766878985426615e-01 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 1641 QUANTITY dispy VALUE -1.28734335550589940e-01 TOLERANCE 1e-6
---------------------------------------------------------------------------IO
-FILESTEPS                       1000
-FLUID_SOL                       Yes
-FLUID_STRESS                    No
-FLUID_VIS                       No
-FLUID_WALL_SHEAR_STRESS         No
-OUTPUT_BIN                      Yes
-STRUCT_DISP                     Yes
-STRUCT_PLASTIC_STRAIN           No
-STRUCT_SE                       No
-STRUCT_STRAIN                   Yes
-STRUCT_STRESS                   Yes
-STRUCT_SURFACTANT               No
-THERM_HEATFLUX                  None
-THERM_TEMPERATURE               No
-THERM_TEMPGRAD                  None
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 RESTART                         0
-SHAPEFCT                        Polynomial
 --------------------------------------------------------------------SOLVER 1
-AZBDIAG                         0
-AZCONV                          AZ_r0
-AZDROP                          0
-AZGRAPH                         0
-AZITER                          1000
-AZOMEGA                         0
-AZOUTPUT                        0
-AZPOLY                          3
-AZPREC                          ILU
-AZREUSE                         0
-AZSCAL                          none
-AZSOLVE                         GMRES
-AZSUB                           300
-AZTOL                           1e-08
-DWINDTAU                        1.5
-IFPACKCOMBINE                   Add
-IFPACKFILL                      1
-IFPACKGFILL                     0
-IFPACKOVERLAP                   0
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               Umfpack
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1
-SIMPLE_DAMPING                  1
 SOLVER                          Amesos_KLU_nonsym
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
-CONTROLNODE                     -1 -1 -1
-CONTROLTYPE                     load
-DAMPING                         No
-DIVERCONT                       stop
 DYNAMICTYP                      GenAlpha
-ITERNORM                        L2
-K_DAMP                          0.5
 LINEAR_SOLVER                   1
-LOADLIN                         no
-LUMPMASS                        No
-MAXITER                         50
 MAXTIME                         0.2123077
-MINITER                         0
-MODIFIEDEXPLEULER               Yes
-M_DAMP                          0.5
-NLNSOL                          fullnewton
-NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFDISP              Or
-NORMCOMBI_RESFINCO              And
-NORM_DISP                       Abs
-NORM_INCO                       Abs
-NORM_PRES                       Abs
-NORM_RESF                       Abs
 NUMSTEP                         3
-PREDICT                         ConstDis
-PRESTRESSTIME                   0
-PTCDT                           0.1
-PRESTRESS                       none
-RESEVRYERGY                     0
-RESTARTEVRY                     1
+RESTARTEVRY                     100
 RESULTSEVRY                     1
-STC_LAYER                       1
-STC_SCALING                     no
 TIMESTEP                        0.07076923
-TOLCONSTR                       1e-08
 TOLDISP                         1e-10
-TOLINCO                         1e-08
-TOLPRE                          1e-08
 TOLRES                          1e-08
-UZAWAALGO                       direct
-UZAWAMAXITER                    50
-UZAWAPARAM                      1
-UZAWATOL                        1e-08
 MATERIALTANGENT                 finitedifferences
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 -------------------------------------------------------------------MATERIALS
-//Law                           E
 MAT 1   MAT_ViscoElastHyper   NUMMAT 4 MATIDS 2 3 4 5 DENS 0.0002
 MAT 2   ELAST_VolOgden KAPPA 8.198272e+04 BETA -2.0
 MAT 3   ELAST_IsoNeoHooke MUE 3.939437e+03
 MAT 4   ELAST_Iso1Pow C 2.591038e+04 D 3
-//MAT 4   ELAST_IsoCub C 2.591038e+04
-MAT 5   VISCO_GenMax TAU 0.1 BETA 1 SOLVE CONVOL
+MAT 5   VISCO_GenMax TAU 0.1 BETA 1 SOLVE OST
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 4.479155e+00 1.817528e+00 0.000000e+00
 NODE 2 COORD 4.676285e+00 1.814495e+00 0.000000e+00
