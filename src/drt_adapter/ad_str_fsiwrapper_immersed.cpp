@@ -242,8 +242,8 @@ void ADAPTER::FSIStructureWrapperImmersed::Output(bool forced_writerestart, cons
       std::cout<<"\n   Write EXTRA STRUCTURE Output Step="<<step<<" Time="<<time<<" ...   \n"<<std::endl;
 
 
-      structure_->DiscWriter()->NewStep(step, time);
-      structure_->DiscWriter()->WriteVector("displacement", structure_->Dispnp());
+    structure_->DiscWriter()->NewStep(step, time);
+    structure_->DiscWriter()->WriteVector("displacement", structure_->Dispnp());
 
     // for visualization of vel and acc do not forget to comment in corresponding lines in StructureEnsightWriter
     if(writevelacc_)

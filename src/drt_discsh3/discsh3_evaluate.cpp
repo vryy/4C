@@ -670,11 +670,11 @@ inline void DRT::ELEMENTS::DiscSh3::MyStochasticForces(Teuchos::ParameterList& p
       if(force != NULL)
         FAD_force(i) += Stoch_mat(i,j)*RandomNumber(j)/3; // weight 1/3 per node
 
-        if(stiffmatrix != NULL)           //    loop over all column nodes
-          for (int k=0; k<NUMNOD_DISCSH3; k++)
-          {
-            FAD_StiffMat(i,j) += Grad_StochMat(k)(i,j)*RandomNumber(j)/3;
-          }
+      if(stiffmatrix != NULL)           //    loop over all column nodes
+        for (int k=0; k<NUMNOD_DISCSH3; k++)
+        {
+          FAD_StiffMat(i,j) += Grad_StochMat(k)(i,j)*RandomNumber(j)/3;
+        }
     }
 
   //loop dimensions with respect to columns

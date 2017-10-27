@@ -832,7 +832,7 @@ namespace DRT
           if ( xi > 2 || xj > 2)
             dserror("Invalid index combination (%d,%d) for stress tensor!", xi, xj);
 
-          return (xi * xj) ? xi + xj + 1 : xi + xj;
+          return (xi * xj > 0) ? xi + xj + 1 : xi + xj;
         }
 
         /// get global master row/col-index of element coupling matrix for a given node index and dof-index

@@ -452,21 +452,21 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass(Teuchos::ParameterList&   params,
     for(int k= 0; k < 3; k++)
       XRefOnlyDisp(node*3 + k) = Nodes()[node]->X()[k];
 
-      // length of first element and second element required for hermite shape function interpolation
-      std::vector<double> LengthofElementatRef(2);
-      // auxiliary vector for norm/length calculations
-      std::vector<double> aux(6);
+  // length of first element and second element required for hermite shape function interpolation
+  std::vector<double> LengthofElementatRef(2);
+  // auxiliary vector for norm/length calculations
+  std::vector<double> aux(6);
 
-      aux[0]=XRefOnlyDisp(0)-XRefOnlyDisp(3);
-      aux[1]=XRefOnlyDisp(1)-XRefOnlyDisp(4);
-      aux[2]=XRefOnlyDisp(2)-XRefOnlyDisp(5);
-      aux[3]=XRefOnlyDisp(6)-XRefOnlyDisp(9);
-      aux[4]=XRefOnlyDisp(7)-XRefOnlyDisp(10);
-      aux[5]=XRefOnlyDisp(8)-XRefOnlyDisp(11);
+  aux[0]=XRefOnlyDisp(0)-XRefOnlyDisp(3);
+  aux[1]=XRefOnlyDisp(1)-XRefOnlyDisp(4);
+  aux[2]=XRefOnlyDisp(2)-XRefOnlyDisp(5);
+  aux[3]=XRefOnlyDisp(6)-XRefOnlyDisp(9);
+  aux[4]=XRefOnlyDisp(7)-XRefOnlyDisp(10);
+  aux[5]=XRefOnlyDisp(8)-XRefOnlyDisp(11);
 
 
-      for (int filament=0; filament<2; filament++)
-        LengthofElementatRef[filament]=sqrt(pow(aux[3*filament],2)+pow(aux[3*filament+1],2)+pow(aux[3*filament+2],2));
+  for (int filament=0; filament<2; filament++)
+    LengthofElementatRef[filament]=sqrt(pow(aux[3*filament],2)+pow(aux[3*filament+1],2)+pow(aux[3*filament+2],2));
 
 
    // Compute Hermite polynomials in current/spatial position, we need the length of filaments at reference configuration

@@ -1493,7 +1493,7 @@ void DRT::ELEMENTS::Shell8::s8_nlnstiffmass(std::vector<int>&         lm,
     {
       for (int j=0; j<nhyb_; ++j) (*oldDtildinv)(i,j) = Dtildinv(i,j);
       for (int j=0; j<nd; ++j)    (*oldLt)(i,j)       = Lt(i,j);
-                                  (*oldRtild)[i]      = Rtild[i];
+      (*oldRtild)[i]      = Rtild[i];
     }
   } // if (nhyb_)
   /*------------------------------------- make estif absolute symmetric */

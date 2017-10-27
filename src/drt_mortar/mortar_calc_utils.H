@@ -679,7 +679,7 @@ void GlobalToCurrentLocal(
      double norm = 0.0;
      for(int p=0;p<ndim;++p)
        norm += rhs[p]*rhs[p];
-       residual = sqrt(norm);
+     residual = sqrt(norm);
      if (residual<1e-13)
        converged = true;
 

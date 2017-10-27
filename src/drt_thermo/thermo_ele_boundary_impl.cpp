@@ -96,7 +96,7 @@ DRT::ELEMENTS::TemperBoundaryImplInterface* DRT::ELEMENTS::TemperBoundaryImplInt
     static TemperBoundaryImpl<DRT::Element::line2>* cl2;
     if (cl2 == NULL)
       cl2 = new TemperBoundaryImpl<DRT::Element::line2>(numdofpernode);
-      return cl2;
+    return cl2;
   }/*
   case DRT::Element::line3:
   {

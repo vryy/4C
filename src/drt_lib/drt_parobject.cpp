@@ -116,7 +116,7 @@ void DRT::ParObject::ExtractfromPack(std::vector<char>::size_type& position, con
   ExtractfromPack(position,data,n);
   stuff.Reshape(m,n);
   double* a = stuff.A();
-  if(m*n)
+  if(m*n > 0)
     ExtractfromPack(position,data,a,n*m*sizeof(double));
   return;
 }
@@ -131,7 +131,7 @@ void DRT::ParObject::ExtractfromPack(std::vector<char>::size_type& position, con
   ExtractfromPack(position,data,m);
   stuff.Resize(m);
   double* a = stuff.Values();
-  if(m)
+  if(m>0)
     ExtractfromPack(position,data,a,m*sizeof(double));
   return;
 }
@@ -149,7 +149,7 @@ void DRT::ParObject::ExtractfromPack(std::vector<char>::size_type& position, con
   ExtractfromPack(position,data,n);
   stuff.Reshape(m,n);
   double* a = stuff.A();
-  if(m*n)
+  if(m*n > 0)
     ExtractfromPack(position,data,a,n*m*sizeof(double));
   return;
 }

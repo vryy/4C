@@ -316,10 +316,9 @@ void SCATRA::HeterogeneousReactionStrategy::
   } // loop over row elements
 
 
-com.Barrier();
-if(com.MyPID() == 0)
-  std::cout<<" Passed."<<std::endl;
+  com.Barrier();
+  if(com.MyPID() == 0)
+    std::cout<<" Passed."<<std::endl;
 
   return;
 }
-

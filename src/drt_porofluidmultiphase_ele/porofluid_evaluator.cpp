@@ -1179,9 +1179,9 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd,nen>::EvaluateMatrixOD
   for (int idof=0; idof<numdofpernode; ++idof)
     refgradphi[idof].Multiply(xjm,gradphi[idof]);
 
-    // compute the pressure gradient from the phi gradients
-    for (int idof=0; idof<numdofpernode; ++idof)
-      refgradpres.Update(phasemanager.PressureDeriv(curphase,idof),refgradphi[idof],1.0);
+  // compute the pressure gradient from the phi gradients
+  for (int idof=0; idof<numdofpernode; ++idof)
+    refgradpres.Update(phasemanager.PressureDeriv(curphase,idof),refgradphi[idof],1.0);
 
   if(nsd == 3)
   {

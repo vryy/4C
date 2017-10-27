@@ -3057,8 +3057,8 @@ int STR::TimIntImpl::UzawaLinearNewtonFullErrorCheck(int linerror, int eleerror)
     {
       if (myrank_ == 0)
         IO::cout<<"Newton unconverged in " << iter_ << " iterations, continuing" <<IO::endl;
-        if (conman_->HaveMonitor())
-          conman_->ComputeMonitorValues(disn_);
+      if (conman_->HaveMonitor())
+        conman_->ComputeMonitorValues(disn_);
       return 0;
     }
     else if ( (iter_ >= itermax_) and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation or divcontype_==INPAR::STR::divcont_adapt_penaltycontact or divcontype_==INPAR::STR::divcont_adapt_3D0Dptc_ele_err))

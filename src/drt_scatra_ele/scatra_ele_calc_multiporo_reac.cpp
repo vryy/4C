@@ -749,116 +749,116 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcConvODMesh(
     for (int idof=0; idof<numphases; ++idof)
       reffluidgradphi[idof].Multiply(my::xjm_,fluidgradphi[idof]);
 
-      // compute the pressure gradient from the phi gradients
-      for (int idof=0; idof<numphases; ++idof)
-        refgradpres.Update(VarManager()->FluidPhaseManager()->PressureDeriv(curphase,idof),reffluidgradphi[idof],1.0);
+    // compute the pressure gradient from the phi gradients
+    for (int idof=0; idof<numphases; ++idof)
+      refgradpres.Update(VarManager()->FluidPhaseManager()->PressureDeriv(curphase,idof),reffluidgradphi[idof],1.0);
 
-      if(my::nsd_==3)
+    if(my::nsd_==3)
+    {
+      const double xjm_0_0   = my::xjm_(0, 0);
+      const double xjm_0_1   = my::xjm_(0, 1);
+      const double xjm_0_2   = my::xjm_(0, 2);
+      const double xjm_1_0   = my::xjm_(1, 0);
+      const double xjm_1_1   = my::xjm_(1, 1);
+      const double xjm_1_2   = my::xjm_(1, 2);
+      const double xjm_2_0   = my::xjm_(2, 0);
+      const double xjm_2_1   = my::xjm_(2, 1);
+      const double xjm_2_2   = my::xjm_(2, 2);
+
       {
-        const double xjm_0_0   = my::xjm_(0, 0);
-        const double xjm_0_1   = my::xjm_(0, 1);
-        const double xjm_0_2   = my::xjm_(0, 2);
-        const double xjm_1_0   = my::xjm_(1, 0);
-        const double xjm_1_1   = my::xjm_(1, 1);
-        const double xjm_1_2   = my::xjm_(1, 2);
-        const double xjm_2_0   = my::xjm_(2, 0);
-        const double xjm_2_1   = my::xjm_(2, 1);
-        const double xjm_2_2   = my::xjm_(2, 2);
+        const double refgradpres_0   = refgradpres(0);
+        const double refgradpres_1   = refgradpres(1);
+        const double refgradpres_2   = refgradpres(2);
 
+        const double gradphi_0   = gradphi(0);
+        const double gradphi_1   = gradphi(1);
+        const double gradphi_2   = gradphi(2);
+
+        // TODO: anisotropic difftensor and
+        //       non-constant viscosity (because of pressure gradient, probably not really necessary)
+        const double vrhs = rhsfac*1.0/J*difftensor(0,0)*(-1.0);
+
+        for (unsigned ui = 0; ui < my::nen_; ++ui)
         {
-          const double refgradpres_0   = refgradpres(0);
-          const double refgradpres_1   = refgradpres(1);
-          const double refgradpres_2   = refgradpres(2);
+          const double v00 = + gradphi_1 * (
+                                              refgradpres_0 * (my::deriv_(2, ui)*xjm_1_2 - my::deriv_(1, ui)*xjm_2_2)
+                                            + refgradpres_1 * (my::deriv_(0, ui)*xjm_2_2 - my::deriv_(2, ui)*xjm_0_2)
+                                            + refgradpres_2 * (my::deriv_(1, ui)*xjm_0_2 - my::deriv_(0, ui)*xjm_1_2)
+                                              )
+                             + gradphi_2 * (
+                                              refgradpres_0 * (my::deriv_(1, ui)*xjm_2_1 - my::deriv_(2, ui)*xjm_1_1)
+                                            + refgradpres_1 * (my::deriv_(2, ui)*xjm_0_1 - my::deriv_(0, ui)*xjm_2_1)
+                                            + refgradpres_2 * (my::deriv_(0, ui)*xjm_1_1 - my::deriv_(1, ui)*xjm_0_1)
+                                              );
+          const double v01 = + gradphi_0 * (
+                                              refgradpres_0 * (my::deriv_(1, ui)*xjm_2_2 - my::deriv_(2, ui)*xjm_1_2)
+                                            + refgradpres_1 * (my::deriv_(2, ui)*xjm_0_2 - my::deriv_(0, ui)*xjm_2_2)
+                                            + refgradpres_2 * (my::deriv_(0, ui)*xjm_1_2 - my::deriv_(1, ui)*xjm_0_2))
+                             + gradphi_2 * (  refgradpres_0 * (my::deriv_(2, ui)*xjm_1_0 - my::deriv_(1, ui)*xjm_2_0)
+                                            + refgradpres_1 * (my::deriv_(0, ui)*xjm_2_0 - my::deriv_(2, ui)*xjm_0_0)
+                                            + refgradpres_2 * (my::deriv_(1, ui)*xjm_0_0 - my::deriv_(0, ui)*xjm_1_0)
+                                              );
+          const double v02 = + gradphi_0 * (
+                                              refgradpres_0 * (my::deriv_(2, ui)*xjm_1_1 - my::deriv_(1, ui)*xjm_2_1)
+                                            + refgradpres_1 * (my::deriv_(0, ui)*xjm_2_1 - my::deriv_(2, ui)*xjm_0_1)
+                                            + refgradpres_2 * (my::deriv_(1, ui)*xjm_0_1 - my::deriv_(0, ui)*xjm_1_1)
+                                              )
+                             + gradphi_1 * (
+                                              refgradpres_0 * (my::deriv_(1, ui)*xjm_2_0 - my::deriv_(2, ui)*xjm_1_0)
+                                            + refgradpres_1 * (my::deriv_(2, ui)*xjm_0_0 - my::deriv_(0, ui)*xjm_2_0)
+                                            + refgradpres_2 * (my::deriv_(0, ui)*xjm_1_0 - my::deriv_(1, ui)*xjm_0_0)
+                                              );
 
-          const double gradphi_0   = gradphi(0);
-          const double gradphi_1   = gradphi(1);
-          const double gradphi_2   = gradphi(2);
-
-          // TODO: anisotropic difftensor and
-          //       non-constant viscosity (because of pressure gradient, probably not really necessary)
-          const double vrhs = rhsfac*1.0/J*difftensor(0,0)*(-1.0);
-
-          for (unsigned ui = 0; ui < my::nen_; ++ui)
+          for (unsigned vi = 0; vi < my::nen_; ++vi)
           {
-            const double v00 = + gradphi_1 * (
-                                                refgradpres_0 * (my::deriv_(2, ui)*xjm_1_2 - my::deriv_(1, ui)*xjm_2_2)
-                                              + refgradpres_1 * (my::deriv_(0, ui)*xjm_2_2 - my::deriv_(2, ui)*xjm_0_2)
-                                              + refgradpres_2 * (my::deriv_(1, ui)*xjm_0_2 - my::deriv_(0, ui)*xjm_1_2)
-                                                )
-                               + gradphi_2 * (
-                                                refgradpres_0 * (my::deriv_(1, ui)*xjm_2_1 - my::deriv_(2, ui)*xjm_1_1)
-                                              + refgradpres_1 * (my::deriv_(2, ui)*xjm_0_1 - my::deriv_(0, ui)*xjm_2_1)
-                                              + refgradpres_2 * (my::deriv_(0, ui)*xjm_1_1 - my::deriv_(1, ui)*xjm_0_1)
-                                                );
-            const double v01 = + gradphi_0 * (
-                                                refgradpres_0 * (my::deriv_(1, ui)*xjm_2_2 - my::deriv_(2, ui)*xjm_1_2)
-                                              + refgradpres_1 * (my::deriv_(2, ui)*xjm_0_2 - my::deriv_(0, ui)*xjm_2_2)
-                                              + refgradpres_2 * (my::deriv_(0, ui)*xjm_1_2 - my::deriv_(1, ui)*xjm_0_2))
-                               + gradphi_2 * (  refgradpres_0 * (my::deriv_(2, ui)*xjm_1_0 - my::deriv_(1, ui)*xjm_2_0)
-                                              + refgradpres_1 * (my::deriv_(0, ui)*xjm_2_0 - my::deriv_(2, ui)*xjm_0_0)
-                                              + refgradpres_2 * (my::deriv_(1, ui)*xjm_0_0 - my::deriv_(0, ui)*xjm_1_0)
-                                                );
-            const double v02 = + gradphi_0 * (
-                                                refgradpres_0 * (my::deriv_(2, ui)*xjm_1_1 - my::deriv_(1, ui)*xjm_2_1)
-                                              + refgradpres_1 * (my::deriv_(0, ui)*xjm_2_1 - my::deriv_(2, ui)*xjm_0_1)
-                                              + refgradpres_2 * (my::deriv_(1, ui)*xjm_0_1 - my::deriv_(0, ui)*xjm_1_1)
-                                                )
-                               + gradphi_1 * (
-                                                refgradpres_0 * (my::deriv_(1, ui)*xjm_2_0 - my::deriv_(2, ui)*xjm_1_0)
-                                              + refgradpres_1 * (my::deriv_(2, ui)*xjm_0_0 - my::deriv_(0, ui)*xjm_2_0)
-                                              + refgradpres_2 * (my::deriv_(0, ui)*xjm_1_0 - my::deriv_(1, ui)*xjm_0_0)
-                                                );
+            const int fvi = vi*my::numdofpernode_+k;
+            const double v = vrhs * my::funct_(vi);
 
-            for (unsigned vi = 0; vi < my::nen_; ++vi)
-            {
-              const int fvi = vi*my::numdofpernode_+k;
-              const double v = vrhs * my::funct_(vi);
-
-              emat(fvi, ui * 3 + 0) += v * v00;
-              emat(fvi, ui * 3 + 1) += v * v01;
-              emat(fvi, ui * 3 + 2) += v * v02;
-            }
+            emat(fvi, ui * 3 + 0) += v * v00;
+            emat(fvi, ui * 3 + 1) += v * v01;
+            emat(fvi, ui * 3 + 2) += v * v02;
           }
         }
       }
-      else if(my::nsd_==2)
+    }
+    else if(my::nsd_==2)
+    {
       {
+        const double refgradpres_0   = refgradpres(0);
+        const double refgradpres_1   = refgradpres(1);
+
+        const double gradphi_0   = gradphi(0);
+        const double gradphi_1   = gradphi(1);
+
+        // TODO: anisotropic difftensor and
+        //       non-constant viscosity (because of pressure gradient, probably not really necessary)
+        const double vrhs = rhsfac*1.0/J*difftensor(0,0)*(-1.0);
+
+        for (unsigned ui = 0; ui < my::nen_; ++ui)
         {
-          const double refgradpres_0   = refgradpres(0);
-          const double refgradpres_1   = refgradpres(1);
+          const double v00 = + gradphi_1 * (
+                                              - refgradpres_0 * my::deriv_(1, ui)
+                                              + refgradpres_1 * my::deriv_(0, ui)
+                                              );
+          const double v01 = + gradphi_0 * (
+                                                refgradpres_0 * my::deriv_(1, ui)
+                                              - refgradpres_1 * my::deriv_(0, ui)
+                                             )
+                                              ;
 
-          const double gradphi_0   = gradphi(0);
-          const double gradphi_1   = gradphi(1);
-
-          // TODO: anisotropic difftensor and
-          //       non-constant viscosity (because of pressure gradient, probably not really necessary)
-          const double vrhs = rhsfac*1.0/J*difftensor(0,0)*(-1.0);
-
-          for (unsigned ui = 0; ui < my::nen_; ++ui)
+          for (unsigned vi = 0; vi < my::nen_; ++vi)
           {
-            const double v00 = + gradphi_1 * (
-                                                - refgradpres_0 * my::deriv_(1, ui)
-                                                + refgradpres_1 * my::deriv_(0, ui)
-                                                );
-            const double v01 = + gradphi_0 * (
-                                                  refgradpres_0 * my::deriv_(1, ui)
-                                                - refgradpres_1 * my::deriv_(0, ui)
-                                               )
-                                                ;
+            const int fvi = vi*my::numdofpernode_+k;
+            const double v = vrhs * my::funct_(vi);
 
-            for (unsigned vi = 0; vi < my::nen_; ++vi)
-            {
-              const int fvi = vi*my::numdofpernode_+k;
-              const double v = vrhs * my::funct_(vi);
-
-              emat(fvi, ui * 2 + 0) += v * v00;
-              emat(fvi, ui * 2 + 1) += v * v01;
-            }
+            emat(fvi, ui * 2 + 0) += v * v00;
+            emat(fvi, ui * 2 + 1) += v * v01;
           }
         }
       }
-      else
-        dserror("shapederivatives not implemented for 1D!");
+    }
+    else
+      dserror("shapederivatives not implemented for 1D!");
 
     //----------------------------------------------------------------
     // standard Galerkin terms  -- "shapederivatives" gradphi
