@@ -185,18 +185,18 @@ PolynomialSpaceTensor<nsd_, POLY>::Evaluate_deriv1(const LINALG::Matrix<nsd_,1> 
           derivatives(2,renumbering_[i*size*size+j*size+k]) =
               gradient[2][i] * evaluation[1][j] * evaluation[0][k];
         }
-      break;
+    break;
   case 2:
     for (unsigned int j=0; j<size; ++j)
       for (unsigned int k=0; k<size; ++k) {
         derivatives(0,renumbering_[j*size+k]) = evaluation[1][j] * gradient[0][k];
         derivatives(1,renumbering_[j*size+k]) = gradient[1][j] * evaluation[0][k];
       }
-      break;
+    break;
   case 1:
     for (unsigned int k=0; k<size; ++k)
       derivatives(0,renumbering_[k]) = gradient[0][k];
-      break;
+    break;
   default:
     dserror("Invalid dimension");
     break;
@@ -246,7 +246,7 @@ PolynomialSpaceTensor<nsd_, POLY>::Evaluate_deriv2(const LINALG::Matrix<nsd_,1> 
           derivatives(5,renumbering_[i*size*size+j*size+k]) =
               gradient[2][i] * gradient[1][j] * evaluation[0][k];
         }
-      break;
+    break;
   case 2:
     for (unsigned int j=0; j<size; ++j)
       for (unsigned int k=0; k<size; ++k) {
@@ -254,11 +254,11 @@ PolynomialSpaceTensor<nsd_, POLY>::Evaluate_deriv2(const LINALG::Matrix<nsd_,1> 
         derivatives(1,renumbering_[j*size+k]) = hessian[1][j] * evaluation[0][k];
         derivatives(2,renumbering_[j*size+k]) = gradient[1][j] * gradient[0][k];
       }
-      break;
+    break;
   case 1:
     for (unsigned int k=0; k<size; ++k)
       derivatives(0,renumbering_[k]) = hessian[0][k];
-      break;
+    break;
   default:
     dserror("Invalid dimension");
     break;
@@ -288,7 +288,7 @@ PolynomialSpaceTensor<nsd_, POLY>::FillUnitNodePoints(LINALG::SerialDenseMatrix 
           matrix(1,renumbering_[i*size*size+j*size+k]) = polySpace1d_[j].NodePoint();
           matrix(2,renumbering_[i*size*size+j*size+k]) = polySpace1d_[i].NodePoint();
         }
-      break;
+    break;
   case 2:
     for (unsigned int j=0; j<size; ++j)
       for (unsigned int k=0; k<size; ++k)
@@ -296,11 +296,11 @@ PolynomialSpaceTensor<nsd_, POLY>::FillUnitNodePoints(LINALG::SerialDenseMatrix 
         matrix(0,renumbering_[j*size+k]) = polySpace1d_[k].NodePoint();
         matrix(1,renumbering_[j*size+k]) = polySpace1d_[j].NodePoint();
       }
-      break;
+    break;
   case 1:
     for (unsigned int k=0; k<size; ++k)
       matrix(0,renumbering_[k]) = polySpace1d_[k].NodePoint();
-      break;
+    break;
   default:
     dserror("Invalid dimension");
     break;
@@ -502,7 +502,7 @@ PolynomialSpaceComplete<nsd_, POLY>::FillUnitNodePoints(LINALG::SerialDenseMatri
           matrix(1,renumbering_[c]) = polySpace1d_[j].NodePoint();
           matrix(2,renumbering_[c]) = polySpace1d_[i].NodePoint();
         }
-      break;
+    break;
   case 2:
     for (unsigned int j=0; j<size; ++j)
       for (unsigned int k=0; k<size-j; ++k, ++c)
@@ -510,11 +510,11 @@ PolynomialSpaceComplete<nsd_, POLY>::FillUnitNodePoints(LINALG::SerialDenseMatri
         matrix(0,renumbering_[c]) = polySpace1d_[k].NodePoint();
         matrix(1,renumbering_[c]) = polySpace1d_[j].NodePoint();
       }
-      break;
+    break;
   case 1:
     for (unsigned int k=0; k<size; ++k, ++c)
       matrix(0,renumbering_[c]) = polySpace1d_[k].NodePoint();
-      break;
+    break;
   default:
     dserror("Invalid dimension");
     break;

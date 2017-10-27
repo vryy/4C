@@ -881,5 +881,5 @@ void Myocard_Inada::Update(const double phi, const double dt)
   for (int i=0; i<29; i++)
     s0_[i] = s_[i];
 
-    return;
+  return;
 }

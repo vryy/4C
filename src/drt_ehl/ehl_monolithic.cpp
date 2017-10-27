@@ -108,8 +108,8 @@ EHL::Monolithic::Monolithic(
   // get direct solver, e.g. UMFPACK
   else  // (merge_ehl_blockmatrix_ == true)
   {
-  if (Comm().MyPID() == 0)
-    std::cout << "Merged EHL block matrix is used!\n" << std::endl;
+    if (Comm().MyPID() == 0)
+      std::cout << "Merged EHL block matrix is used!\n" << std::endl;
 
     Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
     solverparams->set("solver","umfpack");

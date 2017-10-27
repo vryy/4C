@@ -326,12 +326,12 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(Teuchos::RCP<DRT::Discretization
       dserror("UQ requires accurate computation of max ILT thickness, Set CALC_ACCURATE_MAX_ILT_THICK to yes");
     else
       iltthick->MaxValue(&maxiltthick);
-      maxiltthick -= 1.0; // subtract an approximate arterial wall thickness
-      if (!dis->Comm().MyPID())
-      {
-        IO::cout << "WARNING: WALL THICKNESS IS CURRENTLY HARDCODED TO 1.0 mm FOR ILT THICK CALC" << IO::endl;
-        IO::cout << "WARNING: THINK ABOUT SWITCHING TO ACCURATE ILT THICK CALCULATION" << IO::endl;
-      }
+    maxiltthick -= 1.0; // subtract an approximate arterial wall thickness
+    if (!dis->Comm().MyPID())
+    {
+      IO::cout << "WARNING: WALL THICKNESS IS CURRENTLY HARDCODED TO 1.0 mm FOR ILT THICK CALC" << IO::endl;
+      IO::cout << "WARNING: THINK ABOUT SWITCHING TO ACCURATE ILT THICK CALCULATION" << IO::endl;
+    }
   }
 
   iltthick->Scale(1.0/maxiltthick);
@@ -1044,4 +1044,3 @@ double PATSPEC::ComputeMaxILTThickness(Teuchos::RCP<DRT::Discretization> dis)
    iltthick->MaxValue(&maxiltthick);
    return maxiltthick;
 }
-

@@ -820,8 +820,8 @@ bool GEO::CUT::Intersection<probdim,edgetype,sidetype,debug,dimedge,dimside,
           std::cout << "Cut points found by intersection, "
               "Begin Node is in surface! (Codeline:" << __LINE__ << ")"
               << std::endl;
-          if (debugbb)
-            dserror("Bounding Boxes said that ther is no intersection point!");
+        if (debugbb)
+          dserror("Bounding Boxes said that ther is no intersection point!");
         return true;
       }
       //case point lies on end node of line!!!

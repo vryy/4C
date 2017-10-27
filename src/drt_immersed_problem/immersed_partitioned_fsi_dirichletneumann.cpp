@@ -441,7 +441,7 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::InitialGuess()
   else
     return immersedstructure_->Interface()->ExtractIMMERSEDCondVector(struct_bdry_traction_);
 
-    return Teuchos::null;
+  return Teuchos::null;
 }
 
 /*----------------------------------------------------------------------*/

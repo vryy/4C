@@ -111,7 +111,7 @@ private:
   //@}
 
   /// get stress dof-index
-  unsigned stressIndex(unsigned xi, unsigned xj){ return (xi * xj) ? xi + xj + 1 : xi + xj;  }
+  unsigned stressIndex(unsigned xi, unsigned xj){ return (xi * xj > 0) ? xi + xj + 1 : xi + xj;  }
 
 public:
   virtual ~FluidEleCalcXFEM() {}
@@ -497,4 +497,3 @@ private:
 } //namespace DRT
 
 #endif
-

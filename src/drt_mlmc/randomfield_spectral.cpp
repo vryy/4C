@@ -3,6 +3,7 @@
 Created on: 15 May, 2014
 \brief Class for generating samples of gaussian and non gaussian random fields based on spectral representation
 
+\level 2
 
  <pre>
 \maintainer Jonas Biehler
@@ -820,13 +821,13 @@ double UQ::RandomFieldSpectral::EvalFieldAtLocation(
     index_x=int(floor((location[0]-bb_min_[0])/dx_));
     index_y=int(floor((location[1]-bb_min_[1])/dx_));
     // special solution for 2D art_aorta_case SET z to y
-     if (myrank_ == 0&& output && dim_==2 )
-     {
-       IO::cout<< "hack in use" << IO::endl;
-     }
-     if (dim_==2)
-       index_y=int(floor((location[2]-bb_min_[2])/dx_));
-       index_z=int(floor((location[2]-bb_min_[2])/dx_));
+    if (myrank_ == 0&& output && dim_==2 )
+    {
+      IO::cout<< "hack in use" << IO::endl;
+    }
+    if (dim_==2)
+      index_y=int(floor((location[2]-bb_min_[2])/dx_));
+    index_z=int(floor((location[2]-bb_min_[2])/dx_));
     // check index
     if (index_x>M_||index_y>M_||index_z>M_)
       dserror("Index out of bounds");

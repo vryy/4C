@@ -1837,7 +1837,7 @@ void CONTACT::STRATEGY::Factory::PrintStrategyBanner(
       IO::cout << "===== (Saddle point formulation) ===============================\n";
       IO::cout << "================================================================\n\n";
     }
-    else if (INPAR::CONTACT::solution_penalty)
+    else if (soltype == INPAR::CONTACT::solution_penalty)
     {
       IO::cout << "================================================================\n";
       IO::cout << "========= !!! EXPERIMENTAL VERSION  !!!     ====================\n";

@@ -3,15 +3,9 @@
 
 \brief routines for homogeneous isotropic turbulence
 
-Documentation see header.
+\level 1
 
-
-<pre>
-Maintainer: Benjamin Krank
-            krank@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15252
-</pre>
+\maintainer Benjamin Krank
 
 *----------------------------------------------------------------------*/
 
@@ -597,45 +591,45 @@ void TurbulenceStatisticsHit::DoTimeSample(
               if (k_conj_2 < 0)
                 k_conj_2 += nummodes_;
 
-                if ((k_conj_1 >= 0 and k_conj_1 <= (nummodes_-1)) and
-                    (k_conj_2 >= 0 and k_conj_2 <= (nummodes_-1)) and
-                    (k_conj_3 >= 0 and k_conj_3 <= (nummodes_-1)))
-                {
-                  pos_fftw_k_1 = k_conj_1;
-                  pos_fftw_k_2 = k_conj_2;
-                  pos_fftw_k_3 = k_conj_3;
-                }
-                else
-                  dserror("Position in fftw domain expected!");
-              }
-            }
-            else
-            {
-              int k_shift_1 = k_1;
-              int k_shift_2 = k_2;
-              int k_shift_3 = k_3;
-
-              if (not (k_shift_3 >= 0 and k_shift_3 <= (nummodes_-1)))
-                dserror("k_3 in fftw domain expected!");
-
-              // shift k_1 and k_2 into fftw domain
-              if (k_shift_1 < 0 )
-                k_shift_1 += nummodes_;
-              if (k_shift_2 < 0)
-                k_shift_2 += nummodes_;
-
-              if ((k_shift_1 >= 0 and k_shift_1 <= (nummodes_-1)) and
-                  (k_shift_2 >= 0 and k_shift_2 <= (nummodes_-1)) and
-                  (k_shift_3 >= 0 and k_shift_3 <= (nummodes_-1)))
+              if ((k_conj_1 >= 0 and k_conj_1 <= (nummodes_-1)) and
+                  (k_conj_2 >= 0 and k_conj_2 <= (nummodes_-1)) and
+                  (k_conj_3 >= 0 and k_conj_3 <= (nummodes_-1)))
               {
-                pos_fftw_k_1 = k_shift_1;
-                pos_fftw_k_2 = k_shift_2;
-                pos_fftw_k_3 = k_shift_3;
+                pos_fftw_k_1 = k_conj_1;
+                pos_fftw_k_2 = k_conj_2;
+                pos_fftw_k_3 = k_conj_3;
               }
               else
-               dserror("Position in fftw domain expected!");
-           }
-         }
+                dserror("Position in fftw domain expected!");
+            }
+          }
+          else
+          {
+            int k_shift_1 = k_1;
+            int k_shift_2 = k_2;
+            int k_shift_3 = k_3;
+
+            if (not (k_shift_3 >= 0 and k_shift_3 <= (nummodes_-1)))
+              dserror("k_3 in fftw domain expected!");
+
+            // shift k_1 and k_2 into fftw domain
+            if (k_shift_1 < 0 )
+              k_shift_1 += nummodes_;
+            if (k_shift_2 < 0)
+              k_shift_2 += nummodes_;
+
+            if ((k_shift_1 >= 0 and k_shift_1 <= (nummodes_-1)) and
+                (k_shift_2 >= 0 and k_shift_2 <= (nummodes_-1)) and
+                (k_shift_3 >= 0 and k_shift_3 <= (nummodes_-1)))
+            {
+              pos_fftw_k_1 = k_shift_1;
+              pos_fftw_k_2 = k_shift_2;
+              pos_fftw_k_3 = k_shift_3;
+            }
+            else
+             dserror("Position in fftw domain expected!");
+          }
+        }
 
         // get position in u1_hat
         const int pos = pos_fftw_k_3 + (nummodes_/2+1) * (pos_fftw_k_2 + nummodes_ * pos_fftw_k_1);
@@ -2161,45 +2155,45 @@ void TurbulenceStatisticsHitHDG::DoTimeSample(
               if (k_conj_2 < 0)
                 k_conj_2 += nummodes_;
 
-                if ((k_conj_1 >= 0 and k_conj_1 <= (nummodes_-1)) and
-                    (k_conj_2 >= 0 and k_conj_2 <= (nummodes_-1)) and
-                    (k_conj_3 >= 0 and k_conj_3 <= (nummodes_-1)))
-                {
-                  pos_fftw_k_1 = k_conj_1;
-                  pos_fftw_k_2 = k_conj_2;
-                  pos_fftw_k_3 = k_conj_3;
-                }
-                else
-                  dserror("Position in fftw domain expected!");
-              }
-            }
-            else
-            {
-              int k_shift_1 = k_1;
-              int k_shift_2 = k_2;
-              int k_shift_3 = k_3;
-
-              if (not (k_shift_3 >= 0 and k_shift_3 <= (nummodes_-1)))
-                dserror("k_3 in fftw domain expected!");
-
-              // shift k_1 and k_2 into fftw domain
-              if (k_shift_1 < 0 )
-                k_shift_1 += nummodes_;
-              if (k_shift_2 < 0)
-                k_shift_2 += nummodes_;
-
-              if ((k_shift_1 >= 0 and k_shift_1 <= (nummodes_-1)) and
-                  (k_shift_2 >= 0 and k_shift_2 <= (nummodes_-1)) and
-                  (k_shift_3 >= 0 and k_shift_3 <= (nummodes_-1)))
+              if ((k_conj_1 >= 0 and k_conj_1 <= (nummodes_-1)) and
+                  (k_conj_2 >= 0 and k_conj_2 <= (nummodes_-1)) and
+                  (k_conj_3 >= 0 and k_conj_3 <= (nummodes_-1)))
               {
-                pos_fftw_k_1 = k_shift_1;
-                pos_fftw_k_2 = k_shift_2;
-                pos_fftw_k_3 = k_shift_3;
+                pos_fftw_k_1 = k_conj_1;
+                pos_fftw_k_2 = k_conj_2;
+                pos_fftw_k_3 = k_conj_3;
               }
               else
-               dserror("Position in fftw domain expected!");
-           }
-         }
+                dserror("Position in fftw domain expected!");
+            }
+          }
+          else
+          {
+            int k_shift_1 = k_1;
+            int k_shift_2 = k_2;
+            int k_shift_3 = k_3;
+
+            if (not (k_shift_3 >= 0 and k_shift_3 <= (nummodes_-1)))
+              dserror("k_3 in fftw domain expected!");
+
+            // shift k_1 and k_2 into fftw domain
+            if (k_shift_1 < 0 )
+              k_shift_1 += nummodes_;
+            if (k_shift_2 < 0)
+              k_shift_2 += nummodes_;
+
+            if ((k_shift_1 >= 0 and k_shift_1 <= (nummodes_-1)) and
+                (k_shift_2 >= 0 and k_shift_2 <= (nummodes_-1)) and
+                (k_shift_3 >= 0 and k_shift_3 <= (nummodes_-1)))
+            {
+              pos_fftw_k_1 = k_shift_1;
+              pos_fftw_k_2 = k_shift_2;
+              pos_fftw_k_3 = k_shift_3;
+            }
+            else
+             dserror("Position in fftw domain expected!");
+          }
+        }
 
         // get position in u1_hat
         const int pos = pos_fftw_k_3 + (nummodes_/2+1) * (pos_fftw_k_2 + nummodes_ * pos_fftw_k_1);

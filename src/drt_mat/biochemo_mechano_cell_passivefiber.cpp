@@ -616,9 +616,9 @@ void MAT::BioChemoMechanoCellPassiveFiber::Evaluate(
   matelast_->Evaluate(defgrd,glstrain,params,stress,cmat,eleGID);
 
   // sum up total stress
-stress->Update(1.0,visc_stress_PK2,1.0);
-if (params_->analyticalmaterialtangent_)
-  cmat->Update(1.0,visc_cmat,1.0);
+  stress->Update(1.0,visc_stress_PK2,1.0);
+  if (params_->analyticalmaterialtangent_)
+    cmat->Update(1.0,visc_cmat,1.0);
 
   return;
 } // MAT::BioChemoMechanoCellPassiveFiber::Evaluate

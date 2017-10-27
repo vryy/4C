@@ -9554,11 +9554,10 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
         for (int dim=0;dim<cnode->NumDof();++dim)
           traction += tanplane(dimout,dim)*cnode->FriData().jump()[dim]*kappa*pptan;
 
-          traction += tractionold[dimout];
+        traction += tractionold[dimout];
 
-          for (int dim=0;dim<cnode->NumDof();++dim)
-          {
-
+        for (int dim=0;dim<cnode->NumDof();++dim)
+        {
           // loop over all entries of the current derivative map
           for (_colcurr=derivn[dim].begin();_colcurr!=derivn[dim].end();++_colcurr)
           {

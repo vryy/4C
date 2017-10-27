@@ -289,10 +289,10 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
     DRT::Element* parentele = ele->ParentElement();
     Teuchos::RCP<MAT::Material> mat = parentele->Material();
 
-    switch (distype)
-    {
     if (numscal_>1) dserror("not yet implemented for more than one scalar\n");
 
+    switch (distype)
+    {
     // 2D:
     case DRT::Element::line2:
     {
@@ -3123,4 +3123,3 @@ template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::line2>;
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::line3>;
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::nurbs3>;
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::nurbs9>;
-

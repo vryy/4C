@@ -880,7 +880,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
 
   for (int i=0; i<mlmaxlevel-1; ++i)
   {
-    char levelstr[11];
+    char levelstr[19];
     sprintf(levelstr,"(level %d)",i);
     Teuchos::ParameterList& smolevelsublist = mllist.sublist("smoother: list "+std::string(levelstr));
     int type = 0;

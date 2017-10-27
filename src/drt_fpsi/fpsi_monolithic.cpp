@@ -1174,7 +1174,7 @@ void FPSI::Monolithic::PrintNewtonIter()
   {
     if (iter_ == 1)
       PrintNewtonIterHeader(stdout);
-      PrintNewtonIterText(stdout);
+    PrintNewtonIterText(stdout);
   }
 
   // print to error file

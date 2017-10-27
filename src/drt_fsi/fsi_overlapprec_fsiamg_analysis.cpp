@@ -4,11 +4,9 @@
 
 \brief Analysis tool for FSI preconditioners
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\level 3
+
+\maintainer Martin Kronbichler
 */
 /*----------------------------------------------------------------------*/
 
@@ -143,7 +141,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_SingleField(
       fflush(stdout);
     }
     Teuchos::ParameterList pushlist(params.sublist("smoother: ifpack list"));
-    char levelstr[11];
+    char levelstr[19];
     sprintf(levelstr,"(level %d)",level);
     Teuchos::ParameterList subp =  params.sublist("smoother: list "+(std::string)levelstr);
     //std::cout << "pushlist\n" << pushlist << "subp\n" << subp << std::endl;
@@ -394,7 +392,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_SingleField(
               double rate = RichardsonV(fieldname,myrank,3,1.0,localVsweeps,best.Damp(),A,best.S(),P,R,0,nlevel,x,f,false,true,false);
               if (rate<bestVrate)
               {
-                if (!myrank) printf("Current best\n"); fflush(stdout);
+                if (!myrank) { printf("Current best\n"); fflush(stdout); }
                 bestVrate = rate;
                 for (int o=0; o<6; ++o) best.Sweeps()[o] = localVsweeps[o];
               }
@@ -519,7 +517,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_BGSAMG(
                                       false,true,false);
         if (rate<bestrate)
         {
-          if (!myrank) printf("** Current best **\n"); fflush(stdout);
+          if (!myrank) { printf("** Current best **\n"); fflush(stdout); }
           bestrate = rate;
           for (int k=0; k<3; ++k)
             bestsweeps[k] = localsweeps[k];
@@ -564,7 +562,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_BGSAMG(
                                     false,true,false);
       if (rate<bestrate)
       {
-        if (!myrank) printf("** Current best **\n"); fflush(stdout);
+        if (!myrank) { printf("** Current best **\n"); fflush(stdout); }
         bestrate = rate;
         for (int k=0; k<3; ++k)
           bestdamps[k] = localdamps[k];
@@ -717,7 +715,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_AMGBGS(
                                          false,true,false);
           if (rate<bestrate[level])
           {
-            if (!myrank) printf("** Current best **\n"); fflush(stdout);
+            if (!myrank) { printf("** Current best **\n"); fflush(stdout); }
             bestrate[level] = rate;
             for (int k=0; k<3; ++k)
               bestsweeps[k][level] = localsweeps[k][level];
@@ -784,7 +782,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_AMGBGS(
                                            false,true,false);
           if (rate<bestrate[level])
           {
-            if (!myrank) printf("** Current best **\n"); fflush(stdout);
+            if (!myrank) { printf("** Current best **\n"); fflush(stdout); }
             bestrate[level] = rate;
             for (int k=0; k<3; ++k)
               bestdamps[k][level] = localdamps[k][level];
@@ -856,7 +854,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_AMGBGS(
                                               false,true,false);
               if (rate<bestVrate)
               {
-                if (!myrank) printf("** Current best **\n"); fflush(stdout);
+                if (!myrank) { printf("** Current best **\n"); fflush(stdout); }
                 bestVrate = rate;
                 for (int o=0; o<minnlevel_; ++o)
                   bestVsweeps[o] = localVsweeps[o];
@@ -904,7 +902,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_AMGBGS(
                                       false,true,false);
       if (rate<bestVrate)
       {
-        if (!myrank) printf("** Current best **\n"); fflush(stdout);
+        if (!myrank) { printf("** Current best **\n"); fflush(stdout); }
         bestVrate = rate;
         for (int i=0; i<minnlevel_; ++i) bestVdamps[i] = localVdamps[i];
       }
@@ -941,7 +939,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_AMGBGS(
                                       false,true,false);
       if (rate<bestVrate)
       {
-        if (!myrank) printf("** Current best **\n"); fflush(stdout);
+        if (!myrank) { printf("** Current best **\n"); fflush(stdout); }
         bestVrate = rate;
         for (int i=0; i<minnlevel_; ++i) bestVdamps[i] = localVdamps[i];
       }

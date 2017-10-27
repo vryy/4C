@@ -375,17 +375,17 @@ void MAT::PlasticElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linede
     if (!linedef->HaveNamed("FIBER1") || !linedef->HaveNamed("FIBER2") || !linedef->HaveNamed("FIBER3"))
       dserror("so3 expects no fibers or 3 fiber directions");
 
-    // plastic anisotropy
-    SetupHillPlasticity(linedef);
+  // plastic anisotropy
+  SetupHillPlasticity(linedef);
 
-    // setup plastic history variables
-    LINALG::Matrix<3,3> tmp(true);
-    last_alpha_isotropic_        .resize(numgp,0.);
-    last_alpha_kinematic_        .resize(numgp,tmp);
-    for (int i=0; i<3; i++) tmp(i,i)=1.;
-    last_plastic_defgrd_inverse_ .resize(numgp,tmp);
-    activity_state_              .resize(numgp,false);
-    delta_alpha_i_               .resize(numgp,0.);
+  // setup plastic history variables
+  LINALG::Matrix<3,3> tmp(true);
+  last_alpha_isotropic_        .resize(numgp,0.);
+  last_alpha_kinematic_        .resize(numgp,tmp);
+  for (int i=0; i<3; i++) tmp(i,i)=1.;
+  last_plastic_defgrd_inverse_ .resize(numgp,tmp);
+  activity_state_              .resize(numgp,false);
+  delta_alpha_i_               .resize(numgp,0.);
 
   return;
 }

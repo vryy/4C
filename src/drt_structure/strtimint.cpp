@@ -720,7 +720,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
           std::cout << "===== (Saddle point formulation) ===============================" << std::endl;
           std::cout << "================================================================\n" << std::endl;
         }
-        else if (INPAR::CONTACT::solution_penalty)
+        else if (soltype == INPAR::CONTACT::solution_penalty)
         {
           std::cout << "================================================================" << std::endl;
           std::cout << "========= !!! EXPERIMENTAL VERSION  !!!     ====================" << std::endl;

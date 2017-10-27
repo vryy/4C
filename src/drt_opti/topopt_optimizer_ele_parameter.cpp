@@ -3,12 +3,9 @@
 
 \brief Evaluation of element parameter
 
-<pre>
-Maintainer: Martin Winklmaier
-            winklmaier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15241
-</pre>
+\level 3
+
+\maintainer Martin Winklmaier
  *------------------------------------------------------------------------------------------------*/
 
 
@@ -105,19 +102,19 @@ void DRT::ELEMENTS::TopOptParam::SetGeneralOptimizationParameter( Teuchos::Param
   whichtau_ =  DRT::INPUT::IntegralValue<INPAR::FLUID::TauType>(params.sublist("RESIDUAL-BASED STABILIZATION"),"DEFINITION_TAU");
   // check if tau can be handled
   if (not(whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins or
-      INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt or
-      INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen or
-      INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt or
-      INPAR::FLUID::tau_taylor_hughes_zarins_scaled or
-      INPAR::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt or
-      INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall or
-      INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt or
-      INPAR::FLUID::tau_shakib_hughes_codina or
-      INPAR::FLUID::tau_shakib_hughes_codina_wo_dt or
-      INPAR::FLUID::tau_codina or
-      INPAR::FLUID::tau_codina_wo_dt or
-      INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
-      INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt))
+          whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt or
+          whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen or
+          whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt or
+          whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_scaled or
+          whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt or
+          whichtau_ == INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall or
+          whichtau_ == INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt or
+          whichtau_ == INPAR::FLUID::tau_shakib_hughes_codina or
+          whichtau_ == INPAR::FLUID::tau_shakib_hughes_codina_wo_dt or
+          whichtau_ == INPAR::FLUID::tau_codina or
+          whichtau_ == INPAR::FLUID::tau_codina_wo_dt or
+          whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
+          whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt))
     dserror("Definition of Tau cannot be handled by the element");
 
   // set correct stationary definition of stabilization parameter automatically
@@ -242,4 +239,3 @@ void DRT::ELEMENTS::TopOptParam::PrintAdjointParameter() const
   std::cout << "|    theta:     " << theta_ << std::endl;
   std::cout << "|---------------------------------------------------------------------------" << std::endl;
 }  /// @name objective parameters
-

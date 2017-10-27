@@ -117,7 +117,7 @@ void GEO::CUT::LevelSetIntersection::Cut_Mesh( bool screenoutput )
   {
     const double t_start = Teuchos::Time::wallTime();
     if ( myrank_==0 and screenoutput )
-      std::cout << "\n\t * 1/6 Cut ......................"; std::cout << std::flush;
+      std::cout << "\n\t * 1/6 Cut ......................" << std::flush;
 
     m.Cut( *side_ );
 
@@ -133,7 +133,7 @@ void GEO::CUT::LevelSetIntersection::Cut_Mesh( bool screenoutput )
   {
     const double t_start = Teuchos::Time::wallTime();
     if ( myrank_==0 and screenoutput)
-      std::cout << "\n\t * 2/6 MakeCutLines ............."; std::cout << std::flush;
+      std::cout << "\n\t * 2/6 MakeCutLines ............." << std::flush;
 
     m.MakeCutLines();
 
@@ -149,7 +149,7 @@ void GEO::CUT::LevelSetIntersection::Cut_Mesh( bool screenoutput )
   {
     const double t_start = Teuchos::Time::wallTime();
     if ( myrank_==0 and screenoutput )
-      std::cout << "\n\t * 3/6 MakeFacets ..............."; std::cout << std::flush;
+      std::cout << "\n\t * 3/6 MakeFacets ..............." << std::flush;
 
     m.MakeFacets();
 
@@ -165,7 +165,7 @@ void GEO::CUT::LevelSetIntersection::Cut_Mesh( bool screenoutput )
   {
     const double t_start = Teuchos::Time::wallTime();
     if ( myrank_==0 and screenoutput )
-      std::cout << "\n\t * 4/6 MakeVolumeCells .........."; std::cout << std::flush;
+      std::cout << "\n\t * 4/6 MakeVolumeCells .........." << std::flush;
 
     m.MakeVolumeCells();
 
@@ -219,7 +219,7 @@ void GEO::CUT::LevelSetIntersection::Cut( bool include_inner, bool screenoutput,
   {
     const double t_start = Teuchos::Time::wallTime();
     if ( myrank_==0 and screenoutput )
-      std::cout << "\n\t * 5/6 CreateIntegrationCells ..."; std::cout << std::flush;
+      std::cout << "\n\t * 5/6 CreateIntegrationCells ..." << std::flush;
 
     if(VCellGP == INPAR::CUT::VCellGaussPts_Tessellation)
       m.CreateIntegrationCells( 0 );
@@ -238,7 +238,7 @@ void GEO::CUT::LevelSetIntersection::Cut( bool include_inner, bool screenoutput,
   {
     const double t_start = Teuchos::Time::wallTime();
     if ( myrank_==0 and screenoutput )
-      std::cout << "\n\t * 6/6 TestElementVolume ........"; std::cout << std::flush;
+      std::cout << "\n\t * 6/6 TestElementVolume ........" << std::flush;
 
     m.TestElementVolume( true, VCellGP);
 
@@ -281,5 +281,3 @@ void GEO::CUT::LevelSetIntersection::Cut( bool include_inner, bool screenoutput,
 //######################################################################################
 
 }//GEO::CUT::LevelSetIntersection::Cut
-
-

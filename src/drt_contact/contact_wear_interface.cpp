@@ -99,13 +99,13 @@ void WEAR::WearInterface::AssembleTE(LINALG::SparseMatrix& tglobal,
   {
     if (activenodes_==Teuchos::null)
       return;
-      considerednodes = activenodes_;
+    considerednodes = activenodes_;
   }
   else
   {
     if (slipnodes_==Teuchos::null)
       return;
-      considerednodes = slipnodes_;
+    considerednodes = slipnodes_;
   }
 
   // loop over proc's slave nodes of the interface for assembly
@@ -334,13 +334,13 @@ void WEAR::WearInterface::AssembleLinT_D(LINALG::SparseMatrix& lintglobal)
   {
     if (activenodes_==Teuchos::null)
       return;
-      considerednodes = activenodes_;
+    considerednodes = activenodes_;
   }
   else
   {
     if (slipnodes_==Teuchos::null)
       return;
-      considerednodes = slipnodes_;
+    considerednodes = slipnodes_;
   }
 
   /**********************************************************************/
