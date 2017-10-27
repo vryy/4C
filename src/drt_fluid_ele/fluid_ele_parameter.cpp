@@ -203,21 +203,19 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
     whichtau_ =  DRT::INPUT::IntegralValue<INPAR::FLUID::TauType>(stablist,"DEFINITION_TAU");
     // check if tau can be handled
     if (not(whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins or
-                         INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt or
-                         INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen or
-                         INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt or
-                         INPAR::FLUID::tau_taylor_hughes_zarins_scaled or
-                         INPAR::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt or
-                         INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall or
-                         INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt or
-                         INPAR::FLUID::tau_shakib_hughes_codina or
-                         INPAR::FLUID::tau_shakib_hughes_codina_wo_dt or
-                         INPAR::FLUID::tau_codina or
-                         INPAR::FLUID::tau_codina_wo_dt or
-                         INPAR::FLUID::tau_codina_convscaled or
-                         INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
-                         INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt or
-                         INPAR::FLUID::tau_hughes_franca_balestra_wo_dt))
+            whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt or
+            whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen or
+            whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt or
+            whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_scaled or
+            whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt or
+            whichtau_ == INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall or
+            whichtau_ == INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt or
+            whichtau_ == INPAR::FLUID::tau_shakib_hughes_codina or
+            whichtau_ == INPAR::FLUID::tau_shakib_hughes_codina_wo_dt or
+            whichtau_ == INPAR::FLUID::tau_codina or
+            whichtau_ == INPAR::FLUID::tau_codina_wo_dt or
+            whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
+            whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt))
          dserror("Definition of Tau cannot be handled by the element");
 
     // set correct stationary definition of stabilization parameter automatically
@@ -248,16 +246,16 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
     // get and check characteristic element length for stabilization parameter tau_Mu
     charelelengthu_ = DRT::INPUT::IntegralValue<INPAR::FLUID::CharEleLengthU>(stablist,"CHARELELENGTH_U");
     if (not(charelelengthu_ == INPAR::FLUID::streamlength_u or
-                               INPAR::FLUID::volume_equivalent_diameter_u or
-                               INPAR::FLUID::root_of_volume_u))
+            charelelengthu_ == INPAR::FLUID::volume_equivalent_diameter_u or
+            charelelengthu_ == INPAR::FLUID::root_of_volume_u))
       dserror("Unknown characteristic element length for tau_Mu!");
 
     // get and check characteristic element length for stabilization parameter
     // tau_Mp and tau_C
     charelelengthpc_ = DRT::INPUT::IntegralValue<INPAR::FLUID::CharEleLengthPC>(stablist,"CHARELELENGTH_PC");
     if (not(charelelengthpc_ == INPAR::FLUID::streamlength_pc or
-                                INPAR::FLUID::volume_equivalent_diameter_pc or
-                                INPAR::FLUID::root_of_volume_pc))
+            charelelengthpc_ == INPAR::FLUID::volume_equivalent_diameter_pc or
+            charelelengthpc_ == INPAR::FLUID::root_of_volume_pc))
       dserror("Unknown characteristic element length for tau_Mp and tau_C!");
 
     // in case of viscous and/or reactive stabilization, decide whether to use
@@ -639,4 +637,3 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameters( Teuchos::
     }
   } // end if(Classical LES)
 }
-
