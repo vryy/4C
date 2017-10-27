@@ -129,7 +129,12 @@ BUILD_FOLDER=$BUILD_FOLDER_SAFE
 # detect operating system
 if [[ ! "$CONFIGURATION_FILE" ]]; then
   if [[ -f /etc/system-release ]]; then
-    if [ "`grep 'Fedora release 22' /etc/system-release`" ]; then
+    if [ "`grep 'CentOS Linux release 7.4' /etc/system-release`" ]; then
+      echo "Detected CentOS 7.4 (workstation)"
+      CONFIGURATION_FILE=$BACI_HOME/buildconfig/centos74_Q12015.config
+      TRILINOSDEV=ON
+      echo $CONFIGURATION_FILE
+    elif [ "`grep 'Fedora release 22' /etc/system-release`" ]; then
       echo "Detected Fedora 22"
       CONFIGURATION_FILE=$BACI_HOME/buildconfig/fc22_Q12015.config
       TRILINOSDEV=ON
