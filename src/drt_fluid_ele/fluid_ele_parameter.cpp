@@ -213,9 +213,11 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
             whichtau_ == INPAR::FLUID::tau_shakib_hughes_codina or
             whichtau_ == INPAR::FLUID::tau_shakib_hughes_codina_wo_dt or
             whichtau_ == INPAR::FLUID::tau_codina or
+            whichtau_ == INPAR::FLUID::tau_codina_convscaled or
             whichtau_ == INPAR::FLUID::tau_codina_wo_dt or
             whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
-            whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt))
+            whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt or
+            whichtau_ == INPAR::FLUID::tau_hughes_franca_balestra_wo_dt))
          dserror("Definition of Tau cannot be handled by the element");
 
     // set correct stationary definition of stabilization parameter automatically

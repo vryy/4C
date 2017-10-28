@@ -3151,7 +3151,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcStabParameter(const doubl
 
     // for high-order elements or non-polynomial enrichments,
     // a scaling of the convective term like this gives good results
-    if(INPAR::FLUID::tau_codina_convscaled)
+    if(fldpara_->WhichTau() == INPAR::FLUID::tau_codina_convscaled)
       c2 = sqrt(c3/3.0);
 
     // compute stabilization parameter tau_Mu
