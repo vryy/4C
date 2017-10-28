@@ -503,11 +503,11 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
-    LINALG::Matrix<6,6> D_T_bar;
+    LINALG::Matrix<6,6> D_T_bar(false);
     ConvertMat(cmat, mod_defgrd, D_T_bar, t_(0,0));
 
     // (secondary) Cauchy stress dependent on displacements and primary Jacobian
-    LINALG::Matrix<MAT::NUM_STRESS_3D,1> sigma_bar;
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1> sigma_bar(false);
     {
       // Voigt indices
       std::vector<int> Index1(MAT::NUM_STRESS_3D);
@@ -544,17 +544,17 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(
 
 
     // Cauchy stress dependent on displacements, primary Jacobian and primary pressure
-    LINALG::Matrix<MAT::NUM_STRESS_3D,1> sigma_hook;
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1> sigma_hook(sigma_bar);
     for (int i=0; i<3; ++i)
     {
-      sigma_hook(i,0) = sigma_bar(i,0) + p_hook - p_bar;
+      sigma_hook(i,0) += p_hook - p_bar;
     }
 
     // deviatoric content of Cauchy stress
-    LINALG::Matrix<MAT::NUM_STRESS_3D,1> sigma_bar_dev;
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1> sigma_bar_dev(sigma_bar);
     for (int i=0; i<3; ++i)
     {
-      sigma_bar_dev(i,0) = sigma_bar(i,0) - p_bar;
+      sigma_bar_dev(i,0) -= p_bar;
     }
 
     // return GP stresses if necessary
@@ -1331,3 +1331,4 @@ void DRT::ELEMENTS::So_Hex8P1J1::soh8P1J1_recover(
   t_ += dt_;
   p_ += dp_;
 }
+
