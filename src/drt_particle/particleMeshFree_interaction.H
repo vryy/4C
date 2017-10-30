@@ -88,9 +88,7 @@ namespace PARTICLE
       Teuchos::RCP<DRT::Discretization> discret,
       Teuchos::RCP<PARTICLE::Algorithm> particlealgorithm,
       const Teuchos::ParameterList& particledynparams,
-      const double initDensity,
-      const double restDensity,
-      const double refdensfac);
+      bool norender=false);
 
     //! Destructor
     virtual ~ParticleMeshFreeInteractionHandler(){ ; }
@@ -111,11 +109,16 @@ namespace PARTICLE
     //! set up the ColParticles
     virtual void InitColParticles();
 
+    //! set density & mass at the very beginning
+    void InitDensityAndMass(
+        const double particle_volume,
+        const Teuchos::RCP<Epetra_Vector> density,
+        const Teuchos::RCP<Epetra_Vector> mass);
+
     //! accelerations, modified pressures and velocities for boundary particles
     virtual void InitBoundaryData(
         Teuchos::RCP<const Epetra_Vector> accn,
-        const LINALG::Matrix<3,1>& g,
-        double &bpintergy);
+        const LINALG::Matrix<3,1>& g);
 
     //! add to the neighbour maps the current neighbours
     virtual void AddNewNeighbours();
@@ -155,13 +158,19 @@ namespace PARTICLE
         const double time = -1.0);
 
     /// compute surface tension interaction according to continuum model by Adami et al. 2010
-    virtual void Inter_fspvp_Adami(
+    virtual void Inter_fspvp_Adami_1(
         const Teuchos::RCP<Epetra_Vector> accn,
         const Teuchos::RCP<Epetra_Vector> curvature,
         double time);
 
     /// compute surface tension interaction according to continuum model by Adami et al. 2010 (modified version)
-    virtual void Inter_fspvp_Adami_b(
+    virtual void Inter_fspvp_Adami_2(
+        const Teuchos::RCP<Epetra_Vector> accn,
+        const Teuchos::RCP<Epetra_Vector> curvature,
+        double time);
+
+    /// compute surface tension interaction according to continuum model by Adami et al. 2010 (modified version)
+    virtual void Inter_fspvp_Adami_3(
         const Teuchos::RCP<Epetra_Vector> accn,
         const Teuchos::RCP<Epetra_Vector> curvature,
         double time);
@@ -198,6 +207,17 @@ namespace PARTICLE
     virtual void Inter_pvhs_specEnthalpyDot(
         const Teuchos::RCP<Epetra_Vector> specEnthalpyDotn);
 
+    //! Compute pressure for the entire vector
+    virtual void Density2Pressure(
+        const Teuchos::RCP<const Epetra_Vector> density,
+        const Teuchos::RCP<const Epetra_Vector> specEnthalpy,
+        Teuchos::RCP<Epetra_Vector> &pressure,
+        bool trg_createPressureVector = false,
+        bool solve_thermal_problem = true);
+
+    //! Determine internal energy
+    virtual void DetermineIntEnergy(double &intenergy);
+
     //@}
 
     //! @name mesh free fields
@@ -207,7 +227,8 @@ namespace PARTICLE
     virtual void MF_mW(
         const Teuchos::RCP<Epetra_Vector> mW,
         const Teuchos::RCP<Epetra_Vector> unity_vec = Teuchos::null,
-        const Teuchos::RCP<Epetra_Vector> unity_vec_grad = Teuchos::null);
+        const Teuchos::RCP<Epetra_Vector> unity_vec_grad = Teuchos::null,
+        const Teuchos::RCP<Epetra_Vector> phaseColor = Teuchos::null);
 
     void MF_SmoothedCFG(
         const Teuchos::RCP<Epetra_Vector> unity_vec_grad);
@@ -241,6 +262,9 @@ namespace PARTICLE
       min_pressure=min_pressure_;
       max_pressure=max_pressure_;
     }
+
+    /// Determine coefficients required for viscous forces
+    void ViscousCoefficients(const double viscosity, const double bulkViscosity, double& convectionCoeff, double& diffusionCoeff);
 
     //@}
 
@@ -401,9 +425,6 @@ namespace PARTICLE
     /// temporary storage of particleMeshFree data
     std::vector<ParticleMF> colParticles_;
 
-    /// temporary storage for FAD version of particleMeshFree data
-    std::vector<Teuchos::RCP<ParticleFAD> > colFADParticles_;
-
     /// neighbours - particles
     std::vector<boost::unordered_map<int, InterDataPvP> > neighbours_p_;
 
@@ -443,15 +464,6 @@ namespace PARTICLE
     /// number of space dimensions required for weight function definition
     const INPAR::PARTICLE::WeightFunctionDim WF_DIM_;
 
-    //! rest density for meshFree-pressure dynamics
-    const double initDensity_;
-
-    //! rest density for meshFree-pressure dynamics defining the equation of state: pressure=c_0^2(density-refdensfac_*restDensity_)  with the speed of sound c_0^2=BULK_MODULUS/restDensity_
-    const double restDensity_;
-
-    /// factor defining the equation of state: pressure=c_0^2(density-refdensfac_*restDensity_)  with the speed of sound c_0^2=BULK_MODULUS/restDensity_;
-    const double refdensfac_;
-
     /// background pressure employed for modified particle convection velocity
     const double background_pressure_;
 
@@ -470,20 +482,11 @@ namespace PARTICLE
     /// stiffness factor of XSPH scheme
     const double xsph_stiffac_;
 
-    /// laplacian velocity, diffusion coefficient
-    double diffusionCoeff_;
-
-    /// gradient of the divergence of the velocity, convection coefficient
-    double convectionCoeff_;
-
-    /// artificial viscosity according to Adami et al. 2012, Eq. (11)
-    double artificialViscosity_;
+    /// type of surface tension model
+    const INPAR::PARTICLE::SurfaceTensionType surfaceTensionType_;
 
     /// surface tension between fluid and void phase
     double surfaceTension_;
-
-    /// type of surface tension model
-    const INPAR::PARTICLE::SurfaceTensionType surfaceTensionType_;
 
     /// static contact angle between fluid and solid phase in degree measure
     double staticContactAngle_;

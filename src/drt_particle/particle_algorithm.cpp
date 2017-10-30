@@ -69,7 +69,9 @@ PARTICLE::Algorithm::Algorithm(
   particleInteractionType_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleInteractions>(DRT::Problem::Instance()->ParticleParams(),"PARTICLE_INTERACTION")),
   extendedGhosting_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ExtendedGhosting>(DRT::Problem::Instance()->ParticleParams(),"EXTENDED_GHOSTING")),
   particleMat_(NULL),
+  particleMat2_(NULL),
   extParticleMat_(NULL),
+  extParticleMat2_(NULL),
   bin_wallcontent_(BINSTRATEGY::UTILS::BELE3),
   rendering_(Teuchos::null)
 {
@@ -364,6 +366,14 @@ void PARTICLE::Algorithm::InitMaterials()
   switch (particleInteractionType_)
   {
   case INPAR::PARTICLE::MeshFree :
+  {
+    int testid = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_extparticlemat);
+    if(testid!=1)
+      dserror("In MeshFree particle (SPH) simulations, the first material ID has always to be 1!");
+
+    id = 1;
+    break;
+  }
   case INPAR::PARTICLE::Normal_DEM_thermo :
   {
     id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_extparticlemat);
@@ -386,6 +396,19 @@ void PARTICLE::Algorithm::InitMaterials()
   particleMat_ = static_cast<const MAT::PAR::ParticleMat*>(mat);
   if (particleInteractionType_ == INPAR::PARTICLE::MeshFree || particleInteractionType_ == INPAR::PARTICLE::Normal_DEM_thermo)
     extParticleMat_ = static_cast<const MAT::PAR::ExtParticleMat*>(mat);
+
+  if(particleInteractionType_==INPAR::PARTICLE::MeshFree)
+  {
+    const INPAR::PARTICLE::FreeSurfaceType freeSurfaceType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::FreeSurfaceType>(DRT::Problem::Instance()->ParticleParams(),"FREE_SURFACE_TYPE");
+    if(freeSurfaceType==INPAR::PARTICLE::TwoPhase)
+    {
+      int id2 = 2;
+      const MAT::PAR::Parameter* mat2 = DRT::Problem::Instance()->Materials()->ParameterById(id2);
+      particleMat2_ = static_cast<const MAT::PAR::ParticleMat*>(mat2);
+      extParticleMat2_ = static_cast<const MAT::PAR::ExtParticleMat*>(mat2);
+    }
+  }
+
 }
 
 /*----------------------------------------------------------------------*

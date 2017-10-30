@@ -23,6 +23,14 @@
 #include <Sacado.hpp>
 typedef Sacado::Fad::DFad<double> FAD;
 
+namespace MAT
+{
+  namespace PAR
+  {
+    class ExtParticleMat;
+  }
+}
+
 namespace PARTICLE
 {
 // ---------------------------------------------------------- //
@@ -190,8 +198,7 @@ namespace PARTICLE
   boundaryparticle_(boundaryparticle),
   acc_(LINALG::Matrix<3,1>(true)),
   velModVisc_(LINALG::Matrix<3,1>(true)),
-  pressureMod_(-1000),
-  densityMod_(-1000)
+  pressureMod_(-1000)
   {
     //set distinct value as long as not set from outside
     for(int i=0;i<3;i++)
@@ -206,7 +213,6 @@ namespace PARTICLE
   LINALG::Matrix<3,1> acc_;       //acceleration vector of boundary particles
   LINALG::Matrix<3,1> velModVisc_;    //modified velocity vector of boundary particle required for fiscous force calculation(see Ref. Adami2012)
   double pressureMod_;            //modified pressure of boundary particle (see Ref. Adami2012)
-  double densityMod_;            //modified density of boundary particle consistently derived from modified pressure via equation of state
 
   }; // BoundaryData
 
@@ -216,8 +222,9 @@ namespace PARTICLE
   public:
 
   /// constructor: empty
-  FreeSurfaceData(FreeSurfaceParticleType freesurfaceparticletype) :
+  FreeSurfaceData(FreeSurfaceParticleType freesurfaceparticletype, int phase_color) :
     freesurfaceparticletype_(freesurfaceparticletype),
+    phase_color_(phase_color),
     color_field_(-1000),
     colorFieldGrad_(LINALG::Matrix<3,1>(true)),
     smoothedColorFieldGrad_(LINALG::Matrix<3,1>(true)),
@@ -228,7 +235,8 @@ namespace PARTICLE
 
   /// internal variables
   FreeSurfaceParticleType freesurfaceparticletype_;         //which type of free surface particle do we have (none, direct or indirect)?
-  double color_field_;                      //small values of the color_function \in [0;\approx 1] indicate (direct) surface particles
+  int phase_color_;                       //every phase is characterized by a discrete value of the phase color (e.g. 0 / 1  for water / air)
+  double color_field_;                      //smooth interpolation of the phase_color_: small values of the color_function \in [0;\approx 1] indicate (direct) surface particles
   LINALG::Matrix<3,1> colorFieldGrad_;       //gradient of color field above (required as surface normal)
   LINALG::Matrix<3,1> smoothedColorFieldGrad_;    //gradient of smoothed color field (alternative for surface normal)
   double density_sum_;                      //particle density determined via naiv summation (also for free-surface particles)
@@ -242,71 +250,27 @@ namespace PARTICLE
   {
   public:
 
-  /// constructor: full
-  ParticleMF(
-      const int gid,
-      const int owner,
-      const std::vector<int> lm,
-      const LINALG::Matrix<3,1> dis,
-      const LINALG::Matrix<3,1> vel,
-      const double radius,
-      const double mass,
-      const double density,
-      const double specEnthalpy,
-      const double pressure,
-      const double temperature,
-      const double densityDot
-      ) :
-        ParticleBase(gid, owner, lm, dis, vel, radius, mass, density),
-        ParticleThermoBase(specEnthalpy),
-        pressure_(pressure),
-        temperature_(temperature),
-        densityDot_(densityDot),
-        boundarydata_(BoundaryData(false)),
-        freesurfacedata_(FreeSurfaceData(FS_NONE)),
-        velConv_(LINALG::Matrix<3,1>(true)){}
-
   /// constructor: empty
   ParticleMF() : ParticleBase(), ParticleThermoBase(),
-      pressure_(-1), temperature_(-1), densityDot_(-1), boundarydata_(BoundaryData(false)), freesurfacedata_(FreeSurfaceData(FS_NONE)), velConv_(LINALG::Matrix<3,1>(true)) {}
+      pressure_(-1), temperature_(-1), densityDot_(-1), boundarydata_(BoundaryData(false)), freesurfacedata_(FreeSurfaceData(FS_NONE, 0)), velConv_(LINALG::Matrix<3,1>(true)), extParticleMat_(NULL) {}
 
-  // contructor: only identifiers
+  // contructor: only identifiers and material
   ParticleMF(
       const int gid,
       const int owner,
       const std::vector<int> lm,
-      bool boundaryparticle) :
+      bool boundaryparticle,
+      int phase_color,
+      const MAT::PAR::ExtParticleMat* extParticleMat) :
         ParticleBase(gid, owner, lm),
         ParticleThermoBase(),
         pressure_(-1),
         temperature_(-1),
         densityDot_(-1),
         boundarydata_(BoundaryData(boundaryparticle)),
-        freesurfacedata_(FreeSurfaceData(FS_NONE)),
-        velConv_(LINALG::Matrix<3,1>(true)){}
-
-  /// constructor: only the first round
-  ParticleMF(
-      const int gid,
-      const int owner,
-      const std::vector<int> lm,
-      const LINALG::Matrix<3,1> dis,
-      const LINALG::Matrix<3,1> vel,
-      const double radius,
-      const double mass,
-      const double density,
-      const double specEnthalpy,
-      const double pressure,
-      const double temperature
-      ) :
-        ParticleBase(gid, owner, lm, dis, vel, radius, mass, density),
-        ParticleThermoBase(specEnthalpy),
-        pressure_(pressure),
-        temperature_(temperature),
-        densityDot_(-1),
-        boundarydata_(BoundaryData(false)),
-        freesurfacedata_(FreeSurfaceData(FS_NONE)),
-        velConv_(LINALG::Matrix<3,1>(true)){}
+        freesurfacedata_(FreeSurfaceData(FS_NONE, phase_color)),
+        velConv_(LINALG::Matrix<3,1>(true)),
+        extParticleMat_(extParticleMat){}
 
   /// internal variables
   double pressure_;
@@ -315,6 +279,7 @@ namespace PARTICLE
   BoundaryData boundarydata_;
   FreeSurfaceData freesurfacedata_;
   LINALG::Matrix<3,1> velConv_;    //particle convection velocity that may differ from the particle momentum velocity in general (see Ref. Adami2013)
+  const MAT::PAR::ExtParticleMat* extParticleMat_;  //pointer to the extParticleMat material
   }; // ParticleMF
 }
 

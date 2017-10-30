@@ -187,8 +187,14 @@ namespace PARTICLE
     /// Return the pointer to the particle material
     const MAT::PAR::ParticleMat* ParticleMat() const { return particleMat_; }
 
+    /// Return the pointer to second particle material
+    const MAT::PAR::ParticleMat* ParticleMat2() const { return particleMat2_; }
+
     /// Return the pointer to the extended particle material
     const MAT::PAR::ExtParticleMat* ExtParticleMat() const { return extParticleMat_; }
+
+    /// Return the pointer to second extended particle material
+    const MAT::PAR::ExtParticleMat* ExtParticleMat2() const { return extParticleMat2_; }
 
     /// get meshfree rendering handler
     virtual Teuchos::RCP<Rendering> GetRendering() { return rendering_; }
@@ -332,7 +338,11 @@ namespace PARTICLE
 
     const MAT::PAR::ParticleMat* particleMat_;  ///< pointer to the extParticleMat material
 
+    const MAT::PAR::ParticleMat* particleMat2_;  ///< pointer to second extParticleMat material
+
     const MAT::PAR::ExtParticleMat* extParticleMat_;  ///< pointer to the extParticleMat material
+
+    const MAT::PAR::ExtParticleMat* extParticleMat2_;  ///< pointer to second extParticleMat material (for a second phase)
 
     BINSTRATEGY::UTILS::BinContentType bin_wallcontent_;
 

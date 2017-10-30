@@ -191,14 +191,16 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                  "DensityIntegration",
                                  "InteriorReinitialization",
                                  "NormalizedReinitialization",
-                                 "RandlesReinitialization"
+                                 "RandlesReinitialization",
+                                 "TwoPhase"
                                  ),
                                tuple<int>(
-                                 INPAR::PARTICLE::None,
+                                 INPAR::PARTICLE::FreeSurface_None,
                                  INPAR::PARTICLE::DensityIntegration,
                                  INPAR::PARTICLE::InteriorReinitialization,
                                  INPAR::PARTICLE::NormalizedReinitialization,
-                                 INPAR::PARTICLE::RandlesReinitialization
+                                 INPAR::PARTICLE::RandlesReinitialization,
+                                 INPAR::PARTICLE::TwoPhase
                                  ),
                                &particledyn);
 
@@ -283,6 +285,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    DoubleParameter("SURFTENSION_POT_A",2.0,"Scale factor of repulsive part of pairwise interaction force",&particledyn);
    DoubleParameter("SURFTENSION_POT_B",1.0,"Scale factor of attractive part of pairwise interaction force",&particledyn);
    DoubleParameter("SURFTENSION_POT_RATIO",0.5,"Range ratio of repulsive and attractive part of pairwise interaction force",&particledyn);
+   IntParameter("MIN_VOIDPARTICLE_ID",-1,"all particles with an ID >= MIN_VOIDPARTICLE_ID are considered as void particles with colorfield = 0",&particledyn);
 
    setStringToIntegralParameter<int>("DIMENSION","3D",
                                 "number of space dimensions for handling of quasi-2D problems with 3D particles",

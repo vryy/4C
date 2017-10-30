@@ -162,7 +162,7 @@ void PARTICLE::TimIntKickDrift::ReadRestartState()
   densityDot_->UpdateSteps(*densityDotn_);
 
   bool solve_thermal_problem=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM");
-  PARTICLE::Utils::Density2Pressure(restDensity_,refdensfac_,densityn_,specEnthalpyn_,pressure_,particle_algorithm_->ExtParticleMat(),true,solve_thermal_problem);
+  interHandler_->Density2Pressure(densityn_,specEnthalpyn_,pressure_,true,solve_thermal_problem);
 
   // read radius
   reader.ReadVector(radiusn_, "radius");
@@ -218,7 +218,6 @@ void PARTICLE::TimIntKickDrift::GetExtremeValues()
     std::cout << "maximal particle radius: " << maxradius << std::endl;
     std::cout << "allprocalltime_min_pressure: " << allprocalltime_min_pressure << std::endl;
     std::cout << "allprocalltime_max_pressure: " << allprocalltime_max_pressure << std::endl;
-    std::cout << "reference pressure: " <<  c * c * restDensity_ << std::endl;
     std::cout << "background pressure: " << DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE") << std::endl;
   }
   #endif

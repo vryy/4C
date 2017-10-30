@@ -79,7 +79,6 @@ PARTICLE::TimInt::TimInt
   writeorientation_(false),
   kinergy_(0),
   intergy_(0),
-  bpintergy_(0),
   extergy_(0),
   linmomentum_(LINALG::Matrix<3,1>(true)),
   time_(Teuchos::null),
@@ -129,13 +128,11 @@ PARTICLE::TimInt::TimInt
 
   colorField_(Teuchos::null),
   colorFieldGrad_(Teuchos::null),
+  smoothedColorFieldGrad_(Teuchos::null),
   accSF_(Teuchos::null),
   fspType_(Teuchos::null),
   curvature_(Teuchos::null),
-
-  initDensity_(-1.0),
-  restDensity_(-1.0),
-  refdensfac_(-1.0),
+  phaseColor_(Teuchos::null),
 
   global_num_boundaryparticles_(0),
 
@@ -200,9 +197,11 @@ void PARTICLE::TimInt::Init()
 #ifdef PARTICLE_WRITECOLORFIELD
     colorField_ = LINALG::CreateVector(*NodeRowMapView(), true);
     colorFieldGrad_ = LINALG::CreateVector(*DofRowMapView(), true);
+    smoothedColorFieldGrad_ = LINALG::CreateVector(*DofRowMapView(), true);
     accSF_ = LINALG::CreateVector(*DofRowMapView(), true);
     fspType_ = LINALG::CreateVector(*NodeRowMapView(), true);
     curvature_ = LINALG::CreateVector(*NodeRowMapView(), true);
+    phaseColor_ = LINALG::CreateVector(*NodeRowMapView(), true);
 #endif
   }// no break
   case INPAR::PARTICLE::Normal_DEM_thermo :
@@ -310,108 +309,107 @@ void PARTICLE::TimInt::SetInitialFields()
 
   // extract particle density (for now, all particles have identical density)
   const MAT::PAR::ParticleMat* const particlemat = particle_algorithm_->ParticleMat();
-  const double initDensity = particlemat != NULL ? particlemat->initDensity_ : 0.;
 
-  double consistent_problem_volume=DRT::Problem::Instance()->ParticleParams().get<double>("CONSISTENT_PROBLEM_VOLUME");
-  if(consistent_problem_volume<0.0)
-    strategy_->ComputeMass();
-  else // particle mass via problem volume and density
+  if(particle_algorithm_->ParticleInteractionType()!=INPAR::PARTICLE::MeshFree)
   {
-    //boundary particles are excluded for determination of particle mass since they are also not part of the consistent_problem_volume
-    const int num_particles = discret_->NumGlobalNodes() - global_num_boundaryparticles_;
-    mass_->PutScalar(initDensity * consistent_problem_volume / (double)(num_particles));
-  }
+    const double initDensity = particlemat != NULL ? particlemat->initDensity_ : 0.;
+    double consistent_problem_volume=DRT::Problem::Instance()->ParticleParams().get<double>("CONSISTENT_PROBLEM_VOLUME");
+    if(consistent_problem_volume<0.0)
+      strategy_->ComputeMass();
+    else
+      dserror("The definition of a CONSISTENT_PROBLEM_VOLUME is only possible for SPH applications!");
 
-  // -----------------------------------------//
-  // set initial radius condition if existing
-  // -----------------------------------------//
+    // -----------------------------------------//
+    // set initial radius condition if existing
+    // -----------------------------------------//
 
-  std::vector<DRT::Condition*> condition;
-  discret_->GetCondition("InitialParticleRadius", condition);
+    std::vector<DRT::Condition*> condition;
+    discret_->GetCondition("InitialParticleRadius", condition);
 
-  if(consistent_problem_volume>0.0 and condition.size()>0)
-    dserror("The combination of InitialParticleRadius and CONSISTENT_PROBLEM_VOLUME not possible so far!");
+    if(consistent_problem_volume>0.0 and condition.size()>0)
+      dserror("The combination of InitialParticleRadius and CONSISTENT_PROBLEM_VOLUME not possible so far!");
 
-  // loop over conditions
-  for (size_t i=0; i<condition.size(); ++i)
-  {
-    double scalar  = condition[i]->GetDouble("SCALAR");
-    int funct_num  = condition[i]->GetInt("FUNCT");
-
-    const std::vector<int>* nodeids = condition[i]->Nodes();
-    //loop over particles in current condition
-    for(size_t counter=0; counter<(*nodeids).size(); ++counter)
+    // loop over conditions
+    for (size_t i=0; i<condition.size(); ++i)
     {
-      int lid = discret_->NodeRowMap()->LID((*nodeids)[counter]);
-      if(lid != -1)
-      {
-        DRT::Node *currparticle = discret_->gNode((*nodeids)[counter]);
-        double function_value =  DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(0, currparticle->X(),0.0);
-        double r_p = (*(*radius_)(0))[lid];
-        r_p *= function_value * scalar;
-        (*(*radius_)(0))[lid] = r_p;
-        if(r_p <= 0.0)
-          dserror("negative initial radius");
+      double scalar  = condition[i]->GetDouble("SCALAR");
+      int funct_num  = condition[i]->GetInt("FUNCT");
 
-        // mass-vector: m = rho * 4/3 * PI * r^3
-        (*mass_)[lid] = initDensity * PARTICLE::Utils::Radius2Volume(r_p);
+      const std::vector<int>* nodeids = condition[i]->Nodes();
+      //loop over particles in current condition
+      for(size_t counter=0; counter<(*nodeids).size(); ++counter)
+      {
+        int lid = discret_->NodeRowMap()->LID((*nodeids)[counter]);
+        if(lid != -1)
+        {
+          DRT::Node *currparticle = discret_->gNode((*nodeids)[counter]);
+          double function_value =  DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(0, currparticle->X(),0.0);
+          double r_p = (*(*radius_)(0))[lid];
+          r_p *= function_value * scalar;
+          (*(*radius_)(0))[lid] = r_p;
+          if(r_p <= 0.0)
+            dserror("negative initial radius");
+
+          // mass-vector: m = rho * 4/3 * PI * r^3
+          (*mass_)[lid] = initDensity * PARTICLE::Utils::Radius2Volume(r_p);
+        }
       }
     }
-  }
 
-  // -----------------------------------------//
-  // evaluate random normal distribution for particle radii if applicable
-  // -----------------------------------------//
+    // -----------------------------------------//
+    // evaluate random normal distribution for particle radii if applicable
+    // -----------------------------------------//
 
-  switch(radiusdistribution_)
-  {
-    case INPAR::PARTICLE::radiusdistribution_none:
+    switch(radiusdistribution_)
     {
-      // do nothing
-      break;
-    }
-    case INPAR::PARTICLE::radiusdistribution_lognormal:
-    case INPAR::PARTICLE::radiusdistribution_normal:
-    {
-      if(consistent_problem_volume>0.0)
-        dserror("The combination of RADIUS_DISTRIBUTION and CONSISTENT_PROBLEM_VOLUME not possible so far!");
-
-      // get minimum and maximum radius for particles
-      const double min_radius = DRT::Problem::Instance()->ParticleParams().get<double>("MIN_RADIUS");
-      const double max_radius = DRT::Problem::Instance()->ParticleParams().get<double>("MAX_RADIUS");
-
-      // loop over all particles
-      for(int n=0; n<discret_->NumMyRowNodes(); ++n)
+      case INPAR::PARTICLE::radiusdistribution_none:
       {
-        // get local ID of current particle
-        const int lid = discret_->NodeRowMap()->LID(discret_->lRowNode(n)->Id());
+        // do nothing
+        break;
+      }
+      case INPAR::PARTICLE::radiusdistribution_lognormal:
+      case INPAR::PARTICLE::radiusdistribution_normal:
+      {
+        if(consistent_problem_volume>0.0)
+          dserror("The combination of RADIUS_DISTRIBUTION and CONSISTENT_PROBLEM_VOLUME not possible so far!");
 
-        // initialize random number generator with current particle radius or its natural logarithm as mean and input parameter value as standard deviation
-        DRT::Problem::Instance()->Random()->SetMeanVariance(radiusdistribution_ == INPAR::PARTICLE::radiusdistribution_lognormal ? log((*(*radius_)(0))[lid]) : (*(*radius_)(0))[lid],DRT::Problem::Instance()->ParticleParams().get<double>("RADIUS_DISTRIBUTION_SIGMA"));
+        // get minimum and maximum radius for particles
+        const double min_radius = DRT::Problem::Instance()->ParticleParams().get<double>("MIN_RADIUS");
+        const double max_radius = DRT::Problem::Instance()->ParticleParams().get<double>("MAX_RADIUS");
 
-        // generate normally or log-normally distributed random value for particle radius
-        double random_radius = radiusdistribution_ == INPAR::PARTICLE::radiusdistribution_lognormal ? exp(DRT::Problem::Instance()->Random()->Normal()) : DRT::Problem::Instance()->Random()->Normal();
+        // loop over all particles
+        for(int n=0; n<discret_->NumMyRowNodes(); ++n)
+        {
+          // get local ID of current particle
+          const int lid = discret_->NodeRowMap()->LID(discret_->lRowNode(n)->Id());
 
-        // check whether random value lies within allowed bounds, and adjust otherwise
-        if(random_radius > max_radius)
-          random_radius = max_radius;
-        else if(random_radius < min_radius)
-          random_radius = min_radius;
+          // initialize random number generator with current particle radius or its natural logarithm as mean and input parameter value as standard deviation
+          DRT::Problem::Instance()->Random()->SetMeanVariance(radiusdistribution_ == INPAR::PARTICLE::radiusdistribution_lognormal ? log((*(*radius_)(0))[lid]) : (*(*radius_)(0))[lid],DRT::Problem::Instance()->ParticleParams().get<double>("RADIUS_DISTRIBUTION_SIGMA"));
 
-        // set particle radius to random value
-        (*(*radius_)(0))[lid] = random_radius;
+          // generate normally or log-normally distributed random value for particle radius
+          double random_radius = radiusdistribution_ == INPAR::PARTICLE::radiusdistribution_lognormal ? exp(DRT::Problem::Instance()->Random()->Normal()) : DRT::Problem::Instance()->Random()->Normal();
 
-        // recompute particle mass
-        (*mass_)[lid] = initDensity * PARTICLE::Utils::Radius2Volume(random_radius);
+          // check whether random value lies within allowed bounds, and adjust otherwise
+          if(random_radius > max_radius)
+            random_radius = max_radius;
+          else if(random_radius < min_radius)
+            random_radius = min_radius;
+
+          // set particle radius to random value
+          (*(*radius_)(0))[lid] = random_radius;
+
+          // recompute particle mass
+          (*mass_)[lid] = initDensity * PARTICLE::Utils::Radius2Volume(random_radius);
+        }
+
+        break;
       }
 
-      break;
-    }
-
-    default:
-    {
-      dserror("Invalid random distribution of particle radii!");
-      break;
+      default:
+      {
+        dserror("Invalid random distribution of particle radii!");
+        break;
+      }
     }
   }
 
@@ -459,76 +457,28 @@ void PARTICLE::TimInt::SetInitialFields()
   localdofs.push_back(2);
   discret_->EvaluateInitialField(field,(*vel_)(0),localdofs);
 
-  // -----------------------------------------//
-  // set the other parameters. In case of meshfree set also pressure and density
-  // -----------------------------------------//
-
-  const MAT::PAR::ExtParticleMat* extParticleMat = particle_algorithm_->ExtParticleMat();
-  switch (particle_algorithm_->ParticleInteractionType())
-  {
-  case INPAR::PARTICLE::MeshFree :
-  {
-    // set the rest density used for pressure-related dynamics
-    restDensity_ = extParticleMat->restDensity_;
-    refdensfac_ = extParticleMat->refdensfac_;
-    initDensity_ = initDensity;
-
-    // set density in the density vector (useful only for thermodynamics)
-    (*density_)(0)->PutScalar(initDensity);
-
-    if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM"))
-    {
-      // initialize temperature of particles
-      const double initTemperature = extParticleMat->initTemperature_;
-      const double transitionTemperature = extParticleMat->transitionTemperature_;
-      const double tempDiff = initTemperature - transitionTemperature;
-
-      if (tempDiff > 0)
-        (*specEnthalpy_)(0)->PutScalar(extParticleMat->SpecEnthalpyTL() + tempDiff * extParticleMat->CPL_);
-      else if (initTemperature < transitionTemperature)
-        (*specEnthalpy_)(0)->PutScalar(initTemperature * extParticleMat->CPS_);
-      else
-        dserror("TODO: start in the transition point - solid <-> liquid - still not implemented");
-
-      UpdateTemperaturen();
-    }
-
-    break;
-  }
-  case INPAR::PARTICLE::Normal_DEM_thermo :
-  {
-    // set density in the density vector (useful only for thermodynamics)
-    (*density_)(0)->PutScalar(initDensity);
-
-    // initialize temperature of particles
-    const double initTemperature = extParticleMat->initTemperature_;
-    const double transitionTemperature = extParticleMat->transitionTemperature_;
-    const double tempDiff = initTemperature - transitionTemperature;
-
-    if (tempDiff > 0)
-      (*specEnthalpy_)(0)->PutScalar(extParticleMat->SpecEnthalpyTL() + tempDiff * extParticleMat->CPL_);
-    else if (initTemperature < transitionTemperature)
-      (*specEnthalpy_)(0)->PutScalar(initTemperature * extParticleMat->CPS_);
-    else
-      dserror("TODO: start in the transition point - solid <-> liquid - still not implemented");
-
-    UpdateTemperaturen();
-    break;
-  }
-  default : //do nothing
-    break;
-  }
-
-  // It is here because it is a slave of the density
-  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
-  {
-    bool solve_thermal_problem=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM");
-    PARTICLE::Utils::Density2Pressure(restDensity_,refdensfac_,(*density_)(0), (*specEnthalpy_)(0), pressure_, particle_algorithm_->ExtParticleMat(), true, solve_thermal_problem);
-  }
-
   // set vector of initial particle radii if necessary
   if(radiuschangefunct_ > 0)
     radius0_->Update(1.,*(*radius_)(0),0.);
+
+  // In case of SPH, the material might be different from particle to particle. Thus, initial mass, density etc. has to be set individually
+  if(particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::MeshFree)
+  {
+    Teuchos::RCP<PARTICLE::ParticleMeshFreeInteractionHandler> interHandler= Teuchos::rcp(new PARTICLE::ParticleMeshFreeInteractionHandler(discret_, particle_algorithm_, DRT::Problem::Instance()->ParticleParams(),true));
+    interHandler->InitColParticles();
+
+    double consistent_problem_volume=DRT::Problem::Instance()->ParticleParams().get<double>("CONSISTENT_PROBLEM_VOLUME");
+    if(consistent_problem_volume>0.0)
+    {
+      //boundary particles are excluded for determination of particle mass since they are also not part of the consistent_problem_volume
+      const int num_particles = discret_->NumGlobalNodes() - global_num_boundaryparticles_;
+      const double particle_volume = consistent_problem_volume / ((double)(num_particles));
+
+      interHandler->InitDensityAndMass(particle_volume,(*density_)(0),mass_);
+    }
+    else
+      dserror("CONSISTENT_PROBLEM_VOLUME problem volume required for SPH simulations!");
+  }
 
   return;
 }
@@ -622,6 +572,8 @@ void PARTICLE::TimInt::DetermineMassDampConsistAccel()
       else
         DetermineMeshfreeDensAndAcc((*acc_)(0),Teuchos::null,Teuchos::null,Teuchos::null,0.0,0.0);
     }
+    else
+      dserror("Currently, on the kick-drift time integrator is suitable for SPH!");
   }
 
   return;
@@ -686,7 +638,7 @@ void PARTICLE::TimInt::DetermineMeshfreeDensAndAcc(Teuchos::RCP<Epetra_Vector> a
                                             const double dt)
 {
 
-  //Initialize all columns and boundary particles. Set sate vectors disn_ and veln_
+  //Initialize all columns and boundary particles, set sate vectors, search for neighbor particles.
   interHandler_->Init(disn_, veln_, radiusn_, mass_, Teuchos::null);
   //Set also state vector velConv
   if(velConv!=Teuchos::null)
@@ -707,19 +659,19 @@ void PARTICLE::TimInt::DetermineMeshfreeDensAndAcc(Teuchos::RCP<Epetra_Vector> a
 
     #ifdef PARTICLE_BOUNDARYDENSITY
     bool solve_thermal_problem=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM");
-    PARTICLE::Utils::Density2Pressure(restDensity_,refdensfac_,densityn_,specEnthalpyn_,pressure_,particle_algorithm_->ExtParticleMat(),true,solve_thermal_problem);
+    interHandler_->Density2Pressure(densityn_,specEnthalpyn_,pressure_,true,solve_thermal_problem);
     interHandler_->SetStateVector(pressure_, PARTICLE::Pressure);
     //Asign accelerations, modified pressures and modified velocities for boundary particles and calculate their mechanical energy contribution
     const INPAR::PARTICLE::WallInteractionType wallInteractionType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallInteractionType>(DRT::Problem::Instance()->ParticleParams(),"WALL_INTERACTION_TYPE");
     if(wallInteractionType==INPAR::PARTICLE::BoundarParticle_NoSlip or wallInteractionType==INPAR::PARTICLE::BoundarParticle_FreeSlip)
     {
-      interHandler_->InitBoundaryData(acc,particle_algorithm_->GetGravityAcc(time),bpintergy_);
+      interHandler_->InitBoundaryData(acc,particle_algorithm_->GetGravityAcc(time));
     }
     #endif
   }
   else
   {
-    if(freeSurfaceType!=INPAR::PARTICLE::FreeSurface_None)
+    if(freeSurfaceType!=INPAR::PARTICLE::FreeSurface_None and freeSurfaceType!=INPAR::PARTICLE::TwoPhase)
       dserror("Density summation not suitable for free-surface problems. Choose input parameter DENSITY_SUMMATION=No!");
 
     interHandler_->MF_mW(densityn_);
@@ -736,7 +688,7 @@ void PARTICLE::TimInt::DetermineMeshfreeDensAndAcc(Teuchos::RCP<Epetra_Vector> a
     Teuchos::RCP<Epetra_Vector> colorFieldGrad = Teuchos::rcp(new Epetra_Vector(*veln_));
     colorFieldGrad->PutScalar(0.0);
 
-    interHandler_->MF_mW(density_sum,colorField,colorFieldGrad);
+    interHandler_->MF_mW(density_sum,colorField,colorFieldGrad,phaseColor_);
     interHandler_->SetStateVector(colorField, PARTICLE::ColorField);
     interHandler_->SetStateVector(density_sum, PARTICLE::DensitySum);
     interHandler_->SetStateVector(colorFieldGrad, PARTICLE::ColorFieldGrad);
@@ -748,13 +700,16 @@ void PARTICLE::TimInt::DetermineMeshfreeDensAndAcc(Teuchos::RCP<Epetra_Vector> a
       smoothedColorFieldGrad->PutScalar(0.0);
       interHandler_->MF_SmoothedCFG(smoothedColorFieldGrad);
       interHandler_->SetStateVector(smoothedColorFieldGrad, PARTICLE::SmoothedColorFieldGrad);
+
+      if(smoothedColorFieldGrad_!=Teuchos::null)
+        smoothedColorFieldGrad_->Update(1.0,*smoothedColorFieldGrad,0.0);
     }
 
     //Determine free-surface particles
     interHandler_->InitFreeSurfaceParticles(fspType_);
 
     //Re-initialize density if required in case of free-surface flow
-    if(freeSurfaceType!=INPAR::PARTICLE::DensityIntegration)
+    if(freeSurfaceType!=INPAR::PARTICLE::DensityIntegration and freeSurfaceType!=INPAR::PARTICLE::TwoPhase)
       interHandler_->MF_ReInitDensity(densityn_,freeSurfaceType);
 
     if(colorField_!=Teuchos::null)
@@ -766,13 +721,13 @@ void PARTICLE::TimInt::DetermineMeshfreeDensAndAcc(Teuchos::RCP<Epetra_Vector> a
 
   // determine also the new pressure and set state vector
   bool solve_thermal_problem=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM");
-  PARTICLE::Utils::Density2Pressure(restDensity_,refdensfac_,densityn_,specEnthalpyn_,pressure_,particle_algorithm_->ExtParticleMat(),true,solve_thermal_problem);
+  interHandler_->Density2Pressure(densityn_,specEnthalpyn_,pressure_,true,solve_thermal_problem);
   interHandler_->SetStateVector(pressure_, PARTICLE::Pressure);
 
   // assign accelerations, modified pressures and modified velocities for boundary particles and calculate their mechanical energy contribution
   const INPAR::PARTICLE::WallInteractionType wallInteractionType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallInteractionType>(DRT::Problem::Instance()->ParticleParams(),"WALL_INTERACTION_TYPE");
   if(wallInteractionType==INPAR::PARTICLE::BoundarParticle_NoSlip or wallInteractionType==INPAR::PARTICLE::BoundarParticle_FreeSlip)
-    interHandler_->InitBoundaryData(acc,particle_algorithm_->GetGravityAcc(time),bpintergy_);
+    interHandler_->InitBoundaryData(acc,particle_algorithm_->GetGravityAcc(time));
 
   // clear acceleration states
   acc->PutScalar(0.0);
@@ -793,11 +748,23 @@ void PARTICLE::TimInt::DetermineMeshfreeDensAndAcc(Teuchos::RCP<Epetra_Vector> a
     Teuchos::RCP<Epetra_Vector> accSF = Teuchos::rcp(new Epetra_Vector(*acc));
     accSF->PutScalar(0.0);
 
-    if(surfaceTensionType==INPAR::PARTICLE::ST_CONTI_ADAMI)
-      interHandler_->Inter_fspvp_Adami(accSF,kappa,time);
+    if(freeSurfaceType==INPAR::PARTICLE::TwoPhase)
+    {
+      if(surfaceTensionType==INPAR::PARTICLE::ST_CONTI_ADAMI)
+        interHandler_->Inter_fspvp_Adami_1(accSF,kappa,time);
 
-    if(surfaceTensionType==INPAR::PARTICLE::ST_CONTI_HU)
-      interHandler_->Inter_fspvp_Hu(accSF,time);
+      if(surfaceTensionType==INPAR::PARTICLE::ST_CONTI_HU)
+        dserror("This variant is not implemented for two-phase flow yet!");
+    }
+    else
+    {
+      if(surfaceTensionType==INPAR::PARTICLE::ST_CONTI_ADAMI)
+        interHandler_->Inter_fspvp_Adami_2(accSF,kappa,time);
+
+      if(surfaceTensionType==INPAR::PARTICLE::ST_CONTI_HU)
+        interHandler_->Inter_fspvp_Hu(accSF,time);
+    }
+
 
     acc->Update(1.0,*accSF,1.0);
 
@@ -807,6 +774,9 @@ void PARTICLE::TimInt::DetermineMeshfreeDensAndAcc(Teuchos::RCP<Epetra_Vector> a
     if(curvature_!=Teuchos::null)
       curvature_->Update(1.0,*kappa,0.0);
   }
+
+  intergy_ = 0.0;
+  interHandler_->DetermineIntEnergy(intergy_);
 
   // clear vectors, keep memory
   interHandler_->Clear();
@@ -902,6 +872,9 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
   if(colorFieldGrad_!=Teuchos::null)
     UpdateStateVectorMap(colorFieldGrad_);
 
+  if(smoothedColorFieldGrad_!=Teuchos::null)
+    UpdateStateVectorMap(smoothedColorFieldGrad_);
+
   if(accSF_!=Teuchos::null)
     UpdateStateVectorMap(accSF_);
 
@@ -910,6 +883,9 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
 
   if(curvature_!=Teuchos::null)
     UpdateStateVectorMap(curvature_,true);
+
+  if(phaseColor_!=Teuchos::null)
+    UpdateStateVectorMap(phaseColor_,true);
 }
 
 /*----------------------------------------------------------------------*/
@@ -989,7 +965,7 @@ void PARTICLE::TimInt::ReadRestartState()
   if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
   {
     bool solve_thermal_problem=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM");
-    PARTICLE::Utils::Density2Pressure(restDensity_,refdensfac_,densityn_,specEnthalpyn_,pressure_,particle_algorithm_->ExtParticleMat(),true,solve_thermal_problem);
+    interHandler_->Density2Pressure(densityn_,specEnthalpyn_,pressure_,true,solve_thermal_problem);
   }
 
   // read in particle collision relevant data
@@ -1131,6 +1107,9 @@ void PARTICLE::TimInt::OutputRestart
   if(colorFieldGrad_!=Teuchos::null)
     WriteVector("colorFieldGrad", colorFieldGrad_);
 
+  if(smoothedColorFieldGrad_!=Teuchos::null)
+    WriteVector("smoothedColorFieldGrad", smoothedColorFieldGrad_);
+
   if(accSF_!=Teuchos::null)
     WriteVector("accSF", accSF_);
 
@@ -1139,6 +1118,9 @@ void PARTICLE::TimInt::OutputRestart
 
   if(curvature_!=Teuchos::null)
     WriteVector("curvature", curvature_, false);
+
+  if(phaseColor_!=Teuchos::null)
+    WriteVector("phaseColor", phaseColor_, false);
 
   if(variableradius_)
   {
@@ -1213,6 +1195,9 @@ void PARTICLE::TimInt::OutputState
   if(colorFieldGrad_!=Teuchos::null)
     WriteVector("colorFieldGrad", colorFieldGrad_);
 
+  if(smoothedColorFieldGrad_!=Teuchos::null)
+    WriteVector("smoothedColorFieldGrad", smoothedColorFieldGrad_);
+
   if(accSF_!=Teuchos::null)
     WriteVector("accSF", accSF_);
 
@@ -1221,6 +1206,9 @@ void PARTICLE::TimInt::OutputState
 
   if(curvature_!=Teuchos::null)
     WriteVector("curvature", curvature_, false);
+
+  if(phaseColor_!=Teuchos::null)
+    WriteVector("phaseColor", phaseColor_, false);
 
   WriteVector("temperature", temperature_, false);
 
@@ -1267,10 +1255,9 @@ void PARTICLE::TimInt::DetermineEnergy()
     }//energy for SPH case
     else if (collhandler_ == Teuchos::null and particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::MeshFree )
     {
-      // set internal and kinetic energy to zero
+      // set energies to zero (intergy_ has already been calculated earlier)
       double specific_energy = 0.0;
       kinergy_ = 0.0;
-      intergy_ = 0.0;
       extergy_ = 0.0;
       linmomentum_.Clear();
 
@@ -1290,20 +1277,6 @@ void PARTICLE::TimInt::DetermineEnergy()
 
         extergy_ += (*mass_)[i]*specific_energy;
         kinergy_ += 0.5 * (*mass_)[i] * kinetic_energy;
-
-        // thermodynamic energy E with p=-dE/dV, T=dE/dS (see Espanol2003, Eq.(5))
-        // Attention: currently, only the first, pressure-dependent contribution of the thermodynamic energy is implemented!
-        // Thus, it is only valid for isentrop problems, i.e.dE/dS=0! Furthermore, it is only considered for the fluid phase so far (since SpeedOfSoundL is used)!
-
-        //TODO: So far, energy output is only considered in the context of fluid problems (use of SpeedOfSoundL())!
-        if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM"))
-          dserror("Energy output is only considered in the context of pure fluid problems so far!");
-
-        double c0 = particle_algorithm_->ExtParticleMat()->SpeedOfSoundL();
-
-        //Very small / zero densities that might result from boundary particles are not considered here!
-        if((*densityn_)[i]>0.1*restDensity_)
-          intergy_+=PARTICLE::Utils::Density2Energy(c0, (*densityn_)[i], restDensity_, refdensfac_, (*mass_)[i]);
       }
     }
     else
@@ -1654,7 +1627,7 @@ void PARTICLE::TimInt::UpdatePressure()
   if (pressure_ != Teuchos::null && specEnthalpyn_ != Teuchos::null && densityn_ != Teuchos::null)
   {
     bool solve_thermal_problem=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM");
-    PARTICLE::Utils::Density2Pressure(restDensity_,refdensfac_,densityn_, specEnthalpyn_, pressure_, particle_algorithm_->ExtParticleMat(),false,solve_thermal_problem);
+    interHandler_->Density2Pressure(densityn_, specEnthalpyn_, pressure_,false,solve_thermal_problem);
   }
 }
 

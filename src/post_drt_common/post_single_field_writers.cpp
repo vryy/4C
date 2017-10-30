@@ -585,9 +585,11 @@ void ParticleFilter::WriteAllResults(PostField* field)
 
   writer_->WriteResult("colorField", "colorField", nodebased, 1);
   writer_->WriteResult("colorFieldGrad", "colorFieldGrad", dofbased, 1);
+  writer_->WriteResult("smoothedColorFieldGrad", "smoothedColorFieldGrad", dofbased, 1);
   writer_->WriteResult("accSF", "accSF", dofbased, 1);
   writer_->WriteResult("fspType", "fspType", nodebased, 1);
   writer_->WriteResult("curvature", "curvature", nodebased, 1);
+  writer_->WriteResult("phaseColor", "phaseColor", nodebased, 1);
 
   writer_->WriteResult("sign", "sign", nodebased, 1);
   writer_->WriteResult("orientation", "orientation", dofbased, field->problem()->num_dim(), 0);

@@ -979,6 +979,7 @@ baci_test(particleMeshFree_1Dhydrostatic_freesurface_NormalizedReinitialization 
 baci_test(particleMeshFree_1Dhydrostatic_freesurface_RandlesReinitialization 1 "")
 baci_test(particleMeshFree_2Dhydrostatic_freesurface_InteriorReinitialization_ArtVisc 5 "")
 baci_test(particleMeshFree_2Dbubble_ST_CONTI_ADAMI 6 "")
+baci_test(particleMeshFree_2Dbubble_2phase_ST_CONTI_ADAMI 6 "")
 baci_test(particleMeshFree_2Dbubble_ST_CONTI_HU 6 "")
 baci_test(particleMeshFree_2Dbubble_ST_VDW_INDIRECT_var1 6 "")
 baci_test(particleMeshFree_2Dbubble_ST_VDW_INDIRECT_var2 6 "")

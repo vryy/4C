@@ -87,66 +87,55 @@ namespace PARTICLE
     static double ComputeInertia(const double &radius, const double &mass) { return 0.4 * mass * radius * radius; }
 
     //! Compute the pressure from the proper speed of sound and the density (small density variation hypothesis)
-    static double Density2Pressure(const double& speedOfSound, const double& restDensity, const double& refdensfac, const double& density, const double& exponent)
+    static double Density2Pressure(const double& speedOfSound, const double& initDensity, const double& refdensfac, const double& density, const double& exponent)
       {
         if(exponent==1)
         {
-          return speedOfSound * speedOfSound * (density-refdensfac*restDensity);
+          return speedOfSound * speedOfSound * (density-refdensfac*initDensity);
         }
         else
         {
-          const double restPressure=speedOfSound * speedOfSound * restDensity / exponent;
-          return  restPressure*(pow(density/restDensity,exponent)-refdensfac);
+          const double restPressure=speedOfSound * speedOfSound * initDensity / exponent;
+          return  restPressure*(pow(density/initDensity,exponent)-refdensfac);
         }
       };
 
     //! Compute the pressure from the proper speed of sound and the density (small density variation hypothesis)
-    static FAD Density2Pressure(const double& speedOfSound, const double& restDensity, const double& refdensfac, const FAD& density, const double& exponent)
+    static FAD Density2Pressure(const double& speedOfSound, const double& initDensity, const double& refdensfac, const FAD& density, const double& exponent)
       {
         if(exponent==1)
-          return speedOfSound * speedOfSound * (density-refdensfac*restDensity);
+          return speedOfSound * speedOfSound * (density-refdensfac*initDensity);
         else
         {
-          const double restPressure=speedOfSound * speedOfSound * restDensity / exponent;
-          return  restPressure*(pow(density/restDensity,exponent)-refdensfac);
+          const double restPressure=speedOfSound * speedOfSound * initDensity / exponent;
+          return  restPressure*(pow(density/initDensity,exponent)-refdensfac);
         }
       };
 
     //! Compute the density from the proper speed of sound and the pressure (small density variation hypothesis)
-    static double Pressure2Density(const double& speedOfSound, const double& restDensity, const double& refdensfac, const double& pressure, const double& exponent)
+    static double Pressure2Density(const double& speedOfSound, const double& initDensity, const double& refdensfac, const double& pressure, const double& exponent)
     {
       if(exponent==1)
-        return pressure/(speedOfSound * speedOfSound) + refdensfac*restDensity;
+        return pressure/(speedOfSound * speedOfSound) + refdensfac*initDensity;
       else
       {
-        const double restPressure=speedOfSound * speedOfSound * restDensity / exponent;
-        return restDensity*(pow(pressure/restPressure+refdensfac,(double)(1.0/exponent)));
+        const double restPressure=speedOfSound * speedOfSound * initDensity / exponent;
+        return initDensity*(pow(pressure/restPressure+refdensfac,(double)(1.0/exponent)));
       }
     };
 
-    //! Compute pressure for the entire vector
-    static void Density2Pressure(
-        const double& restDensity,
-        const double& refdensfac,
-        const Teuchos::RCP<const Epetra_Vector> density,
-        const Teuchos::RCP<const Epetra_Vector> specEnthalpy,
-        Teuchos::RCP<Epetra_Vector> &pressure,
-        const MAT::PAR::ExtParticleMat* extParticleMat,
-        bool trg_createPressureVector = false,
-        bool solve_thermal_problem = true);
-
     //! Compute the mechanical energy from the current density and the equation of state:
     //! This method has to be in accordance with the methodes Density2Pressure and Pressure2Density above
-    static double Density2Energy(const double& speedOfSound, const double& density, const double& restDensity, const double& refdensfac, const double& mass)
+    static double Density2Energy(const double& speedOfSound, const double& density, const double& initDensity, const double& refdensfac, const double& mass)
     {
       // thermodynamic energy E with p=-dE/dV, T=dE/dS (see Espanol2003, Eq.(5))
       // Attention: currently, only the first, pressure-dependent contribution of the thermodynamic energy is implemented!
       // Thus, it is only valid for isentrop problems, i.e.dE/dS=0! Furthermore, it is only considered for the fluid phase so far (since SpeedOfSoundL is used)!
-      // From the considered pressure law p_i=c_0^2(rho_i+refdensfac_*restDensity_) and the relation rho_i=m_i/V_i it is possible to gain the energy via integration:
-      // E_i=c_0^2 m_i [ln(rho_i/m_i)-refdensfac_*restDensity_/rho_i]+const.  --> The integration constant const. can be determined based on an arbitrary initial condition.
-      // In the following, we choose E_i(rho_i=restDensity_)=0 leading to: E_i=c_0^2 m_i [ln(rho_i/restDensity_)+refdensfac_*{1-restDensity_/rho_i}]:
+      // From the considered pressure law p_i=c_0^2(rho_i+refdensfac_*initDensity_) and the relation rho_i=m_i/V_i it is possible to gain the energy via integration:
+      // E_i=c_0^2 m_i [ln(rho_i/m_i)-refdensfac_*initDensity_/rho_i]+const.  --> The integration constant const. can be determined based on an arbitrary initial condition.
+      // In the following, we choose E_i(rho_i=initDensity_)=0 leading to: E_i=c_0^2 m_i [ln(rho_i/initDensity_)+refdensfac_*{1-initDensity_/rho_i}]:
 
-      double density_frac = density/restDensity;
+      double density_frac = density/initDensity;
       return mass * speedOfSound * speedOfSound * (log(density_frac)-refdensfac*(1.0-1.0/density_frac));
     };
 

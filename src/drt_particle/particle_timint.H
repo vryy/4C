@@ -582,7 +582,6 @@ namespace PARTICLE
 
     double kinergy_; //!< kinetic energy
     double intergy_; //!< internal energy
-    double bpintergy_; //!< internal energy of boundary particles (different definition of density/pressure)
     double extergy_; //!< external energy
     LINALG::Matrix<3,1> linmomentum_; //!< linear momentum
     //@}
@@ -676,19 +675,16 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> colorField_;
     //! gradient of color field
     Teuchos::RCP<Epetra_Vector> colorFieldGrad_;
+    //! smoothed gradient of color field
+    Teuchos::RCP<Epetra_Vector> smoothedColorFieldGrad_;
     //! acceleration contribution of surface tension
     Teuchos::RCP<Epetra_Vector> accSF_;
     //! free-surface particle type
     Teuchos::RCP<Epetra_Vector> fspType_;
     //! curvature of free surface
     Teuchos::RCP<Epetra_Vector> curvature_;
-
-    //! initial density for meshFree-pressure dynamics
-    double initDensity_;
-    //! rest density for meshFree-pressure dynamics defining the equation of state: pressure=c_0^2(density-refdensfac_*restDensity_)  with the speed of sound c_0^2=BULK_MODULUS/restDensity_
-    double restDensity_;
-    /// factor defining the equation of state: pressure=c_0^2(density-refdensfac_*restDensity_)  with the speed of sound c_0^2=BULK_MODULUS/restDensity_;
-    double refdensfac_;
+    //! discrete particle phase color
+    Teuchos::RCP<Epetra_Vector> phaseColor_;
 
     /// global number of boundary particles over all processors
     int global_num_boundaryparticles_;

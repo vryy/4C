@@ -133,7 +133,8 @@ namespace INPAR
       DensityIntegration,             //density determined via time integration exclusively
       InteriorReinitialization,       //density via time integration and re-initialization in the interior via density summation (in every time step)
       NormalizedReinitialization,     //like 'InteriorReinitialization' but with additional re-initialization of free-surface particles via normalized density summation (Shepard Filter)
-      RandlesReinitialization         //like 'NormalizedReinitialization' but with re-initialization of free-surface particles inspired by Randles 1996 instead of Shepard Filter
+      RandlesReinitialization,        //like 'NormalizedReinitialization' but with re-initialization of free-surface particles inspired by Randles 1996 instead of Shepard Filter
+      TwoPhase                        //void phase explicitly modeled / discretized
     };
 
     /// type of surface tension forces for MeshFree interactions

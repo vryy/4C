@@ -66,48 +66,6 @@ void PARTICLE::Utils::SpecEnthalpy2Temperature(
 }
 
 /*-----------------------------------------------------------------------------*/
-// Compute pressure vector (see Antoci2007-E4)
-void PARTICLE::Utils::Density2Pressure(
-  const double& restDensity,
-  const double& refdensfac,
-  const Teuchos::RCP<const Epetra_Vector> density,
-  const Teuchos::RCP<const Epetra_Vector> specEnthalpy,
-  Teuchos::RCP<Epetra_Vector> &pressure,
-  const MAT::PAR::ExtParticleMat* extParticleMat,
-  bool trg_createPressureVector,
-  bool solve_thermal_problem)
-{
-  // checks
-  if (density == Teuchos::null)
-  {
-    pressure = Teuchos::null;
-    return;
-  }
-  if (specEnthalpy == Teuchos::null)
-    dserror("specEnthalpy is a null pointer!");
-
-  // rebuild the pressure vector
-  if (trg_createPressureVector || pressure == Teuchos::null)
-  {
-    pressure = Teuchos::rcp(new Epetra_Vector(density->Map(), true));
-  }
-
-  // compute inertia for every particle
-  for (int lidNode = 0; lidNode < density->MyLength(); ++lidNode)
-  {
-    double speedOfSound = 0.0;
-    //If no thermal problem is solved, only liquid phases are considered
-    if(solve_thermal_problem)
-      speedOfSound = SpeedOfSound((*specEnthalpy)[lidNode], extParticleMat);
-    else
-      speedOfSound = extParticleMat->SpeedOfSoundL();
-
-    (*pressure)[lidNode] = Density2Pressure(speedOfSound, restDensity, refdensfac, (*density)[lidNode],extParticleMat->exponent_);
-  }
-}
-
-
-/*-----------------------------------------------------------------------------*/
 // compute the intersection area of two particles that are in contact. It returns 0 if there is no contact
 // TODO: (see reference... equation...)
 double PARTICLE::Utils::IntersectionAreaPvsP(const double& radius1, const double& radius2, const double& dis)

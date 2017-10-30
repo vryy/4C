@@ -3136,8 +3136,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             "particle material",
                                             INPAR::MAT::m_extparticlemat));
 
-    AddNamedReal(m,"DENSITY","initial mass density");
-    AddNamedReal(m,"RESTDENSITY","reference mass density defining the speed of sound");
+    AddNamedReal(m,"DENSITY","initial / reference mass density");
     AddNamedReal(m,"REFDENSFAC","scale factor for equation of state");
     AddNamedReal(m,"EXPONENT","exponent in equation of state");
     AddNamedReal(m,"INITRADIUS","initial radius of particle");
