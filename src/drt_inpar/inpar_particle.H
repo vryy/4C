@@ -19,6 +19,7 @@
 
 // forward declaration
 namespace DRT { namespace INPUT { class ConditionDefinition; } }
+
 /*----------------------------------------------------------------------*/
 
 namespace INPAR
@@ -44,8 +45,7 @@ namespace INPAR
       Normal_DEM,
       Normal_MD,
       NormalAndTang_DEM,
-      Normal_DEM_thermo,
-      MeshFree
+      SPH
     };
 
     /// Normal contact law
@@ -93,7 +93,7 @@ namespace INPAR
       radiusdistribution_normal
     };
 
-    /// Weight function for MeshFree interactions
+    /// Weight function for SPH interactions
     enum WeightFunction
     {
       CubicBspline,
@@ -102,7 +102,7 @@ namespace INPAR
       HyperbolaNoRsz
     };
 
-    /// Number of weight function space dimensions for MeshFree interactions
+    /// Number of weight function space dimensions for SPH interactions
     enum WeightFunctionDim
     {
       WF_1D,
@@ -118,7 +118,7 @@ namespace INPAR
       AddLayerGhosting
     };
 
-    /// wall interaction type for MeshFree interactions
+    /// wall interaction type for SPH interactions
     enum WallInteractionType
     {
       BoundarParticle_NoSlip,
@@ -126,7 +126,7 @@ namespace INPAR
       NoWallInteraction
     };
 
-    /// type of free-surface treatment for MeshFree interactions
+    /// type of free-surface treatment for SPH interactions
     enum FreeSurfaceType
     {
       FreeSurface_None,               //no free surfaces
@@ -137,7 +137,7 @@ namespace INPAR
       TwoPhase                        //void phase explicitly modeled / discretized
     };
 
-    /// type of surface tension forces for MeshFree interactions
+    /// type of surface tension forces for SPH interactions
     enum SurfaceTensionType
     {
       ST_NONE,             //no surface tension

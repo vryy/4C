@@ -86,10 +86,9 @@ void PASI::PASI_PartTwoWayCoup::Init(
 
   // safety check: two way coupled pasi not implemented for all Particle Interaction Types
   if (particles_->ParticleInteractionType() != INPAR::PARTICLE::Normal_DEM
-      and particles_->ParticleInteractionType() != INPAR::PARTICLE::NormalAndTang_DEM
-      and particles_->ParticleInteractionType() != INPAR::PARTICLE::Normal_DEM_thermo)
+      and particles_->ParticleInteractionType() != INPAR::PARTICLE::NormalAndTang_DEM)
   {
-    dserror("Two way coupled partitioned PASI not implemented yet for ParticleInteractionType: 'None', 'Normal_MD' and 'MeshFree'!");
+    dserror("Two way coupled partitioned PASI not implemented yet for ParticleInteractionType: 'None', 'Normal_MD' and 'SPH'!");
   }
 
   // safety check: two way coupled pasi currently just implemented for CentrDiff time integration scheme in particle field
@@ -252,18 +251,11 @@ void PASI::PASI_PartTwoWayCoup::ResetParticleStates()
   }
 
   // reset radius, density and specific enthalpy (and its derivative)
-  if (particles_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo or
-      particles_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
+  if (particles_->ParticleInteractionType() == INPAR::PARTICLE::SPH)
   {
     particles_->AdapterParticle()->WriteAccessRadiusnp()->Update(1.0,*(particles_->AdapterParticle()->Radiusn()),0.0);
     particles_->AdapterParticle()->WriteAccessDensitynp()->Update(1.0,*(particles_->AdapterParticle()->Densityn()),0.0);
-    particles_->AdapterParticle()->WriteAccessSpecEnthalpynp()->Update(1.0,*(particles_->AdapterParticle()->SpecEnthalpyn()),0.0);
-    particles_->AdapterParticle()->WriteAccessSpecEnthalpyDotnp()->Update(1.0,*(particles_->AdapterParticle()->SpecEnthalpyDotn()),0.0);
-
-    if (particles_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
-    {
-      particles_->AdapterParticle()->WriteAccessDensityDotnp()->Update(1.0,*(particles_->AdapterParticle()->DensityDotn()),0.0);
-    }
+    particles_->AdapterParticle()->WriteAccessDensityDotnp()->Update(1.0,*(particles_->AdapterParticle()->DensityDotn()),0.0);
   }
 
   // clear vector of particle forces on structural discretization

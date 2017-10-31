@@ -37,7 +37,6 @@ namespace PARTICLE
   class Algorithm;
   struct WallContactPoint;
   struct ParticleCollData;
-  class HeatSource;
 }
 namespace BINSTRATEGY
 {
@@ -86,15 +85,13 @@ namespace PARTICLE
         Teuchos::RCP<const Epetra_Vector> radiusn,
         Teuchos::RCP<Epetra_Vector> anglen,
         Teuchos::RCP<Epetra_Vector> mass,
-        Teuchos::RCP<Epetra_Vector> densityn = Teuchos::null,
-        Teuchos::RCP<Epetra_Vector> specEnthalpyn = Teuchos::null);
+        Teuchos::RCP<Epetra_Vector> densityn = Teuchos::null);
 
     /// compute collisions (inter-particle and particle-wall), returns contact energy
     virtual double EvaluateParticleContact(
       double dt,
       Teuchos::RCP<Epetra_Vector> sysvec1,
       Teuchos::RCP<Epetra_Vector> sysvec2,
-      Teuchos::RCP<Epetra_Vector> sysvec3 = Teuchos::null,
       Teuchos::RCP<Epetra_FEVector> f_structure = Teuchos::null
       ) = 0;
 
@@ -137,8 +134,6 @@ namespace PARTICLE
     double r_min_;
     /// maximum expected radius
     double r_max_;
-    /// dismember radius in case of thermodynamics
-    double r_dismember_;
     /// max expected particle velocity
     const double v_max_;
     /// max allowed relative particle-particle penetration
@@ -263,7 +258,6 @@ namespace PARTICLE
     const double dt,
     Teuchos::RCP<Epetra_Vector> f_contact,
     Teuchos::RCP<Epetra_Vector> m_contact,
-    Teuchos::RCP<Epetra_Vector> specEnthalpyDotn,
     Teuchos::RCP<Epetra_FEVector> f_structure);
 
   /// calculate contact with neighboring particles
@@ -274,8 +268,7 @@ namespace PARTICLE
       const bool                           havepbc,                 //!< flag indicating periodic boundaries
       const double                         dt,                      //!< time step size
       const Teuchos::RCP<Epetra_Vector>&   f_contact,               //!< global force vector
-      const Teuchos::RCP<Epetra_Vector>&   m_contact,               //!< global moment vector
-      const Teuchos::RCP<Epetra_Vector>&   specEnthalpyDotn         //!< global enthalpy vector
+      const Teuchos::RCP<Epetra_Vector>&   m_contact                //!< global moment vector
       );
 
   /// calculate contact with neighboring walls
@@ -291,12 +284,6 @@ namespace PARTICLE
       const Teuchos::RCP<Epetra_Vector>&                m_contact,           //!< global moment vector
       const Teuchos::RCP<Epetra_FEVector>&              f_structure          //!< global wall force vector
       );
-
-  /// calculate contact with neighboring heat sources
-  void CalcNeighboringHeatSourcesContact(
-    const ParticleCollData& data_i,
-    const Teuchos::RCP<boost::unordered_map<int, Teuchos::RCP<HeatSource> > > neighboring_heatSources,
-    const Teuchos::RCP<Epetra_Vector>& specEnthalpyDotn);
 
   /// calculate normal contact force for single contact pair
   void CalculateNormalContactForce(
@@ -582,7 +569,6 @@ namespace PARTICLE
       double dt,
       Teuchos::RCP<Epetra_Vector> disn,
       Teuchos::RCP<Epetra_Vector> veln,
-      Teuchos::RCP<Epetra_Vector> specEnthalpyn,
       Teuchos::RCP<Epetra_FEVector> f_structure);
 
     /// contact for one event is evaluated
@@ -775,7 +761,6 @@ namespace PARTICLE
     double rad;
     double mass;
     double density;
-    double specEnthalpy;
     std::vector<int> lm;
     int owner;
     int id;

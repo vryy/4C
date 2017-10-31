@@ -15,14 +15,6 @@
 
 #include "../drt_binstrategy/binning_strategy.H"
 
-#include <Epetra_MpiComm.h>
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-#include <Epetra_Vector.h>
-#include <Epetra_CrsGraph.h>
-#include <vector>
-
-
 namespace DRT
 {
   class Exporter;

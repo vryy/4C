@@ -93,25 +93,7 @@ namespace PARTICLE
   }; // ParticleBase
 
 // ---------------------------------------------------------- //
-  /// base class for themodynamics
-  class ParticleThermoBase
-  {
-  public:
-
-  /// constructors
-
-  ParticleThermoBase(const double specEnthalpy) : specEnthalpy_(specEnthalpy) {}
-
-  ParticleThermoBase() : specEnthalpy_(-1) {}
-
-  /// internal variables
-
-  double specEnthalpy_;
-
-  }; // ParticleThermoBase
-
-// ---------------------------------------------------------- //
-  /// class for material particles (no meshfree - GH stuff)
+  /// class for material particles
   class Particle : public ParticleBase
   {
   public:
@@ -152,43 +134,7 @@ namespace PARTICLE
   }; // Particle
 
 // ---------------------------------------------------------- //
-  /// particles with thermodynamics
-  class ParticleThermo : public Particle, public ParticleThermoBase
-  {
-  public:
-
-  /// constructor
-
-  ParticleThermo(
-      const int gid,
-      const int owner,
-      const std::vector<int> lm,
-      const LINALG::Matrix<3,1> dis,
-      const LINALG::Matrix<3,1> vel,
-      const double radius,
-      const double mass,
-      const double density,
-      const LINALG::Matrix<3,1> angvel,
-      const double ddt,
-      const double specEnthalpy
-      ) :
-        Particle(gid, owner, lm, dis, vel, radius, mass, density,  angvel, ddt),
-        ParticleThermoBase(specEnthalpy) {}
-
-  ParticleThermo() : Particle(), ParticleThermoBase() {}
-
-  ParticleThermo(
-      const int gid,
-      const int owner,
-      const std::vector<int> lm
-      ) :
-        Particle(gid, owner, lm),
-        ParticleThermoBase() {}
-
-  }; // ParticleThermo
-
-// ---------------------------------------------------------- //
-  /// Class containing boundary data required in ParticleMF
+  /// Class containing boundary data required in ParticleSPH
   class BoundaryData
   {
   public:
@@ -216,7 +162,7 @@ namespace PARTICLE
 
   }; // BoundaryData
 
-  /// Class containing free-surface data required in ParticleMF
+  /// Class containing free-surface data required in ParticleSPH
   class FreeSurfaceData
   {
   public:
@@ -245,17 +191,17 @@ namespace PARTICLE
   }; // FreeSurfaceData
 
 // ---------------------------------------------------------- //
-  /// particles for meshfree dynamics (thermodynamics included)
-  class ParticleMF : public ParticleBase, public ParticleThermoBase
+  /// particles for SPH dynamics
+  class ParticleSPH : public ParticleBase
   {
   public:
 
   /// constructor: empty
-  ParticleMF() : ParticleBase(), ParticleThermoBase(),
-      pressure_(-1), temperature_(-1), densityDot_(-1), boundarydata_(BoundaryData(false)), freesurfacedata_(FreeSurfaceData(FS_NONE, 0)), velConv_(LINALG::Matrix<3,1>(true)), extParticleMat_(NULL) {}
+  ParticleSPH() : ParticleBase(),
+      pressure_(-1), densityDot_(-1), boundarydata_(BoundaryData(false)), freesurfacedata_(FreeSurfaceData(FS_NONE, 0)), velConv_(LINALG::Matrix<3,1>(true)), extParticleMat_(NULL) {}
 
   // contructor: only identifiers and material
-  ParticleMF(
+  ParticleSPH(
       const int gid,
       const int owner,
       const std::vector<int> lm,
@@ -263,9 +209,7 @@ namespace PARTICLE
       int phase_color,
       const MAT::PAR::ExtParticleMat* extParticleMat) :
         ParticleBase(gid, owner, lm),
-        ParticleThermoBase(),
         pressure_(-1),
-        temperature_(-1),
         densityDot_(-1),
         boundarydata_(BoundaryData(boundaryparticle)),
         freesurfacedata_(FreeSurfaceData(FS_NONE, phase_color)),
@@ -274,13 +218,12 @@ namespace PARTICLE
 
   /// internal variables
   double pressure_;
-  double temperature_;
   double densityDot_;
   BoundaryData boundarydata_;
   FreeSurfaceData freesurfacedata_;
   LINALG::Matrix<3,1> velConv_;    //particle convection velocity that may differ from the particle momentum velocity in general (see Ref. Adami2013)
   const MAT::PAR::ExtParticleMat* extParticleMat_;  //pointer to the extParticleMat material
-  }; // ParticleMF
+  }; // ParticleSPH
 }
 
 /// class for particles based on FAD (for debugging)

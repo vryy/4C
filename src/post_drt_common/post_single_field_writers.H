@@ -296,10 +296,10 @@ protected:
  \author katta
  \date 12/16
  */
-class ParticleMeshFreeRenderingFilter : public PostFilterBase
+class ParticleSPHRenderingFilter : public PostFilterBase
 {
 public:
-  ParticleMeshFreeRenderingFilter(PostField *field,
+  ParticleSPHRenderingFilter(PostField *field,
                                   std::string name)
   :
     PostFilterBase (field, name)

@@ -18,18 +18,10 @@
 /* headers */
 #include "particle_timint_kickdrift.H"
 #include "particle_algorithm.H"
-#include "particle_contact.H"
 #include "particle_utils.H"
-#include "particleMeshFree_interaction.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/extparticle_mat.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils.H"
-#include "particle_algorithm.H"
-#include "particle_heatSource.H"
-
-#include "../drt_io/io_control.H"
+#include "../drt_io/io.H"
+#include "particle_sph_interaction.H"
 
 /*----------------------------------------------------------------------*/
 /* Constructor */
@@ -62,10 +54,8 @@ PARTICLE::TimIntKickDrift::TimIntKickDrift(
 void PARTICLE::TimIntKickDrift::Init()
 {
   // preliminary safety checks
-  if(particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::MeshFree)
-    dserror("The kick-drift-kick time integrator can currently exclusively be used for SPH/Meshfree applications!");
-  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM"))
-    dserror("No thermal problem possible in kick-drift scheme!");
+  if(particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::SPH)
+    dserror("kick-drift-kick time integrator currently just combined with smoothed particle hydrodynamics interaction mechanism");
   if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"NO_VELDIFF_TERM")==true and DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"TRANSPORT_VELOCITY")==false)
       dserror("The parameter NO_VELDIFF_TERM only makes sense in combination with TRANSPORT_VELOCITY!");
 
@@ -130,7 +120,7 @@ int PARTICLE::TimIntKickDrift::IntegrateStep()
 
   //Determine density as well as physical and modified accelerations a_{n+1/2}=a(r_{n+1},v_{n+1/2})
   //and \tilde{a}_{n+1/2}=\tilde{a}(r_{n+1},v_{n+1/2}) based on r_{n+1} and v_{n+1/2} as well as external forces at t_{n+1}
-  DetermineMeshfreeDensAndAcc(accn_,accmodn_,velmodn_,acc_A,timen_,dt);
+  DetermineSPHDensAndAcc(accn_,accmodn_,velmodn_,acc_A,timen_,dt);
 
   //Update of end-velocities v_{n+1}=v_{n+1/2}+dt/2*a_{n+1/2}
   veln_->Update(dthalf, *accn_, 1.0);
@@ -161,8 +151,7 @@ void PARTICLE::TimIntKickDrift::ReadRestartState()
   reader.ReadVector(densityDotn_, "densityDot");
   densityDot_->UpdateSteps(*densityDotn_);
 
-  bool solve_thermal_problem=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM");
-  interHandler_->Density2Pressure(densityn_,specEnthalpyn_,pressure_,true,solve_thermal_problem);
+  interHandler_->Density2Pressure(densityn_,pressure_);
 
   // read radius
   reader.ReadVector(radiusn_, "radius");
@@ -170,12 +159,8 @@ void PARTICLE::TimIntKickDrift::ReadRestartState()
   // read density
   reader.ReadVector(densityn_, "density");
   density_->UpdateSteps(*densityn_);
-  // read specEnthalpy
-  reader.ReadVector(specEnthalpyn_, "specEnthalpy");
-  specEnthalpy_->UpdateSteps(*specEnthalpyn_);
-  // read specEnthalpyDot
-  reader.ReadVector(specEnthalpyDotn_, "specEnthalpyDot");
-  specEnthalpyDot_->UpdateSteps(*specEnthalpyDotn_);
+
+  return;
 }
 
 /* Determination (and output) of extreme values */

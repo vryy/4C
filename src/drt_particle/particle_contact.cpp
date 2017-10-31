@@ -19,7 +19,6 @@
 #include "particle_contact.H"
 #include "particle_algorithm.H"
 #include "particle_timint_centrdiff.H"
-#include "particle_heatSource.H"
 #include "../drt_adapter/ad_str_structure.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_discret.H"
@@ -61,7 +60,6 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
   young_(0.),
   r_min_(particledynparams.get<double>("MIN_RADIUS")),
   r_max_(particledynparams.get<double>("MAX_RADIUS")),
-  r_dismember_(0.),
   v_max_(particledynparams.get<double>("MAX_VELOCITY")),
   c_(particledynparams.get<double>("REL_PENETRATION")),
   c_wall_(particledynparams.get<double>("REL_PENETRATION_WALL")),
@@ -317,7 +315,7 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
     const double safety = 0.75;
 
     // initialize factor
-    if(particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::Normal_DEM || particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::Normal_DEM_thermo)
+    if(particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::Normal_DEM)
     { factor = 0.34; }
     if(particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::NormalAndTang_DEM)
     { factor = 0.22; }
@@ -338,18 +336,6 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
       if(mu_<=0.0 or (particle_algorithm_->WallDiscret() != Teuchos::null and mu_wall_<=0.0))
        dserror("Friction coefficient invalid");
     }
-  }
-  const MAT::PAR::ExtParticleMat* extParticleMat = particle_algorithm_->ExtParticleMat();
-  if (extParticleMat != NULL)
-  {
-    r_dismember_ = extParticleMat->dismemberRadius_;
-    if (r_dismember_ < 0)
-      dserror("Invalid or unset input parameter (DISMEMBER_RADIUS must be larger than zero)");
-    if (r_dismember_ < r_min_)
-      dserror("DISMEMBER_RADIUS < MIN_RADIUS -> DISMEMBER_RADIUS is too small!");
-
-    if (r_dismember_ > r_max_)
-            dserror("DISMEMBER_RADIUS > MAX_RADIUS -> DISMEMBER_RADIUS is too big!");
   }
 
   // safety checks for particle adhesion
@@ -418,8 +404,7 @@ void PARTICLE::ParticleCollisionHandlerBase::Init(
     Teuchos::RCP<const Epetra_Vector> radiusn,
     Teuchos::RCP<Epetra_Vector> orientn,
     Teuchos::RCP<Epetra_Vector> mass,
-    Teuchos::RCP<Epetra_Vector> densityn,
-    Teuchos::RCP<Epetra_Vector> specEnthalpyn)
+    Teuchos::RCP<Epetra_Vector> densityn)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleCollisionHandlerBase::ContactInit");
   // export everything in col layout
@@ -467,13 +452,11 @@ void PARTICLE::ParticleCollisionHandlerBase::Init(
   else
     dserror("You have a very strange radius vector...");
 
-  Teuchos::RCP<Epetra_Vector> densityCol, specEnthalpyCol;
+  Teuchos::RCP<Epetra_Vector> densityCol;
   if (densityn != Teuchos::null)
   {
     densityCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
-    specEnthalpyCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
     err += densityCol->Import(*densityn, nodeimporter, Insert);
-    err += specEnthalpyCol->Import(*specEnthalpyn, nodeimporter, Insert);
   }
 
   if (err)
@@ -513,10 +496,7 @@ void PARTICLE::ParticleCollisionHandlerBase::Init(
     }
     data.mass = (*massCol)[lid];
     if (densityn != Teuchos::null)
-    {
       data.density = (*densityCol)[lid];
-      data.specEnthalpy = (*specEnthalpyCol)[lid];
-    }
 
     // set ddt
     data.ddt = 0;
@@ -593,7 +573,6 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
   const double dt,
   Teuchos::RCP<Epetra_Vector> f_contact,
   Teuchos::RCP<Epetra_Vector> m_contact,
-  Teuchos::RCP<Epetra_Vector> specEnthalpyDotn,
   Teuchos::RCP<Epetra_FEVector> f_structure)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleCollisionHandlerDEM::ContactSearchAndCalculation");
@@ -649,10 +628,7 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
     // list of walls that border on the CurrentBin
     boost::unordered_map<int, DRT::Element*> neighboring_walls;
 
-    // list of heat sources that border on the CurrentBin
-    const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > neighboring_heatSources = particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo ? Teuchos::rcp(new boost::unordered_map<int , Teuchos::RCP<HeatSource> >) : Teuchos::null;
-
-    particle_algorithm_->GetNeighbouringItems(binId, neighboring_particles, &neighboring_walls, neighboring_heatSources);
+    particle_algorithm_->GetNeighbouringItems(binId, neighboring_particles, &neighboring_walls);
 
     // loop over all particles in CurrentBin
     for(int i=0; i<currentBin->NumNode(); ++i)
@@ -671,12 +647,7 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
       {
         // compute contact with neighboring particles
         CalcNeighboringParticlesContact(particle_i, data_i, neighboring_particles,
-            havepbc, dt, f_contact, m_contact, specEnthalpyDotn);
-
-        if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
-        {
-          CalcNeighboringHeatSourcesContact(data_i, neighboring_heatSources, specEnthalpyDotn);
-        }
+            havepbc, dt, f_contact, m_contact);
       }
     }
   }
@@ -695,35 +666,6 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
   return contact_energy_;
 }
 
-
-/*----------------------------------------------------------------------*
- | calculate contact with neighboring heat sources         katta 10/16  |
- *----------------------------------------------------------------------*/
-void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringHeatSourcesContact(
-  const ParticleCollData& data_i,
-  const Teuchos::RCP<boost::unordered_map<int, Teuchos::RCP<HeatSource> > > neighboring_heatSources,
-  const Teuchos::RCP<Epetra_Vector>& specEnthalpyDotn)
-{
-  double specEnthalpyDot_i = 0.0;
-  boost::unordered_map<int , Teuchos::RCP<HeatSource> >::const_iterator ii;
-  for(ii = neighboring_heatSources->begin(); ii != neighboring_heatSources->end();  ++ii)
-  {
-    const Teuchos::RCP<HeatSource> hs = ii->second;
-    if (hs->minVerZone_[0]<=data_i.dis(0) &&
-        hs->minVerZone_[1]<=data_i.dis(1) &&
-        hs->minVerZone_[2]<=data_i.dis(2) &&
-        hs->maxVerZone_[0]>=data_i.dis(0) &&
-        hs->maxVerZone_[1]>=data_i.dis(1) &&
-        hs->maxVerZone_[2]>=data_i.dis(2))
-    {
-      specEnthalpyDot_i += (hs->QDot_)/data_i.density;
-    }
-  }
-
-  LINALG::Assemble(*specEnthalpyDotn, specEnthalpyDot_i, data_i.id, data_i.owner);
-}
-
-
 /*----------------------------------------------------------------------*
  | calculate contact with neighboring particles             ghamm 04/16 |
  *----------------------------------------------------------------------*/
@@ -734,8 +676,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
     const bool                           havepbc,                 //!< flag indicating periodic boundaries
     const double                         dt,                      //!< time step size
     const Teuchos::RCP<Epetra_Vector>&   f_contact,               //!< global force vector
-    const Teuchos::RCP<Epetra_Vector>&   m_contact,               //!< global moment vector
-    const Teuchos::RCP<Epetra_Vector>&   specEnthalpyDotn         //!< global enthalpy vector
+    const Teuchos::RCP<Epetra_Vector>&   m_contact                //!< global moment vector
     )
 {
   std::map<int, PARTICLE::Collision>& history_particle_i = static_cast<PARTICLE::ParticleNode*>(particle_i)->Get_history_particle();
@@ -870,28 +811,6 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
         LINALG::Assemble(*f_contact, contactforce_j, data_j.lm, data_j.owner);
         LINALG::Assemble(*m_contact, contactmoment_i, data_i.lm, data_i.owner);
         LINALG::Assemble(*m_contact, contactmoment_j, data_j.lm, data_j.owner);
-
-        // --- calculate thermodinamic exchange ---//
-        if (specEnthalpyDotn != Teuchos::null)
-        {
-          // extract the material
-          const MAT::PAR::ExtParticleMat* extParticleMat = particle_algorithm_->ExtParticleMat();
-          // find the interesting quantities
-          static LINALG::Matrix<3,1> r_ij;
-          r_ij.Update(1.,data_j.dis,-1.,data_i.dis);
-          const double norm_r_contact = r_ij.Norm2();
-          const double intersectionArea = PARTICLE::Utils::IntersectionAreaPvsP(data_i.rad,data_j.rad,norm_r_contact);
-          const double temperature_i = PARTICLE::Utils::SpecEnthalpy2Temperature(data_i.specEnthalpy,extParticleMat);
-          const double temperature_j = PARTICLE::Utils::SpecEnthalpy2Temperature(data_j.specEnthalpy,extParticleMat);
-
-          const double enthalpyDotn2i = extParticleMat->thermalConductivity_ * intersectionArea  * (temperature_j - temperature_i)/norm_r_contact;
-
-          double specEnthalpyDotn2i = enthalpyDotn2i/data_i.mass;
-          double specEnthalpyDotn2j = -enthalpyDotn2i/data_j.mass; // actio = - reactio
-
-          LINALG::Assemble(*specEnthalpyDotn, specEnthalpyDotn2i, data_i.id, data_i.owner);
-          LINALG::Assemble(*specEnthalpyDotn, specEnthalpyDotn2j, data_j.id, data_j.owner);
-        }
       }
       else if(particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::NormalAndTang_DEM)// g > 0.0 and no adhesion --> no contact
       {
@@ -2736,7 +2655,6 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(
   double dt,
   Teuchos::RCP<Epetra_Vector> disn,
   Teuchos::RCP<Epetra_Vector> veln,
-  Teuchos::RCP<Epetra_Vector> specEnthalpyn,
   Teuchos::RCP<Epetra_FEVector> f_structure)
 {
 
@@ -3430,7 +3348,6 @@ void PARTICLE::ParticleCollisionHandlerMD::InitializeEventQueue(
     // remove current content but keep memory
     neighboring_particles.clear();
     boost::unordered_map<int, DRT::Element*> neighbouring_walls;
-    //std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> neighboring_heatSources;
 
     // gather all neighboring particles and wall elements
     particle_algorithm_->GetNeighbouringItems(currparticle, neighboring_particles, neighbouring_walls);
@@ -3521,7 +3438,6 @@ void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(
 
   std::list<DRT::Node*> neighbouring_particles;
   boost::unordered_map<int, DRT::Element*> neighbouring_walls;
-  //std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> neighboring_heatSources;
 
   //
   // searching for new collisions for the first particle of the last collision

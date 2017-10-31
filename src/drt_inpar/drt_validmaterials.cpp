@@ -3129,7 +3129,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
-  // multipurpose meshfree-particle material for additive manufacturing
+  // extended particle material
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("MAT_ExtParticle",
@@ -3140,28 +3140,17 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"REFDENSFAC","scale factor for equation of state");
     AddNamedReal(m,"EXPONENT","exponent in equation of state");
     AddNamedReal(m,"INITRADIUS","initial radius of particle");
-    AddNamedReal(m,"DISMEMBER_RADIUS","dismember radius for melting particles");
     AddNamedReal(m,"NUE","poisson ratio",0.0,true);
     AddNamedReal(m,"YOUNG","youngs modulus",0.0,true);
-    AddNamedReal(m,"INITTEMPERATURE","initial temperature");
-    AddNamedReal(m,"CPS","specific heat - constant pressure - solid state");
-    AddNamedReal(m,"CPL","specific heat - constant pressure - liquid state");
-    AddNamedReal(m,"LATENT_HEAT","specific latent heat - solid <-> liquid");
-    AddNamedReal(m,"TRANSITION_TEMPERATURE","transition temperature - solid <-> liquid");
-    AddNamedReal(m,"THERMAL_EXPANSION_S","volumetric thermal expansion coefficient - solid state - usually 3 times the linear coefficient");
-    AddNamedReal(m,"THERMAL_EXPANSION_L","volumetric thermal expansion coefficient - liquid state");
-    AddNamedReal(m,"THERMAL_EXPANSION_T","volumetric thermal expansion coefficient - solid <-> liquid - Beware! It is linked to specEnthalpy instead of temperature!");
     AddNamedReal(m,"BULK_MODULUS","bulk modulus, (1/compressibility) for the liquid phase");
     AddNamedReal(m,"DYNAMIC_VISCOSITY","dynamic (shear) viscosity for the liquid phase");
     AddNamedReal(m,"BULK_VISCOSITY","bulk viscosity for the liquid phase, important only in case of rapid compressions/expansions like shock waves");
     AddNamedReal(m,"ARTIFICIAL_VISCOSITY","artificial viscosity according to Adami et al. 2012, Eq. (11)");
-    AddNamedReal(m,"THERMAL_CONDUCTIVITY","thermal conductivity of the material (it is considered the same for all the phases) - W/(m * K)");
     AddNamedReal(m,"SURFACE_TENSION","surface tension between fluid and void phase");
     AddNamedReal(m,"STATIC_CONTACT_ANGLE","static contact angle between fluid and solid phase in degree measure");
 
     AppendMaterialDefinition(matlist,m);
   }
-
 
   /*----------------------------------------------------------------------*/
   // acoustic material

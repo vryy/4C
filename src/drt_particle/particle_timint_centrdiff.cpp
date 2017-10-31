@@ -15,18 +15,10 @@
 
 /* headers */
 #include "particle_timint_centrdiff.H"
+#include "particle_timint_strategy.H"
 #include "particle_algorithm.H"
 #include "particle_contact.H"
-#include "particle_heatSource.H"
-#include "particle_timint_strategy.H"
-#include "particle_utils.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/extparticle_mat.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
-
-#include "../drt_io/io_control.H"
 #include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*/
@@ -56,60 +48,15 @@ PARTICLE::TimIntCentrDiff::TimIntCentrDiff(
 void PARTICLE::TimIntCentrDiff::Init()
 {
   // safety checks
-  if(particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
-    dserror("Meshfree particle interaction (SPH) not possible with Central Difference Time Integrator anymore. Choose Kick-Drift scheme!");
-  if(particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_MD)
-    dserror("central difference time integrator cannot be combined with molecular dynamics collision mechanism");
+  if(particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::Normal_DEM
+      and particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::NormalAndTang_DEM
+      and particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::None)
+    dserror("central difference time integrator currently just combined with cavitation or discrete element collision mechanism");
 
   // call base class init
   PARTICLE::TimIntExpl::Init();
 
-  // simple check if the expansion speed is too elevated
-  const MAT::PAR::ExtParticleMat* extParticleMat = particle_algorithm_->ExtParticleMat();
-  if (extParticleMat != NULL)
-  {
-    // extract the interesting values
-    const double min_density = extParticleMat->initDensity_;//for now particle densities at the beginning are all equal. Since dismembering increases density it is also equal to the min_density. It can change in the future tho
-    const double CPS = extParticleMat->CPS_;
-    const double inv_CPS = 1/CPS;
-    const double CPL = extParticleMat->CPL_;
-    const double inv_CPL = 1/CPL;
-    const double thermalExpansionS = extParticleMat->thermalExpansionS_;
-    const double thermalExpansionL = extParticleMat->thermalExpansionL_;
-    const double thermalExpansionT = extParticleMat->thermalExpansionT_;
-
-    // extract the boundaries
-    const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
-    const double v_max = particleparams.get<double>("MAX_VELOCITY");
-    const double r_max = particleparams.get<double>("MAX_RADIUS");
-
-    // loop over the heat sources
-    const std::list <Teuchos::RCP<HeatSource> > heatSources = particle_algorithm_->HeatSources();
-    double max_QDot = 0;
-    for (std::list <Teuchos::RCP<HeatSource> >::const_iterator iHS = heatSources.begin(); iHS != heatSources.end(); ++iHS)
-    {
-      if ((*iHS)->QDot_> max_QDot)
-        max_QDot += std::abs((*iHS)->QDot_);
-    }
-    const double deltaSpecEnthalpy = max_QDot * (*dt_)[0]/min_density;
-
-    if(r_max<0.0)
-      dserror("A positive value of r_max is required!");
-    double volume = PARTICLE::Utils::Radius2Volume(r_max);
-    volume *= inv_CPS * thermalExpansionS * deltaSpecEnthalpy + 1;
-    double v_max_thermo = 2*(PARTICLE::Utils::Volume2Radius(volume) - r_max);
-
-    volume = PARTICLE::Utils::Radius2Volume(r_max);
-    volume *= thermalExpansionT * deltaSpecEnthalpy + 1;
-    v_max_thermo = std::max(v_max_thermo,2*(PARTICLE::Utils::Volume2Radius(volume) - r_max));
-
-    volume = PARTICLE::Utils::Radius2Volume(r_max);
-    volume *= inv_CPL * thermalExpansionL * deltaSpecEnthalpy + 1;
-    v_max_thermo = std::max(v_max_thermo,2*(PARTICLE::Utils::Volume2Radius(volume) - r_max));
-
-    if (v_max_thermo > 0.01 * v_max)
-      dserror("The expansion speed of the particle radii is bigger than 1 percent of MAX_VELOCITY. Dismembered particles can explode");
-  }
+  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -163,12 +110,9 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
     f_contact = LINALG::CreateVector(*(discret_->DofRowMap()),true);
     m_contact = LINALG::CreateVector(*(discret_->DofRowMap()),true);
 
-    if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
-      collhandler_->Init(disn_, veln_, angVeln_, radiusn_, orient_, mass_, densityn_, specEnthalpyn_);
-    else
-      collhandler_->Init(disn_, veln_, angVeln_, Radiusn(), orient_, mass_);
+    collhandler_->Init(disn_, veln_, angVeln_, Radiusn(), orient_, mass_);
 
-    intergy_ = collhandler_->EvaluateParticleContact(dt, f_contact, m_contact, specEnthalpyDotn_, f_structure_);
+    intergy_ = collhandler_->EvaluateParticleContact(dt, f_contact, m_contact, f_structure_);
   }
   //--------------------------------------------------------------
 
@@ -179,9 +123,6 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
   // update of end-velocities v_{n+1}=v_{n+1/2}+dt/2*a_{n+1}
   veln_->Update(dthalf, *accn_, 1.0);
 
-  if(particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::Normal_DEM_thermo)
-    specEnthalpyn_->Update(dt, *specEnthalpyDotn_, 1.0);
-
   if(collhandler_ != Teuchos::null)
     angVeln_->Update(dthalf,*angAccn_,1.0);
 
@@ -189,39 +130,4 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
   ApplyDirichletBC(timen_, Teuchos::null, veln_, accn_, false);
 
   return 0;
-}
-
-
-/*----------------------------------------------------------------------*/
-/* Read and set restart state */
-void PARTICLE::TimIntCentrDiff::ReadRestartState()
-{
-  // call the base class
-  TimInt::ReadRestartState();
-
-  IO::DiscretizationReader reader(discret_, step_);
-
-  switch (particle_algorithm_->ParticleInteractionType())
-  {
-  case INPAR::PARTICLE::Normal_DEM_thermo :
-  {
-    // read radius
-    reader.ReadVector(radiusn_, "radius");
-    radius_->UpdateSteps(*radiusn_);
-    // read density
-    reader.ReadVector(densityn_, "density");
-    density_->UpdateSteps(*densityn_);
-    // read specEnthalpy
-    reader.ReadVector(specEnthalpyn_, "specEnthalpy");
-    specEnthalpy_->UpdateSteps(*specEnthalpyn_);
-    // read specEnthalpyDot
-    reader.ReadVector(specEnthalpyDotn_, "specEnthalpyDot");
-    specEnthalpyDot_->UpdateSteps(*specEnthalpyDotn_);
-    break;
-  }
-  default :
-  {
-    break;
-  }
-  }
 }

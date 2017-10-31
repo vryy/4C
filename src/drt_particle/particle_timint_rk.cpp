@@ -16,15 +16,11 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "particle_timint_rk.H"
-#include "particle_contact.H"
 #include "particle_timint_strategy.H"
+#include "particle_contact.H"
 #include "scatra_particle_coupling.H"
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
-#include "../drt_io/io_pstream.H"
-#include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
-
+#include "../drt_io/io.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                          rasthofer 01/14 |
@@ -148,7 +144,7 @@ void PARTICLE::TimIntRK::Integrate_RK_Second()
     if(collhandler_ != Teuchos::null)
     {
       collhandler_->Init(disn_, veln_, angVeln_, Radiusn(), orient_, mass_);
-      intergy_ = collhandler_->EvaluateParticleContact(dt, f_contact, m_contact, specEnthalpyDotn_);
+      intergy_ = collhandler_->EvaluateParticleContact(dt, f_contact, m_contact);
     }
 
     // compute accelerations and angular accelerations at time t_n

@@ -2,7 +2,7 @@
 /*!
 \file extparticle_mat.cpp
 
-\brief Particle material with support for thermodynamics
+\brief extended particle material
 
 \level 3
 
@@ -25,20 +25,10 @@ MAT::PAR::ExtParticleMat::ExtParticleMat(
     ParticleMat(matdata),
     refdensfac_(matdata->GetDouble("REFDENSFAC")),
     exponent_(matdata->GetDouble("EXPONENT")),
-    dismemberRadius_(matdata->GetDouble("DISMEMBER_RADIUS")),
-    initTemperature_(matdata->GetDouble("INITTEMPERATURE")),
-    CPS_(matdata->GetDouble("CPS")),
-    CPL_(matdata->GetDouble("CPL")),
-    latentHeat_(matdata->GetDouble("LATENT_HEAT")),
-    transitionTemperature_(matdata->GetDouble("TRANSITION_TEMPERATURE")),
-    thermalExpansionS_(matdata->GetDouble("THERMAL_EXPANSION_S")),
-    thermalExpansionL_(matdata->GetDouble("THERMAL_EXPANSION_L")),
-    thermalExpansionT_(matdata->GetDouble("THERMAL_EXPANSION_T")),
     bulkModulus_(matdata->GetDouble("BULK_MODULUS")),
     dynamicViscosity_(matdata->GetDouble("DYNAMIC_VISCOSITY")),
     bulkViscosity_(matdata->GetDouble("BULK_VISCOSITY")),
     artificialViscosity_(matdata->GetDouble("ARTIFICIAL_VISCOSITY")),
-    thermalConductivity_(matdata->GetDouble("THERMAL_CONDUCTIVITY")),
     surfaceTension_(matdata->GetDouble("SURFACE_TENSION")),
     staticContactAngle_(matdata->GetDouble("STATIC_CONTACT_ANGLE"))
 {

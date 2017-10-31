@@ -15,8 +15,6 @@
 #include "particle_timint_expleuler.H"
 #include "particle_algorithm.H"
 #include "particle_contact.H"
-#include "../drt_lib/drt_globalproblem.H"
-
 
 /*----------------------------------------------------------------------*/
 /* Constructor */
@@ -45,10 +43,8 @@ PARTICLE::TimIntExplEuler::TimIntExplEuler(
 void PARTICLE::TimIntExplEuler::Init()
 {
   // safety check
-  if(particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM or
-     particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo or
-     particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
-    dserror("explicit euler time integrator is not yet combined with discrete element collision mechanism");
+  if(particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::Normal_MD)
+    dserror("explicit euler time integrator currently just combined with molecular dynamics collision mechanism");
 
   // call base class init
   PARTICLE::TimIntExpl::Init();

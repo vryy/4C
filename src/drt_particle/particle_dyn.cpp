@@ -39,7 +39,6 @@ void particle_drt()
   switch (probtype)
   {
     case prb_particle:
-    case prb_meshfree:
     {
       const Teuchos::ParameterList& params = DRT::Problem::Instance()->ParticleParams();
       /// algorithm is created

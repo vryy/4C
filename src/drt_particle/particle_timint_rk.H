@@ -20,8 +20,6 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "particle_timint_expl.H"
-#include "../drt_inpar/inpar_particle.H"
-
 
 /*----------------------------------------------------------------------*/
 /* belongs to particle namespace */

@@ -580,8 +580,6 @@ void ParticleFilter::WriteAllResults(PostField* field)
   writer_->WriteResult("radius", "radius", nodebased, 1);
   writer_->WriteResult("density", "density", nodebased, 1);
   writer_->WriteResult("pressure", "pressure", nodebased, 1);
-  writer_->WriteResult("temperature", "temperature", nodebased, 1);
-  writer_->WriteResult("specEnthalpy", "specEnthalpy", nodebased, 1);
 
   writer_->WriteResult("colorField", "colorField", nodebased, 1);
   writer_->WriteResult("colorFieldGrad", "colorFieldGrad", dofbased, 1);
@@ -601,7 +599,7 @@ void ParticleFilter::WriteAllResults(PostField* field)
 }
 
 /*----------------------------------------------------------------------*/
-void ParticleMeshFreeRenderingFilter::WriteAllResults(PostField* field)
+void ParticleSPHRenderingFilter::WriteAllResults(PostField* field)
 {
   writer_->WriteResult("velocity", "velocity", dofbased, field->problem()->num_dim(), 0);
   writer_->WriteResult("acceleration", "acceleration", dofbased, field->problem()->num_dim(), 0);
@@ -609,8 +607,6 @@ void ParticleMeshFreeRenderingFilter::WriteAllResults(PostField* field)
 
   writer_->WriteResult("density", "density", nodebased, 1);
   writer_->WriteResult("pressure", "pressure", nodebased, 1);
-  writer_->WriteResult("temperature", "temperature", nodebased, 1);
-  writer_->WriteResult("specEnthalpy", "specEnthalpy", nodebased, 1);
 }
 
 /*----------------------------------------------------------------------*/

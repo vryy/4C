@@ -49,8 +49,6 @@ PartResultTest::PartResultTest(PARTICLE::TimInt& tintegrator)
 
   if (tintegrator.Densitynp() != Teuchos::null)
     density_  = tintegrator.Densitynp();
-  if (tintegrator.Temperature() != Teuchos::null)
-    temperature_ = tintegrator.Temperature();
   if (tintegrator.Pressure() != Teuchos::null)
     pressure_ = tintegrator.Pressure();
 }
@@ -220,25 +218,6 @@ void PartResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
           if (lid < 0)
             dserror("You tried to test %s on nonexistent node %d", position.c_str(), actnode->Id());
           result = (*radius_)[lid];
-        }
-      }
-
-      // test temperature
-      if (temperature_ != Teuchos::null)
-      {
-        const Epetra_BlockMap& temperaturenpmap = temperature_->Map();
-        int idx = -1;
-        if (position == "temperature")
-          idx = 0;
-
-        if (idx >= 0)
-        {
-          unknownpos = false;
-          // node based vector
-          int lid = temperaturenpmap.LID(actnode->Id());
-          if (lid < 0)
-            dserror("You tried to test %s on nonexistent node %d", position.c_str(), actnode->Id());
-          result = (*temperature_)[lid];
         }
       }
 

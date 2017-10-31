@@ -42,7 +42,6 @@ namespace DRT
 namespace LINALG
 {
   class MapExtractor;
-  class Solver;
 }
 
 namespace IO
@@ -53,17 +52,7 @@ namespace IO
 namespace PARTICLE
 {
   class Algorithm;
-  class ParticleMeshFreeInteractionHandler;
   class TimIntStrategyBase;
-}
-
-namespace MAT
-{
-  namespace PAR
-  {
-    class ParticleMat;
-    class ExtParticleMat;
-  }
 }
 
 /*----------------------------------------------------------------------*
@@ -171,12 +160,6 @@ namespace ADAPTER
     //! Read-only time derivative of densities \f$\dot{\rho}_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> DensityDotn() = 0;
 
-    //! Read-only specific enthalpies \f$H_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> SpecEnthalpyn() = 0;
-
-    //! Read-only time derivative of specific enthalpies \f$\dot{H}_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> SpecEnthalpyDotn() = 0;
-
 
 
     //! Read-only displacements \f$D_{n+1}\f$
@@ -203,12 +186,6 @@ namespace ADAPTER
     //! Read-only time derivative of densities \f$\dot{\rho}_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> DensityDotnp() = 0;
 
-    //! Read-only specific enthalpies \f$H_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> SpecEnthalpynp() = 0;
-
-    //! Read-only time derivative of specific enthalpies \f$\dot{H}_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> SpecEnthalpyDotnp() = 0;
-
     //! Read-only radii \f$R_0\f$
     virtual Teuchos::RCP<const Epetra_Vector> Radius0() = 0;
 
@@ -220,9 +197,6 @@ namespace ADAPTER
 
     //! Read-only inertiae \f$I_{n}\f$ or \f$I_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Inertia() = 0;
-
-    //! Read-only temperatures \f$T_{n}\f$ or \f$T_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Temperature() = 0;
 
     //! Read-only pressures \f$P_{n}\f$ or \f$P_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Pressure() = 0;
@@ -272,15 +246,6 @@ namespace ADAPTER
 
     //! Extract time derivative densities \f$\dot{\rho}_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensityDotnp() = 0;
-
-    //! Extract approximate densities \f$\dot{\rho}_{approx,n+1}\f$
-    //virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensityApproxnp() = 0;
-
-    //! Extract specific enthalpies \f$H_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessSpecEnthalpynp() = 0;
-
-    //! Extract time derivative specific enthalpies \f$\dot{H}_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessSpecEnthalpyDotnp() = 0;
 
     //! extract radii \f$R_{0}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius0() = 0;
@@ -362,13 +327,6 @@ namespace ADAPTER
       const Teuchos::ParameterList& prbdyn,
       Teuchos::RCP<DRT::Discretization> actdis
       );
-
-    /// create linear solver for implicit time integration schemes
-    /** returns linear solver object for implicit time integration schemes
-     *
-     *  uses the parameters from the PARTICLE SOLVER block in the BACI dat file
-     */
-    Teuchos::RCP<LINALG::Solver> CreateLinearSolver(Teuchos::RCP<DRT::Discretization>& actdis, const Teuchos::ParameterList& sdyn);
 
     /// particle field
     Teuchos::RCP<Particle> particle_;

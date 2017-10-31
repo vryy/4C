@@ -17,23 +17,10 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "particle_utils.H"
 #include "../drt_adapter/adapter_particle.H"
 #include "../drt_timestepping/timintmstep.H"
 #include "../drt_inpar/inpar_particle.H"
-
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <Epetra_Vector.h>
-#include <Epetra_FEVector.h>
-#include <Epetra_Time.h>
 #include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_io/io.H"
-
-#include <string>
-#include <iostream>
-#include <fstream>
 
 // forward declarations
 namespace DRT
@@ -55,7 +42,7 @@ namespace PARTICLE
 {
   class Algorithm;
   class ParticleCollisionHandlerBase;
-  class ParticleMeshFreeInteractionHandler;
+  class ParticleSPHInteractionHandler;
 }
 
 namespace MAT
@@ -134,8 +121,8 @@ namespace PARTICLE
       Teuchos::RCP<Epetra_Vector> ang_acc
       );
 
-    //! determine acceleration in meshfree case
-    virtual void DetermineMeshfreeDensAndAcc(Teuchos::RCP<Epetra_Vector> acc,
+    //! determine acceleration in SPH case
+    virtual void DetermineSPHDensAndAcc(Teuchos::RCP<Epetra_Vector> acc,
                                              Teuchos::RCP<Epetra_Vector> accmod,
                                              Teuchos::RCP<Epetra_Vector> velConv,
                                              Teuchos::RCP<Epetra_Vector> acc_A,
@@ -212,8 +199,8 @@ namespace PARTICLE
     //! Energy output
     virtual void OutputEnergy();
 
-    //! Meshfree rendering output
-    virtual void PerformMeshfreeRendering(bool clearstate, bool writeoutput);
+    //! SPH rendering output
+    virtual void PerformSPHRendering(bool clearstate, bool writeoutput);
 
     //! output particle statistics
     void OutputParticleStatistics();
@@ -301,12 +288,6 @@ namespace PARTICLE
     //! Read-only time derivative of densities \f$\dot{\rho}_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> DensityDotn() { return (*densityDot_)(0); }
 
-    //! Read-only specific enthalpies \f$H_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> SpecEnthalpyn() { return (*specEnthalpy_)(0); }
-
-    //! Read-only time derivative of specific enthalpies \f$\dot{H}_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> SpecEnthalpyDotn() { return (*specEnthalpyDot_)(0); }
-
     //! Read-only displacements \f$D_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp(){ return disn_; }
 
@@ -337,12 +318,6 @@ namespace PARTICLE
     //! Read-only time derivative of densities \f$\dot{\rho}_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> DensityDotnp() { return densityDotn_; }
 
-    //! Read-only specific enthalpies \f$H_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> SpecEnthalpynp() { return specEnthalpyn_; }
-
-    //! Read-only time derivative of specific enthalpies \f$\dot{H}_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> SpecEnthalpyDotnp() { return specEnthalpyDotn_; }
-
     //! Read-only radii \f$R_0\f$
     virtual Teuchos::RCP<const Epetra_Vector> Radius0() {return radius0_; }
 
@@ -354,9 +329,6 @@ namespace PARTICLE
 
     //! Read-only inertiae \f$I_{n}\f$ or \f$I_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Inertia() { return inertia_; }
-
-    //! Read-only temperatures \f$T_{n}\f$ or \f$T_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Temperature() { return temperature_; }
 
     //! Read-only pressures \f$P_{n}\f$ or \f$P_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Pressure() { return pressure_; }
@@ -424,12 +396,6 @@ namespace PARTICLE
 
     //! Extract time derivative densities \f$\dot{\rho}_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensityDotnp() { return densityDotn_; }
-
-    //! Extract specific enthalpies \f$H_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessSpecEnthalpynp(){ return specEnthalpyn_; }
-
-    //! Extract time derivative specific enthalpies \f$\dot{H}_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessSpecEnthalpyDotnp(){ return specEnthalpyDotn_; }
 
     //! extract radii \f$R_{0}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius0() { return radius0_; }
@@ -517,15 +483,6 @@ namespace PARTICLE
     /* Wrapper update state multi vector with the new map from discret_*/
     virtual void UpdateStateVectorMap(Teuchos::RCP<Epetra_MultiVector> &stateVector, bool trg_nodeVectorType = false);
 
-    //! Read-only temperatures \f$T_{n}\f$
-    virtual void UpdateTemperaturen();
-
-    //! Read-only temperatures \f$T_{n+1}\f$
-    virtual void UpdateTemperaturenp();
-
-    //! Read-only temperatures \f$P_{n+1}\f$
-    virtual void UpdatePressure();
-
     //! wrapper. On top of the output_->WriteVector() it checks that the pointer is not null. In case, it does not write
     virtual void WriteVector(const std::string name, Teuchos::RCP<Epetra_Vector> vec, const bool isdof = true) const;
 
@@ -573,8 +530,8 @@ namespace PARTICLE
     const bool writevelacc_;  //!< write velocity and acceleration on/off
     const int writeresultsevery_;  //!< write state/stress/strain every given step
     const int writeenergyevery_;  //!< write system energy every given step
-    const int writerenderingevery_; //!< write meshfree rendering every given step
-    const int avrgrenderingsteps_; //!< write meshfree rendering every given step
+    const int writerenderingevery_; //!< write SPH rendering every given step
+    const int avrgrenderingsteps_; //!< write SPH rendering every given step
     const int writeparticlestatsevery_;  //!< write particle statistics every given step
     Teuchos::RCP<std::ofstream> energyfile_;  //!< output file for energy
     Teuchos::RCP<std::ofstream> particlestatsfile_;  //!< output file for particle statistics
@@ -621,10 +578,6 @@ namespace PARTICLE
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > density_;
     //! Time derivative of densities \f$\dot{\rho}_{n}, \dot{\rho}_{n-1}, ...\f$
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > densityDot_;
-    //! Specific enthalpies \f$H_{n}, H_{n-1}, ...\f$
-    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > specEnthalpy_;
-    //! Time derivative of specific enthalpies \f$\dot{H}_{n}, \dot{H}_{n-1}, ...\f$
-    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > specEnthalpyDot_;
 
     //! Displacements \f${D}_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> disn_;
@@ -646,10 +599,6 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> densityn_;
     //! Time derivative of densities \f$\dot{\rho}_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> densityDotn_;
-    //! Specific enthalpies \f${H}_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> specEnthalpyn_;
-    //! Time derivative of specific enthalpies \f$\dot{H}_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> specEnthalpyDotn_;
 
     //! additional external forces
     Teuchos::RCP<Epetra_Vector> fifc_;
@@ -664,8 +613,6 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> mass_;
     //! Inertiae \f$I_{n}\f$ or \f$I_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> inertia_;
-    //! Temperature \f$T_{n}\f$ or \f$T_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> temperature_;
     //! Pressures \f$P_{n}\f$ or \f$P_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> pressure_;
     //! Particle force on wall discretization \f$f_{n}\f$ or \f$f_{n+1}\f$
@@ -726,7 +673,7 @@ namespace PARTICLE
     Teuchos::RCP<PARTICLE::ParticleCollisionHandlerBase> collhandler_;
 
     //! interaction handler for particles
-    Teuchos::RCP<PARTICLE::ParticleMeshFreeInteractionHandler> interHandler_;
+    Teuchos::RCP<PARTICLE::ParticleSPHInteractionHandler> interHandler_;
 
     //@}
 

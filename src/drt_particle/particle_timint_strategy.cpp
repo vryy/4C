@@ -16,13 +16,17 @@
 /*--------------------------------------------------------------------------*/
 #include "particle_timint_strategy.H"
 
+#include "particle_algorithm.H"
+#include "particle_utils.H"
+
 #include "particle_ellipsoid_node.H"
 #include "particle_radius_node.H"
 #include "particle_timint.H"
 
 #include "../drt_fem_general/largerotations.H"
-
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_io/io.H"
 
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/particle_mat_ellipsoids.H"

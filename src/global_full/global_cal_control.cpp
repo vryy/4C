@@ -189,7 +189,6 @@ void ntacal()
       break;
     case prb_particle:
     case prb_cavitation:
-    case prb_meshfree:
       particle_drt();
       break;
 

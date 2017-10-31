@@ -18,20 +18,16 @@
 #include "particle_algorithm.H"
 #include "particle_contact.H"
 #include "particle_resulttest.H"
-#include "particle_radius_node.H"
+#include "particle_utils.H"
 #include "particle_timint_strategy.H"
-#include "particleMeshFree_interaction.H"
-#include "particleMeshFree_weightFunction.H"
-#include "particleMeshFree_rendering.H"
+#include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/extparticle_mat.H"
 #include "../drt_mat/matpar_bundle.H"
-
-#include <Teuchos_TimeMonitor.hpp>
+#include "particle_sph_interaction.H"
+#include "particle_sph_rendering.H"
 
 /*----------------------------------------------------------------------*/
 /* print particle time logo */
@@ -99,8 +95,6 @@ PARTICLE::TimInt::TimInt
   radius_(Teuchos::null),
   density_(Teuchos::null),
   densityDot_(Teuchos::null),
-  specEnthalpy_(Teuchos::null),
-  specEnthalpyDot_(Teuchos::null),
 
   disn_(Teuchos::null),
   veln_(Teuchos::null),
@@ -112,8 +106,6 @@ PARTICLE::TimInt::TimInt
   radiusn_(Teuchos::null),
   densityn_(Teuchos::null),
   densityDotn_(Teuchos::null),
-  specEnthalpyn_(Teuchos::null),
-  specEnthalpyDotn_(Teuchos::null),
 
   fifc_(Teuchos::null),
   orient_(Teuchos::null),
@@ -122,7 +114,6 @@ PARTICLE::TimInt::TimInt
   radiusDot_(Teuchos::null),
   mass_(Teuchos::null),
   inertia_(Teuchos::null),
-  temperature_(Teuchos::null),
   pressure_(Teuchos::null),
   f_structure_(Teuchos::null),
 
@@ -189,10 +180,11 @@ void PARTICLE::TimInt::Init()
 
   switch (particle_algorithm_->ParticleInteractionType())
   {
-  case INPAR::PARTICLE::MeshFree :
+  case INPAR::PARTICLE::SPH :
   {
-    pressure_ = LINALG::CreateVector(*NodeRowMapView(), true);
+    density_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
     densityDot_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
+    pressure_ = LINALG::CreateVector(*NodeRowMapView(), true);
 
 #ifdef PARTICLE_WRITECOLORFIELD
     colorField_ = LINALG::CreateVector(*NodeRowMapView(), true);
@@ -203,13 +195,7 @@ void PARTICLE::TimInt::Init()
     curvature_ = LINALG::CreateVector(*NodeRowMapView(), true);
     phaseColor_ = LINALG::CreateVector(*NodeRowMapView(), true);
 #endif
-  }// no break
-  case INPAR::PARTICLE::Normal_DEM_thermo :
-  {
-    density_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
-    specEnthalpy_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
-    specEnthalpyDot_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
-    temperature_ = LINALG::CreateVector(*NodeRowMapView(), true);
+
     break;
   }
   default : //do nothing
@@ -254,16 +240,11 @@ void PARTICLE::TimInt::Init()
 
   switch (particle_algorithm_->ParticleInteractionType())
   {
-  case INPAR::PARTICLE::MeshFree :
-  {
-    densityDotn_ = Teuchos::rcp(new Epetra_Vector(*(*densityDot_)(0)));
-  }// no break
-  case INPAR::PARTICLE::Normal_DEM_thermo :
+  case INPAR::PARTICLE::SPH :
   {
     radiusn_  = Teuchos::rcp(new Epetra_Vector(*(*radius_)(0)));
     densityn_ = Teuchos::rcp(new Epetra_Vector(*(*density_)(0)));
-    specEnthalpyn_ = Teuchos::rcp(new Epetra_Vector(*(*specEnthalpy_)(0)));
-    specEnthalpyDotn_ = Teuchos::rcp(new Epetra_Vector(*(*specEnthalpyDot_)(0)));
+    densityDotn_ = Teuchos::rcp(new Epetra_Vector(*(*densityDot_)(0)));
     break;
   }
   default : //do nothing
@@ -310,7 +291,7 @@ void PARTICLE::TimInt::SetInitialFields()
   // extract particle density (for now, all particles have identical density)
   const MAT::PAR::ParticleMat* const particlemat = particle_algorithm_->ParticleMat();
 
-  if(particle_algorithm_->ParticleInteractionType()!=INPAR::PARTICLE::MeshFree)
+  if(particle_algorithm_->ParticleInteractionType()!=INPAR::PARTICLE::SPH)
   {
     const double initDensity = particlemat != NULL ? particlemat->initDensity_ : 0.;
     double consistent_problem_volume=DRT::Problem::Instance()->ParticleParams().get<double>("CONSISTENT_PROBLEM_VOLUME");
@@ -462,9 +443,9 @@ void PARTICLE::TimInt::SetInitialFields()
     radius0_->Update(1.,*(*radius_)(0),0.);
 
   // In case of SPH, the material might be different from particle to particle. Thus, initial mass, density etc. has to be set individually
-  if(particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::MeshFree)
+  if(particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::SPH)
   {
-    Teuchos::RCP<PARTICLE::ParticleMeshFreeInteractionHandler> interHandler= Teuchos::rcp(new PARTICLE::ParticleMeshFreeInteractionHandler(discret_, particle_algorithm_, DRT::Problem::Instance()->ParticleParams(),true));
+    Teuchos::RCP<PARTICLE::ParticleSPHInteractionHandler> interHandler= Teuchos::rcp(new PARTICLE::ParticleSPHInteractionHandler(discret_, particle_algorithm_, DRT::Problem::Instance()->ParticleParams(),true));
     interHandler->InitColParticles();
 
     double consistent_problem_volume=DRT::Problem::Instance()->ParticleParams().get<double>("CONSISTENT_PROBLEM_VOLUME");
@@ -552,7 +533,7 @@ void PARTICLE::TimInt::PrepareTimeStep()
 /* equilibrate system at initial state and identify consistent accelerations */
 void PARTICLE::TimInt::DetermineMassDampConsistAccel()
 {
-  if(particle_algorithm_->ParticleInteractionType()!=INPAR::PARTICLE::MeshFree)
+  if(particle_algorithm_->ParticleInteractionType()!=INPAR::PARTICLE::SPH)
     ComputeAcc(Teuchos::null, Teuchos::null, (*acc_)(0), Teuchos::null);
   else
   {
@@ -567,10 +548,10 @@ void PARTICLE::TimInt::DetermineMassDampConsistAccel()
         ApplyDirichletBC(0.0, Teuchos::null, veln_, Teuchos::null, false);
         ApplyDirichletBC(0.0, Teuchos::null, velmodn_, Teuchos::null, false);
 
-        DetermineMeshfreeDensAndAcc((*acc_)(0),(*accmod_)(0),velmodn_,Teuchos::null,0.0,0.0);
+        DetermineSPHDensAndAcc((*acc_)(0),(*accmod_)(0),velmodn_,Teuchos::null,0.0,0.0);
       }
       else
-        DetermineMeshfreeDensAndAcc((*acc_)(0),Teuchos::null,Teuchos::null,Teuchos::null,0.0,0.0);
+        DetermineSPHDensAndAcc((*acc_)(0),Teuchos::null,Teuchos::null,Teuchos::null,0.0,0.0);
     }
     else
       dserror("Currently, on the kick-drift time integrator is suitable for SPH!");
@@ -630,7 +611,7 @@ void PARTICLE::TimInt::ComputeAcc(
 
 /*----------------------------------------------------------------------*/
 /* Determine acceleration */
-void PARTICLE::TimInt::DetermineMeshfreeDensAndAcc(Teuchos::RCP<Epetra_Vector> acc,
+void PARTICLE::TimInt::DetermineSPHDensAndAcc(Teuchos::RCP<Epetra_Vector> acc,
                                             Teuchos::RCP<Epetra_Vector> accmod,
                                             Teuchos::RCP<Epetra_Vector> velConv,
                                             Teuchos::RCP<Epetra_Vector> acc_A,
@@ -639,7 +620,7 @@ void PARTICLE::TimInt::DetermineMeshfreeDensAndAcc(Teuchos::RCP<Epetra_Vector> a
 {
 
   //Initialize all columns and boundary particles, set sate vectors, search for neighbor particles.
-  interHandler_->Init(disn_, veln_, radiusn_, mass_, Teuchos::null);
+  interHandler_->Init(disn_, veln_, radiusn_, mass_);
   //Set also state vector velConv
   if(velConv!=Teuchos::null)
     interHandler_->SetStateVector(velConv, PARTICLE::VelConv);
@@ -658,8 +639,7 @@ void PARTICLE::TimInt::DetermineMeshfreeDensAndAcc(Teuchos::RCP<Epetra_Vector> a
     interHandler_->SetStateVector(densityn_, PARTICLE::Density);
 
     #ifdef PARTICLE_BOUNDARYDENSITY
-    bool solve_thermal_problem=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM");
-    interHandler_->Density2Pressure(densityn_,specEnthalpyn_,pressure_,true,solve_thermal_problem);
+    interHandler_->Density2Pressure(densityn_,pressure_);
     interHandler_->SetStateVector(pressure_, PARTICLE::Pressure);
     //Asign accelerations, modified pressures and modified velocities for boundary particles and calculate their mechanical energy contribution
     const INPAR::PARTICLE::WallInteractionType wallInteractionType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallInteractionType>(DRT::Problem::Instance()->ParticleParams(),"WALL_INTERACTION_TYPE");
@@ -720,8 +700,7 @@ void PARTICLE::TimInt::DetermineMeshfreeDensAndAcc(Teuchos::RCP<Epetra_Vector> a
   }
 
   // determine also the new pressure and set state vector
-  bool solve_thermal_problem=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM");
-  interHandler_->Density2Pressure(densityn_,specEnthalpyn_,pressure_,true,solve_thermal_problem);
+  interHandler_->Density2Pressure(densityn_,pressure_);
   interHandler_->SetStateVector(pressure_, PARTICLE::Pressure);
 
   // assign accelerations, modified pressures and modified velocities for boundary particles and calculate their mechanical energy contribution
@@ -841,8 +820,6 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
   strategy_->UpdateRadiusVectorMap();
   UpdateStateVectorMap(density_,true);
   UpdateStateVectorMap(densityDot_,true);
-  UpdateStateVectorMap(specEnthalpy_,true);
-  UpdateStateVectorMap(specEnthalpyDot_,true);
   UpdateStateVectorMap(disn_);
   UpdateStateVectorMap(veln_);
   UpdateStateVectorMap(accn_);
@@ -853,8 +830,6 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
   UpdateStateVectorMap(radiusn_,true);
   UpdateStateVectorMap(densityn_,true);
   UpdateStateVectorMap(densityDotn_,true);
-  UpdateStateVectorMap(specEnthalpyn_,true);
-  UpdateStateVectorMap(specEnthalpyDotn_,true);
 
   UpdateStateVectorMap(fifc_);
   UpdateStateVectorMap(orient_);
@@ -863,7 +838,6 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
   UpdateStateVectorMap(radiusDot_,true);
   UpdateStateVectorMap(mass_,true);
   strategy_->UpdateInertiaVectorMap();
-  UpdateStateVectorMap(temperature_,true);
   UpdateStateVectorMap(pressure_,true);
 
   if(colorField_!=Teuchos::null)
@@ -952,8 +926,7 @@ void PARTICLE::TimInt::ReadRestartState()
   reader.ReadVector(mass_, "mass");
 
 
-  if ((particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::MeshFree ||
-       particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::Normal_DEM_thermo) &&
+  if ( particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::SPH &&
        DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat_ellipsoids) < 0)
   {
     // create a dummy vector to extract the radius vector (radiusn_ does not exist)
@@ -962,11 +935,8 @@ void PARTICLE::TimInt::ReadRestartState()
     radius_->UpdateSteps(*radius);
   }
 
-  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
-  {
-    bool solve_thermal_problem=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM");
-    interHandler_->Density2Pressure(densityn_,specEnthalpyn_,pressure_,true,solve_thermal_problem);
-  }
+  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::SPH)
+    interHandler_->Density2Pressure(densityn_,pressure_);
 
   // read in particle collision relevant data
   if(collhandler_ != Teuchos::null)
@@ -1038,7 +1008,7 @@ void PARTICLE::TimInt::OutputStep(bool forced_writerestart)
     OutputEnergy();
   }
 
-  // output meshfree rendering
+  // output SPH rendering
   if (writerenderingevery_)
   {
     int renderOutputMod = (step_-restart_)%writerenderingevery_;
@@ -1055,7 +1025,7 @@ void PARTICLE::TimInt::OutputStep(bool forced_writerestart)
       // write rendering states at output step
       bool writeoutput = (renderOutputMod==0);
 
-      PerformMeshfreeRendering(clearstate, writeoutput);
+      PerformSPHRendering(clearstate, writeoutput);
     }
   }
 
@@ -1097,9 +1067,6 @@ void PARTICLE::TimInt::OutputRestart
   WriteVector("pressure", pressure_, false);
 
   WriteVector("density", density_, false);
-  WriteVector("specEnthalpy", specEnthalpy_, false);
-  WriteVector("specEnthalpyDot", specEnthalpyDot_, false);
-  WriteVector("temperature", temperature_, false);
 
   if(colorField_!=Teuchos::null)
     WriteVector("colorField", colorField_, false);
@@ -1161,7 +1128,7 @@ void PARTICLE::TimInt::OutputRestart
 }
 
 /*----------------------------------------------------------------------*/
-/* output displacements, velocities, accelerations, temperatures, and pressure */
+/* output states */
 void PARTICLE::TimInt::OutputState
 (
   bool& datawritten
@@ -1182,12 +1149,10 @@ void PARTICLE::TimInt::OutputState
   {
     WriteVector("acceleration", acc_);
     WriteVector("densityDot", densityDot_, false);
-    WriteVector("specEnthalpyDot", specEnthalpyDot_, false);
   }
   WriteVector("pressure", pressure_, false);
   //WriteVector("densityapprox", densityapproxn_, false);
   WriteVector("density", density_, false);
-  WriteVector("specEnthalpy", specEnthalpy_, false);
 
   if(colorField_!=Teuchos::null)
     WriteVector("colorField", colorField_, false);
@@ -1209,8 +1174,6 @@ void PARTICLE::TimInt::OutputState
 
   if(phaseColor_!=Teuchos::null)
     WriteVector("phaseColor", phaseColor_, false);
-
-  WriteVector("temperature", temperature_, false);
 
   WriteVector("modified_velocity", velmod_);
 
@@ -1236,7 +1199,7 @@ void PARTICLE::TimInt::DetermineEnergy()
     int numrownodes = discret_->NodeRowMap()->NumMyElements();
 
     //energy for all cases besides SPH
-    if (collhandler_ != Teuchos::null and particle_algorithm_->ParticleInteractionType()!=INPAR::PARTICLE::MeshFree )
+    if (collhandler_ != Teuchos::null and particle_algorithm_->ParticleInteractionType()!=INPAR::PARTICLE::SPH )
     {
       // total kinetic energy
       kinergy_ = strategy_->ComputeKineticEnergy();
@@ -1253,7 +1216,7 @@ void PARTICLE::TimInt::DetermineEnergy()
       // total external energy not available
       extergy_ = 0.0;
     }//energy for SPH case
-    else if (collhandler_ == Teuchos::null and particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::MeshFree )
+    else if (collhandler_ == Teuchos::null and particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::SPH )
     {
       // set energies to zero (intergy_ has already been calculated earlier)
       double specific_energy = 0.0;
@@ -1280,7 +1243,7 @@ void PARTICLE::TimInt::DetermineEnergy()
       }
     }
     else
-      dserror("Energy output only possible for DEM (with collhandler_ == true) or for meshfree interaction (with collhandler_ == false)");
+      dserror("Energy output only possible for DEM (with collhandler_ == true) or for SPH interaction (with collhandler_ == false)");
 
     double global_energy[3] = {0.0, 0.0, 0.0};
     double energies[3] = {intergy_, kinergy_, extergy_};
@@ -1314,7 +1277,7 @@ void PARTICLE::TimInt::OutputEnergy()
   if (myrank_ == 0)
   {
     //energy for all cases besides SPH
-    if (collhandler_ != Teuchos::null and particle_algorithm_->ParticleInteractionType()!=INPAR::PARTICLE::MeshFree )
+    if (collhandler_ != Teuchos::null and particle_algorithm_->ParticleInteractionType()!=INPAR::PARTICLE::SPH )
     {
       *energyfile_ << " " << std::setw(9) << step_
                    << std::scientific  << std::setprecision(16)
@@ -1326,7 +1289,7 @@ void PARTICLE::TimInt::OutputEnergy()
                    << " " << collhandler_->GetMaxPenetration()
                    << std::endl;
     }//energy for SPH case
-    else if (collhandler_ == Teuchos::null and particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::MeshFree )
+    else if (collhandler_ == Teuchos::null and particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::SPH )
     {
       *energyfile_ << step_
                    << std::scientific  << std::setprecision(16)
@@ -1341,17 +1304,17 @@ void PARTICLE::TimInt::OutputEnergy()
                    << std::endl;
     }
     else
-      dserror("Energy output only possible for DEM (with collhandler_ == true) or for meshfree interaction (with collhandler_ == false)");
+      dserror("Energy output only possible for DEM (with collhandler_ == true) or for SPH interaction (with collhandler_ == false)");
   }
   return;
 }
 
 /*----------------------------------------------------------------------*
- | meshfree rendering output                               sfuchs 06/17 |
+ | SPH rendering output                                    sfuchs 06/17 |
  *----------------------------------------------------------------------*/
-void PARTICLE::TimInt::PerformMeshfreeRendering(bool clearstate, bool writeoutput)
+void PARTICLE::TimInt::PerformSPHRendering(bool clearstate, bool writeoutput)
 {
-  if(interHandler_ != Teuchos::null  and particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::MeshFree)
+  if(interHandler_ != Teuchos::null  and particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::SPH)
   {
     Teuchos::RCP<Rendering> rendering = particle_algorithm_->GetRendering();
     if (rendering != Teuchos::null)
@@ -1366,9 +1329,9 @@ void PARTICLE::TimInt::PerformMeshfreeRendering(bool clearstate, bool writeoutpu
       // determine the (averaged) rendering vectors
       std::cout << "Update (averaged) rendering vectors!" << std::endl;
       if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"TRANSPORT_VELOCITY")==true)
-        rendering->UpdateRenderingVectors(discret_, (*dis_)(0), (*vel_)(0), (*acc_)(0), (*velmod_)(0), (*density_)(0), (*specEnthalpy_)(0), temperature_, (*radius_)(0), pressure_, mass_);
+        rendering->UpdateRenderingVectors(discret_, (*dis_)(0), (*vel_)(0), (*acc_)(0), (*velmod_)(0), (*density_)(0), (*radius_)(0), pressure_, mass_);
       else
-        rendering->UpdateRenderingVectors(discret_, (*dis_)(0), (*vel_)(0), (*acc_)(0), Teuchos::null, (*density_)(0), (*specEnthalpy_)(0), temperature_, (*radius_)(0), pressure_, mass_);
+        rendering->UpdateRenderingVectors(discret_, (*dis_)(0), (*vel_)(0), (*acc_)(0), Teuchos::null, (*density_)(0), (*radius_)(0), pressure_, mass_);
 
       // write the (averaged) rendering vectors
       if (writeoutput)
@@ -1419,7 +1382,7 @@ void PARTICLE::TimInt::AttachEnergyFile()
   if (energyfile_.is_null())
   {
     // energy for all cases besides SPH
-    if(particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::MeshFree)
+    if(particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::SPH)
     {
       std::string energyname
         = DRT::Problem::Instance()->OutputControlFile()->FileName()
@@ -1604,34 +1567,6 @@ void PARTICLE::TimInt::UpdateStateVectorMap(Teuchos::RCP<Epetra_MultiVector> &st
 }
 
 /*----------------------------------------------------------------------*/
-//! update temperatures \f$T_{n}\f$
-void PARTICLE::TimInt::UpdateTemperaturen()
-{
-  PARTICLE::Utils::SpecEnthalpy2Temperature(temperature_,(*specEnthalpy_)(0), particle_algorithm_->ExtParticleMat());
-}
-
-/*----------------------------------------------------------------------*/
-//! update temperatures \f$T_{n+1}\f$
-void PARTICLE::TimInt::UpdateTemperaturenp()
-{
-  if (temperature_ != Teuchos::null && specEnthalpyn_ != Teuchos::null)
-  {
-    PARTICLE::Utils::SpecEnthalpy2Temperature(temperature_,specEnthalpyn_, particle_algorithm_->ExtParticleMat());
-  }
-}
-
-/*----------------------------------------------------------------------*/
-//! update temperatures \f$T_{n+1}\f$
-void PARTICLE::TimInt::UpdatePressure()
-{
-  if (pressure_ != Teuchos::null && specEnthalpyn_ != Teuchos::null && densityn_ != Teuchos::null)
-  {
-    bool solve_thermal_problem=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM");
-    interHandler_->Density2Pressure(densityn_, specEnthalpyn_, pressure_,false,solve_thermal_problem);
-  }
-}
-
-/*----------------------------------------------------------------------*/
 //! Check exixstence of the state vectors
 void PARTICLE::TimInt::CheckStateVector(std::string vecName, const Teuchos::RCP<const Epetra_Vector> vec, bool trg_showVec)
 {
@@ -1667,29 +1602,22 @@ void PARTICLE::TimInt::UpdateStepState()
   UpdateStateVector(dis_, disn_);
   UpdateStateVector(vel_, veln_);
   UpdateStateVector(acc_, accn_);
-  UpdateStateVector(radius_, radiusn_);
-  UpdateStateVector(density_, densityn_);
-  UpdateStateVector(densityDot_, densityDotn_);
-  UpdateStateVector(specEnthalpy_, specEnthalpyn_);
-  UpdateStateVector(specEnthalpyDot_, specEnthalpyDotn_);
 
-  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"TRANSPORT_VELOCITY")==true)
+  if(interHandler_ != Teuchos::null)
   {
-    UpdateStateVector(velmod_, velmodn_);
-    UpdateStateVector(accmod_, accmodn_);
+    UpdateStateVector(radius_, radiusn_);
+    UpdateStateVector(density_, densityn_);
+    UpdateStateVector(densityDot_, densityDotn_);
+
+    interHandler_->Density2Pressure(densityn_, pressure_);
+
+    if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"TRANSPORT_VELOCITY")==true)
+    {
+      UpdateStateVector(velmod_, velmodn_);
+      UpdateStateVector(accmod_, accmodn_);
+    }
   }
 
-  if( particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::Normal_DEM_thermo or
-     (particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::MeshFree and
-      DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM")) )
-  {
-    UpdateTemperaturenp();
-  }
-
-
-  UpdatePressure();
-
-  // legacy... we can probably erase this if (not what is inside tho!) but... whatever
   if(collhandler_ != Teuchos::null)
   {
     // new angular-velocities at t_{n+1} -> t_n
@@ -1772,7 +1700,7 @@ void PARTICLE::TimInt::UpdateExtActions(bool init)
   LINALG::Matrix<3,1> gravity_acc = particle_algorithm_->GetGravityAcc(-1.0);
 
   // forces/accelerations
-  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
+  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::SPH)
   {
     //In SPH simulations, gravity and all other interaction forces are considered at once in the methdo IntegrateStep()
   }
@@ -1786,12 +1714,6 @@ void PARTICLE::TimInt::UpdateExtActions(bool init)
   if (densityDotn_ != Teuchos::null)
   {
     densityDotn_->PutScalar(0);
-  }
-
-  // specEnthalpyDot, in case it exists
-  if (specEnthalpyDotn_ != Teuchos::null)
-  {
-    specEnthalpyDotn_->PutScalar(0);
   }
 
   particle_algorithm_->CalculateAndApplyForcesToParticles(init);

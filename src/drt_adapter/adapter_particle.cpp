@@ -27,10 +27,6 @@
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
-#include "../drt_mat/particle_mat.H"
-#include "../drt_mat/extparticle_mat.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../linalg/linalg_solver.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
@@ -56,7 +52,6 @@ void ADAPTER::ParticleBaseAlgorithm::SetupTimInt(
   Teuchos::RCP<DRT::Discretization> actdis
   )
 {
-
   // this is not exactly a one hundred meter race, but we need timing
   Teuchos::RCP<Teuchos::Time> t
     = Teuchos::TimeMonitor::getNewTimer("ADAPTER::ParticleBaseAlgorithm::SetupParticle");
@@ -69,14 +64,12 @@ void ADAPTER::ParticleBaseAlgorithm::SetupTimInt(
 
   // get input parameter lists and copy them, because a few parameters are overwritten
   const Teuchos::ParameterList& ioflags = DRT::Problem::Instance()->IOParams();
-
   const Teuchos::RCP<Teuchos::ParameterList> partdyn
     = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->ParticleParams()));
 
   // show default parameters of particle parameter list
   if ( (actdis->Comm() ).MyPID() == 0)
     DRT::INPUT::PrintDefaultParameters(IO::cout, *partdyn);
-
 
   // add extra parameters (a kind of work-around)
   Teuchos::RCP<Teuchos::ParameterList> xparams = Teuchos::rcp(new Teuchos::ParameterList());
@@ -91,7 +84,6 @@ void ADAPTER::ParticleBaseAlgorithm::SetupTimInt(
   partdyn->set<int>("RESULTSEVRY", prbdyn.get<int>("RESULTSEVRY"));
 
   // switch to different time integrators
-
   INPAR::PARTICLE::DynamicType timinttype = DRT::INPUT::IntegralValue<INPAR::PARTICLE::DynamicType>(*partdyn,"DYNAMICTYP");
 
   // create marching time integrator
@@ -131,25 +123,3 @@ void ADAPTER::ParticleBaseAlgorithm::SetupTimInt(
 
   return;
 }  // SetupTimInt()
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::Solver> ADAPTER::ParticleBaseAlgorithm::CreateLinearSolver(Teuchos::RCP<DRT::Discretization>& actdis, const Teuchos::ParameterList& sdyn)
-{
-  Teuchos::RCP<LINALG::Solver> solver = Teuchos::null;
-
-  // get the solver number used for structural problems
-  const int linsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
-  // check if the structural solver has a valid solver number
-  if (linsolvernumber == (-1))
-    dserror("no linear solver defined for structural field. Please set LINEAR_SOLVER in PARTICLE DYNAMIC to a valid number!");
-
-  solver = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
-                                    actdis->Comm(),
-                                    DRT::Problem::Instance()->ErrorFile()->Handle()));
-
-  actdis->ComputeNullSpaceIfNecessary(solver->Params());
-
-  return solver;
-}

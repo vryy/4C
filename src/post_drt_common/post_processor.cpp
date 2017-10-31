@@ -254,7 +254,6 @@ void runEnsightVtuFilter(PostProblem    &problem)
       }
       break;
     }
-    case prb_meshfree:
     case prb_particle:
     case prb_pasi:
     {
@@ -289,7 +288,7 @@ void runEnsightVtuFilter(PostProblem    &problem)
         else if (disname == "rendering")
         {
           PostField* visualizebins = problem.get_discretization(i);
-          ParticleMeshFreeRenderingFilter binwriter(visualizebins, problem.outname());
+          ParticleSPHRenderingFilter binwriter(visualizebins, problem.outname());
           binwriter.WriteFiles();
         }
         else

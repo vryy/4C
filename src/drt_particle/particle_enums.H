@@ -27,20 +27,12 @@ namespace PARTICLE
     Radius,
     Density,
     DensityDot,
-    SpecEnthalpy,
     Mass,
     Pressure,
-    Temperature,
     ColorField,
     ColorFieldGrad,
     SmoothedColorFieldGrad,
     DensitySum
-  };
-
-  enum NeighbourType
-  {
-    NT_Particle,
-    NT_HeatSource
   };
 
   enum FreeSurfaceParticleType
@@ -50,6 +42,5 @@ namespace PARTICLE
     FS_INDIRECT     //Particle that has a particle of type FS_DIRECT as neighbor
   };
 }
-
 
 #endif /* SRC_DRT_PARTICLE_PARTICLE_ENUMS_H_ */

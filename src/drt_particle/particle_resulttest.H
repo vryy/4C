@@ -55,7 +55,7 @@ public:
   //! Possible position flags are "dispx", "dispy", "dispz",
   //!                             "velx", "vely", "velz",
   //!                             "accx", "accy", "accz"
-  //!                             "radius", "temperature"
+  //!                             "radius"
   virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
   //! test special quantity not associated with a particular element or node
@@ -89,8 +89,6 @@ private:
   Teuchos::RCP<const Epetra_Vector> radius_;
   //! global density
   Teuchos::RCP<const Epetra_Vector> density_;
-  //! global temperature
-  Teuchos::RCP<const Epetra_Vector> temperature_;
   //! global pressure
   Teuchos::RCP<const Epetra_Vector> pressure_;
   //! kinetic energy

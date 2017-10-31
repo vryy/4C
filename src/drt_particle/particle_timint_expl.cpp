@@ -13,11 +13,10 @@
 *-----------------------------------------------------------------------*/
 /* headers */
 #include "particle_timint_expl.H"
-
+#include "particle_algorithm.H"
 #include "particle_contact.H"
-#include "particleMeshFree_interaction.H"
-
 #include "../drt_lib/drt_globalproblem.H"
+#include "particle_sph_interaction.H"
 
 #include "../drt_mat/matpar_bundle.H"
 
@@ -54,7 +53,6 @@ void PARTICLE::TimIntExpl::Init()
   switch(particle_algorithm_->ParticleInteractionType())
   {
   case INPAR::PARTICLE::Normal_DEM:
-  case INPAR::PARTICLE::Normal_DEM_thermo:
   case INPAR::PARTICLE::NormalAndTang_DEM:
   {
     if(DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat_ellipsoids) < 0)
@@ -63,9 +61,9 @@ void PARTICLE::TimIntExpl::Init()
       collhandler_ = Teuchos::rcp(new PARTICLE::ParticleCollisionHandlerDEMEllipsoids(discret_, particle_algorithm_, particleparams));
     break;
   }
-  case INPAR::PARTICLE::MeshFree:
+  case INPAR::PARTICLE::SPH:
   {
-    interHandler_ = Teuchos::rcp(new PARTICLE::ParticleMeshFreeInteractionHandler(discret_, particle_algorithm_, particleparams));
+    interHandler_ = Teuchos::rcp(new PARTICLE::ParticleSPHInteractionHandler(discret_, particle_algorithm_, particleparams));
     break;
   }
   case INPAR::PARTICLE::Normal_MD:

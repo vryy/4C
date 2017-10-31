@@ -1059,7 +1059,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   Teuchos::RCP<DRT::Discretization> acoudis         = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> elemagdis       = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> celldis         = Teuchos::null;
-  Teuchos::RCP<DRT::Discretization> renderingdis    = Teuchos::null; // simple and general rendering discretization for particleMeshFree simulations
+  Teuchos::RCP<DRT::Discretization> renderingdis    = Teuchos::null; // simple and general rendering discretization for particle SPH simulations
   Teuchos::RCP<DRT::Discretization> pboxdis         = Teuchos::null;
 
   // decide which kind of spatial representation is required
@@ -1989,14 +1989,15 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     break;
   }
   case prb_particle:
+  case prb_pasi:
   {
     if(distype == "Meshfree")
     {
-      particledis = Teuchos::rcp(new DRT::Discretization("particle",reader.Comm()));
+     particledis = Teuchos::rcp(new DRT::Discretization("particle",reader.Comm()));
     }
     else
     {
-      dserror("particle simulations must be distype=Meshfree");
+     dserror("meshfree simulations must be distype=Meshfree");
     }
     structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
 
@@ -2008,9 +2009,18 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     AddDis("particle", particledis);
 
     nodereader.AddAdvancedReader(structdis, reader, "STRUCTURE",
-        DRT::INPUT::IntegralValue<INPAR::GeometryType>(StructuralDynamicParams(),"GEOMETRY"), 0);
+       DRT::INPUT::IntegralValue<INPAR::GeometryType>(StructuralDynamicParams(),"GEOMETRY"), 0);
     nodereader.AddParticleReader(particledis, reader, "PARTICLE");
 
+    // add rendering in case is required
+    if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"RENDERING"))
+    {
+      renderingdis = Teuchos::rcp(new DRT::Discretization("rendering",reader.Comm()));
+      renderingdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(renderingdis)));
+      AddDis("rendering", renderingdis);
+      nodereader.AddAdvancedReader(renderingdis, reader, "MESHFREE RENDERING",
+          INPAR::geometry_box, 0);
+    }
     break;
   }
   case prb_cavitation:
@@ -2030,43 +2040,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
         DRT::INPUT::IntegralValue<INPAR::GeometryType>(FluidDynamicParams(),"GEOMETRY"), 0);
     nodereader.AddParticleReader(particledis, reader, "PARTICLE");
 
-    break;
-  }
-  case prb_meshfree:
-  case prb_pasi:
-  {
-    if(distype == "Meshfree")
-    {
-     particledis = Teuchos::rcp(new DRT::Discretization("particle",reader.Comm()));
-    }
-    else
-    {
-     dserror("meshfree simulations must be distype=Meshfree");
-    }
-    structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
-
-
-    // create discretization writer - in constructor set into and owned by corresponding discret
-    structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
-    particledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(particledis)));
-
-
-    AddDis("structure", structdis);
-    AddDis("particle", particledis);
-
-    nodereader.AddAdvancedReader(structdis, reader, "STRUCTURE",
-       DRT::INPUT::IntegralValue<INPAR::GeometryType>(StructuralDynamicParams(),"GEOMETRY"), 0);
-    nodereader.AddParticleReader(particledis, reader, "PARTICLE");
-
-    // add rendering in case is required
-    if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"RENDERING"))
-    {
-      renderingdis = Teuchos::rcp(new DRT::Discretization("rendering",reader.Comm()));
-      renderingdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(renderingdis)));
-      AddDis("rendering", renderingdis);
-      nodereader.AddAdvancedReader(renderingdis, reader, "MESHFREE RENDERING",
-          INPAR::geometry_box, 0);
-    }
     break;
   }
   case prb_level_set:

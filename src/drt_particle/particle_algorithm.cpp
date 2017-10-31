@@ -19,17 +19,13 @@
 #include "particle_algorithm.H"
 #include "particle_timint_strategy.H"
 #include "particle_utils.H"
-#include "particleMeshFree_rendering.H"
-#include "particleMeshFree_interaction.H"
+#include "particle_node.H"
 #include "../drt_adapter/adapter_particle.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils_parmetis.H"
 #include "../drt_lib/drt_utils_parallel.H"
 #include "../drt_lib/drt_dofset_independent.H"
 #include "../drt_lib/drt_dofset_transparent.H"
 #include "../drt_lib/drt_condition_utils.H"
-#include "../drt_inpar/inpar_particle.H"
 #include "../drt_mat/particle_mat.H"
 #include "../drt_mat/extparticle_mat.H"
 #include "../drt_mat/matpar_bundle.H"
@@ -39,7 +35,6 @@
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
-#include "../drt_io/io_gmsh.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Isorropia_Exception.hpp>
 #include <Isorropia_Epetra.hpp>
@@ -47,11 +42,8 @@
 #include <Isorropia_EpetraPartitioner.hpp>
 #include <Isorropia_EpetraCostDescriber.hpp>
 
-#include "../drt_binstrategy/binning_strategy.H"
 #include "../drt_binstrategy/drt_meshfree_multibin.H"
-#include "../drt_inpar/inpar_binningstrategy.H"
-#include "particle_heatSource.H"
-#include "particle_node.H"
+#include "particle_sph_rendering.H"
 
 /*----------------------------------------------------------------------*
  | Algorithm constructor                                    ghamm 09/12 |
@@ -76,44 +68,33 @@ PARTICLE::Algorithm::Algorithm(
   rendering_(Teuchos::null)
 {
 
-  //Check number of space dimensions chosen for meshfree weight functions
-  if(particleInteractionType_==INPAR::PARTICLE::MeshFree)
+  //Check number of space dimensions chosen for SPH weight functions
+  if(particleInteractionType_==INPAR::PARTICLE::SPH)
   {
     if(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")!=INPAR::PARTICLE::particle_3D)
-      dserror("The general Particle Meshfree Interactions framework (binning strategy etc.) does so far only cover 3D problems (DIMENSION  3D).\n"
+      dserror("The general Particle SPH Interactions framework (binning strategy etc.) does so far only cover 3D problems (DIMENSION  3D).\n"
               "However, if you want to treat quasi-2D or -1D problems, set the input parameter WEIGHT_FUNCTION_DIM to WF_2D or WF_1D, respectively.\n"
-              "In Particle Meshfree Interactions, the definition of the weight functions have to be adapted according to the number of space dimensions considered!");
+              "In Particle SPH Interactions, the definition of the weight functions have to be adapted according to the number of space dimensions considered!");
 
     if(MyRank() == 0)
     {
       switch(DRT::INPUT::IntegralValue<INPAR::PARTICLE::WeightFunctionDim>(DRT::Problem::Instance()->ParticleParams(),"WEIGHT_FUNCTION_DIM"))
       {
         case INPAR::PARTICLE::WF_3D :
-          IO::cout << "Welcome to Particle Meshfree Interactions in 3D!" << IO::endl;
+          IO::cout << "Welcome to Particle SPH Interactions in 3D!" << IO::endl;
         break;
         case INPAR::PARTICLE::WF_2D :
-          IO::cout << "Welcome to Particle Meshfree Interactions in 2D!" << IO::endl;
+          IO::cout << "Welcome to Particle SPH Interactions in 2D!" << IO::endl;
         break;
         case INPAR::PARTICLE::WF_1D :
-          IO::cout << "Welcome to Particle Meshfree Interactions in 1D!" << IO::endl;
+          IO::cout << "Welcome to Particle SPH Interactions in 1D!" << IO::endl;
         break;
         default :  //nothing to do here
         break;
       }
     }
 
-    const INPAR::PARTICLE::WallInteractionType wallInteractionType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallInteractionType>(DRT::Problem::Instance()->ParticleParams(),"WALL_INTERACTION_TYPE");
-    //Perform some further compatibility checks:
-    if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM"))
-    {
-      if(wallInteractionType==INPAR::PARTICLE::BoundarParticle_NoSlip or wallInteractionType==INPAR::PARTICLE::BoundarParticle_FreeSlip)
-      {
-        dserror("Boundary particles can currently not be combined with thermal problems!");
-      }
-    }
-
     INPAR::PARTICLE::DynamicType timinttype = DRT::INPUT::IntegralValue<INPAR::PARTICLE::DynamicType>(DRT::Problem::Instance()->ParticleParams(),"DYNAMICTYP");
-
     if(timinttype!=INPAR::PARTICLE::dyna_kickdrift and DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"TRANSPORT_VELOCITY")==true)
       dserror("Modified particle convection velocities based on a TRANSPORT_VELOCITY field only possible for KickDrift time integration scheme!");
   }
@@ -155,7 +136,6 @@ PARTICLE::Algorithm::Algorithm(
   return;
 }
 
-
 /*----------------------------------------------------------------------*
  | time loop of the particle algorithm                      ghamm 09/12 |
  *----------------------------------------------------------------------*/
@@ -173,9 +153,6 @@ void PARTICLE::Algorithm::Timeloop()
     // particle time step is solved
     Integrate();
 
-    // adaptions for Normal_DEM_thermo
-    NormDemThermoAdapt();
-
     // calculate stresses, strains, energies
     PrepareOutput();
 
@@ -188,8 +165,9 @@ void PARTICLE::Algorithm::Timeloop()
     Output();
 
   }  // NotFinished
-}
 
+  return;
+}
 
 /*----------------------------------------------------------------------*
  | setup of the system                                      ghamm 09/12 |
@@ -198,7 +176,6 @@ void PARTICLE::Algorithm::SetupSystem()
 {
   return;
 }
-
 
 /*----------------------------------------------------------------------*
  | initialization of the system                             ghamm 11/12 |
@@ -286,10 +263,6 @@ void PARTICLE::Algorithm::Init(bool restarted)
     particles_->UpdateExtActions();
 
     particles_->DetermineMassDampConsistAccel();
-
-    // set up Heat Sources in a map
-    SetUpHeatSources();
-    UpdateHeatSourcesConnectivity(false);
   }
   else
   {
@@ -302,8 +275,7 @@ void PARTICLE::Algorithm::Init(bool restarted)
     IO::cout << "after ghosting of particles" << IO::endl;
   DRT::UTILS::PrintParallelDistribution(*BinStrategy()->BinDiscret());
 
-  // update connectivity
-  //UpdateHeatSourcesConnectivity(true);
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -365,18 +337,13 @@ void PARTICLE::Algorithm::InitMaterials()
   int id = -1;
   switch (particleInteractionType_)
   {
-  case INPAR::PARTICLE::MeshFree :
+  case INPAR::PARTICLE::SPH :
   {
     int testid = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_extparticlemat);
     if(testid!=1)
-      dserror("In MeshFree particle (SPH) simulations, the first material ID has always to be 1!");
+      dserror("In SPH simulations, the first material ID has always to be 1!");
 
     id = 1;
-    break;
-  }
-  case INPAR::PARTICLE::Normal_DEM_thermo :
-  {
-    id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_extparticlemat);
     break;
   }
   default :
@@ -394,10 +361,10 @@ void PARTICLE::Algorithm::InitMaterials()
     dserror("Could not find particle material or material type");
   const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
   particleMat_ = static_cast<const MAT::PAR::ParticleMat*>(mat);
-  if (particleInteractionType_ == INPAR::PARTICLE::MeshFree || particleInteractionType_ == INPAR::PARTICLE::Normal_DEM_thermo)
+  if (particleInteractionType_ == INPAR::PARTICLE::SPH)
     extParticleMat_ = static_cast<const MAT::PAR::ExtParticleMat*>(mat);
 
-  if(particleInteractionType_==INPAR::PARTICLE::MeshFree)
+  if(particleInteractionType_==INPAR::PARTICLE::SPH)
   {
     const INPAR::PARTICLE::FreeSurfaceType freeSurfaceType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::FreeSurfaceType>(DRT::Problem::Instance()->ParticleParams(),"FREE_SURFACE_TYPE");
     if(freeSurfaceType==INPAR::PARTICLE::TwoPhase)
@@ -409,6 +376,7 @@ void PARTICLE::Algorithm::InitMaterials()
     }
   }
 
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -429,7 +397,6 @@ void PARTICLE::Algorithm::PrepareTimeStep(bool print_header)
   return;
 }
 
-
 /*----------------------------------------------------------------------*
  | solve the current particle time step                    ghamm 10/12  |
  *----------------------------------------------------------------------*/
@@ -446,7 +413,6 @@ void PARTICLE::Algorithm::Integrate()
   return;
 }
 
-
 /*----------------------------------------------------------------------*
  | update the current time step                            ghamm 10/12  |
  *----------------------------------------------------------------------*/
@@ -457,7 +423,6 @@ void PARTICLE::Algorithm::Update()
 
   return;
 }
-
 
 /*----------------------------------------------------------------------*
 | read restart information for given time step              ghamm 03/13 |
@@ -479,11 +444,8 @@ void PARTICLE::Algorithm::ReadRestart(int restart)
   particles_->ReadRestart(restart);
   SetTimeStep(particles_->TimeOld(),restart);
 
-  UpdateHeatSourcesConnectivity(true);
-
   return;
 }
-
 
 /*----------------------------------------------------------------------*
 | dynamic load balancing for bin distribution               ghamm 08/13 |
@@ -574,9 +536,6 @@ void PARTICLE::Algorithm::DynamicLoadBalancing()
   // update of state vectors to the new maps
   particles_->UpdateStatesAfterParticleTransfer();
 
-  // restart heat source map
-  UpdateHeatSourcesConnectivity(true);
-
   DRT::UTILS::PrintParallelDistribution(*BinStrategy()->BinDiscret());
 
   return;
@@ -598,8 +557,7 @@ void PARTICLE::Algorithm::BinSizeSafetyCheck(const double dt)
 
     switch (particleInteractionType_)
     {
-    case INPAR::PARTICLE::MeshFree :
-    case INPAR::PARTICLE::Normal_DEM_thermo :
+    case INPAR::PARTICLE::SPH :
     {
       particles_->Radiusnp()->MaxValue(&maxrad);
       break;
@@ -614,7 +572,7 @@ void PARTICLE::Algorithm::BinSizeSafetyCheck(const double dt)
     //Determine effective interaction distance (maximal particle distance at which interaction forces are active) for different particle applications
     //TODO: Differentiate the case of particle contact in combination with adhesive forces (active for distances > 2*radius)
     double half_interaction_distance=0.0;
-    if(particleInteractionType_==INPAR::PARTICLE::MeshFree)
+    if(particleInteractionType_==INPAR::PARTICLE::SPH)
       half_interaction_distance=maxrad/2.0;
     else
       half_interaction_distance=maxrad;
@@ -648,6 +606,7 @@ void PARTICLE::Algorithm::BinSizeSafetyCheck(const double dt)
       }
     }
   }
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -919,6 +878,8 @@ void PARTICLE::Algorithm::SetUpWallDiscret()
     particlewalldis_->SetState("walldisnp", walldispnp_);
     particlewalldis_->SetState("wallvelnp", wallvelnp_);
   }
+
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1084,7 +1045,6 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> b
 
   return;
 }
-
 
 /*----------------------------------------------------------------------*
  | relate wall gids to bin ids                              ghamm 03/13 |
@@ -1286,30 +1246,12 @@ void PARTICLE::Algorithm::TestResults(const Epetra_Comm& comm)
   return;
 }
 
-
 /*----------------------------------------------------------------------*
  | calculate stresses, strains, energies                   ghamm 09/13  |
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::PrepareOutput()
 {
   particles_->PrepareOutput();
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | adaptions for Normal_DEM_thermo                        sfuchs 02/17  |
- *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::NormDemThermoAdapt()
-{
-  if (particleInteractionType_ == INPAR::PARTICLE::Normal_DEM_thermo)
-  {
-    // compute thermodynamic expansion
-    ThermalExpansion();
-
-    // particle dismembering
-    ParticleDismemberer();
-  }
 
   return;
 }
@@ -1340,118 +1282,7 @@ void PARTICLE::Algorithm::Output(bool forced_writerestart /*= false*/)
 }
 
 /*----------------------------------------------------------------------*
- | set up heat sources                                      catta 06/16 |
- *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::SetUpHeatSources()
-{
-  // extract heat source conditions
-  std::vector<DRT::Condition*> conds;
-  BinStrategy()->BinDiscret()->GetCondition("ParticleHeatSource", conds);
-
-  for (size_t iHS=0; iHS<conds.size(); iHS++)
-  {
-    // extract condition
-    std::vector<double> HSZone_minVer = *conds[iHS]->Get<std::vector<double> >("vertex0");
-    std::vector<double> HSZone_maxVer = *conds[iHS]->Get<std::vector<double> >("vertex1");
-    const double HSQDot = conds[iHS]->GetDouble("HSQDot");
-    const double HSTstart = conds[iHS]->GetDouble("HSTstart");
-    const double HSTend = conds[iHS]->GetDouble("HSTend");
-
-    // vertex sort
-    double buffer;
-    for (int idim=0; idim<3; idim++)
-    {
-      if (HSZone_maxVer[idim]<HSZone_minVer[idim])
-        {
-          buffer = HSZone_maxVer[idim];
-          HSZone_maxVer[idim] = HSZone_minVer[idim];
-          HSZone_minVer[idim] = buffer;
-        }
-    }
-
-    // create the heat source class
-    heatSources_.push_back(Teuchos::rcp(new HeatSource(false,
-                                                      iHS,
-                                                      HSZone_minVer,
-                                                      HSZone_maxVer,
-                                                      HSQDot,
-                                                      HSTstart,
-                                                      HSTend)));
-  }
-}
-
-
-/*----------------------------------------------------------------------*
- | update of the map bins->heat Sources                     catta 06/16 |
- *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::UpdateHeatSourcesConnectivity(bool trg_forceRestart)
-{
-
-  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM")==false)
-    return;
-
-  // clear the map in case of force restart
-  if (trg_forceRestart)
-    bins2heatSources_.clear();
-
-  // heat source activation
-  for (std::list<Teuchos::RCP<HeatSource> >::const_iterator iHS = heatSources_.begin(); iHS != heatSources_.end(); ++iHS)
-  {
-    // force restart heatSources status
-    if (trg_forceRestart)
-      (*iHS)->active_ = false;
-
-    // map assignment
-    if ((*iHS)->Tstart_<=Time() && (*iHS)->Tend_>=Time() && (*iHS)->active_ == false)
-    {
-      // find the bins
-      int minVerZone_ijk[3];
-      int maxVerZone_ijk[3];
-      BinStrategy()->ConvertPosToijk(&((*iHS)->minVerZone_[0]), minVerZone_ijk);
-      BinStrategy()->ConvertPosToijk(&((*iHS)->maxVerZone_[0]), maxVerZone_ijk);
-      const int ijk_range[] = {
-          minVerZone_ijk[0],maxVerZone_ijk[0],
-          minVerZone_ijk[1],maxVerZone_ijk[1],
-          minVerZone_ijk[2],maxVerZone_ijk[2]};
-      std::set<int>  binIds;
-      BinStrategy()->GidsInijkRange(&ijk_range[0], binIds, false);
-
-      if (binIds.empty()) dserror("Weird! Heat Source %i found but could not be assigned to bins. Is it outside of bins?",(*iHS)->id_);
-
-      // create/update the map
-      for (std::set<int>::const_iterator iBin = binIds.begin(); iBin != binIds.end(); ++iBin)
-          if(BinStrategy()->BinDiscret()->ElementRowMap()->LID(*iBin) >= 0)
-            bins2heatSources_[*iBin].push_back((*iHS));
-
-      (*iHS)->active_ = true;
-    }
-  }
-
-  // heat source deactivation
-  for (std::list<Teuchos::RCP<HeatSource> >::const_iterator iHS = heatSources_.begin(); iHS != heatSources_.end(); ++iHS)
-  {
-    if (((*iHS)->Tend_<Time() || (*iHS)->Tstart_>Time()) && (*iHS)->active_ == true)
-    {
-      // remove elements from the map
-      for (std::map<int,std::list<Teuchos::RCP<HeatSource> > >::iterator iBin = bins2heatSources_.begin(); iBin != bins2heatSources_.end(); ++iBin)
-      {
-        for (std::list<Teuchos::RCP<HeatSource> >::iterator iHSb=iBin->second.begin(); iHSb != iBin->second.end(); ++iHSb)
-        {
-          if (*iHS == *iHSb)
-          {
-            iHSb = iBin->second.erase(iHSb);
-            break;
-          }
-        }
-      }
-      (*iHS)->active_ = false;
-    }
-  }
-}
-
-
-/*----------------------------------------------------------------------*
- | update connectivity                                     catta 06/16  |
+ | update connectivity                                    sfuchs 08/17  |
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::UpdateConnectivity()
 {
@@ -1467,10 +1298,8 @@ void PARTICLE::Algorithm::UpdateConnectivity()
   if ( moving_walls_ )
     AssignWallElesAndGidsToBins();
 
-  // in case of thermal SPH problems: update heat sources
-  UpdateHeatSourcesConnectivity(false);
+  return;
 }
-
 
 /*----------------------------------------------------------------------*
  | get neighbouring particles and walls                    ghamm 09/13  |
@@ -1478,17 +1307,17 @@ void PARTICLE::Algorithm::UpdateConnectivity()
 void PARTICLE::Algorithm::GetNeighbouringItems(
     DRT::Node* particle,
     std::list<DRT::Node*>& neighboursLinf_p,
-    boost::unordered_map<int, DRT::Element*>& neighboursLinf_w,
-    const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > neighboursLinf_hs) const
+    boost::unordered_map<int, DRT::Element*>& neighboursLinf_w) const
 {
   if (particle->NumElement() != 1)
     dserror("More than one element for this particle");
 
   DRT::Element** CurrentBin = particle->Elements();
 
-  GetNeighbouringItems(CurrentBin[0]->Id(),neighboursLinf_p,&neighboursLinf_w, neighboursLinf_hs);
-}
+  GetNeighbouringItems(CurrentBin[0]->Id(),neighboursLinf_p,&neighboursLinf_w);
 
+  return;
+}
 
 /*----------------------------------------------------------------------*
  | get neighbouring particles and walls (bin version)      katta 10/16  |
@@ -1496,17 +1325,17 @@ void PARTICLE::Algorithm::GetNeighbouringItems(
 void PARTICLE::Algorithm::GetNeighbouringItems(
     const int binId,
     std::list<DRT::Node*>& neighboursLinf_p,
-    boost::unordered_map<int, DRT::Element*>* neighboursLinf_w,
-    const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > neighboursLinf_hs) const
+    boost::unordered_map<int, DRT::Element*>* neighboursLinf_w) const
 {
   std::vector<int> binIds;
   binIds.reserve(27);
 
   BinStrategy().GetNeighborAndOwnBinIds(binId,binIds);
 
-  GetBinContent(neighboursLinf_p, neighboursLinf_w, neighboursLinf_hs, binIds);
-}
+  GetBinContent(neighboursLinf_p, neighboursLinf_w, binIds);
 
+  return;
+}
 
 /*----------------------------------------------------------------------*
  | get particles and wall elements in given bins           ghamm 09/13  |
@@ -1514,7 +1343,6 @@ void PARTICLE::Algorithm::GetNeighbouringItems(
 void PARTICLE::Algorithm::GetBinContent(
     std::list<DRT::Node*>& bin_p,
     boost::unordered_map<int, DRT::Element*>* bin_w,
-    const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > bin_hs,
     std::vector<int> &binIds) const
 {
   // loop over all bins
@@ -1555,398 +1383,8 @@ void PARTICLE::Algorithm::GetBinContent(
         (*bin_w)[walleles[iwall]->Id()] = walleles[iwall];
       }
     }
-    // gather heat sources
-    // it is a set so that there are no repetitions of the heat source
-    if (bin_hs != Teuchos::null)
-    {
-      std::map<int,std::list<Teuchos::RCP<HeatSource> > >::const_iterator hs = bins2heatSources_.find(*bin);
-      if(hs != bins2heatSources_.end())
-      {
-        for(std::list<Teuchos::RCP<HeatSource> >::const_iterator iHS = hs->second.begin(); iHS != hs->second.end(); ++iHS)
-          (*bin_hs)[(*iHS)->Id()] = (*iHS);
-      }
-    }
   }
-}
-
-/*----------------------------------------------------------------------*
- | particleDismemberer                                     catta 07/16  |
- *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::ParticleDismemberer()
-{
-  // extract the material parameters
-  const double dismemberRadius = extParticleMat_->dismemberRadius_;
-  const double specEnthalpyTL = extParticleMat_->SpecEnthalpyTL();
-
-  // extract the state vectors
-  Teuchos::RCP<Epetra_Vector> dispn = particles_->WriteAccessDispnp();
-  Teuchos::RCP<Epetra_Vector> mass = particles_->WriteAccessMass();
-  Teuchos::RCP<Epetra_Vector> radiusn = particles_->WriteAccessRadiusnp();
-  Teuchos::RCP<Epetra_Vector> specEnthalpyn = particles_->WriteAccessSpecEnthalpynp();
-  Teuchos::RCP<const Epetra_Vector> specEnthalpy = particles_->SpecEnthalpyn();
-
-  // with this snapshotting the addition of nodes does not affect the main loop
-  const int maxLidNode_old = BinStrategy()->BinDiscret()->NodeRowMap()->NumMyElements();
-
-  std::vector<int> listOrganizer(maxLidNode_old);
-  std::list<homelessParticleTemp > newParticleList;
-
-  for (int lidNode_old = 0; lidNode_old < maxLidNode_old; ++lidNode_old)
-  {
-    DRT::Node* currParticle_old = BinStrategy()->BinDiscret()->lRowNode(lidNode_old);
-    const int lidDof_old = BinStrategy()->BinDiscret()->DofRowMap()->LID(BinStrategy()->BinDiscret()->Dof(currParticle_old, 0));
-
-    // checks
-    if (lidNode_old == -1)
-      dserror("Invalid lidNode\n");
-    if (lidDof_old == -1)
-      dserror("Invalid lidDof\n");
-    if (dismemberRadius > ((*radiusn)[lidNode_old]/3))
-      continue;  // we do not compress particles without creating new particles
-
-    // check if in this time step we completed the transition. This check is based on the temperature history
-    if (Step() > 0 && (*specEnthalpy)[lidNode_old] <= specEnthalpyTL && (*specEnthalpyn)[lidNode_old]>specEnthalpyTL)
-    {
-      // --------------------------------------------------------------------
-      // position of the new particles temporarily stocked to compute the gid
-      // --------------------------------------------------------------------
-      const double x_step = 2 * dismemberRadius ;
-      const int semiLengthInParticlesx = ComputeSemiLengthInParticlesForParticleDismemberer((*radiusn)[lidNode_old], x_step/2.0);
-      const double y_step = sqrt(3) * dismemberRadius;
-      const int semiLengthInParticlesy = ComputeSemiLengthInParticlesForParticleDismemberer((*radiusn)[lidNode_old], y_step/2.0);
-      const double z_step = 2 * sqrt(2) * (1/(sqrt(3))) * dismemberRadius;
-      const int semiLengthInParticlesz = ComputeSemiLengthInParticlesForParticleDismemberer((*radiusn)[lidNode_old], z_step/2.0);
-      LINALG::Matrix<3,1> newRelativeParticlePosition(true);
-      for (int ix=-semiLengthInParticlesx; ix<=semiLengthInParticlesx; ++ix)
-      {
-        for (int iy=-semiLengthInParticlesy; iy<=semiLengthInParticlesy; ++iy)
-        {
-          for (int iz=-semiLengthInParticlesz; iz<=semiLengthInParticlesz; ++iz)
-          {
-            // x position
-            newRelativeParticlePosition(0) = ix * x_step;
-            // line offset if it is odd in the y direction
-            if (std::abs(iy)%2 == 1)
-            {
-              newRelativeParticlePosition(0) += x_step/2.0;
-            }
-
-            // y position
-            newRelativeParticlePosition(1) = iy * y_step;
-            // plane offset if it is odd in the z direction
-            if (std::abs(iz)%2 == 1)
-            {
-              newRelativeParticlePosition(0) -= x_step/2.0;
-              newRelativeParticlePosition(1) += y_step/3.0;
-            }
-            // z position
-            newRelativeParticlePosition(2) = iz * z_step;
-            // is it inside the old radius?
-            if ((newRelativeParticlePosition.Norm2()+dismemberRadius <= (*radiusn)[lidNode_old]) && !(ix == 0 && iy == 0 && iz == 0))
-            {
-              homelessParticleTemp hpt;
-              std::vector<double> newParticlePosition(3);
-              for (int ii=0; ii<3; ++ii)
-              {
-                newParticlePosition.at(ii) = newRelativeParticlePosition(ii) + (*dispn)[lidDof_old+ ii];
-              }
-              hpt.pos = newParticlePosition;
-              hpt.lidNode_old = lidNode_old;
-              hpt.lidDof_old = lidDof_old;
-              newParticleList.push_back(hpt);
-              ++listOrganizer[lidNode_old];
-            }
-          }
-        }
-      }
-    }
-  }
-
-  // -----------------------------------------------
-  // communication: determination of the correct gid
-  // -----------------------------------------------
-  const int nextMaxNode_gid = BinStrategy()->BinDiscret()->NodeRowMap()->MaxAllGID();
-  const int numproc = BinStrategy()->BinDiscret()->Comm().NumProc();
-  std::vector<int> myentries(numproc,0);
-  std::vector<int> globentries(numproc,0);
-  const int MyNewParticleListSize0 = newParticleList.size();
-  myentries[BinStrategy()->BinDiscret()->Comm().MyPID()] = MyNewParticleListSize0;
-  BinStrategy()->BinDiscret()->Comm().SumAll(&myentries[0], &globentries[0], numproc);  // parallel communication
-  int MyOffset = 0;
-  for(int ii = 0; ii < BinStrategy()->BinDiscret()->Comm().MyPID(); ++ii)
-  {
-   MyOffset += globentries[ii];
-  }
-  // finally the offset for the gid
-  const int finalOffset = nextMaxNode_gid + MyOffset;
-
-  // --------------------------------------------------
-  // place the node in the bins and update connectivity
-  // --------------------------------------------------
-  int newParticleIDcounter = finalOffset;
-  for (std::list<homelessParticleTemp >::const_iterator iNodeList = newParticleList.begin(); iNodeList != newParticleList.end(); ++iNodeList)
-  {
-    ++newParticleIDcounter;
-
-    std::list<Teuchos::RCP<DRT::Node> > homelessparticles;
-    Teuchos::RCP<DRT::Node> newParticle = Teuchos::rcp(new PARTICLE::ParticleNode(
-        newParticleIDcounter, &((*iNodeList).pos[0]), MyRank()));
-
-    PlaceNodeCorrectly(newParticle, newParticle->X(), homelessparticles);
-    // rare case when after dismembering some particles fall into another bin
-    if(homelessparticles.size() != 0)
-    {
-      BinStrategy()->BinDiscret()->AddNode(newParticle);
-      // assign node to an arbitrary row bin -> correct placement will follow in the timeloop in TransferParticles
-      DRT::MESHFREE::MeshfreeMultiBin* firstbinindis = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(BinStrategy()->BinDiscret()->lRowElement(0));
-      firstbinindis->AddNode(newParticle.get());
-      homelessparticles.clear();
-    }
-  }
-
-  // rebuild connectivity and assign degrees of freedom (note: IndependentDofSet)
-  BinStrategy()->BinDiscret()->FillComplete(true, false, true);
-
-  // update of state vectors to the new maps
-  particles_->UpdateStatesAfterParticleTransfer();
-  UpdateStates();
-
-  // reset/set of the pointers after updatestestesafterparticletransfer
-  dispn = particles_->WriteAccessDispnp();
-  mass = particles_->WriteAccessMass();
-  radiusn = particles_->WriteAccessRadiusnp();
-  specEnthalpyn = particles_->WriteAccessSpecEnthalpynp();
-  Teuchos::RCP<Epetra_Vector> densityn = particles_->WriteAccessDensitynp();
-  Teuchos::RCP<Epetra_Vector> veln = particles_->WriteAccessVelnp();
-  Teuchos::RCP<Epetra_Vector> accn = particles_->WriteAccessAccnp();
-  Teuchos::RCP<Epetra_Vector> inertia = particles_->WriteAccessInertia();
-
-  int lidNodeCounter = 0;
-  for (std::list<homelessParticleTemp >::const_iterator iNodeList = newParticleList.begin(); iNodeList != newParticleList.end(); ++iNodeList)
-  {
-    // get node lids
-    const int lidNode_new = maxLidNode_old+lidNodeCounter;
-    DRT::Node* currParticle_new = BinStrategy()->BinDiscret()->lRowNode(lidNode_new);
-    const int lidDof_new = BinStrategy()->BinDiscret()->DofRowMap()->LID(BinStrategy()->BinDiscret()->Dof(currParticle_new, 0));
-
-    const int lidNode_old = iNodeList->lidNode_old;
-    const int lidDof_old = iNodeList->lidDof_old;
-
-    // check
-    if (lidNode_new == -1)
-      dserror("invalid new node lid");
-    if (lidDof_new == -1)
-      dserror("invalid new dof lid");
-    if (lidNode_old == -1)
-      dserror("invalid old node lid");
-    if (lidDof_old == -1)
-      dserror("invalid old dof lid");
-
-    // new masses and densities (to conserve the overall mass)
-    MassDensityUpdaterForParticleDismemberer(mass, densityn, radiusn, lidNode_new, lidNode_old, listOrganizer[lidNode_old]);
-    (*radiusn)[lidNode_new] = dismemberRadius;
-    (*specEnthalpyn)[lidNode_new] = (*specEnthalpyn)[lidNode_old];
-    (*inertia)[lidNode_new] = PARTICLE::Utils::ComputeInertia((*radiusn)[lidNode_new], (*mass)[lidNode_new]);
-
-    for(int d=0; d<3; ++d)
-    {
-      (*dispn)[lidDof_new + d] = currParticle_new->X()[d];
-      (*veln)[lidDof_new + d] = (*veln)[lidDof_old + d];
-      (*accn)[lidDof_new + d] = (*accn)[lidDof_old + d];
-    }
-
-    ++lidNodeCounter;
-  }
-
-  // ------------------------------
-  // update of the central particle
-  // ------------------------------
-  for (int lidNode_old = 0; lidNode_old < maxLidNode_old; ++lidNode_old)
-  {
-    if (Step() > 0 && (*specEnthalpy)[lidNode_old] <= specEnthalpyTL &&
-        (*specEnthalpyn)[lidNode_old]>specEnthalpyTL && dismemberRadius <= ((*radiusn)[lidNode_old]/3))
-    {
-      MassDensityUpdaterForParticleDismemberer(mass, densityn, radiusn, lidNode_old, lidNode_old, listOrganizer[lidNode_old]);
-      // radius MUST be updated after MassDensityUpdaterForParticleDismemberer
-      (*radiusn)[lidNode_old] = dismemberRadius;
-      (*inertia)[lidNode_old] = PARTICLE::Utils::ComputeInertia((*radiusn)[lidNode_old], (*mass)[lidNode_old]);
-    }
-  }
-}
-
-
-/*----------------------------------------------------------------------*
- | ComputeSemiLengthInParticlesForParticleDismemberer      catta 06/16  |
- *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::MassDensityUpdaterForParticleDismemberer(
-    Teuchos::RCP<Epetra_Vector> &mass,
-    Teuchos::RCP<Epetra_Vector> &densitynp,
-    Teuchos::RCP<Epetra_Vector> &radius,
-    const int &lidNode_new,
-    const int &lidNode_old,
-    const int &nlist)
-{
-  const double dismemberRadius = extParticleMat_->dismemberRadius_;
-  // new masses and densities (to conserve the overall mass)
-  (*mass)[lidNode_new] = ((*mass)[lidNode_old])/(nlist+1); // the +1 is due to the central node that is resized
-  const double radiusOld = (*radius)[lidNode_old];
-  (*densitynp)[lidNode_new] = (*densitynp)[lidNode_old] * radiusOld * radiusOld * radiusOld /((nlist + 1) * dismemberRadius * dismemberRadius * dismemberRadius);
-}
-
-/*------------------------------------------------------------------------*
- | compute thermodynamic expansion - new densities and radii catta 06/16  |
- *------------------------------------------------------------------------*/
-void PARTICLE::Algorithm::ThermalExpansion()
-{
-  // extract the interesting state vectors
-  Teuchos::RCP<const Epetra_Vector> mass = particles_->Mass();
-  Teuchos::RCP<const Epetra_Vector> specEnthalpy = particles_->SpecEnthalpyn();
-  Teuchos::RCP<const Epetra_Vector> specEnthalpyn = particles_->SpecEnthalpynp();
-  Teuchos::RCP<Epetra_Vector> densityn = particles_->WriteAccessDensitynp();
-  Teuchos::RCP<Epetra_Vector> radiusn = particles_->WriteAccessRadiusnp();
-
-  // extract the material parameters for easy access
-  const double specEnthalpyST = extParticleMat_->SpecEnthalpyST();
-  const double specEnthalpyTL = extParticleMat_->SpecEnthalpyTL();
-  const double CPS = extParticleMat_->CPS_;
-  const double inv_CPS = 1/CPS;
-  const double CPL = extParticleMat_->CPL_;
-  const double inv_CPL = 1/CPL;
-  const double latentHeat = extParticleMat_->latentHeat_;
-  const double thermalExpansionS = extParticleMat_->thermalExpansionS_;
-  const double thermalExpansionL = extParticleMat_->thermalExpansionL_;
-  const double thermalExpansionT = extParticleMat_->thermalExpansionT_;
-
-  // update the other state vectors (\rho and R)
-  for (int lidNode = 0; lidNode < mass->MyLength(); ++lidNode)
-  {
-    const double oldSpecEnthalpy = (*specEnthalpy)[lidNode];
-    const double newSpecEnthalpy = (*specEnthalpyn)[lidNode];
-    // skip in case the specEnthalpy did not change
-    if (newSpecEnthalpy != oldSpecEnthalpy)
-    {
-      // compute the current volume
-      double volume = PARTICLE::Utils::Radius2Volume((*radiusn)[lidNode]);
-      // specEnthalpy difference
-      double deltaSpecEnthalpy = newSpecEnthalpy - oldSpecEnthalpy;
-
-      // --- compute the new volume --- //
-
-      // WAS it solid?
-      if (oldSpecEnthalpy <= specEnthalpyST)
-      {
-        // IS it solid?
-        if (newSpecEnthalpy <= specEnthalpyST)
-        {
-          volume *= inv_CPS * thermalExpansionS * deltaSpecEnthalpy + 1;
-        }
-        // IS it liquid?
-        else if (newSpecEnthalpy >= specEnthalpyTL)
-        {
-          const double deltaSpecEnthalpyUpToTransition = specEnthalpyST - oldSpecEnthalpy;
-
-          // expansion in solid state
-          volume *= inv_CPS * thermalExpansionS * deltaSpecEnthalpyUpToTransition + 1;
-          deltaSpecEnthalpy -= deltaSpecEnthalpyUpToTransition;
-
-          // expansion in transition state
-          volume *= thermalExpansionT * latentHeat + 1;
-          deltaSpecEnthalpy -= latentHeat;
-
-          // expansion in liquid state
-          volume *= inv_CPL * thermalExpansionL * deltaSpecEnthalpy + 1;
-        }
-        // it IS transition state
-        else
-        {
-          const double deltaSpecEnthalpyUpToTransition = specEnthalpyST - oldSpecEnthalpy;
-
-          // expansion in solid state
-          volume *= inv_CPS * thermalExpansionS * deltaSpecEnthalpyUpToTransition + 1;
-          deltaSpecEnthalpy -= deltaSpecEnthalpyUpToTransition;
-
-          // expansion in transition state
-          volume *= thermalExpansionT * deltaSpecEnthalpy + 1;
-        }
-      }
-      // WAS it liquid?
-      else if (oldSpecEnthalpy >= specEnthalpyTL)
-      {
-        // IS it solid?
-        if (newSpecEnthalpy <= specEnthalpyST)
-        {
-          const double deltaSpecEnthalpyUpToTransition = specEnthalpyTL - oldSpecEnthalpy;
-
-          // expansion in liquid state
-          volume *= inv_CPL * thermalExpansionL * deltaSpecEnthalpyUpToTransition + 1;
-          deltaSpecEnthalpy -= deltaSpecEnthalpyUpToTransition;
-
-          // expansion in the transition state
-          volume *= thermalExpansionT *(- latentHeat) + 1;
-          deltaSpecEnthalpy -= -latentHeat;
-
-          // expansion in liquid state
-          volume *= inv_CPL * thermalExpansionL * deltaSpecEnthalpy + 1;
-        }
-        // IS it liquid?
-        else if (newSpecEnthalpy >= specEnthalpyTL)
-        {
-          volume *= inv_CPL * thermalExpansionL * deltaSpecEnthalpy + 1;
-        }
-        // it IS transition state
-        else
-        {
-          const double deltaSpecEnthalpyUpToTransition = specEnthalpyTL - oldSpecEnthalpy;
-
-          // expansion in liquid state
-          volume *= inv_CPL * thermalExpansionL * deltaSpecEnthalpyUpToTransition + 1;
-          deltaSpecEnthalpy -= deltaSpecEnthalpyUpToTransition;
-
-          // expansion in transition state
-          volume *= thermalExpansionT * deltaSpecEnthalpy + 1;
-        }
-      }
-      // it WAS in transition state
-      else
-      {
-        // IS it solid?
-        if (newSpecEnthalpy <= specEnthalpyST)
-        {
-          const double deltaSpecEnthalpyUpToTransition = specEnthalpyST - oldSpecEnthalpy;
-
-          // expansion in transition state
-          volume *= thermalExpansionT * deltaSpecEnthalpyUpToTransition + 1;
-          deltaSpecEnthalpy -= deltaSpecEnthalpyUpToTransition;
-
-          // expansion in liquid state
-          volume *= inv_CPS * thermalExpansionS * deltaSpecEnthalpy + 1;
-        }
-        // IS it liquid?
-        else if (newSpecEnthalpy >= specEnthalpyTL)
-        {
-          const double deltaSpecEnthalpyUpToTransition = specEnthalpyTL - oldSpecEnthalpy;
-
-          // expansion in transition state
-          volume *= thermalExpansionT * deltaSpecEnthalpyUpToTransition + 1;
-          deltaSpecEnthalpy -= deltaSpecEnthalpyUpToTransition;
-
-          // expansion in liquid state
-          volume *= inv_CPL * thermalExpansionL * deltaSpecEnthalpy + 1;
-        }
-        // it IS transition state
-        else
-        {
-          volume *= thermalExpansionT * deltaSpecEnthalpy + 1;
-        }
-      }
-
-      // --- compute the new volume --- //
-
-      // updates
-      (*radiusn)[lidNode] = PARTICLE::Utils::Volume2Radius(volume);
-      (*densityn)[lidNode] = (*mass)[lidNode]/volume;
-    }
-  }
+  return;
 }
 
 /*------------------------------------------------------------------------*
@@ -1964,5 +1402,6 @@ LINALG::Matrix<3,1> PARTICLE::Algorithm::GetGravityAcc(const double time)
 
   LINALG::Matrix<3,1> scaled_gravity_acc(gravity_acc_);
   scaled_gravity_acc.Scale(fac);
+
   return scaled_gravity_acc;
 }

@@ -50,7 +50,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    // Output type
    IntParameter("RESULTSEVRY",1,"save displacements and contact forces every RESULTSEVRY steps",&particledyn);
    IntParameter("RESEVRYERGY",0,"write system energies every requested step",&particledyn);
-   IntParameter("RESEVRYREND",0,"write meshfree rendering every requested step",&particledyn);
+   IntParameter("RESEVRYREND",0,"write SPH rendering every requested step",&particledyn);
    IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&particledyn);
    IntParameter("CONTACTFORCESEVRY",0,"output particle-particle and particle-wall contact forces to *.csv file every CONTACTFORCESEVRY steps",&particledyn);
    IntParameter("PARTICLESTATSEVRY",0,"output particle statistics to *.csv file every PARTICLESTATSEVRY steps",&particledyn);
@@ -62,22 +62,20 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
 
    setStringToIntegralParameter<int>(
                                "PARTICLE_INTERACTION","None",
-                               "Interaction types for particle or meshfree problems",
+                               "Interaction types for particle problems",
                                tuple<std::string>(
                                  "None",
                                  "NormalContact_DEM",
                                  "NormalContact_MD",
                                  "NormalAndTangentialContact_DEM",
-                                 "NormalContact_DEM_thermo",
-                                 "MeshFree"
+                                 "SPH"
                                  ),
                                tuple<int>(
                                  INPAR::PARTICLE::None,
                                  INPAR::PARTICLE::Normal_DEM,
                                  INPAR::PARTICLE::Normal_MD,
                                  INPAR::PARTICLE::NormalAndTang_DEM,
-                                 INPAR::PARTICLE::Normal_DEM_thermo,
-                                 INPAR::PARTICLE::MeshFree
+                                 INPAR::PARTICLE::SPH
                                  ),
                                &particledyn);
 
@@ -121,7 +119,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
 
    setStringToIntegralParameter<int>(
                                "WEIGHT_FUNCTION","CubicBspline",
-                               "weight function for meshFree interaction dynamics",
+                               "weight function for SPH interaction dynamics",
                                tuple<std::string>(
                                  "CubicBspline",
                                  "QuinticBspline",
@@ -138,7 +136,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
 
    setStringToIntegralParameter<int>(
                                   "WEIGHT_FUNCTION_DIM","WF_3D",
-                                  "number of weight function space dimensions for meshFree interaction dynamics",
+                                  "number of weight function space dimensions for SPH interaction dynamics",
                                   tuple<std::string>(
                                     "WF_3D",
                                     "WF_2D",
@@ -170,7 +168,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
 
    setStringToIntegralParameter<int>(
                                "WALL_INTERACTION_TYPE","BoundarParticle_NoSlip",
-                               "wall interaction type for MeshFree interactions",
+                               "wall interaction type for SPH interactions",
                                tuple<std::string>(
                                  "BoundarParticle_NoSlip",
                                  "BoundarParticle_FreeSlip",
@@ -185,7 +183,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
 
    setStringToIntegralParameter<int>(
                                "FREE_SURFACE_TYPE","None",
-                               "type of free-surface treatment for MeshFree interactions",
+                               "type of free-surface treatment for SPH interactions",
                                tuple<std::string>(
                                  "None",
                                  "DensityIntegration",
@@ -206,7 +204,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
 
    setStringToIntegralParameter<int>(
                                "SURFACE_TENSION_TYPE","ST_NONE",
-                               "type of surface tension forces for MeshFree interactions",
+                               "type of surface tension forces for SPH interactions",
                                tuple<std::string>(
                                  "ST_NONE",
                                  "ST_VDW_DIRECT",
@@ -223,9 +221,6 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                  ),
                                &particledyn);
 
-   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for structural problems",&particledyn);
-   DoubleParameter("ERROR_TOLL",1e-6,"tolerance of the error for implicit schemes",&particledyn);
-   IntParameter("ITER_MAX",10,"maximum iteration per time step for implicit schemes",&particledyn);
    DoubleParameter("MIN_RADIUS",-1.0,"smallest particle radius",&particledyn);
    DoubleParameter("MAX_RADIUS",-1.0,"largest particle radius",&particledyn);
    DoubleParameter("REL_PENETRATION",-1.0,"relative particle-particle penetration",&particledyn);
@@ -270,7 +265,6 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    BoolParameter("DENSITY_SUMMATION","no","determine density via summation formula instead of time integration",&particledyn);
    DoubleParameter("CONSISTENT_PROBLEM_VOLUME",-1.0,"prescribe problem volume and determine particle masses consistently based on this volume and the initial density",&particledyn);
    DoubleParameter("VISCOUS_DAMPING",-1.0,"apply artificial viscous damping force to particles in order to determine static equilibrium solutions",&particledyn);
-   BoolParameter("SOLVE_THERMAL_PROBLEM","yes","solve also the thermal problem?",&particledyn);
    BoolParameter("NO_VELDIFF_TERM","no","Do not apply velocity difference tensor in case of transport velocity formulation",&particledyn);
    BoolParameter("CALC_ACC_VAR2","no","I apply alternative variant for discretization of pressure gradient and viscous forces according to Adami et al. 2013",&particledyn);
    setNumericStringParameter("GRAVITY_ACCELERATION","0.0 0.0 0.0",
@@ -403,64 +397,6 @@ void INPAR::PARTICLE::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Co
   }
 
   condlist.push_back(particlecond);
-  /*--------------------------------------------------------------------*/
-    // particle heat source condition
-
-    std::vector<Teuchos::RCP<ConditionComponent> > particleHSComponents;
-    // two vertices describing the bounding box for the Heat Source
-    particleHSComponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("vertex0")));
-    particleHSComponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("vertex0",3)));
-    particleHSComponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("vertex1")));
-    particleHSComponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("vertex1",3)));
-    // intake Q/s
-    particleHSComponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("HSQDot")));
-    particleHSComponents.push_back(Teuchos::rcp(new RealConditionComponent("HSQDot")));
-    // t start
-    particleHSComponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("HSTstart")));
-    particleHSComponents.push_back(Teuchos::rcp(new RealConditionComponent("HSTstart")));
-    // t end
-    particleHSComponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("HSTend")));
-    particleHSComponents.push_back(Teuchos::rcp(new RealConditionComponent("HSTend")));
-
-
-    Teuchos::RCP<ConditionDefinition> particleHScond =
-      Teuchos::rcp(new ConditionDefinition("DESIGN HEAT SOURCE CONDITION",
-                                           "ParticleHeatSource",
-                                           "Particle Heat Source Condition",
-                                           DRT::Condition::ParticleHeatSource,
-                                           false,
-                                           DRT::Condition::Particle));
-
-
-    for (unsigned i=0; i<particleHSComponents.size(); ++i)
-    {
-      particleHScond->AddComponent(particleHSComponents[i]);
-    }
-
-    condlist.push_back(particleHScond);
-  /*--------------------------------------------------------------------*/
-  // particle periodic boundary condition
-
-  std::vector<Teuchos::RCP<ConditionComponent> > particlepbccomponents;
-  // two vertices describing the bounding box for the pbc
-  particlepbccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
-  particlepbccomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("ONOFF",3)));
-
-  Teuchos::RCP<ConditionDefinition> particlepbccond =
-    Teuchos::rcp(new ConditionDefinition("DESIGN PARTICLE PERIODIC BOUNDARY CONDITION",
-                                         "ParticlePeriodic",
-                                         "Particle Periodic Boundary Condition",
-                                         DRT::Condition::ParticlePeriodic,
-                                         false,
-                                         DRT::Condition::Particle));
-
-
-  for (unsigned i=0; i<particlepbccomponents.size(); ++i)
-  {
-    particlepbccond->AddComponent(particlepbccomponents[i]);
-  }
-
-  condlist.push_back(particlepbccond);
 
   /*--------------------------------------------------------------------*/
   // particle init radius condition
@@ -510,5 +446,6 @@ void INPAR::PARTICLE::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Co
 
   condlist.push_back(surfpartwall);
 
+  return;
 }
 

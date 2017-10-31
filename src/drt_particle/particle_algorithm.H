@@ -24,15 +24,6 @@
  *----------------------------------------------------------------------*/
 #include "../drt_adapter/adapter_algorithmbase.H"
 #include "particle_handler.H"
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_binstrategy/binning_strategy_utils.H"
-
-#include <Epetra_MpiComm.h>
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-#include <Epetra_Vector.h>
-#include <Epetra_CrsGraph.h>
-#include <vector>
 #include <boost/unordered_map.hpp>
 
 //Usefull defines (tolerances and constants)
@@ -95,7 +86,6 @@ namespace BINSTRATEGY
 namespace PARTICLE
 {
   // forward declaration
-  class HeatSource;
   class Rendering;
 
   class Algorithm : public ADAPTER::AlgorithmBase, public PARTICLE::ParticleHandler
@@ -155,33 +145,22 @@ namespace PARTICLE
     virtual Teuchos::RCP<std::list<int> > TransferParticles(const bool updatestates,
                                    const bool ghosting = true);
 
-    /// update of the map bins->heat Sources
-    virtual void UpdateHeatSourcesConnectivity(bool forceRestart);
-
     /// get bins in range and call FindNeighbors
     virtual void GetNeighbouringItems(
                     DRT::Node* particle,
                     std::list<DRT::Node*>& neighboursLinf_p,
-                    boost::unordered_map<int, DRT::Element*>& neighboursLinf_w,
-                    const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > neighboursLinf_hs = Teuchos::null) const;
+                    boost::unordered_map<int, DRT::Element*>& neighboursLinf_w) const;
 
     /// get bins in range and call FindNeighbors (bin version)
     virtual void GetNeighbouringItems(
                     const int binId,
                     std::list<DRT::Node*>& neighboursLinf_p,
-                    boost::unordered_map<int, DRT::Element*>* neighboursLinf_w = NULL,
-                    const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > neighboursLinf_hs = Teuchos::null) const;
+                    boost::unordered_map<int, DRT::Element*>* neighboursLinf_w = NULL) const;
 
     /// link to timInt
     virtual const Teuchos::RCP<ADAPTER::Particle> AdapterParticle() const { return particles_; }
 
-    /// map that links bins to heat sources
-    virtual std::map<int,std::list<Teuchos::RCP<HeatSource> > > & Bins2HeatSources() {return bins2heatSources_; }
-
-    /// list of heat sources
-    virtual const std::list< Teuchos::RCP<HeatSource> > HeatSources() {return heatSources_; }
-
-    /// contact type: meshfree, particle-thermo, etc.
+    /// get particle interaction type
     INPAR::PARTICLE::ParticleInteractions ParticleInteractionType() const {return particleInteractionType_; }
 
     /// Return the pointer to the particle material
@@ -196,10 +175,10 @@ namespace PARTICLE
     /// Return the pointer to second extended particle material
     const MAT::PAR::ExtParticleMat* ExtParticleMat2() const { return extParticleMat2_; }
 
-    /// get meshfree rendering handler
+    /// get SPH rendering handler
     virtual Teuchos::RCP<Rendering> GetRendering() { return rendering_; }
 
-    /// set meshfree rendering handler
+    /// set SPH rendering handler
     virtual void SetRendering(Teuchos::RCP<Rendering> rendering) { rendering_ = rendering; }
 
     inline virtual void CalculateAndApplyForcesToParticles(bool init) { ; };
@@ -215,9 +194,6 @@ namespace PARTICLE
 
     /// output particle time step
     virtual void Output(bool forced_writerestart = false);
-
-    /// adaptions for Normal_DEM_thermo
-    virtual void NormDemThermoAdapt();
 
   protected:
 
@@ -274,34 +250,11 @@ namespace PARTICLE
     /// relate wall gids to bin ids
     virtual void RelateWallGidsToBinIds();
 
-    /// set up heat sources
-    virtual void SetUpHeatSources();
-
     /// get particles and wall elements in given bins
     void GetBinContent(
       std::list<DRT::Node*>& bin_p,
       boost::unordered_map<int, DRT::Element*>* bin_w,
-      const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > bin_hs,
       std::vector<int>& binIds) const;
-
-    /// dismember particle using the dismembering radius (it shall be smaller than the oldParticleRadius)
-    virtual void ParticleDismemberer();
-
-    /// mass and density updater for particle dismemberer
-    virtual void MassDensityUpdaterForParticleDismemberer(
-        Teuchos::RCP<Epetra_Vector> &mass,
-        Teuchos::RCP<Epetra_Vector> &density,
-        Teuchos::RCP<Epetra_Vector> &radius,
-        const int &lidNode_new,
-        const int &lidNode_old,
-        const int &nlist);
-
-    /// small function for the dismember
-    virtual int ComputeSemiLengthInParticlesForParticleDismemberer(const double &oldRadius,const double &semiStep)
-      {return (oldRadius-semiStep)/(2 * semiStep) + 2; }
-
-    /// compute thermodynamic expansion - new densities and radii
-    virtual void ThermalExpansion();
 
     //! @name particle related stuff
     //@{
@@ -328,10 +281,6 @@ namespace PARTICLE
 
     const int transfer_every_;   ///< interval to call particle transfer
 
-    std::list<Teuchos::RCP<HeatSource> > heatSources_; ///< heat source storing
-
-    std::map<int,std::list<Teuchos::RCP<HeatSource> > > bins2heatSources_;   ///< bins 2 heat sources map
-
     const INPAR::PARTICLE::ParticleInteractions particleInteractionType_;
 
     const INPAR::PARTICLE::ExtendedGhosting extendedGhosting_;
@@ -346,7 +295,7 @@ namespace PARTICLE
 
     BINSTRATEGY::UTILS::BinContentType bin_wallcontent_;
 
-    Teuchos::RCP<Rendering> rendering_; ///< handler of the rendering discretization (used for meshFree dynamics)
+    Teuchos::RCP<Rendering> rendering_; ///< handler of the rendering discretization (used for SPH dynamics)
 
     std::map<int, std::set<int> > relwallgidtobinids_; ///< map relating wall gids to bin ids
 

@@ -57,7 +57,6 @@ typedef enum _PROBLEM_TYP
   prb_level_set,            // level-set problem
   prb_loma,                 // low-Mach-number flow problem
   prb_lubrication,          // lubrication problem (reduced fluid model for elastohydrodynamic lubrication)
-  prb_meshfree,             // particleMeshFree simulation
   prb_np_support,           // supporting procs for nested parallelism
   prb_opt,                  // structural optimization  problem
   prb_particle,             // particle simulation

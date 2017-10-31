@@ -52,7 +52,6 @@ namespace MESHFREE {
 namespace BINSTRATEGY
 {
   // forward declaration
-  struct HeatSource;
   class Less;
 
   class BinningStrategy

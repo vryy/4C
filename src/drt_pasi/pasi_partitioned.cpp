@@ -225,9 +225,6 @@ void PASI::PartitionedAlgo::ParticleStep()
   // integrate particle time step
   particles_->AdapterParticle()->IntegrateStep();
 
-  // adaptions for Normal_DEM_thermo
-  particles_->NormDemThermoAdapt();
-
   return;
 } // PASI::PartitionedAlgo::ParticleStep()
 

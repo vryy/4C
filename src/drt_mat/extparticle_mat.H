@@ -2,7 +2,7 @@
 /*!
 \file extparticle_mat.H
 
-\brief Particle material with support for thermodynamics
+\brief extended particle material
 
 \level 3
 
@@ -32,32 +32,8 @@ namespace MAT
       //! destructor
       virtual ~ExtParticleMat(){return;};
 
-      //! return the threshold specific enthalpy (solid <-> transition)
-      virtual double SpecEnthalpyST() const { return transitionTemperature_ * CPS_; }
-
-      //! return the threshold specific enthalpy (transition <-> liquid)
-      virtual double SpecEnthalpyTL() const { return SpecEnthalpyST() + latentHeat_; }
-
-      //! return the nominal speed of sound in case of small density variations and solid phase
-      virtual double SpeedOfSoundS() const { return std::pow(youngModulus_/initDensity_,0.5); }
-
       //! return the nominal speed of sound in case of small density variations and liquid phase
       virtual double SpeedOfSoundL() const { return std::pow(bulkModulus_/initDensity_,0.5); }
-
-      //! return the nominal speed of sound in case of small density variations and transition phase
-      virtual double SpeedOfSoundT(const double specEnthalpy) const
-      {
-        // safety check
-        if (specEnthalpy < SpecEnthalpyST() || specEnthalpy > SpecEnthalpyTL())
-          dserror("This particle is not in transition phase");
-
-        // linear interpolation between the Young and compressibility moduli
-        const double alpha = ( bulkModulus_ - youngModulus_)/latentHeat_;
-        const double qq = youngModulus_ - SpecEnthalpyST() * alpha;
-        const double xx = alpha * specEnthalpy + qq;
-
-        return std::pow(xx/initDensity_,0.5);
-      }
 
       //! create instance of particle additive manufacturing material
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
@@ -66,24 +42,6 @@ namespace MAT
       const double refdensfac_;
       ///exponent occurring in equation of state. For exponents !=1, we have:  pressure=p0*((density/initDensity_)^exponent_-refdensfac_) with p0=c_0^2*Density_/exponent_;
       const double exponent_;
-      /// dismembering radius
-      const double dismemberRadius_;
-      /// initial temperature
-      const double initTemperature_;
-      /// specific heat - constant pressure - solid state
-      const double CPS_;
-      /// specific heat - constant pressure - liquid state
-      const double CPL_;
-      /// specific latent heat - solid <-> liquid
-      const double latentHeat_;
-      /// transition temperature - solid <-> liquid
-      const double transitionTemperature_;
-      /// volumetric thermal expansion coefficient - solid state - usually 3 times the linear coefficient
-      const double thermalExpansionS_;
-      /// volumetric thermal expansion coefficient - liquid state
-      const double thermalExpansionL_;
-      /// volumetric thermal expansion coefficient - solid <-> liquid - Beware! It is linked to specEnthalpy instead of temperature!
-      const double thermalExpansionT_;
       /// bulk modulus. 1/compressibility for the liquid phase
       const double bulkModulus_;
       /// dynamic (shear) viscosity for the liquid phase
@@ -92,8 +50,6 @@ namespace MAT
       const double bulkViscosity_;
       /// artificial viscosity for the liquid phase
       const double artificialViscosity_;
-      /// thermal conductivity of the material (it is considered the same for all the phases) - W/(m * K)
-      const double thermalConductivity_;
       /// surface tension between fluid and void phase
       const double surfaceTension_;
       /// static contact angle between fluid and solid phase in degree measure

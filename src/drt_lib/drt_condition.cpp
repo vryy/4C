@@ -241,9 +241,7 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==RedAirwayScatraCapillaryCond)  os << "Reduced d airway scatra capillary condition";
   else if (Type()==ParticleInflow)                os << "particle inflow condition";
   else if (Type()==ParticleInitRadius)            os << "particle initial radius condition";
-  else if (Type()==ParticlePeriodic)              os << "particle periodic boundary condition";
   else if (Type()==ParticleWall)                  os << "particle wall condition";
-  else if (Type()==ParticleHeatSource)            os << "particle heat source condition";
   else if (Type()==SurfaceModeKrylovProjection)   os << "Surface mode for Krylov space projection";
   else if (Type()==VolumeModeKrylovProjection)    os << "Volume mode for Krylov space projection";
   else if (Type()==SurfaceCurrent)                os << "Surface Current Evaluation";

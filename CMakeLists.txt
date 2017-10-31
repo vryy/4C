@@ -1800,7 +1800,6 @@ set(OBJS_POST_DRT_S8CONVERT
 set(OBJS_DRT_PARTICLE
   src/drt_particle/particle_timint.cpp
   src/drt_particle/particle_timint_expl.cpp
-  src/drt_particle/particle_timint_impl.cpp
   src/drt_particle/particle_timint_centrdiff.cpp
   src/drt_particle/particle_timint_kickdrift.cpp
   src/drt_particle/particle_timint_expleuler.cpp
@@ -1811,10 +1810,10 @@ set(OBJS_DRT_PARTICLE
   src/drt_particle/particle_contact.cpp
   src/drt_particle/scatra_particle_coupling.cpp
   src/drt_particle/particle_resulttest.cpp
-  src/drt_particle/particleMeshFree_interaction.cpp
-  src/drt_particle/particleMeshFree_weightFunction.cpp
-  src/drt_particle/particleMeshFree_rendering.cpp
-  src/drt_particle/particleMeshFree_rendering_resulttest.cpp
+  src/drt_particle/particle_sph_interaction.cpp
+  src/drt_particle/particle_sph_weightFunction.cpp
+  src/drt_particle/particle_sph_rendering.cpp
+  src/drt_particle/particle_sph_rendering_resulttest.cpp
   src/drt_particle/particle_utils.cpp
 )
 set(OBJS_DRT_ACOU
