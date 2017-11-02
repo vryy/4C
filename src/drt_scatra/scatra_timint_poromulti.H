@@ -57,19 +57,14 @@ namespace SCATRA
         const int            num=0 //!< field number
     ) {return;};
 
-    //! set solution fields on given dof sets
-    virtual void SetSolutionFieldsWithL2(
+    //! set the nodal L2-flux
+    virtual void SetL2FluxOfMultiFluid(
       Teuchos::RCP<const Epetra_MultiVector>   multiflux,
-      const int                                nds_flux,
-      Teuchos::RCP<const Epetra_Vector>        pressure,
-      const int                                nds_pres,
-      Teuchos::RCP<const Epetra_Vector>        saturation,
-      const int                                nds_sat,
-      Teuchos::RCP<const Epetra_Vector>        solid_pressure,
-      const int                                nds_solid_pressure
+      const int                                nds_flux
      );
 
-    virtual void SetSolutionFieldsWithoutL2(
+    // set solution field of the multiphase fluid
+    virtual void SetSolutionFieldOfMultiFluid(
       Teuchos::RCP<const Epetra_Vector>        phinp_fluid,
       const int                                nds_phi_fluid
      );
@@ -102,10 +97,9 @@ namespace SCATRA
 
     protected:
 
-    //! number of dofset associated with saturation dofs
-    int nds_sat_;
-    //! number of dofset associated with solid pressure dofs
-    int nds_solid_pressure_;
+    // do we employ L2-projection for reconstruction of velocity field
+    bool L2_projection_;
+
   };
 
 

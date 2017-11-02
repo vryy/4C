@@ -123,13 +123,6 @@ namespace POROMULTIPHASESCATRA
     // flux-reconstruction method
     INPAR::POROFLUIDMULTIPHASE::FluxReconstructionMethod fluxreconmethod_;
 
-    //! apply displacement fields to scatra
-    void SetMeshDisp();
-    //! apply solution fields (except displacements) to scatra --> L2-projection case
-    void SetSolutionFieldsWithL2();
-    //! apply solution fields (except displacements) to scatra --> no L2-projection case
-    void SetSolutionFieldsWithoutL2();
-
     //! dofset of scatra field on fluid dis
     // TODO: find a better way to do this. Perhaps this should be moved to the adapter?
     int ndsporofluid_scatra_;

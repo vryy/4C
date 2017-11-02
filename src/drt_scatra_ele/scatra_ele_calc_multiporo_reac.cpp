@@ -37,10 +37,7 @@ DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ScaTraEleCalcMultiPoroReac(c
   DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(numdofpernode,numscal,disname),
   DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ScaTraEleCalcAdvReac(numdofpernode,numscal,disname),
   DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::ScaTraEleCalcPoroReac(numdofpernode,numscal,disname),
-  efluxnp_(0),
-  epresnp_(0),
-  esatnp_(0),
-  esolidpresnp_(true)
+  efluxnp_(0)
 {
   // replace internal variable manager by internal variable manager for muliporo
   my::scatravarmanager_ = Teuchos::rcp(new ScaTraEleInternalVariableManagerMultiPoro<my::nsd_, my::nen_>(my::numscal_));
@@ -249,26 +246,20 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ExtractElementAndNodeVa
   // determine number of velocity related dofs per node (= number of phases)
   const int numphases = la[ndspres].lm_.size()/my::nen_;
 
-  // this is a check if we have L2-based projection or evaluation at GP of fluid-quantities
-  // if the fluid primary variable is present in the scatra discretization, we evaluate at gp
-  // TODO: this is not very nice, is there a better way?
-  //---------------------------------------------------------------------------------------------
-  //                   CASE 1: no L2-projection --> fluid is handled by its own managers
+  // extract element and node values of the porofluid
   if(discretization.HasState(ndspres,"phinp_fluid"))
   {
-    L2_projection_ = false;
     VarManager()->SetupPoroFluidManagers(ele,params,discretization,la,numphases);
     VarManager()->ExtractElementAndNodeValuesOfPoroFluid(ele,discretization,la,my::xyze_);
-  }
-  //---------------------------------------------------------------------------------------------
-  //                   CASE 2: L2-projection --> fluid is handled by class variables of scatra
-  else if(discretization.HasState(ndspres,"pressure"))
-  {
-    L2_projection_ = true;
-    ExtractElementAndNodeValuesWithL2(ele, params, discretization, la, ndspres, numphases);
+    L2_projection_ = params.get<bool>("L2-projection");
+    // extract the nodal flux
+    if(L2_projection_)
+    {
+      ExtractNodalFlux(ele, params, discretization, la, numphases);
+    }
   }
   else
-    dserror("Something went wrong here, scatra-dis has neither pressure nor fluid primary variables");
+    dserror("Something went wrong here, scatra-dis does not have fluid primary variable");
 
   // ---------------------------------------------------------------------
   // call routine for calculation of body force in element nodes
@@ -288,19 +279,16 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ExtractElementAndNodeVa
  | extract element based or nodal values (L2-projection)    vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ExtractElementAndNodeValuesWithL2(
+void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ExtractNodalFlux(
     DRT::Element*                 ele,
     Teuchos::ParameterList&       params,
     DRT::Discretization&          discretization,
     DRT::Element::LocationArray&  la,
-    const int                     ndspres,
     const int                     numphases
     )
 {
   //resize state vectors based on number of phases
   efluxnp_.resize(numphases);
-  epresnp_.resize(numphases);
-  esatnp_.resize(numphases);
 
   // get number of dofset associated with velocity related dofs
   const int ndsvel = params.get<int>("ndsvel");
@@ -319,35 +307,6 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ExtractElementAndNodeVa
       // extract local values of convective velocity field from global state vector
     DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nsd_,my::nen_> >(*convel,efluxnp_[curphase],la[ndsvel].lm_);
   }
-
-  Teuchos::RCP<const Epetra_Vector> presnp = discretization.GetState(ndspres,"pressure");
-  if (presnp==Teuchos::null)
-    dserror("Cannot get state vector 'pressure'");
-
-  // extract local values of pressure field from global state vector
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*presnp,epresnp_,la[ndspres].lm_);
-
-  // get number of dofset associated with saturation related dofs
-  const int ndssat = params.get<int>("ndssat");
-  if(la[ndssat].lm_.size()!= static_cast<unsigned>( numphases*my::nen_ ))
-  {
-    dserror("Number of DOFs of saturation vector unequal to number of phases given by the pressure vector!");
-  }
-  // extract local values from the global vectors
-  Teuchos::RCP<const Epetra_Vector> satnp = discretization.GetState(ndssat,"saturation");
-  if (satnp==Teuchos::null)
-    dserror("Cannot get state vector 'saturation'");
-  // extract local values of saturation field from global state vector
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*satnp,esatnp_,la[ndssat].lm_);
-
-  // get number of dofset associated with solid pressure related dofs
-  const int nds_solid_pressure = params.get<int>("ndssolidpressure");
-  // extract local values from the global vectors
-  Teuchos::RCP<const Epetra_Vector> solidprenp = discretization.GetState(nds_solid_pressure,"solid_pressure");
-  if (solidprenp==Teuchos::null)
-    dserror("Cannot get state vector 'solid_pressure'");
-  // extract local values of solid pressure field from global state vector
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*solidprenp,esolidpresnp_,la[nds_solid_pressure].lm_);
 
   return;
 }
@@ -443,9 +402,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetInternalVariablesForMatAndRHS()
 {
 
-  if(!L2_projection_)
-  {
-  VarManager()->SetInternalVariablesMultiPoroWithoutL2(
+  VarManager()->SetInternalVariablesMultiPoro(
       my::funct_,
       my::derxy_,
       my::deriv_,
@@ -454,19 +411,14 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetInternalVariablesFor
       my::ephinp_,
       my::ephin_,
       my::ehist_);
-  }
-  else
+
+  if(L2_projection_)
   {
-    VarManager()->SetInternalVariablesMultiPoroWithL2(
+    VarManager()->AdaptConvectiveTermForL2(
         my::funct_,
         my::derxy_,
-        my::ephinp_,
-        my::ephin_,
-        efluxnp_,
-        epresnp_,
-        esatnp_,
-        esolidpresnp_,
-        my::ehist_);
+        efluxnp_
+        );
   }
 
   return;

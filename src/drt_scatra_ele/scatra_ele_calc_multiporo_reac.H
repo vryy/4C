@@ -89,12 +89,11 @@ public:
 
   //! extract element based or nodal values --> L2-projection case: called within ExtractElementAndNodeValues
   //  return extracted values of phinp
-  virtual void ExtractElementAndNodeValuesWithL2(
+  virtual void ExtractNodalFlux(
       DRT::Element*                 ele,
       Teuchos::ParameterList&       params,
       DRT::Discretization&          discretization,
       DRT::Element::LocationArray&  la,
-      const int                     ndspres,
       const int                     numphases
   );
 
@@ -346,12 +345,6 @@ public:
 
   //! nodal flux values at t_(n+1)
   std::vector<LINALG::Matrix<my::nsd_,my::nen_> > efluxnp_;
-  //! nodal phase pressures at t_(n+1) or t_(n+alpha_F)
-  std::vector<LINALG::Matrix<my::nen_,1> > epresnp_;
-  //! nodal phase saturation at t_(n+1) or t_(n+alpha_F)
-  std::vector<LINALG::Matrix<my::nen_,1> > esatnp_;
-  //! nodal solid pressure at t_(n+1) or t_(n+alpha_F)
-  LINALG::Matrix<my::nen_,1> esolidpresnp_;
 
   //! a vector containing all quantities, the equation is coupled with
   //! (i.e. pressures, saturations and porosity)
@@ -392,7 +385,7 @@ public:
   virtual ~ScaTraEleInternalVariableManagerMultiPoro(){};
 
   // compute and set internal variables -- no L2-projection but evaluation at GP
-   void SetInternalVariablesMultiPoroWithoutL2(
+   void SetInternalVariablesMultiPoro(
        const LINALG::Matrix<NEN,1>&                 funct,       //! array for shape functions
        const LINALG::Matrix<NSD,NEN>&               derxy,       //! global derivatives of shape functions w.r.t x,y,z
        const LINALG::Matrix<NSD,NEN>&               deriv,       //! global derivatives of shape functions w.r.t r,s,t
@@ -488,29 +481,19 @@ public:
      return;
    };
 
-   // compute and set internal variables -- L2-projection
-    void SetInternalVariablesMultiPoroWithL2(
+   // adapt convective term in case of L2-projection
+    void AdaptConvectiveTermForL2(
         const LINALG::Matrix<NEN,1>&                 funct,       //! array for shape functions
         const LINALG::Matrix<NSD,NEN>&               derxy,       //! global derivatives of shape functions w.r.t x,y,z
-        const std::vector<LINALG::Matrix<NEN,1> >&   ephinp,      //! scalar at t_(n+1) or t_(n+alpha_F)
-        const std::vector<LINALG::Matrix<NEN,1> >&   ephin,       //! scalar at t_(n)
-        const std::vector<LINALG::Matrix<NSD,NEN> >& econvelnp,   //! nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
-        const std::vector<LINALG::Matrix<NEN,1> >&   epresnp,
-        const std::vector<LINALG::Matrix<NEN,1> >&   esatnp,
-        const LINALG::Matrix<NEN,1>&                 esolidpresnp,
-        const std::vector<LINALG::Matrix<NEN,1> >&   ehist        //! history vector of transported scalars
-        )
+        const std::vector<LINALG::Matrix<NSD,NEN> >& econvelnp    //! nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
+    )
     {
-      // call base class (scatra)
-      my::SetInternalVariables(funct,derxy,ephinp,ephin,econvelnp[0],ehist);
 
       const int numphases = econvelnp.size();
 
       // resize all phase related vectors
       multiconvelint_.resize(numphases);
       multiconv_.resize(numphases);
-      pressure_.resize(numphases);
-      saturation_.resize(numphases);
 
       for (int k = 0; k < numphases; ++k)
       {
@@ -518,15 +501,7 @@ public:
         multiconvelint_[k].Multiply(econvelnp[k],funct);
         // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
         multiconv_[k].MultiplyTN(derxy,multiconvelint_[k]);
-
-        // phase pressure
-        pressure_[k] = epresnp[k].Dot(funct);
-        // phase saturation
-        saturation_[k] = esatnp[k].Dot(funct);
       }
-
-      // solid pressure
-      solidpressure_ = esolidpresnp.Dot(funct);
 
       // check if the IDs make sense
       for (std::vector<int>::iterator it = scalartophaseID_.begin() ; it != scalartophaseID_.end(); ++it)

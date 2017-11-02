@@ -256,68 +256,31 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::CreateFieldTest()
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetPoroSolution()
 {
-  SetMeshDisp();
-
-  if(fluxreconmethod_ == INPAR::POROFLUIDMULTIPHASE::FluxReconstructionMethod::gradreco_l2)
-    SetSolutionFieldsWithL2();
-  else
-    SetSolutionFieldsWithoutL2();
-
-}
-
-/*---------------------------------------------------------------------*
- |                                                         vuong 05/13  |
- *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetSolutionFieldsWithL2()
-{
-  // cast
+  // safety check
   Teuchos::RCP<SCATRA::ScaTraTimIntPoroMulti> poroscatra =
       Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntPoroMulti>(scatra_->ScaTraField());
-
   if(poroscatra==Teuchos::null)
     dserror("cast to ScaTraTimIntPoroMulti failed!");
 
-  // set the solution
-  poroscatra->SetSolutionFieldsWithL2(
-      poromulti_->FluidFlux(),
-      1,
-      poromulti_->FluidPressure(),
-      2,
-      poromulti_->FluidSaturation(),
-      2,
-      poromulti_->SolidPressure(),
-      3
-      );
-}
-
-/*---------------------------------------------------------------------*
- |                                                    kremheller 07/17  |
- *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetSolutionFieldsWithoutL2()
-{
-  // cast
-  Teuchos::RCP<SCATRA::ScaTraTimIntPoroMulti> poroscatra =
-      Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntPoroMulti>(scatra_->ScaTraField());
-
-  if(poroscatra==Teuchos::null)
-    dserror("cast to ScaTraTimIntPoroMulti failed!");
-
-  // set the solution
-  poroscatra->SetSolutionFieldsWithoutL2(
-      poromulti_->FluidPhinp(),
-      2
-      );
-}
-
-/*----------------------------------------------------------------------*
- |                                                         vuong 05/13  |
- *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetMeshDisp()
-{
-  scatra_->ScaTraField()->ApplyMeshMovement(
+  // set displacements
+  poroscatra->ApplyMeshMovement(
       poromulti_->StructDispnp(),
       1
       );
+
+  // set the fluid solution
+  poroscatra->SetSolutionFieldOfMultiFluid(
+      poromulti_->FluidPhinp(),
+      2
+      );
+
+  // additionally, set nodal flux if L2-projection is desired
+  if(fluxreconmethod_ == INPAR::POROFLUIDMULTIPHASE::FluxReconstructionMethod::gradreco_l2)
+    poroscatra->SetL2FluxOfMultiFluid(
+        poromulti_->FluidFlux(),
+        1
+        );
+
 }
 
 /*----------------------------------------------------------------------*

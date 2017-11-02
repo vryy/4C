@@ -27,8 +27,7 @@ SCATRA::ScaTraTimIntPoroMulti::ScaTraTimIntPoroMulti(
         Teuchos::RCP<Teuchos::ParameterList>     extraparams,
         Teuchos::RCP<IO::DiscretizationWriter>   output)
   : ScaTraTimIntImpl(dis,solver,sctratimintparams,extraparams,output),
-    nds_sat_(-1),
-    nds_solid_pressure_(-1)
+    L2_projection_(false)
 {
   // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)
   // this is important since we have problems which require an extended ghosting
@@ -48,41 +47,17 @@ void SCATRA::ScaTraTimIntPoroMulti::Init()
 /*----------------------------------------------------------------------*
  | set solution fields on given dof sets                    vuong  08/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMulti::SetSolutionFieldsWithL2(
+void SCATRA::ScaTraTimIntPoroMulti::SetL2FluxOfMultiFluid(
     Teuchos::RCP<const Epetra_MultiVector>   multiflux,
-    const int                                nds_flux,
-    Teuchos::RCP<const Epetra_Vector>        pressure,
-    const int                                nds_pres,
-    Teuchos::RCP<const Epetra_Vector>        saturation,
-    const int                                nds_sat,
-    Teuchos::RCP<const Epetra_Vector>        solid_pressure,
-    const int                                nds_solid_pressure
+    const int                                nds_flux
     )
 {
+  // set L2-projection to true
+  L2_projection_ = true;
+
   // safety check
   if (nds_flux >= discret_->NumDofSets())
       dserror("Too few dofsets on scatra discretization!");
-  if (nds_pres >= discret_->NumDofSets())
-      dserror("Too few dofsets on scatra discretization!");
-  if (nds_sat >= discret_->NumDofSets())
-      dserror("Too few dofsets on scatra discretization!");
-  if (nds_solid_pressure >= discret_->NumDofSets())
-      dserror("Too few dofsets on scatra discretization!");
-
-  // store number of dof-set
-  nds_pres_ = nds_pres;
-  // provide scatra discretization with pressure field
-  discret_->SetState(nds_pres_,"pressure",pressure);
-
-  // store number of dof-set
-  nds_sat_ = nds_sat;
-  // provide scatra discretization with pressure field
-  discret_->SetState(nds_pres_,"saturation",saturation);
-
-  // store number of dof-set
-  nds_solid_pressure_ = nds_solid_pressure;
-  // provide scatra discretization with solid pressure field
-  discret_->SetState(nds_solid_pressure_,"solid_pressure",solid_pressure);
 
   // store number of dof-set associated with velocity related dofs
   nds_vel_ = nds_flux;
@@ -139,7 +114,7 @@ void SCATRA::ScaTraTimIntPoroMulti::SetSolutionFieldsWithL2(
 /*----------------------------------------------------------------------*
  | set solution fields on given dof sets              kremheller  07/17 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMulti::SetSolutionFieldsWithoutL2(
+void SCATRA::ScaTraTimIntPoroMulti::SetSolutionFieldOfMultiFluid(
     Teuchos::RCP<const Epetra_Vector>        phinp_fluid,
     const int                                nds_phi_fluid
     )
@@ -171,10 +146,8 @@ void SCATRA::ScaTraTimIntPoroMulti::AddProblemSpecificParametersAndVectors(
 
   // provide pressure field
   params.set<int>("ndspres",nds_pres_);
-  // provide saturation field
-  params.set<int>("ndssat",nds_sat_);
-  // provide solid pressure field
-  params.set<int>("ndssolidpressure",nds_solid_pressure_);
+  // provide pressure field
+  params.set<bool>("L2-projection",L2_projection_);
 
   return;
 }
