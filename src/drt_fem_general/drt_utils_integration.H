@@ -213,6 +213,7 @@ enum GaussRule1D
     intrule_line_16point,          ///< degree of precision: 31 (open)
     intrule_line_20point,          ///< degree of precision: 39 (open)
     intrule_line_32point,          ///< degree of precision: 63 (open)
+    intrule_line_50point,          ///< degree of precision: 99 (open)
     intrule_line_lobatto2point,    ///< degree of precision: 1  (closed)
     intrule_line_lobatto3point,    ///< degree of precision: 3  (closed)
     intrule_line_lobatto4point,    ///< degree of precision: 5  (closed)
@@ -251,6 +252,7 @@ inline bool IntRuleIsOpen(DRT::UTILS::GaussRule1D intrule)
   case intrule_line_16point:          open=true; break;
   case intrule_line_20point:          open=true; break;
   case intrule_line_32point:          open=true; break;
+  case intrule_line_50point:          open=true; break;
   case intrule_line_lobatto2point:    open=false; break;
   case intrule_line_lobatto3point:    open=false; break;
   case intrule_line_lobatto4point:    open=false; break;
@@ -417,7 +419,7 @@ struct IntegrationPoints1D
       const GaussRule1D intrule       ///< 1d rule
       );
 private:
-  static const int max_nquad = 32;    ///< size of c array
+  static const int max_nquad = 50;    ///< size of c array
   DRT::UTILS::GaussRule1D intrule_;   ///< associated integration rule name
 public:
   int           nquad;                ///< number of integration points
