@@ -13,8 +13,8 @@
 #ifndef ELAST_STRUCTURALTENSOR_STRATEGY_
 #define ELAST_STRUCTURALTENSOR_STRATEGY_
 
-#define numbgp 32
-#define twice 64
+#define numbgp 50
+#define twice 100
 
 #include "../drt_mat/matpar_parameter.H"
 #include "../linalg/linalg_fixedsizematrix.H"

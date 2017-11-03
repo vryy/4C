@@ -122,7 +122,7 @@ void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::
     LINALG::Matrix<6,1>& structural_tensor
 )
 {
-  const DRT::UTILS::IntegrationPoints1D gausspoints(DRT::UTILS::intrule_line_32point);
+  const DRT::UTILS::IntegrationPoints1D gausspoints(DRT::UTILS::intrule_line_50point);
   LINALG::Matrix<numbgp,twice> rho;
 
   // constants for distribution around fiber_vector
@@ -136,11 +136,11 @@ void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::
 
   // aux mean direction of fiber
   // we evaluate the structural tensor with this mean direction.
-  double theta_aux = acos(gausspoints.qxg[31][0]);
+  double theta_aux = acos(gausspoints.qxg[49][0]);
   LINALG::Matrix<3,1> aux_fiber_vector;
   aux_fiber_vector(0) = sin(theta_aux);
   aux_fiber_vector(1) = 0.0;
-  aux_fiber_vector(2) = gausspoints.qxg[31][0]; // = cos(theta_aux)
+  aux_fiber_vector(2) = gausspoints.qxg[49][0]; // = cos(theta_aux)
 
   // gauss integration over sphere
   // see Atkinson 1982
