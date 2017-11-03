@@ -54,12 +54,15 @@ Interface class for materials of (visco)elasthyper toolbox.
 #include "visco_coupmyocard.H"
 #include "visco_isoratedep.H"
 #include "visco_genmax.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_lib/drt_linedefinition.H"
 #include "elast_anisoactivestress_evolution.H"
 #include "visco_generalizedgenmax.H"
 #include "elast_couptransverselyisotropic.H"
+#include "elast_aniso_structuraltensor_strategy.H"
+
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_linedefinition.H"
+#include "../drt_mat/matpar_bundle.H"
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -78,9 +81,23 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
   // retrieve validated input line of material ID in question
   Teuchos::RCP<MAT::PAR::Material> curmat = DRT::Problem::Instance(probinst)->Materials()->ById(matnum);
 
+  // construct structural tensor strategy for anisotropic materials
+  switch (curmat->Type())
+  {
+  case INPAR::MAT::mes_isoanisoexpo:
+  case INPAR::MAT::mes_coupanisoexpo:
+  case INPAR::MAT::mes_coupanisoexpoactive:
+  case INPAR::MAT::mes_coupanisoexpotwocoup:
+  case INPAR::MAT::mes_coupanisoneohooke:
+  case INPAR::MAT::mes_coupanisopow:
+  case INPAR::MAT::mes_coupanisoneohooke_varprop:
+  {
 
-  // check what was read
-  //std::cout << *curmat << std::endl;
+    break;
+  }
+  default:
+    break;
+  }
 
 
   switch (curmat->Type())
@@ -423,24 +440,6 @@ void MAT::ELASTIC::Summand::Unpack(const std::vector<char>& data)
 {
   return;
 };
-
-/*----------------------------------------------------------------------*
- *
- * Function for computing the structural tensor for anisotropic materials
- * via a dyadic product of the current fiber direction
- *
- *----------------------------------------------------------------------*/
-void MAT::ELASTIC::Summand::SetupStructuralTensor(
-    LINALG::Matrix<3,1>  &fiber_vector,
-    LINALG::Matrix<6,1>  &structural_tensor
-)
-{
-  for (int i = 0; i < 3; ++i)
-    structural_tensor(i) = fiber_vector(i)*fiber_vector(i);
-  structural_tensor(3) = fiber_vector(0)*fiber_vector(1);
-  structural_tensor(4) = fiber_vector(1)*fiber_vector(2);
-  structural_tensor(5) = fiber_vector(0)*fiber_vector(2);
-}
 
 /*----------------------------------------------------------------------*
  * Function which reads in the given fiber value due to the

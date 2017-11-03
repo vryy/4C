@@ -4,9 +4,6 @@
 // http://www.lnm.mw.tum.de
 // 089 - 289-15264
 //
-==================================================================
-General Data File BACI
-==================================================================
 -----------------------------------------------------------------------TITLE
 One way electromechanics. Here only solid is calculated. The ssi problem
 is solved only by reading the result of the HDG scatra simulation
@@ -16,30 +13,6 @@ Maintainer: J. Hoermann
 //ELEMENTS                      4153
 //NODES                         928
 DIM                             3
---------------------------------------------------------------DISCRETISATION
-NUMAIRWAYSDIS                   0
-NUMALEDIS                       0
-NUMARTNETDIS                    0
-NUMFLUIDDIS                     0
-NUMSTRUCDIS                     1
-NUMTHERMDIS                     0
---------------------------------------------------------------------------IO
-FILESTEPS                       5
-FLUID_SOL                       No
-FLUID_STRESS                    No
-FLUID_VIS                       No
-FLUID_WALL_SHEAR_STRESS         No
-OUTPUT_BIN                      Yes
-STDOUTEVRY                      1
-STRUCT_DISP                     Yes
-STRUCT_PLASTIC_STRAIN           No
-STRUCT_SE                       No
-STRUCT_STRAIN                   GL
-STRUCT_STRESS                   Cauchy
-STRUCT_SURFACTANT               No
-THERM_HEATFLUX                  None
-THERM_TEMPERATURE               No
-THERM_TEMPGRAD                  None
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure_Scalar_Interaction
 RESTART                         0
@@ -49,52 +22,28 @@ SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-ADAPTCONV                       no
-ADAPTCONV_BETTER                0.1
-CONTROLNODE                     -1 -1 -1
-CONTROLTYPE                     load
 DAMPING                         Rayleigh
-DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta
 INT_STRATEGY                    Old
 ITERNORM                        Inf
 K_DAMP                          0.5
 LINEAR_SOLVER                   1
-LOADLIN                         no
-LUMPMASS                        No
 MAXITER                         20
 MAXTIME                         1
-MINITER                         0
 MODIFIEDEXPLEULER               Yes
 M_DAMP                          0.0
 NLNSOL                          fullnewton
-NORMCOMBI_DISPPRES              And
-NORMCOMBI_RESFDISP              And
-NORMCOMBI_RESFINCO              And
-NORM_DISP                       Abs
-NORM_INCO                       Abs
-NORM_PRES                       Abs
-NORM_RESF                       Abs
 NUMSTEP                         10000000
 PREDICT                         ConstDisVelAcc
-PRESTRESS                       none
-PRESTRESSTIME                   0
 PTCDT                           0.1
-RESEVRYERGY                     0
 RESTARTEVRY                     1
 RESULTSEVRY                     1
-STC_LAYER                       1
-STC_SCALING                     no
 TIMESTEP                        0.1
 TOLCONSTR                       1e-03
 TOLDISP                         1e-03
 TOLINCO                         1e-03
 TOLPRE                          1e-03
 TOLRES                          1e-05
-UZAWAALGO                       direct
-UZAWAMAXITER                    50
-UZAWAPARAM                      1
-UZAWATOL                        1e-03
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
@@ -140,10 +89,11 @@ SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 101
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 10 20 DENS 0.001
 MAT 10 ELAST_CoupMooneyRivlin C1 1.0E-2 C2 0.0 C3 1.0E1
-MAT 20 ELAST_AnisoActiveStress_Evolution SIGMA 1.0E-1 TAUC0 0.0 MAX_ACTIVATION 0.02 MIN_ACTIVATION -0.03 SOURCE_ACTIVATION -1 ACTIVATION_THRES 1.0
+MAT 20 ELAST_AnisoActiveStress_Evolution SIGMA 1.0E-1 TAUC0 0.0 MAX_ACTIVATION 0.02 MIN_ACTIVATION -0.03 SOURCE_ACTIVATION -1 ACTIVATION_THRES 1.0 STR_TENS_ID 100
 MAT 101 MAT_myocard DIFF1 0.03410 DIFF2 0.00314 DIFF3 0.00314 PERTUBATION_DERIV 1e-6 MODEL MV TISSUE M TIME_SCALE 1.0
 MAT 102 MAT_myocard DIFF1 0.03410 DIFF2 0.00314 DIFF3 0.00314 PERTUBATION_DERIV 1e-6 MODEL TNNP TISSUE M TIME_SCALE 1.0
 MAT 103 MAT_myocard DIFF1 0.03410 DIFF2 0.00314 DIFF3 0.00314 PERTUBATION_DERIV 1e-6 MODEL FHN TISSUE M TIME_SCALE 1.0
+MAT 100 ELAST_StructuralTensor STRATEGY Standard
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION (0.5*tanh((t)/0.01)+0.5)*tanh((t)/0.1)*exp(-(((t)/500.0)^10))
 ----------------------------------------------------------------------FUNCT2

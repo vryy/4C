@@ -1,9 +1,5 @@
 // Maintainer: Michael Hiermeier
-==================================================================
-                  General Data File BACI
-==================================================================
 -------------------------------------------------------------TITLE
-created by pre_exodus
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    1
 //NODES       8
@@ -12,50 +8,18 @@ DIM           3
 NUMSTRUCDIS                     1
 --------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
-RESTART                         0
-RESTARTTIME                     -1
-SHAPEFCT                        Polynomial
------------------------------------------------------------------IO
-OUTPUT_GMSH                     No
-OUTPUT_ROT                      No
-OUTPUT_SPRING                   No
-OUTPUT_BIN                      yes
-OUTPUT_EVERY_ITER               no
-OEI_FILE_COUNTER                0
-STRUCT_DISP                     Yes
-STRUCT_VEL_ACC                  No
-STRUCT_SE                       No
-STRUCT_STRESS                   cauchy
-STRUCT_COUPLING_STRESS          No
-STRUCT_STRAIN                   ea
-STRUCT_PLASTIC_STRAIN           No
-STRUCT_SURFACTANT               No
-STRUCT_JACOBIAN_MATLAB          No
-FILESTEPS                       1000
-WRITE_TO_SCREEN                 Yes
-WRITE_TO_FILE                   No
-LIMIT_OUTP_TO_PROC              0
-VERBOSITY                       verbose
-RESTARTWALLTIMEINTERVAL         -1
-RESTARTEVRY                     -1
 -------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1
-RESEVRYERGY                     0
 RESTARTEVRY                     1
 TIMESTEP                        1.0
 NUMSTEP                         1
-TIMEINIT                        0
 MAXTIME                         1.0
 STC_SCALING                     no
 STC_LAYER                       1
 NLNSOL                          fullnewton
 MATERIALTANGENT                 analytical
-CONTROLNODE                     -1 -1 -1
-LOADLIN                         No
-MASSLIN                         No
-NEGLECTINERTIA                  No
 PREDICT                         TangDis
 LINEAR_SOLVER                   1
 -----------------------------------------------------------SOLVER 1
@@ -108,7 +72,8 @@ Status Test Check Type          = Complete
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 2 3 DENS 0.1
 MAT 2 ELAST_CoupLogNeoHooke MODE Lame C1 3937.007874 C2 2992.775691      // C1 = mue, C2 = lambda
-MAT 3 ELAST_CoupTransverselyIsotropic ALPHA -1562.992126 BETA 374.653717 GAMMA 19425.41877 ANGLE 0
+MAT 3 ELAST_CoupTransverselyIsotropic ALPHA -1562.992126 BETA 374.653717 GAMMA 19425.41877 ANGLE 0 STR_TENS_ID 100
+MAT 100 ELAST_StructuralTensor STRATEGY Standard
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION ramp
 VARIABLE 0 NAME ramp TYPE linearinterpolation NUMPOINTS 2 TIMES 0.0 1.0 VALUES 0 20.0

@@ -13,6 +13,8 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "elast_coupanisoexpotwocoup.H"
+#include "elast_aniso_structuraltensor_strategy.H"
+
 #include "../drt_mat/matpar_material.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -23,7 +25,7 @@
 MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup::CoupAnisoExpoTwoCoup(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
-: Parameter(matdata),
+: ParameterAniso(matdata),
   A4_(matdata->GetDouble("A4")),
   B4_(matdata->GetDouble("B4")),
   A6_(matdata->GetDouble("A6")),
@@ -112,8 +114,8 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::Setup(DRT::INPUT::LineDefinition* lined
       // Read in of fiber data and setting fiber data
       ReadFiber(linedef, "FIBER1", a1_);
       ReadFiber(linedef, "FIBER2", a2_);
-      SetupStructuralTensor(a1_,A1_);
-      SetupStructuralTensor(a2_,A2_);
+      params_->StructuralTensorStrategy()->SetupStructuralTensor(a1_,A1_);
+      params_->StructuralTensorStrategy()->SetupStructuralTensor(a2_,A2_);
       A1A2_.MultiplyNT(a1_,a2_);
     }
 
@@ -264,7 +266,7 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::SetFiberVecs(
   a2_0.Multiply(idefgrd,ca2);
   a2_.Update(1./a2_0.Norm2(),a2_0);
 
-  SetupStructuralTensor(a1_,A1_);
-  SetupStructuralTensor(a2_,A2_);
+  params_->StructuralTensorStrategy()->SetupStructuralTensor(a1_,A1_);
+  params_->StructuralTensorStrategy()->SetupStructuralTensor(a2_,A2_);
   A1A2_.MultiplyNT(a1_,a2_);
 }

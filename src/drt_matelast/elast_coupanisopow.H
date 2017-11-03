@@ -32,7 +32,7 @@ namespace ELASTIC
     ///
     /// <h3>Input line</h3>
     /// MAT 1 CoupAnisoPow C 1.0 D 2.0 [ GAMMA 35.0 INIT 0 ADAPT_ANGLE 0]
-    class CoupAnisoPow : public MAT::PAR::Parameter
+    class CoupAnisoPow : public MAT::PAR::ParameterAniso
     {
     public:
 

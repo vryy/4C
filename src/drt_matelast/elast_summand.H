@@ -584,11 +584,6 @@ namespace MAT
         return;  // do nothing
       };
 
-      void SetupStructuralTensor(
-          LINALG::Matrix<3,1>& fiber_vector,
-          LINALG::Matrix<6,1>& structural_tensor
-      );
-
       /// Read FIBERn
       void ReadFiber(
           DRT::INPUT::LineDefinition* linedef,

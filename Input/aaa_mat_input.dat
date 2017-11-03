@@ -6,19 +6,10 @@ DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 RESTART                         0
---------------------------------------------------------------DISCRETISATION
-NUMFLUIDDIS                     0
-NUMSTRUCDIS                     1
-NUMALEDIS                       0
-NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Cauchy
-FLUID_SOL                       No
-FLUID_STRESS                    No
-FLUID_VIS                       No
-FILESTEPS                       1000
 ------------------------------------------------------------PATIENT SPECIFIC
 PATSPEC                         yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
@@ -26,7 +17,7 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      OneStepTheta
 RESULTSEVRY                     1
 RESTARTEVRY                     100
-NLNSOL                          fullnewton                      // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          fullnewton // fullnewton modnewton matfreenewton nlncg ptc
 TIMESTEP                        0.1
 NUMSTEP                         100000
 MAXTIME                         0.2
@@ -41,14 +32,11 @@ NORMCOMBI_RESFDISP              And
 MAXITER                         20
 LOADLIN                         Yes
 RESEVRYERGY                     1
-
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA 1.0 //implicit backward Euler
-
 ---------------------------------------------------------------FLUID DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC
 -----------------------------------------------------------------TSI DYNAMIC
-
 --------------------------------------------------------------------SOLVER 1
 NAME                            CheapSIMPLEPredict
 SOLVER Aztec_MSR //Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -91,19 +79,16 @@ MAT 22 ELAST_IsoVolHUDependentNeoHooke ALPHA_MAX 8.925E-3 CT_MIN 350.0 CT_MAX 50
 MAT 1 MAT_ScDepInterp IDMATZEROSC 15 IDMATUNITSC 10
 MAT 10 MAT_ElastHyper NUMMAT 4 MATIDS 11 12 13 14 DENS 3.0e-6
 MAT 11 ELAST_IsoNeoHooke MUE 21.72e-6
-MAT 12 ELAST_CoupAnisoExpo K1 29.89e-6 K2 2.87 GAMMA 50.4 K1COMP 0.0 K2COMP 1.0 INIT 1 ADAPT_ANGLE No
-MAT 13 ELAST_CoupAnisoExpo K1 29.89e-6 K2 2.87 GAMMA -50.4 K1COMP 0.0 K2COMP 1.0 INIT 1 ADAPT_ANGLE No
+MAT 12 ELAST_CoupAnisoExpo K1 29.89e-6 K2 2.87 GAMMA 50.4 K1COMP 0.0 K2COMP 1.0 INIT 1 ADAPT_ANGLE No STR_TENS_ID 20
+MAT 13 ELAST_CoupAnisoExpo K1 29.89e-6 K2 2.87 GAMMA -50.4 K1COMP 0.0 K2COMP 1.0 INIT 1 ADAPT_ANGLE No STR_TENS_ID 20
 MAT 14 ELAST_VolOgden KAPPA 29.89e-5 BETA -2.0 //nu=0.45
 MAT 15 MAT_Struct_AAANeoHooke YOUNG 2.088E-3 BETA 1.881E-3 NUE 0.45 DENS 3E-6
-
-
-
+MAT 20 ELAST_StructuralTensor STRATEGY Standard
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
 NDSURF                          4
 NDVOL                           2
-
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 orthopressure Mid

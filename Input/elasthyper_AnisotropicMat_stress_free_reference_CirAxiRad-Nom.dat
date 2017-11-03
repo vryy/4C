@@ -3,63 +3,21 @@
 // XXX
 // XXX
 //
-==================================================================
-General Data File BACI
-==================================================================
 -----------------------------------------------------------------------TITLE
-created by pre_exodus
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      8
 //NODES                         27
 DIM                             3
---------------------------------------------------------------DISCRETISATION
-NUMFLUIDDIS                     1
-NUMSTRUCDIS                     1
-NUMALEDIS                       1
-NUMARTNETDIS                    1
-NUMTHERMDIS                     1
-NUMAIRWAYSDIS                   1
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 RESTART                         0
-SHAPEFCT                        Polynomial
-RANDSEED                        -1
---------------------------------------------------------------------------IO
-OUTPUT_BIN                      yes
-STRUCT_DISP                     Yes
-STRUCT_VEL_ACC                  No
-STRUCT_SE                       No
-STRUCT_STRESS                   Cauchy
-STRUCT_COUPLING_STRESS          No
-STRUCT_STRAIN                   GL
-STRUCT_PLASTIC_STRAIN           No
-STRUCT_SURFACTANT               No
-FLUID_SOL                       Yes
-FLUID_STRESS                    No
-FLUID_WALL_SHEAR_STRESS         No
-FLUID_VIS                       No
-THERM_TEMPERATURE               No
-THERM_HEATFLUX                  None
-THERM_TEMPGRAD                  None
-FILESTEPS                       1000
-STDOUTEVRY                      1
-WRITE_TO_SCREEN                 Yes
-WRITE_TO_FILE                   No
-PREFIX_GROUP_ID                 No
-LIMIT_OUTP_TO_PROC              -1
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      GenAlpha
-PRESTRESS                       none
-PRESTRESSTIME                   0
 RESULTSEVRY                     1
-RESEVRYERGY                     0
 RESTARTEVRY                     1
 TIMESTEP                        0.01
 NUMSTEP                         1
 MAXTIME                         5
-DAMPING                         No
-M_DAMP                          -1
-K_DAMP                          -1
 TOLDISP                         1e-10
 NORM_DISP                       Abs
 TOLRES                          1e-08
@@ -71,28 +29,14 @@ NORM_INCO                       Abs
 NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFINCO              And
 NORMCOMBI_RESFDISP              And
-STC_SCALING                     no
-STC_LAYER                       1
-PTCDT                           0.1
 TOLCONSTR                       1e-08
 MAXITER                         50
 MINITER                         0
 ITERNORM                        Inf
-DIVERCONT                       stop
 NLNSOL                          fullnewton
-LOADLIN                         no
-MASSLIN                         no
 PREDICT                         ConstDis
-UZAWAPARAM                      1
-UZAWATOL                        1e-08
-UZAWAMAXITER                    50
-UZAWAALGO                       direct
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
-LUMPMASS                        No
 MODIFIEDEXPLEULER               Yes
 LINEAR_SOLVER                   1
-YOUNG_IS_TEMP_DEPENDENT         No
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 BETA                            0.25
@@ -103,19 +47,20 @@ ALPHA_F                         0.5
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 101 DENS 0.001
-MAT 101 ELAST_CoupAnisoPow K 1.0 D1 1.0 D2 2.0
+MAT 101 ELAST_CoupAnisoPow K 1.0 D1 1.0 D2 2.0 STR_TENS_ID 100
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 102 DENS 0.001
-MAT 102 ELAST_CoupAnisoExpo K1 1.0 K2 1.0 GAMMA 1.0 K1COMP 1.0 K2COMP 1.0 INIT 1 ADAPT_ANGLE No
+MAT 102 ELAST_CoupAnisoExpo K1 1.0 K2 1.0 GAMMA 1.0 K1COMP 1.0 K2COMP 1.0 INIT 1 ADAPT_ANGLE No STR_TENS_ID 100
 MAT 3 MAT_ElastHyper NUMMAT 1 MATIDS 103 DENS 0.001
-MAT 103 ELAST_CoupAnisoExpoTwoCoup A4 1.0 B4 1.0 A6 1.0 B6 1.0 A8 1.0 B8 1.0 GAMMA 1.0 INIT 1 FIB_COMP Yes ADAPT_ANGLE No
+MAT 103 ELAST_CoupAnisoExpoTwoCoup A4 1.0 B4 1.0 A6 1.0 B6 1.0 A8 1.0 B8 1.0 GAMMA 1.0 INIT 1 FIB_COMP Yes ADAPT_ANGLE No STR_TENS_ID 100
 MAT 4 MAT_ElastHyper NUMMAT 1 MATIDS 104 DENS 0.001
-MAT 104 ELAST_IsoAnisoExpo K1 1.0 K2 1.0 GAMMA 1.0 K1COMP 1.0 K2COMP 1.0 INIT 1 ADAPT_ANGLE No
+MAT 104 ELAST_IsoAnisoExpo K1 1.0 K2 1.0 GAMMA 1.0 K1COMP 1.0 K2COMP 1.0 INIT 1 ADAPT_ANGLE No STR_TENS_ID 100
 MAT 5 MAT_ElastHyper NUMMAT 1 MATIDS 105 DENS 0.001
-MAT 105 ELAST_CoupAnisoPow K 1.0 D1 0.5 D2 2.0
+MAT 105 ELAST_CoupAnisoPow K 1.0 D1 0.5 D2 2.0 STR_TENS_ID 100
 MAT 6 MAT_ElastHyper NUMMAT 1 MATIDS 106 DENS 0.001
-MAT 106 ELAST_CoupAnisoPow K 1.0 D1 1.0 D2 2.0
+MAT 106 ELAST_CoupAnisoPow K 1.0 D1 1.0 D2 2.0 STR_TENS_ID 100
 MAT 7 MAT_ElastHyper NUMMAT 1 MATIDS 107 DENS 0.001
-MAT 107 ELAST_CoupAnisoPow K 1.0 D1 1.0 D2 2.0
+MAT 107 ELAST_CoupAnisoPow K 1.0 D1 1.0 D2 2.0 STR_TENS_ID 100
+MAT 100 ELAST_StructuralTensor STRATEGY Standard
 ----------------------------------------------------------------------FUNCT1
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3

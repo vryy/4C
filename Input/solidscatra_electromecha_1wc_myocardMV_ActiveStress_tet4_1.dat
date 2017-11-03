@@ -4,9 +4,6 @@
 // http://www.lnm.mw.tum.de
 // 089 - 289-15264
 //
-==================================================================
-General Data File BACI
-==================================================================
 -----------------------------------------------------------------------TITLE
 One way electromechanics. Here only scatra is calculated. The ssi problem
 is afterwards solved only by reading the result of this scatra simulation
@@ -16,34 +13,8 @@ Maintainer: J. Hoermann
 //ELEMENTS                      4153
 //NODES                         928
 DIM                             3
---------------------------------------------------------------DISCRETISATION
-NUMAIRWAYSDIS                   0
-NUMALEDIS                       0
-NUMARTNETDIS                    0
-NUMFLUIDDIS                     0
-NUMSTRUCDIS                     1
-NUMTHERMDIS                     0
---------------------------------------------------------------------------IO
-FILESTEPS                       5
-FLUID_SOL                       No
-FLUID_STRESS                    No
-FLUID_VIS                       No
-FLUID_WALL_SHEAR_STRESS         No
-OUTPUT_BIN                      Yes
-STDOUTEVRY                      1
-STRUCT_DISP                     Yes
-STRUCT_PLASTIC_STRAIN           No
-STRUCT_SE                       No
-STRUCT_STRAIN                   GL
-STRUCT_STRESS                   Cauchy
-STRUCT_SURFACTANT               No
-THERM_HEATFLUX                  None
-THERM_TEMPERATURE               No
-THERM_TEMPGRAD                  None
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Cardiac_Monodomain
-RESTART                         0
-SHAPEFCT                        Polynomial
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2

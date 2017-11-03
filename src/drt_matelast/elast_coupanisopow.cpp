@@ -13,6 +13,8 @@
 /*-----------------------------------------------------------*/
 /* headers */
 #include "elast_coupanisopow.H"
+#include "elast_aniso_structuraltensor_strategy.H"
+
 #include "../drt_mat/matpar_material.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -23,7 +25,7 @@
 MAT::ELASTIC::PAR::CoupAnisoPow::CoupAnisoPow(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
-: Parameter(matdata),
+: ParameterAniso(matdata),
   k_(matdata->GetDouble("K")),
   d1_(matdata->GetDouble("D1")),
   d2_(matdata->GetDouble("D2")),
@@ -104,7 +106,7 @@ void MAT::ELASTIC::CoupAnisoPow::Setup(DRT::INPUT::LineDefinition* linedef)
     {
       // Read in of data
       ReadFiber(linedef, fibername, a_);
-      SetupStructuralTensor(a_,A_);
+      params_->StructuralTensorStrategy()->SetupStructuralTensor(a_,A_);
     }
 
     // error path
@@ -219,5 +221,5 @@ void MAT::ELASTIC::CoupAnisoPow::SetFiberVecs(
   a_0.Multiply(idefgrd,ca);
   a_.Update(1./a_0.Norm2(),a_0);
 
-  SetupStructuralTensor(a_,A_);
+  params_->StructuralTensorStrategy()->SetupStructuralTensor(a_,A_);
 }

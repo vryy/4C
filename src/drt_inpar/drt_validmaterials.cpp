@@ -1643,6 +1643,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"GAMMA","angle");
     AddNamedReal(m,"K1COMP","linear constant");
     AddNamedReal(m,"K2COMP","exponential constant");
+    AddNamedInt(m,"STR_TENS_ID","MAT ID for definition of Structural Tensor");
     AddNamedInt(m,"INIT","initialization modus for fiber alignment", 1, true);
     AddNamedBool(m,"ADAPT_ANGLE","adapt angle during remodeling", false, true);
     AddNamedReal(m,"S","maximum contractile stress");
@@ -1666,6 +1667,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"GAMMA","angle");
     AddNamedReal(m,"K1COMP","linear constant");
     AddNamedReal(m,"K2COMP","exponential constant");
+    AddNamedInt(m,"STR_TENS_ID","MAT ID for definition of Structural Tensor");
     AddNamedInt(m,"INIT","initialization modus for fiber alignment", 1, true);
     AddNamedBool(m,"ADAPT_ANGLE","adapt angle during remodeling", false, true);
 
@@ -1685,6 +1687,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"D2","exponential constant for system");
     AddNamedReal(m,"ACTIVETHRES","Deformation threshold for activating fibers. Default:"
         " 1.0 (off at compression); If 0.0 (always active)",1.0,true);
+    AddNamedInt(m,"STR_TENS_ID","MAT ID for definition of Structural Tensor");
     AddNamedInt(m,"FIBER","Number of the fiber family contained in the element",1, true);
     AddNamedReal(m,"GAMMA","angle",0.0,true);
     AddNamedInt(m,"INIT","initialization modus for fiber alignment", 1, true);
@@ -1708,6 +1711,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"A8","linear anisotropic constant for fiber 1 relating fiber 2");
     AddNamedReal(m,"B8","exponential anisotropic constant for fiber 1 relating fiber 2");
     AddNamedReal(m,"GAMMA","angle");
+    AddNamedInt(m,"STR_TENS_ID","MAT ID for definition of Structural Tensor");
     AddNamedInt(m,"INIT","initialization modus for fiber alignment", 1, true);
     AddNamedBool(m,"FIB_COMP","fibers support compression: yes (true) or no (false)", true, true);
     AddNamedBool(m,"ADAPT_ANGLE","adapt angle during remodeling", false, true);
@@ -1725,6 +1729,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AddNamedReal(m,"C","linear constant");
     AddNamedReal(m,"GAMMA","angle");
+    AddNamedInt(m,"STR_TENS_ID","MAT ID for definition of Structural Tensor");
     AddNamedInt(m,"INIT","initialization modus for fiber alignment", 1, true);
     AddNamedBool(m,"ADAPT_ANGLE","adapt angle during remodeling", false, true);
 
@@ -1750,6 +1755,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"LAMBDA_UPPER","upper fiber stretch for Frank-Starling law",1.0,true);
     AddNamedReal(m,"GAMMA","azimuth angle",0.0,true);
     AddNamedReal(m,"THETA","polar angle",0.0,true);
+    AddNamedInt(m,"STR_TENS_ID","MAT ID for definition of Structural Tensor");
     AddNamedInt(m,"INIT","initialization mode for fiber alignment", 1, true);
     AddNamedBool(m,"ADAPT_ANGLE","adapt angle during remodeling", false, true);
 
@@ -1769,6 +1775,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedInt(m,"SOURCE_ACTIVATION","Where the activation comes from: 0=scatra , >0 Id for FUNCT");
     AddNamedReal(m,"GAMMA","azimuth angle",0.0,true);
     AddNamedReal(m,"THETA","polar angle",0.0,true);
+    AddNamedInt(m,"STR_TENS_ID","MAT ID for definition of Structural Tensor");
     AddNamedInt(m,"INIT","initialization mode for fiber alignment", 1, true);
     AddNamedBool(m,"ADAPT_ANGLE","adapt angle during remodeling", false, true);
 
@@ -1788,11 +1795,37 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"GAMMA","angle");
     AddNamedReal(m,"K1COMP","linear constant");
     AddNamedReal(m,"K2COMP","exponential constant");
+    AddNamedInt(m,"STR_TENS_ID","MAT ID for definition of Structural Tensor");
     AddNamedInt(m,"INIT","initialization modus for fiber alignment", 1, true);
     AddNamedBool(m,"ADAPT_ANGLE","adapt angle during remodeling", false, true);
 
     AppendMaterialDefinition(matlist,m);
   }
+
+  /*--------------------------------------------------------------------*/
+  // structural tensor
+    {
+      Teuchos::RCP<MaterialDefinition> m
+        = Teuchos::rcp(new MaterialDefinition("ELAST_StructuralTensor",
+                                              "Parameter for structural tensor strategy in anisotropic materials",
+                                              INPAR::MAT::mes_structuraltensorstratgy));
+
+      AddNamedString(
+          m,
+          "STRATEGY","Strategy for evaluation of structural tensor",
+          "Standard");
+      AddNamedString(
+          m,
+          "DISTR","Type of distribution function around mean direction",
+          "none",
+          true);
+      AddNamedReal(m,"C1","constant 1 for distribution function",0.0,true);
+      AddNamedReal(m,"C2","constant 2 for distribution function",0.0,true);
+      AddNamedReal(m,"C3","constant 3 for distribution function",0.0,true);
+      AddNamedReal(m,"C4","constant 4 for distribution function",0.0,true);
+
+      AppendMaterialDefinition(matlist,m);
+    }
 
   /*--------------------------------------------------------------------*/
   // transversely isotropic material
@@ -1807,6 +1840,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"BETA","2-nd constant");
     AddNamedReal(m,"GAMMA","3-rd constant");
     AddNamedReal(m,"ANGLE","fiber angle");
+    AddNamedInt(m,"STR_TENS_ID","MAT ID for definition of Structural Tensor");
     AddNamedInt(m,"FIBER","exponential constant", 1, true);
     AddNamedInt(m,"INIT","initialization modus for fiber alignment", 1, true);
 

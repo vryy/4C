@@ -2,172 +2,36 @@
 // Maintainer: Fabian Bräu
 // braeu@lnm.mw.tum.de
 //
-==================================================================
-                  General Data File BACI
-==================================================================
 -------------------------------------------------------------TITLE
-created by pre_exodus
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    4
 //NODES       9
 DIM           3
------------------------------------------------------DISCRETISATION
-NUMFLUIDDIS                     1
-NUMSTRUCDIS                     1
-NUMALEDIS                       1
-NUMARTNETDIS                    1
-NUMTHERMDIS                     1
-NUMAIRWAYSDIS                   1
 --------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
-RESTART                         0
-RESTARTTIME                     -1
-SHAPEFCT                        Polynomial
-RANDSEED                        -1
------------------------------------------------------------------IO
-OUTPUT_GMSH                     No
-OUTPUT_BIN                      yes
-OUTPUT_EVERY_ITER               no
-OEI_FILE_COUNTER                0
-STRUCT_DISP                     Yes
-STRUCT_VEL_ACC                  No
-STRUCT_SE                       No
-STRUCT_STRESS                   Cauchy
-STRUCT_COUPLING_STRESS          No
-STRUCT_STRAIN                   GL
-STRUCT_PLASTIC_STRAIN           No
-STRUCT_SURFACTANT               No
-FLUID_SOL                       Yes
-FLUID_STRESS                    No
-FLUID_WALL_SHEAR_STRESS         No
-FLUID_ELEDATA_EVRY_STEP         No
-FLUID_NODEDATA_FIRST_STEP       No
-FLUID_VIS                       No
-THERM_TEMPERATURE               No
-THERM_HEATFLUX                  None
-THERM_TEMPGRAD                  None
-FILESTEPS                       1000
-STDOUTEVRY                      1
-WRITE_TO_SCREEN                 Yes
-WRITE_TO_FILE                   No
-PREFIX_GROUP_ID                 No
-LIMIT_OUTP_TO_PROC              -1
 -------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Old
 DYNAMICTYP                      Statics
-PRESTRESS                       none
-PRESTRESSTIME                   0
 RESULTSEVRY                     1
-RESEVRYERGY                     0
 RESTARTEVRY                     1
 TIMESTEP                        0.1
 NUMSTEP                         10
-TIMEINIT                        0
 MAXTIME                         5
-DAMPING                         No
-M_DAMP                          -1
-K_DAMP                          -1
 TOLDISP                         1e-10
 NORM_DISP                       Abs
 TOLRES                          1e-08
 NORM_RESF                       Abs
-TOLPRE                          1e-08
-NORM_PRES                       Abs
-TOLINCO                         1e-08
-NORM_INCO                       Abs
-NORMCOMBI_DISPPRES              And
-NORMCOMBI_RESFINCO              And
-NORMCOMBI_RESFDISP              And
-STC_SCALING                     no
-STC_LAYER                       1
-PTCDT                           0.1
-TOLCONSTR                       1e-08
 MAXITER                         50
-MINITER                         0
-ITERNORM                        L2
-DIVERCONT                       stop
 NLNSOL                          fullnewton
-LSMAXITER                       30
-ALPHA_LS                        0.5
-SIGMA_LS                        0.0001
-MATERIALTANGENT                 analytical
-CONTROLTYPE                     load
-CONTROLNODE                     -1 -1 -1
-LOADLIN                         No
-MASSLIN                         No
-PREDICT                         ConstDis
-UZAWAPARAM                      1
-UZAWATOL                        1e-08
-UZAWAMAXITER                    50
-UZAWAALGO                       direct
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
-LUMPMASS                        No
 MODIFIEDEXPLEULER               Yes
 LINEAR_SOLVER                   1
-YOUNG_IS_TEMP_DEPENDENT         No
-GEOMETRY                        full
 -----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
-AZSOLVE                         GMRES
-AZPREC                          ILU
-IFPACKOVERLAP                   0
-IFPACKGFILL                     0
-IFPACKFILL                      1
-IFPACKCOMBINE                   Add
-AZDROP                          0
-AZPOLY                          3
-AZSUB                           50
-AZCONV                          AZ_r0
-AZOUTPUT                        0
-AZREUSE                         0
-AZITER                          1000
-AZGRAPH                         0
-AZBDIAG                         0
-AZTOL                           1e-08
-AZOMEGA                         0
-DWINDTAU                        1.5
-AZSCAL                          none
-ML_PRINT                        0
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_AGG_SIZE                     27
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_DAMPCOARSE                   1
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOTIMES                     1 1 1 1 1
-ML_COARSEN                      UC
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOOTHERCOARSE               Umfpack
-MueLu_INITSMOOTHER              SGS
-SUB_SOLVER1                     -1
-SUB_SOLVER2                     -1
-MueLu_INITSMOO_SWEEPS           1
-MueLu_INITSMOO_DAMPING          1
-MueLu_MIN_AGG_SIZE              6
-MueLu_REBALANCE                 No
-MueLu_REBALANCE_NONZEROIMBALANCE 1.2
-MueLu_REBALANCE_MINROWS         1000
-MueLu_REUSE                     nothing
-BGS2X2_FLIPORDER                block0_block1_order
-BGS2X2_GLOBAL_DAMPING           1
-BGS2X2_BLOCK1_DAMPING           1
-BGS2X2_BLOCK2_DAMPING           1
-PERMUTE_SYSTEM                  none
-NON_DIAGDOMINANCE_RATIO         1
-VERBOSITY                       0
-STRATIMIKOS_XMLFILE             none
-NAME                            No_name
-SIMPLE_DAMPING                  1
-AMGNXN_TYPE                     AMG(BGS)
-AMGNXN_XML_FILE                 none
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_Membrane_ElastHyper NUMMAT 2 MATIDS 2 3 DENS 1.0
 MAT 2 ELAST_IsoNeoHooke MUE 40.0
-MAT 3 ELAST_CoupAnisoExpo K1 100.0 K2 2.0 K1COMP 1.0 K2COMP 1.0 GAMMA 0.0 INIT 1
+MAT 3 ELAST_CoupAnisoExpo K1 100.0 K2 2.0 K1COMP 1.0 K2COMP 1.0 GAMMA 0.0 INIT 1 STR_TENS_ID 100
+MAT 100 ELAST_StructuralTensor STRATEGY Standard
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 1000 VALUES 0 1 1

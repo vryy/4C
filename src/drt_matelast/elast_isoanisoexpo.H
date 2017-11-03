@@ -34,7 +34,7 @@ namespace ELASTIC
     ///
     /// <h3>Input line</h3>
     /// MAT 1 ELAST_IsoAnisoExpo K1 10.0 K2 1.0 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0 INIT 0 ADAPT_ANGLE 0
-    class IsoAnisoExpo : public MAT::PAR::Parameter
+    class IsoAnisoExpo : public MAT::PAR::ParameterAniso
     {
     public:
 
@@ -61,7 +61,6 @@ namespace ELASTIC
       int init_;
       /// adapt angle during remodeling
       int adapt_angle_;
-
       //@}
 
       /// create material instance of matching type with my parameters
@@ -137,21 +136,21 @@ namespace ELASTIC
 
     /// Add anisotropic modified stresses
     virtual void AddStressAnisoModified(
-        const LINALG::Matrix<6,1>& rcg,  ///<right Cauchy Green Tensor
-        const LINALG::Matrix<6,1>& icg,  ///< inverse of right Cauchy Green Tensor
-        LINALG::Matrix<6,6>& cmat,  ///< material stiffness matrix
-        LINALG::Matrix<6,1>& stress,  ///< 2nd PK-stress
-        double I3,   ///< third principal invariant
-        const int eleGID    ///< element GID
+        const LINALG::Matrix<6,1>& rcg, ///< right Cauchy Green Tensor
+        const LINALG::Matrix<6,1>& icg, ///< inverse of right Cauchy Green Tensor
+        LINALG::Matrix<6,6>& cmat,      ///< material stiffness matrix
+        LINALG::Matrix<6,1>& stress,    ///< 2nd PK-stress
+        double I3,                      ///< third principal invariant
+        const int eleGID                ///< element GID
         );
 
     /// retrieve coefficients of first, second and third derivative
     /// of summand with respect to anisotropic invariants
-    virtual void GetDerivativesAniso(LINALG::Matrix<2,1>& dPI_aniso,               ///< first derivative with respect to invariants
-                                     LINALG::Matrix<3,1>& ddPII_aniso,             ///< second derivative with respect to invariants
-                                     LINALG::Matrix<4,1>& dddPIII_aniso,           ///< third derivative with respect to invariants
-                                     const double I4,                              ///< fourth invariant
-                                     const int eleGID);                            ///< element GID
+    virtual void GetDerivativesAniso(LINALG::Matrix<2,1>& dPI_aniso,     ///< first derivative with respect to invariants
+                                     LINALG::Matrix<3,1>& ddPII_aniso,   ///< second derivative with respect to invariants
+                                     LINALG::Matrix<4,1>& dddPIII_aniso, ///< third derivative with respect to invariants
+                                     const double I4,                    ///< fourth invariant
+                                     const int eleGID);                  ///< element GID
 
     /// @name Access methods
     //@{
@@ -186,7 +185,7 @@ namespace ELASTIC
       return;
     };
 
-  private:
+protected:
 
     /// my material parameters
     MAT::ELASTIC::PAR::IsoAnisoExpo* params_;

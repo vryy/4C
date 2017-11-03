@@ -499,6 +499,7 @@ set(OBJS_DRT_LIB
   src/drt_lib/drt_utils_discret_evaluate.cpp
 )
 set(OBJS_DRT_MAT_LIB
+  src/drt_matelast/elast_aniso_structuraltensor_strategy.cpp
   src/drt_mat/aaa_mixedeffects.cpp
   src/drt_mat/aaagasser.cpp
   src/drt_mat/aaaneohooke.cpp
@@ -660,7 +661,6 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/biochemo_mechano_cell_activefiber.cpp
   src/drt_mat/biochemo_mechano_cell_passivefiber.cpp
   src/drt_matelast/visco_generalizedgenmax.cpp
-
 )
 
 set(OBJS_DRT_ADAPT

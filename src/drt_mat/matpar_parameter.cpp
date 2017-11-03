@@ -19,6 +19,10 @@
 #include "Teuchos_RCP.hpp"
 #include "matpar_parameter.H"
 #include "matpar_material.H"
+#include "matpar_bundle.H"
+
+#include "../drt_matelast/elast_aniso_structuraltensor_strategy.H"
+
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 
@@ -124,5 +128,39 @@ double MAT::PAR::Parameter::GetParameter(int parametername,const int EleId)
    // calculate LID here, instead of before each call              01/2017 birzle
     return (*matparams_[parametername])[matparams_[parametername]->Map().LID(EleId)];
   }
+}
+/*----------------------------------------------------------------------*/
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+MAT::PAR::ParameterAniso::ParameterAniso(
+  Teuchos::RCP<const MAT::PAR::Material> matdata
+  )
+: Parameter(matdata)
+{
+  // get MAT ID for definiton of structural tensor
+  int mat_id_structural_tensor = matdata->GetInt("STR_TENS_ID");
+  // get pointer to material
+  Teuchos::RCP<MAT::PAR::Material> mat_str_tens =
+      DRT::Problem::Instance()->Materials()->ById(mat_id_structural_tensor);
+  // construct parameter class
+  if (mat_str_tens->Parameter() == NULL)
+    mat_str_tens->SetParameter(new MAT::ELASTIC::PAR::StructuralTensorParameter(mat_str_tens));
+  MAT::ELASTIC::PAR::StructuralTensorParameter* params =
+      static_cast<MAT::ELASTIC::PAR::StructuralTensorParameter* >(mat_str_tens->Parameter());
+  // get type of strategy
+  std::string strategy = *mat_str_tens->Get<std::string>("STRATEGY");
+
+    // construct strategy
+    if(strategy == "Standard")
+      structural_tensor_strategy_ =
+          Teuchos::rcp(new MAT::ELASTIC::StructuralTensorStrategyStandard(params));
+    else if(strategy == "ByDistributionFunction")
+      structural_tensor_strategy_ =
+          Teuchos::rcp(new MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction(params));
+    else
+      dserror("Unknown type of structural tensor strategy for anisotropic material chosen.");
+
 }
 /*----------------------------------------------------------------------*/

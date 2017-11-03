@@ -5,78 +5,30 @@
 //
 // necessary defines: D_SOLID3 BINIO
 //
-==================================================================
-General Data File CCARAT
-==================================================================
 -----------------------------------------------------------------------TITLE
-testing of holzapfelcardiovascular material
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        343
 NODES                           512
 DIM                             3
 MATERIALS                       1
 NUMDF                           6
---------------------------------------------------------------DISCRETISATION
-NUMALEDIS                       1
-NUMFLUIDDIS                     1
-NUMSTRUCDIS                     1
-NUMTHERMDIS                     1
---------------------------------------------------------------------------IO
-FILESTEPS                       1000
-FLUID_SOL                       Yes
-FLUID_STRESS                    No
-FLUID_VIS                       No
-OUTPUT_BIN                      Yes
-STRUCT_DISP                     Yes
-STRUCT_STRAIN                   No
-STRUCT_STRESS                   No
-STRUCT_SURFACTANT               No
-THERM_HEATFLUX                  None
-THERM_TEMPERATURE               No
-THERM_TEMPGRAD                  None
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
-RESTART                         0
-SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
-CONTROLNODE                     -1 -1 -1
-CONTROLTYPE                     load
-DAMPING                         No
-DIVERCONT                       stop
 DYNAMICTYP                      Statics
-ITERNORM                        L2
-K_DAMP                          0.5
-LOADLIN                         no
 MAXITER                         50
 MAXTIME                         5
-MINITER                         0
-M_DAMP                          0.5
 NLNSOL                          fullnewton
-NORMCOMBI_DISPPRES              And
-NORMCOMBI_RESFDISP              And
-NORMCOMBI_RESFINCO              And
-NORM_DISP                       Abs
-NORM_INCO                       Abs
-NORM_PRES                       Abs
-NORM_RESF                       Abs
 NUMSTEP                         1
 PREDICT                         ConstDis
 RESULTSEVRY                     1
-RESEVRYERGY                     0
-RESTARTEVRY                     0
 TIMESTEP                        0.5
 TOLCONSTR                       1e-08
 TOLDISP                         1e-10
 TOLINCO                         1e-08
 TOLPRE                          1e-08
 TOLRES                          1e-08
-UZAWAALGO                       direct
-UZAWAMAXITER                    50
-UZAWAPARAM                      1
-UZAWATOL                        1e-08
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
@@ -84,8 +36,9 @@ SOLVER                          UMFPACK
 MAT 1 MAT_ElastHyper NUMMAT 4 MATIDS 2 3 5 6 DENS 1.0
 MAT 2 ELAST_IsoNeoHooke MUE 0.385
 MAT 3 ELAST_VolSussmanBathe KAPPA 0.833
-MAT 5 ELAST_IsoAnisoExpo K1 1.0 K2 1.0 GAMMA 35.0 K1COMP 0.0 K2COMP 13.2 INIT 1 ADAPT_ANGLE No
-MAT 6 ELAST_IsoAnisoExpo K1 1.0 K2 1.0 GAMMA -35.0 K1COMP 0.0 K2COMP 13.2 INIT 1 ADAPT_ANGLE No
+MAT 5 ELAST_IsoAnisoExpo K1 1.0 K2 1.0 GAMMA 35.0 K1COMP 0.0 K2COMP 13.2 INIT 1 ADAPT_ANGLE No STR_TENS_ID 100
+MAT 6 ELAST_IsoAnisoExpo K1 1.0 K2 1.0 GAMMA -35.0 K1COMP 0.0 K2COMP 13.2 INIT 1 ADAPT_ANGLE No STR_TENS_ID 100
+MAT 100 ELAST_StructuralTensor STRATEGY Standard
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 114 QUANTITY dispx VALUE -8.9946411755475297e-02 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 114 QUANTITY dispy VALUE 1.6040758734010971e-01 TOLERANCE 1e-6

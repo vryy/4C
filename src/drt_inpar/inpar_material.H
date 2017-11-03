@@ -196,7 +196,8 @@ namespace INPAR
       mes_vologden,                            ///< Ogden volumetric part of the  hyperelastic potential summand
       mes_volpenalty,                          ///< Penalty volumetric part of the  hyperelastic potential summand
       mes_volsussmanbathe,                     ///< volumetric SussmanBathe hyperelastic potential summand
-      mes_volpow                               ///< volumetric power law hyperelastic potential summand
+      mes_volpow,                              ///< volumetric power law hyperelastic potential summand
+      mes_structuraltensorstratgy              ///< structural tensor in anisotropic materials
     };
 
     /*----------------------------------------------------------------------*

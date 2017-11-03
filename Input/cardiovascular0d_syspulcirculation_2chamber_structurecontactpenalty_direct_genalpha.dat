@@ -2,11 +2,7 @@
 // hirschvogel@mhpc.mw.tum.de
 // http://www.mhpc.mw.tum.de
 // 089 - 289-10363
-==================================================================
-General Data File BACI
-==================================================================
 -------------------------------------------------------------TITLE
-created by pre_exodus
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        88
 NODES                           256
@@ -41,34 +37,6 @@ REDUNDANT_STORAGE               Master
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.1
 LM_SHAPEFCN                     std//dual
------------------------------------------------------DISCRETISATION
-NUMAIRWAYSDIS                   0
-NUMALEDIS                       0
-NUMARTNETDIS                    0
-NUMFLUIDDIS                     0
-NUMSTRUCDIS                     1
-NUMTHERMDIS                     0
------------------------------------------------------------------IO
-FILESTEPS                       1000
-FLUID_SOL                       Yes
-FLUID_STRESS                    No
-FLUID_VIS                       No
-FLUID_WALL_SHEAR_STRESS         No
-LIMIT_OUTP_TO_PROC              -1
-OUTPUT_BIN                      Yes
-PREFIX_GROUP_ID                 No
-STDOUTEVRY                      1
-STRUCT_DISP                     Yes
-STRUCT_PLASTIC_STRAIN           No
-STRUCT_SE                       No
-STRUCT_STRAIN                   gl
-STRUCT_STRESS                   Cauchy
-STRUCT_SURFACTANT               No
-THERM_HEATFLUX                  None
-THERM_TEMPERATURE               No
-THERM_TEMPGRAD                  None
-WRITE_TO_FILE                   No
-WRITE_TO_SCREEN                 Yes
 --------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 RANDSEED                        -1
@@ -188,17 +156,18 @@ RHO_INF                         0.8
 MAT 1 MAT_ElastHyper NUMMAT 3 MATIDS 11 12 13 DENS 1.0e-6
 MAT 11 ELAST_IsoNeoHooke MUE 5.0
 MAT 12 ELAST_VolSussmanBathe KAPPA 5.0
-MAT 13 ELAST_AnisoActiveStress_Evolution SIGMA 60.0 TAUC0 0.0 MAX_ACTIVATION 25.0 MIN_ACTIVATION -25.0 SOURCE_ACTIVATION 1 ACTIVATION_THRES 0
+MAT 13 ELAST_AnisoActiveStress_Evolution SIGMA 60.0 TAUC0 0.0 MAX_ACTIVATION 25.0 MIN_ACTIVATION -25.0 SOURCE_ACTIVATION 1 ACTIVATION_THRES 0 STR_TENS_ID 100
 MAT 2 MAT_ElastHyper NUMMAT 3 MATIDS 21 22 23 DENS 1.0e-6
 MAT 21 ELAST_IsoNeoHooke MUE 5.0
 MAT 22 ELAST_VolSussmanBathe KAPPA 5.0
-MAT 23 ELAST_AnisoActiveStress_Evolution SIGMA 60.0 TAUC0 0.0 MAX_ACTIVATION 25.0 MIN_ACTIVATION -25.0 SOURCE_ACTIVATION 1 ACTIVATION_THRES 0
+MAT 23 ELAST_AnisoActiveStress_Evolution SIGMA 60.0 TAUC0 0.0 MAX_ACTIVATION 25.0 MIN_ACTIVATION -25.0 SOURCE_ACTIVATION 1 ACTIVATION_THRES 0 STR_TENS_ID 100
 MAT 3 MAT_ElastHyper NUMMAT 2 MATIDS 31 32 DENS 2.0e-6
 MAT 31 ELAST_IsoNeoHooke MUE 10.0
 MAT 32 ELAST_VolSussmanBathe KAPPA 50.0
 MAT 4 MAT_ElastHyper NUMMAT 2 MATIDS 31 32 DENS 2.0e-6
 MAT 41 ELAST_IsoNeoHooke MUE 10.0
 MAT 42 ELAST_VolSussmanBathe KAPPA 100.0
+MAT 100 ELAST_StructuralTensor STRATEGY Standard
 -----------------------------------------------CLONING MATERIAL MAP
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION (5.0*(t-(0.18+25.0/(5.0*(25.0-(-25.0)))))+1)*heaviside(5.0*(t-(0.18+25.0/(5.0*(25.0-(-25.0)))))+1)-5.0*(t-(0.18+25.0/(5.0*(25.0-(-25.0)))))*heaviside(5.0*(t-(0.18+25.0/(5.0*(25.0-(-25.0))))))-5.0*(t-(0.52-25.0/(5.0*(25.0-(-25.0)))))*heaviside(5.0*(t-(0.52-25.0/(5.0*(25.0-(-25.0))))))+(5.0*(t-(0.52-25.0/(5.0*(25.0-(-25.0)))))-1)*heaviside(5.0*(t-(0.52-25.0/(5.0*(25.0-(-25.0)))))-1)

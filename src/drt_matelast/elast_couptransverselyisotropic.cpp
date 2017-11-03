@@ -13,6 +13,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "elast_couptransverselyisotropic.H"
+#include "elast_aniso_structuraltensor_strategy.H"
 
 #include "../drt_mat/matpar_material.H"
 #include "../drt_lib/standardtypes_cpp.H"
@@ -25,7 +26,7 @@
  *----------------------------------------------------------------------------*/
 MAT::ELASTIC::PAR::CoupTransverselyIsotropic::CoupTransverselyIsotropic(
   const Teuchos::RCP<MAT::PAR::Material>& matdata )
-: Parameter(matdata),
+: ParameterAniso(matdata),
   alpha_(matdata->GetDouble("ALPHA")),
   beta_(matdata->GetDouble("BETA")),
   gamma_(matdata->GetDouble("GAMMA")),
@@ -102,7 +103,7 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::Setup(
       {
         // Read in of data
         ReadFiber(linedef, fibername, A_);
-        SetupStructuralTensor(A_,AA_);
+        params_->StructuralTensorStrategy()->SetupStructuralTensor(A_,AA_);
       }
       // error path
       else
@@ -174,7 +175,7 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::SetFiberVecs(
   A_0.Multiply(idefgrd,ca);
   A_.Update(1./A_0.Norm2(),A_0);
 
-  SetupStructuralTensor(A_,AA_);
+  params_->StructuralTensorStrategy()->SetupStructuralTensor(A_,AA_);
 }
 
 /*----------------------------------------------------------------------------*

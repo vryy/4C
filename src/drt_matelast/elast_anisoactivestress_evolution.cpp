@@ -12,6 +12,7 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "elast_anisoactivestress_evolution.H"
+#include "elast_aniso_structuraltensor_strategy.H"
 
 #include "../drt_mat/matpar_material.H"
 #include "../drt_mat/material.H"
@@ -25,7 +26,7 @@
 MAT::ELASTIC::PAR::AnisoActiveStress_Evolution::AnisoActiveStress_Evolution(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
-: Parameter(matdata),
+: ParameterAniso(matdata),
   sigma_(matdata->GetDouble("SIGMA")),
   tauc0_(matdata->GetDouble("TAUC0")),
   maxactiv_(matdata->GetDouble("MAX_ACTIVATION")),
@@ -154,7 +155,7 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::Setup(DRT::INPUT::LineDefinition
     {
       // Read in of fiber data and setting fiber data
       ReadFiber(linedef, "FIBER1", a_);
-      SetupStructuralTensor(a_,A_);
+      params_->StructuralTensorStrategy()->SetupStructuralTensor(a_,A_);
     }
 
     // error path
@@ -305,5 +306,5 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::SetFiberVecs(
   a_0.Multiply(idefgrd,ca);
   a_.Update(1./a_0.Norm2(),a_0);
 
-  SetupStructuralTensor(a_,A_);
+  params_->StructuralTensorStrategy()->SetupStructuralTensor(a_,A_);
 }

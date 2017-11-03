@@ -29,7 +29,7 @@ namespace ELASTIC
     ///
     /// <h3>Input line</h3>
     /// MAT 1 ELAST_AnisoActiveStress_Evolution SIGMA 100.0 TAUC0 0.0 MAX_ACTIVATION 30.0 MIN_ACTIVATION -20.0 SOURCE_ACTIVATION 1 ACTIVATION_THRES 0 [STRAIN_DEPENDENCY No] [LAMBDA_LOWER 0.707] [LAMBDA_UPPER 1.414]
-    class AnisoActiveStress_Evolution : public MAT::PAR::Parameter
+    class AnisoActiveStress_Evolution : public MAT::PAR::ParameterAniso
     {
     public:
 

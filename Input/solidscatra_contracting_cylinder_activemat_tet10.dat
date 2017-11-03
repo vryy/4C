@@ -12,34 +12,10 @@ Contracting Cylinder
   - Currently direct solver is active, but a iterative setup is given
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
---------------------------------------------------------------DISCRETISATION
-NUMAIRWAYSDIS                   0
-NUMALEDIS                       0
-NUMARTNETDIS                    0
-NUMFLUIDDIS                     0
-NUMSTRUCDIS                     1
-NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 FILESTEPS                       5
-FLUID_SOL                       No
-FLUID_STRESS                    No
-FLUID_VIS                       No
-FLUID_WALL_SHEAR_STRESS         No
-OUTPUT_BIN                      Yes
-STDOUTEVRY                      1
-STRUCT_DISP                     Yes
-STRUCT_PLASTIC_STRAIN           No
-STRUCT_SE                       No
-STRUCT_STRAIN                   GL
-STRUCT_STRESS                   Cauchy
-STRUCT_SURFACTANT               No
-THERM_HEATFLUX                  None
-THERM_TEMPERATURE               No
-THERM_TEMPGRAD                  None
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
-RESTART                         0
-SHAPEFCT                        Polynomial
 --------------------------------------------------------------------SOLVER 1
 AZBDIAG                         0
 AZCONV                          AZ_r0
@@ -75,62 +51,36 @@ STRATIMIKOS_XMLFILE             None
 --------------------------------------------------------------------SOLVER 2
 SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DAMPING                         No
-DIVERCONT                       stop
 DYNAMICTYP                      GenAlpha
 INT_STRATEGY                    Old
 ITERNORM                        Inf
-K_DAMP                          0.0
-M_DAMP                          0.0
 LINEAR_SOLVER                   2
 MAXITER                         100
 MAXTIME                         0.9
-MINITER                         0
 MODIFIEDEXPLEULER               Yes
 NLNSOL                          fullnewton
-NORMCOMBI_DISPPRES              And
-NORMCOMBI_RESFDISP              And
-NORMCOMBI_RESFINCO              And
-NORM_DISP                       Abs
-NORM_INCO                       Abs
-NORM_PRES                       Abs
-NORM_RESF                       Abs
 NUMSTEP                         1
 PREDICT                         ConstDisVelAcc
-RESEVRYERGY                     0
 RESTARTEVRY                     50
 RESULTSEVRY                     1
-STC_LAYER                       1
-STC_SCALING                     no
 TIMESTEP                        0.007
 TOLCONSTR                       1e-03
 TOLDISP                         1e-09// results computed with 1e-14 // 10^-12 m
 TOLINCO                         1e-03
 TOLPRE                          1e-03
 TOLRES                          1e-06// results computed with 1e-07 // 10^-12 N
-UZAWAALGO                       direct
-UZAWAMAXITER                    50
-UZAWAPARAM                      1
-UZAWATOL                        1e-03
------------------------------------------------------STRUCTURAL DYNAMIC/GEMM
-ALPHA_F                         0.5
-ALPHA_M                         0.5
-BETA                            0.25
-GAMMA                           0.5
-XI                              0
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 BETA                            0.25
 GAMMA                           0.5
 GENAVG                          TrLike
----------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
-THETA                           0.5
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 3 MATIDS 10 11 20 DENS 0.001
 MAT 10 ELAST_IsoMooneyRivlin C1 2.0E4 C2 40
 MAT 11 ELAST_VolPenalty EPSILON 1.0E7 GAMMA 1.0
-MAT 20 ELAST_AnisoActiveStress_Evolution SIGMA 2.0E5 TAUC0 0.0 MAX_ACTIVATION 20.0 MIN_ACTIVATION -30.0 SOURCE_ACTIVATION 1 ACTIVATION_THRES 0.0
+MAT 20 ELAST_AnisoActiveStress_Evolution SIGMA 2.0E5 TAUC0 0.0 MAX_ACTIVATION 20.0 MIN_ACTIVATION -30.0 SOURCE_ACTIVATION 1 ACTIVATION_THRES 0.0 STR_TENS_ID 100
+MAT 100 ELAST_StructuralTensor STRATEGY Standard
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 100*t
 ----------------------------------------------------------------------FUNCT2

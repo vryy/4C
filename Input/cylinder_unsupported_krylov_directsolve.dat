@@ -1,134 +1,34 @@
 //
-// Maintainer: XXX YYY
-// XXX
-// XXX
+// Maintainer: Andreas Rauch
 //
-==================================================================
-General Data File BACI
-==================================================================
 -----------------------------------------------------------------------TITLE
-created by pre_exodus
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      48
 //NODES                         120
 DIM                             3
---------------------------------------------------------------DISCRETISATION
-NUMAIRWAYSDIS                   1
-NUMALEDIS                       1
-NUMARTNETDIS                    1
-NUMFLUIDDIS                     1
-NUMSTRUCDIS                     1
-NUMTHERMDIS                     1
---------------------------------------------------------------------------IO
-FILESTEPS                       1000
-FLUID_SOL                       Yes
-FLUID_STRESS                    No
-FLUID_VIS                       No
-OUTPUT_BIN                      Yes
-STRUCT_DISP                     Yes
-STRUCT_STRAIN                   GL
-STRUCT_STRESS                   2PK
-STRUCT_SURFACTANT               No
-THERM_HEATFLUX                  None
-THERM_TEMPERATURE               No
-THERM_TEMPGRAD                  None
-------------------------------------------------------------PATIENT SPECIFIC
-PATSPEC                         No
-REMODEL                         No
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
-RESTART                         0
-SHAPEFCT                        Polynomial
 --------------------------------------------------------------------SOLVER 1
-AZBDIAG                         0
-AZCONV                          AZ_r0
-AZDROP                          0
-AZGRAPH                         0
-AZITER                          1000
-AZOMEGA                         0
-AZOUTPUT                        0
-AZPOLY                          3
-AZPREC                          ILU
-AZREUSE                         0
-AZSCAL                          none
-AZSOLVE                         GMRES
-AZSUB                           300
-AZTOL                           1e-06
-DWINDTAU                        1.5
-IFPACKFILL                      1.0
-IFPACKGFILL                     0
-IFPACKOVERLAP                   0
-IFPACKCOMBINE                   Add                           // Add Insert Zero
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               Umfpack
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1
-SOLVER                          UMFPACK                       // Aztec_MSR //
+SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
-CONTROLNODE                     -1 -1 -1
-CONTROLTYPE                     load
-DAMPING                         No
-DIVERCONT                       stop
 DYNAMICTYP                      Statics
-ITERNORM                        L2
-K_DAMP                          0.5
-LOADLIN                         no
 MAXITER                         50
 MAXTIME                         5000
-MINITER                         0
-M_DAMP                          0.5
 NLNSOL                          fullnewton
-NORMCOMBI_RESFDISP              And
-NORM_DISP                       Abs
-NORM_RESF                       Abs
 NUMSTEP                         10
-PREDICT                         ConstDis
-PRESTRESS                       none
-PRESTRESSTIME                   0
 RESULTSEVRY                     1
 RESTARTEVRY                     5
-STC_SCALING                     no
 TIMESTEP                        1.0
-TOLCONSTR                       1e-08
 TOLDISP                         1e-08
-TOLINCO                         1e-08
-TOLPRE                          1e-08
 TOLRES                          1e-06
-UZAWAALGO                       uzawa
-UZAWAMAXITER                    50
-UZAWAPARAM                      1
-UZAWATOL                        1e-08
------------------------------------------------------STRUCTURAL DYNAMIC/GEMM
-ALPHA_F                         0.5
-ALPHA_M                         0.5
-XI                              0
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-ALPHA_F                         0.5
-ALPHA_M                         0.5
-BETA                            0.25
-GAMMA                           0.5
-GENAVG                          ImrLike
----------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
-THETA                           0.5
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 4 MATIDS 2 3 5 6 DENS 0.00105
 MAT 2 ELAST_IsoNeoHooke MUE 77.7E3
 MAT 3 ELAST_VolSussmanBathe KAPPA 1.0E6
-MAT 5 ELAST_IsoAnisoExpo K1 917.175E3 K2 10.6 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0 INIT 1 ADAPT_ANGLE No
-MAT 6 ELAST_IsoAnisoExpo K1 917.175E3 K2 10.6 GAMMA -35.0 K1COMP 0.0 K2COMP 1.0 INIT 1 ADAPT_ANGLE No
+MAT 5 ELAST_IsoAnisoExpo K1 917.175E3 K2 10.6 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0 INIT 1 ADAPT_ANGLE No STR_TENS_ID 100
+MAT 6 ELAST_IsoAnisoExpo K1 917.175E3 K2 10.6 GAMMA -35.0 K1COMP 0.0 K2COMP 1.0 INIT 1 ADAPT_ANGLE No STR_TENS_ID 100
+MAT 100 ELAST_StructuralTensor STRATEGY Standard
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 5 100 VALUES 0 1 1

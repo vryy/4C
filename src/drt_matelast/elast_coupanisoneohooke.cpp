@@ -16,6 +16,8 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "elast_coupanisoneohooke.H"
+#include "elast_aniso_structuraltensor_strategy.H"
+
 #include "../drt_mat/matpar_material.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -26,7 +28,7 @@
 MAT::ELASTIC::PAR::CoupAnisoNeoHooke::CoupAnisoNeoHooke(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
-: Parameter(matdata),
+: ParameterAniso(matdata),
   c_(matdata->GetDouble("C")),
   gamma_(matdata->GetDouble("GAMMA")),
   init_(matdata->GetInt("INIT")),
@@ -104,7 +106,7 @@ void MAT::ELASTIC::CoupAnisoNeoHooke::Setup(DRT::INPUT::LineDefinition* linedef)
     {
       // Read in of fiber data and setting fiber data
       ReadFiber(linedef, "FIBER1", a_);
-      SetupStructuralTensor(a_,A_);
+      params_->StructuralTensorStrategy()->SetupStructuralTensor(a_,A_);
     }
 
     // error path
@@ -181,5 +183,5 @@ void MAT::ELASTIC::CoupAnisoNeoHooke::SetFiberVecs(
   a_0.Multiply(idefgrd,ca);
   a_.Update(1./a_0.Norm2(),a_0);
 
-  SetupStructuralTensor(a_,A_);
+  params_->StructuralTensorStrategy()->SetupStructuralTensor(a_,A_);
 }

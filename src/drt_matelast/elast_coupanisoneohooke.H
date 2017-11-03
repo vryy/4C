@@ -34,7 +34,7 @@ namespace ELASTIC
     ///
     /// <h3>Input line</h3>
     /// MAT 1 CoupAnisoNeoHooke C 100 GAMMA 35.0 INIT 0 ADAPT_ANGLE 0
-    class CoupAnisoNeoHooke : public MAT::PAR::Parameter
+    class CoupAnisoNeoHooke : public MAT::PAR::ParameterAniso
     {
     public:
 

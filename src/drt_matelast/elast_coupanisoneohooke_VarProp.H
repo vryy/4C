@@ -32,7 +32,7 @@ namespace ELASTIC
     ///
     /// <h3>Input line</h3>
     /// MAT 1 CoupAnisoNeoHooke_VarProp C 100 GAMMA 35.0 INIT 0 ADAPT_ANGLE 0
-    class CoupAnisoNeoHooke_VarProp : public MAT::PAR::Parameter
+    class CoupAnisoNeoHooke_VarProp : public MAT::PAR::ParameterAniso
     {
     public:
 

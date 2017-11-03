@@ -33,6 +33,11 @@ namespace MAT
   {
     class Material;
   }
+
+  namespace ELASTIC
+  {
+    class StructuralTensorStrategyBase;
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -120,6 +125,33 @@ namespace MAT
       std::string name_;
 
     };  // class Parameter
+
+
+    /*----------------------------------------------------------------------*/
+    /// Extension to hold 'quick' access material parameters for anisotropy
+    ///
+    /// \author rauch
+    /// \date 10/17
+    class ParameterAniso : public Parameter
+    {
+
+    public:
+
+      /// construct the material object given material parameters
+      ParameterAniso(
+          Teuchos::RCP<const MAT::PAR::Material> matdata
+      );
+
+      /// return pointer to strategy
+      const Teuchos::RCP <MAT::ELASTIC::StructuralTensorStrategyBase>&
+      StructuralTensorStrategy(){return structural_tensor_strategy_;};
+
+    private:
+
+      /// structural tensor strategy
+      Teuchos::RCP<MAT::ELASTIC::StructuralTensorStrategyBase> structural_tensor_strategy_;
+
+    };  // class ParameterAniso
 
   }  // namespace PAR
 

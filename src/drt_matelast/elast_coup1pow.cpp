@@ -123,12 +123,14 @@ void MAT::ELASTIC::Coup1Pow::AddDerivativesPrincipal(
 
   // If d<2 the material model is not stress free in the reference configuration
   if (d<2)
-    dserror("The Elast_Coup1Pow - material only works for positive integer exponents, which are larger than two.");
-
-  dPI(0) += c*d*pow((prinv(0)-3.),d-1.);
+    dPI(0)=c;
+  else
+    dPI(0) += c*d*pow((prinv(0)-3.),d-1.);
 
   if (d==2)
     ddPII(0) += (c*d*d-c*d);
+  else if (d==1)
+    ddPII(0) += 0;
   else
     ddPII(0) += (c*d*d-c*d)*pow((prinv(0)-3.),d-2.);
 

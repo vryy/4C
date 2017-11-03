@@ -59,7 +59,7 @@ namespace PAR {
    *  H. Schuermann, "Konstruieren mit Faser-Kunststoff-Verbunden", Springer, 2005.
    *
    *  \author hiermeier \date 09/17 */
-  class CoupTransverselyIsotropic : public MAT::PAR::Parameter
+  class CoupTransverselyIsotropic : public MAT::PAR::ParameterAniso
   {
   public:
     /// no default constructor

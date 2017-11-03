@@ -4,29 +4,12 @@
 // http://www.lnm.mw.tum.de
 // 089 - 289-15271
 //
-==================================================================
-General Data File BACI
-==================================================================
 -----------------------------------------------------------------------TITLE
-created by testcase_generator
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 RESTART                         0
---------------------------------------------------------------DISCRETISATION
-NUMFLUIDDIS                     0
-NUMSTRUCDIS                     1
-NUMALEDIS                       0
-NUMTHERMDIS                     0
---------------------------------------------------------------------------IO
-OUTPUT_GMSH                     No
-OUTPUT_BIN                      Yes
-STRUCT_DISP                     Yes
-STRUCT_STRESS                   No
-FLUID_SOL                       No
-FLUID_STRESS                    No
-FLUID_VIS                       No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
@@ -36,16 +19,11 @@ NLNSOL                          fullnewton
 TIMESTEP                        0.017
 NUMSTEP                         2
 MAXTIME                         100.0
-DAMPING                         No
 TOLRES                          1.0E-6
 TOLDISP                         1.0E-11
 ITERNORM                        Inf
-NORM_RESF                       Abs
-NORM_DISP                       Abs
-NORMCOMBI_RESFDISP              And
 MAXITER                         3
 DIVERCONT                       continue
-LOADLIN                         no
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
@@ -83,27 +61,27 @@ MAT 121 ELAST_CoupSimoPister MUE 1000
 MAT 122 ELAST_Coup13aPow C 500 D 14 A 0.2
 MAT 1000 MAT_ElastHyper NUMMAT 2 MATIDS 1001 1002 DENS 0.005
 MAT 1001 ELAST_CoupNeoHooke YOUNG 1000 NUE 0.43
-MAT 1002 ELAST_CoupAnisoExpo K1 200.0 K2 10.0 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0
+MAT 1002 ELAST_CoupAnisoExpo K1 200.0 K2 10.0 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0 STR_TENS_ID 6000
 MAT 1010 MAT_ElastHyper NUMMAT 2 MATIDS 1011 1012 DENS 0.005
 MAT 1011 ELAST_CoupNeoHooke YOUNG 1000 NUE 0.43
-MAT 1012 ELAST_CoupAnisoExpo K1 200.0 K2 10.0 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0
+MAT 1012 ELAST_CoupAnisoExpo K1 200.0 K2 10.0 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0 STR_TENS_ID 6000
 MAT 1020 MAT_ElastHyper NUMMAT 2 MATIDS 1021 1022 DENS 0.005
 MAT 1021 ELAST_CoupNeoHooke YOUNG 1000 NUE 0.43
-MAT 1022 ELAST_CoupAnisoExpoTwoCoup A4 18.472 B4 16.026 A6 2.481 B6 11.120 A8 0.216 B8 11.436 GAMMA 0.0
+MAT 1022 ELAST_CoupAnisoExpoTwoCoup A4 18.472 B4 16.026 A6 2.481 B6 11.120 A8 0.216 B8 11.436 GAMMA 0.0 STR_TENS_ID 6000
 MAT 1030 MAT_ElastHyper NUMMAT 2 MATIDS 1031 1032 DENS 0.005
 MAT 1031 ELAST_CoupNeoHooke YOUNG 1000 NUE 0.43
-MAT 1032 ELAST_CoupAnisoExpoTwoCoup A4 18.472 B4 16.026 A6 2.481 B6 11.120 A8 0.216 B8 11.436 GAMMA 35.0
+MAT 1032 ELAST_CoupAnisoExpoTwoCoup A4 18.472 B4 16.026 A6 2.481 B6 11.120 A8 0.216 B8 11.436 GAMMA 35.0 STR_TENS_ID 6000
 MAT 1040 MAT_ElastHyper NUMMAT 2 MATIDS 1041 1042 DENS 0.005
-MAT 1041 ELAST_CoupAnisoNeoHooke C 7 GAMMA 0.0
+MAT 1041 ELAST_CoupAnisoNeoHooke C 7 GAMMA 0.0 STR_TENS_ID 6000
 MAT 1042 ELAST_CoupNeoHooke YOUNG 1000 NUE 0.43
 MAT 1050 MAT_ElastHyper NUMMAT 2 MATIDS 1051 1052 DENS 0.005
-MAT 1051 ELAST_CoupAnisoNeoHooke C 7 GAMMA 0.0
+MAT 1051 ELAST_CoupAnisoNeoHooke C 7 GAMMA 0.0 STR_TENS_ID 6000
 MAT 1052 ELAST_CoupNeoHooke YOUNG 1000 NUE 0.43
 MAT 1060 MAT_ElastHyper NUMMAT 2 MATIDS 1061 1062 DENS 0.005
-MAT 1061 ELAST_CoupAnisoPow K 100 D1 2.5 D2 3.5
+MAT 1061 ELAST_CoupAnisoPow K 100 D1 2.5 D2 3.5 STR_TENS_ID 6000
 MAT 1062 ELAST_CoupNeoHooke YOUNG 1000 NUE 0.43
 MAT 1070 MAT_ElastHyper NUMMAT 2 MATIDS 1071 1072 DENS 0.005
-MAT 1071 ELAST_CoupAnisoPow K 100 D1 2.5 D2 3.5
+MAT 1071 ELAST_CoupAnisoPow K 100 D1 2.5 D2 3.5 STR_TENS_ID 6000
 MAT 1072 ELAST_CoupNeoHooke YOUNG 1000 NUE 0.43
 MAT 2000 MAT_ElastHyper NUMMAT 3 MATIDS 2001 2002 2003 DENS 0.005
 MAT 2001 ELAST_VolSussmanBathe KAPPA 10000.
@@ -149,11 +127,11 @@ MAT 2113 ELAST_VolOgden KAPPA 500. BETA -2.0
 MAT 3000 MAT_ElastHyper NUMMAT 3 MATIDS 3001 3002 3003 DENS 0.005
 MAT 3001 ELAST_VolSussmanBathe KAPPA 10000.
 MAT 3002 ELAST_IsoNeoHooke MUE 1000
-MAT 3003 ELAST_IsoAnisoExpo K1 10.0 K2 1.0 GAMMA 0.0 K1COMP 0.0 K2COMP 1.0
+MAT 3003 ELAST_IsoAnisoExpo K1 10.0 K2 1.0 GAMMA 0.0 K1COMP 0.0 K2COMP 1.0 STR_TENS_ID 6000
 MAT 3010 MAT_ElastHyper NUMMAT 3 MATIDS 3011 3012 3013 DENS 0.005
 MAT 3011 ELAST_VolSussmanBathe KAPPA 10000.
 MAT 3012 ELAST_IsoNeoHooke MUE 1000
-MAT 3013 ELAST_IsoAnisoExpo K1 10.0 K2 1.0 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0
+MAT 3013 ELAST_IsoAnisoExpo K1 10.0 K2 1.0 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0 STR_TENS_ID 6000
 MAT 4000 MAT_ViscoElastHyper NUMMAT 4 MATIDS 4001 4002 4003 4004 DENS 0.005
 MAT 4001 ELAST_VolOgden KAPPA 10000. BETA -2
 MAT 4002 ELAST_Iso1Pow C 1000. D 1
@@ -173,6 +151,7 @@ MAT 5000 MAT_Struct_PlasticNlnLogNeoHooke YOUNG 3100 NUE 0.29 DENS 0.1 YIELD 10 
 MAT 5010 MAT_Struct_ThrPlasticHyperElast YOUNG 3100 NUE 0.29 DENS 0.1 YIELD 10 ISOHARD 1 SATHARDENING 200 HARDEXPO 16.93 TOL 1.0e-6
 MAT 5020 MAT_Struct_PlasticLinElast YOUNG 3100 NUE 0.3 DENS 0.1 YIELD 10 ISOHARD 1e4 KINHARD 1e4 TOL 1.0e-06
 MAT 5030 MAT_Struct_Damage YOUNG 3100 NUE 0.29 DENS 0.1 SAMPLENUM 2 SIGMA_Y 10 10e1 EPSBAR_P 0.0 0.001 DAMDEN 0.0035 DAMEXP 1.0 DAMTHRESHOLD 1e10 KINHARD 0.0 KINHARD_REC 0 SATHARDENING 10 HARDEXPO 0 TOL 1.0e-06
+MAT 6000 ELAST_StructuralTensor STRATEGY Standard
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         2
 NDLINE                          2
