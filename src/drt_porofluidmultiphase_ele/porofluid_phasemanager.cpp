@@ -17,6 +17,7 @@
 #include "porofluidmultiphase_ele_calc_utils.H"
 
 #include "../drt_mat/fluidporo_multiphase.H"
+#include "../drt_mat/scatra_mat_multiporo.H"
 #include "../drt_mat/fluidporo_singlephase.H"
 #include "../drt_mat/structporo.H"
 #include "../drt_mat/fluidporo_multiphase_reactions.H"
@@ -35,12 +36,13 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::CreatePhaseManager(
     int nsd,
     INPAR::MAT::MaterialType mattype,
     const POROFLUIDMULTIPHASE::Action&     action,
-    int numphases)
+    int totalnumdofpernode,
+    int numfluidphases)
 {
   Teuchos::RCP< PhaseManagerInterface > phasemanager = Teuchos::null;
 
   // build the standard phase manager
-  phasemanager = Teuchos::rcp(new PhaseManagerCore(numphases));
+  phasemanager = Teuchos::rcp(new PhaseManagerCore(totalnumdofpernode,numfluidphases));
 
   return WrapPhaseManager(para,nsd,mattype,action,phasemanager);
 }
@@ -64,11 +66,45 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::WrapPhaseManager(
   {
   // calculate true pressures and saturation
   case POROFLUIDMULTIPHASE::calc_pres_and_sat:
-  // calculate solid pressure
-  case POROFLUIDMULTIPHASE::calc_solidpressure:
   {
     // no extensions needed
     phasemanager = corephasemanager;
+    break;
+  }
+  // calculate solid pressure
+  case POROFLUIDMULTIPHASE::calc_solidpressure:
+  {
+    // we have volume fractions --> we need PhaseManagerDerivAndPorosity because solid pressure is calculated
+    // differently
+    if(corephasemanager->TotalNumDof() > corephasemanager->NumFluidPhases())
+    {
+      // porosity (includes derivatves) needed
+      phasemanager = Teuchos::rcp(new PhaseManagerDerivAndPorosity(corephasemanager));
+
+      if(mattype==INPAR::MAT::m_fluidporo_multiphase_reactions)
+        // enhance by scalar handling capability
+        phasemanager = Teuchos::rcp(new PhaseManagerReaction(phasemanager));
+
+      switch(nsd)
+      {
+      case 1:
+        phasemanager = Teuchos::rcp(new PhaseManagerVolFrac<1>(phasemanager));
+        break;
+      case 2:
+        phasemanager = Teuchos::rcp(new PhaseManagerVolFrac<2>(phasemanager));
+        break;
+      case 3:
+        phasemanager = Teuchos::rcp(new PhaseManagerVolFrac<3>(phasemanager));
+        break;
+      default:
+        dserror("invalid dimension for creating phase manager!");
+      }
+    }
+    else
+    {
+      // no extensions needed
+      phasemanager = corephasemanager;
+    }
     break;
   }
   // reconstruct velocities
@@ -121,11 +157,30 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::WrapPhaseManager(
     if(mattype==INPAR::MAT::m_fluidporo_multiphase_reactions)
       // enhance by scalar handling capability
       phasemanager = Teuchos::rcp(new PhaseManagerReaction(phasemanager));
+
+    if(corephasemanager->TotalNumDof() > corephasemanager->NumFluidPhases())
+    {
+      switch(nsd)
+      {
+      case 1:
+        phasemanager = Teuchos::rcp(new PhaseManagerVolFrac<1>(phasemanager));
+        break;
+      case 2:
+        phasemanager = Teuchos::rcp(new PhaseManagerVolFrac<2>(phasemanager));
+        break;
+      case 3:
+        phasemanager = Teuchos::rcp(new PhaseManagerVolFrac<3>(phasemanager));
+        break;
+      default:
+        dserror("invalid dimension for creating phase manager!");
+      }
+    }
+
     break;
   }
   case POROFLUIDMULTIPHASE::get_access_from_scatra:
   {
-    // porosity (includes derivatves) needed
+    // porosity (includes derivatives) needed
     phasemanager = Teuchos::rcp(new PhaseManagerDerivAndPorosity(corephasemanager));
 
     // enhance by diffusion tensor
@@ -164,14 +219,17 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::WrapPhaseManager(
 /*----------------------------------------------------------------------*
  | constructor                                              vuong 08/16 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::PhaseManagerCore(int numphases):
-    numphases_(numphases),
-    genpressure_(numphases,0.0),
-    pressure_(numphases,0.0),
-    saturation_(numphases,0.0),
-    density_(numphases,0.0),
+DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::PhaseManagerCore(int totalnumdofpernode, int numfluidphases):
+    totalnumdofpernode_(totalnumdofpernode),
+    numfluidphases_(numfluidphases),
+    genpressure_(numfluidphases,0.0),
+    volfrac_(totalnumdofpernode-numfluidphases,0.0),
+    sumaddvolfrac_(0.0),
+    pressure_(numfluidphases,0.0),
+    saturation_(numfluidphases,0.0),
+    density_(numfluidphases,0.0),
     solidpressure_(0.0),
-    invbulkmodulifluid_(numphases,0.0),
+    invbulkmodulifluid_(numfluidphases,0.0),
     invbulkmodulussolid_(0.0),
     ele_(NULL),
     isevaluated_(false),
@@ -184,8 +242,11 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::PhaseManagerCore(int numphase
  | copy constructor                                          vuong 08/16 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::PhaseManagerCore(const PhaseManagerCore& old):
-    numphases_(old.numphases_),
+    totalnumdofpernode_(old.totalnumdofpernode_),
+    numfluidphases_(old.numfluidphases_),
     genpressure_(old.genpressure_),
+    volfrac_(old.volfrac_),
+    sumaddvolfrac_(old.sumaddvolfrac_),
     pressure_(old.pressure_),
     saturation_(old.saturation_),
     density_(old.density_),
@@ -223,10 +284,11 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::Setup(
       static_cast<const MAT::FluidPoroMultiPhase&>(material);
 
   //safety check
-  if(numphases_ != multiphasemat.NumMat())
+  if(numfluidphases_ != multiphasemat.NumFluidPhases() ||
+      totalnumdofpernode_ != multiphasemat.NumMat())
     dserror("Number of phases given by the poro multiphase material does not match number "
-        "of DOFs (%i phases and %i DOFs)!"
-        , numphases_, multiphasemat.NumMat());
+        "of DOFs (%i phases and %i Fluid DOFs, %i phases and %i Total DOFs)!"
+        , numfluidphases_, multiphasemat.NumFluidPhases(), totalnumdofpernode_, multiphasemat.NumMat());
 
   issetup_=true;
   return;
@@ -252,28 +314,45 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::EvaluateGPState(
   // access state vector
   const std::vector<double>& phinp = *varmanager.Phinp();
 
-  if(numphases_ != (int)phinp.size())
-    dserror("Length of phinp vector is not equal to the number of phases");
+  if(totalnumdofpernode_ != (int)phinp.size())
+    dserror("Length of phinp vector is not equal to the number of dofs");
+
+  // fluid primary variables
+  const std::vector<double> fluid_phinp(&phinp[0],&phinp[numfluidphases_]);
+  // volume fractions
+  const std::vector<double> volfrac(&(phinp[numfluidphases_]),&(phinp[totalnumdofpernode_]));
+
+  if(numfluidphases_ != (int)fluid_phinp.size())
+    dserror("Length of fluid-phinp vector is not equal to the number of phases");
 
   // cast the material to multiphase material
   const MAT::FluidPoroMultiPhase& multiphasemat =
       static_cast<const MAT::FluidPoroMultiPhase&>(material);
 
   //resize all vectors
-  genpressure_.resize(numphases_,0.0);
-  pressure_.resize(numphases_,0.0);
-  saturation_.resize(numphases_,0.0);
-  density_.resize(numphases_,0.0);
-  invbulkmodulifluid_.resize(numphases_,0.0);
+  genpressure_.resize(numfluidphases_,0.0);
+  volfrac_.resize(totalnumdofpernode_-numfluidphases_,0.0);
+  pressure_.resize(numfluidphases_,0.0);
+  saturation_.resize(numfluidphases_,0.0);
+  density_.resize(numfluidphases_,0.0);
+  invbulkmodulifluid_.resize(numfluidphases_,0.0);
+
+  // evaluate the volume fractions
+  volfrac_ = volfrac;
+  if(totalnumdofpernode_-numfluidphases_ != (int)volfrac.size())
+    dserror("Length of volfrac vector is not equal to the number of volume fractions");
+  sumaddvolfrac_ = 0.0;
+  for (int ivolfrac = 0; ivolfrac < totalnumdofpernode_-numfluidphases_; ivolfrac++)
+    sumaddvolfrac_ += volfrac_[ivolfrac];
 
   // evaluate the pressures
-  multiphasemat.EvaluateGenPressure(genpressure_,phinp);
+  multiphasemat.EvaluateGenPressure(genpressure_,fluid_phinp);
 
   //! transform generalized pressures to true pressure values
   multiphasemat.TransformGenPresToTruePres(genpressure_,pressure_);
 
   // explicit evaluation of saturation
-  multiphasemat.EvaluateSaturation(saturation_,phinp,pressure_);
+  multiphasemat.EvaluateSaturation(saturation_,fluid_phinp,pressure_);
 
   // solid pressure = sum (S_i*p_i)
   solidpressure_ = std::inner_product(saturation_.begin(),saturation_.end(),pressure_.begin(),0.0);
@@ -287,7 +366,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::EvaluateGPState(
 
   invbulkmodulussolid_ = structmat->InvBulkmodulus();
 
-  for(int iphase=0; iphase<numphases_; iphase++)
+  for(int iphase=0; iphase<numfluidphases_; iphase++)
   {
     //get the single phase material
     const MAT::FluidPoroSinglePhase& singlephasemat =
@@ -314,10 +393,12 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::ClearGPState()
 
   //zero everything
   std::fill(genpressure_.begin(), genpressure_.end(), 0.0);
+  std::fill(volfrac_.begin(), volfrac_.end(), 0.0);
   std::fill(pressure_.begin(), pressure_.end(), 0.0);
   std::fill(saturation_.begin(), saturation_.end(), 0.0);
   std::fill(density_.begin(), density_.end(), 0.0);
   solidpressure_=0.0;
+  sumaddvolfrac_=0.0;
   std::vector<double> zero(pressure_.size(),0.0);
   invbulkmodulussolid_ = 0.0;
   std::fill(invbulkmodulifluid_.begin(), invbulkmodulifluid_.end(), 0.0);
@@ -336,6 +417,26 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::SolidPressure() const
   CheckIsEvaluated();
 
   return solidpressure_;
+}
+
+/*----------------------------------------------------------------------*
+ * recalculate solid pressure if volfracs are present  kremheller 09/17 |
+*----------------------------------------------------------------------*/
+void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::RecalculateSolidPressure(
+    const double porosity,
+    const std::vector<double>& volfracpressure
+    )
+{
+  CheckIsEvaluated();
+
+  // p_s = (porosity)/(porosity+sumaddvolfrac) * sum_i^numfluidphases (S_i*p_i)
+  //     + 1.0 / (porosity+sumaddvolfrac) sum_i=1^numvolfrac (volfrac_i*pressure_i)
+  // with porosity = porosity' - sumaddvolfrac
+  // porosity' := porosity if no volume fractions were present
+  solidpressure_*= porosity/(sumaddvolfrac_+porosity);
+  for(int ivolfrac = 0; ivolfrac < totalnumdofpernode_-numfluidphases_; ivolfrac++)
+    solidpressure_ += volfrac_[ivolfrac]/(porosity+sumaddvolfrac_)*volfracpressure[ivolfrac];
+
 }
 
 /*----------------------------------------------------------------------*
@@ -366,6 +467,36 @@ const std::vector<double>& DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::Sa
   CheckIsEvaluated();
 
   return saturation_;
+}
+
+/*----------------------------------------------------------------------*
+ *    get volfracs                                     kremheller 08/17 |
+*----------------------------------------------------------------------*/
+const std::vector<double>& DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::VolFrac() const
+{
+  CheckIsEvaluated();
+
+  return volfrac_;
+}
+
+/*----------------------------------------------------------------------*
+ *    get volfrac of volfrac 'volfracnum'              kremheller 08/17 |
+*----------------------------------------------------------------------*/
+double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::VolFrac(int volfracnum) const
+{
+  CheckIsEvaluated();
+
+  return volfrac_[volfracnum];
+}
+
+/*----------------------------------------------------------------------*
+ * get the sum of the additional volume fractions      kremheller 09/17 |
+*----------------------------------------------------------------------*/
+double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::SumAddVolFrac() const
+{
+  CheckIsEvaluated();
+
+  return sumaddvolfrac_;
 }
 
 /*----------------------------------------------------------------------*
@@ -447,13 +578,13 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::PhaseManagerDeriv(
     solidpressurederiv_(Teuchos::null),
     solidpressurederivderiv_(Teuchos::null)
 {
-  const int numphases = phasemanager_->NumPhases();
+  const int numfluidphases = phasemanager_->NumFluidPhases();
   // initialize matrixes and vectors
-  pressurederiv_= Teuchos::rcp(new Epetra_SerialDenseMatrix(numphases,numphases));
-  saturationderiv_= Teuchos::rcp(new Epetra_SerialDenseMatrix(numphases,numphases));
-  saturationderivderiv_ = Teuchos::rcp(new std::vector<Epetra_SerialDenseMatrix>(numphases,Epetra_SerialDenseMatrix(numphases,numphases)));
-  solidpressurederiv_= Teuchos::rcp(new Epetra_SerialDenseVector(numphases));
-  solidpressurederivderiv_= Teuchos::rcp(new Epetra_SerialDenseMatrix(numphases,numphases));
+  pressurederiv_= Teuchos::rcp(new Epetra_SerialDenseMatrix(numfluidphases,numfluidphases));
+  saturationderiv_= Teuchos::rcp(new Epetra_SerialDenseMatrix(numfluidphases,numfluidphases));
+  saturationderivderiv_ = Teuchos::rcp(new std::vector<Epetra_SerialDenseMatrix>(numfluidphases,Epetra_SerialDenseMatrix(numfluidphases,numfluidphases)));
+  solidpressurederiv_= Teuchos::rcp(new Epetra_SerialDenseVector(numfluidphases));
+  solidpressurederivderiv_= Teuchos::rcp(new Epetra_SerialDenseMatrix(numfluidphases,numfluidphases));
 
   return;
 }
@@ -474,21 +605,30 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::EvaluateGPState(
   const MAT::Material& material = *(phasemanager_->Element()->Material(matnum));
 
   // get number of phases
-  const int numphases = phasemanager_->NumPhases();
+  const int numfluidphases = phasemanager_->NumFluidPhases();
   // get pressure
   const std::vector<double>& pressure = phasemanager_->Pressure();
   // get saturation
-   const std::vector<double>& saturation = phasemanager_->Saturation();
+  const std::vector<double>& saturation = phasemanager_->Saturation();
 
   // access state vector
   const std::vector<double>& phinp = *varmanager.Phinp();
+
+  if(phasemanager_->TotalNumDof()!= (int)phinp.size())
+    dserror("Length of phinp vector is not equal to the number of dofs");
+
+  // get fluid primary variable
+  const std::vector<double> fluid_phinp(&phinp[0],&phinp[numfluidphases]);
+
+  if(numfluidphases != (int)fluid_phinp.size())
+    dserror("Length of phinp vector is not equal to the number of phases");
 
   //cast
   const MAT::FluidPoroMultiPhase& multiphasemat =
       static_cast<const MAT::FluidPoroMultiPhase&>(material);
 
   // calculate the derivative of the pressure (actually first its inverse)
-  multiphasemat.EvaluateDerivOfDofWrtPressure(*pressurederiv_,phinp);
+  multiphasemat.EvaluateDerivOfDofWrtPressure(*pressurederiv_,fluid_phinp);
 
   // now invert the derivatives of the dofs w.r.t. pressure to get the derivatives
   // of the pressure w.r.t. the dofs
@@ -501,7 +641,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::EvaluateGPState(
   }
 
   // calculate derivatives of saturation w.r.t. pressure
-  Epetra_SerialDenseMatrix deriv(numphases,numphases);
+  Epetra_SerialDenseMatrix deriv(numfluidphases,numfluidphases);
   multiphasemat.EvaluateDerivOfSaturationWrtPressure(deriv,pressure);
 
   // chain rule: the derivative of saturation w.r.t. dof =
@@ -512,9 +652,9 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::EvaluateGPState(
   // TODO: this should work for pressure und diffpressure DOFs, however not for
   //       saturation DOFs
   Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix> > dummyderiv =
-      Teuchos::rcp(new std::vector<Epetra_SerialDenseMatrix>(numphases,Epetra_SerialDenseMatrix(numphases,numphases)));
+      Teuchos::rcp(new std::vector<Epetra_SerialDenseMatrix>(numfluidphases,Epetra_SerialDenseMatrix(numfluidphases,numfluidphases)));
   multiphasemat.EvaluateSecondDerivOfSaturationWrtPressure(*dummyderiv,pressure);
-  for (int i = 0; i < numphases; i++)
+  for (int i = 0; i < numfluidphases; i++)
   {
     deriv.Multiply('T','N',1.0,*pressurederiv_,(*dummyderiv)[i],0.0);
     (*saturationderivderiv_)[i].Multiply('N','N',1.0,deriv,*pressurederiv_,0.0);
@@ -522,17 +662,17 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::EvaluateGPState(
 
   // compute derivative of solid pressure w.r.t. dofs with product rule
   solidpressurederiv_->Scale(0.0);
-  for(int iphase=0; iphase<numphases; iphase++)
-    for(int jphase=0; jphase<numphases; jphase++)
+  for(int iphase=0; iphase<numfluidphases; iphase++)
+    for(int jphase=0; jphase<numfluidphases; jphase++)
       (*solidpressurederiv_)(iphase) +=   (*pressurederiv_)(jphase,iphase)*saturation[jphase]
                                         + (*saturationderiv_)(jphase,iphase)*pressure[jphase];
 
   // compute second derivative of solid pressure w.r.t. dofs with product rule
   //TODO also include second derivs of pressure and saturation
   solidpressurederivderiv_->Scale(0.0);
-  for(int iphase=0; iphase<numphases; iphase++)
-    for(int jphase=0; jphase<numphases; jphase++)
-      for(int kphase=0; kphase<numphases; kphase++)
+  for(int iphase=0; iphase<numfluidphases; iphase++)
+    for(int jphase=0; jphase<numfluidphases; jphase++)
+      for(int kphase=0; kphase<numfluidphases; kphase++)
         (*solidpressurederivderiv_)(jphase,kphase) +=
               (*pressurederiv_)(iphase,kphase)*(*saturationderiv_)(iphase,jphase)
             + (*saturationderiv_)(iphase,kphase)*(*pressurederiv_)(iphase,jphase);
@@ -548,13 +688,13 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::ClearGPState()
   // this is just a safety call. All quantities should be recomputed
   // in the next EvaluateGPState call anyway, but you never know ...
 
-  const int numphases = phasemanager_->NumPhases();
+  const int numfluidphases = phasemanager_->NumFluidPhases();
   phasemanager_->ClearGPState();
 
   //zero everything
   pressurederiv_->Scale(0.0);
   saturationderiv_->Scale(0.0);
-  for (int iphase = 0; iphase < numphases; iphase++)
+  for (int iphase = 0; iphase < numfluidphases; iphase++)
     (*saturationderivderiv_)[iphase].Scale(0.0);
   solidpressurederiv_->Scale(0.0);
   solidpressurederivderiv_->Scale(0.0);
@@ -640,9 +780,9 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::PhaseManagerDeriv
     dporosity_dp_(0.0),
     porosityderiv_(Teuchos::null)
 {
-  const int numphases = phasemanager_->NumPhases();
+  const int totalnumdof = phasemanager_->TotalNumDof();
   // initialize matrixes and vectors
-  porosityderiv_= Teuchos::rcp(new Epetra_SerialDenseVector(numphases));
+  porosityderiv_= Teuchos::rcp(new Epetra_SerialDenseVector(totalnumdof));
 
   return;
 }
@@ -684,9 +824,23 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::EvaluateGPSt
                               NULL,
                               false);
 
-  // calculate the derivative of the porosity
-  for(int iphase=0; iphase<phasemanager_->NumPhases(); iphase++)
+  // Note:
+  // for phase law density dependent, incompressible:
+  // porosity = 1 - sumaddvolfrac - (1 - porosity_0 - sumaddvolfrac_0)/J
+  // with porosity_0 = porosity_0' - sumaddvolfrac_0   (porosity_0' = element initial porosity)
+  // porosity = 1 - sumaddvolfrac - (1 - porosity_0')/J
+
+  // subtract additional volume fractions
+  // porosity = porosity' - sumaddvolfracs
+  porosity_ -= phasemanager_->SumAddVolFrac();
+
+  // calculate the derivative of the porosity w.r.t. fluid phases
+  for(int iphase=0; iphase<phasemanager_->NumFluidPhases(); iphase++)
       (*porosityderiv_)(iphase)   = dporosity_dp_*SolidPressureDeriv(iphase);
+
+  // additional derivatives w.r.t. volume fractions
+  for(int ivolfrac=0; ivolfrac<phasemanager_->TotalNumDof()-phasemanager_->NumFluidPhases(); ivolfrac++)
+    (*porosityderiv_)(ivolfrac+phasemanager_->NumFluidPhases()) = - 1.0;
 
   return;
 }
@@ -760,7 +914,7 @@ bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::PorosityDepe
   phasemanager_->CheckIsEvaluated();
 
   // this check is needed for speeding up calculations of element stiffness matrices
-  return (fabs(dporosity_dp_) > 1.0e-10);
+  return (fabs(dporosity_dp_) > 1.0e-10 || phasemanager_->TotalNumDof()-phasemanager_->NumFluidPhases() > 0);
 }
 
 /*----------------------------------------------------------------------*
@@ -804,10 +958,10 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::Setup(
   // get material
   const MAT::Material& material = *(phasemanager_->Element()->Material(matnum));
 
-  // get number of phases
-  const int numphases = phasemanager_->NumPhases();
+  // get total number of dofs
+  const int totalnumdof = phasemanager_->TotalNumDof();
 
-  isreactive_.resize(numphases,false);
+  isreactive_.resize(totalnumdof,false);
 
   // cast the material to multiphase material
   const MAT::FluidPoroMultiPhaseReactions& multiphasemat =
@@ -823,7 +977,36 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::Setup(
   Teuchos::RCP<MAT::MatList> scatramat
   = Teuchos::rcp_static_cast<MAT::MatList>(phasemanager_->Element()->Material(2));
 
+  // get number of scalars
   numscal_ = scatramat->NumMat();
+  scalartophaseid_.resize(numscal_);
+
+  // fill scalar to phase id vector
+  if (scatramat->MaterialType() == INPAR::MAT::m_matlist or
+      scatramat->MaterialType() == INPAR::MAT::m_matlist_reactions)
+  {
+    for (int k = 0;k<numscal_;++k)
+    {
+      int matid = scatramat->MatID(k);
+      Teuchos::RCP< MAT::Material> singlemat = scatramat->MaterialById(matid);
+      if(singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo)
+      {
+        const Teuchos::RCP<const MAT::ScatraMatMultiPoro>& poromat
+          = Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoro>(singlemat);
+        scalartophaseid_[k] = poromat->PhaseID();
+      }
+      else
+        dserror("only MAT_scatra_multiporo valid here");
+    }
+  }
+  else if(scatramat->MaterialType() == INPAR::MAT::m_scatra_multiporo)
+  {
+    const Teuchos::RCP<const MAT::ScatraMatMultiPoro>& poromat
+      = Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoro>(scatramat);
+    scalartophaseid_[0] = poromat->PhaseID();
+  }
+  else
+    dserror("only MAT_matlist_reactions, MAT_matlist or MAT_scatra_multiporo valid here");
 
   for(int ireac=0; ireac<numreactions; ireac++)
   {
@@ -831,7 +1014,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::Setup(
     MAT::FluidPoroSingleReaction& singlephasemat =
         POROFLUIDMULTIPHASE::ELEUTILS::GetSingleReactionMatFromMultiReactionsMaterial(multiphasemat,ireac);
 
-    for(int iphase=0; iphase<numphases; iphase++)
+    for(int iphase=0; iphase<totalnumdof; iphase++)
     {
       isreactive_[iphase] = isreactive_[iphase] or singlephasemat.IsReactive(iphase);
     }
@@ -866,7 +1049,12 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::EvaluateGPState(
   // get number of reactions
   const int numreactions = multiphasemat.NumReac();
   // get number of phases
-  const int numphases = phasemanager_->NumPhases();
+  const int numfluidphases = phasemanager_->NumFluidPhases();
+  // get total number of dofs
+  const int totalnumdof = phasemanager_->TotalNumDof();
+
+  // get the volume fraction vector
+  const std::vector<double> volfrac = phasemanager_->VolFrac();
 
   reacterms_.clear();
   reactermsderivs_.clear();
@@ -874,12 +1062,13 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::EvaluateGPState(
   reactermsderivssaturation_.clear();
   reactermsderivsporosity_.clear();
   reactermsderivsscalar_.clear();
-  reacterms_.resize(numphases,0.0);
-  reactermsderivs_.resize(numphases,std::vector<double>(numphases,0.0));
-  reactermsderivspressure_.resize(numphases,std::vector<double>(numphases,0.0));
-  reactermsderivssaturation_.resize(numphases,std::vector<double>(numphases,0.0));
-  reactermsderivsporosity_.resize(numphases,0.0);
-  reactermsderivsscalar_.resize(numphases,std::vector<double>(numscal_,0.0));
+  reacterms_.resize(totalnumdof,0.0);
+  reactermsderivs_.resize(totalnumdof,std::vector<double>(totalnumdof,0.0));
+  reactermsderivspressure_.resize(totalnumdof,std::vector<double>(numfluidphases,0.0));
+  reactermsderivssaturation_.resize(totalnumdof,std::vector<double>(numfluidphases,0.0));
+  reactermsderivsporosity_.resize(totalnumdof,0.0);
+  reactermsderivsscalar_.resize(totalnumdof,std::vector<double>(numscal_,0.0));
+  reactermsderivsvolfrac_.resize(totalnumdof,std::vector<double>(totalnumdof-numfluidphases,0.0));
 
   for(int ireac=0; ireac<numreactions; ireac++)
   {
@@ -893,25 +1082,40 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::EvaluateGPState(
         reactermsderivspressure_,
         reactermsderivssaturation_,
         reactermsderivsporosity_,
+        reactermsderivsvolfrac_,
         reactermsderivsscalar_,
         phasemanager_->Pressure(),
         phasemanager_->Saturation(),
         phasemanager_->Porosity(),
+        volfrac,
         *varmanager.Scalarnp()
         );
   }
 
-  for(int iphase=0; iphase<numphases; iphase++)
+  for(int jdof=0; jdof<totalnumdof; jdof++)
   {
-    std::vector<double>& myphasederiv = reactermsderivs_[iphase];
-    const std::vector<double>& myderivspressure = reactermsderivspressure_[iphase];
-    const std::vector<double>& myderivssaturation = reactermsderivssaturation_[iphase];
+    std::vector<double>& myphasederiv = reactermsderivs_[jdof];
+    const std::vector<double>& myderivspressure = reactermsderivspressure_[jdof];
+    const std::vector<double>& myderivssaturation = reactermsderivssaturation_[jdof];
+    const std::vector<double>& myderivsvolfrac = reactermsderivsvolfrac_[jdof];
+    const double myderivsporosity = reactermsderivsporosity_[jdof];
 
-    for(int doftoderive=0; doftoderive<numphases; doftoderive++)
+    // reaction derivs w.r.t. to fluid phases
+    for(int doftoderive=0; doftoderive<numfluidphases; doftoderive++)
     {
-      for(int idof=0; idof<numphases; idof++)
+      for(int idof=0; idof<numfluidphases; idof++)
         myphasederiv[doftoderive] +=   myderivspressure[idof]*phasemanager_->PressureDeriv(idof,doftoderive)
                                      + myderivssaturation[idof]*phasemanager_->SaturationDeriv(idof,doftoderive);
+      if(phasemanager_->PorosityDependsOnFluid())
+      {
+        myphasederiv[doftoderive] += myderivsporosity*phasemanager_->PorosityDeriv(doftoderive);
+      }
+    }
+    // reaction derivs w.r.t. to volume fraction phases
+    for(int doftoderive=numfluidphases; doftoderive<totalnumdof; doftoderive++)
+    {
+      myphasederiv[doftoderive] += myderivsvolfrac[doftoderive-numfluidphases]
+                                 + myderivsporosity*phasemanager_->PorosityDeriv(doftoderive);
     }
   }
 
@@ -933,6 +1137,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::ClearGPState()
   reactermsderivssaturation_.clear();
   reactermsderivsporosity_.clear();
   reactermsderivsscalar_.clear();
+  reactermsderivsvolfrac_.clear();
 
   return;
 }
@@ -960,7 +1165,7 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::ReacDeriv(int phas
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::NumScal() const
 {
-  phasemanager_->CheckIsEvaluated();
+  phasemanager_->CheckIsSetup();
   return numscal_;
 }
 
@@ -980,6 +1185,15 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::ReacDerivScalar(in
 {
   phasemanager_->CheckIsEvaluated();
   return reactermsderivsscalar_[phasenum][scaltoderive];
+}
+
+/*----------------------------------------------------------------------*
+ | get the scalar to phase id                          kremheller 08/17 |
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::ScalarToPhaseID(int iscal) const
+{
+  phasemanager_->CheckIsEvaluated();
+  return scalartophaseid_[iscal];
 }
 /*----------------------------------------------------------------------*
  * **********************************************************************
@@ -1010,13 +1224,13 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::Setup(
   phasemanager_->Setup(ele, matnum);
 
   // get number of phases
-  const int numphases = phasemanager_->NumPhases();
+  const int numfluidphases = phasemanager_->NumFluidPhases();
 
-  // resize vectors to numphase
-  constrelpermeability_.resize(numphases,false);
-  constdynviscosity_.resize(numphases,false);
-  relpermeabilities_.resize(numphases,false);
-  derrelpermeabilities_.resize(numphases,false);
+  // resize vectors to numfluidphases
+  constrelpermeability_.resize(numfluidphases,false);
+  constdynviscosity_.resize(numfluidphases,false);
+  relpermeabilities_.resize(numfluidphases,false);
+  derrelpermeabilities_.resize(numfluidphases,false);
 
   const MAT::Material& material = *( phasemanager_->Element()->Material(matnum));
 
@@ -1026,7 +1240,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::Setup(
           != INPAR::MAT::m_fluidporo_multiphase_reactions)
     dserror("only poro multiphase material valid");
 
-  for(int iphase=0; iphase<numphases; iphase++)
+  for(int iphase=0; iphase<numfluidphases; iphase++)
   {
     //get the single phase material
     const MAT::FluidPoroSinglePhase& singlephasemat =
@@ -1055,12 +1269,12 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::EvaluateGPStat
   const MAT::Material& material = *( phasemanager_->Element()->Material(matnum));
 
   // get number of phases
-  const int numphases = phasemanager_->NumPhases();
+  const int numfluidphases = phasemanager_->NumFluidPhases();
 
   // resize vectors
-  permeabilitytensors_.resize(numphases);
-  relpermeabilities_.resize(numphases);
-  derrelpermeabilities_.resize(numphases);
+  permeabilitytensors_.resize(numfluidphases);
+  relpermeabilities_.resize(numfluidphases);
+  derrelpermeabilities_.resize(numfluidphases);
 
   // check material type
   if (material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase
@@ -1072,7 +1286,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::EvaluateGPStat
   const MAT::FluidPoroMultiPhase& multiphasemat =
       static_cast<const MAT::FluidPoroMultiPhase&>(material);
 
-  for (int iphase = 0; iphase < numphases; iphase++)
+  for (int iphase = 0; iphase < numfluidphases; iphase++)
   {
     // TODO only isotropic, constant permeability for now
     permeabilitytensors_[iphase].Clear();
@@ -1230,6 +1444,193 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::DynViscosity
   return singlephasemat.ViscosityDeriv(abspressgrad);
 }
 
+/*----------------------------------------------------------------------*
+ | constructor                                         kremheller 08/17 |
+ *----------------------------------------------------------------------*/
+template<int nsd>
+DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::PhaseManagerVolFrac(
+    Teuchos::RCP< POROFLUIDMANAGER::PhaseManagerInterface > phasemanager
+    )
+: PhaseManagerDecorator(phasemanager)
+{
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | constructor                                         kremheller 08/17 |
+ *----------------------------------------------------------------------*/
+template<int nsd>
+void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::Setup(
+    const DRT::Element* ele,
+    const int matnum
+    )
+{
+  // setup the wrapped class
+  phasemanager_->Setup(ele, matnum);
+
+  const int totalnumdof = phasemanager_->TotalNumDof();
+  const int numfluidphases = phasemanager_->NumFluidPhases();
+  const int numvolfrac = totalnumdof - numfluidphases;
+
+  if(numfluidphases >= totalnumdof)
+    dserror("We should not be here, total numdof is %d, numfluidphases is %d",
+        phasemanager_->TotalNumDof(), phasemanager_->NumFluidPhases());
+
+  difftensorsvolfrac_.resize(numvolfrac);
+  volfracdensity_.resize(numvolfrac);
+  volfracpressure_.resize(numvolfrac);
+  scalardiffs_.resize(numvolfrac);
+
+  hasaddscalardpendentflux_.resize(numvolfrac,false);
+
+  // get material
+  const MAT::Material& material = *(ele->Material(matnum));
+
+  // check the material
+  if(material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
+     material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
+    dserror("only poro multiphase and poro multiphase reactions material valid");
+
+  for (int ivolfrac = 0; ivolfrac < numvolfrac; ivolfrac++)
+  {
+    //get the single phase material
+    const MAT::FluidPoroSingleVolFrac& singlevolfracmat =
+        POROFLUIDMULTIPHASE::ELEUTILS::GetSingleVolFracMatFromMaterial(material,ivolfrac+numfluidphases);
+
+    // clear
+    difftensorsvolfrac_[ivolfrac].Clear();
+
+    // TODO only isotropic, constant diffusivity for now
+    const double diffusivity = singlevolfracmat.Diffusivity();
+    for (int i = 0; i < nsd; i++)
+      (difftensorsvolfrac_[ivolfrac])(i, i) = diffusivity;
+
+    volfracdensity_[ivolfrac] = singlevolfracmat.Density();
+    volfracpressure_[ivolfrac] = singlevolfracmat.Pressure();
+
+    if(singlevolfracmat.HasAddScalarDependentFlux())
+    {
+      if(phasemanager_->NumScal() != singlevolfracmat.NumScal())
+        dserror("Wrong number of scalars for additional scalar dependent flux");
+      hasaddscalardpendentflux_[ivolfrac] = true;
+      scalardiffs_[ivolfrac].resize(singlevolfracmat.NumScal());
+      scalardiffs_[ivolfrac] = singlevolfracmat.ScalarDiffs();
+    }
+  }
+
+  return;
+}
+/*----------------------------------------------------------------------*
+ | constructor                                         kremheller 08/17 |
+ *----------------------------------------------------------------------*/
+template<int nsd>
+void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::EvaluateGPState(
+    double                 J,
+    const VariableManagerMinAccess& varmanager,
+    const int matnum
+    )
+{
+  // evaluate wrapped manager
+  phasemanager_->EvaluateGPState( J, varmanager, matnum);
+
+  // safety check
+  if(phasemanager_->InvBulkmodulusSolid() > 1.0e-14)
+    dserror("So far volume fractions are only possible for an incompressible solid");
+
+  // recalculate the solid pressure
+  phasemanager_->RecalculateSolidPressure(phasemanager_->Porosity(),volfracpressure_);
+
+  return;
+ }
+
+/*---------------------------------------------------------------------------*
+ * get diffusion tensor for volume fractions                kremheller 08/17 |
+*---------------------------------------------------------------------------*/
+template<int nsd>
+void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::DiffTensorVolFrac(
+    int volfracnum, LINALG::Matrix<nsd,nsd>& difftensorvolfrac) const
+{
+  phasemanager_->CheckIsEvaluated();
+  // make a hard copy for now
+  difftensorvolfrac = difftensorsvolfrac_[volfracnum];
+}
+
+/*---------------------------------------------------------------------------*
+ * get densities for volume fractions                       kremheller 08/17 |
+*---------------------------------------------------------------------------*/
+template<int nsd>
+double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::VolFracDensity(
+    int volfracnum) const
+{
+  phasemanager_->CheckIsEvaluated();
+
+  return volfracdensity_[volfracnum];
+}
+
+/*---------------------------------------------------------------------------*
+ * get pressures for volume fractions                       kremheller 08/17 |
+*---------------------------------------------------------------------------*/
+template<int nsd>
+double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::VolFracPressure(
+    int volfracnum) const
+{
+  phasemanager_->CheckIsEvaluated();
+
+  return volfracpressure_[volfracnum];
+}
+
+/*---------------------------------------------------------------------------*
+ * get densities for volume fractions                       kremheller 08/17 |
+*---------------------------------------------------------------------------*/
+template<int nsd>
+bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::HasAddScalarDependentFlux(
+    int volfracnum) const
+{
+  phasemanager_->CheckIsEvaluated();
+
+  return hasaddscalardpendentflux_[volfracnum];
+}
+
+/*---------------------------------------------------------------------------*
+ * get densities for volume fractions                       kremheller 08/17 |
+*---------------------------------------------------------------------------*/
+template<int nsd>
+bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::HasAddScalarDependentFlux(
+    int volfracnum,
+    int iscal) const
+{
+  phasemanager_->CheckIsEvaluated();
+
+  return fabs((scalardiffs_[volfracnum])[iscal]) > 1.0e-12;
+}
+
+/*---------------------------------------------------------------------------*
+ * get densities for volume fractions                       kremheller 08/17 |
+*---------------------------------------------------------------------------*/
+template<int nsd>
+double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::ScalarDiff(
+    int volfracnum,
+    int iscal) const
+{
+  phasemanager_->CheckIsEvaluated();
+
+  return (scalardiffs_[volfracnum])[iscal];
+}
+
+/*----------------------------------------------------------------------*
+ | zero all values at GP                               kremheller 08/17 |
+ *----------------------------------------------------------------------*/
+template<int nsd>
+void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::ClearGPState()
+{
+  // this is just a safety call. All quantities should be recomputed
+  // in the next EvaluateGPState call anyway, but you never know ...
+  phasemanager_->ClearGPState();
+
+  return;
+}
+
 ///*----------------------------------------------------------------------*
 // *----------------------------------------------------------------------*/
 //// template classes
@@ -1237,4 +1638,7 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::DynViscosity
 template class DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<1>;
 template class DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<2>;
 template class DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<3>;
+template class DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<1>;
+template class DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<2>;
+template class DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<3>;
 

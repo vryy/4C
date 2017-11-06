@@ -51,7 +51,7 @@ FDCHECK                         global
 NAME                            Solver
 SOLVER                          UMFPACK                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 3 MATIDS 10 20 30 END
+MAT 1 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 3 MATIDS 10 20 30 NUMFLUIDPHASES 3 END
 
 MAT 10 MAT_FluidPoroSinglePhase DOFTYPEID 100 VISCOSITYLAWID 104 DENSITYLAWID 102 DENSITY 1.0 BULKMODULUS 1.0 RELPERMEABILITYLAWID 103
 MAT 100 MAT_FluidPoroSinglePhaseDofPressure PHASELAWID 101

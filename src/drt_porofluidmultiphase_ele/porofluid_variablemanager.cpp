@@ -37,11 +37,22 @@ DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>::CreateVariab
   {
   // calculate true pressures and saturation
   case POROFLUIDMULTIPHASE::calc_pres_and_sat:
+  {
+    // only phi values are needed
+    varmanager = Teuchos::rcp(new VariableManagerPhi<nsd,nen>(numdofpernode));
+
+    break;
+  }
   // calculate solid pressure
   case POROFLUIDMULTIPHASE::calc_solidpressure:
   {
     // only phi values are needed
     varmanager = Teuchos::rcp(new VariableManagerPhi<nsd,nen>(numdofpernode));
+
+    // add manager for displacements and solid velocities in case of ALE
+    if(para.IsAle())
+      varmanager = Teuchos::rcp(new VariableManagerStruct<nsd,nen>(para.NdsVel(),para.NdsDisp(),varmanager));
+
     break;
   }
   // reconstruct velocities
@@ -369,8 +380,12 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerScalar<nsd,nen>::EvaluateGP
   if (not escalarnp_.empty())
   {
     scalarnp_.resize(escalarnp_.size(),0.0);
+    gradscalarnp_.resize(escalarnp_.size());
     for (unsigned k = 0; k < escalarnp_.size(); ++k)
+    {
       scalarnp_[k] = funct.Dot(escalarnp_[k]);
+      gradscalarnp_[k].Multiply(derxy,escalarnp_[k]);
+    }
   }
 
   return;

@@ -2539,6 +2539,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"PERMEABILITY","permeability of medium");
     AddNamedInt(m,"NUMMAT","number of materials in list");
     AddNamedIntVector(m,"MATIDS","the list material IDs","NUMMAT");
+    AddNamedInt(m,"NUMFLUIDPHASES","number of fluid phases");
     AddNamedSeparator(m,"END","indicating end of line");
 
     AppendMaterialDefinition(matlist,m);
@@ -2556,6 +2557,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"PERMEABILITY","permeability of medium");
     AddNamedInt(m,"NUMMAT","number of materials in list");
     AddNamedIntVector(m,"MATIDS","the list material IDs","NUMMAT");
+    AddNamedInt(m,"NUMFLUIDPHASES","number of fluid phases");
     AddNamedInt(m,"NUMREAC","number of reactions for these elements",0);
     AddNamedIntVector(m,"REACIDS","advanced reaction list","NUMREAC",0);
     AddNamedSeparator(m,"END","indicating end of line");
@@ -2572,8 +2574,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             INPAR::MAT::m_fluidporo_singlereaction));
 
     AddNamedInt(m,"NUMSCAL","number of scalars coupled with this problem");
-    AddNamedInt(m,"NUMPHASES","number of phases");
-    AddNamedIntVector(m,"SCALE","advanced reaction list","NUMPHASES");
+    AddNamedInt(m,"TOTALNUMDOF","total number of multiphase-dofs");
+    AddNamedInt(m,"NUMVOLFRAC","number of volfracs");
+    AddNamedIntVector(m,"SCALE","advanced reaction list","TOTALNUMDOF");
     AddNamedString(m,"COUPLING","type of coupling", "no_coupling",false);
     AddNamedInt(m,"FUNCTID","function ID defining the reaction");
 
@@ -2594,6 +2597,24 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedInt(m,"RELPERMEABILITYLAWID","ID of relative permeability law");
     AddNamedInt(m,"VISCOSITYLAWID","ID of viscosity law");
     AddNamedInt(m,"DOFTYPEID","ID of dof definition");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // one volume fraction for multiphase flow in a poroelastic material
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroSingleVolFrac",
+                                            "one phase for multiphase flow in deformable porous media",
+                                            INPAR::MAT::m_fluidporo_singlevolfrac));
+
+    AddNamedReal(m,"DENSITY","reference/initial density");
+    AddNamedReal(m,"DIFFUSIVITY","diffusivity of phase");
+    AddNamedReal(m,"Pressure","pressure of phase");
+    AddNamedBool(m,"AddScalarDependentFlux","Is there additional scalar dependent flux (yes) or (no)");
+    AddNamedInt(m,"NUMSCAL","Number of scalars",0,true);
+    AddNamedRealVector(m,"SCALARDIFFS","Diffusivities for additional scalar-dependent flux","NUMSCAL",0.0,true);
 
     AppendMaterialDefinition(matlist,m);
   }

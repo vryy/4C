@@ -17,6 +17,8 @@
 #include "porofluid_evaluator.H"
 #include "porofluidmultiphase_ele_parameter.H"
 
+#include "../drt_mat/fluidporo_multiphase.H"
+
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
 #include "../drt_geometry/position_array.H"
@@ -35,7 +37,8 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::PoroFluidMultiPhaseEleCalc(
     const int numdofpernode,
     const std::string& disname):
     ele_(NULL),
-    numdofpernode_(numdofpernode),
+    totalnumdofpernode_(numdofpernode),
+    numfluidphases_(0),
     para_(DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance(disname)),            // standard parameter list
     xsi_(true),
     xyze0_(true),
@@ -197,7 +200,6 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvaluateAction(
     break;
   }
   case POROFLUIDMULTIPHASE::calc_pres_and_sat:
-  case POROFLUIDMULTIPHASE::calc_solidpressure:
   {
     // loop over nodes and evaluate terms
     NodeLoop(
@@ -211,6 +213,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvaluateAction(
     break;
   }
   case POROFLUIDMULTIPHASE::calc_porosity:
+  case POROFLUIDMULTIPHASE::calc_solidpressure:
   {
     // loop over nodes and evaluate terms
     NodeLoop(
@@ -219,7 +222,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvaluateAction(
       elevec,
       discretization,
       la,
-      true  // Jacobian at the node needed since porosity depends on J
+      true  // Jacobian at the node needed since porosity and (pressure in case of volume fractions )depends on J
       );
     break;
   }
@@ -356,7 +359,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(
         elemat,
         funct_,
         derxy_,
-        numdofpernode_,
+        totalnumdofpernode_,
         *phasemanager_,
         *variablemanager_,
         timefacfac,
@@ -371,7 +374,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(
         elevec,
         funct_,
         derxy_,
-        numdofpernode_,
+        totalnumdofpernode_,
         *phasemanager_,
         *variablemanager_,
         rhsfac,
@@ -423,7 +426,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODStruct(
         deriv_,
         derxy_,
         xjm_,
-        numdofpernode_,
+        totalnumdofpernode_,
         *phasemanager_,
         *variablemanager_,
         rhsfac,
@@ -475,7 +478,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopODScatra(
         elemat,
         funct_,
         derxy_,
-        numdofpernode_,
+        totalnumdofpernode_,
         *phasemanager_,
         *variablemanager_,
         rhsfac,
@@ -538,7 +541,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::NodeLoop(
         elemat,
         funct_,
         derxy_,
-        numdofpernode_,
+        totalnumdofpernode_,
         *phasemanager_,
         *variablemanager_,
         1.0,
@@ -552,7 +555,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::NodeLoop(
         elevec,
         funct_,
         derxy_,
-        numdofpernode_,
+        totalnumdofpernode_,
         *phasemanager_,
         *variablemanager_,
         1.0,
@@ -584,6 +587,18 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::SetupCalc(
   // set element
   ele_ = ele;
 
+  Teuchos::RCP<MAT::Material> mat = ele->Material();
+  if(mat->MaterialType() == INPAR::MAT::m_fluidporo_multiphase or
+     mat->MaterialType() == INPAR::MAT::m_fluidporo_multiphase_reactions)
+  {
+    const MAT::FluidPoroMultiPhase* actmat = dynamic_cast<const MAT::FluidPoroMultiPhase*>(mat.get());
+    if(actmat==NULL)
+      dserror("cast failed");
+    numfluidphases_ = actmat->NumFluidPhases();
+  }
+  else
+    dserror("PoroFluidMultiPhase element got unsupported material type %d", mat->MaterialType());
+
   //Note:
   // here the phase manager, the variable manager and the evaluator classes are
   // rebuild here, allocating new memory. This is actually not necessary.
@@ -597,7 +612,8 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::SetupCalc(
           nsd_,
           ele->Material()->MaterialType(),
           action,
-          numdofpernode_);
+          totalnumdofpernode_,
+          numfluidphases_);
   // setup the manager
   phasemanager_->Setup(ele);
 
@@ -606,13 +622,14 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::SetupCalc(
       DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<nsd_,nen_>::CreateVariableManager(
           *para_,
           action,
-          numdofpernode_);
+          totalnumdofpernode_);
 
   // build the evaluator
   evaluator_ = DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<nsd_,nen_>::CreateEvaluator(
       *para_,
       action,
-      numdofpernode_,
+      totalnumdofpernode_,
+      numfluidphases_,
       *phasemanager_);
 
   return 0;

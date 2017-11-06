@@ -144,6 +144,7 @@ class VariableManagerInterface : public VariableManagerMinAccess
     virtual const LINALG::Matrix<nsd,nen>* EConVelnp() const=0;
     virtual const LINALG::Matrix<nsd,1>* Dispnp() const=0;
     virtual const std::vector<double>* Scalarnp() const =0;
+    virtual const std::vector<LINALG::Matrix<nsd,1> >* GradScalarnp() const=0;
     //@}
 
   };
@@ -234,6 +235,11 @@ class VariableManagerBase : public VariableManagerInterface<nsd,nen>
     {
        dserror("Access method Salarnp() not implemented! Wrong VariableManager?");
        return NULL;
+   };
+   virtual const std::vector<LINALG::Matrix<nsd,1> >* GradScalarnp() const
+   {
+     dserror("Access method GradScalarnp() not implemented! Wrong VariableManager?");
+     return NULL;
    };
 
    //@}
@@ -414,6 +420,10 @@ class VariableManagerDecorator : public VariableManagerInterface<nsd,nen>
   virtual const std::vector<double>* Scalarnp() const
   {
       return varmanager_->Scalarnp();
+  };
+  virtual const std::vector<LINALG::Matrix<nsd,1> >* GradScalarnp() const
+  {
+    return varmanager_->GradScalarnp();
   };
 
   //@}
@@ -625,7 +635,8 @@ class VariableManagerScalar : public VariableManagerDecorator<nsd,nen>
         VariableManagerDecorator<nsd,nen>(varmanager),
         ndsscalar_(ndsscalar),
         escalarnp_(),
-        scalarnp_()
+        scalarnp_(),
+        gradscalarnp_()
         {};
 
     //! destructor
@@ -655,6 +666,13 @@ class VariableManagerScalar : public VariableManagerDecorator<nsd,nen>
       return &scalarnp_;
     };
 
+    //! access method
+    virtual const std::vector<LINALG::Matrix<nsd,1> >* GradScalarnp() const
+    {
+      this->varmanager_->CheckIsEvaluated();
+      return &gradscalarnp_;
+    }
+
   private:
     // number of dofset associated with scalar related dofs
     const int ndsscalar_;
@@ -664,6 +682,9 @@ class VariableManagerScalar : public VariableManagerDecorator<nsd,nen>
 
     //! scalar values
     std::vector<double> scalarnp_;
+
+    //! spatial gradient of current scalar value
+    std::vector<LINALG::Matrix<nsd,1> > gradscalarnp_;
 
   };
 

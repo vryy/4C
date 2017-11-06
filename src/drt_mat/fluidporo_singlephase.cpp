@@ -277,3 +277,152 @@ double MAT::FluidPoroSinglePhase::EvaluateDerivOfDofWrtPressure(
 {
   return params_->phasedof_->EvaluateDerivOfDofWrtPressure(phasenum,doftoderive,state);
 }
+
+/*----------------------------------------------------------------------*
+ *  constructor (public)                               kremheller 10/17 |
+ *----------------------------------------------------------------------*/
+MAT::PAR::FluidPoroSingleVolFrac::FluidPoroSingleVolFrac(Teuchos::RCP<MAT::PAR::Material> matdata) :
+  Parameter(matdata),
+  density_(matdata->GetDouble("DENSITY")),
+  diffusivity_(matdata->GetDouble("DIFFUSIVITY")),
+  pressure_(matdata->GetDouble("Pressure")),
+  scalardependentflux_(matdata->GetInt("AddScalarDependentFlux")),
+  numscal_(matdata->GetInt("NUMSCAL")),
+  scalardiffs_(*(matdata->Get<std::vector<double> >("SCALARDIFFS"))),
+  isinit_(false)
+{
+  // retrieve problem instance to read from
+  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+
+  // for the sake of safety
+  if (DRT::Problem::Instance(probinst)->Materials() == Teuchos::null)
+    dserror("Sorry dude, cannot work out problem instance.");
+  // yet another safety check
+  if (DRT::Problem::Instance(probinst)->Materials()->Num() == 0)
+    dserror("Sorry dude, no materials defined.");
+
+  // safety checks
+  if(numscal_ < 0)
+    dserror("NUMSCAL smaller than zero not possible");
+
+  if(scalardependentflux_ && numscal_ == 0)
+    dserror("AddScalarDependentFlux has been set to YES, but NUMSCAL is equal to zero");
+
+  if(scalardependentflux_ && scalardiffs_.size() == 0)
+    dserror("AddScalarDependentFlux has been set to YES, but length of SCALARDIFFS is equal to zero");
+
+  if(!scalardependentflux_ && numscal_ > 0)
+    dserror("AddScalarDependentFlux has been set to NO, but NUMSCAL is greater than zero");
+
+  if(!scalardependentflux_ && scalardiffs_.size() > 0)
+    dserror("AddScalarDependentFlux has been set to NO, but length of SCALARDIFFS is greater than zero");
+
+}
+
+/*----------------------------------------------------------------------*
+ *  Create Material (public)                           kremheller 10/17 |
+*----------------------------------------------------------------------*/
+Teuchos::RCP<MAT::Material> MAT::PAR::FluidPoroSingleVolFrac::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::FluidPoroSingleVolFrac(this));
+}
+
+/*----------------------------------------------------------------------*
+ *  Create Material (public)                           kremheller 10/17 |
+*----------------------------------------------------------------------*/
+void MAT::PAR::FluidPoroSingleVolFrac::Initialize()
+{
+  isinit_ = true;
+  return;
+}
+
+/*----------------------------------------------------------------------*
+  global instance of parameter class                   kremheller 10/17 |
+*----------------------------------------------------------------------*/
+MAT::FluidPoroSingleVolFracType MAT::FluidPoroSingleVolFracType::instance_;
+
+/*----------------------------------------------------------------------*
+ *  Create material from given data                    kremheller 10/17 |
+ *----------------------------------------------------------------------*/
+
+DRT::ParObject* MAT::FluidPoroSingleVolFracType::Create(const std::vector<char> & data)
+{
+  MAT::FluidPoroSingleVolFrac* fluid_poro = new MAT::FluidPoroSingleVolFrac();
+  fluid_poro->Unpack(data);
+  return fluid_poro;
+}
+
+/*----------------------------------------------------------------------*
+ *   Create empty material                             kremheller 10/17 |
+ *----------------------------------------------------------------------*/
+MAT::FluidPoroSingleVolFrac::FluidPoroSingleVolFrac() :
+  params_(NULL)
+{
+}
+
+/*----------------------------------------------------------------------*
+*   Create material with parameters                    kremheller 10/17 |
+*----------------------------------------------------------------------*/
+MAT::FluidPoroSingleVolFrac::FluidPoroSingleVolFrac(MAT::PAR::FluidPoroSingleVolFrac* params) :
+  params_(params)
+{
+}
+
+/*----------------------------------------------------------------------*
+ * pack material for commuication                      kremheller 10/17 |
+*----------------------------------------------------------------------*/
+void MAT::FluidPoroSingleVolFrac::Pack(DRT::PackBuffer& data) const
+{
+  DRT::PackBuffer::SizeMarker sm(data);
+  sm.Insert();
+
+  // pack type of this instance of ParObject
+  int type = UniqueParObjectId();
+  AddtoPack(data, type);
+
+  // matid
+  int matid = -1;
+  if (params_ != NULL)
+    matid = params_->Id(); // in case we are in post-process mode
+  AddtoPack(data, matid);
+}
+
+/*----------------------------------------------------------------------*
+* unpack material                                      kremheller 10/17 |
+*----------------------------------------------------------------------*/
+void MAT::FluidPoroSingleVolFrac::Unpack(const std::vector<char>& data)
+{
+  std::vector<char>::size_type position = 0;
+  // extract type
+  int type = 0;
+  ExtractfromPack(position, data, type);
+  if (type != UniqueParObjectId())
+    dserror("wrong instance type data");
+
+  // matid
+  int matid;
+  ExtractfromPack(position,data,matid);
+  params_ = NULL;
+  if (DRT::Problem::Instance()->Materials() != Teuchos::null)
+  if (DRT::Problem::Instance()->Materials()->Num() != 0)
+  {
+    const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+    MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+    if (mat->Type() == MaterialType())
+      params_ = static_cast<MAT::PAR::FluidPoroSingleVolFrac*>(mat);
+    else
+      dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
+  }
+
+  if (position != data.size())
+  dserror("Mismatch in size of data %d <-> %d",data.size(),position);
+}
+
+/*----------------------------------------------------------------------*
+ *  initialize                                         kremheller 10/17 |
+*----------------------------------------------------------------------*/
+void MAT::FluidPoroSingleVolFrac::Initialize()
+{
+  params_->Initialize();
+  return;
+}

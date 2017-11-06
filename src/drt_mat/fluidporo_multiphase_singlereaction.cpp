@@ -24,15 +24,18 @@
 MAT::PAR::FluidPoroSingleReaction::FluidPoroSingleReaction(Teuchos::RCP<MAT::PAR::Material> matdata) :
   Parameter(matdata),
   numscal_(matdata->GetInt("NUMSCAL")),
-  numphases_(matdata->GetInt("NUMPHASES")),
+  numvolfrac_(matdata->GetInt("NUMVOLFRAC")),
+  totalnummultiphasedof_(matdata->GetInt("TOTALNUMDOF")),
+  numfluidphases_(totalnummultiphasedof_-numvolfrac_),
   scale_(matdata->Get<std::vector<int> >("SCALE")),
   coupling_(SetCouplingType(matdata)),
   functID_(matdata->GetInt("FUNCTID")),
   isinit_(false),
   scalarnames_(numscal_),
-  pressurenames_(numphases_),
-  saturationnames_(numphases_),
-  porosityname_("porosity")
+  pressurenames_(numfluidphases_),
+  saturationnames_(numfluidphases_),
+  porosityname_("porosity"),
+  volfracnames_(numvolfrac_)
 {
 }
 
@@ -61,7 +64,7 @@ void MAT::PAR::FluidPoroSingleReaction::Initialize()
       }
     }
 
-    for (int k=0;k<numphases_;k++)
+    for (int k=0;k<numfluidphases_;k++)
     {
       // add pressure names
       {
@@ -90,6 +93,19 @@ void MAT::PAR::FluidPoroSingleReaction::Initialize()
         Function(functID_-1).AddVariable(0,porosityname_,0.0);
     }
 
+    // add additional volume fractions
+    for (int k=0;k<numvolfrac_;k++)
+    {
+      {
+        std::ostringstream temp;
+        temp << k+1;
+        volfracnames_[k] = "VF"+temp.str();
+
+        if(not Function(functID_-1).IsVariable(0,volfracnames_[k]))
+          Function(functID_-1).AddVariable(0,volfracnames_[k],0.0);
+      }
+    }
+
     isinit_=true;
   }
   return;
@@ -103,59 +119,41 @@ void MAT::PAR::FluidPoroSingleReaction::EvaluateFunction(
     std::vector<std::vector<double> >&       reacderivspressure,
     std::vector<std::vector<double> >&       reacderivssaturation,
     std::vector<double>&                     reacderivsporosity,
+    std::vector<std::vector<double> >&       reacderivsvolfrac,
     std::vector<std::vector<double> >&       reacderivsscalar,
     const std::vector<double>&               pressure,
     const std::vector<double>&               saturation,
     const double&                            porosity,
+    const std::vector<double>&               volfracs,
     const std::vector<double>&               scalar)
 {
-//  dsassert(pressurenames_.size()==pressure.size(),"Invalid number of pressure values for this the fluid poro reaction material!");
-//  dsassert(pressurenames_.size()==saturation.size(),"Invalid number of pressure values for this the fluid poro reaction material!");
-//  dsassert(scalarnames_.size()==scalar.size(),"Invalid number of pressure values for this the fluid poro reaction material!");
 
-  if(numphases_!=(int)pressure.size())
-    dserror("Invalid number of pressure values for this fluid poro reaction material!");
-  if(numphases_!=(int)saturation.size())
-    dserror("Invalid number of saturation values for this fluid poro reaction material!");
-  if(numscal_!=(int)scalar.size())
-    dserror("Invalid number of scalar values for this fluid poro reaction material!");
-
-  if(numphases_!=(int)reacderivsporosity.size())
-    dserror("Invalid length of vector for porosity derivatives for this fluid poro reaction material!");
-  if(numphases_!=(int)reacderivspressure.size())
-    dserror("Invalid length of vector for pressure derivatives for this fluid poro reaction material!");
-  for (int k=0;k<numphases_;k++)
-  {
-    if(numphases_!=(int)reacderivspressure[k].size())
-      dserror("Invalid length of vector for pressure derivatives for this fluid poro reaction material!");
-  }
-  if(numphases_!=(int)reacderivssaturation.size())
-    dserror("Invalid length of vector for pressure derivatives for this fluid poro reaction material!");
-  for (int k=0;k<numphases_;k++)
-  {
-    if(numphases_!=(int)reacderivssaturation[k].size())
-      dserror("Invalid length of vector for pressure derivatives for this fluid poro reaction material!");
-  }
-  if(numphases_!=(int)reacderivsscalar.size())
-    dserror("Invalid length of vector for scalar derivatives for this fluid poro reaction material!");
-  for (int k=0;k<numphases_;k++)
-  {
-    if(numscal_!=(int)reacderivsscalar[k].size())
-      dserror("Invalid length of vector for scalar derivatives for this fluid poro reaction material!");
-  }
+  // safety check if sizes fit
+  CheckSizes(
+      reacval,
+      reacderivspressure,
+      reacderivssaturation,
+      reacderivsporosity,
+      reacderivsvolfrac,
+      reacderivsscalar,
+      pressure,
+      saturation,
+      porosity,
+      volfracs,
+      scalar);
 
   std::vector<std::pair<std::string,double> > variables;
-  variables.reserve(numphases_+numphases_+1+numscal_);
+  variables.reserve(numfluidphases_+numfluidphases_+1+numscal_+numvolfrac_);
 
   std::vector<std::pair<std::string,double> > constants;
   constants.reserve(0);
 
   // set pressure values as variable
-  for (int k=0;k<numphases_;k++)
+  for (int k=0;k<numfluidphases_;k++)
     variables.push_back(std::pair<std::string,double>(pressurenames_[k],pressure[k]));
 
   // set saturation values as variable
-  for (int k=0;k<numphases_;k++)
+  for (int k=0;k<numfluidphases_;k++)
     variables.push_back(std::pair<std::string,double>(saturationnames_[k],saturation[k]));
 
   // set porosity value as variable
@@ -165,13 +163,17 @@ void MAT::PAR::FluidPoroSingleReaction::EvaluateFunction(
   for (int k=0;k<numscal_;k++)
     variables.push_back(std::pair<std::string,double>(scalarnames_[k],scalar[k]));
 
+  // set volfrac values as variables
+  for (int k=0;k<numvolfrac_;k++)
+    variables.push_back(std::pair<std::string,double>(volfracnames_[k],volfracs[k]));
+
   // evaluate the reaction term
   double curval = Function(functID_-1).Evaluate(0,variables,constants);
   // evaluate derivatives
   std::vector<double> curderivs(Function(functID_-1).EvaluateDerivative(0,variables,constants));
 
   // fill the output vector
-  for(int k=0;k<numphases_;k++)
+  for(int k=0;k<totalnummultiphasedof_;k++)
   {
     const int scale = (*scale_)[k];
     if(scale!=0)
@@ -182,18 +184,86 @@ void MAT::PAR::FluidPoroSingleReaction::EvaluateFunction(
       // derivatives
       std::vector<double>& presk = reacderivspressure[k];
       std::vector<double>& satk  = reacderivssaturation[k];
-      for(int j=0;j<numphases_;j++)
+      for(int j=0;j<numfluidphases_;j++)
       {
         presk[j] += scale*curderivs[j];
-        satk[j]  += scale*curderivs[numphases_+j];
+        satk[j]  += scale*curderivs[numfluidphases_+j];
       }
-      reacderivsporosity[k] += scale*curderivs[2*numphases_];
+      reacderivsporosity[k] += scale*curderivs[2*numfluidphases_];
       std::vector<double>& scalark  = reacderivsscalar[k];
       for(int j=0;j<numscal_;j++)
       {
-        scalark[j] += scale*curderivs[2*numphases_+1+j];
+        scalark[j] += scale*curderivs[2*numfluidphases_+1+j];
+      }
+      std::vector<double>& volfrack  = reacderivsvolfrac[k];
+      for(int j=0;j<numvolfrac_;j++)
+      {
+        volfrack[j] += scale*curderivs[2*numfluidphases_+1+numscal_+j];
       }
     }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *  check sizes of vectors                                  vuong 08/16 |
+*----------------------------------------------------------------------*/
+void MAT::PAR::FluidPoroSingleReaction::CheckSizes(
+    std::vector<double> &                    reacval,
+    std::vector<std::vector<double> >&       reacderivspressure,
+    std::vector<std::vector<double> >&       reacderivssaturation,
+    std::vector<double>&                     reacderivsporosity,
+    std::vector<std::vector<double> >&       reacderivsvolfrac,
+    std::vector<std::vector<double> >&       reacderivsscalar,
+    const std::vector<double>&               pressure,
+    const std::vector<double>&               saturation,
+    const double&                            porosity,
+    const std::vector<double>&               volfracs,
+    const std::vector<double>&               scalar)
+{
+  //  dsassert(pressurenames_.size()==pressure.size(),"Invalid number of pressure values for this the fluid poro reaction material!");
+  //  dsassert(pressurenames_.size()==saturation.size(),"Invalid number of pressure values for this the fluid poro reaction material!");
+  //  dsassert(scalarnames_.size()==scalar.size(),"Invalid number of pressure values for this the fluid poro reaction material!");
+
+  if(numfluidphases_!=(int)pressure.size())
+    dserror("Invalid number of pressure values for this fluid poro reaction material!");
+  if(numfluidphases_!=(int)saturation.size())
+    dserror("Invalid number of saturation values for this fluid poro reaction material!");
+  if(numscal_!=(int)scalar.size())
+    dserror("Invalid number of scalar values for this fluid poro reaction material!");
+  if(numvolfrac_!=(int)volfracs.size())
+    dserror("Invalid number of volfrac values for this fluid poro reaction material!");
+
+  if(totalnummultiphasedof_!=(int)reacderivsporosity.size())
+    dserror("Invalid length of vector for porosity derivatives for this fluid poro reaction material!");
+  if(totalnummultiphasedof_!=(int)reacderivspressure.size())
+    dserror("Invalid length of vector for pressure derivatives for this fluid poro reaction material!");
+  for (int k=0;k<totalnummultiphasedof_;k++)
+  {
+    if(numfluidphases_!=(int)reacderivspressure[k].size())
+      dserror("Invalid length of vector for pressure derivatives for this fluid poro reaction material!");
+  }
+  if(totalnummultiphasedof_!=(int)reacderivssaturation.size())
+    dserror("Invalid length of vector for pressure derivatives for this fluid poro reaction material!");
+  for (int k=0;k<totalnummultiphasedof_;k++)
+  {
+    if(numfluidphases_!=(int)reacderivssaturation[k].size())
+      dserror("Invalid length of vector for pressure derivatives for this fluid poro reaction material!");
+  }
+  if(totalnummultiphasedof_!=(int)reacderivsscalar.size())
+    dserror("Invalid length of vector for scalar derivatives for this fluid poro reaction material!");
+  for (int k=0;k<totalnummultiphasedof_;k++)
+  {
+    if(numscal_!=(int)reacderivsscalar[k].size())
+      dserror("Invalid length of vector for scalar derivatives for this fluid poro reaction material!");
+  }
+  if(totalnummultiphasedof_!=(int)reacderivsvolfrac.size())
+    dserror("Invalid length of vector for vol frac derivatives for this fluid poro reaction material!");
+  for (int k=0;k<totalnummultiphasedof_;k++)
+  {
+    if(numvolfrac_!=(int)reacderivsvolfrac[k].size())
+      dserror("Invalid length of vector for scalar derivatives for this fluid poro reaction material!");
   }
 
   return;
@@ -344,10 +414,12 @@ void MAT::FluidPoroSingleReaction::EvaluateReaction(
     std::vector<std::vector<double> >&       reacderivspressure,
     std::vector<std::vector<double> >&       reacderivssaturation,
     std::vector<double>&                     reacderivsporosity,
+    std::vector<std::vector<double> >&       reacderivsvolfrac,
     std::vector<std::vector<double> >&       reacderivsscalar,
     const std::vector<double>&               pressure,
     const std::vector<double>&               saturation,
     const double&                            porosity,
+    const std::vector<double>&               volfracs,
     const std::vector<double>&               scalar)
 {
   params_->EvaluateFunction(
@@ -355,10 +427,12 @@ void MAT::FluidPoroSingleReaction::EvaluateReaction(
       reacderivspressure,
       reacderivssaturation,
       reacderivsporosity,
+      reacderivsvolfrac,
       reacderivsscalar,
       pressure,
       saturation,
       porosity,
+      volfracs,
       scalar);
 
   return;

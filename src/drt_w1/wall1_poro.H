@@ -499,6 +499,7 @@ namespace ELEMENTS
         const LINALG::Matrix<numdim_,numdim_>&          C_inv,
         const LINALG::Matrix<1,numdof_>&                dJ_dus,
         const LINALG::Matrix<numstr_,numdof_>&          dCinv_dus,
+        const LINALG::Matrix<1,numdof_>&                dps_dus,
         LINALG::Matrix<numdof_, numdof_>*               stiffmatrix,
         LINALG::Matrix<numdof_,1>*                      force);
 
@@ -626,22 +627,56 @@ namespace ELEMENTS
 
     //! Compute Solid-pressure derivative w.r.t. primary variable at GP
     void ComputeSolPressureDeriv(
-      const std::vector<double>&       phiAtGP,           ///<< primary variable
-      const int                        numphases,         ///<< number of fluid phases
-      std::vector<double>&             solidpressderiv    ///<< solid pressure derivative at GP
+      const std::vector<double>&       phiAtGP,            ///<< primary variable
+      const int                        numfluidphases,          ///<< number of fluid phases
+      std::vector<double>&             solidpressderiv     ///<< solid pressure derivative at GP
       );
 
     //! Compute solid pressure at GP
     double ComputeSolPressureAtGP(
-        const std::vector<double>&                      phiAtGP
+        const int                                    totalnumdofpernode, ///<< total number of multiphase dofs
+        const int                                    numfluidphases,          ///<< number of fluid phases
+        const std::vector<double>&                   phiAtGP             ///<< primary variable
         );
+
+    //! recalculate solid pressure at GP in case of volfracs
+    double RecalculateSolPressureAtGP(
+        double                                       press,
+        const double                                 porosity,
+        const int                                    totalnumdofpernode,
+        const int                                    numfluidphases,
+        const std::vector<double>&                   phiAtGP
+    );
+
+    //! recalculate solid pressure derivative in case of volfracs
+    void RecalculateSolPressureDeriv(
+        const std::vector<double>&                phiAtGP,
+        const int                                 totalnumdofpernode,
+        const int                                 numfluidphases,
+        const double                              press,
+        const double                              porosity,
+        std::vector<double>&                      solidpressderiv
+    );
 
     //! Compute primary variable for multiphase flow at GP
     void ComputePrimaryVariableAtGP(
-        const std::vector<double>&                ephi,
-        const int&                                numphases,
-        const LINALG::Matrix<numnod_,1>&          shapefct,
-        std::vector<double>&                      phiAtGP
+        const std::vector<double>&                ephi,               ///<< primary variable at node
+        const int                                 totalnumdofpernode, ///<< total number of multiphase dofs
+        const LINALG::Matrix<numnod_,1>&          shapefct,           ///<< shapefct
+        std::vector<double>&                      phiAtGP             ///<< primary variable at GP
+    );
+
+    //! Compute linearizaton of solid press w.r.t. displacements
+    //! only needed if additional volume fractions are present and porosity depends on
+    //! Jacobian of deformation gradient
+    void ComputeLinearizationOfSolPressWrtDisp(
+        const double                                 fluidpress,
+        const double                                 porosity,
+        const int                                    totalnumdofpernode,
+        const int                                    numfluidphases,
+        const std::vector<double>&                   phiAtGP,
+        const LINALG::Matrix<1,numdof_>&             dphi_dus,
+        LINALG::Matrix<1,numdof_>&                   dps_dus
     );
 
     //! get materials (solid and fluid)

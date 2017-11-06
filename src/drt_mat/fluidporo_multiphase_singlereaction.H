@@ -63,16 +63,32 @@ class FluidPoroSingleReaction: public Parameter
     /// initialize
     void Initialize();
 
-    /// evaluate reaction
+    /// evaluate reaction for by-function definition
     void EvaluateFunction(
         std::vector<double> &                    reacval,
         std::vector<std::vector<double> >&       reacderivspressure,
         std::vector<std::vector<double> >&       reacderivssaturation,
         std::vector<double>&                     reacderivsporosity,
+        std::vector<std::vector<double> >&       reacderivsvolfrac,
         std::vector<std::vector<double> >&       reacderivsscalar,
         const std::vector<double>&               pressure,
         const std::vector<double>&               saturation,
         const double&                            porosity,
+        const std::vector<double>&               volfracs,
+        const std::vector<double>&               scalar);
+
+    /// Check sizes of vectors
+    void CheckSizes(
+        std::vector<double> &                    reacval,
+        std::vector<std::vector<double> >&       reacderivspressure,
+        std::vector<std::vector<double> >&       reacderivssaturation,
+        std::vector<double>&                     reacderivsporosity,
+        std::vector<std::vector<double> >&       reacderivsvolfrac,
+        std::vector<std::vector<double> >&       reacderivsscalar,
+        const std::vector<double>&               pressure,
+        const std::vector<double>&               saturation,
+        const double&                            porosity,
+        const std::vector<double>&               volfracs,
         const std::vector<double>&               scalar);
 
     /// @name material parameters
@@ -80,8 +96,14 @@ class FluidPoroSingleReaction: public Parameter
     /// number of scalars in this problem (not only in this reaction but total problem!)
     const int numscal_;
 
-    /// number of phases in this problem
-    const int numphases_;
+    /// number of additional volume fractions of this problem
+    const int numvolfrac_;
+
+    /// total number of multiphase-dofs = number of fluid phases + number of additional volume fractions
+    const int totalnummultiphasedof_;
+
+    /// number of fluid phases in this problem
+    const int numfluidphases_;
 
     /// the list of material IDs
     const std::vector<int>* scale_;
@@ -113,6 +135,8 @@ class FluidPoroSingleReaction: public Parameter
     std::vector<std::string> saturationnames_;
     /// string name used for porosity in function parser
     const std::string porosityname_;
+    /// string name used for volume fractions in function parser
+    std::vector<std::string> volfracnames_;
 
 }; // class FluidPoroSinglePhaseReaction
 
@@ -224,10 +248,12 @@ public:
       std::vector<std::vector<double> >&       reacderivspressure,
       std::vector<std::vector<double> >&       reacderivssaturation,
       std::vector<double>&                     reacderivsporosity,
+      std::vector<std::vector<double> >&       reacderivsvolfrac,
       std::vector<std::vector<double> >&       reacderivsscalar,
       const std::vector<double>&               pressure,
       const std::vector<double>&               saturation,
       const double&                            porosity,
+      const std::vector<double>&               volfracs,
       const std::vector<double>&               scalar);
 
   /// return whether phase 'phasenum' is involved in this reaction

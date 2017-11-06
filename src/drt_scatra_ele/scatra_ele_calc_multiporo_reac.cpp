@@ -244,18 +244,19 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ExtractElementAndNodeVa
   const int ndspres = params.get<int>("ndspres");
 
   // determine number of velocity related dofs per node (= number of phases)
-  const int numphases = la[ndspres].lm_.size()/my::nen_;
+  const int numfluidphases = VarManager()->MultiphaseMat()->NumFluidPhases();
+  const int totalnummultiphasedofpernode = VarManager()->MultiphaseMat()->NumMat();
 
   // extract element and node values of the porofluid
   if(discretization.HasState(ndspres,"phinp_fluid"))
   {
-    VarManager()->SetupPoroFluidManagers(ele,params,discretization,la,numphases);
+    VarManager()->SetupPoroFluidManagers(ele,params,discretization,la,numfluidphases,totalnummultiphasedofpernode);
     VarManager()->ExtractElementAndNodeValuesOfPoroFluid(ele,discretization,la,my::xyze_);
     L2_projection_ = params.get<bool>("L2-projection");
     // extract the nodal flux
     if(L2_projection_)
     {
-      ExtractNodalFlux(ele, params, discretization, la, numphases);
+      ExtractNodalFlux(ele, params, discretization, la, numfluidphases);
     }
   }
   else
@@ -284,17 +285,17 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ExtractNodalFlux(
     Teuchos::ParameterList&       params,
     DRT::Discretization&          discretization,
     DRT::Element::LocationArray&  la,
-    const int                     numphases
+    const int                     numfluidphases
     )
 {
   //resize state vectors based on number of phases
-  efluxnp_.resize(numphases);
+  efluxnp_.resize(numfluidphases);
 
   // get number of dofset associated with velocity related dofs
   const int ndsvel = params.get<int>("ndsvel");
 
   std::string stateprefix = "flux";
-  for(int curphase=0;curphase<numphases;curphase++)
+  for(int curphase=0;curphase<numfluidphases;curphase++)
   {
     std::stringstream statename;
     statename << stateprefix << curphase;
@@ -380,8 +381,8 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoro(
   double d_eff = 0.0;
   if(fabs(VarManager()->Saturation(k)) > minimum_saturation_)
   {
-    porosity = poro::DiffManager()->GetPorosity(k)*VarManager()->Saturation(k)*actmat->Density();
-    d_eff = std::pow(poro::DiffManager()->GetPorosity(k)*VarManager()->Saturation(k),actmat->Delta());
+    porosity = VarManager()->FluidPhaseManager()->Porosity()*VarManager()->Saturation(k)*actmat->Density();
+    d_eff = std::pow(VarManager()->FluidPhaseManager()->Porosity()*VarManager()->Saturation(k),actmat->Delta());
   }
 
   {
@@ -440,6 +441,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetAdvancedReactionTerm
 
   const SCATRA::Action act = VarManager()->GetAction();
 
+  // note: we always need the reaction term to calculate rhsint, which is needed also for OD-terms
   remanager->AddToReaBodyForce(
       matreaclist->CalcReaBodyForceTerm(k,my::scatravarmanager_->Phinp(),couplingvalues_,gpcoord),
       k);
@@ -498,8 +500,8 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::FillCouplingVectorAndAd
   {
     //pressures
     const std::vector<double>& pressures = VarManager()->Pressure();
-    const int numphases = pressures.size();
-    for(int i =0;i<numphases;i++)
+    const int numfluidphases = VarManager()->MultiphaseMat()->NumFluidPhases();
+    for(int i =0;i<numfluidphases;i++)
     {
       std::ostringstream temp;
       temp << i+1;
@@ -507,7 +509,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::FillCouplingVectorAndAd
     }
     //saturation
     const std::vector<double>& saturations = VarManager()->Saturation();
-    for(int i =0;i<numphases;i++)
+    for(int i =0;i<numfluidphases;i++)
     {
       std::ostringstream temp;
       temp << i+1;
@@ -515,7 +517,17 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::FillCouplingVectorAndAd
       couplingvalues_.push_back(std::pair<std::string,double>("S"+temp.str(),saturations[i]));
     }
     //porosity
-    couplingvalues_.push_back(std::pair<std::string,double>("porosity",poro::DiffManager()->GetPorosity(0)));
+    couplingvalues_.push_back(std::pair<std::string,double>("porosity",VarManager()->FluidPhaseManager()->Porosity()));
+    // additional volume fractions
+    const int numvolfrac = VarManager()->MultiphaseMat()->NumMat()-VarManager()->MultiphaseMat()->NumFluidPhases();
+    const std::vector<double>& volfracs = VarManager()->VolFrac();
+    for(int i =0;i<numvolfrac;i++)
+    {
+      std::ostringstream temp;
+      temp << i+1;
+
+      couplingvalues_.push_back(std::pair<std::string,double>("VF"+temp.str(),volfracs[i]));
+    }
 
     // initialize and add the variables to the reaction manager --> has to be done only once
     remanager->InitializeReaBodyForceDerivVectorAddVariables(my::numdofpernode_, couplingvalues_.size());
@@ -527,22 +539,28 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::FillCouplingVectorAndAd
   {
     //pressures
     const std::vector<double>& pressures = VarManager()->Pressure();
-    const int numphases = pressures.size();
-    for(int i =0;i<numphases;i++)
+    const int numfluidphases = VarManager()->MultiphaseMat()->NumFluidPhases();
+    for(int i =0;i<numfluidphases;i++)
     {
      // std::cout<<"pressure "<<i<<": "<<pressures[i]<<std::endl;
       couplingvalues_[i].second=pressures[i];
     }
     //saturation
     const std::vector<double>& saturations = VarManager()->Saturation();
-    for(int i =0;i<numphases;i++)
+    for(int i =0;i<numfluidphases;i++)
     {
    //   std::cout<<"saturation "<<i<<": "<<saturations[i]<<std::endl;
-      couplingvalues_[numphases+i].second=saturations[i];
+      couplingvalues_[numfluidphases+i].second=saturations[i];
     }
     //porosity
-    couplingvalues_[2*numphases].second=poro::DiffManager()->GetPorosity(0);
-    //std::cout<<"porosity: "<<poro::DiffManager()->GetPorosity(0)<<std::endl;
+    couplingvalues_[2*numfluidphases].second=VarManager()->FluidPhaseManager()->Porosity();
+    // additional volume fractions
+    const int numvolfrac = VarManager()->MultiphaseMat()->NumMat()-VarManager()->MultiphaseMat()->NumFluidPhases();
+    const std::vector<double>& volfracs = VarManager()->VolFrac();
+    for(int i =0;i<numvolfrac;i++)
+    {
+      couplingvalues_[2*numfluidphases+1+i].second=volfracs[i];
+    }
   }
 }
 
@@ -655,7 +673,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcConvODMesh(
   if(fabs(VarManager()->Saturation(k)) > minimum_saturation_)
   {
     const int curphase = VarManager()->GetPhaseID(k);
-    const int numphases = VarManager()->FluidPhaseManager()->NumPhases();
+    const int numfluidphases = VarManager()->FluidPhaseManager()->NumFluidPhases();
 
     const std::vector<LINALG::Matrix<my::nsd_,1> >& fluidgradphi = *(VarManager()->FluidVarManager()->GradPhinp());
 
@@ -697,12 +715,12 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcConvODMesh(
     refgradpres.Clear();
 
       //gradient of phi w.r.t. reference coordinates
-    std::vector<LINALG::Matrix<my::nsd_,1> > reffluidgradphi(numphases,LINALG::Matrix<my::nsd_,1>(true));
-    for (int idof=0; idof<numphases; ++idof)
+    std::vector<LINALG::Matrix<my::nsd_,1> > reffluidgradphi(numfluidphases,LINALG::Matrix<my::nsd_,1>(true));
+    for (int idof=0; idof<numfluidphases; ++idof)
       reffluidgradphi[idof].Multiply(my::xjm_,fluidgradphi[idof]);
 
     // compute the pressure gradient from the phi gradients
-    for (int idof=0; idof<numphases; ++idof)
+    for (int idof=0; idof<numfluidphases; ++idof)
       refgradpres.Update(VarManager()->FluidPhaseManager()->PressureDeriv(curphase,idof),reffluidgradphi[idof],1.0);
 
     if(my::nsd_==3)
@@ -892,7 +910,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcHistAndSourceODMesh
   if(fabs(VarManager()->Saturation(k)) > minimum_saturation_)
   {
     //const int curphase = VarManager()->GetPhaseID(k);
-    const int numphases = VarManager()->FluidPhaseManager()->NumPhases();
+    const int numfluidphases = VarManager()->FluidPhaseManager()->NumFluidPhases();
 
     // call base class
     my::CalcHistAndSourceODMesh(emat,k,ndofpernodemesh,fac,rhsint,J,dJ_dmesh,densnp);
@@ -908,12 +926,12 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcHistAndSourceODMesh
     {
       const std::vector<double> myderivs = remanager->GetReaBodyForceDerivVectorAddVariables(k);
 
-      // porosity deriv at [2* numphases]: d reac / d d = d reac / d poro * d poro / d d
+      // porosity deriv at [2* numfluidphases]: d reac / d d = d reac / d poro * d poro / d d
       // with
       // dporo/dd = dporo/dJ * dJ/dd = dporosity/dJ * J * N_x
       // J denotes the determinant of the deformation gradient, i.e. det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
 
-      const double poroderiv = myderivs[2*numphases]
+      const double poroderiv = myderivs[2*numfluidphases]
                     *VarManager()->FluidPhaseManager()->JacobianDefGrad()
                     *VarManager()->FluidPhaseManager()->PorosityDerivWrtJacobianDefGrad();
 
@@ -1079,7 +1097,8 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::PorosityLinearizationFl
     Epetra_SerialDenseMatrix&                   emat,
     const int                                   k,
     const int                                   curphase,
-    const int                                   numphases,
+    const int                                   numfluidphases,
+    const int                                   totalnummultiphasedofpernode,
     double                                      prefac
 )
 {
@@ -1097,9 +1116,9 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::PorosityLinearizationFl
     for (unsigned ui=0; ui<my::nen_; ++ui)
     {
       const double vfunct = v * my::funct_(ui);
-      for (int idof=0; idof<numphases; ++idof)
+      for (int idof=0; idof<totalnummultiphasedofpernode; ++idof)
       {
-        const int fui = ui*numphases+idof;
+        const int fui = ui*totalnummultiphasedofpernode+idof;
 
         emat(fvi,fui) += vfunct*VarManager()->FluidPhaseManager()->PorosityDeriv(idof);
       }
@@ -1126,7 +1145,8 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConvODFluid(
   if(fabs(VarManager()->Saturation(k)) > minimum_saturation_)
   {
     const int curphase = VarManager()->GetPhaseID(k);
-    const int numphases = VarManager()->FluidPhaseManager()->NumPhases();
+    const int numfluidphases = VarManager()->FluidPhaseManager()->NumFluidPhases();
+    const int totalnummultiphasedofpernode = VarManager()->MultiphaseMat()->NumMat();
 
     // current pressure gradient
     const LINALG::Matrix<my::nsd_,1> gradpres = VarManager()->PressureGradient(curphase);
@@ -1152,9 +1172,9 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConvODFluid(
         double laplawf(0.0);
         for (unsigned j = 0; j<my::nsd_; j++)
           laplawf += v*my::derxy_(j, ui)*gradphiTdifftensor(0, j);
-        for (int idof=0; idof<numphases; ++idof)
+        for (int idof=0; idof<numfluidphases; ++idof)
         {
-          const int fui = ui*numphases+idof;
+          const int fui = ui*totalnummultiphasedofpernode+idof;
           emat(fvi,fui) += laplawf*VarManager()->FluidPhaseManager()->PressureDeriv(curphase, idof);
         }
       }
@@ -1185,9 +1205,9 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConvODFluid(
           double laplawf(0.0);
           for (unsigned j = 0; j<my::nsd_; j++)
             laplawf += v*gradpres(j)*gradphiTdifftensor(0, j);
-          for (int idof=0; idof<numphases; ++idof)
+          for (int idof=0; idof<numfluidphases; ++idof)
           {
-            const int fui = ui*numphases+idof;
+            const int fui = ui*totalnummultiphasedofpernode+idof;
             emat(fvi,fui) += laplawf*my::funct_(ui)*VarManager()->FluidPhaseManager()->SaturationDeriv(curphase, idof);
           }
         }
@@ -1240,7 +1260,8 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcLinMassODFluid(
   if(fabs(VarManager()->Saturation(k)) > minimum_saturation_)
   {
     const int curphase = VarManager()->GetPhaseID(k);
-    const int numphases = VarManager()->FluidPhaseManager()->NumPhases();
+    const int numfluidphases = VarManager()->FluidPhaseManager()->NumFluidPhases();
+    const int totalnummultiphasedofpernode = VarManager()->MultiphaseMat()->NumMat();
 
     double vtrans = 0.0;
 
@@ -1253,11 +1274,11 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcLinMassODFluid(
     }
 
     // linearization of saturation
-    SaturationLinearization(emat, k, curphase, numphases, vtrans);
+    SaturationLinearization(emat, k, curphase, numfluidphases, totalnummultiphasedofpernode, vtrans);
 
     // linearization of porosity only if porosity is pressure-dependent
     if(VarManager()->FluidPhaseManager()->PorosityDependsOnFluid())
-      PorosityLinearizationFluid(emat, k, curphase, numphases, vtrans);
+      PorosityLinearizationFluid(emat, k, curphase, numfluidphases, totalnummultiphasedofpernode, vtrans);
   }
 
   return;
@@ -1271,7 +1292,8 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SaturationLinearization
     Epetra_SerialDenseMatrix&                   emat,
     const int                                   k,
     const int                                   curphase,
-    const int                                   numphases,
+    const int                                   numfluidphases,
+    const int                                   totalnummultiphasedofpernode,
     double                                      prefac
 )
 {
@@ -1287,9 +1309,9 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SaturationLinearization
     for (unsigned ui=0; ui<my::nen_; ++ui)
     {
       const double vfunct = v*my::funct_(ui);
-      for (int idof = 0; idof < numphases; ++idof)
+      for (int idof = 0; idof < numfluidphases; ++idof)
       {
-        const int fui = ui * numphases + idof;
+        const int fui = ui * totalnummultiphasedofpernode + idof;
 
         emat(fvi,fui) += vfunct*VarManager()->FluidPhaseManager()->SaturationDeriv(curphase, idof);
       }
@@ -1317,16 +1339,17 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcHistAndSourceODFlui
   if(fabs(VarManager()->Saturation(k)) > minimum_saturation_)
   {
     const int curphase = VarManager()->GetPhaseID(k);
-    const int numphases = VarManager()->FluidPhaseManager()->NumPhases();
+    const int numfluidphases = VarManager()->FluidPhaseManager()->NumFluidPhases();
+    const int totalnummultiphasedofpernode = VarManager()->MultiphaseMat()->NumMat();
 
     double vrhs = - fac*rhsint;
 
     // linearization of saturation
-    SaturationLinearization(emat, k, curphase, numphases, vrhs);
+    SaturationLinearization(emat, k, curphase, numfluidphases, totalnummultiphasedofpernode, vrhs);
 
     // linearization of porosity only if porosity is pressure-dependent
     if(VarManager()->FluidPhaseManager()->PorosityDependsOnFluid())
-      PorosityLinearizationFluid(emat, k, curphase, numphases, vrhs);
+      PorosityLinearizationFluid(emat, k, curphase, numfluidphases, totalnummultiphasedofpernode, vrhs);
 
     const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = advreac::ReaManager();
     if(remanager->Active() )
@@ -1334,19 +1357,25 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcHistAndSourceODFlui
       const std::vector<double> myderivs = remanager->GetReaBodyForceDerivVectorAddVariables(k);
 
       // derivatives after primary variables of fluid
-      std::vector<double> phiderivs(numphases, 0.0);
+      std::vector<double> phiderivs(totalnummultiphasedofpernode, 0.0);
 
-      for(int i = 0; i < numphases; i++)
+      for(int i = 0; i < numfluidphases; i++)
       {
-        // porosity deriv at 2*numphases: d reac / d phi_i = d reac / d poro * d poro / d phi_i
-        phiderivs[i] += myderivs[2*numphases]*VarManager()->FluidPhaseManager()->PorosityDeriv(i);
-        for (int j = 0; j < numphases; j++)
+        // porosity deriv at 2*numfluidphases: d reac / d phi_i = d reac / d poro * d poro / d phi_i
+        phiderivs[i] += myderivs[2*numfluidphases]*VarManager()->FluidPhaseManager()->PorosityDeriv(i);
+        for (int j = 0; j < numfluidphases; j++)
         {
-          // pressure derivs at       [0..numphases]: d reac / d phi_i = d reac / d pres_j * d pres_j / d phi_i
-          // saturation derivs at [numph..2*numph-1]: d reac / d phi_i = d reac /  d sat_j *  d sat_j / d phi_i
-          phiderivs[i] += myderivs[j+numphases]*VarManager()->FluidPhaseManager()->SaturationDeriv(j, i)
-                        + myderivs[j          ]*VarManager()->FluidPhaseManager()->PressureDeriv(j, i);
+          // pressure derivs at       [0..numfluidphases]: d reac / d phi_i = d reac / d pres_j * d pres_j / d phi_i
+          // saturation derivs at  [numflph..2*numflph-1]: d reac / d phi_i = d reac /  d sat_j *  d sat_j / d phi_i
+          phiderivs[i] += myderivs[j+numfluidphases]*VarManager()->FluidPhaseManager()->SaturationDeriv(j, i)
+                        + myderivs[j               ]*VarManager()->FluidPhaseManager()->PressureDeriv(j, i);
         }
+      }
+      // derivatives after volume fractions at [2*numfluidphases+1+ivolfrac]
+      for(int ivolfrac = 0; ivolfrac < totalnummultiphasedofpernode-numfluidphases; ivolfrac++)
+      {
+        phiderivs[ivolfrac+numfluidphases] += myderivs[2*numfluidphases+1+ivolfrac]
+                                       + myderivs[2*numfluidphases]*VarManager()->FluidPhaseManager()->PorosityDeriv(ivolfrac+numfluidphases);
       }
 
       // fill matrix
@@ -1360,9 +1389,9 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcHistAndSourceODFlui
         {
           const double vfunct = v * my::funct_(ui);
 
-          for (int idof=0; idof<numphases; ++idof)
+          for (int idof=0; idof<totalnummultiphasedofpernode; ++idof)
           {
-            const int fui = ui*numphases+idof;
+            const int fui = ui*totalnummultiphasedofpernode+idof;
 
             emat(fvi,fui) += vfunct * phiderivs[idof];
           }
@@ -1389,16 +1418,17 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcReactODFluid(
   if (my::reamanager_->Active() && fabs(VarManager()->Saturation(k)) > minimum_saturation_)
   {
     const int curphase = VarManager()->GetPhaseID(k);
-    const int numphases = VarManager()->FluidPhaseManager()->NumPhases();
+    const int numfluidphases = VarManager()->FluidPhaseManager()->NumFluidPhases();
+    const int totalnummultiphasedofpernode = VarManager()->MultiphaseMat()->NumMat();
 
     double vrhs = rhsfac*rea_phi;
 
     // linearization of saturation
-    SaturationLinearization(emat, k, curphase, numphases, vrhs);
+    SaturationLinearization(emat, k, curphase, numfluidphases, totalnummultiphasedofpernode, vrhs);
 
     // linearization of porosity only if porosity is pressure-dependent
     if(VarManager()->FluidPhaseManager()->PorosityDependsOnFluid())
-      PorosityLinearizationFluid(emat, k, curphase, numphases, vrhs);
+      PorosityLinearizationFluid(emat, k, curphase, numfluidphases, totalnummultiphasedofpernode, vrhs);
   }
 
   return;
@@ -1420,7 +1450,8 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcDiffODFluid(
   if(fabs(VarManager()->Saturation(k)) > minimum_saturation_)
   {
     const int curphase = VarManager()->GetPhaseID(k);
-    const int numphases = VarManager()->FluidPhaseManager()->NumPhases();
+    const int numfluidphases = VarManager()->FluidPhaseManager()->NumFluidPhases();
+    const int totalnummultiphasedofpernode = VarManager()->MultiphaseMat()->NumMat();
     const double delta = VarManager()->GetDelta(k);
 
     // linearization of saturation*porosity*d_eff = (saturation * porosity)^(delta+1) w.r.t saturation
@@ -1453,12 +1484,19 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcDiffODFluid(
         const double vfunctsat = vsat * my::funct_(ui);
         const double vfunctporo = vporo * my::funct_(ui);
 
-        for (int idof=0; idof<numphases; ++idof)
+        // derivative w.r.t. fluid phases
+        for (int idof=0; idof<numfluidphases; ++idof)
         {
-          const int fui = ui*numphases+idof;
+          const int fui = ui*totalnummultiphasedofpernode+idof;
 
           emat(fvi,fui) += vfunctsat*VarManager()->FluidPhaseManager()->SaturationDeriv(curphase,idof)
                          + vfunctporo*VarManager()->FluidPhaseManager()->PorosityDeriv(idof);
+        }
+        // derivative w.r.t. volume fractions
+        for (int idof=numfluidphases; idof<totalnummultiphasedofpernode; ++idof)
+        {
+          const int fui = ui*totalnummultiphasedofpernode+idof;
+          emat(fvi,fui) += vfunctporo*VarManager()->FluidPhaseManager()->PorosityDeriv(idof);
         }
       }
     }

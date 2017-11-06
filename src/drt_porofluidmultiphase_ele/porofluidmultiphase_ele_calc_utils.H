@@ -21,6 +21,7 @@ namespace MAT
 {
 class Material;
 class FluidPoroSinglePhase;
+class FluidPoroSingleVolFrac;
 class FluidPoroMultiPhase;
 class FluidPoroMultiPhaseReactions;
 class FluidPoroSingleReaction;
@@ -41,6 +42,16 @@ const MAT::FluidPoroSinglePhase& GetSinglePhaseMatFromMaterial(
 const MAT::FluidPoroSinglePhase& GetSinglePhaseMatFromMultiMaterial(
     const MAT::FluidPoroMultiPhase& multiphasemat,
     int phasenum);
+
+//! get the single volume fraction material from the element material
+const MAT::FluidPoroSingleVolFrac& GetSingleVolFracMatFromMaterial(
+    const MAT::Material& material,
+    int volfracnum);
+
+//! get the single volume fraction material from the element multiphase material
+const MAT::FluidPoroSingleVolFrac& GetSingleVolFracMatFromMultiMaterial(
+    const MAT::FluidPoroMultiPhase& multiphasemat,
+    int volfracnum);
 
 //! get the single phase material from the element multiphase reactions material
 MAT::FluidPoroSingleReaction& GetSingleReactionMatFromMultiReactionsMaterial(

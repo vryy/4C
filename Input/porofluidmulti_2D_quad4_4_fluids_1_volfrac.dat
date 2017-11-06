@@ -10,7 +10,7 @@ General Data File BACI
 ==================================================================
 -------------------------------------------------------------TITLE
 Framework test for multiphase flow through rigid porous medium.
-Also testing post processing
+4 fluid phases and 1 additional volume fraction are present
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    500
 //NODES       561
@@ -30,7 +30,7 @@ LINEAR_SOLVER                   1
 FDCHECK                         none //none
 FDCHECKTOL                      1e-5
 FDCHECKEPS                      1e-7
-INITIALFIELD                    field_by_function
+INITIALFIELD                    field_by_condition
 INITFUNCNO                      1
 ITEMAX                          50
 RESTARTEVRY                     1
@@ -41,7 +41,7 @@ RESULTSEVRY                     1
 CONVTOL                         1e-06
 FLUX_PROJ_METHOD                L2_projection
 FLUX_PROJ_SOLVER                2
-OUTPUT_POROSITY                 no
+OUTPUT_POROSITY                 yes
 --------------------------------------------------------------------SOLVER 1
 NAME                           Solver
 SOLVER                          UMFPACK                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -79,7 +79,7 @@ ML_DAMPFINE                     0.89                          // damping fine gr
 ML_DAMPMED                      1.0                           // damping med grids
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 4 MATIDS 10 11 12 13 NUMFLUIDPHASES 4 END
+MAT 1 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 5 MATIDS 10 11 12 13 14 NUMFLUIDPHASES 4 END
 
 MAT 10 MAT_FluidPoroSinglePhase DOFTYPEID 101 VISCOSITYLAWID 104 DENSITYLAWID 103 DENSITY 1.0 BULKMODULUS 100.0 RELPERMEABILITYLAWID 105
 MAT 101 MAT_FluidPoroSinglePhaseDofSaturation PHASELAWID 102
@@ -104,10 +104,12 @@ MAT 402 MAT_FluidPoroSinglePhaseDofPressure PHASELAWID 404
 MAT 403 MAT_PoroDensityLawExp BULKMODULUS 1e3
 MAT 404 MAT_PhaseLawConstraint
 
-MAT 2 MAT_StructPoro MATID 501 POROLAWID 502 INITPOROSITY 0.4
+MAT 14 MAT_FluidPoroSingleVolFrac DENSITY 1.0 DIFFUSIVITY 1.0 Pressure 0.1 AddScalarDependentFlux NO
+
+MAT 2 MAT_StructPoro MATID 501 POROLAWID 502 INITPOROSITY 0.6
 MAT 501 MAT_Struct_StVenantKirchhoff YOUNG 10 NUE 0.35 DENS 0.1
 MAT 502 MAT_PoroLawDensityDependent DENSITYLAWID 503
-MAT 503 MAT_PoroDensityLawExp BULKMODULUS 1e2
+MAT 503 MAT_PoroDensityLawExp BULKMODULUS 1e15
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD porofluid SRC_MAT 1 TAR_FIELD structure TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
@@ -123,26 +125,46 @@ COMPONENT 0 VARFUNCTION S0-2/pi*atan(0.01*dp) NUMCONSTANTS 1 CONSTANTS S0 0.3
 -------------------------------------------------------------FUNCT4
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 1 1000 DESCRIPTION 1000.0*0.5*(1-cos(t*pi/1.0)) 1000
+----------------------------------------------------------------------FUNCT5
+COMPONENT 0 FUNCTION 0.1
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
+COMPONENT 3 FUNCTION 0.0
+COMPONENT 4 FUNCTION 0.3
 -------------------------------------------------RESULT DESCRIPTION
-POROFLUIDMULTIPHASE DIS porofluid NODE 89 QUANTITY phi1 VALUE 4.41276672810880649e-02 TOLERANCE 1e-10
-POROFLUIDMULTIPHASE DIS porofluid NODE 341 QUANTITY saturation3 VALUE 2.56776395510599276e-01 TOLERANCE 1e-10
-POROFLUIDMULTIPHASE DIS porofluid NODE 542 QUANTITY phi3 VALUE 9.29999999998316618e+00 TOLERANCE 1e-10
-POROFLUIDMULTIPHASE DIS porofluid NODE 213 QUANTITY pressure3 VALUE 2.39999999999495950e+00 TOLERANCE 1e-10
-POROFLUIDMULTIPHASE DIS porofluid NODE 321 QUANTITY phi2 VALUE -1.40000000000096314e+00  TOLERANCE 1e-10
-POROFLUIDMULTIPHASE DIS porofluid NODE 456 QUANTITY saturation2 VALUE 1.85042188427789689e-01 TOLERANCE 1e-10
+POROFLUIDMULTIPHASE DIS porofluid NODE 281 QUANTITY phi1 VALUE 6.81940687913783761e-02 TOLERANCE 1e-10
+POROFLUIDMULTIPHASE DIS porofluid NODE 281 QUANTITY saturation3 VALUE 2.68198785534917217e-01 TOLERANCE 1e-10
+POROFLUIDMULTIPHASE DIS porofluid NODE 281 QUANTITY phi5 VALUE 4.39039921306379269e-02 TOLERANCE 1e-10
+POROFLUIDMULTIPHASE DIS porofluid NODE 266 QUANTITY pressure2 VALUE 2.00025756260159371e+00 TOLERANCE 1e-10
+POROFLUIDMULTIPHASE DIS porofluid NODE 266 QUANTITY phi4 VALUE 1.00061756564396442e+00 TOLERANCE 1e-10
+POROFLUIDMULTIPHASE DIS porofluid NODE 266 QUANTITY phi5 VALUE 1.66559269876064814e-01 TOLERANCE 1e-10
+POROFLUIDMULTIPHASE DIS porofluid NODE 296 QUANTITY saturation2 VALUE 1.87268604413808770e-01 TOLERANCE 1e-10
+POROFLUIDMULTIPHASE DIS porofluid NODE 296 QUANTITY pressure4 VALUE 4.00139170302601155e+00 TOLERANCE 1e-10
+POROFLUIDMULTIPHASE DIS porofluid NODE 296 QUANTITY phi5 VALUE 7.28234447570599332e-03 TOLERANCE 1e-10
+POROFLUIDMULTIPHASE DIS porofluid NODE 172 QUANTITY phi5 VALUE 8.74487039734750116e-02 TOLERANCE 1e-10
+POROFLUIDMULTIPHASE DIS porofluid NODE 541 QUANTITY phi5 VALUE 2.50973009565849843e-02 TOLERANCE 1e-10
+POROFLUIDMULTIPHASE DIS porofluid NODE 66 QUANTITY phi5 VALUE 1.97858591330896082e-02 TOLERANCE 1e-10
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  2
-NDSURF  0
+NDSURF  1
 NDVOL   0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE  1
 // curve_left
-E 1 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.1 0.2 0.3 0.7 FUNCT 4 4 4 4
+E 1 - NUMDOF 5 ONOFF 1 1 1 1 0 VAL 0.1 0.2 0.3 0.7 0.0 FUNCT 4 4 4 4 0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  1
 // curve_right
-E 2 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.1 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 2 - NUMDOF 5 ONOFF 1 1 1 1 1 VAL 0.1 0.0 0.0 0.0 0.3 FUNCT 0 0 0 0 0
+------------------------------DESIGN SURF INITIAL FIELD CONDITIONS
+DSURF  1
+// all_nodes
+E 1 - PoroMultiFluid 1
+------------------------------DESIGN LINE INITIAL FIELD CONDITIONS
+DLINE  1
+// right_EC
+E 2 - PoroMultiFluid 5
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    101 DLINE 1
@@ -168,6 +190,567 @@ NODE    410 DLINE 2
 NODE    461 DLINE 2
 NODE    512 DLINE 2
 -----------------------------------------------DSURF-NODE TOPOLOGY
+NODE         1  DSURF 1
+NODE         2  DSURF 1
+NODE         3  DSURF 1
+NODE         4  DSURF 1
+NODE         5  DSURF 1
+NODE         6  DSURF 1
+NODE         7  DSURF 1
+NODE         8  DSURF 1
+NODE         9  DSURF 1
+NODE        10  DSURF 1
+NODE        11  DSURF 1
+NODE        12  DSURF 1
+NODE        13  DSURF 1
+NODE        14  DSURF 1
+NODE        15  DSURF 1
+NODE        16  DSURF 1
+NODE        17  DSURF 1
+NODE        18  DSURF 1
+NODE        19  DSURF 1
+NODE        20  DSURF 1
+NODE        21  DSURF 1
+NODE        22  DSURF 1
+NODE        23  DSURF 1
+NODE        24  DSURF 1
+NODE        25  DSURF 1
+NODE        26  DSURF 1
+NODE        27  DSURF 1
+NODE        28  DSURF 1
+NODE        29  DSURF 1
+NODE        30  DSURF 1
+NODE        31  DSURF 1
+NODE        32  DSURF 1
+NODE        33  DSURF 1
+NODE        34  DSURF 1
+NODE        35  DSURF 1
+NODE        36  DSURF 1
+NODE        37  DSURF 1
+NODE        38  DSURF 1
+NODE        39  DSURF 1
+NODE        40  DSURF 1
+NODE        41  DSURF 1
+NODE        42  DSURF 1
+NODE        43  DSURF 1
+NODE        44  DSURF 1
+NODE        45  DSURF 1
+NODE        46  DSURF 1
+NODE        47  DSURF 1
+NODE        48  DSURF 1
+NODE        49  DSURF 1
+NODE        50  DSURF 1
+NODE        51  DSURF 1
+NODE        52  DSURF 1
+NODE        53  DSURF 1
+NODE        54  DSURF 1
+NODE        55  DSURF 1
+NODE        56  DSURF 1
+NODE        57  DSURF 1
+NODE        58  DSURF 1
+NODE        59  DSURF 1
+NODE        60  DSURF 1
+NODE        61  DSURF 1
+NODE        62  DSURF 1
+NODE        63  DSURF 1
+NODE        64  DSURF 1
+NODE        65  DSURF 1
+NODE        66  DSURF 1
+NODE        67  DSURF 1
+NODE        68  DSURF 1
+NODE        69  DSURF 1
+NODE        70  DSURF 1
+NODE        71  DSURF 1
+NODE        72  DSURF 1
+NODE        73  DSURF 1
+NODE        74  DSURF 1
+NODE        75  DSURF 1
+NODE        76  DSURF 1
+NODE        77  DSURF 1
+NODE        78  DSURF 1
+NODE        79  DSURF 1
+NODE        80  DSURF 1
+NODE        81  DSURF 1
+NODE        82  DSURF 1
+NODE        83  DSURF 1
+NODE        84  DSURF 1
+NODE        85  DSURF 1
+NODE        86  DSURF 1
+NODE        87  DSURF 1
+NODE        88  DSURF 1
+NODE        89  DSURF 1
+NODE        90  DSURF 1
+NODE        91  DSURF 1
+NODE        92  DSURF 1
+NODE        93  DSURF 1
+NODE        94  DSURF 1
+NODE        95  DSURF 1
+NODE        96  DSURF 1
+NODE        97  DSURF 1
+NODE        98  DSURF 1
+NODE        99  DSURF 1
+NODE       100  DSURF 1
+NODE       101  DSURF 1
+NODE       102  DSURF 1
+NODE       103  DSURF 1
+NODE       104  DSURF 1
+NODE       105  DSURF 1
+NODE       106  DSURF 1
+NODE       107  DSURF 1
+NODE       108  DSURF 1
+NODE       109  DSURF 1
+NODE       110  DSURF 1
+NODE       111  DSURF 1
+NODE       112  DSURF 1
+NODE       113  DSURF 1
+NODE       114  DSURF 1
+NODE       115  DSURF 1
+NODE       116  DSURF 1
+NODE       117  DSURF 1
+NODE       118  DSURF 1
+NODE       119  DSURF 1
+NODE       120  DSURF 1
+NODE       121  DSURF 1
+NODE       122  DSURF 1
+NODE       123  DSURF 1
+NODE       124  DSURF 1
+NODE       125  DSURF 1
+NODE       126  DSURF 1
+NODE       127  DSURF 1
+NODE       128  DSURF 1
+NODE       129  DSURF 1
+NODE       130  DSURF 1
+NODE       131  DSURF 1
+NODE       132  DSURF 1
+NODE       133  DSURF 1
+NODE       134  DSURF 1
+NODE       135  DSURF 1
+NODE       136  DSURF 1
+NODE       137  DSURF 1
+NODE       138  DSURF 1
+NODE       139  DSURF 1
+NODE       140  DSURF 1
+NODE       141  DSURF 1
+NODE       142  DSURF 1
+NODE       143  DSURF 1
+NODE       144  DSURF 1
+NODE       145  DSURF 1
+NODE       146  DSURF 1
+NODE       147  DSURF 1
+NODE       148  DSURF 1
+NODE       149  DSURF 1
+NODE       150  DSURF 1
+NODE       151  DSURF 1
+NODE       152  DSURF 1
+NODE       153  DSURF 1
+NODE       154  DSURF 1
+NODE       155  DSURF 1
+NODE       156  DSURF 1
+NODE       157  DSURF 1
+NODE       158  DSURF 1
+NODE       159  DSURF 1
+NODE       160  DSURF 1
+NODE       161  DSURF 1
+NODE       162  DSURF 1
+NODE       163  DSURF 1
+NODE       164  DSURF 1
+NODE       165  DSURF 1
+NODE       166  DSURF 1
+NODE       167  DSURF 1
+NODE       168  DSURF 1
+NODE       169  DSURF 1
+NODE       170  DSURF 1
+NODE       171  DSURF 1
+NODE       172  DSURF 1
+NODE       173  DSURF 1
+NODE       174  DSURF 1
+NODE       175  DSURF 1
+NODE       176  DSURF 1
+NODE       177  DSURF 1
+NODE       178  DSURF 1
+NODE       179  DSURF 1
+NODE       180  DSURF 1
+NODE       181  DSURF 1
+NODE       182  DSURF 1
+NODE       183  DSURF 1
+NODE       184  DSURF 1
+NODE       185  DSURF 1
+NODE       186  DSURF 1
+NODE       187  DSURF 1
+NODE       188  DSURF 1
+NODE       189  DSURF 1
+NODE       190  DSURF 1
+NODE       191  DSURF 1
+NODE       192  DSURF 1
+NODE       193  DSURF 1
+NODE       194  DSURF 1
+NODE       195  DSURF 1
+NODE       196  DSURF 1
+NODE       197  DSURF 1
+NODE       198  DSURF 1
+NODE       199  DSURF 1
+NODE       200  DSURF 1
+NODE       201  DSURF 1
+NODE       202  DSURF 1
+NODE       203  DSURF 1
+NODE       204  DSURF 1
+NODE       205  DSURF 1
+NODE       206  DSURF 1
+NODE       207  DSURF 1
+NODE       208  DSURF 1
+NODE       209  DSURF 1
+NODE       210  DSURF 1
+NODE       211  DSURF 1
+NODE       212  DSURF 1
+NODE       213  DSURF 1
+NODE       214  DSURF 1
+NODE       215  DSURF 1
+NODE       216  DSURF 1
+NODE       217  DSURF 1
+NODE       218  DSURF 1
+NODE       219  DSURF 1
+NODE       220  DSURF 1
+NODE       221  DSURF 1
+NODE       222  DSURF 1
+NODE       223  DSURF 1
+NODE       224  DSURF 1
+NODE       225  DSURF 1
+NODE       226  DSURF 1
+NODE       227  DSURF 1
+NODE       228  DSURF 1
+NODE       229  DSURF 1
+NODE       230  DSURF 1
+NODE       231  DSURF 1
+NODE       232  DSURF 1
+NODE       233  DSURF 1
+NODE       234  DSURF 1
+NODE       235  DSURF 1
+NODE       236  DSURF 1
+NODE       237  DSURF 1
+NODE       238  DSURF 1
+NODE       239  DSURF 1
+NODE       240  DSURF 1
+NODE       241  DSURF 1
+NODE       242  DSURF 1
+NODE       243  DSURF 1
+NODE       244  DSURF 1
+NODE       245  DSURF 1
+NODE       246  DSURF 1
+NODE       247  DSURF 1
+NODE       248  DSURF 1
+NODE       249  DSURF 1
+NODE       250  DSURF 1
+NODE       251  DSURF 1
+NODE       252  DSURF 1
+NODE       253  DSURF 1
+NODE       254  DSURF 1
+NODE       255  DSURF 1
+NODE       256  DSURF 1
+NODE       257  DSURF 1
+NODE       258  DSURF 1
+NODE       259  DSURF 1
+NODE       260  DSURF 1
+NODE       261  DSURF 1
+NODE       262  DSURF 1
+NODE       263  DSURF 1
+NODE       264  DSURF 1
+NODE       265  DSURF 1
+NODE       266  DSURF 1
+NODE       267  DSURF 1
+NODE       268  DSURF 1
+NODE       269  DSURF 1
+NODE       270  DSURF 1
+NODE       271  DSURF 1
+NODE       272  DSURF 1
+NODE       273  DSURF 1
+NODE       274  DSURF 1
+NODE       275  DSURF 1
+NODE       276  DSURF 1
+NODE       277  DSURF 1
+NODE       278  DSURF 1
+NODE       279  DSURF 1
+NODE       280  DSURF 1
+NODE       281  DSURF 1
+NODE       282  DSURF 1
+NODE       283  DSURF 1
+NODE       284  DSURF 1
+NODE       285  DSURF 1
+NODE       286  DSURF 1
+NODE       287  DSURF 1
+NODE       288  DSURF 1
+NODE       289  DSURF 1
+NODE       290  DSURF 1
+NODE       291  DSURF 1
+NODE       292  DSURF 1
+NODE       293  DSURF 1
+NODE       294  DSURF 1
+NODE       295  DSURF 1
+NODE       296  DSURF 1
+NODE       297  DSURF 1
+NODE       298  DSURF 1
+NODE       299  DSURF 1
+NODE       300  DSURF 1
+NODE       301  DSURF 1
+NODE       302  DSURF 1
+NODE       303  DSURF 1
+NODE       304  DSURF 1
+NODE       305  DSURF 1
+NODE       306  DSURF 1
+NODE       307  DSURF 1
+NODE       308  DSURF 1
+NODE       309  DSURF 1
+NODE       310  DSURF 1
+NODE       311  DSURF 1
+NODE       312  DSURF 1
+NODE       313  DSURF 1
+NODE       314  DSURF 1
+NODE       315  DSURF 1
+NODE       316  DSURF 1
+NODE       317  DSURF 1
+NODE       318  DSURF 1
+NODE       319  DSURF 1
+NODE       320  DSURF 1
+NODE       321  DSURF 1
+NODE       322  DSURF 1
+NODE       323  DSURF 1
+NODE       324  DSURF 1
+NODE       325  DSURF 1
+NODE       326  DSURF 1
+NODE       327  DSURF 1
+NODE       328  DSURF 1
+NODE       329  DSURF 1
+NODE       330  DSURF 1
+NODE       331  DSURF 1
+NODE       332  DSURF 1
+NODE       333  DSURF 1
+NODE       334  DSURF 1
+NODE       335  DSURF 1
+NODE       336  DSURF 1
+NODE       337  DSURF 1
+NODE       338  DSURF 1
+NODE       339  DSURF 1
+NODE       340  DSURF 1
+NODE       341  DSURF 1
+NODE       342  DSURF 1
+NODE       343  DSURF 1
+NODE       344  DSURF 1
+NODE       345  DSURF 1
+NODE       346  DSURF 1
+NODE       347  DSURF 1
+NODE       348  DSURF 1
+NODE       349  DSURF 1
+NODE       350  DSURF 1
+NODE       351  DSURF 1
+NODE       352  DSURF 1
+NODE       353  DSURF 1
+NODE       354  DSURF 1
+NODE       355  DSURF 1
+NODE       356  DSURF 1
+NODE       357  DSURF 1
+NODE       358  DSURF 1
+NODE       359  DSURF 1
+NODE       360  DSURF 1
+NODE       361  DSURF 1
+NODE       362  DSURF 1
+NODE       363  DSURF 1
+NODE       364  DSURF 1
+NODE       365  DSURF 1
+NODE       366  DSURF 1
+NODE       367  DSURF 1
+NODE       368  DSURF 1
+NODE       369  DSURF 1
+NODE       370  DSURF 1
+NODE       371  DSURF 1
+NODE       372  DSURF 1
+NODE       373  DSURF 1
+NODE       374  DSURF 1
+NODE       375  DSURF 1
+NODE       376  DSURF 1
+NODE       377  DSURF 1
+NODE       378  DSURF 1
+NODE       379  DSURF 1
+NODE       380  DSURF 1
+NODE       381  DSURF 1
+NODE       382  DSURF 1
+NODE       383  DSURF 1
+NODE       384  DSURF 1
+NODE       385  DSURF 1
+NODE       386  DSURF 1
+NODE       387  DSURF 1
+NODE       388  DSURF 1
+NODE       389  DSURF 1
+NODE       390  DSURF 1
+NODE       391  DSURF 1
+NODE       392  DSURF 1
+NODE       393  DSURF 1
+NODE       394  DSURF 1
+NODE       395  DSURF 1
+NODE       396  DSURF 1
+NODE       397  DSURF 1
+NODE       398  DSURF 1
+NODE       399  DSURF 1
+NODE       400  DSURF 1
+NODE       401  DSURF 1
+NODE       402  DSURF 1
+NODE       403  DSURF 1
+NODE       404  DSURF 1
+NODE       405  DSURF 1
+NODE       406  DSURF 1
+NODE       407  DSURF 1
+NODE       408  DSURF 1
+NODE       409  DSURF 1
+NODE       410  DSURF 1
+NODE       411  DSURF 1
+NODE       412  DSURF 1
+NODE       413  DSURF 1
+NODE       414  DSURF 1
+NODE       415  DSURF 1
+NODE       416  DSURF 1
+NODE       417  DSURF 1
+NODE       418  DSURF 1
+NODE       419  DSURF 1
+NODE       420  DSURF 1
+NODE       421  DSURF 1
+NODE       422  DSURF 1
+NODE       423  DSURF 1
+NODE       424  DSURF 1
+NODE       425  DSURF 1
+NODE       426  DSURF 1
+NODE       427  DSURF 1
+NODE       428  DSURF 1
+NODE       429  DSURF 1
+NODE       430  DSURF 1
+NODE       431  DSURF 1
+NODE       432  DSURF 1
+NODE       433  DSURF 1
+NODE       434  DSURF 1
+NODE       435  DSURF 1
+NODE       436  DSURF 1
+NODE       437  DSURF 1
+NODE       438  DSURF 1
+NODE       439  DSURF 1
+NODE       440  DSURF 1
+NODE       441  DSURF 1
+NODE       442  DSURF 1
+NODE       443  DSURF 1
+NODE       444  DSURF 1
+NODE       445  DSURF 1
+NODE       446  DSURF 1
+NODE       447  DSURF 1
+NODE       448  DSURF 1
+NODE       449  DSURF 1
+NODE       450  DSURF 1
+NODE       451  DSURF 1
+NODE       452  DSURF 1
+NODE       453  DSURF 1
+NODE       454  DSURF 1
+NODE       455  DSURF 1
+NODE       456  DSURF 1
+NODE       457  DSURF 1
+NODE       458  DSURF 1
+NODE       459  DSURF 1
+NODE       460  DSURF 1
+NODE       461  DSURF 1
+NODE       462  DSURF 1
+NODE       463  DSURF 1
+NODE       464  DSURF 1
+NODE       465  DSURF 1
+NODE       466  DSURF 1
+NODE       467  DSURF 1
+NODE       468  DSURF 1
+NODE       469  DSURF 1
+NODE       470  DSURF 1
+NODE       471  DSURF 1
+NODE       472  DSURF 1
+NODE       473  DSURF 1
+NODE       474  DSURF 1
+NODE       475  DSURF 1
+NODE       476  DSURF 1
+NODE       477  DSURF 1
+NODE       478  DSURF 1
+NODE       479  DSURF 1
+NODE       480  DSURF 1
+NODE       481  DSURF 1
+NODE       482  DSURF 1
+NODE       483  DSURF 1
+NODE       484  DSURF 1
+NODE       485  DSURF 1
+NODE       486  DSURF 1
+NODE       487  DSURF 1
+NODE       488  DSURF 1
+NODE       489  DSURF 1
+NODE       490  DSURF 1
+NODE       491  DSURF 1
+NODE       492  DSURF 1
+NODE       493  DSURF 1
+NODE       494  DSURF 1
+NODE       495  DSURF 1
+NODE       496  DSURF 1
+NODE       497  DSURF 1
+NODE       498  DSURF 1
+NODE       499  DSURF 1
+NODE       500  DSURF 1
+NODE       501  DSURF 1
+NODE       502  DSURF 1
+NODE       503  DSURF 1
+NODE       504  DSURF 1
+NODE       505  DSURF 1
+NODE       506  DSURF 1
+NODE       507  DSURF 1
+NODE       508  DSURF 1
+NODE       509  DSURF 1
+NODE       510  DSURF 1
+NODE       511  DSURF 1
+NODE       512  DSURF 1
+NODE       513  DSURF 1
+NODE       514  DSURF 1
+NODE       515  DSURF 1
+NODE       516  DSURF 1
+NODE       517  DSURF 1
+NODE       518  DSURF 1
+NODE       519  DSURF 1
+NODE       520  DSURF 1
+NODE       521  DSURF 1
+NODE       522  DSURF 1
+NODE       523  DSURF 1
+NODE       524  DSURF 1
+NODE       525  DSURF 1
+NODE       526  DSURF 1
+NODE       527  DSURF 1
+NODE       528  DSURF 1
+NODE       529  DSURF 1
+NODE       530  DSURF 1
+NODE       531  DSURF 1
+NODE       532  DSURF 1
+NODE       533  DSURF 1
+NODE       534  DSURF 1
+NODE       535  DSURF 1
+NODE       536  DSURF 1
+NODE       537  DSURF 1
+NODE       538  DSURF 1
+NODE       539  DSURF 1
+NODE       540  DSURF 1
+NODE       541  DSURF 1
+NODE       542  DSURF 1
+NODE       543  DSURF 1
+NODE       544  DSURF 1
+NODE       545  DSURF 1
+NODE       546  DSURF 1
+NODE       547  DSURF 1
+NODE       548  DSURF 1
+NODE       549  DSURF 1
+NODE       550  DSURF 1
+NODE       551  DSURF 1
+NODE       552  DSURF 1
+NODE       553  DSURF 1
+NODE       554  DSURF 1
+NODE       555  DSURF 1
+NODE       556  DSURF 1
+NODE       557  DSURF 1
+NODE       558  DSURF 1
+NODE       559  DSURF 1
+NODE       560  DSURF 1
+NODE       561  DSURF 1
 ------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD  2.5000000000000000e+00  5.0000000000000000e-01  0.0000000000000000e+00

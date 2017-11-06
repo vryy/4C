@@ -65,11 +65,11 @@ void SCATRA::ScaTraTimIntPoroMulti::SetL2FluxOfMultiFluid(
   if(multiflux->NumVectors()%nsd_!=0)
     dserror("Unexpected length of flux vector: %i",multiflux->NumVectors());
 
-  const int numphases = multiflux->NumVectors() / nsd_;
+  const int totalnumdof = multiflux->NumVectors() / nsd_;
 
   std::string stateprefix = "flux";
 
-  for(int curphase=0;curphase<numphases;++curphase)
+  for(int curphase=0;curphase<totalnumdof;++curphase)
   {
     // initialize velocity vectors
     Teuchos::RCP<Epetra_Vector> phaseflux = LINALG::CreateVector(*discret_->DofRowMap(nds_flux),true);

@@ -452,6 +452,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::FluidPoroSinglePhase* params = static_cast<MAT::PAR::FluidPoroSinglePhase*>(curmat->Parameter());
     return params->CreateMaterial();
   }
+  case INPAR::MAT::m_fluidporo_singlevolfrac:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::FluidPoroSingleVolFrac(curmat));
+    MAT::PAR::FluidPoroSingleVolFrac* params = static_cast<MAT::PAR::FluidPoroSingleVolFrac*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
   case INPAR::MAT::m_poro_law_linear:
   {
     if (curmat->Parameter() == NULL)

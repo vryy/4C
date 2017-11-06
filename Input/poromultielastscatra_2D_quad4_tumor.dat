@@ -115,10 +115,10 @@ ML_DAMPFINE                     0.89                          // damping fine gr
 ML_DAMPMED                      1.0                           // damping med grids
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_FluidPoroMultiPhaseReactions LOCAL No PERMEABILITY 1.8e-7 NUMMAT 2 MATIDS 11 12 NUMREAC 1 REACIDS 20 END
-MAT 2 MAT_FluidPoroMultiPhaseReactions LOCAL No PERMEABILITY 1.8e-7 NUMMAT 2 MATIDS 10 12 NUMREAC 1 REACIDS 20 END
+MAT 1 MAT_FluidPoroMultiPhaseReactions LOCAL No PERMEABILITY 1.8e-7 NUMMAT 2 MATIDS 11 12 NUMFLUIDPHASES 2 NUMREAC 1 REACIDS 20 END
+MAT 2 MAT_FluidPoroMultiPhaseReactions LOCAL No PERMEABILITY 1.8e-7 NUMMAT 2 MATIDS 10 12 NUMFLUIDPHASES 2 NUMREAC 1 REACIDS 20 END
 
-MAT 20 MAT_FluidPoroSingleReaction NUMSCAL 2 NUMPHASES 2 SCALE -1 1 COUPLING scalar_by_function FUNCTID 4
+MAT 20 MAT_FluidPoroSingleReaction NUMSCAL 2 TOTALNUMDOF 2 NUMVOLFRAC 0 SCALE -1 1 COUPLING scalar_by_function FUNCTID 4
 
 MAT 10 MAT_FluidPoroSinglePhase DOFTYPEID 101 VISCOSITYLAWID 104 DENSITYLAWID 103 DENSITY 1.0 BULKMODULUS 1e9 RELPERMEABILITYLAWID 105
 MAT 101 MAT_FluidPoroSinglePhaseDofDiffPressure PHASELAWID 102 NUMDOF 2 PRESCOEFF 1  0  END

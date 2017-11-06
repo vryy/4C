@@ -68,6 +68,7 @@ namespace INPAR
       m_fluid,                                 ///< fluid
       m_fluidporo,                             ///< darcy fluid for poroelasticity problems
       m_fluidporo_singlephase,                 ///< single phase material for multiphase flow through porous medium
+      m_fluidporo_singlevolfrac,               ///< single volume fraction material for multiphase flow through porous medium
       m_fluidporo_singlereaction,              ///< single phase material for multiphase flow through porous medium
       m_fluidporo_multiphase,                  ///< collection of single phase materials for multiphase flow through porous medium
       m_fluidporo_multiphase_reactions,        ///< collection of single phase materials for reavcitve multiphase flow through porous medium

@@ -94,7 +94,7 @@ public:
       Teuchos::ParameterList&       params,
       DRT::Discretization&          discretization,
       DRT::Element::LocationArray&  la,
-      const int                     numphases
+      const int                     numfluidphases
   );
 
   //! set internal variables
@@ -253,20 +253,22 @@ public:
 
   //! generic linearization of term scaled with porosity for coupling with fluid (OD terms)
   void PorosityLinearizationFluid(
-      Epetra_SerialDenseMatrix&                   emat,             //!< element current to be filled
-      const int                                   k,                //!< index of current scalar
-      const int                                   curphase,         //!< current phase (k belongs to curphase)
-      const int                                   numphases,        //!< total number of phases
-      double                                      prefac            //!< generic factor with which the matrix is multiplied
+      Epetra_SerialDenseMatrix&                   emat,                         //!< element current to be filled
+      const int                                   k,                            //!< index of current scalar
+      const int                                   curphase,                     //!< current phase (k belongs to curphase)
+      const int                                   numfluidphases,               //!< number of fluid phases
+      const int                                   totalnummultiphasedofpernode, //!< number of fluid phases + number of volumefractions
+      double                                      prefac                        //!< generic factor with which the matrix is multiplied
   );
 
   //! generic linearization of term scaled with saturation for coupling with fluid (OD terms)
   void SaturationLinearization(
-      Epetra_SerialDenseMatrix&                   emat,             //!< element current to be filled
-      const int                                   k,                //!< index of current scalar
-      const int                                   curphase,         //!< current phase (k belongs to curphase)
-      const int                                   numphases,        //!< total number of phases
-      double                                      prefac            //!< generic factor with which the matrix is multiplied
+      Epetra_SerialDenseMatrix&                   emat,                         //!< element current to be filled
+      const int                                   k,                            //!< index of current scalar
+      const int                                   curphase,                     //!< current phase (k belongs to curphase)
+      const int                                   numfluidphases,               //!< number of fluid phases
+      const int                                   totalnummultiphasedofpernode, //!< number of fluid phases + number of volumefractions
+      double                                      prefac                        //!< generic factor with which the matrix is multiplied
   );
 
   //! calculation of convective element matrix in convective form (off diagonal term fluid)
@@ -419,25 +421,29 @@ public:
      // access from outside to the phasemanager: scatra-discretization has fluid-dis on dofset 2
      phasemanager_->EvaluateGPState(JacobianDefGradient,*variablemanager_,ndsscatra_porofluid_);
 
-     const int numphases = phasemanager_->NumPhases();
+     const int numfluidphases = phasemanager_->NumFluidPhases();
+     const int totalnummultiphasedofpernode = phasemanager_->TotalNumDof();
 
      // resize all phase related vectors
-     multiconvelint_.resize(numphases);
-     multiconv_.resize(numphases);
-     pressure_.resize(numphases);
-     saturation_.resize(numphases);
-     pressuregrad_.resize(numphases);
-     abspressuregrad_.resize(numphases);
+     multiconvelint_.resize(numfluidphases);
+     multiconv_.resize(numfluidphases);
+     pressure_.resize(numfluidphases);
+     saturation_.resize(numfluidphases);
+     pressuregrad_.resize(numfluidphases);
+     abspressuregrad_.resize(numfluidphases);
+     volfrac_.resize(totalnummultiphasedofpernode-numfluidphases);
 
      const std::vector<LINALG::Matrix<NSD,1> >& fluidgradphi = *(variablemanager_->GradPhinp());
 
-     for (int k = 0; k < numphases; ++k)
+     volfrac_ = phasemanager_->VolFrac();
+
+     for (int k = 0; k < numfluidphases; ++k)
      {
        // current pressure gradient
        pressuregrad_[k].Clear();
 
        // compute the pressure gradient from the phi gradients
-       for (int idof=0; idof<numphases; ++idof)
+       for (int idof=0; idof<numfluidphases; ++idof)
          pressuregrad_[k].Update(phasemanager_->PressureDeriv(k,idof),fluidgradphi[idof],1.0);
 
        // compute the absolute value of the pressure gradient from the phi gradients
@@ -468,7 +474,7 @@ public:
      // check if the IDs make sense
      for (std::vector<int>::iterator it = scalartophaseID_.begin() ; it != scalartophaseID_.end(); ++it)
      {
-        if( *it<0 or *it>=numphases )
+        if( *it<0 or *it>=numfluidphases )
           dserror("Invalid phase ID %i",*it);
      }
 
@@ -489,13 +495,13 @@ public:
     )
     {
 
-      const int numphases = econvelnp.size();
+      const int numfluidphases = econvelnp.size();
 
       // resize all phase related vectors
-      multiconvelint_.resize(numphases);
-      multiconv_.resize(numphases);
+      multiconvelint_.resize(numfluidphases);
+      multiconv_.resize(numfluidphases);
 
-      for (int k = 0; k < numphases; ++k)
+      for (int k = 0; k < numfluidphases; ++k)
       {
         // convective velocity
         multiconvelint_[k].Multiply(econvelnp[k],funct);
@@ -506,7 +512,7 @@ public:
       // check if the IDs make sense
       for (std::vector<int>::iterator it = scalartophaseID_.begin() ; it != scalartophaseID_.end(); ++it)
       {
-         if( *it<0 or *it>=numphases )
+         if( *it<0 or *it>=numfluidphases )
            dserror("Invalid phase ID %i",*it);
       }
 
@@ -574,6 +580,12 @@ public:
   const std::vector<double>& Saturation() const
   {
     return saturation_;
+  };
+
+  //! return volfrac vector
+  const std::vector<double>& VolFrac() const
+  {
+    return volfrac_;
   };
 
   //! return solid pressure
@@ -648,7 +660,8 @@ public:
       Teuchos::ParameterList&       params,
       DRT::Discretization&          discretization,
       DRT::Element::LocationArray&  la,
-      const int                     numphases
+      const int                     numfluidphases,
+      const int                     totalnummultiphasedofpernode
       )
   {
 
@@ -663,7 +676,8 @@ public:
             NSD,
             MultiphaseMat()->MaterialType(),
             POROFLUIDMULTIPHASE::Action::get_access_from_scatra,
-            numphases
+            totalnummultiphasedofpernode,
+            numfluidphases
             );
 
     // access from outside to the phasemanager: scatra-discretization has fluid-dis on dofset 2
@@ -674,7 +688,7 @@ public:
         DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<NSD,NEN>::CreateVariableManager(
             *para,
             POROFLUIDMULTIPHASE::Action::get_access_from_scatra,
-            numphases
+            totalnummultiphasedofpernode
             );
 
     return;
@@ -726,6 +740,8 @@ private:
   std::vector<LINALG::Matrix<NSD,1> > pressuregrad_;
   //! norm of pressure-gradient
   std::vector<double> abspressuregrad_;
+  //! phase pressure
+  std::vector<double> volfrac_;
 
   //! fluid-poro multiphase material
   Teuchos::RCP<MAT::FluidPoroMultiPhase> multiphasemat_;

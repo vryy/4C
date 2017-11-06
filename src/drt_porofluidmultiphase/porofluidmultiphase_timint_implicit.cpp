@@ -1084,8 +1084,8 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructFlux()
 
   const int dim = DRT::Problem::Instance()->NDim();
   // we assume same number of dofs per node in the whole dis here
-  const int numphases = discret_->NumDof(0,discret_->lRowNode(0));
-  const int numvec = numphases*dim;
+  const int totalnumdof = discret_->NumDof(0,discret_->lRowNode(0));
+  const int numvec = totalnumdof*dim;
 
   // add state vectors according to time-integration scheme
   AddTimeIntegrationSpecificVectors();

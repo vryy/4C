@@ -237,8 +237,11 @@ depending on the action provided by the global algorithm.
     //! @name dofs and nodes
     /*========================================================================*/
 
-    //! number of dof per node (= number of phases)
-    const int numdofpernode_;
+    //! number of dof per node (= number of fluid phases + number of volume fractions)
+    const int totalnumdofpernode_;
+
+    //! number of fluid phases
+    int numfluidphases_;
 
     /*========================================================================*/
     //! @name parameter lists

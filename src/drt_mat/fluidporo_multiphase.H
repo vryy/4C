@@ -49,6 +49,10 @@ namespace MAT
       //@{
       /// permeability
       const double permeability_;
+
+      /// number of fluid phases of the nummat
+      const int numfluidphases_;
+
       //@}
 
       //! transformation of degrees of freedom to true pressures
@@ -141,6 +145,12 @@ private:
       return paramsporo_->permeability_;
     }
 
+    /// return number of fluid phases
+    int NumFluidPhases() const
+    {
+      return paramsporo_->numfluidphases_;
+    }
+
     /// Return quick accessible material parameter data
     virtual MAT::PAR::FluidPoroMultiPhase* Parameter() const { return paramsporo_; }
 
@@ -159,6 +169,10 @@ private:
     void EvaluateGenPressure(
         std::vector<double>& genpressure,
         const std::vector<double>& phinp) const;
+
+    /// evaluate the pressure of all 'volfrac' phases
+    void GetVolFracPressure(
+        std::vector<double>& volfracpress) const;
 
     /// evaluate saturation of all phases
     void EvaluateSaturation(

@@ -94,12 +94,12 @@ AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
 AMGNXN_XML_FILE                 poromultielastscatra_3D_hex8_mono_tumor_BGS-AMG_3x3.xml
 -------------------------------------------------------------------MATERIALS
-MAT 2 MAT_FluidPoroMultiPhaseReactions LOCAL No PERMEABILITY 1.82e-9 NUMMAT 3 MATIDS 10 11 12 NUMREAC 1 REACIDS 20 END
+MAT 2 MAT_FluidPoroMultiPhaseReactions LOCAL No PERMEABILITY 1.82e-9 NUMMAT 3 MATIDS 10 11 12 NUMFLUIDPHASES 3 NUMREAC 1 REACIDS 20 END
 // 1 = healthy
 // 2 = tumor
 // 3 = IF
 
-MAT 20 MAT_FluidPoroSingleReaction NUMSCAL 2 NUMPHASES 3 SCALE 0 -1 1 COUPLING scalar_by_function FUNCTID 10
+MAT 20 MAT_FluidPoroSingleReaction NUMSCAL 2 TOTALNUMDOF 3 NUMVOLFRAC 0 SCALE 0 -1 1 COUPLING scalar_by_function FUNCTID 10
 // equivalent with: MAT 20 MAT_FluidPoroSingleReaction NUMSCAL 2 NUMPHASES 3 SCALE 0 -1 1 COUPLING scalar_by_function FUNCTID 4
 
 MAT 10 MAT_FluidPoroSinglePhase DOFTYPEID 101 VISCOSITYLAWID 104 DENSITYLAWID 103 DENSITY 1.0 BULKMODULUS 1e15 RELPERMEABILITYLAWID 105

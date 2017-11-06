@@ -29,7 +29,7 @@ INITFUNCNO                      1
 NAME                            Solver
 SOLVER                          UMFPACK                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 3 MATIDS 10 20 30 END
+MAT 1 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 3 MATIDS 10 20 30 NUMFLUIDPHASES 3 END
 
 MAT 10 MAT_FluidPoroSinglePhase DOFTYPEID 100 VISCOSITYLAWID 103 DENSITYLAWID 102 DENSITY 1.0 BULKMODULUS 1.0 RELPERMEABILITYLAWID 104
 MAT 100 MAT_FluidPoroSinglePhaseDofSaturation PHASELAWID 101

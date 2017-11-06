@@ -76,3 +76,42 @@ POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMaterial(
 
   return GetSinglePhaseMatFromMultiMaterial(multiphasemat,phasenum);
 }
+
+/*---------------------------------------------------------------------------------------*
+ * get the single volfrac material from the element multiphase material kremheller 08/17 |
+*----------------------------------------------------------------------------------------*/
+const MAT::FluidPoroSingleVolFrac&
+POROFLUIDMULTIPHASE::ELEUTILS::GetSingleVolFracMatFromMultiMaterial(
+    const MAT::FluidPoroMultiPhase& multiphasemat,
+    int volfracnum)
+{
+  // get the single phase material by its ID
+  const int matid = multiphasemat.MatID(volfracnum);
+  Teuchos::RCP< MAT::Material> singlemat = multiphasemat.MaterialById(matid);
+
+  // safety check and cast
+  if(singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlevolfrac)
+    dserror("only poro single vol fraction material valid");
+
+  return static_cast<const MAT::FluidPoroSingleVolFrac&>(*singlemat);
+}
+
+/*-------------------------------------------------------------------------------*
+ *  get the single volfrac material from the element material   kremheller 08/17 |
+*--------------------------------------------------------------------------------*/
+const MAT::FluidPoroSingleVolFrac&
+POROFLUIDMULTIPHASE::ELEUTILS::GetSingleVolFracMatFromMaterial(
+    const MAT::Material& material,
+    int volfracnum)
+{
+  //safety check
+  if(material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
+     material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
+    dserror("only poro multiphase material valid");
+
+  //cast
+  const MAT::FluidPoroMultiPhase& multiphasemat =
+      static_cast<const MAT::FluidPoroMultiPhase&>(material);
+
+  return GetSingleVolFracMatFromMultiMaterial(multiphasemat,volfracnum);
+}
