@@ -30,6 +30,7 @@
 #define dgetrf              dgetrf_
 #define dgetri              dgetri_
 #define dgetrs              dgetrs_
+#define dggev               dggev_
 #define dsyev               dsyev_
 #define dsyevd              dsyevd_
 #define dsygv               dsygv_
@@ -57,6 +58,9 @@ void dsytrf(char *uplo, int *n, double *a, int *lda, int *ipiv, double *work, in
 void dsytri(char *uplo, int *n, double *a, int *lda, int *ipiv, double *work, int *info);
 void dgetrf(int *m,int *n, double *a, int *lda, int *ipiv, int* info);
 void dgetri(int *n, double *a, int *lda, int *ipiv, double *work, int *lwork, int *info);
+void dggev(const char * jobvl, const char * jobvr, const int * n, double * a, const int * lda, double * b, const int * ldb,
+        double * alphar, double * alphai, double * beta, double * vl, const int * ldvl,
+        double * vr, const int * ldvr, double * work, const int * lwork, int * info);
 void dhgeqz(char *job, char *compq, char *compz, int *n, int *ilo, int *ihi, double* h, int *ldh, double* t,
         int *ldt, double* alphar, double* alphai, double* beta, double* q, int *ldq,
         double* z, int *ldz, double *work, int *lwork, int *info);

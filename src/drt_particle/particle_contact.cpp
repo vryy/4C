@@ -671,7 +671,7 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
     DRT::Node*                           particle_i,              //!< i-th particle
-    const ParticleCollData&              data_i,                  //!< collision data associated with i-th particle
+    ParticleCollData&                    data_i,                  //!< collision data associated with i-th particle
     const std::list<DRT::Node*>&         neighboring_particles,   //!< list of particles adjacent to i-th particle
     const bool                           havepbc,                 //!< flag indicating periodic boundaries
     const double                         dt,                      //!< time step size
@@ -703,10 +703,11 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
       const double m_eff = data_i.mass * data_j.mass / (data_i.mass + data_j.mass);
 
       // might need to shift position of particle j in the presence of periodic boundary conditions
-      static LINALG::Matrix<3,1> data_j_dis;
+      static LINALG::Matrix<3,1> data_i_dis, data_j_dis;
       if(havepbc)
       {
-        // store original position of particle j
+        // store original positions of particles i and j
+        data_i_dis.SetCopy(data_i.dis);
         data_j_dis.SetCopy(data_j.dis);
 
         // perform shifting if necessary
@@ -716,11 +717,19 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
             const double distance = abs(data_j.dis(idim) - data_i.dis(idim));
             const double contactdistance = data_i.rad + data_j.rad;
             const double pbcdelta = particle_algorithm_->BinStrategy().PBCDelta(idim);
+
+            // no interior contact in periodic direction --> shift particle to check for exterior contact
             if(distance > contactdistance)
-              // no interior contact in periodic direction --> shift particle to check for exterior contact
-              data_j.dis(idim) += ((data_j.dis(idim) < data_i.dis(idim)) - (data_j.dis(idim) > data_i.dis(idim))) * pbcdelta;
+            {
+              // check global IDs of particles i and j to decide which particle to shift --> prevents roundoff differences due to parallelization
+              if(data_i.id < data_j.id)
+                data_j.dis(idim) += ((data_j.dis(idim) < data_i.dis(idim)) - (data_j.dis(idim) > data_i.dis(idim))) * pbcdelta;
+              else
+                data_i.dis(idim) += ((data_i.dis(idim) < data_j.dis(idim)) - (data_i.dis(idim) > data_j.dis(idim))) * pbcdelta;
+            }
+
+            // interior contact in periodic direction --> make sure that there is no exterior contact at the same time
             else if(distance > pbcdelta - contactdistance)
-              // interior contact in periodic direction --> make sure that there is no exterior contact at the same time
               dserror("Cannot have interior and exterior contact in periodic direction at the same time!");
           }
       }
@@ -819,9 +828,12 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
         history_particle_j.erase(data_i.id);
       }
 
-      // undo periodic shift of position of particle j if necessary
+      // undo periodic shift of position of particle i or j if necessary
       if(havepbc)
+      {
+        data_i.dis.SetCopy(data_i_dis);
         data_j.dis.SetCopy(data_j_dis);
+      }
     }
   }  // loop over neighboring particles
 
@@ -1886,13 +1898,12 @@ bool PARTICLE::ParticleCollisionHandlerDEMEllipsoids::CollisionCheck(
   // only compute eigenvalues, but not the corresponding eigenvectors, employing a different set of LAPACK routines
   // however: method not reliable, sometimes gives small, artificial complex parts of actually purely real eigenvalues
   //      --> method deactivated at the moment...
-  // return ComplexEigenValues(E_j,E_i_temp);
+  return ComplexEigenValues(E_j,E_i_temp);
 
   // alternative way of checking whether the characteristic equation has two distinct positive roots:
   // discriminant of characteristic equation must be positive and auxiliary quantity P (see below) must be negative
   // however: method not reliable in case of small discriminant (absolute value < 1.e-7), most probably due to roundoff
   //      --> method deactivated at the moment...
-  /* START OF ALTERNATIVE METHOD
   // compute coefficients of characteristic equation
   double a = E_i(0,0)*E_i(1,1)*E_i(2,2)*E_i(3,3) - E_i(0,0)*E_i(1,1)*E_i(2,3)*E_i(3,2) - E_i(0,0)*E_i(1,2)*E_i(2,1)*E_i(3,3)
            + E_i(0,0)*E_i(1,2)*E_i(2,3)*E_i(3,1) + E_i(0,0)*E_i(1,3)*E_i(2,1)*E_i(3,2) - E_i(0,0)*E_i(1,3)*E_i(2,2)*E_i(3,1)
@@ -2045,7 +2056,6 @@ bool PARTICLE::ParticleCollisionHandlerDEMEllipsoids::CollisionCheck(
 
   // collision check via discriminant and auxiliary quantity
   return (discriminant > 0. and P < 0.) ? false : true;
-  END OF ALTERNATIVE METHOD */
 }
 
 
@@ -2121,11 +2131,21 @@ void PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeContactPoint(
     C_particle_t(i) = C_t(i)+t*d_t(i);
   C_particle_t(3) = 1.;
 
+  // invert overall transformation matrix M
+  if(false)
+  {
+    // for some unknown reason, the FixedSizeSerialDenseSolver yields slightly different results with the GCC and Clang compilers,
+    // giving rise to self-amplifying roundoff differences and ultimately causing test cases to fail with one of the two compilers
+    // therefore, the following code is deactivated and replaced by the alternative algorithm given below
+    LINALG::FixedSizeSerialDenseSolver<4,4> inverter;
+    inverter.SetMatrix(M);
+    if(inverter.Invert())
+      dserror("Inversion of 4x4 matrix failed!");
+  }
+  else
+    ComputeTransformationMatrixInverse(M,semiaxes,T,R);
+
   // transform intersection point back
-  LINALG::FixedSizeSerialDenseSolver<4,4> inverter;
-  inverter.SetMatrix(M);
-  if(inverter.Invert())
-    dserror("Inversion of 4x4 matrix failed!");
   C_particle.Multiply(C_particle_t,M);
   C_particle(3) = 0.;
 
@@ -2145,51 +2165,46 @@ bool PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeEigenVectors(
     LINALG::Matrix<3,1>&         V3    //!< fourth eigenvector of generalized eigenproblem
     ) const
 {
-  // compute matrix B^-1 * A
-  static LINALG::Matrix<4,4> temp4x4;
-  temp4x4 = B;
-  LINALG::FixedSizeSerialDenseSolver<4,4> inverter;
-  inverter.SetMatrix(temp4x4);
-  if(inverter.Invert())
-    dserror("Inversion of 4x4 matrix failed!");
-  static LINALG::Matrix<4,4> Binv_A;
-  Binv_A.Multiply(temp4x4,A);
-
-  // compute eigenvectors of matrix B^-1 * A
-  LINALG::Matrix<1,4> WR(true);        // real eigenvalue parts
-  static LINALG::Matrix<1,4> WI;   // imaginary eigenvalue parts
-  double work[16];
+  // compute eigenvalues and eigenvectors of matrix B^-1 * A
+  static LINALG::Matrix<4,4> A_temp, B_temp, vr;
+  A_temp = A;
+  B_temp = B;
+  const char jobvl = 'N', jobvr = 'V';
+  const int n(4), lwork(32);
+  LINALG::Matrix<1,4> alphar;
+  static LINALG::Matrix<1,4> alphai, beta;
+  double work[32];
   int info;
-  Epetra_LAPACK lapack;
-  lapack.GEEV('N','V',4,Binv_A.A(),4,WR.A(),WI.A(),NULL,4,temp4x4.A(),4,work,16,&info);
-  if(info < 0)
-    dserror("LAPACK algorithm GEEV: The %d-th argument has an illegal value!",info);
+  dggev(&jobvl,&jobvr,&n,A_temp.A(),&n,B_temp.A(),&n,alphar.A(),alphai.A(),beta.A(),NULL,&n,vr.A(),&n,work,&lwork,&info);
+  if(info)
+    dserror("LAPACK algorithm GGEV yielded error code %d!",info);
+  alphar.EDivide(beta);
 
   // normalize eigenvectors w.r.t. respective last homogeneous coordinates
   for(unsigned i=0; i<4 ; ++i)
   {
     // compute inverse of current last homogeneous coordinate, avoiding division by zero
-    const double inverse = 1./(abs(temp4x4(3,i)) > 1.e-16 ? temp4x4(3,i) : 1.e-16);
+    const double inverse = abs(vr(3,i)) > 1.e-16 ? 1./vr(3,i) : 1.e16;
 
     // normalize current eigenvector
     for(unsigned j=0; j<4 ; ++j)
-      temp4x4(j,i) = temp4x4(j,i)*inverse;
+      vr(j,i) *= inverse;
   }
 
   // sort eigenvectors in ascending order of real parts of associated eigenvalues
   static std::vector<int> indices(4,0);
   std::iota(indices.begin(),indices.end(),0);
-  std::sort(indices.begin(),indices.end(),[&WR](int a, int b){return WR(a) < WR(b);});
+  std::sort(indices.begin(),indices.end(),[&alphar](int a, int b){return alphar(a) < alphar(b);});
   for(unsigned i=0; i<3 ; ++i)
   {
-    V0(i) = temp4x4(i,indices[0]);
-    V1(i) = temp4x4(i,indices[1]);
-    V2(i) = temp4x4(i,indices[2]);
-    V3(i) = temp4x4(i,indices[3]);
+    V0(i) = vr(i,indices[0]);
+    V1(i) = vr(i,indices[1]);
+    V2(i) = vr(i,indices[2]);
+    V3(i) = vr(i,indices[3]);
   }
 
   // determine whether there are complex eigenvalues
-  return WI.Norm2() > 1.e-12 ? true : false;
+  return alphai.Norm2() > 1.e-11 ? true : false;
 }
 
 
@@ -2283,14 +2298,23 @@ void PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeContactPointAndNorm
     // solve generalized eigenproblem as soon as shrunk ellipsoids no longer collide:
     //     lambda * E_i * V + E_j * V = 0   or   lambda * E_j * V + E_i * V = 0
     // --> compute eigenvectors V0, V1, V2, and V3 of:
-    //     ((-E_i)^-1 * E_j)   or   (E_j^-1 * (-E_i))
+    //     ((-E_i)^-1 * E_j)   or   ((-E_j)^-1 * E_i)
     // although the eigenvectors of both matrices are analytically identical, computationally they are not,
     // and therefore we check the global IDs of particles i and j to always solve the same eigenproblem,
     // no matter how many processors are employed
     static LINALG::Matrix<3,1> V0, V1, V2, V3;
-    E_i.Scale(-1.);
-    if(data_i.id < data_j.id ? ComputeEigenVectors(E_j,E_i,V0,V1,V2,V3) : ComputeEigenVectors(E_i,E_j,V0,V1,V2,V3))
-      dserror("Shrunk ellipsoids still collide!");
+    if(data_i.id < data_j.id)
+    {
+      E_i.Scale(-1.);
+      if(ComputeEigenVectors(E_j,E_i,V0,V1,V2,V3))
+        dserror("Shrunk ellipsoids still collide!");
+    }
+    else
+    {
+      E_j.Scale(-1.);
+      if(ComputeEigenVectors(E_i,E_j,V0,V1,V2,V3))
+        dserror("Shrunk ellipsoids still collide!");
+    }
 
     // compute contact point inside contact plane
     static LINALG::Matrix<3,1> C;
@@ -2423,10 +2447,18 @@ void PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeContactPointAndNorm
   for(int i=0; i<3; ++i)
     coord_hom_t(i) = C(i);
   coord_hom_t(3) = 1.;
-  LINALG::FixedSizeSerialDenseSolver<4,4> inverter;
-  inverter.SetMatrix(M);
-  if(inverter.Invert())
-    dserror("Inversion of 4x4 matrix failed!");
+  if(false)
+  {
+    // for some unknown reason, the FixedSizeSerialDenseSolver yields slightly different results with the GCC and Clang compilers,
+    // giving rise to self-amplifying roundoff differences and ultimately causing test cases to fail with one of the two compilers
+    // therefore, the following code is deactivated and replaced by the alternative algorithm given below
+    LINALG::FixedSizeSerialDenseSolver<4,4> inverter;
+    inverter.SetMatrix(M);
+    if(inverter.Invert())
+      dserror("Inversion of 4x4 matrix failed!");
+  }
+  else
+    ComputeTransformationMatrixInverse(M,data.semiaxes,T,R);
   coord_hom.Multiply(coord_hom_t,M);
   for(int i=0; i<3; ++i)
     coord(i) = coord_hom(i);
@@ -2494,6 +2526,40 @@ void PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeTransformationMatri
 
   // multiply translation matrix T by result R * M
   M.Multiply(T,temp4x4);
+
+  return;
+}
+
+
+/*-----------------------------------------------------------------------------------------------------------------------------*
+ | compute matrix transforming a unit sphere centered at the origin of the coordinate system back to an ellipsoid   fang 11/17 |
+ *-----------------------------------------------------------------------------------------------------------------------------*/
+void PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeTransformationMatrixInverse(
+    LINALG::Matrix<4,4>&         M_inv,      //!< inverse transformation matrix
+    const LINALG::Matrix<3,1>&   semiaxes,   //!< ellipsoid semi-axes
+    const LINALG::Matrix<4,4>&   T,          //!< translation matrix
+    const LINALG::Matrix<4,4>&   R           //!< rotation matrix
+    ) const
+{
+  // clear inverse transformation matrix
+  M_inv.Clear();
+
+  // assemble inverse scaling matrix to affinely transform a plain unit sphere to a plain ellipsoid
+  M_inv(0,0) = semiaxes(0);
+  M_inv(1,1) = semiaxes(1);
+  M_inv(2,2) = semiaxes(2);
+  M_inv(3,3) = 1.;
+
+  // multiply inverse scaling matrix by inverse rotation matrix R^T
+  static LINALG::Matrix<4,4> temp4x4;
+  temp4x4.MultiplyNT(M_inv,R);
+
+  // multiply result M_inv * R by inverse translation matrix T_inv
+  static LINALG::Matrix<4,4> T_inv;
+  T_inv = T;
+  for(int i=0; i<3; ++i)
+    T_inv(3,i) = -T_inv(3,i);
+  M_inv.Multiply(temp4x4,T_inv);
 
   return;
 }

@@ -263,7 +263,7 @@ namespace PARTICLE
   /// calculate contact with neighboring particles
   void CalcNeighboringParticlesContact(
       DRT::Node*                           particle_i,              //!< i-th particle
-      const ParticleCollData&              data_i,                  //!< collision data associated with i-th particle
+      ParticleCollData&                    data_i,                  //!< collision data associated with i-th particle
       const std::list<DRT::Node*>&         neighboring_particles,   //!< list of particles adjacent to i-th particle
       const bool                           havepbc,                 //!< flag indicating periodic boundaries
       const double                         dt,                      //!< time step size
@@ -466,6 +466,13 @@ namespace PARTICLE
           const LINALG::Matrix<4,4>&   R           //!< rotation matrix
           ) const;
 
+      //! compute matrix transforming a unit sphere centered at the origin of the coordinate system back to an ellipsoid
+      void ComputeTransformationMatrixInverse(
+          LINALG::Matrix<4,4>&         M_inv,      //!< inverse transformation matrix
+          const LINALG::Matrix<3,1>&   semiaxes,   //!< ellipsoid semi-axes
+          const LINALG::Matrix<4,4>&   T,          //!< translation matrix
+          const LINALG::Matrix<4,4>&   R           //!< rotation matrix
+          ) const;
 
       //! compute translation matrix expressed in homogeneous coordinates
       void ComputeTranslationMatrix(

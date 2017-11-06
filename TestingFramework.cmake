@@ -947,10 +947,11 @@ baci_test(particle_10_hourglass_MD 2 77)
 baci_test(particle_27_gravity_DEM 2 2500)
 baci_test(particle_27_gravity_DEM_ellipsoids_CD_diff 2 2500)
 baci_test(particle_27_gravity_DEM_ellipsoids_CD_same 2 "")
-baci_test(particle_27_gravity_DEM_ellipsoids_RK2 1 "")
+baci_test(particle_27_gravity_DEM_ellipsoids_RK2 1 "")   # please do not remove this serial test case, since the DEM framework for ellipsoidal particles is very prone to roundoff differences due to parallelization!
 baci_test(particle_27_gravity_DEM_ellipsoids_RK2 2 "")
-baci_test(particle_27_gravity_DEM_ellipsoids_RK2_fric 1 "")
+baci_test(particle_27_gravity_DEM_ellipsoids_RK2_fric 1 "")   # please do not remove this serial test case, since the DEM framework for ellipsoidal particles is very prone to roundoff differences due to parallelization!
 baci_test(particle_27_gravity_DEM_ellipsoids_RK2_fric 2 2500)
+baci_test(particle_27_gravity_DEM_ellipsoids_RK2_fric_pbc 1 "")   # please do not remove this serial test case, since the DEM framework for ellipsoidal particles is very prone to roundoff differences due to parallelization!
 baci_test(particle_27_gravity_DEM_ellipsoids_RK2_fric_pbc 2 2500)
 baci_test(particle_27_gravity_MD 2 900)
 baci_test(particle_6_nogravity_nostructure_DEM_pbc_parallel 2 "")
