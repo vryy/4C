@@ -93,8 +93,11 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
   particle_algorithm_(particlealgorithm),
   particleData_(0)
 {
-  // extract the material
-  const MAT::PAR::ParticleMat* particleMat = particle_algorithm_->ParticleMat();
+  // extract the material (only one material allowed in vector)
+  if(particle_algorithm_->ParticleMat().size()!=1)
+    dserror("Only one particle material allowed in ParticleCollisionHandlerBase so far!");
+  const MAT::PAR::ParticleMat* const particleMat = particle_algorithm_->ParticleMat()[0];
+
   // currently all particles have identical density and radius
   double density = particleMat->initDensity_;
   nue_ = particleMat->poissonRatio_;
@@ -1797,7 +1800,7 @@ PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ParticleCollisionHandlerDEMElli
   // to be explicitly prescribed in the *.dat file prior to the actual simulation
 
   // extract material parameters for ellipsoidal particles
-  const MAT::PAR::ParticleMatEllipsoids* const particlematellipsoids = dynamic_cast<const MAT::PAR::ParticleMatEllipsoids* const>(particle_algorithm_->ParticleMat());
+  const MAT::PAR::ParticleMatEllipsoids* const particlematellipsoids = dynamic_cast<const MAT::PAR::ParticleMatEllipsoids* const>(particle_algorithm_->ParticleMat()[0]);
   if(particlematellipsoids == NULL)
     dserror("Couldn't extract material parameters for ellipsoidal particles!");
 

@@ -137,7 +137,7 @@ void PARTICLE::TimIntStrategySpheres::ComputeMass() const
   // loop over all particles
   for(int i=0; i<timint_->discret_->NumMyRowNodes(); ++i)
     // particle mass: m = rho * 4/3 * PI *r^3
-    (*timint_->mass_)[i] = timint_->particle_algorithm_->ParticleMat()->initDensity_*PARTICLE::Utils::Radius2Volume((*(*timint_->radius_)(0))[i]);
+    (*timint_->mass_)[i] = timint_->particle_algorithm_->ParticleMat()[0]->initDensity_*PARTICLE::Utils::Radius2Volume((*(*timint_->radius_)(0))[i]);
 
   return;
 }
@@ -256,8 +256,12 @@ void PARTICLE::TimIntStrategySpheres::SetInitialOrientation() const
 void PARTICLE::TimIntStrategySpheres::SetInitialRadii() const
 {
   // extract initial particle radius if available
-  const MAT::PAR::ParticleMat* const particlemat = timint_->particle_algorithm_->ParticleMat();
-  const double initRadius = particlemat != NULL ? particlemat->initRadius_ : 0.;
+  std::vector<const MAT::PAR::ParticleMat*> particlemat = timint_->particle_algorithm_->ParticleMat();
+  // safety check
+  if (particlemat.size()==2 and particlemat[0]->initRadius_!=particlemat[1]->initRadius_)
+    dserror("Both particle materials need to be defined with equal initRadius_!");
+
+  const double initRadius = particlemat.size()>0 ? particlemat[0]->initRadius_ : 0.0;
 
   // set initial particle radii to initial or specified values
   for(int i=0; i<timint_->discret_->NumMyRowNodes(); ++i)
@@ -457,7 +461,7 @@ void PARTICLE::TimIntStrategyEllipsoids::ComputeMass() const
   // loop over all particles
   for(int i=0; i<timint_->discret_->NumMyRowNodes(); ++i)
     // particle mass: m = rho * 4/3 * PI * r1 * r2 * r3
-    (*timint_->mass_)[i] = timint_->particle_algorithm_->ParticleMat()->initDensity_*4./3.*M_PI*(*(*timint_->radius_)(0))[i*3]*(*(*timint_->radius_)(0))[i*3+1]*(*(*timint_->radius_)(0))[i*3+2];
+    (*timint_->mass_)[i] = timint_->particle_algorithm_->ParticleMat()[0]->initDensity_*4./3.*M_PI*(*(*timint_->radius_)(0))[i*3]*(*(*timint_->radius_)(0))[i*3+1]*(*(*timint_->radius_)(0))[i*3+2];
 
   return;
 }

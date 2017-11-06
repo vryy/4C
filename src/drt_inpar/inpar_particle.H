@@ -110,6 +110,13 @@ namespace INPAR
       WF_3D
     };
 
+    /// Equation of state for SPH interactions
+    enum EquationOfState
+    {
+      GenTait,
+      IdealGas
+    };
+
     enum ExtendedGhosting
     {
       StandardGhosting,

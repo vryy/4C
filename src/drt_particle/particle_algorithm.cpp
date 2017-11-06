@@ -60,25 +60,24 @@ PARTICLE::Algorithm::Algorithm(
   transfer_every_(DRT::Problem::Instance()->ParticleParams().get<int>("TRANSFER_EVERY")),
   particleInteractionType_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleInteractions>(DRT::Problem::Instance()->ParticleParams(),"PARTICLE_INTERACTION")),
   extendedGhosting_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ExtendedGhosting>(DRT::Problem::Instance()->ParticleParams(),"EXTENDED_GHOSTING")),
-  particleMat_(NULL),
-  particleMat2_(NULL),
-  extParticleMat_(NULL),
-  extParticleMat2_(NULL),
+  particleMat_(0),
   bin_wallcontent_(BINSTRATEGY::UTILS::BELE3),
   rendering_(Teuchos::null)
 {
+  // get particle params list
+  const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
 
   //Check number of space dimensions chosen for SPH weight functions
   if(particleInteractionType_==INPAR::PARTICLE::SPH)
   {
-    if(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")!=INPAR::PARTICLE::particle_3D)
+    if(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(particleparams,"DIMENSION")!=INPAR::PARTICLE::particle_3D)
       dserror("The general Particle SPH Interactions framework (binning strategy etc.) does so far only cover 3D problems (DIMENSION  3D).\n"
               "However, if you want to treat quasi-2D or -1D problems, set the input parameter WEIGHT_FUNCTION_DIM to WF_2D or WF_1D, respectively.\n"
               "In Particle SPH Interactions, the definition of the weight functions have to be adapted according to the number of space dimensions considered!");
 
     if(MyRank() == 0)
     {
-      switch(DRT::INPUT::IntegralValue<INPAR::PARTICLE::WeightFunctionDim>(DRT::Problem::Instance()->ParticleParams(),"WEIGHT_FUNCTION_DIM"))
+      switch(DRT::INPUT::IntegralValue<INPAR::PARTICLE::WeightFunctionDim>(particleparams,"WEIGHT_FUNCTION_DIM"))
       {
         case INPAR::PARTICLE::WF_3D :
           IO::cout << "Welcome to Particle SPH Interactions in 3D!" << IO::endl;
@@ -94,13 +93,13 @@ PARTICLE::Algorithm::Algorithm(
       }
     }
 
-    INPAR::PARTICLE::DynamicType timinttype = DRT::INPUT::IntegralValue<INPAR::PARTICLE::DynamicType>(DRT::Problem::Instance()->ParticleParams(),"DYNAMICTYP");
-    if(timinttype!=INPAR::PARTICLE::dyna_kickdrift and DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"TRANSPORT_VELOCITY")==true)
+    INPAR::PARTICLE::DynamicType timinttype = DRT::INPUT::IntegralValue<INPAR::PARTICLE::DynamicType>(particleparams,"DYNAMICTYP");
+    if(timinttype!=INPAR::PARTICLE::dyna_kickdrift and DRT::INPUT::IntegralValue<int>(particleparams,"TRANSPORT_VELOCITY")==true)
       dserror("Modified particle convection velocities based on a TRANSPORT_VELOCITY field only possible for KickDrift time integration scheme!");
   }
   else
   {
-    if(DRT::Problem::Instance()->ParticleParams().get<double>("GRAVITY_RAMP_TIME")>=0.0)
+    if(particleparams.get<double>("GRAVITY_RAMP_TIME")>=0.0)
       dserror("Ramp time for smooth increase of gravity force only possible for SPH applications so far!");
   }
 
@@ -109,7 +108,6 @@ PARTICLE::Algorithm::Algorithm(
         "Set parameter PROBLEMTYP to 'Particle_Structure_Interaction' in ---PROBLEM TYP section\n"
         "and set the particle structure interaction parameters in ---PASI DYNAMIC section\n");
 
-  const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
   gravity_acc_.PutScalar(0.0);
   // get acceleration vector due to gravity for particles
   std::istringstream accstream(Teuchos::getNumericStringParameter(particleparams,"GRAVITY_ACCELERATION"));
@@ -255,7 +253,7 @@ void PARTICLE::Algorithm::Init(bool restarted)
     particles_->Init();
 
     // in case random noise is added to the particle position, particle transfer is necessary
-    double amplitude = DRT::Problem::Instance()->ParticleParams().get<double>("RANDOM_AMPLITUDE");
+    double amplitude = particledyn.get<double>("RANDOM_AMPLITUDE");
     if(amplitude)
       TransferParticles(true, true);
 
@@ -339,11 +337,9 @@ void PARTICLE::Algorithm::InitMaterials()
   {
   case INPAR::PARTICLE::SPH :
   {
-    int testid = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_extparticlemat);
-    if(testid!=1)
+    id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_extparticlemat);
+    if(id!=1)
       dserror("In SPH simulations, the first material ID has always to be 1!");
-
-    id = 1;
     break;
   }
   default :
@@ -359,10 +355,9 @@ void PARTICLE::Algorithm::InitMaterials()
   // check
   if (id==-1)
     dserror("Could not find particle material or material type");
+
   const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
-  particleMat_ = static_cast<const MAT::PAR::ParticleMat*>(mat);
-  if (particleInteractionType_ == INPAR::PARTICLE::SPH)
-    extParticleMat_ = static_cast<const MAT::PAR::ExtParticleMat*>(mat);
+  particleMat_.push_back(static_cast<const MAT::PAR::ParticleMat* const>(mat));
 
   if(particleInteractionType_==INPAR::PARTICLE::SPH)
   {
@@ -371,8 +366,7 @@ void PARTICLE::Algorithm::InitMaterials()
     {
       int id2 = 2;
       const MAT::PAR::Parameter* mat2 = DRT::Problem::Instance()->Materials()->ParameterById(id2);
-      particleMat2_ = static_cast<const MAT::PAR::ParticleMat*>(mat2);
-      extParticleMat2_ = static_cast<const MAT::PAR::ExtParticleMat*>(mat2);
+      particleMat_.push_back(static_cast<const MAT::PAR::ParticleMat* const>(mat2));
     }
   }
 

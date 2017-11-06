@@ -289,11 +289,15 @@ void PARTICLE::TimInt::SetInitialFields()
   strategy_->SetInitialRadii();
 
   // extract particle density (for now, all particles have identical density)
-  const MAT::PAR::ParticleMat* const particlemat = particle_algorithm_->ParticleMat();
+  std::vector<const MAT::PAR::ParticleMat*> particlemat = particle_algorithm_->ParticleMat();
 
   if(particle_algorithm_->ParticleInteractionType()!=INPAR::PARTICLE::SPH)
   {
-    const double initDensity = particlemat != NULL ? particlemat->initDensity_ : 0.;
+    // safety check
+    if (particlemat.size()>1)
+      dserror("Only one particle material allowed for non SPH interaction!");
+
+    const double initDensity = particlemat.size()==1 ? particlemat[0]->initDensity_ : 0.0;
     double consistent_problem_volume=DRT::Problem::Instance()->ParticleParams().get<double>("CONSISTENT_PROBLEM_VOLUME");
     if(consistent_problem_volume<0.0)
       strategy_->ComputeMass();
@@ -398,8 +402,12 @@ void PARTICLE::TimInt::SetInitialFields()
   // initialize displacement field
   // -----------------------------------------//
 
+  // safety check
+  if (particlemat.size()==2 and particlemat[0]->initRadius_!=particlemat[1]->initRadius_)
+    dserror("Both particle materials need to be defined with equal initRadius_!");
+
   const double amplitude = DRT::Problem::Instance()->ParticleParams().get<double>("RANDOM_AMPLITUDE");
-  const double initRadius = particlemat != NULL ? particlemat->initRadius_ : 0.;
+  const double initRadius = particlemat.size()>0 ? particlemat[0]->initRadius_ : 0.0;
 
   for(int n=0; n<discret_->NumMyRowNodes(); ++n)
   {

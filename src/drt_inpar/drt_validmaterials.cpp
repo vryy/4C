@@ -3201,8 +3201,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"DYNAMIC_VISCOSITY","dynamic (shear) viscosity for the liquid phase");
     AddNamedReal(m,"BULK_VISCOSITY","bulk viscosity for the liquid phase, important only in case of rapid compressions/expansions like shock waves");
     AddNamedReal(m,"ARTIFICIAL_VISCOSITY","artificial viscosity according to Adami et al. 2012, Eq. (11)");
-    AddNamedReal(m,"SURFACE_TENSION","surface tension between fluid and void phase");
-    AddNamedReal(m,"STATIC_CONTACT_ANGLE","static contact angle between fluid and solid phase in degree measure");
 
     AppendMaterialDefinition(matlist,m);
   }

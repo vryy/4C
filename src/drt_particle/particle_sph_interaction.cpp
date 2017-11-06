@@ -24,6 +24,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "particle_sph_rendering.H"
 #include "particle_sph_weightFunction.H"
+#include "particle_sph_eos.H"
 
 /*----------------------------------------------------------------------*
  | constructor for particle SPH interaction                meier 10/16  |
@@ -37,6 +38,7 @@ PARTICLE::ParticleSPHInteractionHandler::ParticleSPHInteractionHandler(
   particle_algorithm_(particlealgorithm),
   myrank_(discret->Comm().MyPID()),
   weightFunctionHandler_(Teuchos::null),
+  equationOfStateHandler_(0),
   interactionVariant2_(DRT::INPUT::IntegralValue<int>(particledynparams,"CALC_ACC_VAR2")),
   wallInteractionType_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallInteractionType>(particledynparams,"WALL_INTERACTION_TYPE")),
   freeSurfaceType_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::FreeSurfaceType>(particledynparams,"FREE_SURFACE_TYPE")),
@@ -48,16 +50,17 @@ PARTICLE::ParticleSPHInteractionHandler::ParticleSPHInteractionHandler(
   xsph_dampfac_(particledynparams.get<double>("XSPH_DAMPFAC")),
   xsph_stiffac_(particledynparams.get<double>("XSPH_STIFFAC")),
   surfaceTensionType_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::SurfaceTensionType>(particledynparams,"SURFACE_TENSION_TYPE")),
+  surfTens_ff_(particledynparams.get<double>("SURFACE_TENSION_FF")),
+  surfTens_fs_(particledynparams.get<double>("SURFACE_TENSION_FS")),
+  surfTensPotA_(particledynparams.get<double>("SURFTENSION_POT_A")),
+  surfTensPotB_(particledynparams.get<double>("SURFTENSION_POT_B")),
+  surfTensPotRatio_(particledynparams.get<double>("SURFTENSION_POT_RATIO")),
   min_pvp_dist_(1.0e10),
   min_pvw_dist_(1.0e10),
   min_pressure_(1.0e10),
   max_pressure_(-1.0e10)
 {
   // checks
-  if (particle_algorithm_->ExtParticleMat() == NULL)
-    dserror("extParticleMat_ is empty");
-  // extract material parameters
-  const MAT::PAR::ExtParticleMat* extParticleMat = particle_algorithm_->ExtParticleMat();
 
   if(wallInteractionType_==INPAR::PARTICLE::BoundarParticle_NoSlip or wallInteractionType_==INPAR::PARTICLE::BoundarParticle_FreeSlip)
   {
@@ -68,9 +71,6 @@ PARTICLE::ParticleSPHInteractionHandler::ParticleSPHInteractionHandler(
 
   if(freeSurfaceType_!=INPAR::PARTICLE::FreeSurface_None and freeSurfaceType_!=INPAR::PARTICLE::TwoPhase and particle_algorithm_->BinStrategy()->HavePBC())
     dserror("Periodic free surface flows not possible so far!");
-
-  surfaceTension_ = extParticleMat->surfaceTension_;
-  staticContactAngle_ = extParticleMat->staticContactAngle_;
 
   // set the correct WeightFunction
   switch (DRT::INPUT::IntegralValue<INPAR::PARTICLE::WeightFunction>(particledynparams,"WEIGHT_FUNCTION"))
@@ -97,6 +97,40 @@ PARTICLE::ParticleSPHInteractionHandler::ParticleSPHInteractionHandler(
     }
   }
 
+  // extract vector of pointers to material parameters
+  std::vector<const MAT::PAR::ParticleMat*> particlemat = particle_algorithm_->ParticleMat();
+  if (particlemat.size() == 0)
+    dserror("No particle material defined!");
+
+  // loop over all particle material parameters
+  for(int i=0; i<particlemat.size(); ++i)
+  {
+    // cast to extended particle material parameters
+    const MAT::PAR::ExtParticleMat* extparticlemat = dynamic_cast<const MAT::PAR::ExtParticleMat*>(particlemat[i]);
+    if(extparticlemat == NULL)
+      dserror("Could not extract material parameters for extended particle material!");
+    // append extended particle material parameter to vector
+    extParticleMat_.push_back(extparticlemat);
+  }
+
+  // set the equation of state for each particle material
+  for(int i=0; i<extParticleMat_.size(); ++i)
+  {
+    switch (DRT::INPUT::IntegralValue<INPAR::PARTICLE::EquationOfState>(particledynparams,"EQUATION_OF_STATE"))
+    {
+      case INPAR::PARTICLE::GenTait :
+      {
+        equationOfStateHandler_.push_back(Teuchos::rcp(new PARTICLE::EquationOfState_GenTait(extParticleMat_[i]->SpeedOfSoundL(), extParticleMat_[i]->initDensity_, extParticleMat_[i]->refdensfac_, extParticleMat_[i]->exponent_)));
+        break;
+      }
+      case INPAR::PARTICLE::IdealGas :
+      {
+        equationOfStateHandler_.push_back(Teuchos::rcp(new PARTICLE::EquationOfState_IdealGas(extParticleMat_[i]->SpeedOfSoundL(), extParticleMat_[i]->initDensity_)));
+        break;
+      }
+    }
+  }
+
   // initialize rendering handler
   const INPAR::PARTICLE::RenderingType renderingType = DRT::INPUT::IntegralValue<INPAR::PARTICLE::RenderingType>(particledynparams,"RENDERING");
   if ((renderingType == INPAR::PARTICLE::StandardRendering or renderingType == INPAR::PARTICLE::NormalizedRendering) and norender==false)
@@ -115,17 +149,14 @@ PARTICLE::ParticleSPHInteractionHandler::ParticleSPHInteractionHandler(
 
   if(freeSurfaceType_==INPAR::PARTICLE::TwoPhase and interactionVariant2_==false)
   {
+    if(extParticleMat_.size()!=2)
+      dserror("Two-phase flow needs two particle material definitions!");
+
     if(interactionVariant2_==false)
       dserror("Two-phase flow only possible with acceleration terms according to variant 2!");
 
-    if(fabs(particle_algorithm_->ExtParticleMat()->artificialViscosity_-particle_algorithm_->ExtParticleMat2()->artificialViscosity_)>1.0e-12)
+    if(fabs(extParticleMat_[0]->artificialViscosity_-extParticleMat_[1]->artificialViscosity_)>1.0e-12)
       dserror("Artificial viscosities of both phases have to be identical!");
-
-    if(fabs(particle_algorithm_->ExtParticleMat()->surfaceTension_-particle_algorithm_->ExtParticleMat2()->surfaceTension_)>1.0e-12)
-      dserror("surfaceTension_ of both phases have to be identical!");
-
-    if(fabs(particle_algorithm_->ExtParticleMat()->staticContactAngle_-particle_algorithm_->ExtParticleMat2()->staticContactAngle_)>1.0e-12)
-      dserror("staticContactAngle_ of both phases have to be identical!");
   }
 }
 
@@ -203,11 +234,12 @@ void PARTICLE::ParticleSPHInteractionHandler::InitColParticles()
       boundaryparticle = particleNode->Is_bdry_particle();
     }
 
+    int phase_color = 0;
     // The -1 is needed since particle IDs start with 1 in the input file and with zero in the code
-    if(min_voidparticle_id>0 and particle->Id()>= (min_voidparticle_id-1))
-      colParticles_[lidNodeCol] = ParticleSPH(particle->Id(), particle->Owner(), lm, boundaryparticle, 1, particle_algorithm_->ExtParticleMat2());
-    else
-      colParticles_[lidNodeCol] = ParticleSPH(particle->Id(), particle->Owner(), lm, boundaryparticle, 0, particle_algorithm_->ExtParticleMat());
+    if(min_voidparticle_id>0 and particle->Id()>=(min_voidparticle_id-1))
+      phase_color = 1;
+
+    colParticles_[lidNodeCol] = ParticleSPH(particle->Id(), particle->Owner(), lm, boundaryparticle, phase_color, extParticleMat_[phase_color]);
 
     if(boundaryparticle)
     {
@@ -983,11 +1015,11 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_pvp_acc(
       Inter_laminarViscosity(&sumj_accn_ij, generalCoeff_ij, particle_i, particle_j, interData_ij);
 
       // ********** artificial viscous forces **********
-      if(particle_algorithm_->ExtParticleMat()->artificialViscosity_>0)
+      if(particle_i.extParticleMat_->artificialViscosity_>0)
         Inter_artificialViscosity(&sumj_accn_ij, particle_i, particle_j, interData_ij);
 
       // ********** surface tension **********
-      if(surfaceTension_>0.0 and (surfaceTensionType_==INPAR::PARTICLE::ST_VDW_DIRECT or surfaceTensionType_==INPAR::PARTICLE::ST_VDW_INDIRECT))
+      if(surfTens_ff_>0.0 and (surfaceTensionType_==INPAR::PARTICLE::ST_VDW_DIRECT or surfaceTensionType_==INPAR::PARTICLE::ST_VDW_INDIRECT))
         Inter_surfaceTension(&sumj_accn_ij, particle_i, particle_j, interData_ij, time);
 
     } // loop over j
@@ -1148,8 +1180,11 @@ void PARTICLE::ParticleSPHInteractionHandler::MF_mW(
         // According to Adami et al. 2012 Eq (28), the density of boundary particle is determined based on the extrapolated pressure in Eq (27) and
         // the equation of state based on material data of the interacting particle_i (for multi-phase flows, the material data might strongly differ from particle to particle).
         double pressure_j = particle_j.boundarydata_.pressureMod_;
-        density_j = PARTICLE::Utils::Pressure2Density(particle_i.extParticleMat_->SpeedOfSoundL(),
-            particle_i.extParticleMat_->initDensity_,particle_i.extParticleMat_->refdensfac_,pressure_j,particle_i.extParticleMat_->exponent_);
+
+        // determine phase particle_i belongs to
+        const int phasecolor_i = particle_i.freesurfacedata_.phase_color_;
+
+        density_j = equationOfStateHandler_[phasecolor_i]->PressureToDensity(pressure_j); // based on material data of fluid particle_i
 #endif
       }
 
@@ -1404,8 +1439,11 @@ void PARTICLE::ParticleSPHInteractionHandler::MF_ReInitDensity(
         {
           //TODO: Replace p0 with atmospheric pressue in case of inhomogeneous NBC
           double p0=0.0;
-          double density_0=PARTICLE::Utils::Pressure2Density(particle_i.extParticleMat_->SpeedOfSoundL(),
-              particle_i.extParticleMat_->initDensity_,particle_i.extParticleMat_->refdensfac_,p0,particle_i.extParticleMat_->exponent_);
+
+          // determine phase particle_i belongs to
+          const int phasecolor_i = particle_i.freesurfacedata_.phase_color_;
+
+          double density_0 = equationOfStateHandler_[phasecolor_i]->PressureToDensity(p0); // based on material data of fluid particle_i
 
           particle_i.density_=particle_i.freesurfacedata_.density_sum_ + density_0*(1.0-particle_i.freesurfacedata_.color_field_);
         }
@@ -1418,8 +1456,11 @@ void PARTICLE::ParticleSPHInteractionHandler::MF_ReInitDensity(
         {
           //TODO: Replace p0 with atmospheric pressue in case of inhomogeneous NBC
           double p0=0.0;
-          double density_0=PARTICLE::Utils::Pressure2Density(particle_i.extParticleMat_->SpeedOfSoundL(),
-              particle_i.extParticleMat_->initDensity_,particle_i.extParticleMat_->refdensfac_,p0,particle_i.extParticleMat_->exponent_);
+
+          // determine phase particle_i belongs to
+          const int phasecolor_i = particle_i.freesurfacedata_.phase_color_;
+
+          double density_0 = equationOfStateHandler_[phasecolor_i]->PressureToDensity(p0); // based on material data of fluid particle_i
 
           particle_i.density_=particle_i.freesurfacedata_.density_sum_ + density_0*(1.0-particle_i.freesurfacedata_.color_field_);
         }
@@ -1428,8 +1469,11 @@ void PARTICLE::ParticleSPHInteractionHandler::MF_ReInitDensity(
       {
         //TODO: Replace p0 with atmospheric pressue in case of inhomogeneous NBC
         double p0=0.0;
-        double density_0=PARTICLE::Utils::Pressure2Density(particle_i.extParticleMat_->SpeedOfSoundL(),
-            particle_i.extParticleMat_->initDensity_,particle_i.extParticleMat_->refdensfac_,p0,particle_i.extParticleMat_->exponent_);
+
+        // determine phase particle_i belongs to
+        const int phasecolor_i = particle_i.freesurfacedata_.phase_color_;
+
+        double density_0 = equationOfStateHandler_[phasecolor_i]->PressureToDensity(p0); // based on material data of fluid particle_i
 
         particle_i.density_=particle_i.freesurfacedata_.density_sum_ + density_0*(1.0-particle_i.freesurfacedata_.color_field_);
       }
@@ -1630,8 +1674,11 @@ double PARTICLE::ParticleSPHInteractionHandler::Inter_generalCoeff_ij(
     // According to Adami et al. 2012 Eq (28), the density of boundary particle is determined based on the extrapolated pressure in Eq (27) and
     // the equation of state based on material data / mass of the interacting particle_i (for multi-phase flows, the material data might strongly differ from particle to particle).
     double pressure_j = particle_j.boundarydata_.pressureMod_;
-    density_j = PARTICLE::Utils::Pressure2Density(particle_i.extParticleMat_->SpeedOfSoundL(),
-        particle_i.extParticleMat_->initDensity_,particle_i.extParticleMat_->refdensfac_,pressure_j,particle_i.extParticleMat_->exponent_);
+
+    // determine phase particle_i belongs to
+    const int phasecolor_i = particle_i.freesurfacedata_.phase_color_;
+
+    density_j = equationOfStateHandler_[phasecolor_i]->PressureToDensity(pressure_j); // based on material data of fluid particle_i
     mass_j = particle_i.mass_;
   }
 
@@ -1676,8 +1723,11 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_pressure(
     // According to Adami et al. 2012 Eq (28), the density of boundary particle is determined based on the extrapolated pressure in Eq (27) and
     // the equation of state based on material data / mass of the interacting particle_i (for multi-phase flows, the material data might strongly differ from particle to particle).
     pressure_j = particle_j.boundarydata_.pressureMod_;
-    density_j = PARTICLE::Utils::Pressure2Density(particle_i.extParticleMat_->SpeedOfSoundL(),
-        particle_i.extParticleMat_->initDensity_,particle_i.extParticleMat_->refdensfac_,pressure_j,particle_i.extParticleMat_->exponent_);
+
+    // determine phase particle_i belongs to
+    const int phasecolor_i = particle_i.freesurfacedata_.phase_color_;
+
+    density_j = equationOfStateHandler_[phasecolor_i]->PressureToDensity(pressure_j); // based on material data of fluid particle_i
   }
 
   double fac = 0.0;
@@ -1721,8 +1771,11 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_backgroundPressure(
     // According to Adami et al. 2012 Eq (28), the density of boundary particle is determined based on the extrapolated pressure in Eq (27) and
     // the equation of state based on material data / mass of the interacting particle_i (for multi-phase flows, the material data might strongly differ from particle to particle).
     double pressure_j = particle_j.boundarydata_.pressureMod_;
-    density_j = PARTICLE::Utils::Pressure2Density(particle_i.extParticleMat_->SpeedOfSoundL(),
-        particle_i.extParticleMat_->initDensity_,particle_i.extParticleMat_->refdensfac_,pressure_j,particle_i.extParticleMat_->exponent_);
+
+    // determine phase particle_i belongs to
+    const int phasecolor_i = particle_i.freesurfacedata_.phase_color_;
+
+    density_j = equationOfStateHandler_[phasecolor_i]->PressureToDensity(pressure_j); // based on material data of fluid particle_i
     mass_j = particle_i.mass_;
   }
 
@@ -1781,8 +1834,11 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_xsph(
     // According to Adami et al. 2012 Eq (28), the density of boundary particle is determined based on the extrapolated pressure in Eq (27) and
     // the equation of state based on material data / mass of the interacting particle_i (for multi-phase flows, the material data might strongly differ from particle to particle).
     double pressure_j = particle_j.boundarydata_.pressureMod_;
-    density_j = PARTICLE::Utils::Pressure2Density(particle_i.extParticleMat_->SpeedOfSoundL(),
-        particle_i.extParticleMat_->initDensity_,particle_i.extParticleMat_->refdensfac_,pressure_j,particle_i.extParticleMat_->exponent_);
+
+    // determine phase particle_i belongs to
+    const int phasecolor_i = particle_i.freesurfacedata_.phase_color_;
+
+    density_j = equationOfStateHandler_[phasecolor_i]->PressureToDensity(pressure_j); // based on material data of fluid particle_i
     mass_j = particle_i.mass_;
   }
 
@@ -1834,8 +1890,11 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_transportVelocity_divA(
     // According to Adami et al. 2012 Eq (28), the density of boundary particle is determined based on the extrapolated pressure in Eq (27) and
     // the equation of state based on material data / mass of the interacting particle_i (for multi-phase flows, the material data might strongly differ from particle to particle).
     double pressure_j = particle_j.boundarydata_.pressureMod_;
-    density_j = PARTICLE::Utils::Pressure2Density(particle_i.extParticleMat_->SpeedOfSoundL(),
-        particle_i.extParticleMat_->initDensity_,particle_i.extParticleMat_->refdensfac_,pressure_j,particle_i.extParticleMat_->exponent_);
+
+    // determine phase particle_i belongs to
+    const int phasecolor_i = particle_i.freesurfacedata_.phase_color_;
+
+    density_j = equationOfStateHandler_[phasecolor_i]->PressureToDensity(pressure_j); // based on material data of fluid particle_i
   }
 
   // build ternsor A_{ab}:=\rho*vel_a*(\tilde{vel}_b-vel_b) according to Adami 2013, Eq. (4).
@@ -1910,8 +1969,11 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_laminarViscosity(
     // According to Adami et al. 2012 Eq (28), the density of boundary particle is determined based on the extrapolated pressure in Eq (27) and
     // the equation of state based on material data / mass of the interacting particle_i (for multi-phase flows, the material data might strongly differ from particle to particle).
     double pressure_j = particle_j.boundarydata_.pressureMod_;
-    density_j = PARTICLE::Utils::Pressure2Density(particle_i.extParticleMat_->SpeedOfSoundL(),
-        particle_i.extParticleMat_->initDensity_,particle_i.extParticleMat_->refdensfac_,pressure_j,particle_i.extParticleMat_->exponent_);
+
+    // determine phase particle_i belongs to
+    const int phasecolor_i = particle_i.freesurfacedata_.phase_color_;
+
+    density_j = equationOfStateHandler_[phasecolor_i]->PressureToDensity(pressure_j); // based on material data of fluid particle_i
   }
 
   // viscous interaction with boundary particles is only required in case of a no-slip boundary condition
@@ -1992,8 +2054,11 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_artificialViscosity(
     // According to Adami et al. 2012 Eq (28), the density of boundary particle is determined based on the extrapolated pressure in Eq (27) and
     // the equation of state based on material data / mass of the interacting particle_i (for multi-phase flows, the material data might strongly differ from particle to particle).
     double pressure_j = particle_j.boundarydata_.pressureMod_;
-    density_j = PARTICLE::Utils::Pressure2Density(particle_i.extParticleMat_->SpeedOfSoundL(),
-        particle_i.extParticleMat_->initDensity_,particle_i.extParticleMat_->refdensfac_,pressure_j,particle_i.extParticleMat_->exponent_);
+
+    // determine phase particle_i belongs to
+    const int phasecolor_i = particle_i.freesurfacedata_.phase_color_;
+
+    density_j = equationOfStateHandler_[phasecolor_i]->PressureToDensity(pressure_j); // based on material data of fluid particle_i
     mass_j = particle_i.mass_;
   }
 
@@ -2020,7 +2085,7 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_artificialViscosity(
 
   const double rRelVersorDotVrel = interData_ij.rRelVersor_ij_.Dot(vRel_ij);
 
-  const double art_visc_fac = particle_algorithm_->ExtParticleMat()->artificialViscosity_*h_ij*c_ij*rRelVersorDotVrel*interData_ij.rRelNorm2_ / (density_ij*(std::pow(interData_ij.rRelNorm2_, 2)+epsilon*std::pow(h_ij, 2)));
+  const double art_visc_fac = particle_i.extParticleMat_->artificialViscosity_*h_ij*c_ij*rRelVersorDotVrel*interData_ij.rRelNorm2_ / (density_ij*(std::pow(interData_ij.rRelNorm2_, 2)+epsilon*std::pow(h_ij, 2)));
 
   // the following term represents the acceleration resulting from artificial viscosity as applied in Adami et al. 2012, Eq. (11)
   accn_ij->Update(mass_j*interData_ij.dw_ij_*art_visc_fac, interData_ij.rRelVersor_ij_, 1.0);
@@ -2043,6 +2108,7 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_surfaceTension(
   const double density_i = particle_i.density_;
   const double radius_i = particle_i.radius_;
   const double mass_i = particle_i.mass_;
+  const int phasecolor_i = particle_i.freesurfacedata_.phase_color_;
 
   // get states of (boundary) particle j
   bool boundaryParticle_j = particle_j.boundarydata_.boundaryparticle_;
@@ -2059,8 +2125,7 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_surfaceTension(
     // According to Adami et al. 2012 Eq (28), the density of boundary particle is determined based on the extrapolated pressure in Eq (27) and
     // the equation of state based on material data / mass of the interacting particle_i (for multi-phase flows, the material data might strongly differ from particle to particle).
     double pressure_j = particle_j.boundarydata_.pressureMod_;
-    density_j = PARTICLE::Utils::Pressure2Density(particle_i.extParticleMat_->SpeedOfSoundL(),
-        particle_i.extParticleMat_->initDensity_,particle_i.extParticleMat_->refdensfac_,pressure_j,particle_i.extParticleMat_->exponent_);
+    density_j = equationOfStateHandler_[phasecolor_i]->PressureToDensity(pressure_j); // based on material data of fluid particle_i
     mass_j = particle_i.mass_;
   }
 
@@ -2086,20 +2151,20 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_surfaceTension(
     if (not boundaryParticle_j) // case of fluid-fluid interaction
     {
       if(surfaceTensionType_==INPAR::PARTICLE::ST_VDW_DIRECT)
-        s_ij = 0.5*std::pow(n_ij,-2)*(surfaceTension_/lambda);
+        s_ij = 0.5*std::pow(n_ij,-2)*(surfTens_ff_/lambda);
       else
-        s_ij = surfaceTension_;
+        s_ij = surfTens_ff_;
     }
     else // case of fluid-solid interaction
     {
       if(surfaceTensionType_==INPAR::PARTICLE::ST_VDW_DIRECT)
       {
         // convert static contact angle in radians
-        double theta_0 = staticContactAngle_*M_PI/180.0;
-        s_ij = 0.5*std::pow(n_ij,-2)*(surfaceTension_/lambda)*(1+0.5*std::cos(theta_0));
+        double theta_0 = surfTens_fs_*M_PI/180.0;
+        s_ij = 0.5*std::pow(n_ij,-2)*(surfTens_ff_/lambda)*(1+0.5*std::cos(theta_0));
       }
       else
-        s_ij = staticContactAngle_;
+        s_ij = surfTens_fs_;
     }
 
     // pair-wise interaction force to model surface tension following Kordilla et al. 2013 and Tartakovsky et al. 2016
@@ -2126,16 +2191,8 @@ void PARTICLE::ParticleSPHInteractionHandler::SurfTensionInterPot(
 
   Teuchos::RCP<PARTICLE::WeightFunction_QuinticBspline> weightFunction = Teuchos::rcp(new PARTICLE::WeightFunction_QuinticBspline(WF_DIM_));
 
-  // scale factor of repulsive part
-  double A = DRT::Problem::Instance()->ParticleParams().get<double>("SURFTENSION_POT_A");
-  // scale factor of attractive part
-  double B = DRT::Problem::Instance()->ParticleParams().get<double>("SURFTENSION_POT_B");
-
-  // ratio of repulsive and attractive parts
-  double ratio = DRT::Problem::Instance()->ParticleParams().get<double>("SURFTENSION_POT_RATIO");
-
   // range of repulsive part
-  double radius0 = ratio*radius;
+  double radius0 = surfTensPotRatio_*radius;
 
   if(surfaceTensionType_==INPAR::PARTICLE::ST_VDW_DIRECT)
   {
@@ -2143,12 +2200,12 @@ void PARTICLE::ParticleSPHInteractionHandler::SurfTensionInterPot(
     {
       case INPAR::PARTICLE::WF_3D :
       {
-        lambda = (7.0*81.0)/(324.0*359.0) * ( -A*std::pow(radius0, 2) + B*std::pow(radius, 2) );
+        lambda = (7.0*81.0)/(324.0*359.0) * ( -surfTensPotA_*std::pow(radius0, 2) + surfTensPotB_*std::pow(radius, 2) );
         break;
       }
       case INPAR::PARTICLE::WF_2D :
       {
-        lambda = (2771.0*63.0)/(20412.0*478.0*M_PI) * ( -A*std::pow(radius0, 2) + B*std::pow(radius, 2) );
+        lambda = (2771.0*63.0)/(20412.0*478.0*M_PI) * ( -surfTensPotA_*std::pow(radius0, 2) + surfTensPotB_*std::pow(radius, 2) );
         break;
       }
       default :
@@ -2161,7 +2218,7 @@ void PARTICLE::ParticleSPHInteractionHandler::SurfTensionInterPot(
       dserror("The parameter lambda in the pairwise interaction force should be positive!");
   }
 
-  potential = -A*weightFunction->W(rRelNorm2, radius0) + B*weightFunction->W(rRelNorm2, radius);
+  potential = -surfTensPotA_*weightFunction->W(rRelNorm2, radius0) + surfTensPotB_*weightFunction->W(rRelNorm2, radius);
 
   return;
 }
@@ -2262,13 +2319,13 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_fspvp_Adami_1(
     // However, consideration of boundary particles might not always be reasonable (e.g. when a drop is falling down on a rigid surface).
     LINALG::Matrix<3,1> acc_i(particle_i.freesurfacedata_.smoothedColorFieldGrad_);
 
-    if(surfaceTension_>0.0)
+    if(surfTens_ff_>0.0)
     {
       double timefac = 1.0;
       if(time >= 0.0)
         timefac = SurfTensionTimeFac(time);
 
-      acc_i.Scale(-timefac*kappa_i*surfaceTension_/particle_i.density_);
+      acc_i.Scale(-timefac*kappa_i*surfTens_ff_/particle_i.density_);
 
       LINALG::Assemble(*curvature, kappa_i, particle_i.gid_, particle_i.owner_);
       LINALG::Assemble(*accn, acc_i, particle_i.lm_, particle_i.owner_);
@@ -2364,13 +2421,13 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_fspvp_Adami_2(
     expfac=1.0/std::pow(abs(particle_i.freesurfacedata_.color_field_),PARTICLE_SFEXP);
 #endif
 
-    if(surfaceTension_>0.0)
+    if(surfTens_ff_>0.0)
     {
       double timefac = 1.0;
       if(time >= 0.0)
         timefac = SurfTensionTimeFac(time);
 
-      acc_i.Scale(-expfac*timefac*kappa_i*surfaceTension_/particle_i.density_);
+      acc_i.Scale(-expfac*timefac*kappa_i*surfTens_ff_/particle_i.density_);
 
       LINALG::Assemble(*curvature, kappa_i, particle_i.gid_, particle_i.owner_);
       LINALG::Assemble(*accn, acc_i, particle_i.lm_, particle_i.owner_);
@@ -2474,12 +2531,12 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_fspvp_Adami_3(
       expfac=1.0/std::pow(abs(particle_i.freesurfacedata_.color_field_),PARTICLE_SFEXP);
     #endif
 
-    if(surfaceTension_>0.0)
+    if(surfTens_ff_>0.0)
     {
       double timefac = 1.0;
       if(time >= 0.0)
         timefac = SurfTensionTimeFac(time);
-      acc_i.Scale(expfac*timefac*kappa_i*surfaceTension_/particle_i.density_);
+      acc_i.Scale(expfac*timefac*kappa_i*surfTens_ff_/particle_i.density_);
 
       LINALG::Assemble(*curvature, kappa_i, particle_i.gid_, particle_i.owner_);
       LINALG::Assemble(*accn, acc_i, particle_i.lm_, particle_i.owner_);
@@ -2529,7 +2586,7 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_fspvp_Hu(
     for(int k=0;k<3;k++)
       Pi_i(k,k)+=norm_gradC_i*norm_gradC_i/dim;
 
-    Pi_i.Scale(surfaceTension_/norm_gradC_i);
+    Pi_i.Scale(surfTens_ff_/norm_gradC_i);
 
     // loop over the interaction particle list
     boost::unordered_map<int, InterDataPvP>::const_iterator jj;
@@ -2556,7 +2613,7 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_fspvp_Hu(
         for(int k=0;k<3;k++)
           Pi_j(k,k)+=norm_gradC_j*norm_gradC_j/dim;
 
-        Pi_j.Scale(surfaceTension_/norm_gradC_j);
+        Pi_j.Scale(surfTens_ff_/norm_gradC_j);
 
         LINALG::Matrix<2,2> Pidiff_2D(true);
         for(int k=0;k<2;k++)
@@ -2636,7 +2693,7 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_fspvp_Hu_b(
     for(int k=0;k<3;k++)
       Pi_i(k,k)+=norm_gradC_i*norm_gradC_i/dim;
 
-    Pi_i.Scale(surfaceTension_/norm_gradC_i);
+    Pi_i.Scale(surfTens_ff_/norm_gradC_i);
 
     // loop over the interaction particle list
     boost::unordered_map<int, InterDataPvP>::const_iterator jj;
@@ -2663,7 +2720,7 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_fspvp_Hu_b(
         for(int k=0;k<3;k++)
           Pi_j(k,k)+=norm_gradC_j*norm_gradC_j/dim;
 
-        Pi_j.Scale(surfaceTension_/norm_gradC_j);
+        Pi_j.Scale(surfTens_ff_/norm_gradC_j);
 
         LINALG::Matrix<3,1> eij_Pi_i(true);
         eij_Pi_i.Multiply(Pi_i,interData_ij.rRelVersor_ij_);
@@ -2766,9 +2823,10 @@ void PARTICLE::ParticleSPHInteractionHandler::Density2Pressure(
     const int lidNodeCol_i = discret_->NodeColMap()->LID(gid_i);
     const ParticleSPH& particle_i = colParticles_[lidNodeCol_i];
 
-    double speedOfSound = particle_i.extParticleMat_->SpeedOfSoundL();
+    // determine phase particle_i belongs to
+    const int phasecolor_i = particle_i.freesurfacedata_.phase_color_;
 
-    (*pressure)[lidNodeRow_i] = PARTICLE::Utils::Density2Pressure(speedOfSound, particle_i.extParticleMat_->initDensity_, particle_i.extParticleMat_->refdensfac_, (*density)[lidNodeRow_i],particle_i.extParticleMat_->exponent_);
+    (*pressure)[lidNodeRow_i] = equationOfStateHandler_[phasecolor_i]->DensityToPressure((*density)[lidNodeRow_i]);
   }
 }
 
@@ -2791,9 +2849,10 @@ void PARTICLE::ParticleSPHInteractionHandler::DetermineIntEnergy(double &intener
     if(particle_i.boundarydata_.boundaryparticle_)
       continue;
 
-    intenergy+=PARTICLE::Utils::Density2Energy(particle_i.extParticleMat_->SpeedOfSoundL(), particle_i.density_,
-        particle_i.extParticleMat_->initDensity_, particle_i.extParticleMat_->refdensfac_, particle_i.mass_);
+    // determine phase particle_i belongs to
+    const int phasecolor_i = particle_i.freesurfacedata_.phase_color_;
 
+    intenergy += equationOfStateHandler_[phasecolor_i]->DensityToEnergy(particle_i.density_,particle_i.mass_);
   }
   return;
 }

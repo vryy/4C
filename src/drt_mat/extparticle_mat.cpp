@@ -28,9 +28,7 @@ MAT::PAR::ExtParticleMat::ExtParticleMat(
     bulkModulus_(matdata->GetDouble("BULK_MODULUS")),
     dynamicViscosity_(matdata->GetDouble("DYNAMIC_VISCOSITY")),
     bulkViscosity_(matdata->GetDouble("BULK_VISCOSITY")),
-    artificialViscosity_(matdata->GetDouble("ARTIFICIAL_VISCOSITY")),
-    surfaceTension_(matdata->GetDouble("SURFACE_TENSION")),
-    staticContactAngle_(matdata->GetDouble("STATIC_CONTACT_ANGLE"))
+    artificialViscosity_(matdata->GetDouble("ARTIFICIAL_VISCOSITY"))
 {
   return;
 }

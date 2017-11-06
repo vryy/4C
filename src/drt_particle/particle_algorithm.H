@@ -163,17 +163,8 @@ namespace PARTICLE
     /// get particle interaction type
     INPAR::PARTICLE::ParticleInteractions ParticleInteractionType() const {return particleInteractionType_; }
 
-    /// Return the pointer to the particle material
-    const MAT::PAR::ParticleMat* ParticleMat() const { return particleMat_; }
-
-    /// Return the pointer to second particle material
-    const MAT::PAR::ParticleMat* ParticleMat2() const { return particleMat2_; }
-
-    /// Return the pointer to the extended particle material
-    const MAT::PAR::ExtParticleMat* ExtParticleMat() const { return extParticleMat_; }
-
-    /// Return the pointer to second extended particle material
-    const MAT::PAR::ExtParticleMat* ExtParticleMat2() const { return extParticleMat2_; }
+    /// Return vector of pointers to particle material parameters
+    std::vector<const MAT::PAR::ParticleMat*> ParticleMat() const { return particleMat_; }
 
     /// get SPH rendering handler
     virtual Teuchos::RCP<Rendering> GetRendering() { return rendering_; }
@@ -285,13 +276,7 @@ namespace PARTICLE
 
     const INPAR::PARTICLE::ExtendedGhosting extendedGhosting_;
 
-    const MAT::PAR::ParticleMat* particleMat_;  ///< pointer to the extParticleMat material
-
-    const MAT::PAR::ParticleMat* particleMat2_;  ///< pointer to second extParticleMat material
-
-    const MAT::PAR::ExtParticleMat* extParticleMat_;  ///< pointer to the extParticleMat material
-
-    const MAT::PAR::ExtParticleMat* extParticleMat2_;  ///< pointer to second extParticleMat material (for a second phase)
+    std::vector<const MAT::PAR::ParticleMat*> particleMat_;  ///< vector of pointers to particle material parameters
 
     BINSTRATEGY::UTILS::BinContentType bin_wallcontent_;
 

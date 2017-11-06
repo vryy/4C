@@ -22,26 +22,26 @@
  Adami2013: A transport-velocity formulation for smoothed particle hydrodynamics, http://dx.doi.org/10.1016/j.jcp.2013.01.043
 */
 
-#ifndef SRC_DRT_PARTICLE_PARTICLE_SPH_INTERACTION_H_
-#define SRC_DRT_PARTICLE_PARTICLE_SPH_INTERACTION_H_
+#ifndef PARTICLE_SPH_INTERACTION_H_
+#define PARTICLE_SPH_INTERACTION_H_
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "../drt_lib/drt_discret.H"
 #include "particle_interData.H"
 #include "particle_particle.H"
+#include "../drt_inpar/inpar_particle.H"
 #include <boost/unordered_map.hpp>
-#include "particle_sph_weightFunction.H"
 
 // forward declarations
 namespace DRT
 {
-  class Element;
   class Node;
 }
 namespace PARTICLE
 {
   class Algorithm;
-  class WeightFunctionBase;
+  class WeightFunction_Base;
+  class EquationOfState_Base;
 
   /// struct to store wallSPH data for faster access
   struct WallSPHData {
@@ -49,16 +49,6 @@ namespace PARTICLE
     double mass_;
     double pressure_;
   };
-}
-
-namespace BINSTRATEGY
-{
-  class Less;
-}
-
-namespace LINALG
-{
-  class SparseMatrix;
 }
 
 /*----------------------------------------------------------------------*/
@@ -380,8 +370,14 @@ namespace PARTICLE
     /// neighbours - particles
     std::vector<boost::unordered_map<int, InterDataPvP> > neighbours_p_;
 
-    /// weight function
+    /// weight function handler
     Teuchos::RCP<PARTICLE::WeightFunction_Base> weightFunctionHandler_;
+
+    /// vector of pointers to extended particle material parameters
+    std::vector<const MAT::PAR::ExtParticleMat*> extParticleMat_;
+
+    /// vector of pointers to equation of state for each particle material parameters
+    std::vector<Teuchos::RCP<PARTICLE::EquationOfState_Base> > equationOfStateHandler_;
 
     /// particle interaction variant
     const bool interactionVariant2_;
@@ -431,11 +427,16 @@ namespace PARTICLE
     /// type of surface tension model
     const INPAR::PARTICLE::SurfaceTensionType surfaceTensionType_;
 
-    /// surface tension between fluid and void phase
-    double surfaceTension_;
+    /// surface tension value/factor between fluid and void phase/second fluid
+    double surfTens_ff_;
 
-    /// static contact angle between fluid and solid phase in degree measure
-    double staticContactAngle_;
+    /// surface tension value/factor between fluid and solid phase
+    double surfTens_fs_;
+
+    /// surface tension interaction potential parameters
+    double surfTensPotA_;
+    double surfTensPotB_;
+    double surfTensPotRatio_;
 
     // minimal distance (over all particles) between two particles
     double min_pvp_dist_;
@@ -455,4 +456,4 @@ namespace PARTICLE
 
 }  // namespace PARTICLE
 /*----------------------------------------------------------------------*/
-#endif /* SRC_DRT_PARTICLE_PARTICLE_SPH_INTERACTION_H_ */
+#endif /* PARTICLE_SPH_INTERACTION_H_ */

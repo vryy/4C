@@ -816,6 +816,10 @@ void CAVITATION::Algorithm::InitCavitation()
   // make sure that a particle material is defined in the dat-file
   InitMaterials();
 
+  // safety check
+  if(particleMat_.size()!=1)
+    dserror("Only one particle material allowed for cavitation problems!");
+
   // setup pbcs after bins have been created
   BinStrategy()->BuildPeriodicBC();
 
@@ -2800,7 +2804,7 @@ void CAVITATION::Algorithm::ParticleInflow()
   Teuchos::RCP<Epetra_Vector> bubbleradius0 = particles_->WriteAccessRadius0();
   Teuchos::RCP<Epetra_Vector> bubbleradiusdot = particles_->WriteAccessRadiusDot();
 
-  const double initDensity = particleMat_->initDensity_;
+  const double initDensity = particleMat_[0]->initDensity_;
 
   double gamma = 0.0;
   double pvapor = 0.0;
@@ -3347,7 +3351,7 @@ void CAVITATION::Algorithm::BuildBubbleInflowCondition()
     const double timedelay = conds[i]->GetDouble("timedelay");
     const double stopinflowtime = conds[i]->GetDouble("stopinflowtime");
 
-    const double initial_radius = particleMat_->initRadius_;
+    const double initial_radius = particleMat_[0]->initRadius_;
 
     const double inflowtime = 1.0 / inflow_freq;
     if(std::abs(inflowtime/Dt() - (int)(inflowtime/Dt())) > EPS9)

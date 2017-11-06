@@ -50,11 +50,6 @@ namespace MAT
       const double bulkViscosity_;
       /// artificial viscosity for the liquid phase
       const double artificialViscosity_;
-      /// surface tension between fluid and void phase
-      const double surfaceTension_;
-      /// static contact angle between fluid and solid phase in degree measure
-      const double staticContactAngle_;
-
 
     };  // class MAT::PAR::ExtParticleMat
   } // namespace PAR

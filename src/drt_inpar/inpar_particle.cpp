@@ -150,6 +150,19 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                   &particledyn);
 
    setStringToIntegralParameter<int>(
+                               "EQUATION_OF_STATE","GenTait",
+                               "equation of state for SPH interaction dynamics",
+                               tuple<std::string>(
+                                 "GenTait",
+                                 "IdealGas"
+                                 ),
+                               tuple<int>(
+                                 INPAR::PARTICLE::GenTait,
+                                 INPAR::PARTICLE::IdealGas
+                                 ),
+                               &particledyn);
+
+   setStringToIntegralParameter<int>(
                                   "EXTENDED_GHOSTING","StandardGhosting",
                                   "Extend the ghosting",
                                   tuple<std::string>(
@@ -276,6 +289,8 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    DoubleParameter("XSPH_DAMPFAC",-1.0,"damping factor of XSPH scheme",&particledyn);
    DoubleParameter("XSPH_STIFFAC",-1.0,"damping factor of XSPH scheme",&particledyn);
    BoolParameter("TRANSPORT_VELOCITY","no","apply particle convection velocity that differs from momentum velocity",&particledyn);
+   DoubleParameter("SURFACE_TENSION_FF",0.0,"surface tension value/factor between fluid and void phase/second fluid",&particledyn);
+   DoubleParameter("SURFACE_TENSION_FS",0.0,"surface tension value/factor between fluid and solid phase",&particledyn);
    DoubleParameter("SURFTENSION_POT_A",2.0,"Scale factor of repulsive part of pairwise interaction force",&particledyn);
    DoubleParameter("SURFTENSION_POT_B",1.0,"Scale factor of attractive part of pairwise interaction force",&particledyn);
    DoubleParameter("SURFTENSION_POT_RATIO",0.5,"Range ratio of repulsive and attractive part of pairwise interaction force",&particledyn);
