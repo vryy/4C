@@ -19,6 +19,10 @@ In accordance with [2] the cube is expanding in lateral direction. This
 is an incorrect behavior due to the insensitivity of the anisotropic
 isochoric contribution to volumetric deformation.
 
+Structural Tensor in this example:
+
+Matrix<6,1>[0.00199266 0.00199526 0.996128 0 0 0]
+
 [1] Holzapfel G.A., Gasser T.C., Ogden R.W.; A new constitutive framework
     for arterial wall mechanics and a comparative study of material models.
 [2] Nolan D.R., Gower A.L., Destrade M., Ogden R.W., McGarry J.P.;
@@ -62,7 +66,6 @@ MAT 2 ELAST_IsoAnisoExpo  K1 1.0E6 K2 100.0 GAMMA 0.0 K1COMP 0.0 K2COMP 0.0 STR_
 MAT 3 ELAST_Iso1Pow C 2.5E4 D 1
 MAT 4 ELAST_VolSussmanBathe KAPPA 1.0E6
 MAT 100 ELAST_StructuralTensor STRATEGY ByDistributionFunction DISTR vonMisesFisher C1 500.0
-//MAT 100 ELAST_StructuralTensor STRATEGY Standard
 -----------------------------------------------CLONING MATERIAL MAP
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a

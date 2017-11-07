@@ -1819,10 +1819,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
           "DISTR","Type of distribution function around mean direction",
           "none",
           true);
-      AddNamedReal(m,"C1","constant 1 for distribution function",0.0,true);
+      AddNamedReal(m,"C1","constant 1 for distribution function",1.0,true);
       AddNamedReal(m,"C2","constant 2 for distribution function",0.0,true);
       AddNamedReal(m,"C3","constant 3 for distribution function",0.0,true);
-      AddNamedReal(m,"C4","constant 4 for distribution function",0.0,true);
+      AddNamedReal(m,"C4","constant 4 for distribution function",1e16,true);
 
       AppendMaterialDefinition(matlist,m);
     }

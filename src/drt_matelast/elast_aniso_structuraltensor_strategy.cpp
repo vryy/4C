@@ -136,17 +136,17 @@ void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::
 
   // aux mean direction of fiber
   // we evaluate the structural tensor with this mean direction.
-  double theta_aux = acos(gausspoints.qxg[49][0]);
+  double theta_aux = acos(gausspoints.qxg[numbgp-1][0]);
   LINALG::Matrix<3,1> aux_fiber_vector;
   aux_fiber_vector(0) = sin(theta_aux);
   aux_fiber_vector(1) = 0.0;
-  aux_fiber_vector(2) = gausspoints.qxg[49][0]; // = cos(theta_aux)
+  aux_fiber_vector(2) = gausspoints.qxg[numbgp-1][0]; // = cos(theta_aux)
 
   // gauss integration over sphere
   // see Atkinson 1982
-  for (int j=0; j<2*gausspoints.nquad; j++)
+  for (int j=0; j<twice; j++)
   {
-    for (int i=0; i<gausspoints.nquad; i++)
+    for (int i=0; i<numbgp; i++)
     {
       double theta = acos(gausspoints.qxg[i][0]);
       double phi = (((double)(j))*M_PI)/((double)gausspoints.nquad) ;
