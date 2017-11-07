@@ -103,7 +103,7 @@ PARTICLE::ParticleSPHInteractionHandler::ParticleSPHInteractionHandler(
     dserror("No particle material defined!");
 
   // loop over all particle material parameters
-  for(int i=0; i<particlemat.size(); ++i)
+  for(unsigned int i=0; i<particlemat.size(); ++i)
   {
     // cast to extended particle material parameters
     const MAT::PAR::ExtParticleMat* extparticlemat = dynamic_cast<const MAT::PAR::ExtParticleMat*>(particlemat[i]);
@@ -114,7 +114,7 @@ PARTICLE::ParticleSPHInteractionHandler::ParticleSPHInteractionHandler(
   }
 
   // set the equation of state for each particle material
-  for(int i=0; i<extParticleMat_.size(); ++i)
+  for(unsigned int i=0; i<extParticleMat_.size(); ++i)
   {
     switch (DRT::INPUT::IntegralValue<INPAR::PARTICLE::EquationOfState>(particledynparams,"EQUATION_OF_STATE"))
     {
