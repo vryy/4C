@@ -29,7 +29,8 @@ STR::ResultTest::ResultTest()
       disn_(Teuchos::null),
       dismatn_(Teuchos::null),
       veln_(Teuchos::null),
-      accn_(Teuchos::null)
+      accn_(Teuchos::null),
+      gstate_(Teuchos::null)
 {
   // empty constructor
 }
@@ -43,7 +44,9 @@ void STR::ResultTest::Init(const STR::TIMINT::BaseDataGlobalState& gstate)
   disn_  = gstate.GetDisN();
   veln_  = gstate.GetVelN();
   accn_  = gstate.GetAccN();
+  gstate_ = Teuchos::rcpFromRef(gstate);
   strudisc_ = gstate.GetDiscret();
+
   if (DRT::Problem::Instance()->ProblemType() == prb_struct_ale and
       (DRT::Problem::Instance()->WearParams()).get<double>("WEARCOEFF")>0.0)
     dserror("Material displ. are not yet considered!");
@@ -64,7 +67,9 @@ void STR::ResultTest::Setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::ResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void STR::ResultTest::TestNode(
+    DRT::INPUT::LineDefinition& res,
+    int& nerr, int& test_count)
 {
   CheckInitSetup();
   // this implementation does not allow testing of stresses !
@@ -202,4 +207,104 @@ void STR::ResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& 
       test_count++;
     }
   }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::ResultTest::TestSpecial(
+      DRT::INPUT::LineDefinition&   res,
+      int&                          nerr,
+      int&                          test_count,
+      int&                          uneval_test_count )
+{
+  CheckInitSetup();
+
+  if ( strudisc_->Comm().MyPID() != 0 )
+    return;
+
+  std::string quantity;
+  res.ExtractString( "QUANTITY", quantity );
+
+  Status special_status = Status::unevaluated;
+  const double result = GetSpecialResult( quantity, special_status );
+  switch ( special_status )
+  {
+    case Status::evaluated:
+    {
+      nerr += CompareValues( result, "SPECIAL", res );
+      ++test_count;
+      break;
+    }
+    case Status::unevaluated:
+    {
+      ++uneval_test_count;
+      break;
+    }
+    default:
+    {
+      dserror("What shall be done for this Status type? (enum=%d)",
+          special_status );
+      exit( EXIT_FAILURE );
+    }
+  }
+
+
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double STR::ResultTest::GetSpecialResult(
+    const std::string& quantity,
+    Status& special_status ) const
+{
+  if ( quantity.find( "num_iter_step_" ) != quantity.npos )
+  {
+    return GetNlnIterationNumber(quantity, special_status );
+  }
+  else
+    dserror("Quantity '%s' not supported by special result testing functionality "
+        "for structure field!",quantity.c_str());
+
+  exit( EXIT_FAILURE );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double STR::ResultTest::GetNlnIterationNumber(
+    const std::string& quantity,
+    Status& special_status ) const
+{
+  const int stepn = GetIntegerNumberAtLastPositionOfName( quantity );
+
+  const int restart = DRT::Problem::Instance()->Restart();
+  if ( stepn <= restart )
+    return -1.0;
+
+  special_status = Status::evaluated;
+  return static_cast<double>( gstate_->GetNlnIterationNumber( stepn ) );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int STR::GetIntegerNumberAtLastPositionOfName( const std::string& quantity )
+{
+  std::stringstream ss(quantity);
+  std::string s;
+
+  std::vector<std::string> split_strings;
+  while ( std::getline( ss, s, '_' ) )
+    split_strings.push_back( s );
+
+  try
+  {
+    return std::stoi( split_strings.back() );
+  }
+  catch ( const std::invalid_argument& e )
+  {
+    dserror( "You provided the wrong format. The integer number must be "
+        "at the very last position of the name, separated by an underscore. "
+        "The correct format is:\n"
+        "\"<prefix_name>_<number>\"" );
+  }
+  exit( EXIT_FAILURE );
 }

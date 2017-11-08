@@ -130,13 +130,12 @@ void STR::TIMINT::ImplicitBase::PrintStep()
   if (DataGlobalState().GetMyRank()!=0 or GroupId() != 0)
     return;
 
-  const int& newtoniter = DataSDyn().GetMutableNoxParams().sublist("Output").
-      get<int>("Nonlinear Iterations",0);
-  const int& stepmax    = DataSDyn().GetStepMax();
-  const int& stepn      = DataGlobalState().GetStepN();
-  const double& timen   = DataGlobalState().GetTimeN();
-  const double& dt      = (*DataGlobalState().GetDeltaTime())[0];
-  double wct            = DataGlobalState().GetTimer()->ElapsedTime();
+  const int stepmax    = DataSDyn().GetStepMax();
+  const int stepn      = DataGlobalState().GetStepN();
+  const double& timen  = DataGlobalState().GetTimeN();
+  const double& dt     = (*DataGlobalState().GetDeltaTime())[0];
+  const int newtoniter = DataGlobalState().GetNlnIterationNumber( stepn );
+  double wct           = DataGlobalState().GetTimer()->ElapsedTime();
 
   // open outstd::stringstream
   std::ostringstream oss;

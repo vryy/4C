@@ -841,6 +841,14 @@ namespace TIMINT {
     /// add restart information to output state
     void AddRestartToOutputState();
 
+    /** \brief set the number of nonlinear iterations of the last time step
+     *
+     *  \pre UpdateStepTime() must be called beforehand, otherwise the wrong
+     *  step-id is considered.
+     *
+     *  \author hiermeier \date 11/17 */
+    void SetNumberOfNonlinearIterations();
+
   protected:
     /// flag indicating if Init() has been called
     bool isinit_;

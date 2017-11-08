@@ -259,6 +259,7 @@ void STR::TIMINT::Base::Update()
   int_ptr_->PreUpdate();
   int_ptr_->UpdateStepState();
   UpdateStepTime();
+  SetNumberOfNonlinearIterations();
   int_ptr_->UpdateStepElement();
   int_ptr_->PostUpdate();
 }
@@ -285,6 +286,22 @@ void STR::TIMINT::Base::UpdateStepTime()
   const double& dtn = (*dataglobalstate_->GetDeltaTime())[0];
   timenp += dtn;
   stepnp += 1;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Base::SetNumberOfNonlinearIterations()
+{
+  int nlniter = 0;
+
+  if ( DataSDyn().GetNoxParams().isSublist("Output") )
+  {
+    const Teuchos::ParameterList& nox_output = DataSDyn().GetNoxParams().sublist("Output");
+    if ( nox_output.isParameter("Nonlinear Iterations") )
+      nlniter = nox_output.get<int>("Nonlinear Iterations");
+  }
+
+  dataglobalstate_->SetNlnIterationNumber( nlniter );
 }
 
 /*----------------------------------------------------------------------------*
@@ -324,7 +341,7 @@ void STR::TIMINT::Base::GetRestartData(
   *nodedata = *(discret_ptr->PackMyNodes());
 
   // get restart data is only for simple structure problems
-  // hence if the model set is large than one, we throw an error
+  // hence if the model set is larger than one, we throw an error
   if (datasdyn_->GetModelTypes().size()>1)
     dserror("The GetRestartData routine supports the structural model case ONLY!");
 

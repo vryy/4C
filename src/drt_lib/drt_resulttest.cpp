@@ -48,6 +48,14 @@ void DRT::ResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, in
   dserror("no special case test available");
 }
 
+void DRT::ResultTest::TestSpecial(
+    DRT::INPUT::LineDefinition& res,
+    int& nerr, int& test_count,
+    int& unevaluated_test_count )
+{
+  TestSpecial( res, nerr, test_count );
+}
+
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -178,6 +186,7 @@ void DRT::ResultTestManager::TestAll(const Epetra_Comm& comm)
 {
   int nerr = 0;                     // number of tests with errors
   int test_count = 0;               // number of tests performed
+  int uneval_test_count = 0;        // number of unevaluated tests
   const int size = results_.size(); // total number of tests
 
   if (comm.MyPID()==0)
@@ -196,10 +205,16 @@ void DRT::ResultTestManager::TestAll(const Epetra_Comm& comm)
         else if (res.HaveNamed("NODE"))
           fieldtest_[j]->TestNode(res,nerr,test_count);
         else
-          fieldtest_[j]->TestSpecial(res,nerr,test_count);
+          fieldtest_[j]->TestSpecial(res,nerr,test_count,uneval_test_count);
       }
     }
   }
+
+  // print number of unevaluated tests to screen
+  int guneval_test_count = 0;
+  comm.SumAll( &uneval_test_count, &guneval_test_count, 1 );
+  if ( guneval_test_count > 0 and comm.MyPID() == 0 )
+    IO::cout << guneval_test_count << " tests stay unevaluated" << IO::endl;
 
   // determine the total number of errors
   int numerr;
@@ -222,7 +237,8 @@ void DRT::ResultTestManager::TestAll(const Epetra_Comm& comm)
   int count;
   if (test_count > -1)
   {
-    comm.SumAll(&test_count,&count,1);
+    int lcount = test_count + uneval_test_count;
+    comm.SumAll(&lcount,&count,1);
 
     /* It's indeed possible to count more tests than expected if you
      * happen to test values of a boundary element. We don't want this
@@ -247,6 +263,16 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
     .AddTag("STRUCTURE")
     .AddNamedString("DIS")
     .AddNamedInt("NODE")
+    .AddNamedString("QUANTITY")
+    .AddNamedDouble("VALUE")
+    .AddNamedDouble("TOLERANCE")
+    .AddOptionalNamedString("NAME")
+    ;
+
+  DRT::INPUT::LineDefinition structure_special;
+  structure_special
+    .AddTag("STRUCTURE")
+    .AddTag("SPECIAL")
     .AddNamedString("QUANTITY")
     .AddNamedDouble("VALUE")
     .AddNamedDouble("TOLERANCE")
@@ -534,6 +560,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
 
   Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("RESULT DESCRIPTION"));
   lines->Add(structure);
+  lines->Add(structure_special);
   lines->Add(fluid_node);
   lines->Add(fluid_ele);
   lines->Add(xfluid_node);

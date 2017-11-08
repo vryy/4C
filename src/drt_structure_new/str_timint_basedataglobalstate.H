@@ -153,6 +153,17 @@ namespace TIMINT {
     Teuchos::RCP<Epetra_Vector> ExtractRotVecEntries(
         const Epetra_Vector& source) const;
 
+    /** \brief Read-only access of the desired block of the global jacobian
+     *  matrix in the global state data container.
+     *
+     *  \param mt (in)  : Model type of the desired block.
+     *  \param bt (in)  : Desired matrix block type.
+     *
+     *  \author hiermeier \date 04/17 */
+    Teuchos::RCP<const LINALG::SparseMatrix> GetJacobianBlock(
+        const INPAR::STR::ModelType mt,
+        const DRT::UTILS::MatBlockType bt ) const;
+
     /// Get the block of the stiffness matrix which belongs to the displacement dofs.
     Teuchos::RCP<LINALG::SparseMatrix> ExtractDisplBlock(
         LINALG::SparseOperator& jac) const;
@@ -325,6 +336,9 @@ namespace TIMINT {
       CheckInit();
       return stepn_;
     };
+
+    /// Get the number of non-linear iterations of the %step
+    int GetNlnIterationNumber( const unsigned step ) const;
 
     /// Return time for lin solver
     const double& GetLinearSolverTime() const
@@ -615,6 +629,9 @@ namespace TIMINT {
       return stepn_;
     };
 
+    /// Set the number of non-linear iterations of the #stepn_
+    void SetNlnIterationNumber( const int nln_iter );
+
     /// Return time for lin solver
     double& GetMutableLinearSolverTime()
     {
@@ -879,6 +896,9 @@ namespace TIMINT {
 
     /// time step index \f$n+1\f$
     int stepnp_;
+
+    /// pairs of (step ID, number of nonlinear iteration in this step)
+    std::vector<std::pair<int,int> > nln_iter_numbers_;
 
     /// A new time step started and we predict the new solution
     bool ispredict_;

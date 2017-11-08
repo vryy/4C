@@ -437,9 +437,8 @@ void STR::TIMINT::BaseDataGlobalState::SetupElementTechnologyMapExtractors()
     mapext.CheckForValidMapExtractor();
 
     // insert into map
-    std::pair<decltype(mapextractors_)::iterator, bool> check =
-        mapextractors_.insert(std::pair<INPAR::STR::EleTech,
-            LINALG::MultiMapExtractor>(et,mapext));
+    const auto check = mapextractors_.insert(std::pair<INPAR::STR::EleTech,
+        LINALG::MultiMapExtractor>(et,mapext));
 
     if ( not check.second )
       dserror( "Insert failed!" );
@@ -1036,6 +1035,64 @@ Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::
     dserror("The jacobian is not initialized!");
   return ExtractDisplBlock(*jac_);
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<const LINALG::SparseMatrix>
+STR::TIMINT::BaseDataGlobalState::GetJacobianBlock(
+    const INPAR::STR::ModelType mt,
+    const DRT::UTILS::MatBlockType bt ) const
+{
+  if ( jac_.is_null() )
+    dserror("The jacobian is not initialized!");
+
+  return ExtractModelBlock( *jac_, mt, bt );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int STR::TIMINT::BaseDataGlobalState::GetNlnIterationNumber(
+    const unsigned step ) const
+{
+  CheckInitSetup();
+  if ( step < 1 )
+    dserror( "The given step number must be larger than 1. (step=%d)", step );
+
+  auto cit = nln_iter_numbers_.begin();
+  while ( cit != nln_iter_numbers_.end() )
+  {
+    if ( cit->first == static_cast<int>( step ) )
+      return cit->second;
+    ++cit;
+  }
+
+  dserror("There is no nonlinear iteration number for the given step %d.",
+      step );
+  exit( EXIT_FAILURE );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::BaseDataGlobalState::SetNlnIterationNumber( const int nln_iter )
+{
+  CheckInitSetup();
+
+  auto cit = nln_iter_numbers_.cbegin();
+  while ( cit != nln_iter_numbers_.end() )
+  {
+    if ( cit->first == stepn_ )
+    {
+      if ( cit->second != nln_iter )
+        dserror("There is already a different nonlinear iteration number "
+            "for step %d.", stepn_ );
+      else
+        return;
+    }
+    ++cit;
+  }
+  nln_iter_numbers_.push_back(std::make_pair(stepn_,nln_iter));
+}
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
