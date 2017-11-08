@@ -67,6 +67,15 @@ public:
   /// setup the solver (only for monolithic system)
   virtual bool SetupSolver() = 0;
 
+  /// perform relaxation (only for partitioned system)
+  virtual void PerformRelaxation(Teuchos::RCP<const Epetra_Vector> phi, const int itnum) = 0;
+
+  /// get relaxed fluid solution (only for partitioned system)
+  virtual Teuchos::RCP<const Epetra_Vector> RelaxedFluidPhinp() const = 0;
+
+  /// set relaxed fluid solution on structure (only for partitioned system)
+  virtual void SetRelaxedFluidSolution() = 0;
+
   /// prepare timeloop of coupled problem
   virtual void PrepareTimeLoop() = 0;
 

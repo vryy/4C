@@ -20,7 +20,7 @@
 namespace POROMULTIPHASESCATRA
 {
 
-  //! Base class of all solid-scatra algorithms
+  //! Base class of all partitioned solid-scatra algorithms --> virtual
   class PoroMultiPhaseScaTraPartitionedTwoWay : public PoroMultiPhaseScaTraPartitioned
   {
   public:
@@ -59,13 +59,19 @@ namespace POROMULTIPHASESCATRA
     /// time step of coupled problem
     void TimeStep() {return Solve();};
 
+    /// print header
+    void PrintHeaderPartitioned();
+
+    /// print header
+    void IterUpdateStates();
+
     //! perform iteration loop between fields
-    void Solve();
+    virtual void Solve() = 0;
 
 
-  private:
+  protected:
 
-    //! perform iteration step of structure field
+    //! perform iteration step of structure-fluid field
     void DoPoroStep();
 
     //! perform iteration step of scatra field
@@ -87,7 +93,91 @@ namespace POROMULTIPHASESCATRA
     double ittol_;
 
 
-  }; //PoroMultiPhaseScatraPartitioned
+  }; //PoroMultiPhaseScatraPartitionedTwoWay
+
+  //! Nested partitioned solution algorithm
+  // +--------------------------+           +----------+
+  // |         ---->            |  ------>  |          |
+  // |  fluid        structure  |           | ScaTra   |
+  // |         <----            |  <------  |          |
+  // +--------------------------+           +----------+
+
+  class PoroMultiPhaseScaTraPartitionedTwoWayNested : public PoroMultiPhaseScaTraPartitionedTwoWay
+  {
+  public:
+
+    /// create using a Epetra_Comm
+    PoroMultiPhaseScaTraPartitionedTwoWayNested(
+        const Epetra_Comm& comm,
+        const Teuchos::ParameterList& globaltimeparams);
+
+    /// virtual destructor
+    virtual ~PoroMultiPhaseScaTraPartitionedTwoWayNested(){};
+
+    /// initialization
+    virtual void Init(
+        const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& algoparams,
+        const Teuchos::ParameterList& poroparams,
+        const Teuchos::ParameterList& structparams,
+        const Teuchos::ParameterList& fluidparams,
+        const Teuchos::ParameterList& scatraparams,
+        const std::string& struct_disname,
+        const std::string& fluid_disname,
+        const std::string& scatra_disname,
+        bool isale,
+        int nds_disp,
+        int nds_vel,
+        int nds_solidpressure,
+        int ndsporofluid_scatra);
+
+    //! perform iteration loop between fields
+    virtual void Solve();
+
+  }; // PoroMultiPhaseScatraPartitionedTwoWayNested
+
+  //! Sequential partitioned solution algorithm
+  // +-----------+          +-----------+           +-----------+
+  // |           |  ----->  |           | --------> |           |
+  // |   fluid   |          | structure |           |  ScaTra   |
+  // |           |          |           |           |           |
+  // +-----------+          +-----------+           +-----------+
+  //      ^                                              |
+  //      |----------------------------------------------+
+
+  class PoroMultiPhaseScaTraPartitionedTwoWaySequential : public PoroMultiPhaseScaTraPartitionedTwoWay
+  {
+  public:
+
+    /// create using a Epetra_Comm
+    PoroMultiPhaseScaTraPartitionedTwoWaySequential(
+        const Epetra_Comm& comm,
+        const Teuchos::ParameterList& globaltimeparams);
+
+    /// virtual destructor
+    virtual ~PoroMultiPhaseScaTraPartitionedTwoWaySequential(){};
+
+    /// initialization
+    virtual void Init(
+        const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& algoparams,
+        const Teuchos::ParameterList& poroparams,
+        const Teuchos::ParameterList& structparams,
+        const Teuchos::ParameterList& fluidparams,
+        const Teuchos::ParameterList& scatraparams,
+        const std::string& struct_disname,
+        const std::string& fluid_disname,
+        const std::string& scatra_disname,
+        bool isale,
+        int nds_disp,
+        int nds_vel,
+        int nds_solidpressure,
+        int ndsporofluid_scatra);
+
+    //! perform iteration loop between fields
+    virtual void Solve();
+
+  }; // PoroMultiPhaseScatraPartitionedTwoWayNested
 
 
 }

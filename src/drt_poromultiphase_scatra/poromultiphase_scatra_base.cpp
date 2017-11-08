@@ -79,13 +79,23 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
   INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields solschemescatraporo =
     DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields>(algoparams,"COUPALGO");
 
+  // partitioned -- monolithic not possible --> error
   if(solschemeporo != INPAR::POROMULTIPHASE::SolutionSchemeOverFields::solscheme_twoway_monolithic &&
       solschemescatraporo == INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields::solscheme_twoway_monolithic)
     dserror("Your requested coupling is not available: possible couplings are:\n"
-        "(STRUCTURE <--> FLUID) <--> SCATRA: partitioned -- partitioned\n"
-        "                                    monolithic  -- partitioned\n"
+        "(STRUCTURE <--> FLUID) <--> SCATRA: partitioned -- partitioned_nested\n"
+        "                                    monolithic  -- partitioned_nested\n"
         "                                    monolithic  -- monolithic\n"
         "YOUR CHOICE                       : partitioned -- monolithic");
+
+  // monolithic -- partitioned sequential not possible
+  if(solschemeporo == INPAR::POROMULTIPHASE::SolutionSchemeOverFields::solscheme_twoway_monolithic &&
+      solschemescatraporo == INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields::solscheme_twoway_partitioned_sequential)
+    dserror("Your requested coupling is not available: possible couplings are:\n"
+        "(STRUCTURE <--> FLUID) <--> SCATRA: partitioned -- partitioned_nested\n"
+        "                                    monolithic  -- partitioned_nested\n"
+        "                                    monolithic  -- monolithic\n"
+        "YOUR CHOICE                       : monolithic  -- partitioned_sequential");
 
   fluxreconmethod_ =
     DRT::INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::FluxReconstructionMethod>(fluidparams,"FLUX_PROJ_METHOD");
@@ -270,7 +280,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetPoroSolution()
 
   // set the fluid solution
   poroscatra->SetSolutionFieldOfMultiFluid(
-      poromulti_->FluidPhinp(),
+      poromulti_->RelaxedFluidPhinp(),
       2
       );
 

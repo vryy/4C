@@ -10,7 +10,7 @@ General Data File BACI
 ==================================================================
 -------------------------------------------------------------TITLE
 Framework test for multiphase flow through elastic porous medium with scalar transport.
-Partitioned algorithm.
+Partitioned nested algorithm.
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    500
 //NODES       561
@@ -24,7 +24,7 @@ RESTARTEVRY                     4
 NUMSTEP                         5
 MAXTIME                         2.0
 TIMESTEP                        0.1
-COUPALGO                        twoway_partitioned
+COUPALGO                        twoway_partitioned_nested
 ------------------------------POROMULTIPHASESCATRA DYNAMIC/PARTITIONED
 CONVTOL                         1e-06
 ----------------------------------------------------------STRUCTURAL DYNAMIC

@@ -1,6 +1,6 @@
 //
-// Maintainer: Lena Yoshihara
-// yoshihara@lnm.mw.tum.de
+// Maintainer: Johannes Kremheller
+// kremheller@lnm.mw.tum.de
 // http://www.lnm.mw.tum.de
 //
 //
@@ -10,7 +10,7 @@ General Data File BACI
 ==================================================================
 -------------------------------------------------------------TITLE
 Framework test for multiphase flow through elastic porous medium with scalar transport.
-Partitioned nested algorithm.
+Partitioned sequential algorithm with Aitken relaxation
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    500
 //NODES       561
@@ -20,17 +20,28 @@ PROBLEMTYP                      Multiphase_Poroelasticity_ScaTra // Multiphase_P
 RESTART                         0
 ----------------------------------------------------------POROMULTIPHASESCATRA DYNAMIC
 RESULTSEVRY                      1
-RESTARTEVRY                     4
+RESTARTEVRY                     3
 NUMSTEP                         5
 MAXTIME                         2.0
 TIMESTEP                        0.1
-COUPALGO                        twoway_partitioned_nested
-----------------------------------POROMULTIPHASESCATRA DYNAMIC/PARTITIONED
+COUPALGO                        twoway_partitioned_sequential
+------------------------------POROMULTIPHASESCATRA DYNAMIC/PARTITIONED
 CONVTOL                         1e-06
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 DYNAMICTYP                      OneStepTheta // OneStepTheta
 LINEAR_SOLVER                   1
+------------------------------------------------STRUCT NOX/Printing
+Error                           = No
+Warning                         = No
+Outer Iteration                 = Yes
+Inner Iteration                 = No
+Parameters                      = No
+Details                         = No
+Outer Iteration StatusTest      = No
+Linear Solver Details           = No
+Test Details                    = No
+Debug                           = No
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
 ---------------------------------------------POROFLUIDMULTIPHASE DYNAMIC
@@ -40,13 +51,17 @@ LINEAR_SOLVER                   1
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 CONVTOL                         1e-06
-FLUX_PROJ_METHOD                L2_projection
+FLUX_PROJ_METHOD                none
 FLUX_PROJ_SOLVER                2
 ---------------------------------------------POROMULTIPHASE DYNAMIC
 ITEMAX                          10
 COUPALGO                        twoway_partitioned
-----------------------------------POROMULTIPHASE DYNAMIC/PARTITIONED
+---------------------------------POROMULTIPHASE DYNAMIC/PARTITIONED
 CONVTOL                         1e-06
+RELAXATION                      Aitken
+STARTOMEGA                      1.0
+MINOMEGA                        0.01
+MAXOMEGA                        10.0
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
@@ -107,14 +122,15 @@ ML_DAMPFINE                     0.89                          // damping fine gr
 ML_DAMPMED                      1.0                           // damping med grids
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 4 MATIDS 10 11 12 13 NUMFLUIDPHASES 4 END
+MAT 1 MAT_FluidPoroMultiPhaseReactions LOCAL No PERMEABILITY 1.0 NUMMAT 4 MATIDS 10 11 12 13 NUMFLUIDPHASES 4 NUMREAC 1 REACIDS 14 END
 
+MAT 14 MAT_FluidPoroSingleReaction NUMSCAL 2 TOTALNUMDOF 4 NUMVOLFRAC 0 SCALE 0 1 -1 0 COUPLING scalar_by_function FUNCTID 3
 MAT 10 MAT_FluidPoroSinglePhase DOFTYPEID 101 VISCOSITYLAWID 104 DENSITYLAWID 103 DENSITY 1.0 BULKMODULUS 100.0 RELPERMEABILITYLAWID 105
 MAT 101 MAT_FluidPoroSinglePhaseDofSaturation PHASELAWID 102
 MAT 102 MAT_PhaseLawTangent NUMDOF 4 PRESCOEFF -1 1 0 0  END RELTENSION 0.02 EXP 1.0 SATURATION_0 0.1
 MAT 103 MAT_PoroDensityLawExp BULKMODULUS 1e3
 MAT 104 MAT_FluidPoroViscosityLawConstant VALUE 0.01
-MAT 105 MAT_FluidPoroRelPermeabilityLawConstant VALUE  1.0
+MAT 105 MAT_FluidPoroRelPermeabilityLawConstant VALUE 1.0
 
 MAT 11 MAT_FluidPoroSinglePhase DOFTYPEID 111 VISCOSITYLAWID 104 DENSITYLAWID 113 DENSITY 1.0 BULKMODULUS 100.0 RELPERMEABILITYLAWID 105
 MAT 111 MAT_FluidPoroSinglePhaseDofDiffPressure PHASELAWID 112 NUMDOF 4 PRESCOEFF 0 1 -1 0 END
@@ -131,9 +147,9 @@ MAT 131 MAT_FluidPoroSinglePhaseDofPressure PHASELAWID 133
 MAT 132 MAT_PoroDensityLawExp BULKMODULUS 1e3
 MAT 133 MAT_PhaseLawConstraint
 
-MAT 2 MAT_StructPoro MATID 20 POROLAWID 200 INITPOROSITY 0.4
+MAT 2 MAT_StructPoro MATID 20 POROLAWID 21 INITPOROSITY 0.4
 MAT 20 MAT_Struct_StVenantKirchhoff YOUNG 10 NUE 0.35 DENS 0.1
-MAT 200 MAT_PoroLawConstant
+MAT 21 MAT_PoroLawConstant
 
 MAT 5 MAT_matlist_reactions LOCAL No NUMMAT 2 MATIDS 301 302 NUMREAC 1 REACIDS 401 END
 MAT 301 MAT_scatra_multiporo PHASEID 2 DIFFUSIVITY 0.1 DENSITY 1.0
@@ -149,23 +165,25 @@ COMPONENT 2 FUNCTION 0.0
 COMPONENT 3 FUNCTION 0.0
 COMPONENT 4 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION 0.1*x+1.0
+COMPONENT 0 FUNCTION 0.1*x+1
 COMPONENT 1 FUNCTION 0.2*x+1.0
 ----------------------------------------------------------------------FUNCT3
+VARFUNCTION phi2*p2*S2
+----------------------------------------------------------------------FUNCT4
 COMPONENT 0 FUNCTION v
 VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 1000.0 DESCRIPTION 1000.0*0.5*(1-cos(t*pi/1.0)) 1000.0
 -------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 89 QUANTITY dispx VALUE 9.88902817253768246e-02 TOLERANCE 1e-09
-STRUCTURE DIS structure NODE 341 QUANTITY dispx VALUE 2.33743796360871725e-01 TOLERANCE 1e-09
-POROFLUIDMULTIPHASE DIS porofluid NODE 89 QUANTITY phi1 VALUE 7.00587483385027299e-02 TOLERANCE 1e-09
-POROFLUIDMULTIPHASE DIS porofluid NODE 341 QUANTITY saturation3 VALUE 2.76983216620841688e-01 TOLERANCE 1e-09
-POROFLUIDMULTIPHASE DIS porofluid NODE 542 QUANTITY phi3 VALUE 4.88062461429760486e+00 TOLERANCE 1e-09
-POROFLUIDMULTIPHASE DIS porofluid NODE 213 QUANTITY pressure3 VALUE 1.21252553053211765e+00 TOLERANCE 1e-09
-POROFLUIDMULTIPHASE DIS porofluid NODE 321 QUANTITY phi2 VALUE -7.15129297538808939e-01 TOLERANCE 1e-09
-POROFLUIDMULTIPHASE DIS porofluid NODE 456 QUANTITY saturation2 VALUE 1.91928637172170763e-01 TOLERANCE 1e-09
-SCATRA DIS scatra NODE 213 QUANTITY phi1 VALUE 7.47526620524354146e-01 TOLERANCE 1e-09
-SCATRA DIS scatra NODE 321 QUANTITY phi2 VALUE 5.10500955221493635e-01 TOLERANCE 1e-09
-SCATRA DIS scatra NODE 456 QUANTITY phi2 VALUE 5.01031859051371820e-01 TOLERANCE 1e-09
+STRUCTURE DIS structure NODE 89 QUANTITY dispx VALUE 9.89310137819831847e-02 TOLERANCE 1e-09
+STRUCTURE DIS structure NODE 341 QUANTITY dispx VALUE 2.33875816591874897e-01 TOLERANCE 1e-09
+POROFLUIDMULTIPHASE DIS porofluid NODE 89 QUANTITY phi1 VALUE 7.06921030847384863e-02 TOLERANCE 1e-09
+POROFLUIDMULTIPHASE DIS porofluid NODE 341 QUANTITY saturation3 VALUE 2.76704581326879306e-01 TOLERANCE 1e-09
+POROFLUIDMULTIPHASE DIS porofluid NODE 542 QUANTITY phi3 VALUE 4.92169529799644234e+00 TOLERANCE 1e-09
+POROFLUIDMULTIPHASE DIS porofluid NODE 213 QUANTITY pressure3 VALUE 1.22401424589725027e+00 TOLERANCE 1e-09
+POROFLUIDMULTIPHASE DIS porofluid NODE 321 QUANTITY phi2 VALUE -7.54934695365908071e-01 TOLERANCE 1e-09
+POROFLUIDMULTIPHASE DIS porofluid NODE 456 QUANTITY saturation2 VALUE 1.91604210275003795e-01 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 213 QUANTITY phi1 VALUE 7.47545430507432718e-01 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 321 QUANTITY phi2 VALUE 5.10502241346330932e-01  TOLERANCE 1e-09
+SCATRA DIS scatra NODE 456 QUANTITY phi2 VALUE 5.01031910719986540e-01 TOLERANCE 1e-09
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  3
@@ -174,7 +192,7 @@ NDVOL   0
 -------------------------------DESIGN LINE PORO NEUMANN CONDITIONS
 DLINE  1
 // curve_left
-E 1 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.1 0.2 0.3 0.7 FUNCT 3 3 3 3
+E 1 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.1 0.2 0.3 0.7 FUNCT 4 4 4 4
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  1
 // curve_left
@@ -182,7 +200,7 @@ E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 -------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
 DLINE  1
 // curve_left
-E 1 - NUMDOF 2 ONOFF 1 1  VAL 0.75 0.5  FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 1 1  VAL 0.75 0.5 FUNCT 0 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  1
 // surface

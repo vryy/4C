@@ -30,7 +30,8 @@ namespace POROMULTIPHASESCATRA
   /// Type of coupling strategy for poro scatra problems
   enum SolutionSchemeOverFields
   {
-    solscheme_twoway_partitioned,
+    solscheme_twoway_partitioned_nested,
+    solscheme_twoway_partitioned_sequential,
     solscheme_twoway_monolithic
   };
 

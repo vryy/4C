@@ -118,6 +118,14 @@ namespace POROMULTIPHASE
     /// return fluid solution variable
     Teuchos::RCP<const Epetra_Vector> FluidPhinp() const;
 
+    /// return relaxed fluid solution variable (partitioned coupling will overwrite this method)
+    virtual Teuchos::RCP<const Epetra_Vector> RelaxedFluidPhinp() const
+    { return FluidPhinp(); };
+
+    /// set (relaxed) fluid solution on structure field (partitioned coupling will overwrite this method)
+    virtual void SetRelaxedFluidSolution()
+    {dserror("SetRelaxedFluidSolution() only available for partitioned schemes!"); return;};
+
     /// return fluid solution variable
     Teuchos::RCP<const Epetra_Vector> FluidSaturation() const;
 
@@ -149,6 +157,10 @@ namespace POROMULTIPHASE
         Teuchos::RCP<const Epetra_Vector>& fx
         )
         {dserror("UpdateFieldsAfterConvergence() only available for monolithic schemes!"); return;};
+
+    /// perform relaxaton (only for partitioned schemes)
+    virtual void PerformRelaxation(Teuchos::RCP<const Epetra_Vector> phi, const int itnum)
+    {dserror("PerformRelaxation() only available for partitioned schemes!"); return;};
 
     //! get monolithic rhs vector
     virtual Teuchos::RCP<const Epetra_Vector> RHS() const

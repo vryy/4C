@@ -24,7 +24,7 @@ RESTARTEVRY                     4
 NUMSTEP                         5
 MAXTIME                         2.0
 TIMESTEP                        0.1
-COUPALGO                        twoway_partitioned
+COUPALGO                        twoway_partitioned_nested
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 DYNAMICTYP                      OneStepTheta // OneStepTheta

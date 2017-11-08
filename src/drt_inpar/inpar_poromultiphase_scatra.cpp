@@ -47,14 +47,16 @@ void INPAR::POROMULTIPHASESCATRA::SetValidParameters(Teuchos::RCP<Teuchos::Param
 
   // Coupling strategy for poroscatra solvers
   setStringToIntegralParameter<int>(
-                              "COUPALGO","twoway_partitioned",
+                              "COUPALGO","twoway_partitioned_nested",
                               "Coupling strategies for poroscatra solvers",
                               tuple<std::string>(
-                                "twoway_partitioned",
+                                "twoway_partitioned_nested",
+                                "twoway_partitioned_sequential",
                                 "twoway_monolithic"
                                 ),
                               tuple<int>(
-                                  solscheme_twoway_partitioned,
+                                  solscheme_twoway_partitioned_nested,
+                                  solscheme_twoway_partitioned_sequential,
                                   solscheme_twoway_monolithic
                                 ),
                               &poromultiphasescatradyn);

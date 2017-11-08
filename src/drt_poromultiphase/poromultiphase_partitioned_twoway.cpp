@@ -158,11 +158,11 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::OuterLoop()
     // 1.) solve scalar transport equation
     DoFluidStep();
 
-    // get relaxation parameter
-    CalcOmega(FluidField()->Phinp());
+    // perform relaxation
+    PerformRelaxation(FluidField()->Phinp(), itnum_);
 
     // 2.) set fluid solution in structure field
-    SetRelaxedFluidSolution(omega_);
+    SetRelaxedFluidSolution();
 
     // check convergence for all fields
     // stop iteration loop if converged
@@ -295,15 +295,8 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::DoFluidStep()
 /*----------------------------------------------------------------------*
  | Set relaxed fluid solution on structure             kremheller 09/16 |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::SetRelaxedFluidSolution(
-    const double omega)
+void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::SetRelaxedFluidSolution()
 {
-  // calculate the relaxed fluid solution as phi,n+1^i+1 = phi,n+1^i + \omega*(phi,n+1^i+1 - phi,n+1^i)
-  // note: in first iteration step, omega = 1.0
-  fluidphinp_->Update(1.0,*fluidphioldnp_,omega,*fluidphiincnp_,0.0);
-
-  // save the old fluid solution
-  fluidphioldnp_->Update(1.0,*fluidphinp_,0.0);
 
   // set fluid solution on structure
   StructureField()->Discretization()->SetState(1,"porofluid",fluidphinp_);
@@ -314,8 +307,9 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::SetRelaxedFluidSolution(
 /*----------------------------------------------------------------------*
  | Calculate relaxation parameter omega                kremheller 09/16 |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::CalcOmega(
-    Teuchos::RCP<const Epetra_Vector> phi
+void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::PerformRelaxation(
+    Teuchos::RCP<const Epetra_Vector> phi,
+    const int itnum
     )
 {
   // get the increment vector
@@ -343,7 +337,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::CalcOmega(
     case INPAR::POROMULTIPHASE::RelaxationMethods::relaxation_aitken:
     {
       // Aitken
-      AitkenRelaxation(omega_);
+      AitkenRelaxation(omega_,itnum);
       if (Comm().MyPID()==0)
         std::cout << "Aitken relaxation parameter omega is: " << omega_ << std::endl;
       break;
@@ -356,6 +350,13 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::CalcOmega(
     }
   }
 
+  // calculate the relaxed fluid solution as phi,n+1^i+1 = phi,n+1^i + \omega*(phi,n+1^i+1 - phi,n+1^i)
+  // note: in first iteration step, omega = 1.0
+  fluidphinp_->Update(1.0,*fluidphioldnp_,omega_,*fluidphiincnp_,0.0);
+
+  // save the old fluid solution
+  fluidphioldnp_->Update(1.0,*fluidphinp_,0.0);
+
   return;
 }
 
@@ -363,7 +364,8 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::CalcOmega(
  | Perform Aitken relaxation                           kremheller 09/16 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::AitkenRelaxation(
-    double&                              omega)
+    double&                              omega,
+    const int itnum)
 {
 
   // fluidphiincnpdiff =  r^{i+1}_{n+1} - r^i_{n+1}
@@ -380,7 +382,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::AitkenRelaxation(
   double fluidphiincsdot = 0.0; //delsdot = ( r^{i+1}_{n+1} - r^i_{n+1} )^T . r^{i+1}_{n+1}
   fluidphiincnpdiff->Dot(*fluidphiincnp_,&fluidphiincsdot);
 
-  if (itnum_ != 1 and fluidphiincnpdiffnorm > 1e-06)
+  if (itnum != 1 and fluidphiincnpdiffnorm > 1e-06)
   {
     // relaxation parameter
     // omega^{i+1} = 1- mu^{i+1} and nu^{i+1} = nu^i + (nu^i -1) . (r^{i+1} - r^i)^T . (-r^{i+1}) / |r^{i+1} - r^{i}|^2 results in

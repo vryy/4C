@@ -42,11 +42,20 @@ POROMULTIPHASESCATRA::UTILS::CreatePoroMultiPhaseScatraAlgorithm(
 
   switch(solscheme)
   {
-  case INPAR::POROMULTIPHASESCATRA::solscheme_twoway_partitioned:
+  case INPAR::POROMULTIPHASESCATRA::solscheme_twoway_partitioned_nested:
   {
     // call constructor
     algo =
-        Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay(
+        Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWayNested(
+                comm,
+                timeparams));
+    break;
+  }
+  case INPAR::POROMULTIPHASESCATRA::solscheme_twoway_partitioned_sequential:
+  {
+    // call constructor
+    algo =
+        Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWaySequential(
                 comm,
                 timeparams));
     break;

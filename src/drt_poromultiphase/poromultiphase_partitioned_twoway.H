@@ -61,6 +61,10 @@ namespace POROMULTIPHASE
     // update
     virtual void UpdateAndOutput();
 
+    // update
+    virtual Teuchos::RCP<const Epetra_Vector> RelaxedFluidPhinp() const
+    { return fluidphinp_;}
+
   private:
 
     //! perform iteration loop between fields
@@ -79,14 +83,14 @@ namespace POROMULTIPHASE
     //! convergence check of outer loop
     virtual bool ConvergenceCheck(int itnum);
 
-    //! calculate relaxation parameter omega
-    virtual void CalcOmega(Teuchos::RCP<const Epetra_Vector> phi);
+    //! perform relaxation
+    virtual void PerformRelaxation(Teuchos::RCP<const Epetra_Vector> phi, const int itnum);
 
     /// set (relaxed) fluid solution on structure field
-    void SetRelaxedFluidSolution(const double omega) ;
+    void SetRelaxedFluidSolution() ;
 
     /// perform aitken
-    void AitkenRelaxation(double& omega) ;
+    void AitkenRelaxation(double& omega, const int itnum) ;
 
     //! pressure increment of the outer loop
     Teuchos::RCP<Epetra_Vector> phiincnp_;
