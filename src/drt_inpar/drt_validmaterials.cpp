@@ -1810,15 +1810,27 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                               "Parameter for structural tensor strategy in anisotropic materials",
                                               INPAR::MAT::mes_structuraltensorstratgy));
 
+      // choose between:
+      // "Standard"
+      // "ByDistributionFunction"
+      // "DispersedTransverselyIsotropic"
+      //  rauch 10/17
       AddNamedString(
           m,
           "STRATEGY","Strategy for evaluation of structural tensor",
           "Standard");
+
+      // choose between:
+      // "none"
+      // "Bingham"
+      // "vonMisesFisher"
+      //  rauch 10/17
       AddNamedString(
           m,
           "DISTR","Type of distribution function around mean direction",
           "none",
           true);
+
       AddNamedReal(m,"C1","constant 1 for distribution function",1.0,true);
       AddNamedReal(m,"C2","constant 2 for distribution function",0.0,true);
       AddNamedReal(m,"C3","constant 3 for distribution function",0.0,true);

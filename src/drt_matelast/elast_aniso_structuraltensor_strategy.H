@@ -29,15 +29,16 @@ namespace PAR
 typedef enum _DISTR_TYPE_
 {
   distr_type_undefined=0,
-  distr_type_bingham=1,
-  distr_type_vonmisesfisher=2
+  distr_type_vonmisesfisher=1,
+  distr_type_bingham=2
 } DISTR_TYPE_;
 
 typedef enum _STRATEGY_TYPE_
 {
   strategy_type_undefined=0,
   strategy_type_standard=1,
-  strategy_type_bydistributionfunction=2
+  strategy_type_bydistributionfunction=2,
+  strategy_type_dispersedtransverselyisotropic=3
 } STRATEGY_TYPE_;
 
 /*----------------------------------------------------------------------*/
@@ -109,6 +110,15 @@ public:
       LINALG::Matrix<6,1>  &structural_tensor
   ) = 0;
 
+  /// \brief calculate MxM
+  ///
+  /// \param M (in) : vector (e.g. fiber direction)
+  /// \param result (out) : result of dyadic product
+  void DyadicProduct(
+      LINALG::Matrix<3,1>& M,
+      LINALG::Matrix<6,1>& result
+   );
+
 protected:
 
   /// return residual tolerance of structural problem
@@ -163,20 +173,29 @@ public:
 /*----------------------------------------------------------------------*/
 /// \brief Class for computing the generalized structural tensor
 ///
-/// Class for computing the generalized structural tensor for anisotropic
-/// materials, by integrating a given distribution function for fiber
-/// orientations.
+/// Class for computing the generalized forms of the structural tensor for
+/// anisotropic materials, by integrating a given distribution function for
+/// fiber orientations.
 ///
 ///  See:
-///  T. C. Gasser, R. W. Ogden, and G. A. Holzapfel. Hyperelastic modelling of arterial layers
+///  T.C. Gasser, R.W. Ogden, and G.A. Holzapfel. Hyperelastic modelling of arterial layers
 ///  with distributed collagen fibre orientations. J. R. Soc. Interface, 3:15–35, 2006. doi:
 ///  10.1098/rsif.2005.0073.
+///
 ///
 /// <h3>Definiton of Structural Tensor H</h3>
 ///
 /// H = \frac{1}{4\pi}\int \rho(Theta,Phi) [m x m] sin(Theta) dTheta dPhi
 /// with
 /// m = \sin(\Theta)\cos(\Phi)e_1 + \sin(\Theta)\sin(\Phi)e_2 + \cos(\Theta)e_3 .
+///
+/// Our convention for the rotations (cf. [Gasser 2006]) :
+///
+/// 1) Vector m'' is initially aligned with e3
+/// 2) We rotate m'' with angle Theta away from e3 in e1-e3-plane (e2 is normal to this plane).
+///    We arrive at the vector m'.
+/// 3) We rotate the vector m' with angle Phi around e3 to arrive at m.
+///
 ///
 ///
 /// <h3>Distribution functions rho</h3>
@@ -194,24 +213,36 @@ public:
 ///
 ///    See also: https://en.wikipedia.org/wiki/Von_Mises%E2%80%93Fisher_distribution
 ///
+///
 ///  2) Bingham distribution:
 ///
 ///     This distribution function requires four parameters C1, C2, C3, and C4.
 ///
+///     !!! IMPORTANT REMARK :
+///     The definition of angles Theta and Phi in [Gasser et al. 2012] is different from our definition.
+///     This explains the difference in the formulation compared to the equation reported by Gasser et al.
+///     Further, you have to choose C3 = 0.0 to reproduce the reported distribution.
+///
 ///     \rho(\Theta,\Phi) = \frac{1}{C4} \exp(C1 X_1 + C2 X_2 + C3 X_3)
 ///
-///     with X_1 = m_1^2
-///          X_2 = m_2^2
-///          X_3 = m_3^2
+///     with X_1 = ( sin(theta) * cos(phi) )^2
+///          X_2 = ( sin(theta) * sin(phi) )^2 * (K^2 / (1.0+K^2))
+///          X_3 = cos(theta)^2
+///
+///          K = sin(theta)*cos(phi) / cos(theta)
 ///
 ///     See:
-///     T. Gasser, S. Gallinetti, X. Xing, C. Forsell, J. Swedenborg, and J. Roy. Spatial orientation
+///     T.C. Gasser, S. Gallinetti, X. Xing, C. Forsell, J. Swedenborg, and J. Roy. Spatial orientation
 ///     of collagen fibers in the abdominal aortic aneurysm’s wall and its relation to wall mechanics
 ///     Acta Biomater., 8:3091–3103, 2012. doi: http://dx.doi.org/10.1016/j.actbio.2012.04.044.
+///
+///
+/// <h3>Numerical Integration</h3>
 ///
 /// The integration is performed by an Gauss integration rule in accordance with:
 ///
 /// Atkinson K.; Numerical Integration on the Sphere.; J. Austral. Math. Soc.B; 23; 1982
+///
 ///
 /// \author rauch
 /// \date 10/17
@@ -243,6 +274,59 @@ public:
       LINALG::Matrix<6,1>& structural_tensor
   );
 }; // class StructuralTensorStrategyByDistributionFunction
+
+
+/*----------------------------------------------------------------------*/
+/// \brief Class for computing dispersed transversely isotropic structural tensor
+///
+///  See:
+///  T.C. Gasser, R.W. Ogden, and G.A. Holzapfel. Hyperelastic modelling of arterial layers
+///  with distributed collagen fibre orientations. J. R. Soc. Interface, 3:15–35, 2006. doi:
+///  10.1098/rsif.2005.0073.
+///
+///
+/// <h3>Definiton of Structural Tensor H</h3>
+///
+/// H = c1*I + (1-3*c1)MxM
+///
+/// I = Identity matrix
+/// MxM = dyadic product with fiber orientation M
+///
+/// c1 is the dispersion parameter:
+///
+/// if c1 = 1/3 -> isotropic distribution
+/// if c1 = 0.0 -> same as StructuralTensorStrategyStandard
+/// if 0<c1<1/3 -> varying transverse isotropy
+///
+/// \author rauch
+/// \date 10/17
+class StructuralTensorStrategyDispersedTransverselyIsotropic : public StructuralTensorStrategyBase
+{
+public:
+
+  /// constructor with given material parameters
+  StructuralTensorStrategyDispersedTransverselyIsotropic(MAT::ELASTIC::PAR::StructuralTensorParameter* params);
+
+  /*! \brief evaluate transversely isotropic structural tensor with dispersion
+
+    H = c1*I + (1-3*c1)MxM
+
+    I = Identity matrix
+    MxM = dyadic product with fiber orientation M
+
+    c1 is the dispersion parameter:
+
+    if c1 = 1/3 -> isotropic distribution
+    if c1 = 0.0 -> same as StructuralTensorStrategyStandard
+    if 0<c1<1/3 -> varying transverse isotropy
+
+    \author rauch
+    \date 10/17    */
+  virtual void SetupStructuralTensor(
+      LINALG::Matrix<3,1>& fiber_vector,
+      LINALG::Matrix<6,1>& structural_tensor
+  );
+}; // class StructuralTensorStrategyDispersedTransverselyIsotropic
 
 }  // namespace ELASTIC
 }  // namespace MAT

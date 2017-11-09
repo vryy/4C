@@ -36,6 +36,8 @@ MAT::ELASTIC::PAR::StructuralTensorParameter::StructuralTensorParameter(
     strategy_type_ = strategy_type_standard;
   else if (strategy_type == "ByDistributionFunction")
     strategy_type_ = strategy_type_bydistributionfunction;
+  else if (strategy_type == "DispersedTransverselyIsotropic")
+    strategy_type_ = strategy_type_dispersedtransverselyisotropic;
   else
     dserror("unknown strategy for evaluation of the structural tensor for anisotropic material.");
 
@@ -61,7 +63,9 @@ MAT::ELASTIC::PAR::StructuralTensorParameter::StructuralTensorParameter(
   else if(distr_type == "none" and strategy_type_ == strategy_type_bydistributionfunction)
     dserror("You chose structural tensor strategy 'ByDistributionFunction' but you forgot to specify the 'DISTR' parameter.\n"
         "Check the definitions of anisotropic materials in your .dat file.");
-  else if (distr_type == "none" and strategy_type_ == strategy_type_standard)
+  else if (distr_type == "none" and
+           ( strategy_type_ == strategy_type_standard or
+             strategy_type_ == strategy_type_dispersedtransverselyisotropic) )
   { /* this is fine */}
   else
     dserror("Invalid choice of parameter 'DISTR' in anisotropic material definition.");
@@ -98,6 +102,32 @@ StructuralTensorStrategyByDistributionFunction(MAT::ELASTIC::PAR::StructuralTens
 }
 
 
+/*----------------------------------------------------------------------*
+ |  Constructor                                   (public)  rauch 10/17 |
+ *----------------------------------------------------------------------*/
+MAT::ELASTIC::StructuralTensorStrategyDispersedTransverselyIsotropic::
+StructuralTensorStrategyDispersedTransverselyIsotropic(MAT::ELASTIC::PAR::StructuralTensorParameter* params)
+  : StructuralTensorStrategyBase(params)
+{
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::StructuralTensorStrategyBase::
+DyadicProduct(
+    LINALG::Matrix<3,1>& M,
+    LINALG::Matrix<6,1>& result)
+{
+  for (int i = 0; i < 3; ++i)
+    result(i) = M(i)*M(i);
+
+  result(3) = M(0)*M(1);
+  result(4) = M(1)*M(2);
+  result(5) = M(0)*M(2);
+}
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::StructuralTensorStrategyStandard::SetupStructuralTensor(
@@ -105,12 +135,7 @@ void MAT::ELASTIC::StructuralTensorStrategyStandard::SetupStructuralTensor(
     LINALG::Matrix<6,1>  &structural_tensor
 )
 {
-  for (int i = 0; i < 3; ++i)
-    structural_tensor(i) = fiber_vector(i)*fiber_vector(i);
-
-  structural_tensor(3) = fiber_vector(0)*fiber_vector(1);
-  structural_tensor(4) = fiber_vector(1)*fiber_vector(2);
-  structural_tensor(5) = fiber_vector(0)*fiber_vector(2);
+  DyadicProduct(fiber_vector,structural_tensor);
 }
 
 
@@ -136,6 +161,7 @@ void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::
 
   // aux mean direction of fiber
   // we evaluate the structural tensor with this mean direction.
+  // note: used only in case of von mises-fisher distribution
   double theta_aux = acos(gausspoints.qxg[numbgp-1][0]);
   LINALG::Matrix<3,1> aux_fiber_vector;
   aux_fiber_vector(0) = sin(theta_aux);
@@ -166,8 +192,9 @@ void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::
       }
       case MAT::ELASTIC::PAR::distr_type_bingham:
       {
+        double K = (sin(theta)*cos(phi))/cos(theta);
         double X1 = x(0)*x(0);
-        double X2 = x(1)*x(1);
+        double X2 = x(1)*x(1)*( pow(K,2.0)/(1.0+pow(K,2.0)) );
         double X3 = x(2)*x(2);
         rho(i,j) = (1.0/c4) * exp(c1*X1 + c2*X2  + c3*X3 );
         break;
@@ -271,6 +298,26 @@ void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::
   // to the integration error.
   double trace = structural_tensor(0) + structural_tensor(1) + structural_tensor(2);
   structural_tensor.Scale(1.0/trace);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::StructuralTensorStrategyDispersedTransverselyIsotropic::
+SetupStructuralTensor(
+    LINALG::Matrix<3,1>& fiber_vector,
+    LINALG::Matrix<6,1>& structural_tensor
+)
+{
+  // constant for dispersion around fiber_vector
+  double c1 = params_->c1_;
+
+  DyadicProduct(fiber_vector,structural_tensor);
+
+  LINALG::Matrix<6,1> Identity(true);
+  Identity(0)=1.0; Identity(1)=1.0; Identity(2)=1.0;
+
+  structural_tensor.Update(c1,Identity,(1.0-3.0*c1));
 }
 
 

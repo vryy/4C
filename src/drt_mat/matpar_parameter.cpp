@@ -152,15 +152,18 @@ MAT::PAR::ParameterAniso::ParameterAniso(
   // get type of strategy
   std::string strategy = *mat_str_tens->Get<std::string>("STRATEGY");
 
-    // construct strategy
-    if(strategy == "Standard")
-      structural_tensor_strategy_ =
-          Teuchos::rcp(new MAT::ELASTIC::StructuralTensorStrategyStandard(params));
-    else if(strategy == "ByDistributionFunction")
-      structural_tensor_strategy_ =
-          Teuchos::rcp(new MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction(params));
-    else
-      dserror("Unknown type of structural tensor strategy for anisotropic material chosen.");
+  // construct strategy
+  if(strategy == "Standard")
+    structural_tensor_strategy_ =
+        Teuchos::rcp(new MAT::ELASTIC::StructuralTensorStrategyStandard(params));
+  else if(strategy == "ByDistributionFunction")
+    structural_tensor_strategy_ =
+        Teuchos::rcp(new MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction(params));
+  else if(strategy == "DispersedTransverselyIsotropic")
+    structural_tensor_strategy_ =
+        Teuchos::rcp(new MAT::ELASTIC::StructuralTensorStrategyDispersedTransverselyIsotropic(params));
+  else
+    dserror("Unknown type of structural tensor strategy for anisotropic material chosen.");
 
 }
 /*----------------------------------------------------------------------*/
