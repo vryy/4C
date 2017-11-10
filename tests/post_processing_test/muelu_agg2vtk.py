@@ -68,7 +68,7 @@ def main(argv=None):
   blockids2nodecoords = {}
   for iblock in sections['DESIGN S2I COUPLING VOL CONDITIONS / PARTITIONING']:
     if iblock[0][:2] != '//':
-      blockids2nodecoords[int(iblock[1])] = []
+      blockids2nodecoords[int(iblock[1])] = {}
 
   # fill dictionary by looping over all nodes from *.dat input file
   for inode in sections['DVOL-NODE TOPOLOGY']:
@@ -77,7 +77,19 @@ def main(argv=None):
     inodecoords = nodescoords[int(inode[1]) - 1]
 
     # add scaled spatial coordinates of current node to dictionary
-    blockids2nodecoords[int(inode[3])].append((float(inodecoords[3]) * scaling,float(inodecoords[4]) * scaling,float(inodecoords[5]) * scaling))
+    blockids2nodecoords[int(inode[3])][int(inode[1])] = (float(inodecoords[3]) * scaling,float(inodecoords[4]) * scaling,float(inodecoords[5]) * scaling)
+
+  # remove offset of node IDs associated with each matrix block to obtain minimum node ID of zero
+  for iblock in blockids2nodecoords:
+
+    # compute offset for current matrix block
+    offset = min(blockids2nodecoords[iblock])
+
+    # loop over all node IDs associated with current matrix block
+    for inode in sorted(blockids2nodecoords[iblock]):
+
+      # subtract offset from current node ID
+      blockids2nodecoords[iblock][inode - offset] = blockids2nodecoords[iblock].pop(inode)
 
   # process all multigrid levels
   for ilevel in range(0,numlevel):
@@ -226,7 +238,7 @@ def main(argv=None):
         print "  | | Calculating root nodes for aggregation on next coarser multigrid level ... ",
 
         # initialize list for spatial coordinates of root nodes
-        rootnodescoords = []
+        rootnodescoords = {}
 
         # loop over all aggregates in current matrix block of current multigrid level
         for aggid in range(len(aggids2nodeids)):
@@ -251,7 +263,7 @@ def main(argv=None):
               rootnodecoords[idim] += nodecoords[idim]
 
           # compute and store spatial coordinates of centroid associated with current aggregate
-          rootnodescoords.append(tuple([rootnodecoords[idim] / len(nodeids) for idim in range (dimension)]))
+          rootnodescoords[aggid] = tuple([rootnodecoords[idim] / len(nodeids) for idim in range (dimension)])
 
         # replace spatial coordinates of nodes associated with current matrix block of current multigrid level by spatial coordinates of root nodes
         blockids2nodecoords[iblock] = rootnodescoords
