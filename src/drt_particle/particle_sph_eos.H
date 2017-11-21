@@ -38,13 +38,13 @@ public :
   virtual ~EquationOfState_Base(){};
 
   //! determine the pressure
-  virtual double DensityToPressure(const double& density) = 0;
+  virtual double DensityToPressure(const double& density, const double& density0) = 0;
 
   //! determine the density
-  virtual double PressureToDensity(const double& pressure) = 0;
+  virtual double PressureToDensity(const double& pressure, const double& density0) = 0;
 
   //! determine the energy
-  virtual double DensityToEnergy(const double& density, const double& mass) = 0;
+  virtual double DensityToEnergy(const double& density, const double& mass, const double& density0) = 0;
 
 };
 
@@ -57,7 +57,6 @@ public :
   //! constructor
   explicit EquationOfState_GenTait(
       const double& speedOfSound,
-      const double& initDensity,
       const double& refDensFac,
       const double& exponent
       );
@@ -66,30 +65,24 @@ public :
   virtual ~EquationOfState_GenTait(){};
 
   //! determine the pressure
-  virtual double DensityToPressure(const double& density);
+  virtual double DensityToPressure(const double& density, const double& density0);
 
   //! determine the density
-  virtual double PressureToDensity(const double& pressure);
+  virtual double PressureToDensity(const double& pressure, const double& density0);
 
   //! determine the energy
-  virtual double DensityToEnergy(const double& density, const double& mass);
+  virtual double DensityToEnergy(const double& density, const double& mass, const double& density0);
 
 private :
 
   //! speed of sound
   const double speedOfSound_;
 
-  //! initial density
-  const double initDensity_;
-
   //! reference density factor
   const double refDensFac_;
 
   //! exponent
   const double exponent_;
-
-  //! rest pressure
-  double initPressure_;
 
 };
 
@@ -101,29 +94,25 @@ public :
 
   //! constructor
   explicit EquationOfState_IdealGas(
-      const double& speedOfSound,
-      const double& initDensity
+      const double& speedOfSound
       );
 
   //! virtual destructor
   virtual ~EquationOfState_IdealGas(){};
 
   //! determine the pressure
-  virtual double DensityToPressure(const double& density);
+  virtual double DensityToPressure(const double& density, const double& density0);
 
   //! determine the density
-  virtual double PressureToDensity(const double& pressure);
+  virtual double PressureToDensity(const double& pressure, const double& density0);
 
   //! determine the energy
-  virtual double DensityToEnergy(const double& density, const double& mass);
+  virtual double DensityToEnergy(const double& density, const double& mass, const double& density0);
 
 private :
 
   //! speed of sound
   const double speedOfSound_;
-
-  //! initial density
-  const double initDensity_;
 
 };
 

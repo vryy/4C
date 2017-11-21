@@ -222,15 +222,13 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                  "ST_NONE",
                                  "ST_VDW_DIRECT",
                                  "ST_VDW_INDIRECT",
-                                 "ST_CONTI_ADAMI",
-                                 "ST_CONTI_HU"
+                                 "ST_CONTI_ADAMI"
                                  ),
                                tuple<int>(
                                  INPAR::PARTICLE::ST_NONE,
                                  INPAR::PARTICLE::ST_VDW_DIRECT,
                                  INPAR::PARTICLE::ST_VDW_INDIRECT,
-                                 INPAR::PARTICLE::ST_CONTI_ADAMI,
-                                 INPAR::PARTICLE::ST_CONTI_HU
+                                 INPAR::PARTICLE::ST_CONTI_ADAMI
                                  ),
                                &particledyn);
 
@@ -295,6 +293,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    DoubleParameter("SURFTENSION_POT_B",1.0,"Scale factor of attractive part of pairwise interaction force",&particledyn);
    DoubleParameter("SURFTENSION_POT_RATIO",0.5,"Range ratio of repulsive and attractive part of pairwise interaction force",&particledyn);
    IntParameter("MIN_VOIDPARTICLE_ID",-1,"all particles with an ID >= MIN_VOIDPARTICLE_ID are considered as void particles with colorfield = 0",&particledyn);
+   BoolParameter("CONTACT_ANGLE_VAR2","no","Apply alternative model to enforce the static contact angle",&particledyn);
 
    setStringToIntegralParameter<int>("DIMENSION","3D",
                                 "number of space dimensions for handling of quasi-2D problems with 3D particles",

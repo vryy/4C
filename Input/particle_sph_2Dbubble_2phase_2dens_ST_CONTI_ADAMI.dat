@@ -6,13 +6,15 @@
                   General Data File BACI
 ==================================================================
 ---------------------------------------------------------------------------TITLE
-First 2D test case for Particle Meshfree Interaction (SPH) with two phase flow:
+2D test case for Particle Meshfree Interaction (SPH) with two phase flow:
 2D bubble with surface tension and gravity forces acting. For surface tension
-the continuum type model proposed in Adami et al. 2010 is applied.
+the continuum type model proposed in Adami et al. 2010 is applied. The two
+phases have a density ratio of 1000. To avoid tensile instabilities, BACKGROUND_PRESSURE is applied.
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Particle
 SHAPEFCT                        Meshfree
 RANDSEED                        1
+RESTART                         0
 --------------------------------------------------------------BINNING STRATEGY
 CUTOFF_RADIUS                   0.06
 PERIODICONOFF                   1 1 0
@@ -33,25 +35,24 @@ WEIGHT_FUNCTION_DIM             WF_2D
 DENSITY_SUMMATION               yes
 FREE_SURFACE_TYPE               TwoPhase
 CONSISTENT_PROBLEM_VOLUME       1.0
-VISCOUS_DAMPING                 0.0
-TRANSPORT_VELOCITY              no
-BACKGROUND_PRESSURE             0.0
-NO_VELDIFF_TERM                 no
 CALC_ACC_VAR2                   yes
 SURFACE_TENSION_TYPE            ST_CONTI_ADAMI
 SURFACE_TENSION_FF              1.0
 MIN_VOIDPARTICLE_ID             901
 WALL_INTERACTION_TYPE           NoWallInteraction
+TRANSPORT_VELOCITY              yes
+BACKGROUND_PRESSURE             10
+NO_VELDIFF_TERM                 yes
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_ExtParticle DENSITY 1.0 REFDENSFAC 0.7 EXPONENT 1.0 INITRADIUS 0.06 NUE 0.1 YOUNG 0.1 BULK_MODULUS 100 DYNAMIC_VISCOSITY 0.2 BULK_VISCOSITY 0.0 ARTIFICIAL_VISCOSITY 0.0
-MAT 2 MAT_ExtParticle DENSITY 1.0 REFDENSFAC 0.7 EXPONENT 1.0 INITRADIUS 0.06 NUE 0.1 YOUNG 0.1 BULK_MODULUS 100 DYNAMIC_VISCOSITY 0.2 BULK_VISCOSITY 0.0 ARTIFICIAL_VISCOSITY 0.0
+MAT 1 MAT_ExtParticle DENSITY 1.0 REFDENSFAC 1.0 EXPONENT 1.0 INITRADIUS 0.06 NUE 0.1 YOUNG 0.1 BULK_MODULUS 100 DYNAMIC_VISCOSITY 0.2 BULK_VISCOSITY 0.0 ARTIFICIAL_VISCOSITY 0.0
+MAT 2 MAT_ExtParticle DENSITY 0.001 REFDENSFAC 1.0 EXPONENT 1.0 INITRADIUS 0.06 NUE 0.1 YOUNG 0.1 BULK_MODULUS 0.1 DYNAMIC_VISCOSITY 0.001 BULK_VISCOSITY 0.0 ARTIFICIAL_VISCOSITY 0.0
 ----------------------------------------------------------RESULT DESCRIPTION
-PARTICLE DIS particle NODE 900 QUANTITY velx VALUE -4.16788389257583325e-01 TOLERANCE 1.0e-10
-PARTICLE DIS particle NODE 900 QUANTITY vely VALUE -4.16788389257583269e-01 TOLERANCE 1.0e-10
-PARTICLE DIS particle NODE 900 QUANTITY dispx VALUE 2.60846513301016492e-01 TOLERANCE 1.0e-10
-PARTICLE DIS particle NODE 900 QUANTITY dispy VALUE 2.60846513301016547e-01 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 900 QUANTITY velx VALUE -5.22657851252220418e-01 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 900 QUANTITY vely VALUE -5.22657851252217420e-01 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 900 QUANTITY dispx VALUE 2.32720492954775121e-01 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 900 QUANTITY dispy VALUE 2.32720492954775260e-01 TOLERANCE 1.0e-10
 ------------------------------------------------NODE COORDS
 PARTICLE 1 COORD -0.29 -0.29 0.0000000000000e+00
 PARTICLE 2 COORD -0.29 -0.27 0.0000000000000e+00

@@ -105,6 +105,7 @@ PARTICLE::TimInt::TimInt
   angAccn_(Teuchos::null),
   radiusn_(Teuchos::null),
   densityn_(Teuchos::null),
+  density0_(Teuchos::null),
   densityDotn_(Teuchos::null),
 
   fifc_(Teuchos::null),
@@ -118,12 +119,15 @@ PARTICLE::TimInt::TimInt
   f_structure_(Teuchos::null),
 
   colorField_(Teuchos::null),
-  colorFieldGrad_(Teuchos::null),
-  smoothedColorFieldGrad_(Teuchos::null),
-  accSF_(Teuchos::null),
+  CFG_(Teuchos::null),
+  CFG_FF_(Teuchos::null),
+  CFG_F1S_(Teuchos::null),
+  CFG_F2S_(Teuchos::null),
+  accST_FF_(Teuchos::null),
   fspType_(Teuchos::null),
   curvature_(Teuchos::null),
   phaseColor_(Teuchos::null),
+  distWall_(Teuchos::null),
 
   global_num_boundaryparticles_(0),
 
@@ -188,12 +192,15 @@ void PARTICLE::TimInt::Init()
 
 #ifdef PARTICLE_WRITECOLORFIELD
     colorField_ = LINALG::CreateVector(*NodeRowMapView(), true);
-    colorFieldGrad_ = LINALG::CreateVector(*DofRowMapView(), true);
-    smoothedColorFieldGrad_ = LINALG::CreateVector(*DofRowMapView(), true);
-    accSF_ = LINALG::CreateVector(*DofRowMapView(), true);
+    CFG_ = LINALG::CreateVector(*DofRowMapView(), true);
+    CFG_FF_ = LINALG::CreateVector(*DofRowMapView(), true);
+    CFG_F1S_ = LINALG::CreateVector(*DofRowMapView(), true);
+    CFG_F2S_ = LINALG::CreateVector(*DofRowMapView(), true);
+    accST_FF_ = LINALG::CreateVector(*DofRowMapView(), true);
     fspType_ = LINALG::CreateVector(*NodeRowMapView(), true);
     curvature_ = LINALG::CreateVector(*NodeRowMapView(), true);
     phaseColor_ = LINALG::CreateVector(*NodeRowMapView(), true);
+    distWall_ = LINALG::CreateVector(*NodeRowMapView(), true);
 #endif
 
     break;
@@ -245,6 +252,7 @@ void PARTICLE::TimInt::Init()
     radiusn_  = Teuchos::rcp(new Epetra_Vector(*(*radius_)(0)));
     densityn_ = Teuchos::rcp(new Epetra_Vector(*(*density_)(0)));
     densityDotn_ = Teuchos::rcp(new Epetra_Vector(*(*densityDot_)(0)));
+
     break;
   }
   default : //do nothing
@@ -463,7 +471,16 @@ void PARTICLE::TimInt::SetInitialFields()
       const int num_particles = discret_->NumGlobalNodes() - global_num_boundaryparticles_;
       const double particle_volume = consistent_problem_volume / ((double)(num_particles));
 
-      interHandler->InitDensityAndMass(particle_volume,(*density_)(0),mass_);
+      //set initial values of particle mass and density
+      interHandler->InitDensityAndMass(particle_volume,(*density_)(0),mass_,(*dis_)(0),(*radius_)(0));
+
+      //in case of two-phase flow, the initial density is determined via density summation!
+      const INPAR::PARTICLE::FreeSurfaceType freeSurfaceType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::FreeSurfaceType>(DRT::Problem::Instance()->ParticleParams(),"FREE_SURFACE_TYPE");
+      if(freeSurfaceType==INPAR::PARTICLE::TwoPhase and DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"DENSITY_SUMMATION")==true)
+      {
+        density0_ = Teuchos::rcp(new Epetra_Vector(*(*density_)(0)));
+        density0_->Update(1.0,*((*density_)(0)),0.0);
+      }
     }
     else
       dserror("CONSISTENT_PROBLEM_VOLUME problem volume required for SPH simulations!");
@@ -628,7 +645,7 @@ void PARTICLE::TimInt::DetermineSPHDensAndAcc(Teuchos::RCP<Epetra_Vector> acc,
 {
 
   //Initialize all columns and boundary particles, set sate vectors, search for neighbor particles.
-  interHandler_->Init(disn_, veln_, radiusn_, mass_);
+  interHandler_->Init(disn_, veln_, radiusn_, mass_, density0_);
   //Set also state vector velConv
   if(velConv!=Teuchos::null)
     interHandler_->SetStateVector(velConv, PARTICLE::VelConv);
@@ -673,24 +690,53 @@ void PARTICLE::TimInt::DetermineSPHDensAndAcc(Teuchos::RCP<Epetra_Vector> acc,
     density_sum->PutScalar(0.0);
     Teuchos::RCP<Epetra_Vector> colorField = Teuchos::rcp(new Epetra_Vector(*densityn_));
     colorField->PutScalar(0.0);
-    Teuchos::RCP<Epetra_Vector> colorFieldGrad = Teuchos::rcp(new Epetra_Vector(*veln_));
-    colorFieldGrad->PutScalar(0.0);
+    Teuchos::RCP<Epetra_Vector> CFG = Teuchos::rcp(new Epetra_Vector(*veln_));
+    CFG->PutScalar(0.0);
 
-    interHandler_->MF_mW(density_sum,colorField,colorFieldGrad,phaseColor_);
+    interHandler_->MF_mW(density_sum,colorField,CFG,phaseColor_);
     interHandler_->SetStateVector(colorField, PARTICLE::ColorField);
     interHandler_->SetStateVector(density_sum, PARTICLE::DensitySum);
-    interHandler_->SetStateVector(colorFieldGrad, PARTICLE::ColorFieldGrad);
+    interHandler_->SetStateVector(CFG, PARTICLE::CFG);
 
     const INPAR::PARTICLE::SurfaceTensionType surfaceTensionType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::SurfaceTensionType>(DRT::Problem::Instance()->ParticleParams(),"SURFACE_TENSION_TYPE");
-    if(surfaceTensionType==INPAR::PARTICLE::ST_CONTI_ADAMI or surfaceTensionType==INPAR::PARTICLE::ST_CONTI_HU)
+    if(surfaceTensionType==INPAR::PARTICLE::ST_CONTI_ADAMI)
     {
-      Teuchos::RCP<Epetra_Vector> smoothedColorFieldGrad = Teuchos::rcp(new Epetra_Vector(*veln_));
-      smoothedColorFieldGrad->PutScalar(0.0);
-      interHandler_->MF_SmoothedCFG(smoothedColorFieldGrad);
-      interHandler_->SetStateVector(smoothedColorFieldGrad, PARTICLE::SmoothedColorFieldGrad);
+      Teuchos::RCP<Epetra_Vector> CFG_FF = Teuchos::rcp(new Epetra_Vector(*veln_));
+      CFG_FF->PutScalar(0.0);
+      Teuchos::RCP<Epetra_Vector> CFG_F1S = Teuchos::rcp(new Epetra_Vector(*veln_));
+      CFG_F1S->PutScalar(0.0);
+      Teuchos::RCP<Epetra_Vector> CFG_F2S = Teuchos::rcp(new Epetra_Vector(*veln_));
+      CFG_F2S->PutScalar(0.0);
+      Teuchos::RCP<Epetra_Vector> distWall = Teuchos::rcp(new Epetra_Vector(*densityn_));
+      distWall->PutScalar(0.0);
+      interHandler_->MF_SmoothedCFG(CFG_FF,CFG_F1S,CFG_F2S,distWall);
+      interHandler_->SetStateVector(CFG_FF, PARTICLE::CFG_FF);
+      interHandler_->SetStateVector(CFG_F1S, PARTICLE::CFG_F1S);
+      interHandler_->SetStateVector(distWall, PARTICLE::DistWall);
 
-      if(smoothedColorFieldGrad_!=Teuchos::null)
-        smoothedColorFieldGrad_->Update(1.0,*smoothedColorFieldGrad,0.0);
+      if(freeSurfaceType==INPAR::PARTICLE::TwoPhase and surfaceTensionType==INPAR::PARTICLE::ST_CONTI_ADAMI)
+      {
+
+        #if (defined(PARTICLE_ST_BOUNDARYSCALEFAC) or defined(PARTICLE_ST_CFGEXTRAPLATION))
+          interHandler_->ExtrapolateTriplePointCFG(CFG_FF);
+          interHandler_->SetStateVector(CFG_FF, PARTICLE::CFG_FF);
+        #endif
+        interHandler_->SetTriplePointNormal(CFG_F2S);
+      }
+
+      interHandler_->SetStateVector(CFG_F2S, PARTICLE::CFG_F2S);
+
+      if(CFG_FF_!=Teuchos::null)
+        CFG_FF_->Update(1.0,*CFG_FF,0.0);
+
+      if(CFG_F1S_!=Teuchos::null)
+        CFG_F1S_->Update(1.0,*CFG_F1S,0.0);
+
+      if(CFG_F2S_!=Teuchos::null)
+        CFG_F2S_->Update(1.0,*CFG_F2S,0.0);
+
+      if(distWall_!=Teuchos::null)
+        distWall_->Update(1.0,*distWall,0.0);
     }
 
     //Determine free-surface particles
@@ -703,8 +749,8 @@ void PARTICLE::TimInt::DetermineSPHDensAndAcc(Teuchos::RCP<Epetra_Vector> acc,
     if(colorField_!=Teuchos::null)
       colorField_->Update(1.0,*colorField,0.0);
 
-    if(colorFieldGrad_!=Teuchos::null)
-      colorFieldGrad_->Update(1.0,*colorFieldGrad,0.0);
+    if(CFG_!=Teuchos::null)
+      CFG_->Update(1.0,*CFG,0.0);
   }
 
   // determine also the new pressure and set state vector
@@ -728,35 +774,34 @@ void PARTICLE::TimInt::DetermineSPHDensAndAcc(Teuchos::RCP<Epetra_Vector> acc,
   interHandler_->Inter_pvp_acc(acc,accmod,acc_A,time);
 
   const INPAR::PARTICLE::SurfaceTensionType surfaceTensionType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::SurfaceTensionType>(DRT::Problem::Instance()->ParticleParams(),"SURFACE_TENSION_TYPE");
-  if(surfaceTensionType==INPAR::PARTICLE::ST_CONTI_ADAMI or surfaceTensionType==INPAR::PARTICLE::ST_CONTI_HU)
+  if(surfaceTensionType==INPAR::PARTICLE::ST_CONTI_ADAMI)
   {
     Teuchos::RCP<Epetra_Vector> kappa = Teuchos::rcp(new Epetra_Vector(*densityn_));
     kappa->PutScalar(0.0);
-    Teuchos::RCP<Epetra_Vector> accSF = Teuchos::rcp(new Epetra_Vector(*acc));
-    accSF->PutScalar(0.0);
+    Teuchos::RCP<Epetra_Vector> accST_FF = Teuchos::rcp(new Epetra_Vector(*acc));
+    accST_FF->PutScalar(0.0);
 
     if(freeSurfaceType==INPAR::PARTICLE::TwoPhase)
     {
       if(surfaceTensionType==INPAR::PARTICLE::ST_CONTI_ADAMI)
-        interHandler_->Inter_fspvp_Adami_1(accSF,kappa,time);
+      {
+        interHandler_->Inter_fspvp_Adami_1(accST_FF,kappa,time);
 
-      if(surfaceTensionType==INPAR::PARTICLE::ST_CONTI_HU)
-        dserror("This variant is not implemented for two-phase flow yet!");
+        bool contact_angle_var2=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"CONTACT_ANGLE_VAR2");
+        if(contact_angle_var2==true)
+          interHandler_->Inter_fspvp_Adami_ContactAngleVar2(accST_FF,time);
+      }
     }
     else
     {
       if(surfaceTensionType==INPAR::PARTICLE::ST_CONTI_ADAMI)
-        interHandler_->Inter_fspvp_Adami_2(accSF,kappa,time);
-
-      if(surfaceTensionType==INPAR::PARTICLE::ST_CONTI_HU)
-        interHandler_->Inter_fspvp_Hu(accSF,time);
+        interHandler_->Inter_fspvp_Adami_2(accST_FF,kappa,time);
     }
 
+    acc->Update(1.0,*accST_FF,1.0);
 
-    acc->Update(1.0,*accSF,1.0);
-
-    if(accSF_!=Teuchos::null)
-      accSF_->Update(1.0,*accSF,0.0);
+    if(accST_FF_!=Teuchos::null)
+      accST_FF_->Update(1.0,*accST_FF,0.0);
 
     if(curvature_!=Teuchos::null)
       curvature_->Update(1.0,*kappa,0.0);
@@ -851,14 +896,20 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
   if(colorField_!=Teuchos::null)
     UpdateStateVectorMap(colorField_,true);
 
-  if(colorFieldGrad_!=Teuchos::null)
-    UpdateStateVectorMap(colorFieldGrad_);
+  if(CFG_!=Teuchos::null)
+    UpdateStateVectorMap(CFG_);
 
-  if(smoothedColorFieldGrad_!=Teuchos::null)
-    UpdateStateVectorMap(smoothedColorFieldGrad_);
+  if(CFG_FF_!=Teuchos::null)
+    UpdateStateVectorMap(CFG_FF_);
 
-  if(accSF_!=Teuchos::null)
-    UpdateStateVectorMap(accSF_);
+  if(CFG_F1S_!=Teuchos::null)
+    UpdateStateVectorMap(CFG_F1S_);
+
+  if(CFG_F2S_!=Teuchos::null)
+    UpdateStateVectorMap(CFG_F2S_);
+
+  if(accST_FF_!=Teuchos::null)
+    UpdateStateVectorMap(accST_FF_);
 
   if(fspType_!=Teuchos::null)
     UpdateStateVectorMap(fspType_,true);
@@ -868,6 +919,9 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
 
   if(phaseColor_!=Teuchos::null)
     UpdateStateVectorMap(phaseColor_,true);
+
+  if(distWall_!=Teuchos::null)
+    UpdateStateVectorMap(distWall_,true);
 }
 
 /*----------------------------------------------------------------------*/
@@ -942,9 +996,6 @@ void PARTICLE::TimInt::ReadRestartState()
     reader.ReadVector(radius, "radius");
     radius_->UpdateSteps(*radius);
   }
-
-  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::SPH)
-    interHandler_->Density2Pressure(densityn_,pressure_);
 
   // read in particle collision relevant data
   if(collhandler_ != Teuchos::null)
@@ -1079,14 +1130,20 @@ void PARTICLE::TimInt::OutputRestart
   if(colorField_!=Teuchos::null)
     WriteVector("colorField", colorField_, false);
 
-  if(colorFieldGrad_!=Teuchos::null)
-    WriteVector("colorFieldGrad", colorFieldGrad_);
+  if(CFG_!=Teuchos::null)
+    WriteVector("CFG", CFG_);
 
-  if(smoothedColorFieldGrad_!=Teuchos::null)
-    WriteVector("smoothedColorFieldGrad", smoothedColorFieldGrad_);
+  if(CFG_FF_!=Teuchos::null)
+    WriteVector("CFG_FF", CFG_FF_);
 
-  if(accSF_!=Teuchos::null)
-    WriteVector("accSF", accSF_);
+  if(CFG_F1S_!=Teuchos::null)
+    WriteVector("CFG_F1S", CFG_F1S_);
+
+  if(CFG_F2S_!=Teuchos::null)
+    WriteVector("CFG_F2S", CFG_F2S_);
+
+  if(accST_FF_!=Teuchos::null)
+    WriteVector("accST_FF", accST_FF_);
 
   if(fspType_!=Teuchos::null)
     WriteVector("fspType", fspType_, false);
@@ -1096,6 +1153,9 @@ void PARTICLE::TimInt::OutputRestart
 
   if(phaseColor_!=Teuchos::null)
     WriteVector("phaseColor", phaseColor_, false);
+
+  if(distWall_!=Teuchos::null)
+    WriteVector("distWall", distWall_, false);
 
   if(variableradius_)
   {
@@ -1165,14 +1225,20 @@ void PARTICLE::TimInt::OutputState
   if(colorField_!=Teuchos::null)
     WriteVector("colorField", colorField_, false);
 
-  if(colorFieldGrad_!=Teuchos::null)
-    WriteVector("colorFieldGrad", colorFieldGrad_);
+  if(CFG_!=Teuchos::null)
+    WriteVector("CFG", CFG_);
 
-  if(smoothedColorFieldGrad_!=Teuchos::null)
-    WriteVector("smoothedColorFieldGrad", smoothedColorFieldGrad_);
+  if(CFG_FF_!=Teuchos::null)
+    WriteVector("CFG_FF", CFG_FF_);
 
-  if(accSF_!=Teuchos::null)
-    WriteVector("accSF", accSF_);
+  if(CFG_F1S_!=Teuchos::null)
+    WriteVector("CFG_F1S", CFG_F1S_);
+
+  if(CFG_F2S_!=Teuchos::null)
+    WriteVector("CFG_F2S", CFG_F2S_);
+
+  if(accST_FF_!=Teuchos::null)
+    WriteVector("accST_FF", accST_FF_);
 
   if(fspType_!=Teuchos::null)
     WriteVector("fspType", fspType_, false);
@@ -1182,6 +1248,9 @@ void PARTICLE::TimInt::OutputState
 
   if(phaseColor_!=Teuchos::null)
     WriteVector("phaseColor", phaseColor_, false);
+
+  if(distWall_!=Teuchos::null)
+    WriteVector("distWall", distWall_, false);
 
   WriteVector("modified_velocity", velmod_);
 
@@ -1616,8 +1685,6 @@ void PARTICLE::TimInt::UpdateStepState()
     UpdateStateVector(radius_, radiusn_);
     UpdateStateVector(density_, densityn_);
     UpdateStateVector(densityDot_, densityDotn_);
-
-    interHandler_->Density2Pressure(densityn_, pressure_);
 
     if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"TRANSPORT_VELOCITY")==true)
     {

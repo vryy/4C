@@ -26,13 +26,17 @@ namespace PARTICLE
     Acc,
     Radius,
     Density,
+    Density0,
     DensityDot,
     Mass,
     Pressure,
     ColorField,
-    ColorFieldGrad,
-    SmoothedColorFieldGrad,
-    DensitySum
+    CFG,
+    CFG_FF,
+    CFG_F1S,
+    CFG_F2S,
+    DensitySum,
+    DistWall
   };
 
   enum FreeSurfaceParticleType

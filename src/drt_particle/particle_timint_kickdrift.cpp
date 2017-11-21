@@ -123,6 +123,7 @@ int PARTICLE::TimIntKickDrift::IntegrateStep()
   DetermineSPHDensAndAcc(accn_,accmodn_,velmodn_,acc_A,timen_,dt);
 
   //Update of end-velocities v_{n+1}=v_{n+1/2}+dt/2*a_{n+1/2}
+  //TODO
   veln_->Update(dthalf, *accn_, 1.0);
 
   //Apply Dirichlet BCs at t_{n+1} for veln_ and accn_
@@ -133,7 +134,7 @@ int PARTICLE::TimIntKickDrift::IntegrateStep()
 
   double maxvel=0.0;
   veln_->NormInf(&maxvel);
-  //std::cout << std::setprecision(16) <<"maxvel: " << maxvel << std::endl;
+  std::cout << std::setprecision(16) <<"maxvel: " << maxvel << std::endl;
 
   return 0;
 }
@@ -150,8 +151,6 @@ void PARTICLE::TimIntKickDrift::ReadRestartState()
   // read densityDot
   reader.ReadVector(densityDotn_, "densityDot");
   densityDot_->UpdateSteps(*densityDotn_);
-
-  interHandler_->Density2Pressure(densityn_,pressure_);
 
   // read radius
   reader.ReadVector(radiusn_, "radius");
@@ -197,7 +196,6 @@ void PARTICLE::TimIntKickDrift::GetExtremeValues()
   #ifdef PARTICLE_MINMAXOUTPUT_EVRY
   if((discret_->Comm().MyPID()==0) and (stepn_ % 100==0))
   {
-    const double c = particle_algorithm_->ExtParticleMat()->SpeedOfSoundL();
     std::cout << "allprocalltime_min_pvp_dist: " << allprocalltime_min_pvp_dist << std::endl;
     std::cout << "allprocalltime_min_pvw_dist: " << allprocalltime_min_pvw_dist << std::endl;
     std::cout << "maximal particle radius: " << maxradius << std::endl;

@@ -32,7 +32,7 @@ WEIGHT_FUNCTION_DIM             WF_1D // Spatial dimension of problem entering w
 DENSITY_SUMMATION               no // Density via summation formula or via time integration?
 CONSISTENT_PROBLEM_VOLUME       0.2 // =-1.0(default): particle mass via sphere volume, >0: particle mass via DENSITY and problem volume
 WALL_INTERACTION_TYPE           NoWallInteraction //InitParticle (default),Mirror,Custom,BoundarParticle_NoSlip,BoundarParticle_FreeSlip,None
-VISCOUS_DAMPING                 0.01
+VISCOUS_DAMPING                 5
 EXTENDED_GHOSTING               BdryParticleGhosting
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK

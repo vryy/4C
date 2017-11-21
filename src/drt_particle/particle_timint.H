@@ -597,6 +597,8 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> radiusn_;
     //! Densities \f${\rho}_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> densityn_;
+    //! Initial density (only required if not prescribed via material law)
+    Teuchos::RCP<Epetra_Vector> density0_;
     //! Time derivative of densities \f$\dot{\rho}_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> densityDotn_;
 
@@ -620,18 +622,24 @@ namespace PARTICLE
 
     //! color field
     Teuchos::RCP<Epetra_Vector> colorField_;
-    //! gradient of color field
-    Teuchos::RCP<Epetra_Vector> colorFieldGrad_;
-    //! smoothed gradient of color field
-    Teuchos::RCP<Epetra_Vector> smoothedColorFieldGrad_;
-    //! acceleration contribution of surface tension
-    Teuchos::RCP<Epetra_Vector> accSF_;
+    //! gradient of color field (according to Morris et al.)
+    Teuchos::RCP<Epetra_Vector> CFG_;
+    //! smoothed gradient of color field for interaction fluid1-fluid2
+    Teuchos::RCP<Epetra_Vector> CFG_FF_;
+    //! smoothed gradient of color field for interaction fluid1-solid
+    Teuchos::RCP<Epetra_Vector> CFG_F1S_;
+    //! smoothed gradient of color field for interaction fluid2-solid
+    Teuchos::RCP<Epetra_Vector> CFG_F2S_;
+    //! acceleration contribution of surface tension for interaction fluid1-fluid2
+    Teuchos::RCP<Epetra_Vector> accST_FF_;
     //! free-surface particle type
     Teuchos::RCP<Epetra_Vector> fspType_;
     //! curvature of free surface
     Teuchos::RCP<Epetra_Vector> curvature_;
     //! discrete particle phase color
     Teuchos::RCP<Epetra_Vector> phaseColor_;
+    //! discrete particle phase color
+    Teuchos::RCP<Epetra_Vector> distWall_;
 
     /// global number of boundary particles over all processors
     int global_num_boundaryparticles_;

@@ -32,7 +32,7 @@ DENSITY_SUMMATION               no // Density via summation formula or via time 
 FREE_SURFACE_TYPE               DensityIntegration
 CONSISTENT_PROBLEM_VOLUME       4.9 // =-1.0(default): particle mass via sphere volume, >0: particle mass via DENSITY and problem volume
 WALL_INTERACTION_TYPE           BoundarParticle_NoSlip //InitParticle (default),Mirror,Custom,BoundarParticle_NoSlip,BoundarParticle_FreeSlip,None
-VISCOUS_DAMPING                 0.01
+VISCOUS_DAMPING                 0.1
 CALC_ACC_VAR2                   yes
 EXTENDED_GHOSTING               BdryParticleGhosting
 --------------------------------------------------------------------SOLVER 1

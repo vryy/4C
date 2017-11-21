@@ -29,8 +29,8 @@
 //Usefull defines (tolerances and constants)
 #define PARTICLE_TENSILESAFETYFAC 0.0000001         //Factor prescribing the minimal particle distance as compared to the average initial particle distance (tensile instabilites)
 #define PARTICLE_COLORLIMIT 0.9                     //Color field limit value to identify free-surface particle
-#define PARTICLE_COLORGRADLIMIT 0.1               //Color gradient limit for the evaluation of surface tension forces
-#define PARTICLE_SFEXP 5
+#define PARTICLE_COLORGRADLIMIT 0.1                 //Color gradient limit for the evaluation of surface tension forces
+#define PARTICLE_SFEXP 5                            //Additional weighting of surface tension forces (continuum model according to Adami et al. 2010) for free-surface flow
 #define PARTICLE_P0ZHANG 3.0                        //Factor between h and \tilde{h} of smoothing kernel applied in background pressure term for free-surface flow according to Zhang et al. 2017
 
 #define PARTICLE_REINITSHIFT 2                      //Define shifting criterion between free-surface and interior particles in case of density reinitialization (default: 2)
@@ -38,11 +38,16 @@
                                                     //2: Apply shifting criterion for free-surface particles according to colorfield<1 (see Zhang et al. 2017)
                                                     //3: Apply reinitialization everywhere
 
+#define PARTICLE_ST_TRIPPLEPOINTSMOOTHFAC 2.0          //Smoothing factor for prescription of normal vector via static contact angle
+#define PARTICLE_ST_BOUNDARYSCALEFAC 1.0              //Increase the surface tension forces in the triple zone by scaling factor 1.0+PARTICLE_ST_BOUNDARYSCALEFAC
+#define PARTICLE_ST_CFGEXTRAPLATION                   //Extrapolate direction of CFG vector
+//#define PARTICLE_ONLYPHASE1ACC                      //Apply surface tension forces only to the phase with higher density
+
 //Usefull defines (additional functionalities and debugging tools)
 //#define PARTICLE_ONLYLAPLACETERM                  //Apply only Laplace term in viscous force calculation according to variant 1 (this is sufficient for incompressible flows)
 //#define PARTICLE_BOUNDARYDENSITY                  //Determine the density of boundary particles required for colorfield and density reinitialization on the basis of pressure extrapolation (similar to Adami et al. 2012)
 //#define PARTICLE_MINMAXOUTPUT_EVRY 100              //Ouput of minimal/maximal pressures, particle distances etc. every PARTICLE_MINMAXOUTPUT_EVRY time steps
-#define PARTICLE_WRITECOLORFIELD                    //Output of colorField_ and fspType_ (free-surface particle type) for paraview
+//#define PARTICLE_WRITECOLORFIELD                    //Output of colorField_ and fspType_ (free-surface particle type) for paraview
 
 /*----------------------------------------------------------------------*
  | forward declarations                                     ghamm 09/12 |

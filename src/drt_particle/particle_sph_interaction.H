@@ -90,7 +90,8 @@ namespace PARTICLE
         Teuchos::RCP<const Epetra_Vector> disn,
         Teuchos::RCP<const Epetra_Vector> veln,
         Teuchos::RCP<const Epetra_Vector> radiusn,
-        Teuchos::RCP<const Epetra_Vector> mass);
+        Teuchos::RCP<const Epetra_Vector> mass,
+        Teuchos::RCP<const Epetra_Vector> density0);
 
     //! set up the ColParticles
     virtual void InitColParticles();
@@ -99,7 +100,9 @@ namespace PARTICLE
     void InitDensityAndMass(
         const double particle_volume,
         const Teuchos::RCP<Epetra_Vector> density,
-        const Teuchos::RCP<Epetra_Vector> mass);
+        const Teuchos::RCP<Epetra_Vector> mass,
+        const Teuchos::RCP<Epetra_Vector> disn,
+        const Teuchos::RCP<Epetra_Vector> radiusn);
 
     //! accelerations, modified pressures and velocities for boundary particles
     virtual void InitBoundaryData(
@@ -152,21 +155,18 @@ namespace PARTICLE
         const Teuchos::RCP<Epetra_Vector> curvature,
         double time);
 
-    /// compute surface tension interaction according to continuum model by Adami et al. 2010 (modified version)
-    virtual void Inter_fspvp_Adami_3(
-        const Teuchos::RCP<Epetra_Vector> accn,
-        const Teuchos::RCP<Epetra_Vector> curvature,
-        double time);
-
-    /// compute surface tension interaction according to continuum model by Hu et al. 2006
-    virtual void Inter_fspvp_Hu(
+    /// alternative model to enforce the static contact angle
+    void Inter_fspvp_Adami_ContactAngleVar2(
         const Teuchos::RCP<Epetra_Vector> accn,
         double time);
 
-    /// compute surface tension interaction according to continuum model by Hu et al. 2006 (modified version)
-    virtual void Inter_fspvp_Hu_b(
-        const Teuchos::RCP<Epetra_Vector> accn,
-        double time);
+    /// Get the correct surface tension coefficient
+    double GetSurfaceTension(PARTICLE::StateVectorType interaction_type);
+
+    /// Get the correct color field gradient
+    LINALG::Matrix<3,1> GetCFG(
+        const ParticleSPH& particle,
+        const PARTICLE::StateVectorType interaction_type);
 
     ///Computes Gradient of divergence operator for vector v - pvp
     virtual void Inter_pvp_Laplace_x(
@@ -202,8 +202,20 @@ namespace PARTICLE
         const Teuchos::RCP<Epetra_Vector> unity_vec_grad = Teuchos::null,
         const Teuchos::RCP<Epetra_Vector> phaseColor = Teuchos::null);
 
+    /// Prescribe normal vector of particles close to the triple point
+    void SetTriplePointNormal(
+        const Teuchos::RCP<Epetra_Vector> CFG_F2S);
+
+    /// compute smoothed color field gradients according to Hu et al. 2006
     void MF_SmoothedCFG(
-        const Teuchos::RCP<Epetra_Vector> unity_vec_grad);
+        const Teuchos::RCP<Epetra_Vector> CFG_FF,
+        const Teuchos::RCP<Epetra_Vector> CFG_F1S,
+        const Teuchos::RCP<Epetra_Vector> CFG_F2S,
+        const Teuchos::RCP<Epetra_Vector> distWall);
+
+    /// extrapolate CFG to triple point particles
+    void ExtrapolateTriplePointCFG(
+        const Teuchos::RCP<Epetra_Vector> CFG_FF);
 
     /// re-initialize density in case of free-surface flow - mesh free sense
     virtual void MF_ReInitDensity(
@@ -244,7 +256,7 @@ namespace PARTICLE
 
     //! set the neighbours - particles
     virtual void AddNewNeighbours_p(
-        const ParticleSPH& particle_i,
+        ParticleSPH& particle_i,
         const std::list<DRT::Node*>& neighboursLinf_p);
 
     //! set the neighbours - boundary particles
