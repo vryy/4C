@@ -19,6 +19,7 @@
 #include "so3_scatra_eletypes.H"
 
 #include "../drt_fem_general/drt_utils_gausspoints.H"
+#include "../drt_fem_general/drt_utils_integration.H"
 
 #include "../drt_inpar/inpar_scatra.H"
 
@@ -84,12 +85,14 @@ public:
 
   //! number of element nodes (
   static const int numnod_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-
   //! number of space dimensions
   static const int numdim_ = 3;
-
-  //!total gauss points per element
-  int numgpt_;
+  //! number of dofs per node
+  static const int numdofpernode_ = 3;
+  //! total dofs per element
+  static const int numdofperelement_ = numdofpernode_ * numnod_;
+  //! number of strains/stresses
+  static const int numstr_ = 6;
 
   //! @name Acess methods
 
@@ -109,7 +112,7 @@ public:
   top of this file.
   */
   //virtual int UniqueParObjectId() const = 0 ;
-  virtual int UniqueParObjectId() const
+  int UniqueParObjectId() const
   {
     switch(distype)
     {
@@ -159,7 +162,7 @@ public:
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
-  virtual void Pack(DRT::PackBuffer& data) const;
+  void Pack(DRT::PackBuffer& data) const;
 
   /*!
   \brief Unpack data from a char vector into this class
@@ -167,7 +170,7 @@ public:
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
-  virtual void Unpack(const std::vector<char>& data);
+  void Unpack(const std::vector<char>& data);
 
   //@}
 
@@ -178,7 +181,7 @@ public:
   */
   void Print(std::ostream& os) const ;
 
-  virtual DRT::ElementType & ElementType() const
+  DRT::ElementType & ElementType() const
   {
     switch(distype)
     {
@@ -237,6 +240,9 @@ public:
                    const std::string& eledistype,
                    DRT::INPUT::LineDefinition* linedef)  ;
 
+  //! initialize the elements
+  void InitElement();
+
   //@}
 
   //! @name Evaluation
@@ -277,6 +283,18 @@ public:
 
   //@}
 
+  /// Set element material
+  /*!
+    Material numbers are read from the input file. The element stores
+    a corresponding material object. These material objects can be
+    anything from very simple (just a little calculation) to highly
+    sophisticated with history data. The material is packed and
+    unpacked along with its element.
+
+    \param matnum : material number from input file
+   */
+  void SetMaterial(int matnum);
+
   /// @name params
   /// return SCATRA::ImplType
   const INPAR::SCATRA::ImplType& ImplType() const {return impltype_;};
@@ -286,23 +304,53 @@ private:
   //! scalar transport implementation type (physics)
   INPAR::SCATRA::ImplType impltype_;
 
+  //! @name Evaluation
+  //! Calculate mechanical scalar stiffness term needed for monolithic SSI K_dS
+  void nln_kdS_ssi
+  (
+    DRT::Element::LocationArray&                la,               //!< (i): location array
+    std::vector<double>&                        disp,             //!< (i): current displacement
+    LINALG::Matrix<numdofperelement_,numnod_>*  stiffmatrix_kdS,  //!< (o): mechanical scalar stiffness term at current gp
+    Teuchos::ParameterList&                     params            //!< parameter list
+  );
+
+  //! calculate nonlinear B-operator (6x24)
+  void CalculateBop
+  (
+    LINALG::Matrix<numstr_,numdofperelement_>*  bop,     //!< (o): nonlinear B-operator
+    const LINALG::Matrix<numdim_,numdim_>*      defgrd,  //!< (i): deformation gradient
+    const LINALG::Matrix<numdim_,numnod_>*      N_XYZ    //!< (i): (material) derivative of shape functions
+  ) const;
+
+  //@}
+
 protected:
 
   //! don't want = operator
   So3_Scatra& operator = (const So3_Scatra& old);
 
 private:
+  // action type recognized by So3_Scatra elements
+  enum ActionType
+  {
+    none,
+    calc_struct_stiffscalar     //!< calculate coupling term k_dS for monolithic SSI
+  };
 
-  DRT::UTILS::GaussIntegration intpoints_;
+  // integration points
+  const DRT::UTILS::IntegrationPoints3D intpoints_;
+  //!total gauss points per element
+  const int numgpt_;
+  //! vector of coordinates of current integration point in reference coordinates
+  std::vector<LINALG::Matrix<numdim_,1> >  xsi_;
 
-  //! vector of inverses of the jacobian in material frame
-  //vector<LINALG::Matrix<numdim_,numdim_> >                      invJ_;
-  //! determinant of Jacobian in material frame
-  //vector<double>                                                        detJ_;
+  //! vector of inverses of the jacobian (J^{-1} = \frac{\mathrm{d} \vec{r}} {\mathrm{d} \vec{X} }) at each gauss point
+  std::vector<LINALG::Matrix<numdim_,numdim_> >  invJ_;
+  //! vector of determinants of the jacobian (\det[ \frac{\mathrm{d} \vec{X}} {\mathrm{d} \vec{r}} ]) at each gauss point
+  std::vector<double>  detJ_;
+
   //! container containing all kind of solid3 thisandthat
   //DRT::Container                                                        data_;
-  //! vector of coordinates of current integration point in reference coordinates
-  //std::vector<LINALG::Matrix<numdim_,1> > xsi_;
 
   DRT::Node** Nodes();
 

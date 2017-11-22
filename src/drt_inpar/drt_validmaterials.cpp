@@ -2209,6 +2209,22 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
+  /*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
+  // simple isotropic growth law, scalar-dependent volumetric growth, constant material density
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_GrowthIso",
+                                            "scalar dependent isotropic growth law",
+                                            INPAR::MAT::m_growth_iso));
+
+    AddNamedInt(m,"SCALAR1","number of growth inducing scalar");
+    AddNamedReal(m,"SCALAR1_GrowthFac","isotropic growth factor due to scalar 1");
+    AddNamedReal(m,"SCALAR1_RefConc","reference concentration of scalar 1 causing no strains");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/

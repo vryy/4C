@@ -3878,7 +3878,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
 
   Teuchos::RCP<const Epetra_Vector>      glambda = discretization.GetState("lambda");
 
-  if (velnp == Teuchos::null)
+  if (glambda == Teuchos::null)
     dserror("Cannot get state vector 'lambda'");
 
   std::vector<double> mylambda(lm.size());

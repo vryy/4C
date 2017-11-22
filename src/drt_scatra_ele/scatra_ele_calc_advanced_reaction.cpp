@@ -29,6 +29,7 @@
 #include "../drt_mat/scatra_reaction_mat.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/matlist_reactions.H"
+#include "../drt_mat/so3_material.H"
 #include "../drt_mat/growth_law.H"
 
 /*----------------------------------------------------------------------*

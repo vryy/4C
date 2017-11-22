@@ -20,6 +20,7 @@ wrt. \f$\frac{\partial \vartheta}{\partial C}\f$.
 /*----------------------------------------------------------------------*/
 
 
+#include "growth.H"
 #include "growth_law.H"
 #include "matpar_material.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -1854,4 +1855,160 @@ double MAT::GrowthLawConst::DensityScale(const double theta)
 double MAT::GrowthLawConst::DensityDerivScale(const double theta)
 {
   return 3.0 * theta * theta;
+}
+
+
+/*----------------------------------------------------------------------*
+ | constructor (public)                                   schmidt 10/17 |
+ *----------------------------------------------------------------------*/
+MAT::PAR::GrowthLawIso::GrowthLawIso(
+  Teuchos::RCP<MAT::PAR::Material> matdata
+  )
+: Parameter(matdata),
+  Sc1_(matdata->GetInt("SCALAR1")),
+  Sc1growthfac_(matdata->GetDouble("SCALAR1_GrowthFac")),
+  Sc1refconc_(matdata->GetDouble("SCALAR1_RefConc"))
+{
+  // safety checks
+  if (Sc1_ < 1)
+    dserror("At least one scalar field must induce growth");
+  if (Sc1growthfac_ < 0.0)
+    dserror("The influence of scalar field SCALAR1 to growth can't be negativ");
+  if (Sc1refconc_ < 0.0)
+    dserror("The reference concentration of SCALAR1 can't be negative");
+
+  // check correct masslin type
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  if (DRT::INPUT::IntegralValue<INPAR::STR::MassLin>(sdyn,"MASSLIN") != INPAR::STR::ml_none)
+    dserror("If you use the 'GrowthLawIso' please set 'MASSLIN' in the STRUCTURAL DYNAMIC Section to 'None',"
+        " or feel free to implement other possibility!");
+}
+
+
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<MAT::Material> MAT::PAR::GrowthLawIso::CreateMaterial()
+{
+  return Teuchos::null;
+}
+
+
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<MAT::GrowthLaw> MAT::PAR::GrowthLawIso::CreateGrowthLaw()
+{
+
+  return Teuchos::rcp(new MAT::GrowthLawIso(this));
+}
+
+
+/*----------------------------------------------------------------------------*/
+MAT::GrowthLawIso::GrowthLawIso()
+  : GrowthLawStatic(NULL)
+{
+}
+
+
+/*----------------------------------------------------------------------------*/
+MAT::GrowthLawIso::GrowthLawIso(MAT::PAR::GrowthLawIso* params)
+  : GrowthLawStatic(params)
+{
+}
+
+
+/*----------------------------------------------------------------------*
+ | evaluate growth law isotropic (public)                 schmidt 10/17 |
+ *----------------------------------------------------------------------*/
+void MAT::GrowthLawIso::Evaluate(double* theta,
+                                const double& thetaold,
+                                LINALG::Matrix<6,1>* dthetadC,
+                                MAT::Growth& matgrowth,
+                                const LINALG::Matrix<3,3>* defgrd,
+                                const LINALG::Matrix<6,1>* glstrain,
+                                const LINALG::Matrix<3,1>& refdir,
+                                const std::vector<LINALG::Matrix<3,1> >& curdir,
+                                const std::vector<LINALG::Matrix<3,3> >& histdefgrd,
+                                const double& consttrig,
+                                Teuchos::ParameterList& params,
+                                const int eleGID)
+{
+
+  // get Gauss point number
+  const int gp = params.get<int>("gp",-1);
+  if (gp == -1)
+    dserror("No Gauss point number provided in material.");
+  //get pointer to vector containing the scalar values at the Gauss points
+  Teuchos::RCP<std::vector<std::vector<double> > > concentrations=
+      params.get< Teuchos::RCP<std::vector<std::vector<double> > > >("gp_conc",Teuchos::rcp(new std::vector<std::vector<double> >(30,std::vector<double>(20,0.0))));
+
+  // get growth law parameters
+  const int Sc1 = Parameter()->Sc1_;
+  const double Sc1growthfac = Parameter()->Sc1growthfac_;
+  const double Sc1refconc = Parameter()->Sc1refconc_;
+
+  const double deltagrowth = Sc1growthfac*(concentrations->at(gp).at(Sc1-1) - Sc1refconc);
+
+  *theta = pow(1.0 + deltagrowth , (1.0 / 3.0) );
+
+  // no derivative w.r.t. cauchy-green tensor
+  dthetadC->PutScalar(0.0);
+}
+
+
+/*----------------------------------------------------------------------*
+ | calculate growth part of deformation gradient (pub.)   schmidt 10/17 |
+ *----------------------------------------------------------------------*/
+void MAT::GrowthLawIso::CalcFg
+(
+    const double& theta,
+    const double& thetaold,
+    const int& gp,
+    const LINALG::Matrix<3,3>* defgrd,
+    const LINALG::Matrix<3,1>& refdir,
+    const std::vector<LINALG::Matrix<3,1> >& curdir,
+    const std::vector<LINALG::Matrix<3,3> >& histdefgrd,
+    LINALG::Matrix<3,3>& F_g
+)
+{
+  for (int i = 0; i < 3; ++i)
+    F_g(i,i) = theta;
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | add parameter to parameterlist (private)               schmidt 10/17 |
+ *----------------------------------------------------------------------*/
+void MAT::GrowthLawIso::AddParamsToParameterList(
+          Teuchos::ParameterList& params,
+          const double& theta)
+{
+  // calculate dtheta/dc
+  // theta = (1 + Sc1growthfac*(c-c_0))^(1/3) ->
+  // dtheta/dc = Sc1growthfac/(3 * (1 + Sc1growthfac*(c-c_0))^(2/3)) = Sc1growthfac/(3 * theta^2)
+
+  // get needed parameter
+  const double Sc1growthfac = Parameter()->Sc1growthfac_;
+  const double dtheta_dc = Sc1growthfac/(3.0*theta*theta);
+
+  // we need to add theta and dtheta/dc (c = concentration of scalar) here
+  params.set< double >("theta",theta);
+  params.set< double >("dtheta_dc",dtheta_dc);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------------*/
+double MAT::GrowthLawIso::DensityScale(const double theta)
+{
+  // density in material configuration is constant
+  return 1.0;
+}
+
+
+/*----------------------------------------------------------------------------*/
+double MAT::GrowthLawIso::DensityDerivScale(const double theta)
+{
+  // derivative of density in material configuration vanishes
+  return 0.0;
 }

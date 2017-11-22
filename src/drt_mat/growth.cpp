@@ -21,6 +21,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_lib/drt_utils_factory.H"
+#include "../drt_inpar/inpar_ssi.H"
 
 
 /*----------------------------------------------------------------------------*/
@@ -120,10 +121,36 @@ MAT::PAR::Growth::Growth(
     growthlaw_ = params->CreateGrowthLaw();
     break;
   }
+  case INPAR::MAT::m_growth_iso:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::GrowthLawIso(curmat));
+    MAT::PAR::GrowthLawIso* params = static_cast<MAT::PAR::GrowthLawIso*>(curmat->Parameter());
+    growthlaw_ = params->CreateGrowthLaw();
+    break;
+  }
   default:
     dserror("unknown material type %d", curmat->Type());
     break;
   }
+
+  // safety checks
+  // get the scatra structure control parameter list
+  const Teuchos::ParameterList& ssicontrol = DRT::Problem::Instance()->SSIControlParams();
+  // monolithic ssi coupling algorithm only implemented for MAT_GrowthIso so far
+  if ((DRT::INPUT::IntegralValue<INPAR::SSI::SolutionSchemeOverFields>(ssicontrol,"COUPALGO") == INPAR::SSI::ssi_Monolithic) and
+      (curmat->Type() != INPAR::MAT::m_growth_iso))
+    dserror("When you use the the 'COUPALGO' 'ssi_Monolithic' from the 'SSI CONTROL' section,"
+        " you need to use the material 'MAT_GrowthIso'! If you want to use another material"
+        " feel free to implement it! ;-)");
+
+  // safety check to ensure that growth is possible throughout the whole simulation time if growth law 'MAT_GrowthIso' is chosen
+  if ((curmat->Type() == INPAR::MAT::m_growth_iso) and ((starttime_ >= 0.0) or (endtime_ >= 0.0)))
+    dserror("Since growth is possible throughout the whole simulation time for the growth law 'MAT_GrowthIso' you should set"
+        " the 'STARTTIME' and 'ENDTIME' to a negative value to ensure this!");
+
+  if(starttime_ > endtime_)
+    dserror("WTF! It is not reasonable to have a starttime that is larger than the endtime!");
 }
 
 /*----------------------------------------------------------------------------*/
@@ -142,6 +169,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Growth::CreateMaterial()
   case INPAR::MAT::m_growth_ac_radial:
   case INPAR::MAT::m_growth_ac_radial_refconc:
   case INPAR::MAT::m_growth_const:
+  case INPAR::MAT::m_growth_iso:
     mat = Teuchos::rcp(new MAT::GrowthVolumetric(this));
     break;
   default:
@@ -396,6 +424,13 @@ double MAT::Growth::Density(int gp) const
 
 }
 
+/*----------------------------------------------------------------------*
+ | returns whether material density is constant (public)  schmidt 11/17 |
+ *----------------------------------------------------------------------*/
+bool MAT::Growth::VaryingDensity() const
+{
+  return Parameter()->growthlaw_->VaryingDensity();
+}
 
 
 /*----------------------------------------------------------------------------*/
@@ -535,11 +570,8 @@ void MAT::GrowthVolumetric::Evaluate
   const double starttime = growth_params->starttime_;
   // when stress output is calculated the final parameters already exist
   // we should not do another local Newton iteration, which uses eventually a wrong thetaold
-  if (output)
-    time = endtime + 1.0;
-
-  if (time > starttime + eps && time <= endtime + eps)
-  {
+  if ((((time > starttime + eps) and (time <= endtime + eps)) or ((starttime < 0.0) and (endtime < 0.0))) and !output)
+  { // growth is allowed in here
 
     // not nice but currently the only way we may do that....
     switch (Parameter()->growthlaw_->MaterialType())
@@ -651,13 +683,14 @@ void MAT::GrowthVolumetric::Evaluate
 
     }// END stuff needed for const growth law in combination with parameter estimation
 
-
     // store theta
     theta_->at(gp) = theta;
 
-
+    // if action is "calc_struct_stiffscalar" additional values have to be added to the parameter list to be able to evaluate the off diagonal block
+    if (action == "calc_struct_stiffscalar")
+      Parameter()->growthlaw_->AddParamsToParameterList(params,theta);
   }
-  else if (time > endtime + eps)
+  else if ((time > endtime + eps) or output)
   { // turn off growth or calculate stresses for output
     double theta = theta_->at(gp);
 
@@ -759,7 +792,7 @@ void MAT::GrowthVolumetric::EvaluateNonLinMass( const LINALG::Matrix<3, 3>* defg
   const double endtime = Parameter()->endtime_;
   const double time = params.get<double>("total time", -1.0);
 
-  if (time > starttime + eps and time <= endtime + eps)
+  if (((time > starttime + eps) and (time <= endtime + eps)) or ((starttime < 0.0) and (endtime < 0.0)))
   {
     // get gauss point number
     const int gp = params.get<int>("gp", -1);

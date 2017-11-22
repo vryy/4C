@@ -75,9 +75,6 @@ namespace SSI
       //! return global map of degrees of freedom
       const Teuchos::RCP<const Epetra_Map>& DofRowMap() const;
 
-      //! pass structural degrees of freedom to scalar transport discretization and vice versa
-      void ExchangeStateVectors();
-
       //! check termination criterion for Newton-Raphson iteration
       bool ExitNewtonRaphson();
 

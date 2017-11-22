@@ -14,21 +14,18 @@
 *----------------------------------------------------------------------*/
 
 #include "so3_scatra.H"
-#include "so_base.H"
 
 #include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_dserror.H"
-
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_lib/drt_element_integration_select.H"
+#include "../drt_mat/so3_material.H"
 
 /*----------------------------------------------------------------------*
  |  preevaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(Teuchos::ParameterList& params,
-                                        DRT::Discretization&      discretization,
-                                        DRT::Element::LocationArray& la)
+void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(
+          Teuchos::ParameterList&       params,
+          DRT::Discretization&          discretization,
+          DRT::Element::LocationArray&  la)
 {
 
   if(la.Size()>1)
@@ -41,125 +38,8 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(Teuchos::ParameterL
 
     if (discretization.HasState(1,"temperature")) //if concentrations were set
     {
-      //get reference coordinated of current element
-      DRT::Node** nodes = Nodes();
-      LINALG::Matrix<numnod_,numdim_> xrefe;  // reference coord. of element
-
-      for (int k=0; k<numnod_; ++k)
-      {
-        const double* x = nodes[k]->X();
-        xrefe(k,0) = x[0];
-        xrefe(k,1) = x[1];
-        xrefe(k,2) = x[2];
-      }
-
-      std::vector<LINALG::Matrix<numnod_,1> > shapefunct(numgpt_);
-      std::vector<LINALG::Matrix<numdim_,numnod_> > derivs(numgpt_);
-      std::vector<double> detJref(numgpt_);
-
       if (not (distype == DRT::Element::hex8 or distype == DRT::Element::hex27 or distype == DRT::Element::tet4))
         dserror("The Solidscatra elements are only tested for the Hex8, Hex27 and Tet4 case. The following should work, but keep your eyes open (especially with the order of the Gauß points");
-
-      if (distype == DRT::Element::hex8)
-      {
-        // (r,s,t) gp-locations of fully integrated linear 8-node Hex
-        const double gploc    = 1.0/sqrt(3.0);    // gp sampling point value for linear fct
-        const double r[NUMGPT_SOH8] = {-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc,-gploc};
-        const double s[NUMGPT_SOH8] = {-gploc,-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc};
-        const double t[NUMGPT_SOH8] = {-gploc,-gploc,-gploc,-gploc, gploc, gploc, gploc, gploc};
-        // fill up nodal f at each gp
-        for (int igp=0; igp<numgpt_; ++igp)
-        {
-          (shapefunct[igp])(0) = (1.0-r[igp])*(1.0-s[igp])*(1.0-t[igp])*0.125;
-          (shapefunct[igp])(1) = (1.0+r[igp])*(1.0-s[igp])*(1.0-t[igp])*0.125;
-          (shapefunct[igp])(2) = (1.0+r[igp])*(1.0+s[igp])*(1.0-t[igp])*0.125;
-          (shapefunct[igp])(3) = (1.0-r[igp])*(1.0+s[igp])*(1.0-t[igp])*0.125;
-          (shapefunct[igp])(4) = (1.0-r[igp])*(1.0-s[igp])*(1.0+t[igp])*0.125;
-          (shapefunct[igp])(5) = (1.0+r[igp])*(1.0-s[igp])*(1.0+t[igp])*0.125;
-          (shapefunct[igp])(6) = (1.0+r[igp])*(1.0+s[igp])*(1.0+t[igp])*0.125;
-          (shapefunct[igp])(7) = (1.0-r[igp])*(1.0+s[igp])*(1.0+t[igp])*0.125;
-
-          // df wrt to r for each node(0..7) at each gp [igp]
-          (derivs[igp])(0,0) = -(1.0-s[igp])*(1.0-t[igp])*0.125;
-          (derivs[igp])(0,1) =  (1.0-s[igp])*(1.0-t[igp])*0.125;
-          (derivs[igp])(0,2) =  (1.0+s[igp])*(1.0-t[igp])*0.125;
-          (derivs[igp])(0,3) = -(1.0+s[igp])*(1.0-t[igp])*0.125;
-          (derivs[igp])(0,4) = -(1.0-s[igp])*(1.0+t[igp])*0.125;
-          (derivs[igp])(0,5) =  (1.0-s[igp])*(1.0+t[igp])*0.125;
-          (derivs[igp])(0,6) =  (1.0+s[igp])*(1.0+t[igp])*0.125;
-          (derivs[igp])(0,7) = -(1.0+s[igp])*(1.0+t[igp])*0.125;
-
-          // df wrt to s for each node(0..7) at each gp [igp]
-          (derivs[igp])(1,0) = -(1.0-r[igp])*(1.0-t[igp])*0.125;
-          (derivs[igp])(1,1) = -(1.0+r[igp])*(1.0-t[igp])*0.125;
-          (derivs[igp])(1,2) =  (1.0+r[igp])*(1.0-t[igp])*0.125;
-          (derivs[igp])(1,3) =  (1.0-r[igp])*(1.0-t[igp])*0.125;
-          (derivs[igp])(1,4) = -(1.0-r[igp])*(1.0+t[igp])*0.125;
-          (derivs[igp])(1,5) = -(1.0+r[igp])*(1.0+t[igp])*0.125;
-          (derivs[igp])(1,6) =  (1.0+r[igp])*(1.0+t[igp])*0.125;
-          (derivs[igp])(1,7) =  (1.0-r[igp])*(1.0+t[igp])*0.125;
-
-          // df wrt to t for each node(0..7) at each gp [igp]
-          (derivs[igp])(2,0) = -(1.0-r[igp])*(1.0-s[igp])*0.125;
-          (derivs[igp])(2,1) = -(1.0+r[igp])*(1.0-s[igp])*0.125;
-          (derivs[igp])(2,2) = -(1.0+r[igp])*(1.0+s[igp])*0.125;
-          (derivs[igp])(2,3) = -(1.0-r[igp])*(1.0+s[igp])*0.125;
-          (derivs[igp])(2,4) =  (1.0-r[igp])*(1.0-s[igp])*0.125;
-          (derivs[igp])(2,5) =  (1.0+r[igp])*(1.0-s[igp])*0.125;
-          (derivs[igp])(2,6) =  (1.0+r[igp])*(1.0+s[igp])*0.125;
-          (derivs[igp])(2,7) =  (1.0-r[igp])*(1.0+s[igp])*0.125;
-
-          LINALG::Matrix<numdim_,numdim_> invJ;
-          invJ.Multiply(derivs[igp],xrefe);
-          detJref[igp] = invJ.Determinant()*1.0;
-        }
-      }
-      else if (distype == DRT::Element::tet4)
-      {
-        //TODO: there is something wrong with the Tet4 case. (e.g. numgp_ is 5 and standard gausspoint rule is intrule_tet_4point)
-        const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_tet_1point;//
-        const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
-
-        // There is only one gausspoint, so the loop (and the vector) is not really needed.
-        //NOTE: numgp_ is not correct for this case
-        for (int igp = 0; igp < NUMGPT_SOTET4; ++igp)
-        {
-          const double r = intpoints.qxg[igp][0];
-          const double s = intpoints.qxg[igp][1];
-          const double t = intpoints.qxg[igp][2];
-
-          //get shape functions evaluated at current gauß point
-          DRT::UTILS::shape_function_3D(shapefunct[igp], r, s, t, distype);
-
-          //get first derivative of shape functions evaluated at current gauß point
-          DRT::UTILS::shape_function_3D_deriv1(derivs[igp], r, s, t, distype);
-
-          LINALG::Matrix<numdim_,numdim_> invJ;
-          invJ.Multiply(derivs[igp],xrefe);
-          detJref[igp] = invJ.Determinant()*intpoints.qwgt[igp];
-        }
-      }
-      else //all other elements use the standard shape function from DRT::UTILS::shape_function_3D
-      {
-        const DRT::UTILS::GaussRule3D gaussrule = DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule;
-        const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
-        for (int igp = 0; igp < numgpt_; ++igp)
-        {
-          const double r = intpoints.qxg[igp][0];
-          const double s = intpoints.qxg[igp][1];
-          const double t = intpoints.qxg[igp][2];
-
-          //get shape functions evaluated at current gauß point
-          DRT::UTILS::shape_function_3D(shapefunct[igp], r, s, t, distype);
-
-          //get first derivative of shape functions evaluated at current gauß point
-          DRT::UTILS::shape_function_3D_deriv1(derivs[igp], r, s, t, distype);
-
-          LINALG::Matrix<numdim_,numdim_> invJ;
-          invJ.Multiply(derivs[igp],xrefe);
-          detJref[igp] = invJ.Determinant()*intpoints.qwgt[igp];
-        }
-      }
 
       /* =========================================================================*/
       // start concentration business
@@ -198,20 +78,24 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(Teuchos::ParameterL
 
       for (int igp=0; igp<numgpt_; ++igp)
       {
-        volume_ref+=detJref[igp];
+        // detJrefpar_wgp = det(dX/dr) * w_gp to calculate volume in reference configuration
+        const double detJrefpar_wgp = detJ_[igp]*intpoints_.qwgt[igp];
+
+        volume_ref+=detJrefpar_wgp;
 
         //concentrations at current gauß point
         std::vector<double> conc_gp_k(numscal,0.0);
 
         // shape functions evaluated at current gauß point
-        const LINALG::Matrix<numnod_,1> shapefunct_gp = shapefunct.at(igp);
+        LINALG::Matrix<numnod_,1> shapefunct_gp(true);
+        DRT::UTILS::shape_function<distype>(xsi_[igp],shapefunct_gp);
 
         for (int k=0; k<numscal; ++k)
         {
           // identical shapefunctions for displacements and temperatures
           conc_gp_k.at(k) = shapefunct_gp.Dot(econc.at(k));
 
-          mass_ref.at(k) += conc_gp_k.at(k)*detJref[igp];
+          mass_ref.at(k) += conc_gp_k.at(k)*detJrefpar_wgp;
         }
 
         gpconc->at(igp)=conc_gp_k;
@@ -230,7 +114,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(Teuchos::ParameterL
 
       params.set< Teuchos::RCP<std::vector<std::vector<double> > > >("avg_conc",avgconc);
 
-    }
+    } // if (discretization.HasState(1,"temperature"))
 
     //If you need a pointer to the scatra material, use these lines:
     //we assume that the second material of the structure is the scatra element material
@@ -250,29 +134,321 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(Teuchos::ParameterL
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::So3_Scatra< so3_ele, distype>::Evaluate(Teuchos::ParameterList& params,
-                                    DRT::Discretization&      discretization,
-                                    DRT::Element::LocationArray& la,
-                                    Epetra_SerialDenseMatrix& elemat1_epetra,
-                                    Epetra_SerialDenseMatrix& elemat2_epetra,
-                                    Epetra_SerialDenseVector& elevec1_epetra,
-                                    Epetra_SerialDenseVector& elevec2_epetra,
-                                    Epetra_SerialDenseVector& elevec3_epetra)
+int DRT::ELEMENTS::So3_Scatra< so3_ele, distype>::Evaluate(
+         Teuchos::ParameterList&       params,
+         DRT::Discretization&          discretization,
+         DRT::Element::LocationArray&  la,
+         Epetra_SerialDenseMatrix&     elemat1_epetra,
+         Epetra_SerialDenseMatrix&     elemat2_epetra,
+         Epetra_SerialDenseVector&     elevec1_epetra,
+         Epetra_SerialDenseVector&     elevec2_epetra,
+         Epetra_SerialDenseVector&     elevec3_epetra)
 {
+  // start with ActionType "none"
+  typename So3_Scatra::ActionType act = So3_Scatra::none;
 
+  // get the required action
+  std::string action = params.get<std::string>("action","none");
+
+  // get the required action and safety check
+  if (action == "none")
+    dserror("No action supplied");
+  else if (action == "calc_struct_stiffscalar")
+    act = So3_Scatra::calc_struct_stiffscalar;
+
+  // at the moment all cases need the PreEvaluate routine, since we always need the concentration value at the gp
   PreEvaluate(params,
               discretization,
               la);
 
-  return so3_ele::Evaluate(params,
-                    discretization,
-                    la[0].lm_,
-                    elemat1_epetra,
-                    elemat2_epetra,
-                    elevec1_epetra,
-                    elevec2_epetra,
-                    elevec3_epetra);
+  // what action shall be performed
+  switch(act)
+  {
+  // coupling terms K_dS of stiffness matrix K^{SSI} for monolithic SSI
+  case So3_Scatra::calc_struct_stiffscalar:
+  {
+    // structure-scatra system matrix (off diagonal block)
+    LINALG::Matrix<numdofperelement_,numnod_> stiffmatrix_kdS(elemat1_epetra.A(),true);
 
+    Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0,"displacement");
+    if (disp == Teuchos::null)
+      dserror("Cannot get state vectors 'displacement'");
+
+    // get my displacement vector
+    std::vector<double> mydisp((la[0].lm_).size());
+    DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
+
+    // calculate the stiffness matrix
+    nln_kdS_ssi(la,mydisp,&stiffmatrix_kdS,params);
+
+    break;
+  }
+
+  default:
+  {
+    // call the base class routine
+    so3_ele::Evaluate(params,
+                      discretization,
+                      la[0].lm_,
+                      elemat1_epetra,
+                      elemat2_epetra,
+                      elevec1_epetra,
+                      elevec2_epetra,
+                      elevec3_epetra);
+    break;
+  } // default
+  } // switch(act)
+
+  return 0;
+} // Evaluate
+
+
+/*----------------------------------------------------------------------*
+ | evaluate only the mechanical-scatra stiffness term     schmidt 10/17 |
+ | for monolithic SSI, contribution to k_dS (private)                   |
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::nln_kdS_ssi(
+          DRT::Element::LocationArray&                la,
+          std::vector<double>&                        disp,             // current displacement
+          LINALG::Matrix<numdofperelement_,numnod_>*  stiffmatrix_kdS,  // (numdim_*numnod_ ; numnod_)
+          Teuchos::ParameterList&                     params)
+{
+  // calculate current and material coordinates of element
+  LINALG::Matrix<numnod_,numdim_> xrefe(true);  // X, material coord. of element
+  LINALG::Matrix<numnod_,numdim_> xcurr(true);  // x, current  coord. of element
+  DRT::Node** nodes = Nodes();
+  for (int i=0; i<numnod_; ++i)
+  {
+    const double* x = nodes[i]->X();
+    xrefe(i,0) = x[0];
+    xrefe(i,1) = x[1];
+    xrefe(i,2) = x[2];
+
+    xcurr(i,0) = xrefe(i,0) + disp[i*numdofpernode_+0];
+    xcurr(i,1) = xrefe(i,1) + disp[i*numdofpernode_+1];
+    xcurr(i,2) = xrefe(i,2) + disp[i*numdofpernode_+2];
+  }
+
+  // shape functions and their first derivatives
+  LINALG::Matrix<numnod_,1> shapefunct(true);
+  LINALG::Matrix<numdim_,numnod_> deriv(true);
+  // compute derivatives N_XYZ at gp w.r.t. material coordinates
+  LINALG::Matrix<numdim_,numnod_> N_XYZ(true);
+  // compute deformation gradient w.r.t. to material configuration
+  LINALG::Matrix<numdim_,numdim_> defgrd(true);
+
+  /* =========================================================================*/
+  /* ================================================= Loop over Gauss Points */
+  /* =========================================================================*/
+  for (int gp=0; gp<numgpt_; ++gp)
+  {
+    // get shape functions and their derivatives
+    DRT::UTILS::shape_function<distype>(xsi_[gp],shapefunct);
+    DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
+
+    // compute derivatives N_XYZ at gp w.r.t. material coordinates
+    // by N_XYZ = J^-1 . N_rst
+    N_XYZ.Multiply(invJ_[gp],deriv);
+
+    // (material) deformation gradient
+    // F = d xcurr / d xrefe = xcurr^T . N_XYZ^T
+    defgrd.MultiplyTT(xcurr,N_XYZ);
+
+    // right Cauchy-Green tensor = F^T . F
+    LINALG::Matrix<3,3> cauchygreen;
+    cauchygreen.MultiplyTN(defgrd,defgrd);
+
+    // calculate vector of right Cauchy-Green tensor
+    LINALG::Matrix<numstr_,1> cauchygreenvec;
+    cauchygreenvec(0) = cauchygreen(0,0);
+    cauchygreenvec(1) = cauchygreen(1,1);
+    cauchygreenvec(2) = cauchygreen(2,2);
+    cauchygreenvec(3) = 2 * cauchygreen(0,1);
+    cauchygreenvec(4) = 2 * cauchygreen(1,2);
+    cauchygreenvec(5) = 2 * cauchygreen(2,0);
+
+    // Green Lagrange strain
+    LINALG::Matrix<numstr_,1>glstrain;
+    // Green-Lagrange strain matrix E = 0.5 * (Cauchygreen - Identity)
+    glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
+    glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
+    glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
+    glstrain(3) = cauchygreen(0,1);
+    glstrain(4) = cauchygreen(1,2);
+    glstrain(5) = cauchygreen(2,0);
+
+    // calculate nonlinear B-operator
+    LINALG::Matrix<numstr_,numdofperelement_> bop(true);
+    CalculateBop(&bop,&defgrd,&N_XYZ);
+
+    /*==== call material law ======================================================*/
+    // init cmat and stress
+    LINALG::Matrix<numstr_,numstr_> cmat(true);
+    LINALG::Matrix<numstr_,1> stress(true);
+
+    // set current gauss point
+    params.set<int>("gp",gp);
+
+    // get the cmat and stress tensors here
+    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_static_cast<MAT::So3Material>(Material());
+    so3mat->Evaluate(&defgrd,&glstrain,params,&stress,&cmat,Id());
+
+    /*==== end of call material law ===============================================*/
+
+  // update stiffness matrix kdS (derivative of structure residuals w.r.t. scalar dofs)
+  if (stiffmatrix_kdS != NULL)
+  {
+    // get integration specific factors from parameter list
+    const double theta = params.get<double>("theta");
+    const double dtheta_dc = params.get<double>("dtheta_dc");
+    const double fac = - dtheta_dc / theta;
+    // determinant of the jacobian multiplied by gauss weight and above calculated factor
+    const double detJ_w_fac = detJ_[gp] * intpoints_.qwgt[gp] * fac;
+
+    // k_dS = k_dS + 2.0 . (B^T . S . N^T) . detJ . w(gp) . fac     is added in the next few lines
+    LINALG::Matrix<numstr_,numnod_> sn(true);
+    sn.MultiplyNT(stress, shapefunct);
+    // integrate stiffness term
+    // k_dS = k_dS + 2.0 . (B^T . S . N^T) . detJ . w(gp) . fac
+    stiffmatrix_kdS->MultiplyTN((2.0*detJ_w_fac), bop, sn, 1.0);
+
+    // k_dS = k_dS + B^T . Cmat . C . N^T . detJ . w(gp) . fac     is added in the next few lines
+    LINALG::Matrix<numdofperelement_,numstr_> bc(true);
+    bc.MultiplyTN(bop,cmat);
+    LINALG::Matrix<numdofperelement_,1> bcc(true);
+    bcc.Multiply(bc,cauchygreenvec);
+    // now the last step is to add the complete term
+    // k_dS = k_dS + B^T . Cmat . C . N^T . detJ . w(gp) . fac
+    stiffmatrix_kdS->MultiplyNT(detJ_w_fac,bcc,shapefunct,1.0);
+
+  }//if (stiffmatrix_kdS != NULL)
+
+  // should not happen to get into the else case
+  else
+    dserror("Why did you get here? Does not make sense!");
+
+  } // gauss point loop
+
+  return;
+} // nln_kdS_ssi
+
+
+/*----------------------------------------------------------------------*
+ | calculate the nonlinear B-operator (private)           schmidt 10/17 |
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::CalculateBop(
+          LINALG::Matrix<numstr_,numdofperelement_>*  bop,         //!< (o): nonlinear B-operator
+          const LINALG::Matrix<numdim_,numdim_>*      defgrd,      //!< (i): deformation gradient
+          const LINALG::Matrix<numdim_,numnod_>*      N_XYZ) const //!< (i): (material) derivative of shape functions
+{
+  // calc bop matrix if provided
+  if (bop != NULL)
+  {
+    /* non-linear B-operator (may so be called, meaning of B-operator is not so
+    **  sharp in the non-linear realm) *
+    **   B = F^{i,T} . B_L *
+    ** with linear B-operator B_L =  N_XYZ (6x24) = (3x8)
+    **
+    **   B    =   F^T  . N_XYZ
+    ** (6x24)    (3x3)   (3x8)
+    **
+    **      [ ... | F_11*N_{,1}^k  F_21*N_{,1}^k  F_31*N_{,1}^k | ... ]
+    **      [ ... | F_12*N_{,2}^k  F_22*N_{,2}^k  F_32*N_{,2}^k | ... ]
+    **      [ ... | F_13*N_{,3}^k  F_23*N_{,3}^k  F_33*N_{,3}^k | ... ]
+    ** B =  [ ~~~   ~~~~~~~~~~~~~  ~~~~~~~~~~~~~  ~~~~~~~~~~~~~   ~~~ ]
+    **      [       F_11*N_{,2}^k+F_12*N_{,1}^k                       ]
+    **      [ ... |          F_21*N_{,2}^k+F_22*N_{,1}^k        | ... ]
+    **      [                       F_31*N_{,2}^k+F_32*N_{,1}^k       ]
+    **      [                                                         ]
+    **      [       F_12*N_{,3}^k+F_13*N_{,2}^k                       ]
+    **      [ ... |          F_22*N_{,3}^k+F_23*N_{,2}^k        | ... ]
+    **      [                       F_32*N_{,3}^k+F_33*N_{,2}^k       ]
+    **      [                                                         ]
+    **      [       F_13*N_{,1}^k+F_11*N_{,3}^k                       ]
+    **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
+    **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
+    */
+    for (int i=0; i<numnod_; ++i)
+    {
+      (*bop)(0,numdofpernode_*i+0) = (*defgrd)(0,0)*(*N_XYZ)(0,i);
+      (*bop)(0,numdofpernode_*i+1) = (*defgrd)(1,0)*(*N_XYZ)(0,i);
+      (*bop)(0,numdofpernode_*i+2) = (*defgrd)(2,0)*(*N_XYZ)(0,i);
+      (*bop)(1,numdofpernode_*i+0) = (*defgrd)(0,1)*(*N_XYZ)(1,i);
+      (*bop)(1,numdofpernode_*i+1) = (*defgrd)(1,1)*(*N_XYZ)(1,i);
+      (*bop)(1,numdofpernode_*i+2) = (*defgrd)(2,1)*(*N_XYZ)(1,i);
+      (*bop)(2,numdofpernode_*i+0) = (*defgrd)(0,2)*(*N_XYZ)(2,i);
+      (*bop)(2,numdofpernode_*i+1) = (*defgrd)(1,2)*(*N_XYZ)(2,i);
+      (*bop)(2,numdofpernode_*i+2) = (*defgrd)(2,2)*(*N_XYZ)(2,i);
+      /* ~~~ */
+      (*bop)(3,numdofpernode_*i+0) = (*defgrd)(0,0)*(*N_XYZ)(1,i) + (*defgrd)(0,1)*(*N_XYZ)(0,i);
+      (*bop)(3,numdofpernode_*i+1) = (*defgrd)(1,0)*(*N_XYZ)(1,i) + (*defgrd)(1,1)*(*N_XYZ)(0,i);
+      (*bop)(3,numdofpernode_*i+2) = (*defgrd)(2,0)*(*N_XYZ)(1,i) + (*defgrd)(2,1)*(*N_XYZ)(0,i);
+      (*bop)(4,numdofpernode_*i+0) = (*defgrd)(0,1)*(*N_XYZ)(2,i) + (*defgrd)(0,2)*(*N_XYZ)(1,i);
+      (*bop)(4,numdofpernode_*i+1) = (*defgrd)(1,1)*(*N_XYZ)(2,i) + (*defgrd)(1,2)*(*N_XYZ)(1,i);
+      (*bop)(4,numdofpernode_*i+2) = (*defgrd)(2,1)*(*N_XYZ)(2,i) + (*defgrd)(2,2)*(*N_XYZ)(1,i);
+      (*bop)(5,numdofpernode_*i+0) = (*defgrd)(0,2)*(*N_XYZ)(0,i) + (*defgrd)(0,0)*(*N_XYZ)(2,i);
+      (*bop)(5,numdofpernode_*i+1) = (*defgrd)(1,2)*(*N_XYZ)(0,i) + (*defgrd)(1,0)*(*N_XYZ)(2,i);
+      (*bop)(5,numdofpernode_*i+2) = (*defgrd)(2,2)*(*N_XYZ)(0,i) + (*defgrd)(2,0)*(*N_XYZ)(2,i);
+    }
+  }
+
+  return;
+} // CalculateBop
+
+
+/*----------------------------------------------------------------------*
+ | initialize element (private)                            schmidt 10/17|
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::InitElement()
+{
+  // resize gauss point coordinates, inverse of the jacobian and determinant of the jacobian
+  xsi_.resize(numgpt_);
+  invJ_.resize(numgpt_);
+  detJ_.resize(numgpt_);
+
+  // calculate coordinates in reference (material) configuration
+  LINALG::Matrix<numnod_,numdim_> xrefe;
+  for (int i=0; i<numnod_; ++i)
+  {
+    Node** nodes=Nodes();
+    if(!nodes) dserror("Nodes() returned null pointer");
+    xrefe(i,0) = Nodes()[i]->X()[0];
+    xrefe(i,1) = Nodes()[i]->X()[1];
+    xrefe(i,2) = Nodes()[i]->X()[2];
+  }
+
+  // calculate gauss point coordinates, the inverse jacobian and the determinant of the jacobian
+  for (int gp=0; gp<numgpt_; ++gp)
+  {
+    // gauss point coordinates
+    const double* gpcoord = intpoints_.Point(gp);
+    for (int idim=0;idim<numdim_;idim++)
+      xsi_[gp](idim) = gpcoord[idim];
+
+    // get derivative of shape functions w.r.t. parameter coordinates, needed for calculation of the inverse of the jacobian
+    LINALG::Matrix<numdim_,numnod_> deriv ;
+    DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
+
+    // get the inverse of the Jacobian matrix which looks like:
+    /*
+                 [ X_,r  Y_,r  Z_,r ]^-1
+          J^-1 = [ X_,s  Y_,s  Z_,s ]
+                 [ X_,t  Y_,t  Z_,t ]
+     */
+
+    invJ_[gp].Multiply(deriv,xrefe);
+    // here Jacobian is inverted and det(J) is calculated
+    detJ_[gp] = invJ_[gp].Invert();
+
+    // make sure determinant of jacobian is positive
+    if (detJ_[gp] <= 0.0)
+      dserror("Element Jacobian mapping %10.5e <= 0.0",detJ_[gp]);
+  }
+
+  return;
 }
 
 

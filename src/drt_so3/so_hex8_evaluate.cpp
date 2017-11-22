@@ -2361,7 +2361,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
       break;
     }
 
-    double detJ_w = detJ*gpweights[gp];
+    const double detJ_w = detJ*gpweights[gp];
     // update internal force vector
     if (force != NULL)
     {
@@ -2412,14 +2412,16 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
         sfac.Scale(detJ_w); // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
         std::vector<double> SmB_L(3); // intermediate Sm.B_L
         // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
-        for (int inod=0; inod<NUMNOD_SOH8; ++inod) {
+        for (int inod=0; inod<NUMNOD_SOH8; ++inod)
+        {
           SmB_L[0] = sfac(0) * N_XYZ(0, inod) + sfac(3) * N_XYZ(1, inod)
               + sfac(5) * N_XYZ(2, inod);
           SmB_L[1] = sfac(3) * N_XYZ(0, inod) + sfac(1) * N_XYZ(1, inod)
               + sfac(4) * N_XYZ(2, inod);
           SmB_L[2] = sfac(5) * N_XYZ(0, inod) + sfac(4) * N_XYZ(1, inod)
               + sfac(2) * N_XYZ(2, inod);
-          for (int jnod=0; jnod<NUMNOD_SOH8; ++jnod) {
+          for (int jnod=0; jnod<NUMNOD_SOH8; ++jnod)
+          {
             double bopstrbop = 0.0; // intermediate value
             for (int idim=0; idim<NUMDIM_SOH8; ++idim)
               bopstrbop += N_XYZ(idim, jnod) * SmB_L[idim];
@@ -2466,7 +2468,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
 
     if (massmatrix != NULL) // evaluate mass matrix +++++++++++++++++++++++++
     {
-      double density = Material()->Density(gp);
+      const double density = Material()->Density(gp);
 
       // integrate consistent mass matrix
       const double factor = detJ_w * density;

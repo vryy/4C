@@ -19,7 +19,6 @@
 
 #include "so3_material.H"
 #include "matpar_parameter.H"
-#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_container.H"
 
 /*------------------------------------------------------------------------*/
@@ -122,7 +121,7 @@ class GrowthLaw;
       \sa DRT::ParObject
       \param data (in/out): char vector to store class information
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -131,15 +130,15 @@ class GrowthLaw;
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data);
 
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_growth_volumetric; }
+    INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_growth_volumetric; }
 
     /// check if element kinematics and material kinematics are compatible
-    virtual void ValidKinematics(INPAR::STR::KinemType kinem)
+    void ValidKinematics(INPAR::STR::KinemType kinem)
     { if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
       dserror("element and material kinematics are not compatible");}
 
@@ -147,22 +146,22 @@ class GrowthLaw;
     virtual Teuchos::RCP<Material> Clone() const = 0;
 
     /// Setup
-    virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
+    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 
     /// Reset internal variables to state in the beginning of the computation (needed for inverse analysis)
-    virtual void ResetAll(int numgp);
+    void ResetAll(int numgp);
 
     /// Update
-    virtual void Update();
+    void Update();
 
     /// Reset time step
     void ResetStep();
 
     /// Store history/internal variables
-    virtual void StoreHistory(int timestep);
+    void StoreHistory(int timestep);
 
     /// Set history/internal variables
-    virtual void SetHistory(int timestep);
+    void SetHistory(int timestep);
 
 
     //! @name Evaluation methods
@@ -186,7 +185,7 @@ class GrowthLaw;
      *  \author kehl
      * \date 06/2015
      */
-    virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,
+    void Evaluate(const LINALG::Matrix<3,3>* defgrd,
                           const LINALG::Matrix<6,1>* glstrain,
                           Teuchos::ParameterList& params,
                           LINALG::Matrix<6,1>* stress,
@@ -211,7 +210,7 @@ class GrowthLaw;
      *  \author kehl
      * \date 06/2015
      */
-    virtual void EvaluateNonLinMass(const LINALG::Matrix<3,3>* defgrd,
+    void EvaluateNonLinMass(const LINALG::Matrix<3,3>* defgrd,
                           const LINALG::Matrix<6,1>* glstrain,
                           Teuchos::ParameterList& params,
                           LINALG::Matrix<6,1>* linmass_disp,
@@ -252,13 +251,13 @@ class GrowthLaw;
     double Density() const {dserror("growth material needs gauss point data for density!"); return -1.0;}
 
     // growth law-specific!
-    virtual double Density(int gp) const;
+    double Density(int gp) const;
 
     /// Return whether material has a varying material density
-    bool VaryingDensity() const { return true;}
+    bool VaryingDensity() const;
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Growth* Parameter() const { return params_; }
+    MAT::PAR::Growth* Parameter() const { return params_; }
 
     /// access to the elastic material
     const Teuchos::RCP<MAT::So3Material> Matelastic() const {return matelastic_;}
@@ -360,7 +359,7 @@ class GrowthLaw;
 
       \sa DRT::ParObject
     */
-    virtual int UniqueParObjectId() const { return GrowthVolumetricType::Instance().UniqueParObjectId(); }
+    int UniqueParObjectId() const { return GrowthVolumetricType::Instance().UniqueParObjectId(); }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -368,7 +367,7 @@ class GrowthLaw;
       \sa DRT::ParObject
       \param data (in/out): char vector to store class information
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -377,27 +376,27 @@ class GrowthLaw;
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data);
 
     //@}
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new GrowthVolumetric( *this ) ); }
+    Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new GrowthVolumetric( *this ) ); }
 
     /// Setup
-    virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
+    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 
     /// Update
-    virtual void Update();
+    void Update();
 
     /// Reset internal variables to state in the beginning of the computation (needed for inverse analysis)
-    virtual void ResetAll(int numgp);
+    void ResetAll(int numgp);
 
     /// Return names of visualization data
-    virtual void VisNames(std::map<std::string,int>& names);
+    void VisNames(std::map<std::string,int>& names);
 
     /// Return visualization data
-    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
+    bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
 
     //! @name Evaluation methods
     //@{
@@ -420,7 +419,7 @@ class GrowthLaw;
      *  \author kehl
      * \date 06/2015
      */
-    virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,
+    void Evaluate(const LINALG::Matrix<3,3>* defgrd,
                           const LINALG::Matrix<6,1>* glstrain,
                           Teuchos::ParameterList& params,
                           LINALG::Matrix<6,1>* stress,
@@ -428,7 +427,7 @@ class GrowthLaw;
                           const int eleGID );
 
     ///calculate stresses and elastic material tangent (both in Voigt notation)
-    virtual void GetSAndCmatdach
+    void GetSAndCmatdach
     (
         const double theta,
         const LINALG::Matrix<3,3>* defgrd,
@@ -439,7 +438,7 @@ class GrowthLaw;
     );
 
     ///Function which reads in the given fiber value due to the FIBER1 nomenclature
-    virtual void ReadFiber(
+    void ReadFiber(
         DRT::INPUT::LineDefinition* linedef,
         std::string specifier,
         LINALG::Matrix<3,1> &fiber_vector
@@ -454,20 +453,20 @@ class GrowthLaw;
 //                        const double j);
 
     ///transform vector in voigt notation into symmetric 2Tensor (in matrix notation)
-    virtual void VectorToMatrix(
+    void VectorToMatrix(
         LINALG::Matrix<3,3>& Matrix,
         const LINALG::Matrix<6,1>& Vector,
         const MAT::VoigtType Type);
 
     ///transform symmetric 2Tensor(in matrix notation) into voigt notation ( e.g. vector notation)
-    virtual void MatrixToVector(
+    void MatrixToVector(
         const LINALG::Matrix<3,3>& Matrix,
         LINALG::Matrix<6,1>& Vector,
         const MAT::VoigtType Type);
 
     /// pull back of a symmetric elastic 4th order tensor (in matrix/voigt notation)
     /// via the 2th order deformation gradient (also in matrix notation)
-    virtual LINALG::Matrix<6,6> PullBack4Tensor(const LINALG::Matrix<3,3>& defgr,
+    LINALG::Matrix<6,6> PullBack4Tensor(const LINALG::Matrix<3,3>& defgr,
                             const LINALG::Matrix<6,6>& Cmat);
 
     /// pull back the ijkl-th entry of a symmetric elastic 4th order tensor (in matrix/voigt notation)
@@ -480,7 +479,7 @@ class GrowthLaw;
                           const double& l);
 
     //Setup 4-Tensor from 6x6 Voigt notation
-    virtual void Setup4Tensor(
+    void Setup4Tensor(
         double (&FourTensor)[3][3][3][3],
         const LINALG::Matrix<6,6>& VoigtMatrix
     );
@@ -492,7 +491,7 @@ class GrowthLaw;
 //    );
 
     //Print Four Tensor
-    virtual void PrintFourTensor( double (&FourTensor)[3][3][3][3] );
+    void PrintFourTensor( double (&FourTensor)[3][3][3][3] );
 
 
 
@@ -517,7 +516,7 @@ class GrowthLaw;
      *  \author kehl
      * \date 06/2015
      */
-    virtual void EvaluateNonLinMass(const LINALG::Matrix<3,3>* defgrd,
+    void EvaluateNonLinMass(const LINALG::Matrix<3,3>* defgrd,
                           const LINALG::Matrix<6,1>* glstrain,
                           Teuchos::ParameterList& params,
                           LINALG::Matrix<6,1>* linmass_disp,
@@ -547,7 +546,7 @@ class GrowthLaw;
      *  \author kehl
      * \date 06/2015
      */
-    virtual void EvaluateGrowth(double* theta,
+    void EvaluateGrowth(double* theta,
                                 LINALG::Matrix<6,1>* dthetadC,
                                 const LINALG::Matrix<3,3>* defgrd,
                                 const LINALG::Matrix<6,1>* glstrain,
@@ -560,7 +559,7 @@ class GrowthLaw;
     //@{
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Growth* Parameter() const { return paramsVolumetric_; }
+    MAT::PAR::Growth* Parameter() const { return paramsVolumetric_; }
 
     //@}
 

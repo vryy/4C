@@ -202,8 +202,46 @@ void SSI::SSI_Mono::AssembleODBlockScatraStructure() const
  *-----------------------------------------------------------------------------------*/
 void SSI::SSI_Mono::AssembleODBlockStructureScatra() const
 {
-  // nothing here at the moment
+  // initialize structure-scatra matrix block
+  structurescatrablock_->Zero();
+
+  // create parameter list for element evaluation and fill it
+  Teuchos::ParameterList eleparams;
+  // set action
+  eleparams.set("action","calc_struct_stiffscalar");
+  // set time
+  eleparams.set<double>("total time",Time());
+
+  // remove state vectors from structure discretization
+  structure_->Discretization()->ClearState();
+
+  // and set the current displacement and acceleration state vector
+  structure_->Discretization()->SetState("displacement",structure_->Dispnp());
+
+  // create strategy for assembly of structure-scatra matrix block
+  DRT::AssembleStrategy strategystructurescatra(
+      0,                       // row assembly based on number of dofset associated with structure dofs on structural discretization
+      1,                       // column assembly based on number of dofset associated with scalar transport dofs on structural discretization
+      structurescatrablock_,   // structure-scatra matrix block
+      Teuchos::null,           // no additional matrices or vectors needed
+      Teuchos::null,
+      Teuchos::null,
+      Teuchos::null
+      );
+
+  // assemble structure-scatra matrix block
+  structure_->Discretization()->Evaluate(eleparams,strategystructurescatra);
+
+  // need to scale structurescatrablock_ with 'timefac' (e.g. with theta for OST-scheme) to get correct implementation
+  const double timeintparam = structure_->TimIntParam();
+  // scale with theta
+  structurescatrablock_->Scale(1.0 - timeintparam);
+
+  // complete the structure scatra off diagonal block
   structurescatrablock_->Complete(*maps_->Map(0),*maps_->Map(1));
+
+  // apply dirichlet condition to off diagonal block
+  structurescatrablock_->ApplyDirichlet(*structure_->GetDBCMapExtractor()->CondMap(),false);
 
   return;
 }
@@ -215,19 +253,6 @@ void SSI::SSI_Mono::AssembleODBlockStructureScatra() const
 const Teuchos::RCP<const Epetra_Map>& SSI::SSI_Mono::DofRowMap() const
 {
   return maps_->FullMap();
-}
-
-
-/*---------------------------------------------------------------------------------------------------*
- | pass structural degrees of freedom to scalar transport discretization and vice versa   fang 08/17 |
- *---------------------------------------------------------------------------------------------------*/
-void SSI::SSI_Mono::ExchangeStateVectors()
-{
-  // pass structural degrees of freedom to scalar transport discretization and vice versa
-  SetStructSolution(structure_->Dispnp(),structure_->Velnp());
-  SetScatraSolution(scatra_->ScaTraField()->Phinp());
-
-  return;
 }
 
 
@@ -267,7 +292,7 @@ bool SSI::SSI_Mono::ExitNewtonRaphson()
   if(scatradofnorm_ < 1.e-10)
     scatradofnorm_ = 1.e-10;
   if(structuredofnorm_ < 1.e-10)
-    scatradofnorm_ = 1.e-10;
+    structuredofnorm_ = 1.e-10;
 
   // first Newton-Raphson iteration
   if(iter_ == 1)
@@ -521,6 +546,7 @@ void SSI::SSI_Mono::FDCheck()
     if(counterglobal)
     {
       printf("--> FAILED AS LISTED ABOVE WITH %d CRITICAL MATRIX ENTRIES IN TOTAL\n\n",counterglobal);
+      printf("--> FAILED WITH MAXIMUM ABSOLUTE ERROR %+12.5e AND MAXIMUM RELATIVE ERROR %+12.5e\n\n",maxabserrglobal,maxrelerrglobal);
       dserror("Finite difference check failed for SSI system matrix!");
     }
     else
@@ -587,11 +613,16 @@ void SSI::SSI_Mono::PrepareTimeStep()
   // update time and time step
   IncrementTimeAndStep();
 
-  // pass structural degrees of freedom to scalar transport discretization and vice versa
-  ExchangeStateVectors();
+  // pass structural degrees of freedom to scalar transport discretization
+  SetStructSolution(structure_->Dispnp(),structure_->Velnp());
 
   // prepare time step for scalar transport field
   scatra_->ScaTraField()->PrepareTimeStep();
+
+  // pass scalar transport degrees of freedom to structural discretization
+  // has to be called AFTER scatra_->ScaTraField()->PrepareTimeStep(), because in the Timestep 0
+  // the potential field is calculated consistently from defined initial and boundary conditions within this call
+  SetScatraSolution(scatra_->ScaTraField()->Phinp());
 
   // prepare time step for structural field
   structure_->PrepareTimeStep();
@@ -740,7 +771,7 @@ void SSI::SSI_Mono::Solve()
       dserror("Complete() has not been called on global system matrix yet!");
 
     // perform finite difference check on time integrator level
-    if(scatra_->ScaTraField()->FDCheckType() == INPAR::SCATRA::fdcheck_global)
+    if((scatra_->ScaTraField()->FDCheckType() == INPAR::SCATRA::fdcheck_global) and (Step() > 1))
       FDCheck();
 
     // check termination criterion for Newton-Raphson iteration

@@ -1,0 +1,149 @@
+//
+// Maintainer: Christoph Schmidt
+// schmidt@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de/
+// 089 - 289-15251
+//
+==================================================================
+                  General Data File BACI
+==================================================================
+-------------------------------------------------------------TITLE
+simple, academic test case for monolithic scalar-structure interaction:
+- three-dimensional problem involving standard scalar transport
+- cubic domain discretized by 8 hex8 elements
+- constant initial value 0.0 of transported scalar
+- scalar inflow via Neumann boundary condition applied to one side of the cubic domain for the first 50 seconds, after that homogeneous
+  Neumann boundary condition is applied
+- homogeneous Neumann boundary conditions are applied to all other sides throughout the simulation
+- structure and scatra fields are coupled via MAT_GrowthIso
+- MAT_GrowthIso: isotropic strain dependent on scalar concentration according to the following equation:
+- strain = [1 + GrowthFac * (c - RefConc)]^(1/3)
+------------------------------------------------------PROBLEM SIZE
+//ELEMENTS    8
+//NODES       27
+DIM           3
+-------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Structure_Scalar_Interaction
+----------------------------------------------------------------IO
+STDOUTEVRY                      0
+------------------------------------------------STRUCTURAL DYNAMIC
+DYNAMICTYP                      OneStepTheta
+LINEAR_SOLVER                   1
+INT_STRATEGY                    Standard
+------------------------------------------SCALAR TRANSPORT DYNAMIC
+LINEAR_SOLVER                   1
+SOLVERTYPE                      nonlinear
+VELOCITYFIELD                   Navier_Stokes
+INITIALFIELD                    field_by_function
+INITFUNCNO                      1
+CONVFORM                        conservative
+-------------------------------------------------------SSI CONTROL
+NUMSTEP                         100
+TIMESTEP                        1.0
+COUPALGO                        ssi_Monolithic
+SCATRATIMINTTYPE                Standard
+--------------------------------------------SSI CONTROL/MONOLITHIC
+LINEAR_SOLVER                   1
+MATRIXTYPE                      sparse
+----------------------------------------------------------SOLVER 1
+SOLVER                          UMFPACK
+---------------------------------------------------------MATERIALS
+MAT 1 MAT_scatra DIFFUSIVITY 0.1
+
+MAT 2 MAT_GrowthVolumetric GROWTHLAW 3 IDMATELASTIC 4 STARTTIME -1. ENDTIME -1.
+
+MAT 4 MAT_ElastHyper NUMMAT 1 MATIDS 5 DENS 1.0e-3
+MAT 5 ELAST_CoupSVK YOUNG 1.0 NUE 0.3
+
+MAT 3 MAT_GrowthIso SCALAR1 1 SCALAR1_GrowthFac 0.1 SCALAR1_RefConc 0.0
+----------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 1
+------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION 0.0
+------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION (1.0-1.0*heaviside(t-50.0))
+------------------------------------------------RESULT DESCRIPTION
+SCATRA DIS scatra NODE 1 QUANTITY phi VALUE 9.59268841909200987e+00 TOLERANCE 1.e-09
+SCATRA DIS scatra NODE 7 QUANTITY phi VALUE 9.58424249903434777e+00 TOLERANCE 1.e-09
+SCATRA DIS scatra NODE 17 QUANTITY phi VALUE 9.59268841909202230e+00 TOLERANCE 1.e-09
+SCATRA DIS scatra NODE 25 QUANTITY phi VALUE 9.58751909939799951e+00 TOLERANCE 1.e-09
+STRUCTURE DIS structure NODE 9 QUANTITY dispx VALUE 2.24907964724714192e-03 TOLERANCE 1.e-12
+STRUCTURE DIS structure NODE 9 QUANTITY dispy VALUE -2.51145454864973083e-01 TOLERANCE 1.e-10
+STRUCTURE DIS structure NODE 9 QUANTITY dispz VALUE -2.51145454865292550e-01 TOLERANCE 1.e-10
+STRUCTURE DIS structure NODE 14 QUANTITY dispx VALUE 2.24907964754007860e-03 TOLERANCE 1.e-12
+STRUCTURE DIS structure NODE 14 QUANTITY dispy VALUE 2.51145454864973472e-01 TOLERANCE 1.e-10
+STRUCTURE DIS structure NODE 14 QUANTITY dispz VALUE 2.51145454865294770e-01 TOLERANCE 1.e-10
+STRUCTURE DIS structure NODE 26 QUANTITY dispx VALUE 5.05471926094516188e-01 TOLERANCE 1.e-10
+STRUCTURE DIS structure NODE 26 QUANTITY dispy VALUE 2.50671359127532578e-01 TOLERANCE 1.e-10
+STRUCTURE DIS structure NODE 26 QUANTITY dispz VALUE 2.50671359127794424e-01 TOLERANCE 1.e-10
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 1
+NDSURF  1
+---------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
+DSURF  1
+E 1 - NUMDOF 1 ONOFF 1 VAL 0.5 FUNCT 2
+-------------------------------------DESIGN POINT DIRICH CONDITIONS
+DPOINT 1
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT none none none
+-----------------------------------------------DNODE-NODE TOPOLOGY
+NODE    3 DNODE 1
+-----------------------------------------------DLINE-NODE TOPOLOGY
+-----------------------------------------------DSURF-NODE TOPOLOGY
+NODE    1 DSURF 1
+NODE    2 DSURF 1
+NODE    3 DSURF 1
+NODE    4 DSURF 1
+NODE    9 DSURF 1
+NODE    10 DSURF 1
+NODE    13 DSURF 1
+NODE    14 DSURF 1
+NODE    17 DSURF 1
+------------------------------------------------DVOL-NODE TOPOLOGY
+-------------------------------------------------------NODE COORDS
+NODE         1 COORD -1.0000000000000000e+00 -1.0000000000000000e+00  1.0000000000000000e+00
+NODE         2 COORD -1.0000000000000000e+00 -1.0000000000000000e+00  0.0000000000000000e+00
+NODE         3 COORD -1.0000000000000000e+00  0.0000000000000000e+00  0.0000000000000000e+00
+NODE         4 COORD -1.0000000000000000e+00  0.0000000000000000e+00  1.0000000000000000e+00
+NODE         5 COORD  0.0000000000000000e+00 -1.0000000000000000e+00  1.0000000000000000e+00
+NODE         6 COORD  0.0000000000000000e+00 -1.0000000000000000e+00  0.0000000000000000e+00
+NODE         7 COORD  0.0000000000000000e+00  0.0000000000000000e+00  0.0000000000000000e+00
+NODE         8 COORD  0.0000000000000000e+00  0.0000000000000000e+00  1.0000000000000000e+00
+NODE         9 COORD -1.0000000000000000e+00 -1.0000000000000000e+00 -1.0000000000000000e+00
+NODE        10 COORD -1.0000000000000000e+00  0.0000000000000000e+00 -1.0000000000000000e+00
+NODE        11 COORD  0.0000000000000000e+00 -1.0000000000000000e+00 -1.0000000000000000e+00
+NODE        12 COORD  0.0000000000000000e+00  0.0000000000000000e+00 -1.0000000000000000e+00
+NODE        13 COORD -1.0000000000000000e+00  1.0000000000000000e+00  0.0000000000000000e+00
+NODE        14 COORD -1.0000000000000000e+00  1.0000000000000000e+00  1.0000000000000000e+00
+NODE        15 COORD  0.0000000000000000e+00  1.0000000000000000e+00  0.0000000000000000e+00
+NODE        16 COORD  0.0000000000000000e+00  1.0000000000000000e+00  1.0000000000000000e+00
+NODE        17 COORD -1.0000000000000000e+00  1.0000000000000000e+00 -1.0000000000000000e+00
+NODE        18 COORD  0.0000000000000000e+00  1.0000000000000000e+00 -1.0000000000000000e+00
+NODE        19 COORD  1.0000000000000000e+00 -1.0000000000000000e+00  1.0000000000000000e+00
+NODE        20 COORD  1.0000000000000000e+00 -1.0000000000000000e+00  0.0000000000000000e+00
+NODE        21 COORD  1.0000000000000000e+00  0.0000000000000000e+00  0.0000000000000000e+00
+NODE        22 COORD  1.0000000000000000e+00  0.0000000000000000e+00  1.0000000000000000e+00
+NODE        23 COORD  1.0000000000000000e+00 -1.0000000000000000e+00 -1.0000000000000000e+00
+NODE        24 COORD  1.0000000000000000e+00  0.0000000000000000e+00 -1.0000000000000000e+00
+NODE        25 COORD  1.0000000000000000e+00  1.0000000000000000e+00  0.0000000000000000e+00
+NODE        26 COORD  1.0000000000000000e+00  1.0000000000000000e+00  1.0000000000000000e+00
+NODE        27 COORD  1.0000000000000000e+00  1.0000000000000000e+00 -1.0000000000000000e+00
+------------------------------------------------STRUCTURE ELEMENTS
+   1 SOLIDH8SCATRA HEX8  1 2 3 4 5 6 7 8    MAT 2 KINEM nonlinear EAS none TYPE Std
+   2 SOLIDH8SCATRA HEX8  2 9 10 3 6 11 12 7    MAT 2 KINEM nonlinear EAS none TYPE Std
+   3 SOLIDH8SCATRA HEX8  4 3 13 14 8 7 15 16    MAT 2 KINEM nonlinear EAS none TYPE Std
+   4 SOLIDH8SCATRA HEX8  3 10 17 13 7 12 18 15    MAT 2 KINEM nonlinear EAS none TYPE Std
+   5 SOLIDH8SCATRA HEX8  5 6 7 8 19 20 21 22    MAT 2 KINEM nonlinear EAS none TYPE Std
+   6 SOLIDH8SCATRA HEX8  6 11 12 7 20 23 24 21    MAT 2 KINEM nonlinear EAS none TYPE Std
+   7 SOLIDH8SCATRA HEX8  8 7 15 16 22 21 25 26    MAT 2 KINEM nonlinear EAS none TYPE Std
+   8 SOLIDH8SCATRA HEX8  7 12 18 15 21 24 27 25    MAT 2 KINEM nonlinear EAS none TYPE Std
+----------------------------------------------------FLUID ELEMENTS
+------------------------------------------------------ALE ELEMENTS
+------------------------------------------------LUBRICATION ELEMENTS
+------------------------------------------------TRANSPORT ELEMENTS
+------------------------------------------------TRANSPORT2 ELEMENTS
+---------------------------------------------------THERMO ELEMENTS
+---------------------------------------------------ACOUSTIC ELEMENTS
+---------------------------------------------------CELL ELEMENTS
+---------------------------------------------------CELLSCATRA ELEMENTS
+---------------------------------------------------------------END
+// END

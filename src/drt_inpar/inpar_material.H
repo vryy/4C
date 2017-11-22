@@ -91,7 +91,8 @@ namespace INPAR
       m_growth_ac,                             ///< simple scalar depended growth law
       m_growth_ac_radial,                      ///< scalar depended growth in radial direction
       m_growth_ac_radial_refconc,              ///< scalar depended growth in radial direction using reference concentrations
-      m_growth_const,                          ///< grwoth factor given as material parameter via input
+      m_growth_const,                          ///< growth factor given as material parameter via input
+      m_growth_iso,                            ///< scalar dependent isotropic growth (same growth rate in each space dimension)
       m_growth_volumetric,                     ///< volumetric growth base material
       m_sc_dep_interp,                         ///< integration point based and scalar dependent interpolation between to materials
       m_membrane_elasthyper,                   ///< collection of hyperelastic materials for membranes

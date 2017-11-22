@@ -37,7 +37,9 @@
 
 #include "../drt_mat/material.H"
 #include "../drt_mat/matpar_bundle.H"
+#include "../drt_mat/so3_material.H"
 #include "../drt_mat/growth_law.H"
+#include "../drt_mat/growth.H"
 
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
