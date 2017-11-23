@@ -12,6 +12,8 @@
 
 #include "beam3eb.H"
 
+#include "beam_spatial_discretization_utils.H"
+
 // Todo check for obsolete header inclusions
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -2128,7 +2130,8 @@ void DRT::ELEMENTS::Beam3eb::EvaluateTranslationalDamping(Teuchos::ParameterList
 
   for(int gp=0; gp < gausspoints.nquad; gp++)
   {
-    EvaluateShapeFunctionsAndDerivsAtXi<nnode,vpernode>(gausspoints.qxg[gp][0],N_i,N_i_xi,this->Shape());
+    DRT::UTILS::BEAM::EvaluateShapeFunctionsAndDerivsAtXi<nnode,vpernode>(gausspoints.qxg[gp][0],
+        N_i,N_i_xi,this->Shape(),this->RefLength());
 
     // compute position vector r of point in physical space corresponding to Gauss point
     Calc_r<nnode,vpernode,double>(disp_totlag, N_i, evaluationpoint);
@@ -2140,7 +2143,7 @@ void DRT::ELEMENTS::Beam3eb::EvaluateTranslationalDamping(Teuchos::ParameterList
     GetBackgroundVelocity<ndim,double>(params,evaluationpoint,velbackground,velbackgroundgrad);
 
     // compute velocity vector at this Gauss point via same interpolation as for centerline position vector
-    CalcInterpolation<nnode,vpernode,3,double>(vel, N_i, vel_rel);
+    DRT::UTILS::BEAM::CalcInterpolation<nnode,vpernode,3,double>(vel, N_i, vel_rel);
     vel_rel -= velbackground;
 
     // loop over lines and columns of damping matrix
@@ -2223,7 +2226,8 @@ void DRT::ELEMENTS::Beam3eb::EvaluateStochasticForces(Teuchos::ParameterList& pa
 
   for(int gp=0; gp < gausspoints.nquad; gp++)
   {
-    EvaluateShapeFunctionsAndDerivsAtXi<nnode,vpernode>(gausspoints.qxg[gp][0],N_i,N_i_xi,this->Shape());
+    DRT::UTILS::BEAM::EvaluateShapeFunctionsAndDerivsAtXi<nnode,vpernode>(gausspoints.qxg[gp][0],
+        N_i,N_i_xi,this->Shape(),this->RefLength());
 
     // compute tangent vector t_{\par}=r' at current Gauss point
     Calc_r_s<nnode,vpernode,double>(disp_totlag, N_i_xi, jacobi_, r_s);

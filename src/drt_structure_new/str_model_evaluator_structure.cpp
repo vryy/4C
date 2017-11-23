@@ -582,25 +582,25 @@ void STR::MODELEVALUATOR::Structure::InitOutputRuntimeVtkStructure()
 
   // Todo: we need a better upper bound for total number of time steps here
   // however, this 'only' affects the number of leading zeros in the vtk file names
-  const unsigned int num_timesteps_in_simulation_upper_bound = 1000000;
+  unsigned int num_timesteps_in_simulation_upper_bound = 1000000;
+
+  if ( GInOutput().GetRuntimeVtkOutputParams()->OutputEveryIteration() )
+    num_timesteps_in_simulation_upper_bound *= 1000;
 
   // initialize the writer object
   vtu_writer_ptr_->Initialize(
-      Teuchos::rcp_dynamic_cast<DRT::Discretization>( const_cast<STR::MODELEVALUATOR::Structure*>(this)->DiscretPtr(), true ),
-      num_timesteps_in_simulation_upper_bound,
-      GState().GetTimeN(),
-      vtu_output_params.WriteBinaryOutput() );
+      Teuchos::rcp_dynamic_cast<DRT::Discretization>(
+        const_cast<STR::MODELEVALUATOR::Structure*>(this)->DiscretPtr(), true ),
+        num_timesteps_in_simulation_upper_bound,
+        GState().GetTimeN(),
+        vtu_output_params.WriteBinaryOutput() );
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkStructure() const
+void STR::MODELEVALUATOR::Structure::WriteTimeStepOutputRuntimeVtkStructure() const
 {
-  CheckInit();
-
-  // get the parameter container object
-  const DRT::ELEMENTS::StructureRuntimeVtuOutputParams & strucuture_vtu_output_params =
-      * GInOutput().GetRuntimeVtkOutputParams()->GetStructureParams();
+  CheckInitSetup();
 
   // export displacement state to column format
   const DRT::Discretization& discret = dynamic_cast<const DRT::Discretization&>( Discret() );
@@ -608,14 +608,58 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkStructure() const
       *discret.DofColMap(), true ) );
   LINALG::Export( *GState().GetDisN(), *disn_col );
 
+  if ( not GInOutput().GetRuntimeVtkOutputParams()->OutputEveryIteration() )
+    WriteOutputRuntimeVtkStructure( disn_col, GState().GetStepN(), GState().GetTimeN() );
+  else
+    WriteOutputRuntimeVtkStructure( disn_col, 10000 * GState().GetStepN(), GState().GetTimeN() );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::WriteIterationOutputRuntimeVtkStructure() const
+{
+  CheckInitSetup();
+
+  // export displacement state to column format
+  const DRT::Discretization& discret = dynamic_cast<const DRT::Discretization&>( Discret() );
+  Teuchos::RCP<Epetra_Vector> disnp_col = Teuchos::rcp( new Epetra_Vector(
+      *discret.DofColMap(), true ) );
+  LINALG::Export( *GState().GetDisNp(), *disnp_col );
+
+  const int augmented_timestep_number_incl_iteration_count =
+      10000 * GState().GetStepN() +
+      1 * EvalData().GetNlnIter();
+
+  const double augmented_time_incl_iteration_count =
+      GState().GetTimeN() +
+      1e-8 * EvalData().GetNlnIter();
+
+  WriteOutputRuntimeVtkStructure( disnp_col, augmented_timestep_number_incl_iteration_count,
+      augmented_time_incl_iteration_count );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkStructure(
+    const Teuchos::RCP<Epetra_Vector> & displacement_state_vector,
+    int timestep_number,
+    double time ) const
+{
+  CheckInitSetup();
+
+  // get the parameter container object
+  const DRT::ELEMENTS::StructureRuntimeVtuOutputParams & strucuture_vtu_output_params =
+      * GInOutput().GetRuntimeVtkOutputParams()->GetStructureParams();
+
   // reset time and time step of the writer object
-  vtu_writer_ptr_->ResetTimeAndTimeStep( GState().GetTimeN(), GState().GetStepN() );
+  vtu_writer_ptr_->ResetTimeAndTimeStep( time, timestep_number );
 
   // append all desired output data to the writer object's storage
 
   // append displacement if desired
   if ( strucuture_vtu_output_params.OutputDisplacementState() )
-    vtu_writer_ptr_->AppendDofBasedResultDataVector( disn_col, 3, 0, "displacement" );
+    vtu_writer_ptr_->AppendDofBasedResultDataVector( displacement_state_vector,
+        3, 0, "displacement" );
 
   // finalize everything and write all required files to filesystem
   vtu_writer_ptr_->WriteFiles();
@@ -634,7 +678,10 @@ void STR::MODELEVALUATOR::Structure::InitOutputRuntimeVtkBeams()
 
   // Todo: we need a better upper bound for total number of time steps here
   // however, this 'only' affects the number of leading zeros in the vtk file names
-  const unsigned int num_timesteps_in_simulation_upper_bound = 1000000;
+  unsigned int num_timesteps_in_simulation_upper_bound = 1000000;
+
+  if ( GInOutput().GetRuntimeVtkOutputParams()->OutputEveryIteration() )
+    num_timesteps_in_simulation_upper_bound *= 1000;
 
   // export displacement state to column format
   const DRT::Discretization& discret = dynamic_cast<const DRT::Discretization&>( Discret() );
@@ -643,26 +690,26 @@ void STR::MODELEVALUATOR::Structure::InitOutputRuntimeVtkBeams()
   LINALG::Export( *GState().GetDisN(), *disn_col );
 
   // get bounding box object only if periodic boundaries are active
-  Teuchos::RCP<GEO::MESHFREE::BoundingBox> bounding_box_ptr = TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox();
+  Teuchos::RCP<GEO::MESHFREE::BoundingBox> bounding_box_ptr =
+      TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox();
 
   // initialize the writer object with current displacement state
   beam_vtu_writer_ptr_->Initialize(
-      Teuchos::rcp_dynamic_cast<DRT::Discretization>( const_cast<STR::MODELEVALUATOR::Structure*>(this)->DiscretPtr(), true ),
-      disn_col,
-      beam_vtu_output_params.UseAbsolutePositions(),
-      bounding_box_ptr,
-      num_timesteps_in_simulation_upper_bound,
-      GState().GetTimeN(),
-      GInOutput().GetRuntimeVtkOutputParams()->WriteBinaryOutput() );
+      Teuchos::rcp_dynamic_cast<DRT::Discretization>(
+        const_cast<STR::MODELEVALUATOR::Structure*>(this)->DiscretPtr(), true ),
+        disn_col,
+        beam_vtu_output_params.UseAbsolutePositions(),
+        bounding_box_ptr,
+        num_timesteps_in_simulation_upper_bound,
+        GState().GetTimeN(),
+        GInOutput().GetRuntimeVtkOutputParams()->WriteBinaryOutput() );
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkBeams() const
+void STR::MODELEVALUATOR::Structure::WriteTimeStepOutputRuntimeVtkBeams() const
 {
-  // get the parameter container object
-  const DRT::ELEMENTS::BeamRuntimeVtuOutputParams & beam_vtu_output_params =
-      * GInOutput().GetRuntimeVtkOutputParams()->GetBeamParams();
+  CheckInitSetup();
 
   // export displacement state to column format
   const DRT::Discretization& discret = dynamic_cast<const DRT::Discretization&>( Discret() );
@@ -670,11 +717,54 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkBeams() const
       *discret.DofColMap(), true ) );
   LINALG::Export( *GState().GetDisN(), *disn_col );
 
+  if ( not GInOutput().GetRuntimeVtkOutputParams()->OutputEveryIteration() )
+    WriteOutputRuntimeVtkBeams( disn_col, GState().GetStepN(), GState().GetTimeN() );
+  else
+    WriteOutputRuntimeVtkBeams( disn_col, 10000 * GState().GetStepN(), GState().GetTimeN() );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::WriteIterationOutputRuntimeVtkBeams() const
+{
+  CheckInitSetup();
+
+  // export displacement state to column format
+  const DRT::Discretization& discret = dynamic_cast<const DRT::Discretization&>( Discret() );
+  Teuchos::RCP<Epetra_Vector> disnp_col = Teuchos::rcp( new Epetra_Vector(
+      *discret.DofColMap(), true ) );
+  LINALG::Export( *GState().GetDisNp(), *disnp_col );
+
+  const int augmented_timestep_number_incl_iteration_count =
+      10000 * GState().GetStepN() +
+      1 * EvalData().GetNlnIter();
+
+  const double augmented_time_incl_iteration_count =
+      GState().GetTimeN() +
+      1e-8 * EvalData().GetNlnIter();
+
+  WriteOutputRuntimeVtkBeams( disnp_col, augmented_timestep_number_incl_iteration_count,
+      augmented_time_incl_iteration_count );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkBeams(
+    const Teuchos::RCP<Epetra_Vector> & displacement_state_vector,
+    int timestep_number,
+    double time ) const
+{
+  CheckInitSetup();
+
+  // get the parameter container object
+  const DRT::ELEMENTS::BeamRuntimeVtuOutputParams & beam_vtu_output_params =
+      * GInOutput().GetRuntimeVtkOutputParams()->GetBeamParams();
+
   // set geometry
-  beam_vtu_writer_ptr_->SetGeometryFromBeamDiscretization( disn_col );
+  beam_vtu_writer_ptr_->SetGeometryFromBeamDiscretization( displacement_state_vector );
 
   // reset time and time step of the writer object
-  beam_vtu_writer_ptr_->ResetTimeAndTimeStep( GState().GetTimeN(), GState().GetStepN() );
+  beam_vtu_writer_ptr_->ResetTimeAndTimeStep( time, timestep_number );
 
   // append all desired output data to the writer object's storage
   beam_vtu_writer_ptr_->AppendElementOwningProcessor();
@@ -684,11 +774,11 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkBeams() const
 
   // append displacement if desired
   if ( beam_vtu_output_params.OutputDisplacementState() )
-    beam_vtu_writer_ptr_->AppendDisplacementField( disn_col );
+    beam_vtu_writer_ptr_->AppendDisplacementField( displacement_state_vector );
 
   // append triads if desired
   if ( beam_vtu_output_params.IsWriteTriadVisualizationPoints() )
-    beam_vtu_writer_ptr_->AppendTriadField( disn_col );
+    beam_vtu_writer_ptr_->AppendTriadField( displacement_state_vector );
 
   // append material cross-section strain resultants if desired
   if ( beam_vtu_output_params.IsWriteMaterialStrainsGaussPoints() )
@@ -704,9 +794,10 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkBeams() const
 
   // append filament id and type if desired
   if ( beam_vtu_output_params.IsWriteOrientationParamter() )
-  beam_vtu_writer_ptr_->AppendElementOrientationParamater( disn_col );
+  beam_vtu_writer_ptr_->AppendElementOrientationParamater( displacement_state_vector );
 
-//  beam_vtu_writer_ptr_->AppendPeriodicBoxCrossSectionStressResultants( disn_col );
+//  beam_vtu_writer_ptr_->AppendPeriodicBoxCrossSectionStressResultants(
+//      displacement_state_vector );
 
   // finalize everything and write all required VTU files to filesystem
   beam_vtu_writer_ptr_->WriteFiles();
@@ -854,6 +945,22 @@ void STR::MODELEVALUATOR::Structure::RecoverState(
       {Teuchos::null,Teuchos::null};
 
   EvaluateInternal(eval_mat,eval_vec);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::RunPostIterate( const NOX::Solver::Generic& solver )
+{
+  CheckInitSetup();
+
+  if ( vtu_writer_ptr_ != Teuchos::null and
+      GInOutput().GetRuntimeVtkOutputParams()->OutputEveryIteration() )
+    WriteIterationOutputRuntimeVtkStructure();
+
+  // write special output for beams if desired
+  if ( beam_vtu_writer_ptr_ != Teuchos::null and
+      GInOutput().GetRuntimeVtkOutputParams()->OutputEveryIteration() )
+    WriteIterationOutputRuntimeVtkBeams();
 }
 
 /*----------------------------------------------------------------------------*
@@ -1028,11 +1135,11 @@ void STR::MODELEVALUATOR::Structure::RuntimeOutputStepState() const
   CheckInitSetup();
 
   if ( vtu_writer_ptr_ != Teuchos::null )
-    WriteOutputRuntimeVtkStructure();
+    WriteTimeStepOutputRuntimeVtkStructure();
 
   // write special output for beams if desired
   if ( beam_vtu_writer_ptr_ != Teuchos::null )
-    WriteOutputRuntimeVtkBeams();
+    WriteTimeStepOutputRuntimeVtkBeams();
 }
 
 /*----------------------------------------------------------------------------*

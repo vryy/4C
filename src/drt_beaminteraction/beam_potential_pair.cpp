@@ -239,6 +239,12 @@ DRT::UTILS::GaussRule1D BEAMINTERACTION::BeamPotentialPair::GetGaussRule() const
       break;
     }
 
+    case 50:
+    {
+      return DRT::UTILS::intrule_line_50point;
+      break;
+    }
+
     default:
       dserror("%d Gauss points are not supported yet!", Params()->NumberGaussPoints() );
   }

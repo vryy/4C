@@ -19,6 +19,8 @@
 #include "../drt_binstrategy/binning_strategy_utils.H"
 
 //forward declaration ...
+class RuntimeVtpWriter;
+
 namespace DRT {
   class Element;
   class Condition;
@@ -96,6 +98,9 @@ namespace SUBMODELEVALUATOR {
     virtual void PostReadRestart();
 
     //! derived
+    virtual void RunPostIterate( const NOX::Solver::Generic& solver );
+
+    //! derived
     virtual void InitSubmodelDependencies(Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> const submodelmap);
 
     //! derived
@@ -164,6 +169,23 @@ namespace SUBMODELEVALUATOR {
      *  \author grill */
     void PrintConsoleWelcomeMessage(std::ostream& out) const;
 
+    //!@name routines that handle visualization output for potential-based interactions
+    //! @{
+
+    //! init output for potential-based interactions in VTP format
+    void InitOutputRuntimeVtpBeamPotential();
+
+    //! writes VTP output for potential-based interactions at the end of a time step
+    void WriteTimeStepOutputRuntimeVtpBeamPotential() const;
+
+    //! writes VTP output for potential-based interactions at the end of a nonlinear iteration
+    void WriteIterationOutputRuntimeVtpBeamPotential( int iteration_number ) const;
+
+    //! writes VTP output for potential-based interactions
+    void WriteOutputRuntimeVtpBeamPotential( int timestep_number, double time ) const;
+
+    //! @}
+
   private:
     //! data container holding all beam contact related parameters
     Teuchos::RCP<BEAMINTERACTION::BeamPotentialParams> beam_potential_params_ptr_;
@@ -177,6 +199,8 @@ namespace SUBMODELEVALUATOR {
     //! mapping beam ele (elegid) to set of spatially proximal eles (pointer to elements)
     std::map<int, std::set<DRT::Element*> > nearby_elements_map_;
 
+    //! runtime vtp writer for visualization of potential-based interactions
+    Teuchos::RCP<RuntimeVtpWriter> vtp_writer_ptr_;
   };
 
 }

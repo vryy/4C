@@ -535,22 +535,6 @@ private:
                           const DRT::Element* ele) const;
 
   /*!
-  \brief Assemble the shape functions into corresponding matrices
-  */
-  void AssembleShapefunctions(const LINALG::TMatrix<TYPE,1,numnodes*numnodalvalues>& N_i,
-                              const LINALG::TMatrix<TYPE,1,numnodes*numnodalvalues>& N_i_xi,
-                              const LINALG::TMatrix<TYPE,1,numnodes*numnodalvalues>& N_i_xixi,
-                              LINALG::TMatrix<TYPE,3,3*numnodes*numnodalvalues>& N,
-                              LINALG::TMatrix<TYPE,3,3*numnodes*numnodalvalues>& N_xi,
-                              LINALG::TMatrix<TYPE,3,3*numnodes*numnodalvalues>& N_xixi);
-
-  /*!
-  \brief Assemble shape functions for one given matrix
-  */
-  void AssembleShapefunctions(const LINALG::TMatrix<TYPE,1,numnodes*numnodalvalues>& N_i,
-                              LINALG::TMatrix<TYPE,3,3*numnodes*numnodalvalues>& N) const;
-
-  /*!
   \brief compute coordinate at given curve point
   */
   LINALG::TMatrix<TYPE,3,1> r(const TYPE& eta, const DRT::Element* ele) const;

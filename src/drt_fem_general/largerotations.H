@@ -29,6 +29,7 @@ theory: implementation of a strain-invariant finite element for statics and dyna
 namespace LARGEROTATIONS
 {
   //!computing spin matrix S from rotation angle vector theta, Crisfield, Vol. 2, equation (16.8)
+  // Fixme: remove this function and all non-templates in this file; should be obsolete!
   void computespin(LINALG::Matrix<3,3>& S, const LINALG::Matrix<3,1>& theta);
 
   //!this is a templated version of the method computespin as declared above in order to also handle

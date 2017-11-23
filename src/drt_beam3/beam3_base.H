@@ -26,6 +26,8 @@
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
+#include "beam_spatial_discretization_utils.H"
+
 /* number of linear subsegments used for visualization of beam centerline
  * in vtu format (see post_drt_vtu_writer.cpp and beam_discretization_runtime_vtu_writer.cpp) */
 #define BEAMSVTUVISUALSUBSEGMENTS 5
@@ -371,152 +373,6 @@ protected:
     return *browndyn_interface_ptr_;
   }
 
-  /** \brief evaluate shape functions at position \xi in element parameter space [-1,1]
-   *
-   *  \author grill
-   *  \date 03/16 */
-  template<unsigned int nnode, unsigned int vpernode>
-  void EvaluateShapeFunctionsAtXi(const double&                             xi,
-                                  LINALG::TMatrix<double,1,vpernode*nnode>& I_i,
-                                  const DRT::Element::DiscretizationType&   distype) const
-  {
-    I_i.Clear();
-
-    switch(vpernode)
-    {
-      case 1:
-      {
-        // evaluate Lagrange shape functions at xi
-        DRT::UTILS::shape_function_1D(I_i,xi,distype);
-        break;
-      }
-      case 2:
-      {
-        // evaluate Hermite shape functions at xi: vpernode=2 means 3rd order, i.e. line2
-        DRT::UTILS::shape_function_hermite_1D(I_i,xi,this->RefLength(),line2);
-        break;
-      }
-      default:
-        dserror("invalid value for vpernode (number of values per node) specified");
-    }
-  }
-
-  /** \brief evaluate shape function derivatives at position \xi in element parameter space [-1,1]
-   *
-   *  \author grill
-   *  \date 03/16 */
-  template<unsigned int nnode, unsigned int vpernode>
-  void EvaluateShapeFunctionDerivsAtXi(const double&                             xi,
-                                       LINALG::TMatrix<double,1,vpernode*nnode>& I_i_xi,
-                                       const DRT::Element::DiscretizationType&   distype) const
-  {
-    I_i_xi.Clear();
-
-    switch(vpernode)
-    {
-      case 1:
-      {
-        // evaluate Lagrange shape function derivs at xi
-        DRT::UTILS::shape_function_1D_deriv1(I_i_xi,xi,distype);
-        break;
-      }
-      case 2:
-      {
-        // evaluate Hermite shape function derivs at xi: vpernode=2 means 3rd order, i.e. line2
-        DRT::UTILS::shape_function_hermite_1D_deriv1(I_i_xi,xi,this->RefLength(),line2);
-        break;
-      }
-      default:
-        dserror("invalid value for vpernode (number of values per node) specified");
-    }
-  }
-
-  /** \brief evaluate shape function derivatives at position \xi in element parameter space [-1,1]
-   *
-   *  \author grill
-   *  \date 03/16 */
-  template<unsigned int nnode, unsigned int vpernode>
-  void EvaluateShapeFunctionsAndDerivsAtXi(const double&                             xi,
-                                           LINALG::TMatrix<double,1,vpernode*nnode>& I_i,
-                                           LINALG::TMatrix<double,1,vpernode*nnode>& I_i_xi,
-                                           const DRT::Element::DiscretizationType&   distype) const
-  {
-    this->EvaluateShapeFunctionsAtXi<nnode,vpernode>(xi,I_i,distype);
-    this->EvaluateShapeFunctionDerivsAtXi<nnode,vpernode>(xi,I_i_xi,distype);
-  }
-
-  /** \brief evaluate shape functions at all specified Gauss points at once
-   *
-   *  \author grill
-   *  \date 03/16 */
-  template<unsigned int nnode, unsigned int vpernode>
-  void EvaluateShapeFunctionsAllGPs(const DRT::UTILS::IntegrationPoints1D&          gausspoints,
-                                    std::vector<LINALG::TMatrix<double,1,vpernode*nnode> >& I_i,
-                                    const DRT::Element::DiscretizationType&         distype) const
-  {
-    if (I_i.size()!= (unsigned int) gausspoints.nquad)
-      dserror("vector for individual shape functions to be evaluated at %d GPs has wrong size: %d"
-          ,gausspoints.nquad,I_i.size());
-
-    for (int numgp=0; numgp < gausspoints.nquad; numgp++)
-    {
-      // Get location of GP in element parameter space xi \in [-1;1]
-      const double xi = gausspoints.qxg[numgp][0];
-      this->EvaluateShapeFunctionsAtXi<nnode,vpernode>(xi,I_i[numgp],distype);
-    }
-  }
-
-  /** \brief evaluate shape function derivatives at all specified Gauss points at once
-   *
-   *  \author grill
-   *  \date 03/16 */
-  template<unsigned int nnode, unsigned int vpernode>
-  void EvaluateShapeFunctionDerivsAllGPs(const DRT::UTILS::IntegrationPoints1D&          gausspoints,
-                                         std::vector<LINALG::TMatrix<double,1,vpernode*nnode> >& I_i_xi,
-                                         const DRT::Element::DiscretizationType&         distype) const
-  {
-    if (I_i_xi.size()!= (unsigned int) gausspoints.nquad)
-      dserror("vector for individual shape function derivatives to be evaluated at %d GPs has wrong size: %d"
-          ,gausspoints.nquad,I_i_xi.size());
-
-    for (int numgp=0; numgp < gausspoints.nquad; numgp++)
-    {
-      // Get location of GP in element parameter space xi \in [-1;1]
-      const double xi = gausspoints.qxg[numgp][0];
-      this->EvaluateShapeFunctionDerivsAtXi<nnode,vpernode>(xi,I_i_xi[numgp],distype);
-    }
-  }
-
-  /** \brief evaluate shape functions and derivatives at all specified Gauss points at once
-   *
-   *  \author grill
-   *  \date 03/16 */
-  template<unsigned int nnode, unsigned int vpernode>
-  void EvaluateShapeFunctionsAndDerivsAllGPs(const DRT::UTILS::IntegrationPoints1D&          gausspoints,
-                                             std::vector<LINALG::TMatrix<double,1,vpernode*nnode> >& I_i,
-                                             std::vector<LINALG::TMatrix<double,1,vpernode*nnode> >& I_i_xi,
-                                             const DRT::Element::DiscretizationType&         distype) const
-  {
-    this->EvaluateShapeFunctionsAllGPs<nnode,vpernode>(gausspoints,I_i,distype);
-    this->EvaluateShapeFunctionDerivsAllGPs<nnode,vpernode>(gausspoints,I_i_xi,distype);
-  }
-
-  /** \brief interpolation of nodal DoFs based on given shape function values
-   *
-   *  \author grill
-   *  \date 03/16 */
-  template<unsigned int nnode, unsigned int vpernode, unsigned int ndim, typename T>
-  void CalcInterpolation(const LINALG::TMatrix<T,ndim*vpernode*nnode,1>& dof_vals,
-                         const LINALG::TMatrix<double,1,vpernode*nnode>& shapefcn_vals,
-                         LINALG::TMatrix<T,ndim,1>&                      result) const
-  {
-    result.Clear();
-
-    for (unsigned int dim=0; dim<ndim; ++dim)
-      for (unsigned int i=0; i<vpernode*nnode; ++i)
-        result(dim) += shapefcn_vals(i)*dof_vals(ndim*i+dim);
-  }
-
   /** \brief compute beam centerline position vector at position \xi in element parameter space [-1,1]
    *         via interpolation of nodal DoFs based on given shape function values
    *
@@ -527,7 +383,7 @@ protected:
               const LINALG::TMatrix<double,1,vpernode*nnode>& funct,
               LINALG::TMatrix<T,3,1>&                         r) const
   {
-    CalcInterpolation<nnode,vpernode,3,T>(disp_totlag_centerline,funct,r);
+    DRT::UTILS::BEAM::CalcInterpolation<nnode,vpernode,3,T>(disp_totlag_centerline,funct,r);
   }
 
   /** \brief compute derivative of beam centerline (i.e. tangent vector) at position \xi in
@@ -541,7 +397,7 @@ protected:
                  const LINALG::TMatrix<double,1,vpernode*nnode>& deriv,
                  LINALG::TMatrix<T,3,1>&                         r_xi) const
   {
-    CalcInterpolation<nnode,vpernode,3,T>(disp_totlag_centerline,deriv,r_xi);
+    DRT::UTILS::BEAM::CalcInterpolation<nnode,vpernode,3,T>(disp_totlag_centerline,deriv,r_xi);
   }
 
   /** \brief compute derivative of beam centerline (i.e. tangent vector) at position \xi in

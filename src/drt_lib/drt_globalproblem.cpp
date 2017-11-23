@@ -369,6 +369,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--BEAM CONTACT", *list);
   reader.ReadGidSection("--BEAM CONTACT/RUNTIME VTK OUTPUT", *list);
   reader.ReadGidSection("--BEAM POTENTIAL", *list);
+  reader.ReadGidSection("--BEAM POTENTIAL/RUNTIME VTK OUTPUT", *list);
   reader.ReadGidSection("--SEMI-SMOOTH PLASTICITY", *list);
   reader.ReadGidSection("--ACOUSTIC DYNAMIC", *list);
   reader.ReadGidSection("--ACOUSTIC DYNAMIC/PA IMAGE RECONSTRUCTION", *list);

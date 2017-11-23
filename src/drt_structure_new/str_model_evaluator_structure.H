@@ -106,8 +106,7 @@ namespace MODELEVALUATOR{
             const Epetra_Vector& xnew);
 
     //! derived
-    virtual void RunPostIterate( const NOX::Solver::Generic& solver )
-    { return; };
+    virtual void RunPostIterate( const NOX::Solver::Generic& solver );
 
     //! derived
     virtual void Predict(const INPAR::STR::PredEnum& pred_type);
@@ -323,10 +322,27 @@ namespace MODELEVALUATOR{
     void InitOutputRuntimeVtkStructure();
 
     /*! \brief writes output for discretization structure in VTK format
+     *         at the end of a time step
      *
      *  \date 04/17
      *  \author grill */
-    void WriteOutputRuntimeVtkStructure() const;
+    void WriteTimeStepOutputRuntimeVtkStructure() const;
+
+    /*! \brief writes output for discretization structure in VTK format
+     *         at the end of a nonlinear iteration
+     *
+     *  \date 10/17
+     *  \author grill */
+    void WriteIterationOutputRuntimeVtkStructure() const;
+
+    /*! \brief writes output for discretization structure in VTK format
+     *
+     *  \date 10/17
+     *  \author grill */
+    void WriteOutputRuntimeVtkStructure(
+        const Teuchos::RCP<Epetra_Vector> & displacement_state_vector,
+        int timestep_number,
+        double time ) const;
 
     /*! \brief writes special output for beam elements in VTK format
      *
@@ -335,10 +351,27 @@ namespace MODELEVALUATOR{
     void InitOutputRuntimeVtkBeams();
 
     /*! \brief writes special output for beam elements in VTK format
+     *         at the end of a time step
      *
      *  \date 04/17
      *  \author grill */
-    void WriteOutputRuntimeVtkBeams() const;
+    void WriteTimeStepOutputRuntimeVtkBeams() const;
+
+    /*! \brief writes special output for beam elements in VTK format
+     *         at the end of a nonlinear iteration
+     *
+     *  \date 10/17
+     *  \author grill */
+    void WriteIterationOutputRuntimeVtkBeams() const;
+
+    /*! \brief writes special output for beam elements in VTK format
+     *
+     *  \date 10/17
+     *  \author grill */
+    void WriteOutputRuntimeVtkBeams(
+        const Teuchos::RCP<Epetra_Vector> & displacement_state_vector,
+        int timestep_number,
+        double time ) const;
 
     /*! \brief Write the parameters from the STR::MODELEVALUATOR::Data
      *         to the Teuchos::ParameterList

@@ -14,6 +14,8 @@
 
 #include "../drt_fem_general/drt_utils_integration.H"
 
+#include "../linalg/linalg_fixedsizematrix.H"
+
 #include <Teuchos_RCP.hpp>
 
 //forward declaration ...
@@ -114,6 +116,33 @@ public:
   \brief Get second element
   */
   inline DRT::Element const* Element2() const { return element2_;};
+
+  /*!
+  \brief Get coordinates of all interacting points on element1 and element2
+  */
+  virtual void GetAllInteractingPointCoordsElement1(
+      std::vector<LINALG::TMatrix<double,3,1> >& coords ) const=0;
+
+  virtual void GetAllInteractingPointCoordsElement2(
+      std::vector<LINALG::TMatrix<double,3,1> >& coords ) const=0;
+
+  /*!
+  \brief Get forces at all interacting points on element1 and element2
+  */
+  virtual void GetForcesAtAllInteractingPointsElement1(
+      std::vector<LINALG::TMatrix<double,3,1> >& forces ) const=0;
+
+  virtual void GetForcesAtAllInteractingPointsElement2(
+      std::vector<LINALG::TMatrix<double,3,1> >& forces ) const=0;
+
+  /*!
+  \brief Get moments at all interacting points on element1 and element2
+  */
+  virtual void GetMomentsAtAllInteractingPointsElement1(
+      std::vector<LINALG::TMatrix<double,3,1> >& moments ) const=0;
+
+  virtual void GetMomentsAtAllInteractingPointsElement2(
+      std::vector<LINALG::TMatrix<double,3,1> >& moments ) const=0;
 
   /** \brief print this beam potential-based element pair to screen
    *

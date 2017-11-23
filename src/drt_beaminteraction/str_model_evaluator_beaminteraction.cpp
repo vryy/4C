@@ -638,6 +638,19 @@ void STR::MODELEVALUATOR::BeamInteraction::RecoverState(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::BeamInteraction::RunPostIterate(
+    const NOX::Solver::Generic& solver )
+{
+  CheckInitSetup();
+
+  // submodel loop
+  Vector::iterator sme_iter;
+  for ( sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter )
+    (*sme_iter)->RunPostIterate( solver );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteraction::UpdateStepState(
     const double& timefac_n)
 {

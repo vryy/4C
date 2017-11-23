@@ -27,6 +27,7 @@
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 #include "../drt_inpar/inpar_beamcontact.H"
 #include "../drt_beam3/beam3_base.H"
@@ -36,7 +37,7 @@
 #include "beaminteraction_calc_utils.H"
 #include "str_model_evaluator_beaminteraction_datastate.H"
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include <NOX_Solver_Generic.H>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -56,15 +57,15 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
   CheckInit();
 
   // init and setup beam to beam contact data container
-  beam_contact_params_ptr_ =Teuchos::rcp(new BEAMINTERACTION::BeamContactParams() );
-  beam_contact_params_ptr_->Init();
-  beam_contact_params_ptr_->Setup();
+  beam_contact_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamContactParams() );
+  BeamContactParams().Init();
+  BeamContactParams().Setup();
 
   // initialize element types that are considered for beamt to ? contact
   InitElementTypesConsideredForContact();
 
   // build runtime vtp writer if desired
-  if ( beam_contact_params_ptr_->VtkRuntimeOutput() )
+  if ( BeamContactParams().VtkRuntimeOutput() )
     InitOutputRuntimeVtpBeamContact();
 
   // set flag
@@ -389,8 +390,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::UpdateStepElement()
    * from previous time step */
   if ( vtp_writer_ptr_ != Teuchos::null and
       GState().GetStepNp() %
-      beam_contact_params_ptr_->GetBeamContactVtkParams()->OutputIntervalInSteps() == 0 )
-    WriteOutputRuntimeVtpBeamContact();
+      BeamContactParams().GetBeamContactVtkParams()->OutputIntervalInSteps() == 0 )
+    WriteTimeStepOutputRuntimeVtpBeamContact();
 
 
   nearby_elements_map_.clear();
@@ -433,7 +434,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::InitOutputRuntimeVtpBeamCo
 
   // Todo: we need a better upper bound for total number of time steps here
   // however, this 'only' affects the number of leading zeros in the vtk file names
-  const unsigned int num_timesteps_in_simulation_upper_bound = 1000000;
+  unsigned int num_timesteps_in_simulation_upper_bound = 1000000;
+
+  if ( BeamContactParams().GetBeamContactVtkParams()->OutputEveryIteration() )
+    num_timesteps_in_simulation_upper_bound *= 1000;
 
   // determine path of output directory
   const std::string outputfilename( DRT::Problem::Instance()->OutputControlFile()->FileName() );
@@ -458,129 +462,161 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::InitOutputRuntimeVtpBeamCo
       "beam-contact",
       DRT::Problem::Instance()->OutputControlFile()->RestartName(),
       GState().GetTimeN(),
-      beam_contact_params_ptr_->GetBeamContactVtkParams()->WriteBinaryOutput() );
+      BeamContactParams().GetBeamContactVtkParams()->WriteBinaryOutput() );
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::WriteOutputRuntimeVtpBeamContact() const
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
+WriteTimeStepOutputRuntimeVtpBeamContact() const
 {
   CheckInitSetup();
 
-   const unsigned int num_spatial_dimensions = 3;
+  if ( not BeamContactParams().GetBeamContactVtkParams()->OutputEveryIteration() )
+    WriteOutputRuntimeVtpBeamContact( GState().GetStepN(), GState().GetTimeN() );
+  else
+    WriteOutputRuntimeVtpBeamContact( 10000 * GState().GetStepN(), GState().GetTimeN() );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
+WriteIterationOutputRuntimeVtpBeamContact( int iteration_number ) const
+{
+  CheckInitSetup();
+
+  const int augmented_timestep_number_incl_iteration_count =
+      10000 * GState().GetStepN() +
+      1 * iteration_number;
+
+  const double augmented_time_incl_iteration_count =
+      GState().GetTimeN() +
+      1e-8 * iteration_number;
+
+  WriteOutputRuntimeVtpBeamContact( augmented_timestep_number_incl_iteration_count,
+      augmented_time_incl_iteration_count );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::WriteOutputRuntimeVtpBeamContact(
+    int timestep_number, double time ) const
+{
+  CheckInitSetup();
+
+  const unsigned int num_spatial_dimensions = 3;
 
   // reset time and time step and geometry name in the writer object
-  vtp_writer_ptr_->SetupForNewTimeStepAndGeometry(
-      GState().GetTimeN(), GState().GetStepN(), "beam-contact" );
+  vtp_writer_ptr_->SetupForNewTimeStepAndGeometry( time, timestep_number, "beam-contact" );
 
-  // number of active point contact point pairs = number of row points for writer object
+  // number of active point contact point pairs * 2 = number of row points for writer object
   unsigned int num_row_points = 0;
 
   // loop over contact pairs and retrieve number of all active contact point pairs
   std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair> >::const_iterator pair_iter;
   for ( pair_iter=contact_elepairs_.begin(); pair_iter!=contact_elepairs_.end(); ++pair_iter )
   {
-    num_row_points += (*pair_iter)->GetNumAllActiveContactPointPairs();
+    num_row_points += 2 * (*pair_iter)->GetNumAllActiveContactPointPairs();
   }
 
-   // get and prepare storage for point coordinate values
-   std::vector<double>& point_coordinates = vtp_writer_ptr_->GetMutablePointCoordinateVector();
-   point_coordinates.clear();
-   point_coordinates.reserve( num_spatial_dimensions * num_row_points );
+  // get and prepare storage for point coordinate values
+  std::vector<double>& point_coordinates = vtp_writer_ptr_->GetMutablePointCoordinateVector();
+  point_coordinates.clear();
+  point_coordinates.reserve( num_spatial_dimensions * num_row_points );
 
-   // contact force values: collect data and append to visualization results if desired
-   std::vector<double> contact_force_vector(0);
-   contact_force_vector.reserve( num_spatial_dimensions * num_row_points );
+  // contact force values: collect data and append to visualization results if desired
+  std::vector<double> contact_force_vector(0);
+  contact_force_vector.reserve( num_spatial_dimensions * num_row_points );
 
-   // gap values: collect data and append to visualization results if desired
-   std::vector<double> gaps(0);
-   gaps.reserve( num_row_points );
+  // gap values: collect data and append to visualization results if desired
+  std::vector<double> gaps(0);
+  gaps.reserve( num_row_points );
 
-   // loop over my points and collect the geometry/grid data, i.e. contact points
-   std::vector<LINALG::TMatrix<double,3,1> > coordinates_ele1_this_pair;
-   std::vector<LINALG::TMatrix<double,3,1> > coordinates_ele2_this_pair;
+  // loop over my points and collect the geometry/grid data, i.e. contact points
+  std::vector<LINALG::TMatrix<double,3,1> > coordinates_ele1_this_pair;
+  std::vector<LINALG::TMatrix<double,3,1> > coordinates_ele2_this_pair;
 
-   std::vector<double> contact_forces_this_pair;
-   std::vector<double> gaps_this_pair;
+  std::vector<double> contact_forces_this_pair;
+  std::vector<double> gaps_this_pair;
 
-   // loop over contact pairs and retrieve all active contact point coordinates
-   for ( pair_iter=contact_elepairs_.begin(); pair_iter!=contact_elepairs_.end(); ++pair_iter )
+  // loop over contact pairs and retrieve all active contact point coordinates
+  for ( pair_iter=contact_elepairs_.begin(); pair_iter!=contact_elepairs_.end(); ++pair_iter )
+  {
+   if ( (*pair_iter)->GetContactFlag() == true )
    {
-     if ( (*pair_iter)->GetContactFlag() == true )
+     // active contact points of element 1 and element 2
+     (*pair_iter)->GetAllActiveContactPointCoordsElement1( coordinates_ele1_this_pair );
+     (*pair_iter)->GetAllActiveContactPointCoordsElement2( coordinates_ele2_this_pair );
+     (*pair_iter)->GetAllActiveContactForces( contact_forces_this_pair );
+     (*pair_iter)->GetAllActiveContactGaps( gaps_this_pair );
+
+     const unsigned int num_active_point_pairs =
+         (unsigned int) coordinates_ele1_this_pair.size();
+
+     dsassert( num_active_point_pairs == (unsigned int) coordinates_ele2_this_pair.size(),
+         "number of active points on element 1 does not match number of active points "
+         "on element 2!" );
+
+     dsassert( num_active_point_pairs == (unsigned int) contact_forces_this_pair.size(),
+         "number of active points on element 1 does not match number of contact forces!" );
+
+
+     dsassert( num_active_point_pairs == (unsigned int) gaps_this_pair.size(),
+         "number of active points on element 1 does not match number of gap values!" );
+
+
+     for ( unsigned int ipointpair=0; ipointpair < num_active_point_pairs; ++ipointpair )
      {
-       // active contact points of element 1 and element 2
-       (*pair_iter)->GetAllActiveContactPointCoordsElement1( coordinates_ele1_this_pair );
-       (*pair_iter)->GetAllActiveContactPointCoordsElement2( coordinates_ele2_this_pair );
-       (*pair_iter)->GetAllActiveContactForces( contact_forces_this_pair );
-       (*pair_iter)->GetAllActiveContactGaps( gaps_this_pair );
+       LINALG::TMatrix<double,3,1> normal_vector;
+       normal_vector.Update(1.0, coordinates_ele1_this_pair[ipointpair],
+           -1.0, coordinates_ele2_this_pair[ipointpair]);
 
-       const unsigned int num_active_point_pairs =
-           (unsigned int) coordinates_ele1_this_pair.size();
-
-       dsassert( num_active_point_pairs == (unsigned int) coordinates_ele2_this_pair.size(),
-           "number of active points on element 1 does not match number of active points "
-           "on element 2!" );
-
-       dsassert( num_active_point_pairs == (unsigned int) contact_forces_this_pair.size(),
-           "number of active points on element 1 does not match number of contact forces!" );
-
-
-       dsassert( num_active_point_pairs == (unsigned int) gaps_this_pair.size(),
-           "number of active points on element 1 does not match number of gap values!" );
-
-
-       for ( unsigned int ipointpair=0; ipointpair < num_active_point_pairs; ++ipointpair )
+       // contact point on first element
+       for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
        {
-         LINALG::TMatrix<double,3,1> normal_vector;
-         normal_vector.Update(1.0, coordinates_ele1_this_pair[ipointpair],
-             -1.0, coordinates_ele2_this_pair[ipointpair]);
+         point_coordinates.push_back( coordinates_ele1_this_pair[ipointpair](idim) );
 
-         // contact point on first element
-         for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
-         {
-           point_coordinates.push_back( coordinates_ele1_this_pair[ipointpair](idim) );
-
-           contact_force_vector.push_back( contact_forces_this_pair[ipointpair]
-                                           * normal_vector(idim) );
-         }
-         gaps.push_back( gaps_this_pair[ipointpair] );
-
-         // contact point on second element
-         for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
-         {
-           point_coordinates.push_back( coordinates_ele2_this_pair[ipointpair](idim) );
-
-           contact_force_vector.push_back( -1.0 * contact_forces_this_pair[ipointpair]
-                                           * normal_vector(idim) );
-         }
-         gaps.push_back( gaps_this_pair[ipointpair] );
-
+         contact_force_vector.push_back( contact_forces_this_pair[ipointpair]
+                                         * normal_vector(idim) );
        }
+       gaps.push_back( gaps_this_pair[ipointpair] );
+
+       // contact point on second element
+       for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
+       {
+         point_coordinates.push_back( coordinates_ele2_this_pair[ipointpair](idim) );
+
+         contact_force_vector.push_back( -1.0 * contact_forces_this_pair[ipointpair]
+                                         * normal_vector(idim) );
+       }
+       gaps.push_back( gaps_this_pair[ipointpair] );
 
      }
+
    }
+  }
 
 
-   // append all desired output data to the writer object's storage
-   if ( beam_contact_params_ptr_->GetBeamContactVtkParams()->IsWriteContactForces() )
-   {
-     vtp_writer_ptr_->AppendVisualizationPointDataVector( contact_force_vector,
-         num_spatial_dimensions, "contact_force" );
-   }
-   if ( beam_contact_params_ptr_->GetBeamContactVtkParams()->IsWriteGaps() )
-   {
-     vtp_writer_ptr_->AppendVisualizationPointDataVector( gaps,
-         1, "gap" );
-   }
+  // append all desired output data to the writer object's storage
+  if ( BeamContactParams().GetBeamContactVtkParams()->IsWriteContactForces() )
+  {
+   vtp_writer_ptr_->AppendVisualizationPointDataVector( contact_force_vector,
+       num_spatial_dimensions, "contact_force" );
+  }
+  if ( BeamContactParams().GetBeamContactVtkParams()->IsWriteGaps() )
+  {
+   vtp_writer_ptr_->AppendVisualizationPointDataVector( gaps,
+       1, "gap" );
+  }
 
-   // finalize everything and write all required VTU files to filesystem
-   vtp_writer_ptr_->WriteFiles();
+  // finalize everything and write all required VTU files to filesystem
+  vtp_writer_ptr_->WriteFiles();
 
 
-   // write a collection file summarizing all previously written files
-   vtp_writer_ptr_->WriteCollectionFileOfAllWrittenFiles(
-       DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix() +
-       "-beam-contact" );
+  // write a collection file summarizing all previously written files
+  vtp_writer_ptr_->WriteCollectionFileOfAllWrittenFiles(
+     DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix() +
+     "-beam-contact" );
 }
 
 /*----------------------------------------------------------------------*
@@ -618,6 +654,18 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::PostReadRestart()
   nearby_elements_map_.clear();
   FindAndStoreNeighboringElements();
   CreateBeamContactElementPairs();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::RunPostIterate(
+    const NOX::Solver::Generic& solver )
+{
+  CheckInitSetup();
+
+  if ( vtp_writer_ptr_ != Teuchos::null and
+      BeamContactParams().GetBeamContactVtkParams()->OutputEveryIteration() )
+    WriteIterationOutputRuntimeVtpBeamContact( solver.getNumIterations() );
 }
 
 /*----------------------------------------------------------------------*

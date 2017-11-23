@@ -32,6 +32,7 @@
 #include "beam3k.H"
 
 #include "triad_interpolation_local_rotation_vectors.H"
+#include "beam_spatial_discretization_utils.H"
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public)                                                                 meier 01/16|
@@ -2942,8 +2943,8 @@ void DRT::ELEMENTS::Beam3k::EvaluateTranslationalDamping(
 
   for (int gp=0; gp<gausspoints.nquad; gp++)
   {
-    EvaluateShapeFunctionsAndDerivsAtXi<nnode,vpernode>(
-        gausspoints.qxg[gp][0], N_i, N_i_xi, this->Shape() );
+    DRT::UTILS::BEAM::EvaluateShapeFunctionsAndDerivsAtXi<nnode,vpernode>(
+        gausspoints.qxg[gp][0], N_i, N_i_xi, this->Shape(), this->RefLength() );
 
     // compute position vector r of point in physical space corresponding to Gauss point
     Calc_r<nnode,vpernode,T>(disp_totlag, N_i, evaluationpoint);
@@ -3120,8 +3121,8 @@ void DRT::ELEMENTS::Beam3k::EvaluateStochasticForces(
 
   for (int gp=0; gp<gausspoints.nquad; gp++)
   {
-    EvaluateShapeFunctionsAndDerivsAtXi<nnode,vpernode>(
-        gausspoints.qxg[gp][0], N_i, N_i_xi, this->Shape());
+    DRT::UTILS::BEAM::EvaluateShapeFunctionsAndDerivsAtXi<nnode,vpernode>(
+        gausspoints.qxg[gp][0], N_i, N_i_xi, this->Shape(), this->RefLength());
 
     // compute tangent vector t_{\par}=r' at current Gauss point
     Calc_r_s<nnode,vpernode,T>(disp_totlag, N_i_xi, jacobi_[gp], r_s);

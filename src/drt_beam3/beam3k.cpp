@@ -2222,7 +2222,7 @@ void DRT::ELEMENTS::Beam3k::Calc_velocity(
     const LINALG::TMatrix<double,ndim,1>&                  position,
     int                                                    gausspoint_index) const
 {
-  CalcInterpolation<nnodecl,vpernode,ndim,double>(velocity_dofvec, N_i, velocity);
+  DRT::UTILS::BEAM::CalcInterpolation<nnodecl,vpernode,ndim,double>(velocity_dofvec, N_i, velocity);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -2242,7 +2242,7 @@ void DRT::ELEMENTS::Beam3k::Calc_velocity(
    * adapt the calculated velocity and compare it with the velocity calculated in time integrator
    * and handed in from outside for safety reasons */
   LINALG::TMatrix<double,ndim,1> velocity_test;
-  CalcInterpolation<nnodecl,vpernode,ndim,double>(velocity_dofvec, N_i, velocity_test);
+  DRT::UTILS::BEAM::CalcInterpolation<nnodecl,vpernode,ndim,double>(velocity_dofvec, N_i, velocity_test);
 
   // get time step size
   const double dt = ParamsInterface().GetDeltaTime();

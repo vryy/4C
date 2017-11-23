@@ -112,6 +112,10 @@ namespace SUBMODELEVALUATOR {
     virtual void PostReadRestart();
 
     //! derived
+    virtual void RunPostIterate( const NOX::Solver::Generic& solver )
+    { /*empty*/ };
+
+    //! derived
     virtual void InitSubmodelDependencies(Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> const submodelmap);
 
     //! derived

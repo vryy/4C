@@ -13,6 +13,7 @@
 #include "beam3r.H"
 
 #include "triad_interpolation_local_rotation_vectors.H"
+#include "beam_spatial_discretization_utils.H"
 
 // Todo @grill: check for obsolete header inclusions
 #include "../drt_lib/drt_discret.H"
@@ -1028,9 +1029,11 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
   H_i_xi.resize(gausspoints_elast_force.nquad);
 
   // evaluate all shape functions and derivatives with respect to element parameter xi at all specified Gauss points
-  EvaluateShapeFunctionsAllGPs<nnodetriad,1>(gausspoints_elast_force,I_i,this->Shape());
+  DRT::UTILS::BEAM::EvaluateShapeFunctionsAllGPs<nnodetriad,1>(gausspoints_elast_force,I_i,
+      this->Shape());
 
-  EvaluateShapeFunctionDerivsAllGPs<nnodecl,vpernode>(gausspoints_elast_force,H_i_xi,this->Shape());
+  DRT::UTILS::BEAM::EvaluateShapeFunctionDerivsAllGPs<nnodecl,vpernode>(gausspoints_elast_force,
+      H_i_xi,this->Shape(),this->RefLength());
 
   // re-assure correct size of strain and stress resultant class variables
   axial_strain_GP_elastf_.resize( gausspoints_elast_force.nquad );
@@ -1145,7 +1148,8 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
   I_i_xi.resize(gausspoints_elast_moment.nquad);
 
   // evaluate all shape functions and derivatives with respect to element parameter xi at all specified Gauss points
-  EvaluateShapeFunctionsAndDerivsAllGPs<nnodetriad,1>(gausspoints_elast_moment,I_i,I_i_xi,this->Shape());
+  DRT::UTILS::BEAM::EvaluateShapeFunctionsAndDerivsAllGPs<nnodetriad,1>(gausspoints_elast_moment,
+      I_i,I_i_xi,this->Shape());
 
   // reset norm of maximal bending curvature
   Kmax_ = 0.0;
@@ -1328,8 +1332,10 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
   H_i.resize(gausspoints_mass.nquad);
 
   // evaluate all shape functions at all specified Gauss points
-  EvaluateShapeFunctionsAllGPs<nnodetriad,1>(gausspoints_mass,I_i,this->Shape());
-  EvaluateShapeFunctionsAllGPs<nnodecl,vpernode>(gausspoints_mass,H_i,this->Shape());
+  DRT::UTILS::BEAM::EvaluateShapeFunctionsAllGPs<nnodetriad,1>(gausspoints_mass,I_i,
+      this->Shape());
+  DRT::UTILS::BEAM::EvaluateShapeFunctionsAllGPs<nnodecl,vpernode>(gausspoints_mass,H_i,
+      this->Shape(),this->RefLength());
 
   // Calculate current centerline position at gauss points (needed for element intern time integration)
   for (int gp=0; gp<gausspoints_mass.nquad; gp++)//loop through Gauss points
@@ -2266,7 +2272,7 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(
   std::vector<LINALG::TMatrix<double,1,nnodetriad> > I_i(gausspoints.nquad);
 
   // evaluate all shape functions at all specified Gauss points
-  EvaluateShapeFunctionsAllGPs<nnodetriad,1>(gausspoints, I_i, this->Shape());
+  DRT::UTILS::BEAM::EvaluateShapeFunctionsAllGPs<nnodetriad,1>(gausspoints, I_i, this->Shape());
 
   /* vector with nnodetriad elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode according to (3.19), Jelenic 1999*/
   std::vector<LINALG::TMatrix<double,3,3> > Itilde(nnodetriad);
@@ -2514,7 +2520,8 @@ void DRT::ELEMENTS::Beam3r::EvaluateTranslationalDamping(
   std::vector<LINALG::TMatrix<double,1,vpernode*nnodecl> > H_i_xi(gausspoints.nquad);
 
   // evaluate all shape functions and derivatives with respect to element parameter xi at all specified Gauss points
-  EvaluateShapeFunctionsAndDerivsAllGPs<nnodecl,vpernode>(gausspoints,H_i,H_i_xi,this->Shape());
+  DRT::UTILS::BEAM::EvaluateShapeFunctionsAndDerivsAllGPs<nnodecl,vpernode>(gausspoints,H_i,H_i_xi,
+      this->Shape(),this->RefLength());
 
   for(int gp=0; gp<gausspoints.nquad; gp++)
   {
@@ -2528,7 +2535,7 @@ void DRT::ELEMENTS::Beam3r::EvaluateTranslationalDamping(
     GetBackgroundVelocity<ndim,double>(params,r,velbackground,velbackgroundgrad);
 
     // compute velocity vector at this Gauss point via same interpolation as for centerline position vector
-    CalcInterpolation<nnodecl,vpernode,3,double>(vel_centerline, H_i[gp], vel_rel);
+    DRT::UTILS::BEAM::CalcInterpolation<nnodecl,vpernode,3,double>(vel_centerline, H_i[gp], vel_rel);
     vel_rel -= velbackground;
 
     // loop over lines and columns of damping matrix
@@ -2642,7 +2649,8 @@ void DRT::ELEMENTS::Beam3r::EvaluateStochasticForces(
   std::vector<LINALG::TMatrix<double,1,vpernode*nnodecl> > H_i_xi(gausspoints.nquad);
 
   // evaluate all shape function derivatives with respect to element parameter xi at all specified Gauss points
-  EvaluateShapeFunctionsAndDerivsAllGPs<nnodecl,vpernode>(gausspoints,H_i,H_i_xi,this->Shape());
+  DRT::UTILS::BEAM::EvaluateShapeFunctionsAndDerivsAllGPs<nnodecl,vpernode>(gausspoints,H_i,H_i_xi,
+      this->Shape(),this->RefLength());
 
 
   for (int gp=0; gp < gausspoints.nquad; gp++)

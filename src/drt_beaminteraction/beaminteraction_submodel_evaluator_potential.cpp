@@ -13,8 +13,11 @@
 #include "../drt_beaminteraction/beaminteraction_submodel_evaluator_potential.H"
 
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
+#include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
+#include "../drt_io/runtime_vtp_writer.H"
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "../drt_structure_new/str_timint_basedataglobalstate.H"
@@ -23,6 +26,7 @@
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 //#include "../drt_inpar/inpar_beamcontact.H"
 #include "../drt_beam3/beam3_base.H"
@@ -30,7 +34,10 @@
 #include "../drt_beaminteraction/str_model_evaluator_beaminteraction_datastate.H"
 #include "beam_potential_pair.H"
 #include "beam_potential_params.H"
+#include "beam_potential_runtime_vtk_output_params.H"
 #include "beaminteraction_calc_utils.H"
+
+#include <NOX_Solver_Generic.H>
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
@@ -54,6 +61,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::Setup()
   BeamPotentialParams().Setup();
 
   PrintConsoleWelcomeMessage(std::cout);
+
+  // build runtime vtp writer if desired
+  if ( BeamPotentialParams().VtkRuntimeOutput() )
+    InitOutputRuntimeVtpBeamPotential();
 
   // set flag
   issetup_ = true;
@@ -445,6 +456,16 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::UpdateStepElement()
 {
   CheckInitSetup();
 
+  /* Fixme
+   * writing vtk output needs to be done BEFORE updating (and thus clearing
+   * element pairs)
+   * move this to RuntimeOutputStepState as soon as we keep element pairs
+   * from previous time step */
+  if ( vtp_writer_ptr_ != Teuchos::null and
+      GState().GetStepNp() %
+      BeamPotentialParams().GetBeamPotentialVtkParams()->OutputIntervalInSteps() == 0 )
+    WriteTimeStepOutputRuntimeVtpBeamPotential();
+
   nearby_elements_map_.clear();
   FindAndStoreNeighboringElements();
   CreateBeamPotentialElementPairs();
@@ -513,6 +534,18 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::PostReadRestart()
   nearby_elements_map_.clear();
   FindAndStoreNeighboringElements();
   CreateBeamPotentialElementPairs();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::RunPostIterate(
+    const NOX::Solver::Generic& solver )
+{
+  CheckInitSetup();
+
+  if ( vtp_writer_ptr_ != Teuchos::null and
+      BeamPotentialParams().GetBeamPotentialVtkParams()->OutputEveryIteration() )
+    WriteIterationOutputRuntimeVtpBeamPotential( solver.getNumIterations() );
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -813,4 +846,202 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::PrintConsoleWelcomeMessa
 
     std::cout << "================================================================\n" << std::endl;
   }
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::InitOutputRuntimeVtpBeamPotential()
+{
+  CheckInit();
+
+  vtp_writer_ptr_ = Teuchos::rcp( new RuntimeVtpWriter() );
+
+  // Todo: we need a better upper bound for total number of time steps here
+  // however, this 'only' affects the number of leading zeros in the vtk file names
+  unsigned int num_timesteps_in_simulation_upper_bound = 1000000;
+
+  if ( BeamPotentialParams().GetBeamPotentialVtkParams()->OutputEveryIteration() )
+    num_timesteps_in_simulation_upper_bound *= 1000;
+
+  // determine path of output directory
+  const std::string outputfilename( DRT::Problem::Instance()->OutputControlFile()->FileName() );
+
+  size_t pos = outputfilename.find_last_of("/");
+
+  if (pos == outputfilename.npos)
+    pos = 0ul;
+  else
+    pos++;
+
+  const std::string output_directory_path( outputfilename.substr(0ul, pos) );
+
+
+  // initialize the writer object
+  vtp_writer_ptr_->Initialize(
+      Discret().Comm().MyPID(),
+      Discret().Comm().NumProc(),
+      num_timesteps_in_simulation_upper_bound,
+      output_directory_path,
+      DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix(),
+      "beam-potential",
+      DRT::Problem::Instance()->OutputControlFile()->RestartName(),
+      GState().GetTimeN(),
+      BeamPotentialParams().GetBeamPotentialVtkParams()->WriteBinaryOutput() );
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
+WriteTimeStepOutputRuntimeVtpBeamPotential() const
+{
+  CheckInitSetup();
+
+  if ( not BeamPotentialParams().GetBeamPotentialVtkParams()->OutputEveryIteration() )
+    WriteOutputRuntimeVtpBeamPotential( GState().GetStepN(), GState().GetTimeN() );
+  else
+    WriteOutputRuntimeVtpBeamPotential( 10000 * GState().GetStepN(), GState().GetTimeN() );
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
+WriteIterationOutputRuntimeVtpBeamPotential( int iteration_number ) const
+{
+  CheckInitSetup();
+
+  const int augmented_timestep_number_incl_iteration_count =
+      10000 * GState().GetStepN() +
+      1 * iteration_number;
+
+  const double augmented_time_incl_iteration_count =
+      GState().GetTimeN() +
+      1e-8 * iteration_number;
+
+  WriteOutputRuntimeVtpBeamPotential( augmented_timestep_number_incl_iteration_count,
+      augmented_time_incl_iteration_count );
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteOutputRuntimeVtpBeamPotential(
+    int timestep_number, double time ) const
+{
+  CheckInitSetup();
+
+  const unsigned int num_spatial_dimensions = 3;
+
+  // reset time and time step and geometry name in the writer object
+  vtp_writer_ptr_->SetupForNewTimeStepAndGeometry( time, timestep_number, "beam-potential" );
+
+  // estimate for number of interacting point pairs * 2 = number of row points for writer object
+  // Fixme
+  unsigned int num_row_points = 2000;
+
+  // get and prepare storage for point coordinate values
+  std::vector<double>& point_coordinates = vtp_writer_ptr_->GetMutablePointCoordinateVector();
+  point_coordinates.clear();
+  point_coordinates.reserve( num_spatial_dimensions * num_row_points );
+
+  // force values: collect data and append to visualization results if desired
+  std::vector<double> potential_force_vector(0);
+  potential_force_vector.reserve( num_spatial_dimensions * num_row_points );
+
+  // moment values: collect data and append to visualization results if desired
+  std::vector<double> potential_moment_vector(0);
+  potential_moment_vector.reserve( num_spatial_dimensions * num_row_points );
+
+
+  // loop over my points and collect the geometry/grid data, i.e. interacting points
+  std::vector<LINALG::TMatrix<double,3,1> > coordinates_ele1_this_pair;
+  std::vector<LINALG::TMatrix<double,3,1> > coordinates_ele2_this_pair;
+
+  std::vector<LINALG::TMatrix<double,3,1> > potential_forces_ele1_this_pair;
+  std::vector<LINALG::TMatrix<double,3,1> > potential_forces_ele2_this_pair;
+
+  std::vector<LINALG::TMatrix<double,3,1> > potential_moments_ele1_this_pair;
+  std::vector<LINALG::TMatrix<double,3,1> > potential_moments_ele2_this_pair;
+
+  // loop over contact pairs and retrieve all active contact point coordinates
+  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> >::const_iterator pair_iter;
+  for ( pair_iter=beam_potential_element_pairs_.begin();
+      pair_iter!=beam_potential_element_pairs_.end(); ++pair_iter )
+  {
+
+    // retrieve data for interacting points of element 1 and element 2
+    (*pair_iter)->GetAllInteractingPointCoordsElement1( coordinates_ele1_this_pair );
+    (*pair_iter)->GetAllInteractingPointCoordsElement2( coordinates_ele2_this_pair );
+    (*pair_iter)->GetForcesAtAllInteractingPointsElement1( potential_forces_ele1_this_pair );
+    (*pair_iter)->GetForcesAtAllInteractingPointsElement2( potential_forces_ele2_this_pair );
+    (*pair_iter)->GetMomentsAtAllInteractingPointsElement1( potential_moments_ele1_this_pair );
+    (*pair_iter)->GetMomentsAtAllInteractingPointsElement2( potential_moments_ele2_this_pair );
+
+    const unsigned int num_interacting_point_pairs =
+       (unsigned int) coordinates_ele1_this_pair.size();
+
+    dsassert( num_interacting_point_pairs == (unsigned int) coordinates_ele2_this_pair.size(),
+       "number of interacting points on element 1 does not match number of interacting points "
+       "on element 2!" );
+
+    dsassert( num_interacting_point_pairs == (unsigned int) potential_forces_ele1_this_pair.size(),
+       "number of interacting points on element 1 does not match number of potential forces!" );
+
+    dsassert( num_interacting_point_pairs == (unsigned int) potential_forces_ele2_this_pair.size(),
+       "number of interacting points on element 2 does not match number of potential forces!" );
+
+
+    for ( unsigned int ipointpair=0; ipointpair < num_interacting_point_pairs; ++ipointpair )
+    {
+      // ignore point pairs with zero forces
+      /* (e.g. if no valid point-to-curve projection in master-slave approach or
+       * contribution is neglected on element pair level due to cutoff value) */
+      if ( potential_forces_ele1_this_pair[ipointpair].Norm2() != 0.0 or
+          potential_forces_ele2_this_pair[ipointpair].Norm2() != 0.0 or
+          potential_moments_ele1_this_pair[ipointpair].Norm2() != 0.0 or
+          potential_moments_ele2_this_pair[ipointpair].Norm2() != 0.0 )
+      {
+        // interacting point on first element
+        for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
+        {
+         point_coordinates.push_back( coordinates_ele1_this_pair[ipointpair](idim) );
+
+         potential_force_vector.push_back( potential_forces_ele1_this_pair[ipointpair](idim) );
+         potential_moment_vector.push_back( potential_moments_ele1_this_pair[ipointpair](idim) );
+        }
+
+        // interacting point on second element
+        for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
+        {
+         point_coordinates.push_back( coordinates_ele2_this_pair[ipointpair](idim) );
+
+         potential_force_vector.push_back( potential_forces_ele2_this_pair[ipointpair](idim) );
+         potential_moment_vector.push_back( potential_moments_ele2_this_pair[ipointpair](idim) );
+        }
+      }
+
+    }
+
+  }
+
+
+  // append all desired output data to the writer object's storage
+  if ( BeamPotentialParams().GetBeamPotentialVtkParams()->IsWriteForces() )
+  {
+   vtp_writer_ptr_->AppendVisualizationPointDataVector( potential_force_vector,
+       num_spatial_dimensions, "force" );
+  }
+
+  if ( BeamPotentialParams().GetBeamPotentialVtkParams()->IsWriteMoments() )
+  {
+   vtp_writer_ptr_->AppendVisualizationPointDataVector( potential_moment_vector,
+       num_spatial_dimensions, "moment" );
+  }
+
+  // finalize everything and write all required VTU files to filesystem
+  vtp_writer_ptr_->WriteFiles();
+
+
+  // write a collection file summarizing all previously written files
+  vtp_writer_ptr_->WriteCollectionFileOfAllWrittenFiles(
+     DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix() +
+     "-beam-potential" );
 }

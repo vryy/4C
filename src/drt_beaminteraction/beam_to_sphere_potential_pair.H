@@ -92,6 +92,51 @@ public:
       const std::vector<double>& centerline_dofvec_ele1,
       const std::vector<double>& centerline_dofvec_ele2);
 
+  /*!
+  \brief Get coordinates of all interacting points on element1 and element2
+  */
+  virtual void GetAllInteractingPointCoordsElement1(
+      std::vector<LINALG::TMatrix<double,3,1> >& coords ) const
+  {
+    dserror("not implemented yet");
+  }
+
+  virtual void GetAllInteractingPointCoordsElement2(
+      std::vector<LINALG::TMatrix<double,3,1> >& coords ) const
+  {
+    dserror("not implemented yet");
+  }
+
+  /*!
+  \brief Get forces at all interacting points on element1 and element2
+  */
+  virtual void GetForcesAtAllInteractingPointsElement1(
+      std::vector<LINALG::TMatrix<double,3,1> >& forces ) const
+  {
+    dserror("not implemented yet");
+  }
+
+  virtual void GetForcesAtAllInteractingPointsElement2(
+      std::vector<LINALG::TMatrix<double,3,1> >& forces ) const
+  {
+    dserror("not implemented yet");
+  }
+
+  /*!
+  \brief Get moments at all interacting points on element1 and element2
+  */
+  virtual void GetMomentsAtAllInteractingPointsElement1(
+      std::vector<LINALG::TMatrix<double,3,1> >& moments ) const
+  {
+    dserror("not implemented yet");
+  }
+
+  virtual void GetMomentsAtAllInteractingPointsElement2(
+      std::vector<LINALG::TMatrix<double,3,1> >& moments ) const
+  {
+    dserror("not implemented yet");
+  }
+
   /** \brief print this beam potential-based element pair to screen
    *
    *  \author grill */

@@ -18,6 +18,8 @@
 // forward declaration
 namespace BEAMINTERACTION {
 
+class BeamToBeamPotentialRuntimeVtkParams;
+
   /*!
    *  */
   class BeamPotentialParams
@@ -55,36 +57,54 @@ namespace BEAMINTERACTION {
 
     inline std::vector<double> const& PotentialLawExponents() const
     {
-      ThrowErrorIfNotInit();
+      ThrowErrorIfNotInitAndSetup();
       return *pot_law_exponents_;
     }
 
     inline std::vector<double> const& PotentialLawPrefactors() const
     {
-      ThrowErrorIfNotInit();
+      ThrowErrorIfNotInitAndSetup();
       return *pot_law_prefactors_;
     }
 
     inline enum INPAR::BEAMPOTENTIAL::BeamPotentialType PotentialType() const
     {
+      ThrowErrorIfNotInitAndSetup();
       return potential_type_;
     }
 
     inline enum INPAR::BEAMPOTENTIAL::BeamPotentialStrategy Strategy() const
     {
+      ThrowErrorIfNotInitAndSetup();
       return strategy_;
     }
 
     inline int NumberGaussPoints() const
     {
+      ThrowErrorIfNotInitAndSetup();
       return num_GPs_;
     }
 
     inline bool UseFAD() const
     {
+      ThrowErrorIfNotInitAndSetup();
       return useFAD_;
     }
 
+    //! whether to write vtk output for beam contact
+    inline bool VtkRuntimeOutput() const
+    {
+      ThrowErrorIfNotInitAndSetup();
+      return vtk_output_;
+    }
+
+    //! get the data container for parameters regarding vtk output
+    inline Teuchos::RCP<const BEAMINTERACTION::BeamToBeamPotentialRuntimeVtkParams>
+    GetBeamPotentialVtkParams() const
+    {
+      ThrowErrorIfNotInitAndSetup();
+      return params_runtime_vtk_BTB_potential_;
+    }
 
   private:
 
@@ -110,6 +130,12 @@ namespace BEAMINTERACTION {
 
     //! use automatic differentiation via FAD
     bool useFAD_;
+
+    //! whether to write vtk output at runtime
+    bool vtk_output_;
+
+    //! data container for input parameters related to VTK output of beam contact at runtime
+    Teuchos::RCP<BEAMINTERACTION::BeamToBeamPotentialRuntimeVtkParams> params_runtime_vtk_BTB_potential_;
 
   };
 

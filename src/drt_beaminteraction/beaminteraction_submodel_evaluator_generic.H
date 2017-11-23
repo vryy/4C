@@ -37,6 +37,11 @@ namespace MESHFREE{
   class BoundingBox;
 }
 }
+namespace NOX {
+namespace Solver {
+  class Generic;
+}
+}
 namespace STR {
 namespace TIMINT{
   class BaseDataGlobalState;
@@ -148,6 +153,13 @@ namespace SUBMODELEVALUATOR {
 
     //! \brief do stuff post read of model specific restart information
     virtual void PostReadRestart() = 0;
+
+    /*! \brief Executed at the end of the NOX::Solver::Generic::Step() (f.k.a. Iterate()) method
+     *
+     *  \param solver (in) : reference to the non-linear nox solver object (read-only)
+     *
+     *  \author grill, hiermeier \date 10/17 */
+    virtual void RunPostIterate( const NOX::Solver::Generic& solver ) = 0;
 
     //! reset routine for model evlaluator
     virtual void InitSubmodelDependencies(Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> const submodelvector) = 0;

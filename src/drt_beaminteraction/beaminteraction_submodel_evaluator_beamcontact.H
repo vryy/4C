@@ -98,6 +98,9 @@ namespace SUBMODELEVALUATOR {
     virtual void PostReadRestart();
 
     //! derived
+    virtual void RunPostIterate( const NOX::Solver::Generic& solver );
+
+    //! derived
     virtual void InitSubmodelDependencies(Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> const submodelmap);
 
     //! derived
@@ -120,14 +123,40 @@ namespace SUBMODELEVALUATOR {
     //! @}
 
   private:
+
+    inline BEAMINTERACTION::BeamContactParams const& BeamContactParams() const
+    {
+      CheckInit();
+      return *beam_contact_params_ptr_;
+    }
+
+    inline BEAMINTERACTION::BeamContactParams& BeamContactParams()
+    {
+      CheckInit();
+      return *beam_contact_params_ptr_;
+    }
+
+    inline Teuchos::RCP<BEAMINTERACTION::BeamContactParams> BeamContactParamsPtr() const
+    {
+      CheckInit();
+      return beam_contact_params_ptr_;
+    }
+
     //!@name routines that handle visualization output for contact forces
     //! @{
 
-    //! writes output for contact forces in VTP format
-    void WriteOutputRuntimeVtpBeamContact() const;
-
     //! init output for contact forces in VTP format
     void InitOutputRuntimeVtpBeamContact();
+
+    //! writes VTP output for contact forces at the end of a time step
+    void WriteTimeStepOutputRuntimeVtpBeamContact() const;
+
+    //! writes VTP output for contact forces at the end of a nonlinear iteration
+    void WriteIterationOutputRuntimeVtpBeamContact( int iteration_number ) const;
+
+    //! writes VTP output for contact forces
+    void WriteOutputRuntimeVtpBeamContact( int timestep_number, double time ) const;
+
 
     //! @}
 

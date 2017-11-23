@@ -75,6 +75,52 @@ void INPAR::BEAMPOTENTIAL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLis
 
   IntParameter("BEAMPOT_TREEDEPTH",6,"max, tree depth of the octree",&beampotential);
   IntParameter("BEAMPOT_BOXESINOCT",8,"max number of bounding boxes in any leaf octant",&beampotential);
+
+  /*------------------------------------------------------------------------*/
+  /* parameters for visualization of potential-based beam interactions via vtk output at runtime */
+
+  Teuchos::ParameterList& beampotential_vtk_sublist =
+      beampotential.sublist("RUNTIME VTK OUTPUT",false,"");
+
+
+  // whether to write vtk output for beam contact
+  setStringToIntegralParameter<int>("VTK_OUTPUT_BEAM_POTENTIAL","No",
+                               "write vtk output for potential-based beam interactions",
+                               yesnotuple, yesnovalue, &beampotential_vtk_sublist);
+
+  // output interval regarding steps: write output every INTERVAL_STEPS steps
+  IntParameter( "INTERVAL_STEPS", -1,
+      "write VTK output at runtime every INTERVAL_STEPS steps", &beampotential_vtk_sublist );
+
+  // data format for written numeric data
+  setStringToIntegralParameter<int>(
+    "OUTPUT_DATA_FORMAT", "binary", "data format for written numeric data",
+    tuple<std::string>(
+      "binary",
+      "Binary",
+      "ascii",
+      "ASCII"),
+    tuple<int>(
+      INPAR::BEAMPOTENTIAL::binary,
+      INPAR::BEAMPOTENTIAL::binary,
+      INPAR::BEAMPOTENTIAL::ascii,
+      INPAR::BEAMPOTENTIAL::ascii),
+    &beampotential_vtk_sublist);
+
+  // whether to write output in every iteration of the nonlinear solver
+  setStringToIntegralParameter<int>("EVERY_ITERATION","No",
+                               "write output in every iteration of the nonlinear solver",
+                               yesnotuple, yesnovalue, &beampotential_vtk_sublist);
+
+  // whether to write vtp output for forces
+  setStringToIntegralParameter<int>("FORCES","No",
+                               "write vtp output for forces",
+                               yesnotuple, yesnovalue, &beampotential_vtk_sublist);
+
+  // whether to write vtp output for moments
+  setStringToIntegralParameter<int>("MOMENTS","No",
+                               "write vtp output for moments",
+                               yesnotuple, yesnovalue, &beampotential_vtk_sublist);
 }
 
 void INPAR::BEAMPOTENTIAL::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist)

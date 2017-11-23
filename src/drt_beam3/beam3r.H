@@ -32,6 +32,7 @@
 
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 
+#include "beam_spatial_discretization_utils.H"
 #include "beam3_base.H"
 
 // forward declaration ...
@@ -742,7 +743,8 @@ private:
     LINALG::Matrix<3,1> r;
     LINALG::TMatrix<double,1,vpernode*nnodecl> N_i;
 
-    this->EvaluateShapeFunctionsAtXi<nnodecl,vpernode>(xi,N_i,this->Shape());
+    DRT::UTILS::BEAM::EvaluateShapeFunctionsAtXi<nnodecl,vpernode>(xi,N_i,this->Shape(),
+        this->RefLength());
     this->Calc_r<nnodecl,vpernode,double>(disp_totlag,N_i,r);
 
     return r;
@@ -772,7 +774,8 @@ private:
       }
     }
 
-    this->EvaluateShapeFunctionDerivsAtXi<nnodecl,vpernode>(xi,N_i_xi,this->Shape());
+    DRT::UTILS::BEAM::EvaluateShapeFunctionDerivsAtXi<nnodecl,vpernode>(xi,N_i_xi,this->Shape(),
+        this->RefLength());
     this->Calc_r_xi<nnodecl,vpernode,double>(disp_centerline_ref,N_i_xi,r0_xi);
 
     return r0_xi.Norm2();

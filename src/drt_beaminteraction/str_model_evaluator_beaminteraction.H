@@ -126,8 +126,7 @@ namespace MODELEVALUATOR{
             const Epetra_Vector& xnew);
 
     //! derived
-    virtual void RunPostIterate( const NOX::Solver::Generic& solver )
-    { return; };
+    virtual void RunPostIterate( const NOX::Solver::Generic& solver );
 
     //! derived
     virtual void UpdateStepState(const double& timefac_n);

@@ -1,8 +1,9 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*!
-\file beam_contact_runtime_vtk_output_params.cpp
+\file beam_potential_runtime_vtk_output_params.cpp
 
-\brief data container holding all input parameters for vtk-based visualization of beam contact
+\brief data container for input parameters for vtk-based visualization of potential-based beam
+       interactions
 
 \level 3
 
@@ -10,27 +11,27 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#include "beam_contact_runtime_vtk_output_params.H"
+#include "beam_potential_runtime_vtk_output_params.H"
 
 #include "../drt_lib/drt_dserror.H"
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-BEAMINTERACTION::BeamToBeamContactRuntimeVtkParams::BeamToBeamContactRuntimeVtkParams()
+BEAMINTERACTION::BeamToBeamPotentialRuntimeVtkParams::BeamToBeamPotentialRuntimeVtkParams()
 : isinit_(false),
   issetup_(false),
-  output_data_format_( INPAR::BEAMCONTACT::vague ),
+  output_data_format_( INPAR::BEAMPOTENTIAL::vague ),
   output_interval_steps_(-1),
   output_every_iteration_(false),
   output_forces_(false),
-  output_gaps_(false)
+  output_moments_(false)
 {
   // empty constructor
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamToBeamContactRuntimeVtkParams::Init(
+void BEAMINTERACTION::BeamToBeamPotentialRuntimeVtkParams::Init(
     const Teuchos::ParameterList& beam_contact_vtk_paramslist )
 {
   issetup_ = false;
@@ -40,7 +41,7 @@ void BEAMINTERACTION::BeamToBeamContactRuntimeVtkParams::Init(
   // get and check required parameters
   /****************************************************************************/
   output_data_format_ =
-      DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::OutputDataFormat>(
+      DRT::INPUT::IntegralValue<INPAR::BEAMPOTENTIAL::OutputDataFormat>(
           beam_contact_vtk_paramslist, "OUTPUT_DATA_FORMAT" );
 
   output_interval_steps_ = beam_contact_vtk_paramslist.get<int>("INTERVAL_STEPS");
@@ -50,19 +51,18 @@ void BEAMINTERACTION::BeamToBeamContactRuntimeVtkParams::Init(
 
   /****************************************************************************/
   output_forces_ =
-      (bool) DRT::INPUT::IntegralValue<int>(beam_contact_vtk_paramslist, "CONTACT_FORCES");
+      (bool) DRT::INPUT::IntegralValue<int>(beam_contact_vtk_paramslist, "FORCES");
 
   /****************************************************************************/
-  output_gaps_ =
-      (bool) DRT::INPUT::IntegralValue<int>(beam_contact_vtk_paramslist, "GAPS");
-
+  output_moments_ =
+      (bool) DRT::INPUT::IntegralValue<int>(beam_contact_vtk_paramslist, "MOMENTS");
 
   isinit_ = true;
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamToBeamContactRuntimeVtkParams::Setup()
+void BEAMINTERACTION::BeamToBeamPotentialRuntimeVtkParams::Setup()
 {
   ThrowErrorIfNotInit();
 
@@ -73,7 +73,7 @@ void BEAMINTERACTION::BeamToBeamContactRuntimeVtkParams::Setup()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamToBeamContactRuntimeVtkParams::ThrowErrorIfNotInitAndSetup() const
+void BEAMINTERACTION::BeamToBeamPotentialRuntimeVtkParams::ThrowErrorIfNotInitAndSetup() const
 {
   if (!IsInit() or !IsSetup())
     dserror("Call Init() and Setup() first!");
@@ -81,7 +81,7 @@ void BEAMINTERACTION::BeamToBeamContactRuntimeVtkParams::ThrowErrorIfNotInitAndS
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamToBeamContactRuntimeVtkParams::ThrowErrorIfNotInit() const
+void BEAMINTERACTION::BeamToBeamPotentialRuntimeVtkParams::ThrowErrorIfNotInit() const
 {
   if (!IsInit())
     dserror("Init() has not been called, yet!");

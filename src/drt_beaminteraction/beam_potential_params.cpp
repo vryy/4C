@@ -11,6 +11,7 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 #include "beam_potential_params.H"
+#include "beam_potential_runtime_vtk_output_params.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_dserror.H"
@@ -26,7 +27,9 @@ BEAMINTERACTION::BeamPotentialParams::BeamPotentialParams()
   pot_law_exponents_(Teuchos::null),
   pot_law_prefactors_(Teuchos::null),
   potential_type_(INPAR::BEAMPOTENTIAL::beampot_vague),
-  useFAD_(false)
+  useFAD_(false),
+  vtk_output_(false),
+  params_runtime_vtk_BTB_potential_(Teuchos::null)
 {
   // empty constructor
 }
@@ -100,6 +103,23 @@ void BEAMINTERACTION::BeamPotentialParams::Init()
 
   /****************************************************************************/
   useFAD_ = DRT::INPUT::IntegralValue<int>(beam_potential_params_list,"AUTOMATIC_DIFFERENTIATION");
+
+  /****************************************************************************/
+  // check for vtk output which is to be handled by an own writer object
+  vtk_output_ =
+      (bool) DRT::INPUT::IntegralValue<int>(beam_potential_params_list.sublist("RUNTIME VTK OUTPUT"),
+          "VTK_OUTPUT_BEAM_POTENTIAL");
+
+  // create and initialize parameter container object for runtime vtk output
+  if ( vtk_output_ )
+  {
+    params_runtime_vtk_BTB_potential_ = Teuchos::rcp(
+        new BEAMINTERACTION::BeamToBeamPotentialRuntimeVtkParams );
+
+    params_runtime_vtk_BTB_potential_->Init(
+        beam_potential_params_list.sublist("RUNTIME VTK OUTPUT") );
+    params_runtime_vtk_BTB_potential_->Setup();
+  }
 
 
   /****************************************************************************/

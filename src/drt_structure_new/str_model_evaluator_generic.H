@@ -283,6 +283,7 @@ namespace MODELEVALUATOR {
     //! @name internal accessors
     //! @{
     //! Returns the model evaluator data container
+    const STR::MODELEVALUATOR::Data& EvalData() const;
     STR::MODELEVALUATOR::Data& EvalData();
     Teuchos::RCP<STR::MODELEVALUATOR::Data>& EvalDataPtr();
 

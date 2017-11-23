@@ -13,6 +13,7 @@
 #include "beam3r.H"
 
 #include "triad_interpolation_local_rotation_vectors.H"
+#include "beam_spatial_discretization_utils.H"
 
 // Todo @grill: check for obsolete header inclusions
 #include "../drt_lib/drt_discret.H"
@@ -888,7 +889,8 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(const std::vector<double>& xr
     H_i_xi.resize(gausspoints_elast_force.nquad);
 
     // evaluate all shape functions and derivatives with respect to element parameter xi at all specified Gauss points
-    EvaluateShapeFunctionDerivsAllGPs<nnodecl,vpernode>(gausspoints_elast_force,H_i_xi,distype);
+    DRT::UTILS::BEAM::EvaluateShapeFunctionDerivsAllGPs<nnodecl,vpernode>(gausspoints_elast_force,
+        H_i_xi,distype,this->RefLength());
 
 
     // assure correct size of strain and stress resultant class variables and fill them
@@ -949,8 +951,10 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(const std::vector<double>& xr
     H_i_xi.resize(gausspoints_elast_moment.nquad);
 
     // evaluate all shape functions and derivatives with respect to element parameter xi at all specified Gauss points
-    EvaluateShapeFunctionsAndDerivsAllGPs<nnodetriad,1>(gausspoints_elast_moment, I_i, I_i_xi, distype);
-    EvaluateShapeFunctionDerivsAllGPs<nnodecl,vpernode>(gausspoints_elast_moment, H_i_xi, distype);
+    DRT::UTILS::BEAM::EvaluateShapeFunctionsAndDerivsAllGPs<nnodetriad,1>(gausspoints_elast_moment,
+        I_i, I_i_xi, distype);
+    DRT::UTILS::BEAM::EvaluateShapeFunctionDerivsAllGPs<nnodecl,vpernode>(gausspoints_elast_moment,
+        H_i_xi, distype, this->RefLength());
 
     // assure correct size of strain and stress resultant class variables and fill them
     // with zeros (by definition, the reference configuration is undeformed and stress-free)
@@ -1031,7 +1035,8 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(const std::vector<double>& xr
     H_i_xi.resize(gausspoints_inertia.nquad);
 
     // evaluate all shape functions and derivatives with respect to element parameter xi at all specified Gauss points
-    EvaluateShapeFunctionsAndDerivsAllGPs<nnodecl,vpernode>(gausspoints_inertia, H_i, H_i_xi, distype);
+    DRT::UTILS::BEAM::EvaluateShapeFunctionsAndDerivsAllGPs<nnodecl,vpernode>(gausspoints_inertia,
+        H_i, H_i_xi, distype, this->RefLength());
 
     // Loop through all GPs for exact integration and compute initial jacobi determinant
     for (int numgp=0; numgp<gausspoints_inertia.nquad; numgp++)
@@ -1084,7 +1089,8 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(const std::vector<double>& xr
     H_i_xi.resize(gausspoints_damp_stoch.nquad);
 
     // evaluate all shape functions and derivatives with respect to element parameter xi at all specified Gauss points
-    EvaluateShapeFunctionDerivsAllGPs<nnodecl,vpernode>(gausspoints_damp_stoch,H_i_xi,distype);
+    DRT::UTILS::BEAM::EvaluateShapeFunctionDerivsAllGPs<nnodecl,vpernode>(gausspoints_damp_stoch,
+        H_i_xi,distype,this->RefLength());
 
     // Loop through all GPs
     for (int numgp=0; numgp < gausspoints_damp_stoch.nquad; numgp++)
@@ -1117,7 +1123,8 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(const std::vector<double>& xr
     H_i_xi.resize(gausspoints_neumann.nquad);
 
     // evaluate all shape functions and derivatives with respect to element parameter xi at all specified Gauss points
-    EvaluateShapeFunctionDerivsAllGPs<nnodecl,vpernode>(gausspoints_neumann, H_i_xi, distype);
+    DRT::UTILS::BEAM::EvaluateShapeFunctionDerivsAllGPs<nnodecl,vpernode>(gausspoints_neumann,
+        H_i_xi, distype, this->RefLength());
 
     // Loop through all GPs
     for (int numgp=0; numgp < gausspoints_neumann.nquad; numgp++)
@@ -1252,7 +1259,8 @@ void DRT::ELEMENTS::Beam3r::Calculate_reflength(
     // Matrices to store the function values of the shape functions
     std::vector<LINALG::TMatrix<double,1,nnode*vpernode> > H_i_xi(gausspoints.nquad);
 
-    EvaluateShapeFunctionDerivsAllGPs<nnode,vpernode>(gausspoints,H_i_xi,this->Shape());
+    DRT::UTILS::BEAM::EvaluateShapeFunctionDerivsAllGPs<nnode,vpernode>(gausspoints,H_i_xi,
+        this->Shape(), this->RefLength());
 
     // current value of the derivative at the GP
     LINALG::Matrix<3,1> r_xi;
@@ -1573,8 +1581,9 @@ void DRT::ELEMENTS::Beam3r::GetGeneralizedInterpolationMatrixVariationsAtXi(
   // (either cubic Hermite or Lagrange polynomials of order 1...5)
   LINALG::TMatrix<double,1,vpernode*nnodecl> H_i;
 
-  EvaluateShapeFunctionsAtXi<nnodetriad,1>(xi,I_i,this->Shape());
-  EvaluateShapeFunctionsAtXi<nnodecl,vpernode>(xi,H_i,this->Shape());
+  DRT::UTILS::BEAM::EvaluateShapeFunctionsAtXi<nnodetriad,1>(xi,I_i,this->Shape());
+  DRT::UTILS::BEAM::EvaluateShapeFunctionsAtXi<nnodecl,vpernode>(xi,H_i,this->Shape(),
+      this->RefLength());
 
   Ivar.Clear();
 
@@ -1692,7 +1701,8 @@ void DRT::ELEMENTS::Beam3r::GetGeneralizedInterpolationMatrixIncrementsAtXi(
   // (either cubic Hermite or Lagrange polynomials of order 1...5)
   LINALG::TMatrix<double,1,vpernode*nnodecl> H_i;
 
-  EvaluateShapeFunctionsAtXi<nnodecl,vpernode>(xi,H_i,this->Shape());
+  DRT::UTILS::BEAM::EvaluateShapeFunctionsAtXi<nnodecl,vpernode>(xi,H_i,this->Shape(),
+      this->RefLength());
 
   // nodal triads in form of quaternions
   std::vector<LINALG::TMatrix<double,4,1> > Qnode(nnodetriad);

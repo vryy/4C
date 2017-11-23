@@ -40,8 +40,8 @@ RESTARTEVRY                     100
 NLNSOL                          fullnewton
 DIVERCONT                       adapt_step
 TIMESTEP                        5e-4
-NUMSTEP                         50
-MAXTIME                         2.5e-2
+NUMSTEP                         100
+MAXTIME                         5e-2
 PREDICT                         ConstDis
 TOLDISP                         1.0E-12
 TOLRES                          1.0E-08
@@ -71,9 +71,9 @@ KT                              0.0
 POT_LAW_PREFACTOR               -3e-5
 POT_LAW_EXPONENT                6.0
 BEAMPOTENTIAL_TYPE              Volume
-STRATEGY                        DoubleLengthSpecific_SmallSepApprox
+STRATEGY                        SingleLengthSpecific_SmallSepApprox
 NUM_GAUSSPOINTS                 32
-AUTOMATIC_DIFFERENTIATION       no
+AUTOMATIC_DIFFERENTIATION       yes
 
 // only needed for old beam_contact_manager
 BEAMPOT_OCTREE                  none
@@ -84,6 +84,7 @@ OUTPUT_DATA_FORMAT              binary
 INTERVAL_STEPS                  1
 EVERY_ITERATION                 no
 FORCES                          yes
+MOMENTS                         yes
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 1
 NDLINE  4
@@ -155,10 +156,10 @@ NODE   18 COORD    -5.000000000000000e-01   1.000000000000000e+00   2.02e-2
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_BeamReissnerElastHyper YOUNG 2e5 POISSONRATIO 0.0 DENS 0.001 CROSSAREA 0.00125663706144 SHEARCORR 1.1 MOMINPOL 2.5e-7 MOMIN2 1.25663706144e-07 MOMIN3 1.25663706144e-07 INTERACTIONRADIUS 2e-2
 ---------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE  3.55667318871600233e-02 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE  1.30523397628360821e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE  7.32952902747123769e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE -3.22307699974492753e-02 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE  0.00000000000000000e+00 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE  2.18441881229631291e-01 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 3 QUANTITY dispy VALUE -5.45440398582974079e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE  5.38486977193666991e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispy VALUE -2.29786687444257127e-02 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 3 QUANTITY dispz VALUE  0.00000000000000000e+00 TOLERANCE 1e-10
 ---------------------------------------------------------------END

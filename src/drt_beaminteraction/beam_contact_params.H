@@ -62,81 +62,97 @@ class BeamToBeamContactRuntimeVtkParams;
 
     inline enum INPAR::BEAMCONTACT::Strategy Strategy() const
     {
+      CheckInitSetup();
       return strategy_;
     }
 
     inline enum INPAR::BEAMCONTACT::PenaltyLaw PenaltyLaw() const
     {
+      CheckInitSetup();
       return penalty_law_;
     }
 
     inline double BeamToBeamPenaltyLawRegularizationG0() const
     {
+      CheckInitSetup();
       return BTB_penalty_law_regularization_G0_;
     }
 
     inline double BeamToBeamPenaltyLawRegularizationF0() const
     {
+      CheckInitSetup();
       return BTB_penalty_law_regularization_F0_;
     }
 
     inline double BeamToBeamPenaltyLawRegularizationC0() const
     {
+      CheckInitSetup();
       return BTB_penalty_law_regularization_C0_;
     }
 
     inline double GapShift() const
     {
+      CheckInitSetup();
       return gap_shift_;
     }
 
     inline double BeamToBeamPointPenaltyParam() const
     {
+      CheckInitSetup();
       return BTB_point_penalty_param_;
     }
 
     inline double BeamToBeamLinePenaltyParam() const
     {
+      CheckInitSetup();
       return BTB_line_penalty_param_;
     }
 
     inline double BeamToBeamPerpShiftingAngle1() const
     {
+      CheckInitSetup();
       return BTB_perp_shifting_angle1_;
     }
 
     inline double BeamToBeamPerpShiftingAngle2() const
     {
+      CheckInitSetup();
       return BTB_perp_shifting_angle2_;
     }
 
     inline double BeamToBeamParallelShiftingAngle1() const
     {
+      CheckInitSetup();
       return BTB_parallel_shifting_angle1_;
     }
 
     inline double BeamToBeamParallelShiftingAngle2() const
     {
+      CheckInitSetup();
       return BTB_parallel_shifting_angle2_;
     }
 
     inline double SegmentationAngle() const
     {
+      CheckInitSetup();
       return segangle_;
     }
 
     inline int NumIntegrationIntervals() const
     {
+      CheckInitSetup();
       return num_integration_intervals_;
     }
 
     inline double BasicStiffGap() const
     {
+      CheckInitSetup();
       return BTB_basicstiff_gap_;
     }
 
     inline bool EndPointPenalty() const
     {
+      CheckInitSetup();
       return BTB_endpoint_penalty_;
     }
 
@@ -148,7 +164,8 @@ class BeamToBeamContactRuntimeVtkParams;
     };
 
     /// get the data container for parameters regarding vtk output
-    Teuchos::RCP<const BEAMINTERACTION::BeamToBeamContactRuntimeVtkParams> GetBeamContactVtkParams() const
+    Teuchos::RCP<const BEAMINTERACTION::BeamToBeamContactRuntimeVtkParams>
+    GetBeamContactVtkParams() const
     {
       CheckInitSetup();
       return params_runtime_vtk_BTB_contact_;
@@ -157,6 +174,7 @@ class BeamToBeamContactRuntimeVtkParams;
     // ********** Fixme: this needs to go to BeamToSphereContactParams ******************
     inline double BeamToSpherePenaltyParam() const
     {
+      CheckInitSetup();
       return BTSPH_penalty_param_;
     }
     // ***********************************************************************************

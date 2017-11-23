@@ -899,6 +899,7 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/beam_to_beam_contact_variables.cpp
   src/drt_beaminteraction/beam_to_sphere_contact_pair
   src/drt_beaminteraction/beam_potential_params.cpp
+  src/drt_beaminteraction/beam_potential_runtime_vtk_output_params.cpp
   src/drt_beaminteraction/beam_potential_pair.cpp
   src/drt_beaminteraction/beam_to_beam_potential_pair.cpp
   src/drt_beaminteraction/beam_to_sphere_potential_pair.cpp
@@ -920,6 +921,7 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/beaminteraction_submodel_evaluator_crosslinking.cpp
   src/drt_beaminteraction/contractilecells_params.cpp
   src/drt_beaminteraction/beaminteraction_submodel_evaluator_contractilecells.cpp
+  src/drt_beaminteraction/beaminteraction_geometry_utils.cpp
 )
 set(OBJS_DRT_STRU_MULTI
   src/drt_stru_multi/convert_mat.cpp

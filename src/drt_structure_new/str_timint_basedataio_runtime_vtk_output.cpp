@@ -54,14 +54,12 @@ void STR::TIMINT::ParamsRuntimeVtkOutput::Init(
   output_every_iteration_ =
       (bool) DRT::INPUT::IntegralValue<int>(IO_vtk_structure_paramslist, "EVERY_ITERATION");
 
-  if ( output_every_iteration_ )
-    dserror("not implemented yet!");
 
-  // check for special beam output which is to be handled by an own writer object
+  // check for output of structure discretization which is to be handled by an own writer object
   output_structure_ =
       (bool) DRT::INPUT::IntegralValue<int>(IO_vtk_structure_paramslist.sublist("STRUCTURE"), "OUTPUT_STRUCTURE");
 
-  // create and initialize parameter container object for beam sepcific runtime vtk output
+  // create and initialize parameter container object for structure specific runtime vtk output
   if ( output_structure_ )
   {
     params_runtime_vtu_output_structure_ = Teuchos::rcp( new DRT::ELEMENTS::StructureRuntimeVtuOutputParams() );
@@ -75,7 +73,7 @@ void STR::TIMINT::ParamsRuntimeVtkOutput::Init(
   output_beams_ =
       (bool) DRT::INPUT::IntegralValue<int>(IO_vtk_structure_paramslist.sublist("BEAMS"), "OUTPUT_BEAMS");
 
-  // create and initialize parameter container object for beam sepcific runtime vtk output
+  // create and initialize parameter container object for beam specific runtime vtk output
   if ( output_beams_ )
   {
     params_runtime_vtu_output_beams_ = Teuchos::rcp( new DRT::ELEMENTS::BeamRuntimeVtuOutputParams() );

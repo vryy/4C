@@ -48,6 +48,14 @@ namespace INPAR
       strategy_vague
     };
 
+    /// data format for written numeric data via vtk
+    enum OutputDataFormat
+    {
+      binary,
+      ascii,
+      vague
+    };
+
     /// set the beam potential parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 

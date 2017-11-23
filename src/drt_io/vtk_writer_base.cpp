@@ -21,6 +21,8 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 
+#include "../drt_io/io_pstream.H"
+
 #include "vtk_writer_base.H"
 
 
@@ -348,7 +350,10 @@ VtkWriterBase::AppendMasterFileAndTimeToCollectionFileMidSectionContent(
     double time)
 {
   collection_file_midsection_cumulated_content_
-      << "    <DataSet timestep=\"" << time
+      << "    <DataSet timestep=\""
+      << std::scientific
+      << std::setprecision(std::numeric_limits<double>::digits10 -1)
+      << time
       << "\" group=\"\" part=\"0\" file=\""
       << master_file_directory_name << "/"
       << master_file_name
@@ -433,7 +438,7 @@ VtkWriterBase::WriteTimeOrCycleAsFieldData()
 
     // time
     if ( time_ != std::numeric_limits<double>::min() )
-      currentout_ << "      <DataArray type=\"Float32\" Name=\"TIME\" NumberOfTuples=\"1\" format=\"ascii\">\n"
+      currentout_ << "      <DataArray type=\"Float64\" Name=\"TIME\" NumberOfTuples=\"1\" format=\"ascii\">\n"
       << time_
       << "\n      </DataArray>\n";
 
@@ -622,6 +627,13 @@ VtkWriterBase::WriteVtkFooterMasterFile()
   currentmasterout_ << "</VTKFile>\n";
 
   currentmasterout_ << std::flush;
+
+  if ( myrank_ == 0 )
+    IO::cout(IO::verbose) << "\nVtk Files '" << filename_base_
+    << "' written. Time: "
+    << std::scientific
+    << std::setprecision(std::numeric_limits<double>::digits10 -1)
+    << time_ << IO::endl;
 }
 
 /*----------------------------------------------------------------------*
@@ -679,7 +691,7 @@ VtkWriterBase::WriteVtkCollectionFileForAllWrittenMasterFiles(
 
 
     collectionfilestream.flush();
-//    collectionfilestream.close();  // Todo required?
+    collectionfilestream.close();
   }
 }
 
@@ -727,7 +739,7 @@ VtkWriterBase::WriteVtkCollectionFileForGivenListOfMasterFiles(
     WriteFooterIntoGivenVtkCollectionFileStream( collectionfilestream );
 
     collectionfilestream.flush();
-//    collectionfilestream.close();  // Todo required?
+    collectionfilestream.close();
   }
 
 }
@@ -770,7 +782,7 @@ VtkWriterBase::CreateRestartedInitialCollectionFileMidSection(
       // convert to double
       double readtime = std::atof( readtime_string.c_str() );
 
-      if ( readtime < restart_time )
+      if ( readtime <= (restart_time + 1e-12) )
         collection_file_midsection_cumulated_content_ << line << "\n";
       else
         break;
@@ -860,7 +872,10 @@ VtkWriterBase::WriteMasterFileAndTimeValueIntoGivenVtkCollectionFileStream(
 {
   ThrowErrorIfInvalidFileStream( collectionfilestream );
 
-  collectionfilestream << "    <DataSet timestep=\"" << time
+  collectionfilestream << "    <DataSet timestep=\""
+             << std::scientific
+             << std::setprecision(std::numeric_limits<double>::digits10 -1)
+             << time
              << "\" group=\"\" part=\"0\" file=\""
              << master_file_directory_name << "/"
              << master_file_name

@@ -61,10 +61,34 @@ namespace FADUTILS
   template<typename type>
   type Signum(type a)
   {
-    if (CastToDouble(a) >= 0.0)
+    if (a >= 0.0)
       return 1.0;
     else
       return -1.0;
+  }
+
+  /*!
+  \brief Calculate square root of a scalar double quantity
+  */
+  inline double sqrt(double a)
+  {
+    return std::sqrt(a);
+  }
+
+  /*!
+  \brief Calculate square root of a scalar FAD quantity
+
+  Note: do NOT try to call this method with expressions such as FADUTILS::sqrt(a+b+c)
+        as argument is then of type Sacado::Fad::Expr<T> instead of Sacado::Fad::DFad<double>
+  */
+  inline FAD sqrt(FAD a)
+  {
+    // avoid non-differentiable point of square root function by using conditional
+    /* Todo should we use a tolerance/threshold here? */
+    if ( a == 0.0 )
+      return 0.0;
+    else
+      return std::sqrt(a);
   }
 
   /*!
@@ -80,7 +104,7 @@ namespace FADUTILS
   */
   inline FAD Norm(FAD a)
   {
-    return std::pow(a*a,0.5);
+    return FADUTILS::sqrt(a*a);
   }
 
   /*!
@@ -98,32 +122,33 @@ namespace FADUTILS
   template<int length>
   FAD VectorNorm(LINALG::TMatrix<FAD,length,1> v)
   {
-    FAD norm = 0.0;
+    FAD norm_squared = 0.0;
     for (int i=0;i<length;i++)
     {
-      norm+=v(i)*v(i);
+      norm_squared+=v(i)*v(i);
     }
-    norm = std::pow(norm,0.5);
-    return norm;
+
+    return FADUTILS::sqrt(norm_squared);
   }
 
   //! Calculates the Norm of a FAD vector, since .Norm2() is not available for FAD vectors
+  // Todo this function is obsolete
   template<typename T>
   T Norm(LINALG::TMatrix<T,3,1> v)
   {
-    T norm = 0.0;
+    T norm_squared = 0.0;
     for (int i=0;i<3;i++)
     {
-      norm+=v(i)*v(i);
+      norm_squared+=v(i)*v(i);
     }
-    norm = std::sqrt(norm);
 
-    return norm;
+    return FADUTILS::sqrt(norm_squared);
   }
 
   /*!
   \brief Calculate inner product of two FAD or double vectors
   */
+  // Todo this function is obsolete, use Dot of LINALG::TMatrix instead
   template<typename type>
   type ScalarProduct(LINALG::TMatrix<type,3,1> a, LINALG::TMatrix<type,3,1> b)
   {
@@ -133,6 +158,7 @@ namespace FADUTILS
   /*!
   \brief Calculate difference of two FAD or double vectors
   */
+  // Todo this function is obsolete, use Update of LINALG::TMatrix instead
   template<typename type>
   LINALG::TMatrix<type,3,1> DiffVector(LINALG::TMatrix<type,3,1> a, LINALG::TMatrix<type,3,1> b)
   {
@@ -146,6 +172,7 @@ namespace FADUTILS
   /*!
   \brief Calculate vector product of two FAD or double vectors
   */
+  // Todo this function is obsolete, use CrossProduct of LINALG::TMatrix instead
   template<typename type>
   LINALG::TMatrix<type,3,1> VectorProduct(LINALG::TMatrix<type,3,1> first_vector, LINALG::TMatrix<type,3,1> second_vector)
   {
@@ -169,6 +196,6 @@ namespace FADUTILS
     return result_vector;
   }
 
-} // FADUTILS
+}
 
-#endif  // #ifndef FAD_UTILS_H
+#endif

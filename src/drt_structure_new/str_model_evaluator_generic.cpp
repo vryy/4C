@@ -89,6 +89,14 @@ STR::MODELEVALUATOR::Data& STR::MODELEVALUATOR::Generic::EvalData()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+const STR::MODELEVALUATOR::Data& STR::MODELEVALUATOR::Generic::EvalData() const
+{
+  CheckInit();
+  return *eval_data_ptr_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 Teuchos::RCP<STR::MODELEVALUATOR::Data>& STR::MODELEVALUATOR::Generic::EvalDataPtr()
 {
   CheckInit();

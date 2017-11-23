@@ -24,7 +24,7 @@ VERBOSITY                       standard
 ----------------------------------------------------------IO/RUNTIME VTK OUTPUT
 OUTPUT_DATA_FORMAT              binary
 INTERVAL_STEPS                  1
-EVERY_ITERATION                 No
+EVERY_ITERATION                 yes
 ----------------------------------------------------------IO/RUNTIME VTK OUTPUT/BEAMS
 OUTPUT_BEAMS                    Yes
 DISPLACEMENT                    Yes
@@ -77,7 +77,7 @@ BEAMS_EXTVAL                    0.02
 VTK_OUTPUT_BEAM_CONTACT         yes
 OUTPUT_DATA_FORMAT              binary
 INTERVAL_STEPS                  1
-EVERY_ITERATION                 no
+EVERY_ITERATION                 yes
 CONTACT_FORCES                  yes
 GAPS                            yes
 --------------------------------------------------------------------BINNING STRATEGY

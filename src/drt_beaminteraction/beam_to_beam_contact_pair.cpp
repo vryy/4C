@@ -33,6 +33,7 @@
 #include "../drt_beam3/beam3k.H"
 #include "../drt_beam3/beam3r.H"
 #include "../drt_beam3/beam3eb.H"
+#include "../drt_beam3/beam_spatial_discretization_utils.H"
 
 #include "Teuchos_TimeMonitor.hpp"
 
@@ -4198,8 +4199,10 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetShapeF
     dserror("Only beam elements with one (nodal positions) or two (nodal positions + nodal tangents) values are valid!");
 
   //Assemble the individual shape functions in matrices, such that: r1=N1*d1, r1_xi=N1_xi*d1, r1_xixi=N1_xixi*d1, r2=N2*d2, r2_xi=N2_xi*d2, r2_xixi=N2_xixi*d2
-  AssembleShapefunctions(N1_i, N1_i_xi, N1_i_xixi, N1, N1_xi, N1_xixi);
-  AssembleShapefunctions(N2_i, N2_i_xi, N2_i_xixi, N2, N2_xi, N2_xixi);
+  DRT::UTILS::BEAM::AssembleShapeFunctionsAndDerivsAnd2ndDerivs<numnodes,numnodalvalues,TYPE>(
+      N1_i, N1_i_xi, N1_i_xixi, N1, N1_xi, N1_xixi);
+  DRT::UTILS::BEAM::AssembleShapeFunctionsAndDerivsAnd2ndDerivs<numnodes,numnodalvalues,TYPE>(
+      N2_i, N2_i_xi, N2_i_xixi, N2, N2_xi, N2_xixi);
 
   return;
 }
@@ -4276,141 +4279,13 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetShapeF
     dserror("Only beam elements with one (nodal positions) or two (nodal positions + nodal tangents) values are valid!");
 
   //Assemble the individual shape functions in matrices, such that: r1=N1*d1, r1_xi=N1_xi*d1, r1_xixi=N1_xixi*d1, r2=N2*d2, r2_xi=N2_xi*d2, r2_xixi=N2_xixi*d2
-  AssembleShapefunctions(N_i, N);
+  DRT::UTILS::BEAM::AssembleShapeFunctions<numnodes,numnodalvalues,TYPE>(N_i, N);
 
   return;
 }
 /*----------------------------------------------------------------------*
  |  end: evaluate shape functions and derivatives
  *----------------------------------------------------------------------*/
-
-/*-----------------------------------------------------------------------------------------------------------*
- |  Assemble one shape function matrix                                                             meier 10/14|
- *-----------------------------------------------------------------------------------------------------------*/
-template<unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::AssembleShapefunctions(
-    const LINALG::TMatrix<TYPE,1,numnodes*numnodalvalues>& N_i,
-    LINALG::TMatrix<TYPE,3,3*numnodes*numnodalvalues>& N) const
-{
-  //assembly_N is just an array to help assemble the matrices of the shape functions
-  //it determines, which shape function is used in which column of N
-  unsigned int assembly_N[3][3*numnodes*numnodalvalues];
-
-  //Initialize to zero
-  for (unsigned int i=0;i<3*numnodes*numnodalvalues;i++)
-  {
-    for (unsigned int j=0;j<3; j++)
-    {
-      assembly_N[j][i]=0;
-    }
-  }
-
-  /*
-  Set number of shape functions for each 3*3 block:
-  e.g. second order Reissner beam (numnodes=3, numnodalvalues=1)
-  int assembly_N[3][9]=  { {1,0,0,2,0,0,3,0,0},
-                           {0,1,0,0,2,0,0,3,0},
-                           {0,0,1,0,0,2,0,0,3}};
-
-  e.g. Kirchhoff beam (numnodes=2, numnodalvalues=2)
-  int assembly_N[3][12]=  {{1,0,0,2,0,0,3,0,0,4,0,0},
-                           {0,1,0,0,2,0,0,3,0,0,4,0},
-                           {0,0,1,0,0,2,0,0,3,0,0,4}};
-  */
-
-  for (unsigned int i=0;i<numnodes*numnodalvalues;i++)
-  {
-    assembly_N[0][3*i]=i+1;
-    assembly_N[1][3*i+1]=i+1;
-    assembly_N[2][3*i+2]=i+1;
-  }
-
-  //Assemble the matrices of the shape functions
-  for (unsigned int i=0; i<3*numnodes*numnodalvalues; i++)
-  {
-    for (unsigned int j=0; j<3; j++)
-    {
-      if(assembly_N[j][i]==0)
-      {
-        N(j,i)=0;
-      }
-      else
-      {
-        N(j,i)=N_i(assembly_N[j][i]-1);
-      }
-    }
-  }
-
-  return;
-}
-
-/*-----------------------------------------------------------------------------------------------------------*
- |  Assemble all shape functions                                                                  meier 01/14|
- *-----------------------------------------------------------------------------------------------------------*/
-template<unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::AssembleShapefunctions(
-    const LINALG::TMatrix<TYPE,1,numnodes*numnodalvalues>& N_i,
-    const LINALG::TMatrix<TYPE,1,numnodes*numnodalvalues>& N_i_xi,
-    const LINALG::TMatrix<TYPE,1,numnodes*numnodalvalues>& N_i_xixi,
-    LINALG::TMatrix<TYPE,3,3*numnodes*numnodalvalues>& N,
-    LINALG::TMatrix<TYPE,3,3*numnodes*numnodalvalues>& N_xi,
-    LINALG::TMatrix<TYPE,3,3*numnodes*numnodalvalues>& N_xixi)
-{
-  //assembly_N is just an array to help assemble the matrices of the shape functions
-  //it determines, which shape function is used in which column of N
-  unsigned int assembly_N[3][3*numnodes*numnodalvalues];
-
-  //Initialize to zero
-  for (unsigned int i=0;i<3*numnodes*numnodalvalues;i++)
-  {
-    for (unsigned int j=0;j<3; j++)
-    {
-      assembly_N[j][i]=0;
-    }
-  }
-
-  /*
-  Set number of shape functions for each 3*3 block:
-  e.g. second order Reissner beam (numnodes=3, numnodalvalues=1)
-  int assembly_N[3][9]=  { {1,0,0,2,0,0,3,0,0},
-                           {0,1,0,0,2,0,0,3,0},
-                           {0,0,1,0,0,2,0,0,3}};
-
-  e.g. Kirchhoff beam (numnodes=2, numnodalvalues=2)
-  int assembly_N[3][12]=  {{1,0,0,2,0,0,3,0,0,4,0,0},
-                           {0,1,0,0,2,0,0,3,0,0,4,0},
-                           {0,0,1,0,0,2,0,0,3,0,0,4}};
-  */
-
-  for (unsigned int i=0;i<numnodes*numnodalvalues;i++)
-  {
-    assembly_N[0][3*i]=i+1;
-    assembly_N[1][3*i+1]=i+1;
-    assembly_N[2][3*i+2]=i+1;
-  }
-
-  //Assemble the matrices of the shape functions
-  for (unsigned int i=0; i<3*numnodes*numnodalvalues; i++)
-  {
-    for (unsigned int j=0; j<3; j++)
-    {
-      if(assembly_N[j][i]==0)
-      {
-        N(j,i)=0;
-        N_xi(j,i)=0;
-        N_xixi(j,i)=0;
-      }
-      else
-      {
-        N(j,i)=N_i(assembly_N[j][i]-1);
-        N_xi(j,i)=N_i_xi(assembly_N[j][i]-1);
-        N_xixi(j,i)=N_i_xixi(assembly_N[j][i]-1);
-      }
-    }
-  }
-
-  return;
-}
 
 /*----------------------------------------------------------------------*
  | compute position at given curve point                  meier 10/14|
