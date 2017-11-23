@@ -147,7 +147,7 @@ PARTICLE::ParticleSPHInteractionHandler::ParticleSPHInteractionHandler(
     dserror("If PARTICLE_REINITSHIFT != 2, the flag PARTICLE_BOUNDARYDENSITY is required!");
 #endif
 
-  if(freeSurfaceType_==INPAR::PARTICLE::TwoPhase and interactionVariant2_==false)
+  if(freeSurfaceType_==INPAR::PARTICLE::TwoPhase)
   {
     if(extParticleMat_.size()!=2)
       dserror("Two-phase flow needs two particle material definitions!");
@@ -1425,10 +1425,7 @@ void PARTICLE::ParticleSPHInteractionHandler::MF_SmoothedCFG(
   if(distWall == Teuchos::null)
     dserror("distWall!");
 
-  const INPAR::PARTICLE::FreeSurfaceType freeSurfaceType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::FreeSurfaceType>(DRT::Problem::Instance()->ParticleParams(),"FREE_SURFACE_TYPE");
-  const INPAR::PARTICLE::SurfaceTensionType surfaceTensionType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::SurfaceTensionType>(DRT::Problem::Instance()->ParticleParams(),"SURFACE_TENSION_TYPE");
-
-  if(freeSurfaceType!=INPAR::PARTICLE::TwoPhase)
+  if(freeSurfaceType_!=INPAR::PARTICLE::TwoPhase)
   {
     // loop over the particles (no superpositions)
     for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_p_.size(); ++lidNodeRow_i)
@@ -1474,7 +1471,7 @@ void PARTICLE::ParticleSPHInteractionHandler::MF_SmoothedCFG(
 
     }//loop over i
   }
-  else if(freeSurfaceType==INPAR::PARTICLE::TwoPhase and surfaceTensionType==INPAR::PARTICLE::ST_CONTI_ADAMI)
+  else if(freeSurfaceType_==INPAR::PARTICLE::TwoPhase and surfaceTensionType_==INPAR::PARTICLE::ST_CONTI_ADAMI)
   {
     // loop over the particles (no superpositions)
     for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_p_.size(); ++lidNodeRow_i)
@@ -2750,9 +2747,9 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_fspvp_Adami_2(
       const ParticleSPH& particle_j = colParticles_[lidNodeCol_j];
       const InterDataPvP& interData_ij = jj->second;
 
-    //Only particles, whose color field gradient is large enough (in order to avoid the noise of small contributions). --> See Morris et al. 2000, Eq.(20)
-    if(particle_j.freesurfacedata_.validNormal_==false or particle_j.boundarydata_.boundaryparticle_==true)
-      continue;
+      //Only particles, whose color field gradient is large enough (in order to avoid the noise of small contributions). --> See Morris et al. 2000, Eq.(20)
+      if(particle_j.freesurfacedata_.validNormal_==false or particle_j.boundarydata_.boundaryparticle_==true)
+        continue;
 
       if (interData_ij.dw_ij_ != 0)
       {

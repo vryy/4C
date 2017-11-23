@@ -676,9 +676,6 @@ void PARTICLE::TimInt::DetermineSPHDensAndAcc(Teuchos::RCP<Epetra_Vector> acc,
   }
   else
   {
-    if(freeSurfaceType!=INPAR::PARTICLE::FreeSurface_None and freeSurfaceType!=INPAR::PARTICLE::TwoPhase)
-      dserror("Density summation not suitable for free-surface problems. Choose input parameter DENSITY_SUMMATION=No!");
-
     interHandler_->MF_mW(densityn_);
     interHandler_->SetStateVector(densityn_, PARTICLE::Density);
   }
