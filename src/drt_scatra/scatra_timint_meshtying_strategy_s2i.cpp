@@ -288,6 +288,10 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
     // action for elements
     condparams.set<int>("action",SCATRA::bd_calc_s2icoupling);
 
+    // number of dofset associated with displacement dofs
+    if(scatratimint_->IsALE())
+      condparams.set<int>("ndsdisp",scatratimint_->NdsDisp());
+
     // set global state vectors according to time-integration scheme
     scatratimint_->Discretization()->ClearState();
     scatratimint_->AddTimeIntegrationSpecificVectors();

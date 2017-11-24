@@ -231,6 +231,11 @@ public:
       DRT::FaceElement*                  ele
       );
 
+  //! compute shape derivatives, i.e., derivatives of square root of determinant of metric tensor w.r.t. spatial coordinates
+  void EvalShapeDerivatives(
+      LINALG::Matrix<nsd_+1,nen_>&   shapederivatives   //!< shape derivatives to be computed
+      );
+
   //! evaluate shape functions and derivatives at int. point
   double EvalShapeFuncAndIntFac(
       const DRT::UTILS::IntPointsAndWeights<nsd_>&   intpoints,         ///< integration points
@@ -248,6 +253,15 @@ public:
       Epetra_SerialDenseMatrix&      emastermatrix,    ///< element matrix for master side
       Epetra_SerialDenseVector&      eslaveresidual    ///< element residual for slave side
   );
+
+  //! evaluate off-diagonal system matrix contributions associated with scatra-scatra interface coupling condition
+  virtual void EvaluateS2ICouplingOD(
+      const DRT::FaceElement*        ele,              ///< current boundary element
+      Teuchos::ParameterList&        params,           ///< parameter list
+      DRT::Discretization&           discretization,   ///< discretization
+      DRT::Element::LocationArray&   la,               ///< location array
+      Epetra_SerialDenseMatrix&      eslavematrix      ///< element matrix for slave side
+      );
 
   //! extract nodal state variables associated with boundary element
   virtual void ExtractNodeValues(

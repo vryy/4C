@@ -426,6 +426,12 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
     break;
   }
 
+  case SCATRA::bd_calc_s2icoupling_od:
+  {
+    EvaluateS2ICouplingOD(ele,params,discretization,la,elemat1_epetra);
+    break;
+  }
+
   case SCATRA::bd_calc_boundary_integral:
   {
     CalcBoundaryIntegral(ele,elevec1_epetra);
@@ -911,6 +917,44 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ConvectiveHeatTransfer(
 } // DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ConvectiveHeatTransfer
 
 
+/*-------------------------------------------------------------------------------------------------------------------------------------*
+ | compute shape derivatives, i.e., derivatives of square root of determinant of metric tensor w.r.t. spatial coordinates   fang 11/17 |
+ *-------------------------------------------------------------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvalShapeDerivatives(
+    LINALG::Matrix<nsd_+1,nen_>&   shapederivatives   //!< shape derivatives to be computed
+    )
+{
+  // safety check
+  if(nsd_ != 2)
+    dserror("Computation of shape derivatives only implemented for 2D interfaces!");
+
+  // compute derivatives of spatial coordinates w.r.t. reference coordinates
+  static LINALG::Matrix<nsd_,nsd_+1> dxyz_drs;
+  dxyz_drs.MultiplyNT(deriv_,xyze_);
+
+  // compute basic components of shape derivatives
+  const double xr(dxyz_drs(0,0)), xs(dxyz_drs(1,0)), yr(dxyz_drs(0,1)), ys(dxyz_drs(1,1)), zr(dxyz_drs(0,2)), zs(dxyz_drs(1,2));
+  const double denominator_inv = 1./sqrt(xr*xr*ys*ys+xr*xr*zs*zs-2*xr*xs*yr*ys-2*xr*xs*zr*zs+xs*xs*yr*yr+xs*xs*zr*zr+yr*yr*zs*zs-2*yr*ys*zr*zs+ys*ys*zr*zr);
+  const double numerator_xr = xr*ys*ys+xr*zs*zs-xs*yr*ys-xs*zr*zs;
+  const double numerator_xs = -(xr*yr*ys+xr*zr*zs-xs*yr*yr-xs*zr*zr);
+  const double numerator_yr = -(xr*xs*ys-xs*xs*yr-yr*zs*zs+ys*zr*zs);
+  const double numerator_ys = xr*xr*ys-xr*xs*yr-yr*zr*zs+ys*zr*zr;
+  const double numerator_zr = -(xr*xs*zs-xs*xs*zr+yr*ys*zs-ys*ys*zr);
+  const double numerator_zs = xr*xr*zs-xr*xs*zr+yr*yr*zs-yr*ys*zr;
+
+  // compute shape derivatives
+  for(int ui=0; ui<nen_; ++ui)
+  {
+    shapederivatives(0,ui) = denominator_inv*(numerator_xr*deriv_(0,ui)+numerator_xs*deriv_(1,ui));
+    shapederivatives(1,ui) = denominator_inv*(numerator_yr*deriv_(0,ui)+numerator_ys*deriv_(1,ui));
+    shapederivatives(2,ui) = denominator_inv*(numerator_zr*deriv_(0,ui)+numerator_zs*deriv_(1,ui));
+  }
+
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
  | evaluate shape functions and int. factor at int. point     gjb 01/09 |
  *----------------------------------------------------------------------*/
@@ -1196,6 +1240,97 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingAtIntegra
 
   return;
 }
+
+
+/*---------------------------------------------------------------------------------------------------------------------------*
+ | evaluate off-diagonal system matrix contributions associated with scatra-scatra interface coupling condition   fang 11/17 |
+ *---------------------------------------------------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingOD(
+    const DRT::FaceElement*        ele,              ///< current boundary element
+    Teuchos::ParameterList&        params,           ///< parameter list
+    DRT::Discretization&           discretization,   ///< discretization
+    DRT::Element::LocationArray&   la,               ///< location array
+    Epetra_SerialDenseMatrix&      eslavematrix      ///< element matrix for slave side
+    )
+{
+  // extract local nodal values on present and opposite side of scatra-scatra interface
+  ExtractNodeValues(discretization,la);
+  std::vector<LINALG::Matrix<nen_,1> > emasterphinp(numscal_,LINALG::Matrix<nen_,1>(true));
+  ExtractNodeValues(emasterphinp,discretization,la,"imasterphinp");
+
+  // get current scatra-scatra interface coupling condition
+  Teuchos::RCP<DRT::Condition> s2icondition = params.get<Teuchos::RCP<DRT::Condition> >("condition");
+  if(s2icondition == Teuchos::null)
+    dserror("Cannot access scatra-scatra interface coupling condition!");
+
+  // integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // loop over integration points
+  for(int gpid=0; gpid<intpoints.IP().nquad; ++gpid)
+  {
+    // evaluate values of shape functions at current integration point
+    EvalShapeFuncAndIntFac(intpoints,gpid);
+
+    // evaluate shape derivatives
+    static LINALG::Matrix<nsd_+1,nen_> shapederivatives;
+    EvalShapeDerivatives(shapederivatives);
+
+    // evaluate overall integration factor
+    const double timefacwgt = scatraparamstimint_->TimeFac()*intpoints.IP().qwgt[gpid];
+    if (timefacwgt < 0.)
+      dserror("Integration factor is negative!");
+
+    // loop over scalars
+    for(int k=0; k<numscal_; ++k)
+    {
+      // evaluate dof values at current integration point on slave and master sides of scatra-scatra interface
+      const double slavephiint = funct_.Dot(ephinp_[k]);
+      const double masterphiint = funct_.Dot(emasterphinp[k]);
+
+      // compute matrix contributions according to kinetic model for current scatra-scatra interface coupling condition
+      switch(s2icondition->GetInt("kinetic model"))
+      {
+        // constant permeability model
+        case INPAR::S2I::kinetics_constperm:
+        {
+          // access real vector of constant permeabilities associated with current condition
+          const std::vector<double>* permeabilities = s2icondition->GetMutable<std::vector<double> >("permeabilities");
+          if(permeabilities == NULL)
+            dserror("Cannot access vector of permeabilities for scatra-scatra interface coupling!");
+          if(permeabilities->size() != (unsigned) numscal_)
+            dserror("Number of permeabilities does not match number of scalars!");
+
+          // core linearization
+          const double dN_dd_slave = timefacwgt*(*permeabilities)[k]*(slavephiint-masterphiint);
+
+          // loop over matrix columns
+          for(int ui=0; ui<nen_; ++ui)
+            // loop over matrix rows
+            for(int vi=0; vi<nen_; ++vi)
+            {
+              // compute linearizations w.r.t. slave-side structural displacements
+              const double vi_dN_dd_slave = funct_(vi)*dN_dd_slave;
+              eslavematrix(vi*numscal_+k,ui*3) += vi_dN_dd_slave*shapederivatives(0,ui);
+              eslavematrix(vi*numscal_+k,ui*3+1) += vi_dN_dd_slave*shapederivatives(1,ui);
+              eslavematrix(vi*numscal_+k,ui*3+2) += vi_dN_dd_slave*shapederivatives(2,ui);
+            }
+
+          break;
+        }
+
+        default:
+        {
+          dserror("Kinetic model for scatra-scatra interface coupling not yet implemented!");
+          break;
+        }
+      } // selection of kinetic model
+    } // loop over scalars
+  } // loop over integration points
+
+  return;
+} // DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingOD
 
 
 /*-----------------------------------------------------------------------------*

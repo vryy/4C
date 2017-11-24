@@ -19,7 +19,10 @@
 #include <Epetra_Time.h>
 
 #include "../drt_adapter/ad_str_ssiwrapper.H"
+#include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
+
+#include "../drt_fsi/fsi_matrixtransform.H"
 
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_inpar/inpar_ssi.H"
@@ -30,6 +33,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_scatra/scatra_timint_implicit.H"
+#include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
 
 #include "../drt_scatra_ele/scatra_ele_action.H"
 
@@ -50,10 +54,13 @@ SSI::SSI_Mono::SSI_Mono(
     // initialize member variables
     dtele_(0.),
     dtsolve_(0.),
+    icoup_structure_(Teuchos::null),
     iter_(0),
     itermax_(globaltimeparams.get<int>("ITEMAX")),
     itertol_(globaltimeparams.sublist("MONOLITHIC").get<double>("CONVTOL")),
+    map_structure_(Teuchos::null),
     maps_(Teuchos::null),
+    maps_structure_(Teuchos::null),
     matrixtype_(DRT::INPUT::IntegralValue<INPAR::SSI::MatrixType>(globaltimeparams.sublist("MONOLITHIC"),"MATRIXTYPE")),
     residual_(Teuchos::null),
     restol_(globaltimeparams.sublist("MONOLITHIC").get<double>("ABSTOLRES")),
@@ -66,6 +73,7 @@ SSI::SSI_Mono::SSI_Mono(
         comm,
         DRT::Problem::Instance()->ErrorFile()->Handle()
         ))),
+    strategy_scatra_(Teuchos::null),
     structuredofnorm_(0.),
     structureresnorm_(0.),
     structureincnorm_(0.),
@@ -89,7 +97,17 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
   if(iter_ == 1)
     structure_->Evaluate();
   else
-    structure_->Evaluate(maps_->ExtractVector(increment_,1));
+  {
+    // set up structural increment vector
+    const Teuchos::RCP<Epetra_Vector> increment_structure = maps_->ExtractVector(increment_,1);
+
+    // consider structural meshtying if applicable
+    if(scatra_->ScaTraField()->S2ICoupling())
+      maps_structure_->InsertVector(icoup_structure_->MasterToSlave(maps_structure_->ExtractVector(increment_structure,2)),1,increment_structure);
+
+    // evaluate structural field
+    structure_->Evaluate(increment_structure);
+  }
 
   // apply Dirichlet conditions on structural system matrix
   structure_->SystemMatrix()->ApplyDirichlet(*structure_->GetDBCMapExtractor()->CondMap(),true);
@@ -116,11 +134,151 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
       if(systemmatrix == Teuchos::null)
         dserror("System matrix is not a sparse matrix!");
 
-      // construct global system matrix by adding matrix blocks
+      // add scalar transport system matrix to global system matrix
       systemmatrix->Add(*scatra_->ScaTraField()->SystemMatrix(),false,1.,0.);
-      systemmatrix->Add(*scatrastructureblock_,false,1.,1.);
-      systemmatrix->Add(*structurescatrablock_,false,1.,1.);
-      systemmatrix->Add(*structure_->SystemMatrix(),false,1.,1.);
+
+      // perform structural meshtying before adding remaining matrix blocks
+      if(scatra_->ScaTraField()->S2ICoupling())
+      {
+        // assemble interior and master-side columns of scatra-structure block into global system matrix
+        const LINALG::SparseMatrix& scatrastructureblock = *Teuchos::rcp_dynamic_cast<const LINALG::SparseMatrix>(scatrastructureblock_);
+        FSI::UTILS::MatrixLogicalSplitAndTransform()(
+            scatrastructureblock,
+            scatrastructureblock.RangeMap(),
+            *map_structure_,
+            1.,
+            NULL,
+            NULL,
+            *systemmatrix,
+            true,
+            true
+            );
+
+        // transform and assemble slave-side columns of scatra-structure block into global system matrix
+        ADAPTER::CouplingSlaveConverter converter(*icoup_structure_);
+        FSI::UTILS::MatrixLogicalSplitAndTransform()(
+            scatrastructureblock,
+            scatrastructureblock.RangeMap(),
+            *icoup_structure_->SlaveDofMap(),
+            1.,
+            NULL,
+            &converter,
+            *systemmatrix,
+            true,
+            true
+            );
+
+        // assemble interior and master-side rows of structure-scatra block into global system matrix
+        const LINALG::SparseMatrix& structurescatrablock = *Teuchos::rcp_dynamic_cast<const LINALG::SparseMatrix>(structurescatrablock_);
+        FSI::UTILS::MatrixLogicalSplitAndTransform()(
+            structurescatrablock,
+            *map_structure_,
+            structurescatrablock.DomainMap(),
+            1.,
+            NULL,
+            NULL,
+            *systemmatrix,
+            true,
+            true
+            );
+
+        // transform and assemble slave-side rows of structure-scatra block into global system matrix
+        FSI::UTILS::MatrixLogicalSplitAndTransform()(
+            structurescatrablock,
+            *icoup_structure_->SlaveDofMap(),
+            structurescatrablock.DomainMap(),
+            1.,
+            &converter,
+            NULL,
+            *systemmatrix,
+            true,
+            true
+            );
+
+        // assemble interior and master-side rows and columns of structural system matrix into global system matrix
+        FSI::UTILS::MatrixLogicalSplitAndTransform()(
+            *structure_->SystemMatrix(),
+            *map_structure_,
+            *map_structure_,
+            1.,
+            NULL,
+            NULL,
+            *systemmatrix,
+            true,
+            true
+            );
+
+        // transform and assemble slave-side rows of structural system matrix into global system matrix
+        FSI::UTILS::MatrixLogicalSplitAndTransform()(
+            *structure_->SystemMatrix(),
+            *icoup_structure_->SlaveDofMap(),
+            *map_structure_,
+            1.,
+            &converter,
+            NULL,
+            *systemmatrix,
+            true,
+            true
+            );
+
+        // transform and assemble slave-side columns of structural system matrix into global system matrix
+        FSI::UTILS::MatrixLogicalSplitAndTransform()(
+            *structure_->SystemMatrix(),
+            *map_structure_,
+            *icoup_structure_->SlaveDofMap(),
+            1.,
+            NULL,
+            &converter,
+            *systemmatrix,
+            true,
+            true
+            );
+
+        // transform and assemble slave-side rows and columns of structural system matrix into global system matrix
+        FSI::UTILS::MatrixLogicalSplitAndTransform()(
+            *structure_->SystemMatrix(),
+            *icoup_structure_->SlaveDofMap(),
+            *icoup_structure_->SlaveDofMap(),
+            1.,
+            &converter,
+            &converter,
+            *systemmatrix,
+            true,
+            true
+            );
+
+        // subject slave-side rows of structural system matrix to pseudo Dirichlet conditions to finalize structural meshtying
+        const double value(1.);
+        for(int doflid_slave=0; doflid_slave<icoup_structure_->SlaveDofMap()->NumMyElements(); ++doflid_slave)
+        {
+          // extract global ID of current slave-side row
+          const int dofgid_slave = icoup_structure_->SlaveDofMap()->GID(doflid_slave);
+          if(dofgid_slave < 0)
+            dserror("Local ID not found!");
+
+          // apply pseudo Dirichlet conditions to filled matrix, i.e., to local row and column indices
+          if(systemmatrix->Filled())
+          {
+            const int rowlid_slave = systemmatrix->RowMap().LID(dofgid_slave);
+            if(rowlid_slave < 0)
+              dserror("Global ID not found!");
+            if(systemmatrix->EpetraMatrix()->ReplaceMyValues(rowlid_slave,1,&value,&rowlid_slave))
+              dserror("ReplaceMyValues failed!");
+          }
+
+          // apply pseudo Dirichlet conditions to unfilled matrix, i.e., to global row and column indices
+          else if(systemmatrix->EpetraMatrix()->InsertGlobalValues(dofgid_slave,1,&value,&dofgid_slave))
+            dserror("InsertGlobalValues failed!");
+        }
+      }
+
+      // add remaining matrix blocks directly
+      else
+      {
+        systemmatrix->Add(*scatrastructureblock_,false,1.,1.);
+        systemmatrix->Add(*structurescatrablock_,false,1.,1.);
+        systemmatrix->Add(*structure_->SystemMatrix(),false,1.,1.);
+      }
 
       break;
     }
@@ -135,10 +293,24 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
   // finalize global system matrix
   systemmatrix_->Complete();
 
-  // create monolithic right-hand side vector
+  // initialize monolithic right-hand side vector
   residual_->PutScalar(0.);
+
+  // assemble scalar transport right-hand side vector into monolithic right-hand side vector
   maps_->InsertVector(scatra_->ScaTraField()->Residual(),0,residual_);
-  maps_->AddVector(structure_->RHS(),1,residual_,-1.);
+
+  // perform structural meshtying before assembling structural right-hand side vector into monolithic right-hand side vector
+  if(scatra_->ScaTraField()->S2ICoupling())
+  {
+    Epetra_Vector residual_structure(*structure_->RHS());
+    maps_structure_->AddVector(*icoup_structure_->SlaveToMaster(maps_structure_->ExtractVector(residual_structure,1)),2,residual_structure);
+    maps_structure_->PutScalar(residual_structure,1,0.);
+    maps_->AddVector(residual_structure,1,*residual_,-1.);
+  }
+
+  // directly assemble structural right-hand side vector into monolithic right-hand side vector
+  else
+    maps_->AddVector(structure_->RHS(),1,residual_,-1.);
 
   return;
 }
@@ -183,6 +355,74 @@ void SSI::SSI_Mono::AssembleODBlockScatraStructure() const
 
   // assemble scatra-structure matrix block
   scatra_->ScaTraField()->Discretization()->Evaluate(eleparams,strategyscatrastructure);
+
+  // provide scatra-structure matrix block with contributions from scatra-scatra interface coupling if applicable
+  if(scatra_->ScaTraField()->S2ICoupling())
+  {
+    // create parameter list for element evaluation
+    Teuchos::ParameterList condparams;
+
+    // action for elements
+    condparams.set<int>("action",SCATRA::bd_calc_s2icoupling_od);
+
+    // number of dofset associated with displacement-related dofs on scalar transport discretization
+    condparams.set<int>("ndsdisp",1);
+
+    // add state vector containing master-side scatra degrees of freedom to scatra discretization
+    scatra_->ScaTraField()->Discretization()->SetState("imasterphinp",strategy_scatra_->MasterPhinp());
+
+    switch(matrixtype_)
+    {
+      case INPAR::SSI::matrix_sparse:
+      {
+        // initialize auxiliary system matrix for linearizations of slave-side scatra fluxes w.r.t. slave-side structural dofs
+        strategy_scatra_->SlaveMatrix()->Zero();
+
+        // create strategy for assembly of auxiliary system matrix
+        DRT::AssembleStrategy strategyscatrastructures2i(
+            0,                                 // row assembly based on number of dofset associated with scalar transport dofs on scalar transport discretization
+            1,                                 // column assembly based on number of dofset associated with structural dofs on structural discretization
+            strategy_scatra_->SlaveMatrix(),   // auxiliary system matrix
+            Teuchos::null,                     // no additional matrices of vectors
+            Teuchos::null,
+            Teuchos::null,
+            Teuchos::null
+            );
+
+        // evaluate scatra-scatra interface coupling
+        std::vector<DRT::Condition*> conditions;
+        scatra_->ScaTraField()->Discretization()->GetCondition("S2ICoupling",conditions);
+        for(unsigned icondition=0; icondition<conditions.size(); ++icondition)
+          if(conditions[icondition]->GetInt("interface side") == INPAR::S2I::side_slave)
+            scatra_->ScaTraField()->Discretization()->EvaluateCondition(condparams,strategyscatrastructures2i,"S2ICoupling",conditions[icondition]->GetInt("ConditionID"));
+
+        // finalize auxiliary system matrix
+        strategy_scatra_->SlaveMatrix()->Complete(*maps_->Map(1),*maps_->Map(0));
+
+        // assemble linearizations of slave-side scatra fluxes w.r.t. slave-side structural dofs into scatra-structure matrix block
+        scatrastructureblock_->Add(*strategy_scatra_->SlaveMatrix(),false,1.,1.);
+
+        // derive linearizations of master-side scatra fluxes w.r.t. master-side structural dofs and assemble into scatra-structure matrix block
+        FSI::UTILS::MatrixRowColTransform()(
+            *strategy_scatra_->SlaveMatrix(),
+            -1.,
+            ADAPTER::CouplingSlaveConverter(*strategy_scatra_->CouplingAdapter()),
+            ADAPTER::CouplingSlaveConverter(*icoup_structure_),
+            *Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(scatrastructureblock_),
+            true,
+            true
+            );
+
+        break;
+      }
+
+      default:
+      {
+        dserror("Type of global system matrix for scalar-structure interaction not recognized!");
+        break;
+      }
+    }
+  }
 
   // finalize scatra-structure matrix block
   scatrastructureblock_->Complete(*maps_->Map(1),*maps_->Map(0));
@@ -412,12 +652,19 @@ void SSI::SSI_Mono::FDCheck()
     if(maxcollid < 0)
       continue;
 
+    // continue loop if current column index is associated with slave side of structural meshtying interface
+    if(scatra_->ScaTraField()->S2ICoupling() and icoup_structure_->SlaveDofMap()->MyGID(colgid))
+      continue;
+
     // fill global state vector with original state variables
     statenp->Update(1.,*statenp_original,0.);
 
     // impose perturbation
     if(statenp->Map().MyGID(colgid))
       if(statenp->SumIntoGlobalValue(colgid,0,scatra_->ScaTraField()->FDCheckEps()))
+        dserror("Perturbation could not be imposed on state vector for finite difference check!");
+    if(scatra_->ScaTraField()->S2ICoupling() and icoup_structure_->PermMasterDofMap()->MyGID(colgid))
+      if(statenp->SumIntoGlobalValue(icoup_structure_->SlaveDofMap()->GID(icoup_structure_->PermMasterDofMap()->LID(colgid)),0,scatra_->ScaTraField()->FDCheckEps()))
         dserror("Perturbation could not be imposed on state vector for finite difference check!");
     scatra_->ScaTraField()->Phinp()->Update(1.,*maps_->ExtractVector(statenp,0),0.);
     structure_->SetState(maps_->ExtractVector(statenp,1));
@@ -443,8 +690,8 @@ void SSI::SSI_Mono::FDCheck()
       if(rowgid < 0)
         dserror("Invalid global ID of matrix row!");
 
-      // skip matrix rows associated with Dirichlet boundary conditions
-      if(scatra_->ScaTraField()->DirichMaps()->CondMap()->MyGID(rowgid) or structure_->GetDBCMapExtractor()->CondMap()->MyGID(rowgid))
+      // skip matrix rows associated with Dirichlet boundary conditions and slave side of structural meshtying interface
+      if(scatra_->ScaTraField()->DirichMaps()->CondMap()->MyGID(rowgid) or structure_->GetDBCMapExtractor()->CondMap()->MyGID(rowgid) or (scatra_->ScaTraField()->S2ICoupling() and icoup_structure_->SlaveDofMap()->MyGID(rowgid)))
         continue;
 
       // get relevant entry in current row of original system matrix
@@ -654,6 +901,33 @@ void SSI::SSI_Mono::Setup()
   if(scatra_->ScaTraField()->SystemMatrix() == Teuchos::null)
     dserror("System matrix associated with scalar transport field must be a sparse matrix!");
 
+  // set up scatra-scatra interface coupling
+  if(scatra_->ScaTraField()->S2ICoupling())
+  {
+    // extract meshtying strategy for scatra-scatra interface coupling on scatra discretization
+    strategy_scatra_ = Teuchos::rcp_dynamic_cast<const SCATRA::MeshtyingStrategyS2I>(scatra_->ScaTraField()->Strategy());
+
+    // safety checks
+    if(strategy_scatra_ == Teuchos::null)
+      dserror("Invalid scatra-scatra interface coupling strategy!");
+    if(strategy_scatra_->CouplingType() != INPAR::S2I::coupling_matching_nodes)
+      dserror("Monolithic scalar-structure interaction only implemented for scatra-scatra interface coupling with matching interface nodes!");
+
+    // set up scatra-scatra interface coupling adapter for structure field
+    SetupCouplingAdapterStructure();
+
+    // set up map for interior and master-side structural degrees of freedom
+    map_structure_ = LINALG::SplitMap(*structure_->Discretization()->DofRowMap(),*icoup_structure_->SlaveDofMap());
+
+    // set up structural map extractor holding interior and interface maps of degrees of freedom
+    std::vector<Teuchos::RCP<const Epetra_Map> > maps(0,Teuchos::null);
+    maps.push_back(LINALG::SplitMap(*map_structure_,*icoup_structure_->MasterDofMap()));
+    maps.push_back(icoup_structure_->SlaveDofMap());
+    maps.push_back(icoup_structure_->MasterDofMap());
+    maps_structure_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*structure_->Discretization()->DofRowMap(),maps));
+    maps_structure_->CheckForValidMapExtractor();
+  }
+
   return;
 }
 
@@ -726,6 +1000,66 @@ void SSI::SSI_Mono::SetupSystem()
       false,
       true
       ));
+
+  return;
+}
+
+
+/*---------------------------------------------------------------------------------*
+ | setup scatra-scatra interface coupling adapter for structure field   fang 08/17 |
+ *---------------------------------------------------------------------------------*/
+void SSI::SSI_Mono::SetupCouplingAdapterStructure()
+{
+  // initialize integer vectors for global IDs of master-side and slave-side interface nodes on structure discretization
+  std::vector<int> inodegidvec_master;
+  std::vector<int> inodegidvec_slave;
+
+  // extract scatra-scatra interface coupling conditions from structure discretization
+  std::vector<DRT::Condition*> conditions(0,NULL);
+  structure_->Discretization()->GetCondition("S2ICoupling",conditions);
+
+  // loop over all conditions
+  for(unsigned icondition=0; icondition<conditions.size(); ++icondition)
+  {
+    // extract current condition
+    DRT::Condition* const condition = conditions[icondition];
+
+    // extract interface side associated with current condition
+    const int side = condition->GetInt("interface side");
+
+    // extract nodes associated with current condition
+    const std::vector<int>* const inodegids = condition->Nodes();
+
+    // loop over all nodes
+    for(unsigned inode=0; inode<inodegids->size(); ++inode)
+    {
+      // extract ID of current node
+      const int inodegid = (*inodegids)[inode];
+
+      // insert global ID of current node into associated vector only if node is owned by current processor
+      // need to make sure that node is stored on current processor, otherwise cannot resolve "->Owner()"
+      if(structure_->Discretization()->HaveGlobalNode(inodegid) and structure_->Discretization()->gNode(inodegid)->Owner() == structure_->Discretization()->Comm().MyPID())
+        side == INPAR::S2I::side_master ? inodegidvec_master.push_back(inodegid) : inodegidvec_slave.push_back(inodegid);
+    }
+  }
+
+  // remove potential duplicates from vectors
+  std::sort(inodegidvec_master.begin(),inodegidvec_master.end());
+  inodegidvec_master.erase(unique(inodegidvec_master.begin(),inodegidvec_master.end()),inodegidvec_master.end());
+  std::sort(inodegidvec_slave.begin(),inodegidvec_slave.end());
+  inodegidvec_slave.erase(unique(inodegidvec_slave.begin(),inodegidvec_slave.end()),inodegidvec_slave.end());
+
+  // setup scatra-scatra interface coupling adapter for structure field
+  icoup_structure_ = Teuchos::rcp(new ADAPTER::Coupling());
+  icoup_structure_->SetupCoupling(
+      *structure_->Discretization(),
+      *structure_->Discretization(),
+      inodegidvec_master,
+      inodegidvec_slave,
+      DRT::Problem::Instance()->NDim(),
+      true,
+      1.e-8
+      );
 
   return;
 }

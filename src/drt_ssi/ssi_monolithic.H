@@ -21,9 +21,20 @@
 #include "ssi_base.H"
 
 // forward declarations
+namespace ADAPTER
+{
+  class Coupling;
+}
+
 namespace LINALG
 {
+  class MultiMapExtractor;
   class Solver;
+}
+
+namespace SCATRA
+{
+  class MeshtyingStrategyS2I;
 }
 
 namespace SSI
@@ -87,6 +98,9 @@ namespace SSI
       //! prepare time step
       void PrepareTimeStep();
 
+      //! setup scatra-scatra interface coupling adapter for structure field
+      void SetupCouplingAdapterStructure();
+
       //! evaluate time step using Newton-Raphson iteration
       void Solve();
 
@@ -98,6 +112,9 @@ namespace SSI
 
       //! time for solution of global system of equations
       double dtsolve_;
+
+      //! scatra-scatra interface coupling adapter for structure field
+      Teuchos::RCP<ADAPTER::Coupling> icoup_structure_;
 
       //! global increment vector for Newton-Raphson iteration
       Teuchos::RCP<Epetra_Vector> increment_;
@@ -111,8 +128,14 @@ namespace SSI
       //! tolerance for Newton-Raphson iteration
       const double itertol_;
 
+      //! map for interior and master-side structural degrees of freedom
+      Teuchos::RCP<const Epetra_Map> map_structure_;
+
       //! global map extractor (0: scalar transport, 1: structure)
       Teuchos::RCP<LINALG::MapExtractor> maps_;
+
+      //! structural map extractor (0: other degrees of freedom, 1: slave-side degrees of freedom, 2: master-side degrees of freedom)
+      Teuchos::RCP<const LINALG::MultiMapExtractor> maps_structure_;
 
       //! type of global system matrix in global system of equations
       const INPAR::SSI::MatrixType matrixtype_;
@@ -137,6 +160,9 @@ namespace SSI
 
       //! algebraic solver for global system of equations
       Teuchos::RCP<LINALG::Solver> solver_;
+
+      //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
+      Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> strategy_scatra_;
 
       //! L2 norm of structural state vector
       double structuredofnorm_;

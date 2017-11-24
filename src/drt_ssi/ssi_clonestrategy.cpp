@@ -47,6 +47,10 @@ std::map<std::string,std::string> SSI::ScatraStructureCloneStrategy::ConditionsT
   conditions_to_copy.insert(std::pair<std::string,std::string>("ScaTraCoupling","ScaTraCoupling"));
   // boundary flux evaluation condition for scalar transport
   conditions_to_copy.insert(std::pair<std::string,std::string>("ScaTraFluxCalc","ScaTraFluxCalc"));
+  // initial field conditions
+  conditions_to_copy.insert(std::pair<std::string,std::string>("Initfield","Initfield"));
+  // scatra-scatra interface coupling conditions
+  conditions_to_copy.insert(std::pair<std::string,std::string>("S2ICoupling","S2ICoupling"));
 
   return conditions_to_copy;
 }
