@@ -482,6 +482,12 @@ public:
     const int                          startfuncno //!< number of spatial function
   );
 
+  /*========================================================================*/
+  //! @name Preconditioning
+  /*========================================================================*/
+
+  virtual void SetupSplitter() {return;};
+
   /*--- calculate and update -----------------------------------------------*/
 
   //! call elements to calculate system matrix and rhs and assemble
@@ -910,7 +916,7 @@ protected:
 
   /*--- set, prepare, and predict ------------------------------------------*/
   //! compute null space information associated with global system matrix if applicable
-  void ComputeNullSpaceIfNecessary() const;
+  virtual void ComputeNullSpaceIfNecessary() const;
 
   //! create scalar handler
   virtual void CreateScalarHandler();

@@ -390,7 +390,7 @@ namespace ELEMENTS
         );
 
     //! calculate error of numerical solution with respect to analytical solution
-    void CalErrorComparedToAnalytSolution(
+    virtual void CalErrorComparedToAnalytSolution(
       const DRT::Element*                   ele,        //!< the element we are dealing with
       Teuchos::ParameterList&               params,     //!< parameter list
       Epetra_SerialDenseVector&             errors      //!< vector containing L2-error norm

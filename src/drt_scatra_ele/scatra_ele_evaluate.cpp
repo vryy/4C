@@ -183,7 +183,14 @@ int DRT::ELEMENTS::Transport::Evaluate(
 
     break;
   }
+  case INPAR::SCATRA::impltype_variational_diffusion:
+  {
+    if (numdofpernode % 2)  // Checks the number of degrees of freedom is multiple of 2 (since each species contributes with a concentration and chemical potential field)
+      dserror("Number of degrees of freedom must be pair!");
+    numscal = numdofpernode/2;
 
+    break;
+  }
   case INPAR::SCATRA::impltype_levelset:
   case INPAR::SCATRA::impltype_lsreinit:
   {

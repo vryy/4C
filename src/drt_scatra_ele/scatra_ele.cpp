@@ -505,13 +505,15 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
       if (pairlength != numdofpernode_)
         dserror("The number of scalars in your MAT_scatra_chemotaxis material with ID %i does not fit to the number of scalars!",actmat->PairID(jj));
     }
-}
+  }
   else if(mat->MaterialType() == INPAR::MAT::m_elchmat)
   {
     const MAT::ElchMat* actmat = static_cast<const MAT::ElchMat*>(mat.get());
 
     numdofpernode_ = actmat->NumDOF();
   }
+  else if(mat->MaterialType() == INPAR::MAT::m_var_chemdiffusion)
+    numdofpernode_ = 2;   //concentration and chemical potential //TODO: Generalize for n species
   else
     dserror("Transport element got unsupported material type %d", mat->MaterialType());
 

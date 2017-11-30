@@ -39,6 +39,7 @@
 #include "scatra_ele_calc_sti_diffcond.H"
 #include "scatra_ele_calc_sti_electrode.H"
 #include "scatra_ele_calc_hdg.H"
+#include "scatra_ele_calc_variational.H"
 #include "scatra_ele_parameter_std.H"
 
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
@@ -431,6 +432,11 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
   case INPAR::SCATRA::impltype_elch_electrode_thermo:
   {
     return DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::Instance(numdofpernode,numscal,disname);
+    break;
+  }
+  case INPAR::SCATRA::impltype_variational_diffusion:
+  {
+    return DRT::ELEMENTS::ScaTraEleCalVariational<distype>::Instance(numdofpernode,numscal,disname);
     break;
   }
   case INPAR::SCATRA::impltype_elch_diffcond:

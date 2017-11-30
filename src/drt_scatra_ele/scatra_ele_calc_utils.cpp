@@ -211,10 +211,15 @@ const std::string ImplTypeToString(const INPAR::SCATRA::ImplType impltype)
     break;
   }
   case INPAR::SCATRA::impltype_bondreac:
-    {
-      impltypestring = "Advanced reactions with bond dynamics";
-      break;
-    }
+  {
+    impltypestring = "Advanced reactions with bond dynamics";
+    break;
+  }
+  case INPAR::SCATRA::impltype_variational_diffusion:
+  {
+    impltypestring = "Chemical diffusion under a variational setting";
+    break;
+  }
   case INPAR::SCATRA::impltype_undefined:
   {
     impltypestring = "Undefined";

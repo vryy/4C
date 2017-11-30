@@ -98,8 +98,8 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   {
     // a standard Teuchos::tuple can have at maximum 10 entries! We have to circumvent this here.
-    Teuchos::Tuple<std::string,12> name;
-    Teuchos::Tuple<int,12> label;
+    Teuchos::Tuple<std::string,13> name;
+    Teuchos::Tuple<int,13> label;
     name[ 0] = "zero_field";                   label[ 0] = initfield_zero_field;
     name[ 1] = "field_by_function";            label[ 1] = initfield_field_by_function;
     name[ 2] = "field_by_condition";           label[ 2] = initfield_field_by_condition;
@@ -112,6 +112,7 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
     name[ 9] = "oracles_flame";                label[ 9] = initfield_oracles_flame;
     name[10] = "high_forced_hit";              label[10] = initialfield_forced_hit_high_Sc;
     name[11] = "low_forced_hit";               label[11] = initialfield_forced_hit_low_Sc;
+    name[12] = "algebraic_field_dependence";   label[12] = initialfield_algebraic_field_dependence;
 
     setStringToIntegralParameter<int>(
         "INITIALFIELD",
@@ -135,7 +136,8 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
                                  "Electroneutrality",
                                  "error_by_function",
                                  "error_by_condition",
-                                 "SphereDiffusion"
+                                 "SphereDiffusion",
+                                 "AnalyticSeries"
                                  ),
                                tuple<int>(
                                    calcerror_no,
@@ -144,7 +146,8 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
                                    calcerror_electroneutrality,
                                    calcerror_byfunction,
                                    calcerror_bycondition,
-                                   calcerror_spherediffusion
+                                   calcerror_spherediffusion,
+                                   calcerror_AnalyticSeries
                                    ),
                                &scatradyn);
 
@@ -331,6 +334,15 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   // flag for point-based null space calculation
   BoolParameter("NULLSPACE_POINTBASED","No","flag for point-based null space calculation",&scatradyn);
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& scatra_variational = scatradyn.sublist(
+      "VARIATIONAL",
+      false,
+      "control parameters for solving problems under a VARIATIONAL setting\n");
+
+  BoolParameter("SEMIMPLICITFUNCTIONAL","no","Flag to evaluate concentration implicitly or explicitly on the functional",&scatra_variational);
+  BoolParameter("BLOCKPRECOND","NO","Switch to block-preconditioned family of solvers, only works with block preconditioners like CheapSIMPLE!",&scatra_variational);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scatra_nonlin = scatradyn.sublist(

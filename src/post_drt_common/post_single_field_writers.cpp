@@ -379,6 +379,9 @@ void ScaTraFilter::WriteAllResults(PostField* field)
     // write flux vectors (always 3D)
     writer_->WriteResult("flux_domain_"+name, "flux_domain_"+name, nodebased, 3);
     writer_->WriteResult("flux_boundary_"+name, "flux_boundary_"+name, nodebased, 3);
+    // write analytic solution
+    std::string nameAnalytic = "phiAnalytic_"+temp.str();
+    writer_->WriteResult("phiAnalytic", nameAnalytic, dofbased, 1,k-1,true);
   }
 
   writer_->WriteResult("activation_time_np","act_time",dofbased,1);

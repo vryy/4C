@@ -132,6 +132,7 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::De
     return DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>::Instance(numdofpernode,numscal,disname);
     break;
   }
+  case INPAR::SCATRA::impltype_variational_diffusion://todo: Check if it can be put on the general case
   case INPAR::SCATRA::impltype_elch_diffcond:
   case INPAR::SCATRA::impltype_elch_diffcond_thermo:
   {

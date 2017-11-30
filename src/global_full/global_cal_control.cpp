@@ -46,6 +46,7 @@
 #include "../drt_thermo/thr_dyn.H"
 #include "../drt_tsi/tsi_dyn.H"
 #include "../drt_two_phase_flow/two_phase_dyn.H"
+#include "../drt_variational/var_chemdiff_dyn.H"
 #include "../drt_wear/wear_dyn.H"
 #ifdef HAVE_FFTW
   #include "../drt_mlmc/drt_uq_dyn.H"
@@ -138,6 +139,10 @@ void ntacal()
 
     case prb_elch:
       elch_dyn(restart);
+      break;
+
+    case prb_var_chemdiff:
+      var_chemdiff_dyn(restart);
       break;
 
     case prb_fluid_topopt:

@@ -77,6 +77,7 @@ std::map<std::string,PROBLEM_TYP> DRT::StringToProblemTypeMap()
     string2prbtype["Tutorial"]                                         = prb_tutorial;
     string2prbtype["Two_Phase_Flow"]                                   = prb_two_phase_flow;
     string2prbtype["UQ"]                                               = prb_uq;
+    string2prbtype["Variational_Chemical_Diffusion"]                   = prb_var_chemdiff;
     string2prbtype["XContact"]                                         = prb_xcontact;
   }
 

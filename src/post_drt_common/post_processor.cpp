@@ -394,6 +394,7 @@ void runEnsightVtuFilter(PostProblem    &problem)
       scatrawriter.WriteFiles();
       break;
     }
+    case prb_var_chemdiff:
     case prb_scatra_endoexocytosis:
     case prb_cardiac_monodomain:
     case prb_scatra:

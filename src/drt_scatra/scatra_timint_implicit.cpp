@@ -334,6 +334,9 @@ void SCATRA::ScaTraTimIntImpl::Setup()
   else
     scalarhandler_->Setup(this);
 
+  // setup splitter (needed to solve initialization problems before SetupMeshtying())
+  SetupSplitter();
+
   // setup strategy
   strategy_->SetupMeshtying();
 
@@ -572,7 +575,8 @@ void SCATRA::ScaTraTimIntImpl::Setup()
         dserror("Calculation of relative error based on conditions desired, but no conditions specified!");
       relerrors_ = Teuchos::rcp(new std::vector<double>(2*NumDofPerNode()*relerrorconditions.size()));
     }
-
+    else if (calcerror_ == INPAR::SCATRA::calcerror_AnalyticSeries)
+      relerrors_ = Teuchos::rcp(new std::vector<double>(2)); //TODO: Update two n species
     else
       relerrors_ = Teuchos::rcp(new std::vector<double>(2*NumDofPerNode()));
   }
@@ -1074,6 +1078,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
  *------------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::PrepareFirstTimeStep()
 {
+ // ApplyDirichletBC(time_,phin_,Teuchos::null);
   if(not skipinitder_)
   {
     if( nds_vel_ != -1 ) //if some velocity field has been set

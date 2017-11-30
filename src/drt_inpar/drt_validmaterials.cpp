@@ -273,30 +273,53 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
-    // scalar transport bond material
-    {
-      Teuchos::RCP<MaterialDefinition> m
-        = Teuchos::rcp(new MaterialDefinition("MAT_scatra_bondreac",
-                                              "bond dynamics material",
-                                              INPAR::MAT::m_scatra_bondreac));
+  // scalar transport bond material
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_scatra_bondreac",
+                                            "bond dynamics material",
+                                            INPAR::MAT::m_scatra_bondreac));
 
-      AddNamedInt(m,"NUMSCAL","number of reactions for these elements");
-      AddNamedIntVector(m,"STOICH","advanced reaction list","NUMSCAL");
-      AddNamedReal(m,"REACCOEFF","reaction coefficient");
-      AddNamedInt(m,"DISTRFUNCT","spatial distribution of reaction coefficient",0,true);
-      AddNamedString(m,"COUPLING","type of coupling", "no_coupling",false);
-      AddNamedRealVector(m,"ROLE","role in michaelis-menten like reactions","NUMSCAL",-1.0,false);
-      AddNamedRealVector(m,"REACSTART","starting point of reaction","NUMSCAL",0.0,true);
-      AddNamedString(m,"BONDTYPE","type of bond", "no_bondtype",false);
-      AddNamedReal(m,"SLIPCOEFF","slip bond coefficient",-1.0,true);
-      AddNamedReal(m,"CATCHCOEFF1","catch bond coefficient 1",-123.0,true);
-      AddNamedReal(m,"CATCHCOEFF2","catch bond coefficient 2",-123.0,true);
-      AddNamedReal(m,"CATCHCOEFF3","catch bond coefficient 3",-123.0,true);
-      AddNamedReal(m,"CATCHCOEFF4","catch bond coefficient 4",-123.0,true);
-      AddNamedReal(m,"BINDING_RADIUS","binding radius of cell-ECM binding",-1.0,true);
+    AddNamedInt(m,"NUMSCAL","number of reactions for these elements");
+    AddNamedIntVector(m,"STOICH","advanced reaction list","NUMSCAL");
+    AddNamedReal(m,"REACCOEFF","reaction coefficient");
+    AddNamedInt(m,"DISTRFUNCT","spatial distribution of reaction coefficient",0,true);
+    AddNamedString(m,"COUPLING","type of coupling", "no_coupling",false);
+    AddNamedRealVector(m,"ROLE","role in michaelis-menten like reactions","NUMSCAL",-1.0,false);
+    AddNamedRealVector(m,"REACSTART","starting point of reaction","NUMSCAL",0.0,true);
+    AddNamedString(m,"BONDTYPE","type of bond", "no_bondtype",false);
+    AddNamedReal(m,"SLIPCOEFF","slip bond coefficient",-1.0,true);
+    AddNamedReal(m,"CATCHCOEFF1","catch bond coefficient 1",-123.0,true);
+    AddNamedReal(m,"CATCHCOEFF2","catch bond coefficient 2",-123.0,true);
+    AddNamedReal(m,"CATCHCOEFF3","catch bond coefficient 3",-123.0,true);
+    AddNamedReal(m,"CATCHCOEFF4","catch bond coefficient 4",-123.0,true);
+    AddNamedReal(m,"BINDING_RADIUS","binding radius of cell-ECM binding",-1.0,true);
 
-      AppendMaterialDefinition(matlist,m);
-    }
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // Chemical Diffusion material (using a variational setting)
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_variational_chemicaldiffusion",
+                                            "chemical diffusion under a variational formulation",
+                                            INPAR::MAT::m_var_chemdiffusion));
+
+    AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
+    AddNamedReal(m,"REFMU","Reference Chemical potential",0.0,true);
+    AddNamedReal(m,"REFC","Reference concentration",0.0,true);
+    AddNamedReal(m,"REFTEMP","Reference temperature",298.15,true);
+    AddNamedReal(m,"GASCON","specific gas constant R (J/(kg*K))",8.314,true);
+    AddNamedReal(m,"REACOEFF","reaction coefficient",0.0,true);            // TODO NOT VALID MATERIAL: Create error
+    AddNamedReal(m,"SCNUM","schmidt number",0.0,true);                     // TODO NOT VALID MATERIAL: Create error
+    AddNamedReal(m,"DENSIFICATION","densification coefficient",0.0,true);  // TODO NOT VALID MATERIAL: Create error
+
+    // Model for constitutive law under a variational framework
+    AddNamedString(m,"MODEL","model for constitutive chemical diffusion","fickean", true);
+
+    AppendMaterialDefinition(matlist,m);
+  }
 
   /*----------------------------------------------------------------------*/
   // scalar transport reaction material

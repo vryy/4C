@@ -502,7 +502,8 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                  "ConcentricCylinders",
                                  "Electroneutrality",
                                  "error_by_function",
-                                 "SphereDiffusion"
+                                 "SphereDiffusion",
+                                 "AnalyticSeries"
                                  ),
                                tuple<int>(
                                    calcerror_no,
@@ -510,7 +511,8 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                    calcerror_cylinder,
                                    calcerror_electroneutrality,
                                    calcerror_byfunction,
-                                   calcerror_spherediffusion
+                                   calcerror_spherediffusion,
+                                   calcerror_AnalyticSeries
                                    ),
                                &cellscatradyn);
 

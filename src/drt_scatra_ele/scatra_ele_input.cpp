@@ -78,6 +78,8 @@ bool DRT::ELEMENTS::Transport::ReadElement(
     impltype_ = INPAR::SCATRA::impltype_cardiac_monodomain_hdg;
   else if(impltype == "BondReac")
     impltype_ = INPAR::SCATRA::impltype_bondreac;
+  else if(impltype == "VariationalDiffusion")
+    impltype_ = INPAR::SCATRA::impltype_variational_diffusion;
   else
     dserror("Transport element received invalid implementation type!");
 

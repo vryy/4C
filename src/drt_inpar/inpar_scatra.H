@@ -71,7 +71,8 @@ namespace INPAR
       initfield_facing_flame_fronts,
       initfield_oracles_flame,
       initialfield_forced_hit_high_Sc,
-      initialfield_forced_hit_low_Sc
+      initialfield_forced_hit_low_Sc,
+      initialfield_algebraic_field_dependence
     };
 
     /// form of convective term
@@ -90,7 +91,8 @@ namespace INPAR
       calcerror_electroneutrality,
       calcerror_byfunction,
       calcerror_bycondition,
-      calcerror_spherediffusion
+      calcerror_spherediffusion,
+      calcerror_AnalyticSeries
     };
 
     /// possible types of stabilization
@@ -206,7 +208,8 @@ namespace INPAR
       impltype_chemoreac,
       impltype_std_hdg,
       impltype_cardiac_monodomain_hdg,
-      impltype_bondreac
+      impltype_bondreac,
+      impltype_variational_diffusion
     };
 
     /// type of method for improving consistency of stabilized methods

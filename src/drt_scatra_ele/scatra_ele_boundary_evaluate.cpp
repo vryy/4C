@@ -60,6 +60,7 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(
   // perform additional operations specific to implementation type
   switch(ParentElement()->ImplType())
   {
+  case INPAR::SCATRA::impltype_variational_diffusion:
   case INPAR::SCATRA::impltype_elch_diffcond:
   case INPAR::SCATRA::impltype_elch_diffcond_thermo:
   case INPAR::SCATRA::impltype_elch_electrode:
