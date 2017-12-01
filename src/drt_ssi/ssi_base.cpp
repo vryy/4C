@@ -454,7 +454,7 @@ void SSI::SSI_Base::ReadRestartfromTime( double restarttime )
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Base::TestResults(const Epetra_Comm& comm)
+void SSI::SSI_Base::TestResults(const Epetra_Comm& comm) const
 {
   DRT::Problem* problem = DRT::Problem::Instance();
 

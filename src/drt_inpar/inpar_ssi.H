@@ -68,6 +68,7 @@ namespace SSI
   {
     scatratiminttype_standard,
     scatratiminttype_cardiac_monodomain,
+    scatratiminttype_elch
   };
 
   /// set the ssi parameters

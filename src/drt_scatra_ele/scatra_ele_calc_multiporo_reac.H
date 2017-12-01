@@ -224,6 +224,7 @@ public:
       Epetra_SerialDenseMatrix&                   emat,             //!< element current to be filled
       const int                                   k,                //!< index of current scalar
       const int                                   ndofpernodemesh,  //!< number of dofs per node of ale element
+      const double                                diffcoeff,        //!< diffusion coefficient
       const double                                fac,              //!< domain-integration factor
       const double                                rhsfac,           //!< time-integration factor for rhs times domain-integration factor
       const double                                J,                //!< determinant of Jacobian det(dx/ds)

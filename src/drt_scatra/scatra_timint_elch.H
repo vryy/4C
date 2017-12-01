@@ -328,6 +328,9 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   //! Toggle which defines dof's with a Dirichlet condition
   Teuchos::RCP<Epetra_Vector> dctoggle_;
 
+  //! initial volumes of resolved electrodes
+  Teuchos::RCP<std::vector<double> > electrodeinitvols_;
+
   //! states of charge of resolved electrodes
   Teuchos::RCP<std::vector<double> > electrodesoc_;
 

@@ -63,16 +63,30 @@ namespace SSI
           bool                            isAle               //!< flag for ALE
           );
 
+      //! return counter for Newton-Raphson iterations
+      const unsigned& Iter() const {return iter_;};
+
+      //! return global map extractor (0: scalar transport, 1: structure)
+      const Teuchos::RCP<LINALG::MapExtractor>& Maps() const {return maps_;};
+
       //! setup monolithic algorithm
       void Setup();
 
       //! setup global system of equations
       void SetupSystem();
 
+      //! test results
+      void TestResults(const Epetra_Comm& comm) const;
+
       //! time loop
       void Timeloop();
 
     private:
+
+      // strategies for Newton-Raphson convergence check
+      class ConvCheckStrategyBase;
+      class ConvCheckStrategyStd;
+      class ConvCheckStrategyElch;
 
       //! assemble global system of equations
       void AssembleMatAndRHS();
@@ -85,9 +99,6 @@ namespace SSI
 
       //! return global map of degrees of freedom
       const Teuchos::RCP<const Epetra_Map>& DofRowMap() const;
-
-      //! check termination criterion for Newton-Raphson iteration
-      bool ExitNewtonRaphson();
 
       //! finite difference check for global system matrix
       void FDCheck();
@@ -122,12 +133,6 @@ namespace SSI
       //! counter for Newton-Raphson iterations
       unsigned iter_;
 
-      //! maximum number of Newton-Raphson iterations
-      const unsigned itermax_;
-
-      //! tolerance for Newton-Raphson iteration
-      const double itertol_;
-
       //! map for interior and master-side structural degrees of freedom
       Teuchos::RCP<const Epetra_Map> map_structure_;
 
@@ -143,35 +148,17 @@ namespace SSI
       //! global residual vector on right-hand side of global system of equations
       Teuchos::RCP<Epetra_Vector> residual_;
 
-      //! absolute tolerance for residual vectors
-      const double restol_;
-
-      //! L2 norm of scalar transport state vector
-      double scatradofnorm_;
-
-      //! L2 norm of scalar transport increment vector
-      double scatraincnorm_;
-
-      //! L2 norm of scalar transport residual vector
-      double scatraresnorm_;
-
       //! scatra-structure block of global system matrix (derivatives of scalar transport residuals w.r.t. structural degrees of freedom)
       Teuchos::RCP<LINALG::SparseOperator> scatrastructureblock_;
 
       //! algebraic solver for global system of equations
       Teuchos::RCP<LINALG::Solver> solver_;
 
+      //! strategy for Newton-Raphson convergence check
+      Teuchos::RCP<const SSI::SSI_Mono::ConvCheckStrategyBase> strategy_convcheck_;
+
       //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
       Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> strategy_scatra_;
-
-      //! L2 norm of structural state vector
-      double structuredofnorm_;
-
-      //! L2 norm of structural residual vector
-      double structureresnorm_;
-
-      //! L2 norm of structural increment vector
-      double structureincnorm_;
 
       //! structure-scatra block of global system matrix (derivatives of structural residuals w.r.t. scalar transport degrees of freedom)
       Teuchos::RCP<LINALG::SparseOperator> structurescatrablock_;

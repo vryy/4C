@@ -126,6 +126,20 @@ namespace DRT
         //! @name methods for evaluation of individual terms
         /*========================================================================*/
 
+        //! CalcMat: linearizations of diffusion term and Ohmic overpotential w.r.t. structural displacements
+        void CalcDiffODMesh(
+            Epetra_SerialDenseMatrix&                    emat,              //!< element matrix
+            const int                                    k,                 //!< index of current scalar
+            const int                                    ndofpernodemesh,   //!< number of structural degrees of freedom per node
+            const double                                 diffcoeff,         //!< diffusion coefficient
+            const double                                 fac,               //!< domain-integration factor
+            const double                                 rhsfac,            //!< time-integration factor for rhs times domain-integration factor
+            const double                                 J,                 //!< Jacobian determinant det(dx/ds)
+            const LINALG::Matrix<my::nsd_,1>&            gradphi,           //!< gradient of current scalar
+            const LINALG::Matrix<my::nsd_,1>&            convelint,         //!< convective velocity
+            const LINALG::Matrix<1,my::nsd_*my::nen_>&   dJ_dmesh           //!< derivatives of Jacobian determinant det(dx/ds) w.r.t. structural displacements
+            );
+
         //! CalcMat: linearization of diffusion coefficient in diffusion term
         void CalcMatDiffCoeffLin(
           Epetra_SerialDenseMatrix&                          emat,         //!< element matrix to be filled

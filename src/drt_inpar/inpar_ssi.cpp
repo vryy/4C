@@ -101,10 +101,12 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                "scalar transport time integration type is needed to instantiate correct scalar transport time integration scheme for ssi problems",
                                tuple<std::string>(
                                  "Standard",
-                                 "Cardiac_Monodomain"),
+                                 "Cardiac_Monodomain",
+                                 "Elch"),
                                tuple<int>(
                                  INPAR::SSI::scatratiminttype_standard,
-                                 INPAR::SSI::scatratiminttype_cardiac_monodomain),
+                                 INPAR::SSI::scatratiminttype_cardiac_monodomain,
+                                 INPAR::SSI::scatratiminttype_elch),
                                  &ssidyn);
 
   //Restart from Structure problem instead of SSI

@@ -15,6 +15,8 @@
 */
 /*--------------------------------------------------------------------------*/
 #include "ssi_monolithic.H"
+#include "ssi_monolithic_convcheck_strategies.H"
+#include "ssi_monolithic_resulttest.H"
 
 #include <Epetra_Time.h>
 
@@ -31,6 +33,7 @@
 
 #include "../drt_lib/drt_assemblestrategy.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_locsys.H"
 
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
@@ -56,27 +59,19 @@ SSI::SSI_Mono::SSI_Mono(
     dtsolve_(0.),
     icoup_structure_(Teuchos::null),
     iter_(0),
-    itermax_(globaltimeparams.get<int>("ITEMAX")),
-    itertol_(globaltimeparams.sublist("MONOLITHIC").get<double>("CONVTOL")),
     map_structure_(Teuchos::null),
     maps_(Teuchos::null),
     maps_structure_(Teuchos::null),
     matrixtype_(DRT::INPUT::IntegralValue<INPAR::SSI::MatrixType>(globaltimeparams.sublist("MONOLITHIC"),"MATRIXTYPE")),
     residual_(Teuchos::null),
-    restol_(globaltimeparams.sublist("MONOLITHIC").get<double>("ABSTOLRES")),
-    scatradofnorm_(0.),
-    scatraincnorm_(0.),
-    scatraresnorm_(0.),
     scatrastructureblock_(Teuchos::null),
     solver_(Teuchos::rcp(new LINALG::Solver(
         DRT::Problem::Instance()->SolverParams(globaltimeparams.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER")),
         comm,
         DRT::Problem::Instance()->ErrorFile()->Handle()
         ))),
+    strategy_convcheck_(Teuchos::null),
     strategy_scatra_(Teuchos::null),
-    structuredofnorm_(0.),
-    structureresnorm_(0.),
-    structureincnorm_(0.),
     structurescatrablock_(Teuchos::null),
     systemmatrix_(Teuchos::null),
     timer_(Teuchos::rcp(new Epetra_Time(comm)))
@@ -103,14 +98,15 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
 
     // consider structural meshtying if applicable
     if(scatra_->ScaTraField()->S2ICoupling())
+    {
+      maps_structure_->InsertVector(icoup_structure_->MasterToSlave(maps_structure_->ExtractVector(structure_->Dispnp(),2)),1,structure_->WriteAccessDispnp());
+      structure_->SetState(structure_->WriteAccessDispnp());
       maps_structure_->InsertVector(icoup_structure_->MasterToSlave(maps_structure_->ExtractVector(increment_structure,2)),1,increment_structure);
+    }
 
     // evaluate structural field
     structure_->Evaluate(increment_structure);
   }
-
-  // apply Dirichlet conditions on structural system matrix
-  structure_->SystemMatrix()->ApplyDirichlet(*structure_->GetDBCMapExtractor()->CondMap(),true);
 
   // pass structural degrees of freedom to scalar transport discretization
   SetStructSolution(structure_->Dispnp(),structure_->Velnp());
@@ -293,6 +289,57 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
   // finalize global system matrix
   systemmatrix_->Complete();
 
+  // apply structural Dirichlet conditions
+  if(structure_->LocsysManager() == Teuchos::null)
+    systemmatrix_->ApplyDirichlet(*structure_->GetDBCMapExtractor()->CondMap());
+  else
+  {
+    switch(matrixtype_)
+    {
+      case INPAR::SSI::matrix_sparse:
+      {
+        // check global system matrix
+        Teuchos::RCP<LINALG::SparseMatrix> systemmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix_);
+        if(systemmatrix == Teuchos::null)
+          dserror("System matrix is not a sparse matrix!");
+
+        // extract structural rows of global system matrix
+        const Teuchos::RCP<LINALG::SparseMatrix> systemmatrix_structure = Teuchos::rcp(new LINALG::SparseMatrix(
+            *structure_->DofRowMap(),
+            27,
+            false,
+            true
+            ));
+        FSI::UTILS::MatrixLogicalSplitAndTransform()(
+            *systemmatrix,
+            *structure_->DofRowMap(),
+            systemmatrix->DomainMap(),
+            1.,
+            NULL,
+            NULL,
+            *systemmatrix_structure
+            );
+        systemmatrix_structure->Complete(systemmatrix->DomainMap(),*structure_->DofRowMap());
+
+        // apply structural Dirichlet conditions
+        structure_->LocsysManager()->RotateGlobalToLocal(systemmatrix_structure);
+        systemmatrix_structure->ApplyDirichletWithTrafo(structure_->LocsysManager()->Trafo(),*structure_->GetDBCMapExtractor()->CondMap());
+        structure_->LocsysManager()->RotateLocalToGlobal(systemmatrix_structure);
+
+        // assemble structural rows of global system matrix back into global system matrix
+        systemmatrix->Put(*systemmatrix_structure,1.,structure_->DofRowMap());
+
+        break;
+      }
+
+      default:
+      {
+        dserror("Type of global system matrix for scalar-structure interaction not recognized!");
+        break;
+      }
+    }
+  }
+
   // initialize monolithic right-hand side vector
   residual_->PutScalar(0.);
 
@@ -302,9 +349,27 @@ void SSI::SSI_Mono::AssembleMatAndRHS()
   // perform structural meshtying before assembling structural right-hand side vector into monolithic right-hand side vector
   if(scatra_->ScaTraField()->S2ICoupling())
   {
+    // make copy of structural right-hand side vector
     Epetra_Vector residual_structure(*structure_->RHS());
-    maps_structure_->AddVector(*icoup_structure_->SlaveToMaster(maps_structure_->ExtractVector(residual_structure,1)),2,residual_structure);
+
+    // transform slave-side part of structural right-hand side vector to master side
+    Teuchos::RCP<Epetra_Vector> slavetomaster = maps_structure_->InsertVector(icoup_structure_->SlaveToMaster(maps_structure_->ExtractVector(residual_structure,1)),2);
+
+    // apply Dirichlet conditions to transformed slave-side part of structural right-hand side vector
+    const Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(slavetomaster->Map()));
+    if(structure_->LocsysManager() != Teuchos::null)
+      structure_->LocsysManager()->RotateGlobalToLocal(slavetomaster);
+    LINALG::ApplyDirichlettoSystem(slavetomaster,zeros,*structure_->GetDBCMapExtractor()->CondMap());
+    if(structure_->LocsysManager() != Teuchos::null)
+      structure_->LocsysManager()->RotateLocalToGlobal(slavetomaster);
+
+    // assemble transformed slave-side part of structural right-hand side vector
+    residual_structure.Update(1.,*slavetomaster,1.);
+
+    // zero out slave-side part of structural right-hand side vector
     maps_structure_->PutScalar(residual_structure,1,0.);
+
+    // assemble final structural right-hand side vector into monolithic right-hand side vector
     maps_->AddVector(residual_structure,1,*residual_,-1.);
   }
 
@@ -480,9 +545,6 @@ void SSI::SSI_Mono::AssembleODBlockStructureScatra() const
   // complete the structure scatra off diagonal block
   structurescatrablock_->Complete(*maps_->Map(0),*maps_->Map(1));
 
-  // apply dirichlet condition to off diagonal block
-  structurescatrablock_->ApplyDirichlet(*structure_->GetDBCMapExtractor()->CondMap(),false);
-
   return;
 }
 
@@ -493,108 +555,6 @@ void SSI::SSI_Mono::AssembleODBlockStructureScatra() const
 const Teuchos::RCP<const Epetra_Map>& SSI::SSI_Mono::DofRowMap() const
 {
   return maps_->FullMap();
-}
-
-
-/*--------------------------------------------------------------------------*
- | check termination criterion for Newton-Raphson iteration      fang 08/17 |
- *--------------------------------------------------------------------------*/
-bool SSI::SSI_Mono::ExitNewtonRaphson()
-{
-  // initialize exit flag
-  bool exit(false);
-
-  // compute vector norms for convergence check
-  scatra_->ScaTraField()->Phinp()->Norm2(&scatradofnorm_);
-  maps_->ExtractVector(residual_,0)->Norm2(&scatraresnorm_);
-  maps_->ExtractVector(increment_,0)->Norm2(&scatraincnorm_);
-  structure_->Dispnp()->Norm2(&structuredofnorm_);
-  maps_->ExtractVector(residual_,1)->Norm2(&structureresnorm_);
-  maps_->ExtractVector(increment_,1)->Norm2(&structureincnorm_);
-
-  // safety checks
-  if(std::isnan(scatradofnorm_) or
-     std::isnan(scatraresnorm_) or
-     std::isnan(scatraincnorm_) or
-     std::isnan(structuredofnorm_) or
-     std::isnan(structureresnorm_) or
-     std::isnan(structureincnorm_))
-    dserror("Vector norm is not a number!");
-  if(std::isinf(scatradofnorm_) or
-     std::isinf(scatraresnorm_) or
-     std::isinf(scatraincnorm_) or
-     std::isinf(structuredofnorm_) or
-     std::isinf(structureresnorm_) or
-     std::isinf(structureincnorm_))
-    dserror("Vector norm is infinity!");
-
-  // prevent division by zero
-  if(scatradofnorm_ < 1.e-10)
-    scatradofnorm_ = 1.e-10;
-  if(structuredofnorm_ < 1.e-10)
-    structuredofnorm_ = 1.e-10;
-
-  // first Newton-Raphson iteration
-  if(iter_ == 1)
-  {
-    // print first line of convergence table to screen
-    // solution increment not yet available during first Newton-Raphson iteration
-    if(Comm().MyPID() == 0)
-      std::cout << "|  " << std::setw(3) << iter_ << "/" << std::setw(3) << itermax_ << "   | "
-                << std::setw(10) << std::setprecision(3) << std::scientific << itertol_ << "[L_2 ]  | "
-                << std::setw(10) << std::setprecision(3) << std::scientific << scatraresnorm_
-                << "   |      --      | "
-                << std::setw(10) << std::setprecision(3) << std::scientific << structureresnorm_
-                << "   |      --      | "
-                << "(       --      , te = "
-                << std::setw(10) << std::setprecision(3) << dtele_ << ")" << std::endl;
-  }
-
-  // subsequent Newton-Raphson iterations
-  else
-  {
-    // print current line of convergence table to screen
-    if(Comm().MyPID() == 0)
-      std::cout << "|  " << std::setw(3) << iter_ << "/" << std::setw(3) << itermax_ << "   | "
-                << std::setw(10) << std::setprecision(3) << std::scientific << itertol_ << "[L_2 ]  | "
-                << std::setw(10) << std::setprecision(3) << std::scientific << scatraresnorm_ << "   | "
-                << std::setw(10) << std::setprecision(3) << std::scientific << scatraincnorm_/scatradofnorm_ << "   | "
-                << std::setw(10) << std::setprecision(3) << std::scientific << structureresnorm_ << "   | "
-                << std::setw(10) << std::setprecision(3) << std::scientific << structureincnorm_/structuredofnorm_ << "   | (ts = "
-                << std::setw(10) << std::setprecision(3) << dtsolve_ << ", te = "
-                << std::setw(10) << std::setprecision(3) << dtele_ << ")" << std::endl;
-
-    // convergence check
-    if(scatraresnorm_ <= itertol_ and
-       structureresnorm_ <= itertol_ and
-       scatraincnorm_/scatradofnorm_ <= itertol_ and
-       structureincnorm_/structuredofnorm_ <= itertol_)
-      // exit Newton-Raphson iteration upon convergence
-      exit = true;
-  }
-
-  // exit Newton-Raphson iteration when residuals are small enough to prevent unnecessary additional solver calls
-  if(scatraresnorm_ < restol_ and structureresnorm_ < restol_)
-    exit = true;
-
-  // print warning to screen if maximum number of Newton-Raphson iterations is reached without convergence
-  if(iter_ == itermax_)
-  {
-    if(Comm().MyPID() == 0)
-    {
-      std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+" << std::endl;
-      std::cout << "|      Newton-Raphson method has not converged after a maximum number of " << std::setw(2) << itermax_ << " iterations!      |" << std::endl;
-    }
-
-    // proceed to next time step
-    exit = true;
-  }
-
-  // print finish line of convergence table to screen
-  if(exit and Comm().MyPID() == 0)
-    std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+" << std::endl;
-
-  return exit;
 }
 
 
@@ -653,8 +613,13 @@ void SSI::SSI_Mono::FDCheck()
       continue;
 
     // continue loop if current column index is associated with slave side of structural meshtying interface
-    if(scatra_->ScaTraField()->S2ICoupling() and icoup_structure_->SlaveDofMap()->MyGID(colgid))
-      continue;
+    if(scatra_->ScaTraField()->S2ICoupling())
+    {
+      collid = icoup_structure_->SlaveDofMap()->LID(colgid);
+      Comm().MaxAll(&collid,&maxcollid,1);
+      if(maxcollid >= 0)
+        continue;
+    }
 
     // fill global state vector with original state variables
     statenp->Update(1.,*statenp_original,0.);
@@ -714,8 +679,15 @@ void SSI::SSI_Mono::FDCheck()
       const double fdval = -(*residual_)[rowlid] / scatra_->ScaTraField()->FDCheckEps() + (*rhs_original)[rowlid] / scatra_->ScaTraField()->FDCheckEps();
 
       // confirm accuracy of first comparison
-      if(abs(fdval) > 1.e-17 and abs(fdval) < 1.e-15)
-        dserror("Finite difference check involves values too close to numerical zero!");
+      if(abs(fdval) > 1.e-20 and abs(fdval) < 1.e-15)
+      {
+        // output warning
+        std::cout << "WARNING: Finite difference check involves values very close to numerical zero!" << std::endl;
+
+        // skip comparison if current entry is very small
+        if(abs(entry) < 1.e-15)
+          continue;
+      }
 
       // absolute and relative errors in first comparison
       const double abserr1 = entry - fdval;
@@ -750,8 +722,15 @@ void SSI::SSI_Mono::FDCheck()
         const double right = -(*residual_)[rowlid] / scatra_->ScaTraField()->FDCheckEps();
 
         // confirm accuracy of second comparison
-        if(abs(right) > 1.e-17 and abs(right) < 1.e-15)
-          dserror("Finite difference check involves values too close to numerical zero!");
+        if(abs(right) > 1.e-20 and abs(right) < 1.e-15)
+        {
+          // output warning
+          std::cout << "WARNING: Finite difference check involves values very close to numerical zero!" << std::endl;
+
+          // skip comparison if current left-hand side is very small
+          if(abs(left) < 1.e-15)
+            continue;
+        }
 
         // absolute and relative errors in second comparison
         const double abserr2 = left - right;
@@ -831,6 +810,28 @@ int SSI::SSI_Mono::Init(
   // check input parameters for scalar transport field
   if(DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatraparams,"VELOCITYFIELD") != INPAR::SCATRA::velocity_Navier_Stokes)
     dserror("Invalid type of velocity field for scalar-structure interaction!");
+
+  // initialize strategy for Newton-Raphson convergence check
+  switch(DRT::INPUT::IntegralValue<INPAR::SSI::ScaTraTimIntType>(globaltimeparams,"SCATRATIMINTTYPE"))
+  {
+    case INPAR::SSI::scatratiminttype_elch:
+    {
+      strategy_convcheck_ = Teuchos::rcp(new SSI::SSI_Mono::ConvCheckStrategyElch(globaltimeparams));
+      break;
+    }
+
+    case INPAR::SSI::scatratiminttype_standard:
+    {
+      strategy_convcheck_ = Teuchos::rcp(new SSI::SSI_Mono::ConvCheckStrategyStd(globaltimeparams));
+      break;
+    }
+
+    default:
+    {
+      dserror("Type of scalar transport time integrator currently not supported!");
+      break;
+    }
+  }
 
   // call base class routine
   return SSI_Base::Init(comm,globaltimeparams,scatraparams,structparams,struct_disname,scatra_disname,isAle);
@@ -937,6 +938,16 @@ void SSI::SSI_Mono::Setup()
  *--------------------------------------------------------------------------*/
 void SSI::SSI_Mono::SetupSystem()
 {
+  if(scatra_->ScaTraField()->S2ICoupling())
+  {
+    // check whether slave-side degrees of freedom are Dirichlet-free
+    std::vector<Teuchos::RCP<const Epetra_Map> > maps(2,Teuchos::null);
+    maps[0] = icoup_structure_->SlaveDofMap();
+    maps[1] = structure_->GetDBCMapExtractor()->CondMap();
+    if(LINALG::MultiMapExtractor::IntersectMaps(maps)->NumGlobalElements() > 0)
+      dserror("Must not apply Dirichlet conditions to slave-side structural displacements!");
+  }
+
   // initialize global map extractor
   maps_ = Teuchos::rcp(new LINALG::MapExtractor(
       *LINALG::MergeMap(
@@ -1073,13 +1084,6 @@ void SSI::SSI_Mono::Solve()
   // initialize counter for Newton-Raphson iteration
   iter_ = 0;
 
-  // print header of convergence table to screen
-  if(Comm().MyPID() == 0)
-  {
-    std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+" << std::endl;
-    std::cout << "|- step/max -|- tolerance[norm] -|- scatra-res -|- scatra-inc -|- struct-res -|- struct-inc -|" << std::endl;
-  }
-
   // start Newton-Raphson iteration
   while(true)
   {
@@ -1109,7 +1113,7 @@ void SSI::SSI_Mono::Solve()
       FDCheck();
 
     // check termination criterion for Newton-Raphson iteration
-    if(ExitNewtonRaphson())
+    if(strategy_convcheck_->ExitNewtonRaphson(*this))
       break;
 
     // initialize global increment vector
@@ -1139,6 +1143,21 @@ void SSI::SSI_Mono::Solve()
 
     // structure field is updated during the next Newton-Raphson iteration step
   } // Newton-Raphson iteration
+
+  return;
+}
+
+
+/*--------------------------------------------------------------------------*
+ | test results                                                  fang 11/17 |
+ *--------------------------------------------------------------------------*/
+void SSI::SSI_Mono::TestResults(const Epetra_Comm& comm) const
+{
+  // activate result testing for monolithic scalar-structure interaction
+  DRT::Problem::Instance()->AddFieldTest(Teuchos::rcp(new SSI::SSI_Mono_ResultTest(Teuchos::rcp(this,false))));
+
+  // call base class routine
+  SSI_Base::TestResults(comm);
 
   return;
 }

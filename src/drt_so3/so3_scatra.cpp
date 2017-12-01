@@ -200,6 +200,10 @@ bool DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::ReadElement(const std::string& 
     impltype_ = INPAR::SCATRA::impltype_chemo;
   else if(impltype == "ChemoReac")
     impltype_ = INPAR::SCATRA::impltype_chemoreac;
+  else if(impltype == "ElchDiffCond")
+    impltype_ = INPAR::SCATRA::impltype_elch_diffcond;
+  else if(impltype == "ElchElectrode")
+    impltype_ = INPAR::SCATRA::impltype_elch_electrode;
   else if(impltype == "Loma")
     impltype_ = INPAR::SCATRA::impltype_loma;
   else if(impltype == "RefConcReac")

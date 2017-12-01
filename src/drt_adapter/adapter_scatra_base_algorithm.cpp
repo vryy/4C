@@ -29,7 +29,6 @@
 #include "../drt_inpar/inpar_sti.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "../drt_scatra/scatra_resulttest.H"
 
 // general time integration schemes
 #include "../drt_scatra/scatra_timint_stat.H"
@@ -47,6 +46,7 @@
 #include "../drt_scatra/scatra_timint_loma_bdf2.H"
 
 // elch specific files
+#include "../drt_scatra/scatra_resulttest_elch.H"
 #include "../drt_scatra/scatra_timint_elch_scheme.H"
 
 // variational diffusion specific files
@@ -241,7 +241,9 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
   }
 
   // electrochemistry
-  else if (probtype == prb_elch or (probtype == prb_sti and disname == "scatra" and DRT::INPUT::IntegralValue<INPAR::STI::ScaTraTimIntType>(DRT::Problem::Instance()->STIDynamicParams(),"SCATRATIMINTTYPE") == INPAR::STI::scatratiminttype_elch))
+  else if (probtype == prb_elch or
+          (probtype == prb_ssi and DRT::INPUT::IntegralValue<INPAR::SSI::ScaTraTimIntType>(DRT::Problem::Instance()->SSIControlParams(),"SCATRATIMINTTYPE") == INPAR::SSI::scatratiminttype_elch) or
+          (probtype == prb_sti and disname == "scatra" and DRT::INPUT::IntegralValue<INPAR::STI::ScaTraTimIntType>(DRT::Problem::Instance()->STIDynamicParams(),"SCATRATIMINTTYPE") == INPAR::STI::scatratiminttype_elch))
   {
     Teuchos::RCP<Teuchos::ParameterList> elchparams = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->ELCHControlParams()));
 
@@ -593,6 +595,9 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::ScaTraBaseAlgorithm::CreateScaTraFieldTes
 {
   if (DRT::Problem::Instance()->SpatialApproximation() == "HDG")
     return Teuchos::rcp(new SCATRA::HDGResultTest(scatra_));
+  else if (DRT::Problem::Instance()->ProblemType() == prb_elch or
+          (DRT::Problem::Instance()->ProblemType() == prb_ssi and DRT::INPUT::IntegralValue<INPAR::SSI::ScaTraTimIntType>(DRT::Problem::Instance()->SSIControlParams(),"SCATRATIMINTTYPE") == INPAR::SSI::scatratiminttype_elch))
+    return Teuchos::rcp(new SCATRA::ElchResultTest(Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(scatra_)));
   else
     return Teuchos::rcp(new SCATRA::ScaTraResultTest(scatra_));
 }

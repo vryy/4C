@@ -1307,15 +1307,21 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingOD(
 
           // loop over matrix columns
           for(int ui=0; ui<nen_; ++ui)
+          {
+            const int fui = ui*3;
+
             // loop over matrix rows
             for(int vi=0; vi<nen_; ++vi)
             {
-              // compute linearizations w.r.t. slave-side structural displacements
+              const int fvi = vi*numscal_+k;
               const double vi_dN_dd_slave = funct_(vi)*dN_dd_slave;
-              eslavematrix(vi*numscal_+k,ui*3) += vi_dN_dd_slave*shapederivatives(0,ui);
-              eslavematrix(vi*numscal_+k,ui*3+1) += vi_dN_dd_slave*shapederivatives(1,ui);
-              eslavematrix(vi*numscal_+k,ui*3+2) += vi_dN_dd_slave*shapederivatives(2,ui);
+
+              // loop over spatial dimensions
+              for(unsigned dim=0; dim<3; ++dim)
+                // compute linearizations w.r.t. slave-side structural displacements
+                eslavematrix(fvi,fui+dim) += vi_dN_dd_slave*shapederivatives(dim,ui);
             }
+          }
 
           break;
         }

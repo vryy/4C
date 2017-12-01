@@ -56,6 +56,7 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(
     lastsocstep_    (-1),
     ektoggle_       (Teuchos::null),
     dctoggle_       (Teuchos::null),
+    electrodeinitvols_(Teuchos::null),
     electrodesoc_   (Teuchos::null),
     electrodecrates_(Teuchos::null),
     electrodeconc_  (Teuchos::null),
@@ -141,6 +142,11 @@ void SCATRA::ScaTraTimIntElch::Setup()
   discret_->GetCondition("ElectrodeSOC",electrodesocconditions);
   if(electrodesocconditions.size() > 0)
   {
+    if(isale_)
+    {
+      electrodeinitvols_ = Teuchos::rcp(new std::vector<double>);
+      electrodeinitvols_->resize(electrodesocconditions.size(),-1.);
+    }
     electrodesoc_ = Teuchos::rcp(new std::vector<double>);
     electrodesoc_->resize(electrodesocconditions.size(),-1.);
     electrodecrates_ = Teuchos::rcp(new std::vector<double>);
@@ -678,6 +684,10 @@ void SCATRA::ScaTraTimIntElch::ReadRestartProblemSpecific(const int step,IO::Dis
   // read restart data associated with electrode state of charge conditions if applicable, needed for correct evaluation of cell C rate at the beginning of the first time step after restart
   if(discret_->GetCondition("ElectrodeSOC"))
   {
+    // read volumes of resolved electrodes
+    if(isale_)
+      reader.ReadRedundantDoubleVector(electrodeinitvols_,"electrodeinitvols");
+
     // read states of charge of resolved electrodes
     reader.ReadRedundantDoubleVector(electrodesoc_,"electrodesoc");
 
@@ -1167,6 +1177,10 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
       // action for elements
       condparams.set<int>("action",SCATRA::calc_elch_electrode_soc);
 
+      // number of dofset associated with displacement-related dofs
+      if(isale_)
+        condparams.set<int>("ndsdisp",nds_disp_);
+
       // initialize result vector
       // first component = concentration integral, second component = domain integral
       Teuchos::RCP<Epetra_SerialDenseVector> scalars = Teuchos::rcp(new Epetra_SerialDenseVector(2));
@@ -1179,9 +1193,14 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
       double intconcentration = (*scalars)(0);
       double intdomain = (*scalars)(1);
 
+      // store initial volume of current electrode
+      if(isale_ and step_ == 0)
+        (*electrodeinitvols_)[condid] = intdomain;
+
       // extract reference concentrations at 0% and 100% state of charge
-      const double c_0 = conditions[icond]->GetDouble("c_0%");
-      const double c_100 = conditions[icond]->GetDouble("c_100%");
+      const double volratio = isale_ ? (*electrodeinitvols_)[condid]/intdomain : 1.;
+      const double c_0 = conditions[icond]->GetDouble("c_0%")*volratio;
+      const double c_100 = conditions[icond]->GetDouble("c_100%")*volratio;
 
       // compute state of charge for current electrode
       const double soc = (intconcentration/intdomain-c_0)/(c_100-c_0);
@@ -1302,6 +1321,10 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
         // action for elements
         condparams.set<int>("action",SCATRA::bd_calc_elch_cell_voltage);
 
+        // number of dofset associated with displacement-related dofs
+        if(isale_)
+          condparams.set<int>("ndsdisp",nds_disp_);
+
         // initialize result vector
         // first component = electric potential integral, second component = domain integral
         Teuchos::RCP<Epetra_SerialDenseVector> scalars = Teuchos::rcp(new Epetra_SerialDenseVector(2));
@@ -1407,6 +1430,10 @@ void SCATRA::ScaTraTimIntElch::OutputRestart() const
   // output restart data associated with electrode state of charge conditions if applicable, needed for correct evaluation of cell C rate at the beginning of the first time step after restart
   if(discret_->GetCondition("ElectrodeSOC"))
   {
+    // output volumes of resolved electrodes
+    if(isale_)
+      output_->WriteRedundantDoubleVector("electrodeinitvols",electrodeinitvols_);
+
     // output states of charge of resolved electrodes
     output_->WriteRedundantDoubleVector("electrodesoc",electrodesoc_);
 
@@ -1531,7 +1558,7 @@ void SCATRA::ScaTraTimIntElch::ValidParameterDiffCond()
        DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params_,"SOLVERTYPE") != INPAR::SCATRA::solvertype_nonlinear_multiscale_microtomacro)
       dserror("The only solvertype supported by the ELCH diffusion-conduction framework is the non-linear solver!!");
 
-    if((DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(*params_,"CONVFORM"))!= INPAR::SCATRA::convform_convective)
+    if(problem_->ProblemType() != prb_ssi and DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(*params_,"CONVFORM") != INPAR::SCATRA::convform_convective)
       dserror("Only the convective formulation is supported so far!!");
 
     if((DRT::INPUT::IntegralValue<int>(*params_,"NEUMANNINFLOW"))== true)

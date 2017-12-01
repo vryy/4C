@@ -965,6 +965,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcDiffODMesh(
       Epetra_SerialDenseMatrix&                   emat,
       const int                                   k,
       const int                                   ndofpernodemesh,
+      const double                                diffcoeff,
       const double                                fac,
       const double                                rhsfac,
       const double                                J,
@@ -977,7 +978,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcDiffODMesh(
   if(fabs(VarManager()->Saturation(k)) > minimum_saturation_)
   {
     // call base class
-    my::CalcDiffODMesh(emat,k,ndofpernodemesh,fac,rhsfac,J,gradphi,convelint,dJ_dmesh);
+    my::CalcDiffODMesh(emat,k,ndofpernodemesh,diffcoeff,fac,rhsfac,J,gradphi,convelint,dJ_dmesh);
 
     // linearization of porosity only if it depends on deformation
     if(VarManager()->FluidPhaseManager()->PorosityDependsOnStruct())
@@ -989,7 +990,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcDiffODMesh(
       // J denotes the determinant of the deformation gradient, i.e. det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
       // in our case: diffusivity is scaled with porosity^(delta + 1) --> scale it with 1.0/porosity^(delta + 1) here
       //              and build derivative d diff/d porosity = (delta + 1) * porosity^delta
-      const double vrhs = rhsfac*my::diffmanager_->GetIsotropicDiff(k)
+      const double vrhs = rhsfac*diffcoeff
                          /std::pow(VarManager()->FluidPhaseManager()->Porosity(), delta + 1.0)
                          * (delta + 1.0) * std::pow(VarManager()->FluidPhaseManager()->Porosity(), delta )
                          *VarManager()->FluidPhaseManager()->JacobianDefGrad()

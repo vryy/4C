@@ -89,6 +89,15 @@ namespace DRT
           Epetra_SerialDenseVector&      eslaveresidual    ///< element residual for slave side
           );
 
+      //! evaluate off-diagonal system matrix contributions associated with scatra-scatra interface coupling condition
+      virtual void EvaluateS2ICouplingOD(
+          const DRT::FaceElement*        ele,              ///< current boundary element
+          Teuchos::ParameterList&        params,           ///< parameter list
+          DRT::Discretization&           discretization,   ///< discretization
+          DRT::Element::LocationArray&   la,               ///< location array
+          Epetra_SerialDenseMatrix&      eslavematrix      ///< element matrix for slave side
+          );
+
       //! extract valence of species k from element material
       virtual double GetValence(
           const Teuchos::RCP<const MAT::Material>&   material,   //! element material

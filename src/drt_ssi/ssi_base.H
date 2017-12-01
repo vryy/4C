@@ -155,7 +155,7 @@ namespace SSI
     virtual void Timeloop() = 0;
 
     /// test results (if necessary)
-    void TestResults(const Epetra_Comm& comm);
+    virtual void TestResults(const Epetra_Comm& comm) const;
 
     /// read restart
     void ReadRestart( int restart );

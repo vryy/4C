@@ -15,6 +15,7 @@
 */
 /*--------------------------------------------------------------------------*/
 #include "scatra_ele_calc_elch_electrode.H"
+#include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_utils_elch_electrode.H"
 
@@ -124,6 +125,15 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalcMatAndRhs(
   // 2b) element matrix: additional term arising from concentration dependency of diffusion coefficient
   CalcMatDiffCoeffLin(emat,k,timefacfac,VarManager()->GradPhi(k),1.);
 
+  // 2c) element matrix: conservative part of convective term, needed for deforming electrodes,
+  //                     i.e., for scalar-structure interaction
+  double vdiv(0.);
+  if(my::scatrapara_->IsConservative())
+  {
+    my::GetDivergence(vdiv,my::evelnp_);
+    my::CalcMatConvAddCons(emat,k,timefacfac,vdiv,1.);
+  }
+
   //----------------------------------------------------------------------------
   // 3) element right hand side vector (negative residual of nonlinear problem):
   //    terms arising from transport equation
@@ -140,6 +150,15 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalcMatAndRhs(
 
   // 3c) element rhs: standard Galerkin diffusion term
   my::CalcRHSDiff(erhs,k,rhsfac);
+
+  // 3d) element rhs: conservative part of convective term, needed for deforming electrodes,
+  //                  i.e., for scalar-structure interaction
+  if(my::scatrapara_->IsConservative())
+  {
+    double vrhs = rhsfac*my::scatravarmanager_->Phinp(k)*vdiv;
+    for(unsigned vi=0; vi<my::nen_; ++vi)
+      erhs[vi*my::numdofpernode_+k] -= vrhs*my::funct_(vi);
+  }
 
   //----------------------------------------------------------------------------
   // 4) element matrix: stationary terms arising from potential equation
@@ -178,6 +197,37 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalcMatAndRhsOutsideSca
 
   // element rhs: standard Galerkin terms from potential equation
   CalcRhsPotEquDiviOhm(erhs,rhsfac,VarManager()->InvF(),VarManager()->GradPot(),1.);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------------------------------------------------*
+ | CalcMat: linearizations of diffusion term and Ohmic overpotential w.r.t. structural displacements   fang 11/17 |
+ *----------------------------------------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalcDiffODMesh(
+    Epetra_SerialDenseMatrix&                    emat,              //!< element matrix
+    const int                                    k,                 //!< index of current scalar
+    const int                                    ndofpernodemesh,   //!< number of structural degrees of freedom per node
+    const double                                 diffcoeff,         //!< diffusion coefficient
+    const double                                 fac,               //!< domain-integration factor
+    const double                                 rhsfac,            //!< time-integration factor for rhs times domain-integration factor
+    const double                                 J,                 //!< Jacobian determinant det(dx/ds)
+    const LINALG::Matrix<my::nsd_,1>&            gradphi,           //!< gradient of current scalar
+    const LINALG::Matrix<my::nsd_,1>&            convelint,         //!< convective velocity
+    const LINALG::Matrix<1,my::nsd_*my::nen_>&   dJ_dmesh           //!< derivatives of Jacobian determinant det(dx/ds) w.r.t. structural displacements
+)
+{
+  // safety check
+  if(k != 0)
+    dserror("Invalid species index!");
+
+  // call base class routine to compute linearizations of diffusion term w.r.t. structural displacements
+  my::CalcDiffODMesh(emat,0,ndofpernodemesh,diffcoeff,fac,rhsfac,J,gradphi,convelint,dJ_dmesh);
+
+  // call base class routine again to compute linearizations of Ohmic overpotential w.r.t. structural displacements
+  my::CalcDiffODMesh(emat,1,ndofpernodemesh,VarManager()->InvF()*DiffManager()->GetCond(),fac,rhsfac,J,VarManager()->GradPot(),convelint,dJ_dmesh);
 
   return;
 }

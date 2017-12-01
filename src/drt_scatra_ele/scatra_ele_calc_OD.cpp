@@ -304,7 +304,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SysmatODMesh(
       //----------------------------------------------------------------
       // standard Galerkin terms  --  diffusive term
       //----------------------------------------------------------------
-      CalcDiffODMesh(emat,k,ndofpernodemesh,fac,rhsfac,J,scatravarmanager_->GradPhi(k),scatravarmanager_->ConVel(k),dJ_dmesh);
+      CalcDiffODMesh(emat,k,ndofpernodemesh,diffmanager_->GetIsotropicDiff(k),fac,rhsfac,J,scatravarmanager_->GradPhi(k),scatravarmanager_->ConVel(k),dJ_dmesh);
 
       //----------------------------------------------------------------
       // standard Galerkin terms  -- "shapederivatives" reactive term
@@ -874,6 +874,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDiffODMesh(
     Epetra_SerialDenseMatrix&           emat,
     const int                           k,
     const int                           ndofpernodemesh,
+    const double                        diffcoeff,
     const double                        fac,
     const double                        rhsfac,
     const double                        J,
@@ -882,7 +883,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDiffODMesh(
     const LINALG::Matrix<1,nsd_*nen_>&  dJ_dmesh
   )
 {
-  const double vrhs = -rhsfac/J*diffmanager_->GetIsotropicDiff(k);
+  const double vrhs = -rhsfac/J*diffcoeff;
 
   for (unsigned vi=0; vi<nen_; ++vi)
   {
@@ -917,7 +918,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDiffODMesh(
       const double xjm_2_1   = xjm_(2, 1);
       const double xjm_2_2   = xjm_(2, 2);
     {
-      const double v = diffmanager_->GetIsotropicDiff(k)*rhsfac/J;
+      const double v = diffcoeff*rhsfac/J;
 
       const double gradphi_0   = gradphi(0);
       const double gradphi_1   = gradphi(1);
@@ -971,7 +972,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDiffODMesh(
       }
     }
 
-    const double v = diffmanager_->GetIsotropicDiff(k)*rhsfac/J;
+    const double v = diffcoeff*rhsfac/J;
 
     //gradient of scalar w.r.t. reference coordinates
     static LINALG::Matrix<nsd_,1> refgradphi;
@@ -1031,7 +1032,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDiffODMesh(
   else if(nsd_==2)
   {
     {
-      const double v = diffmanager_->GetIsotropicDiff(k)*rhsfac/J;
+      const double v = diffcoeff*rhsfac/J;
 
       const double gradphi_0   = gradphi(0);
       const double gradphi_1   = gradphi(1);
@@ -1060,7 +1061,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDiffODMesh(
       }
     }
 
-    const double v = diffmanager_->GetIsotropicDiff(k)*rhsfac/J;
+    const double v = diffcoeff*rhsfac/J;
 
     //gradient of scalar w.r.t. reference coordinates
     static LINALG::Matrix<nsd_,1> refgradphi;

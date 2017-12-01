@@ -51,6 +51,10 @@ std::map<std::string,std::string> SSI::ScatraStructureCloneStrategy::ConditionsT
   conditions_to_copy.insert(std::pair<std::string,std::string>("Initfield","Initfield"));
   // scatra-scatra interface coupling conditions
   conditions_to_copy.insert(std::pair<std::string,std::string>("S2ICoupling","S2ICoupling"));
+  // electrode state of charge conditions
+  conditions_to_copy.insert(std::pair<std::string,std::string>("ElectrodeSOC","ElectrodeSOC"));
+  // cell voltage conditions
+  conditions_to_copy.insert(std::pair<std::string,std::string>("CellVoltage","CellVoltage"));
 
   return conditions_to_copy;
 }
@@ -108,6 +112,8 @@ void SSI::ScatraStructureCloneStrategy::CheckMaterialType(const int matid)
 INPAR::MAT::MaterialType mtype = DRT::Problem::Instance()->Materials()->ById(matid)->Type();
 if (
     (mtype != INPAR::MAT::m_scatra) &&
+    (mtype != INPAR::MAT::m_elchmat) &&
+    (mtype != INPAR::MAT::m_electrode) &&
     (mtype != INPAR::MAT::m_matlist) &&
     (mtype != INPAR::MAT::m_matlist_reactions) &&
     (mtype != INPAR::MAT::m_myocard)
