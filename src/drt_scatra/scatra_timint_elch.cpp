@@ -92,9 +92,10 @@ void SCATRA::ScaTraTimIntElch::Init()
 }
 
 /*----------------------------------------------------------------------*
- | setup algorithm                                          rauch 09/16 |
+ |  initialize splitter for preconditioning                deanda 10/17 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::Setup()
+
+void SCATRA::ScaTraTimIntElch::SetupSplitter()
 {
   // set up concentration-potential splitter
   SetupConcPotSplit();
@@ -102,6 +103,15 @@ void SCATRA::ScaTraTimIntElch::Setup()
   // set up concentration-potential-potential splitter for macro scale in multi-scale simulations
   if(macro_scale_)
     SetupConcPotPotSplit();
+}
+
+/*----------------------------------------------------------------------*
+ | setup algorithm                                          rauch 09/16 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::Setup()
+{
+  // set up concentration-potential splitter
+  SetupSplitter();
 
   // initialize time-dependent electrode kinetics variables (galvanostatic mode or double layer contribution)
   ComputeTimeDerivPot0(true);

@@ -36,7 +36,7 @@
 
 
 /*----------------------------------------------------------------------*
- |  Constructor (public)                                     ehrl 01/14 |
+ |  Constructor (public)                                   deanda 10/17 |
  *----------------------------------------------------------------------*/
 SCATRA::TimIntVariational::TimIntVariational(
   Teuchos::RCP<DRT::Discretization>        actdis,        //!< discretization
@@ -56,7 +56,7 @@ SCATRA::TimIntVariational::TimIntVariational(
 
 
 /*----------------------------------------------------------------------*
- |  initialize time integration                              ehrl 01/14 |
+ |  initialize time integration                             deanda 10/17 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntVariational::Init()
 {
@@ -69,7 +69,7 @@ void SCATRA::TimIntVariational::Init()
 
 
 /*----------------------------------------------------------------------*
- |  initialize time integration                              ehrl 01/14 |
+ |  initialize time integration                             deanda 10/17 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntVariational::Setup()
 {
@@ -87,7 +87,7 @@ void SCATRA::TimIntVariational::Setup()
 }
 
 /*----------------------------------------------------------------------*
- |  initialize splitter for preconditioning                  ehrl 01/14 |
+ |  initialize splitter for preconditioning                deanda 10/17 |
  *----------------------------------------------------------------------*/
 
 void SCATRA::TimIntVariational::SetupSplitter()
@@ -138,7 +138,7 @@ void SCATRA::TimIntVariational::AddTimeIntegrationSpecificVectors(bool forcedinc
 }
 
 /*----------------------------------------------------------------------*
-| Destructor dtor (public)                                   ehrl 01/14 |
+| Destructor dtor (public)                                 deanda 10/17 |
 *-----------------------------------------------------------------------*/
 SCATRA::TimIntVariational::~TimIntVariational()
 {
@@ -148,7 +148,7 @@ SCATRA::TimIntVariational::~TimIntVariational()
 
 /*----------------------------------------------------------------------*
  | current solution becomes most recent solution of next timestep       |
- |                                                            gjb 08/08 |
+ |                                                         deanda 10/17 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntVariational::Update(const int num)
 {
@@ -159,7 +159,7 @@ void SCATRA::TimIntVariational::Update(const int num)
 
 
 /*----------------------------------------------------------------------*
- | explicit predictor for nonlinear solver                   fang 10/15 |
+ | explicit predictor for nonlinear solver                 deanda 10/17 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntVariational::ExplicitPredictor() const
 {
@@ -170,7 +170,7 @@ void SCATRA::TimIntVariational::ExplicitPredictor() const
 }
 
 /*----------------------------------------------------------------------*
- |  set initial field for phi                               deanda 09/17 |
+ |  set initial field for phi                              deanda 10/17 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntVariational::SetInitialField(
     const INPAR::SCATRA::InitialField init,
@@ -279,7 +279,7 @@ void SCATRA::TimIntVariational::SetInitialField(
 
 
 /*----------------------------------------------------------------------------------------*
- | create scalar manager                                                      fang 12/14 |
+ | create scalar manager                                                      deanda 10/17 |
  *----------------------------------------------------------------------------------------*/
 void SCATRA::TimIntVariational::CreateScalarHandler()
 {
@@ -290,7 +290,7 @@ void SCATRA::TimIntVariational::CreateScalarHandler()
 
 
 /*----------------------------------------------------------------------*
- |  calculate error compared to analytical solution            gjb 10/08|
+ |  calculate error compared to analytical solution         deanda 10/17 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntVariational::EvaluateErrorComparedToAnalyticalSol()
 {
@@ -394,7 +394,7 @@ void SCATRA::TimIntVariational::EvaluateErrorComparedToAnalyticalSol()
 
 
 /*-------------------------------------------------------------------------*
- | valid parameters for the diffusion-conduction formulation    ehrl 12/12 |
+ | valid parameters for the diffusion-conduction formulation  deanda 10/17 |
  *-------------------------------------------------------------------------*/
 void SCATRA::TimIntVariational::ValidParameterDiffCond()
 {
@@ -467,7 +467,7 @@ void SCATRA::TimIntVariational::ApplyDirichletBC
 } // SCATRA::TimIntVariational::ApplyDirichletBC
 
 /*----------------------------------------------------------------------*
- | add parameters depending on the problem              rasthofer 12/13 |
+ | add parameters depending on the problem                  deanda 10/17 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntVariational::AddProblemSpecificParametersAndVectors(
   Teuchos::ParameterList& params //!< parameter list
@@ -684,7 +684,7 @@ void SCATRA::ScalarHandlerVar::Setup(const ScaTraTimIntImpl* const scatratimint)
 }
 
 /*-------------------------------------------------------------------------*
-|  Determine number of Scalars per node in given condition    vuong   04/16|
+|  Determine number of Scalars per node in given condition     deanda 10/17 |
  *-------------------------------------------------------------------------*/
 int SCATRA::ScalarHandlerVar::NumScalInCondition(
     const DRT::Condition& condition,

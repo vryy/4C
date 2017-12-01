@@ -64,6 +64,15 @@ void SCATRA::ScaTraTimIntLoma::Init()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntLoma::Setup()
 {
+  SetupSplitter();
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | setup splitter                                          deanda 11/17 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntLoma::SetupSplitter()
+{
   // set up a species-temperature splitter (if more than one scalar)
   if (NumScal() > 1)
   {

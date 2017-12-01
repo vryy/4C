@@ -34,6 +34,12 @@ namespace SCATRA
     /// virtual destructor
     virtual ~ScaTraTimIntLoma(){return;};
 
+    /*========================================================================*/
+    //! @name Preconditioning
+    /*========================================================================*/
+
+    void SetupSplitter();
+
     // -----------------------------------------------------------------
     // general methods
     // -----------------------------------------------------------------
@@ -42,7 +48,7 @@ namespace SCATRA
     virtual void Init();
 
     /// initialize algorithm
-    virtual void Setup();
+    void Setup();
 
     //! set initial thermodynamic pressure
     void SetInitialThermPressure();
