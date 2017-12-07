@@ -951,7 +951,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::LinearSolve()
 
   if (solveradapttol_ and (itnum_ > 1))
   {
-    double worst = normrhs_;
+    double worst = std::max(normrhs_,norminc_);
     double wanted = tolfres_;
     solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
   }

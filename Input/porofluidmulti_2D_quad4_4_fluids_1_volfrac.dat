@@ -38,7 +38,6 @@ NUMSTEP                         15
 MAXTIME                         2.0
 TIMESTEP                        0.1
 RESULTSEVRY                     1
-CONVTOL                         1e-06
 FLUX_PROJ_METHOD                L2_projection
 FLUX_PROJ_SOLVER                2
 OUTPUT_POROSITY                 yes

@@ -452,7 +452,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::Evaluate(Teucho
   SetupRHS();
 
   // *********** time measurement ***********
-  dtele_ = timernewton_.WallTime() - dtcpu;
+  double mydtele = timernewton_.WallTime() - dtcpu;
+  Comm().MaxAll(&mydtele,&dtele_,1);
   // *********** time measurement ***********
 
 }
@@ -936,7 +937,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::LinearSolve()
 
   if (solveradapttol_ and (itnum_ > 1))
   {
-    double worst = normrhs_;
+    double worst = std::max(normrhs_,norminc_);
     double wanted = ittolres_;
     solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
   }
@@ -970,7 +971,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::LinearSolve()
   }
 
   // *********** time measurement ***********
-  dtsolve_ = timernewton_.WallTime() - dtcpu;
+  double mydtsolve = timernewton_.WallTime() - dtcpu;
+  Comm().MaxAll(&mydtsolve,&dtsolve_,1);
   // *********** time measurement ***********
 
   return;

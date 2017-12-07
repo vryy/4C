@@ -294,5 +294,38 @@ namespace SCATRA
       //! copy constructor
       ConvCheckStrategyStdMacroScaleElch(const ConvCheckStrategyStdMacroScaleElch& old);
   }; // class ConvCheckStrategyStdMacroScaleElch
+
+  /*!
+  \brief specific strategy for Newton-Raphson convergence check for Multiphase_Poroelasticity_ScaTra problems
+         || delta phi|| / || phi || < tol    and    || res || / sqrt(totalnumdof) < tol
+
+  \author kremheller (kremheller@lnm.mw.tum.de)
+  */
+
+  class ConvCheckStrategyPoroMultiphaseScatra : public ConvCheckStrategyBase
+  {
+    public:
+
+      //! constructor
+    ConvCheckStrategyPoroMultiphaseScatra(
+          const Teuchos::ParameterList&   parameters   //!< parameter list for Newton-Raphson iteration
+          ) :
+      ConvCheckStrategyBase(parameters)
+      {return;};
+
+      //! destructor
+      virtual ~ConvCheckStrategyPoroMultiphaseScatra(){return;};
+
+      //! perform convergence check for Newton-Raphson iteration
+      bool AbortNonlinIter(
+          const ScaTraTimIntImpl&   scatratimint,   //!< scalar transport time integrator
+          double&                   actresidual     //!< return maximum current residual value
+          ) const;
+
+    private:
+
+      //! copy constructorexit
+      ConvCheckStrategyPoroMultiphaseScatra(const ConvCheckStrategyPoroMultiphaseScatra& old);
+  }; // class ConvCheckStrategyStd
 } // namespace SCATRA
 #endif // #ifndef SCATRA_TIMINT_CONVCHECK_STRATEGIES_H

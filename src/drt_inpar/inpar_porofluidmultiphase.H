@@ -55,8 +55,9 @@ enum ConvNorm
 //! type of vector norm used for error/residual vectors
 enum VectorNorm
 {
-  norm_vague = 0,  //!< undetermined norm
+  norm_undefined,
   norm_l1,  //!< L1/linear norm
+  norm_l1_scaled,  //!< L1/linear norm scaled by length of vector
   norm_l2,  //!< L2/Euclidean norm
   norm_rms,  //!< root mean square (RMS) norm
   norm_inf  //!< Maximum/infinity norm
@@ -99,19 +100,19 @@ static inline const std::string VectorNormString(
 {
   switch (norm)
   {
-  case INPAR::POROFLUIDMULTIPHASE::norm_vague:
-    return "Vague";
-    break;
-  case INPAR::POROFLUIDMULTIPHASE::norm_l1:
+  case INPAR::POROFLUIDMULTIPHASE::norm_l1 :
     return "L1";
     break;
-  case INPAR::POROFLUIDMULTIPHASE::norm_l2:
+  case INPAR::POROFLUIDMULTIPHASE::norm_l1_scaled :
+    return "L1_scaled";
+    break;
+  case INPAR::POROFLUIDMULTIPHASE::norm_l2 :
     return "L2";
     break;
-  case INPAR::POROFLUIDMULTIPHASE::norm_rms:
+  case INPAR::POROFLUIDMULTIPHASE::norm_rms :
     return "Rms";
     break;
-  case INPAR::POROFLUIDMULTIPHASE::norm_inf:
+  case INPAR::POROFLUIDMULTIPHASE::norm_inf :
     return "Inf";
     break;
   default:

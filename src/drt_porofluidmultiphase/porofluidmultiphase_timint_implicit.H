@@ -338,7 +338,6 @@ protected:
   bool AbortNonlinIter(
     const int itnum,        //!< current value of iteration step counter
     const int itmax,        //!< maximum number of iteration steps
-    const double ittol,     //!< relative tolerance for increments
     const double abstolres, //!< absolute tolerance for the residual norm
     double& actresidual     //!< return value of the current residual
   );
@@ -380,8 +379,7 @@ protected:
       const int&              itnum,          //!< current Newton-Raphson iteration step
       const int&              itemax,         //!< maximum number of Newton-Raphson iteration steps
       const double&           ittol,          //!< relative tolerance for Newton-Raphson scheme
-      const double&           preresnorm,     //!< L2 norm of pressure residual
-      const double&           preresnorminf   //!< infinity norm of pressure residual
+      const double&           preresnorm      //!< norm of pressure residual
   );
 
   //! print current line of convergence table to screen
@@ -389,10 +387,9 @@ protected:
       const int&              itnum,           //!< current Newton-Raphson iteration step
       const int&              itemax,          //!< maximum number of Newton-Raphson iteration steps
       const double&           ittol,           //!< relative tolerance for Newton-Raphson scheme
-      const double&           preresnorm,      //!< L2 norm of pressure residual
-      const double&           incprenorm_L2,   //!< L2 norm of pressure increment
-      const double&           prenorm_L2,      //!< L2 norm of pressure state vector
-      const double&           preresnorminf    //!< infinity norm of pressure residual
+      const double&           preresnorm,      //!< norm of pressure residual
+      const double&           incprenorm,      //!< norm of pressure increment
+      const double&           prenorm          //!< norm of pressure state vector
   );
 
   //! print finish line of convergence table to screen
@@ -513,6 +510,16 @@ protected:
 
   //! write restart data every uprestart_ steps ? writesolutioneveryrestart_
   const int uprestart_;
+
+  // vector norm for residuals
+  enum INPAR::POROFLUIDMULTIPHASE::VectorNorm vectornormfres_;
+  // vector norm for increments
+  enum INPAR::POROFLUIDMULTIPHASE::VectorNorm vectornorminc_;
+
+  //! convergence tolerance for increments
+  double ittolres_;
+  //! convergence tolerance for residuals
+  double ittolinc_;
 
   /*========================================================================*/
   //! @name degrees of freedom variables

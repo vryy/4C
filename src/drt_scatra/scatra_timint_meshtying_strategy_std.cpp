@@ -18,6 +18,7 @@
 #include "../drt_lib/drt_discret.H"
 
 #include "../drt_scatra/scatra_timint_implicit.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_solver.H"
@@ -99,6 +100,8 @@ void SCATRA::MeshtyingStrategyStd::InitConvCheckStrategy()
 {
   if(scatratimint_->MicroScale())
     convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStdMicroScale(scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
+  else if(DRT::Problem::Instance()->ProblemType()==prb_poromultiphasescatra)
+    convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyPoroMultiphaseScatra(scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
   else
     convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStd(scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
 

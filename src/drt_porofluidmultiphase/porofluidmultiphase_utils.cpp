@@ -160,6 +160,60 @@ Teuchos::RCP<ADAPTER::PoroFluidMultiphase> POROFLUIDMULTIPHASE::UTILS::CreateAlg
 }
 
 /*----------------------------------------------------------------------*
+ | calculate vector norm                             kremheller 12/17   |
+ *----------------------------------------------------------------------*/
+double POROFLUIDMULTIPHASE::UTILS::CalculateVectorNorm(
+  const enum INPAR::POROFLUIDMULTIPHASE::VectorNorm norm,
+  const Teuchos::RCP<const Epetra_Vector> vect
+  )
+{
+  // L1 norm
+  // norm = sum_0^i vect[i]
+  if (norm == INPAR::POROFLUIDMULTIPHASE::norm_l1)
+  {
+    double vectnorm;
+    vect->Norm1(&vectnorm);
+    return vectnorm;
+  }
+  // L2/Euclidian norm
+  // norm = sqrt{sum_0^i vect[i]^2 }
+  else if (norm == INPAR::POROFLUIDMULTIPHASE::norm_l2)
+  {
+    double vectnorm;
+    vect->Norm2(&vectnorm);
+    return vectnorm;
+  }
+  // RMS norm
+  // norm = sqrt{sum_0^i vect[i]^2 }/ sqrt{length_vect}
+  else if (norm == INPAR::POROFLUIDMULTIPHASE::norm_rms)
+  {
+    double vectnorm;
+    vect->Norm2(&vectnorm);
+    return vectnorm/sqrt((double) vect->GlobalLength());
+  }
+  // infinity/maximum norm
+  // norm = max( vect[i] )
+  else if (norm == INPAR::POROFLUIDMULTIPHASE::norm_inf)
+  {
+    double vectnorm;
+    vect->NormInf(&vectnorm);
+    return vectnorm;
+  }
+  // norm = sum_0^i vect[i]/length_vect
+  else if (norm == INPAR::POROFLUIDMULTIPHASE::norm_l1_scaled)
+  {
+    double vectnorm;
+    vect->Norm1(&vectnorm);
+    return vectnorm/((double) vect->GlobalLength());
+  }
+  else
+  {
+    dserror("Cannot handle vector norm");
+    return 0;
+  }
+}  // CalculateVectorNorm()
+
+/*----------------------------------------------------------------------*
  |                                                    kremheller 03/17  |
  *----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::PrintLogo()

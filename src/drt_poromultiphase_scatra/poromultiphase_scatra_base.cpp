@@ -186,7 +186,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Timeloop()
     // *********** time measurement ***********
     TimeStep();
     // *********** time measurement ***********
-    dttimestep_ = timertimestep_.WallTime() - dtcpu;
+    double mydttimestep = timertimestep_.WallTime() - dtcpu;
+    Comm().MaxAll(&mydttimestep,&dttimestep_,1);
     // *********** time measurement ***********
 
     UpdateAndOutput();

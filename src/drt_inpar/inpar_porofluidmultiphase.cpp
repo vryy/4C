@@ -68,7 +68,6 @@ void INPAR::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
 
   IntParameter("ITEMAX",10,"max. number of nonlin. iterations",&porofluidmultiphasedyn);
   DoubleParameter("ABSTOLRES",1e-14,"Absolute tolerance for deciding if residual of nonlinear problem is already zero",&porofluidmultiphasedyn);
-  DoubleParameter("CONVTOL",1e-13,"Tolerance for convergence check",&porofluidmultiphasedyn);
 
   // convergence criteria adaptivity
   BoolParameter("ADAPTCONV","yes","Switch on adaptive control of linear solver tolerance for nonlinear solution",&porofluidmultiphasedyn);
@@ -98,56 +97,43 @@ void INPAR::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
     "Scaling factor for stabilization parameter for biot stabilization of porous flow.",
     &porofluidmultiphasedyn);
 
-  setStringToIntegralParameter<int>("NORM_PRE","Abs",
-    "type of norm for temperature convergence check",
-    tuple<std::string>(
-      "Abs",
-      "Rel",
-      "Mix"),
-    tuple<int>(
-      convnorm_abs,
-      convnorm_rel,
-      convnorm_mix),
-    &porofluidmultiphasedyn
-    );
+  setStringToIntegralParameter<int>("VECTORNORM_RESF","L2",
+                                "type of norm to be applied to residuals",
+                                tuple<std::string>(
+                                  "L1",
+                                  "L1_Scaled",
+                                  "L2",
+                                  "Rms",
+                                  "Inf"),
+                                tuple<int>(
+                                  INPAR::POROFLUIDMULTIPHASE::norm_l1,
+                                  INPAR::POROFLUIDMULTIPHASE::norm_l1_scaled,
+                                  INPAR::POROFLUIDMULTIPHASE::norm_l2,
+                                  INPAR::POROFLUIDMULTIPHASE::norm_rms,
+                                  INPAR::POROFLUIDMULTIPHASE::norm_inf),
+                                &porofluidmultiphasedyn
+                                );
 
-  setStringToIntegralParameter<int>("NORM_RESF","Abs",
-    "type of norm for residual convergence check",
-    tuple<std::string>(
-      "Abs",
-      "Rel",
-      "Mix"),
-    tuple<int>(
-      convnorm_abs,
-      convnorm_rel,
-      convnorm_mix),
-    &porofluidmultiphasedyn
-    );
-
-  setStringToIntegralParameter<int>("ITERNORM","L2","type of norm to be applied to residuals",
-    tuple<std::string>(
-      "L1",
-      "L2",
-      "Rms",
-      "Inf"),
-    tuple<int>(
-      norm_l1,
-      norm_l2,
-      norm_rms,
-      norm_inf),
-    &porofluidmultiphasedyn
-    );
+  setStringToIntegralParameter<int>("VECTORNORM_INC","L2",
+                              "type of norm to be applied to residuals",
+                              tuple<std::string>(
+                                "L1",
+                                "L1_Scaled",
+                                "L2",
+                                "Rms",
+                                "Inf"),
+                              tuple<int>(
+                                INPAR::POROFLUIDMULTIPHASE::norm_l1,
+                                INPAR::POROFLUIDMULTIPHASE::norm_l1_scaled,
+                                INPAR::POROFLUIDMULTIPHASE::norm_l2,
+                                INPAR::POROFLUIDMULTIPHASE::norm_rms,
+                                INPAR::POROFLUIDMULTIPHASE::norm_inf),
+                              &porofluidmultiphasedyn
+                              );
 
   // Iterationparameters
-  DoubleParameter("TOLPRE",1.0E-06,
-    "tolerance in the temperature norm of the Newton iteration",
-    &porofluidmultiphasedyn
-    );
-
-  DoubleParameter("TOLRES",1.0E-06,
-    "tolerance in the residual norm for the Newton iteration",
-    &porofluidmultiphasedyn
-    );
+  DoubleParameter("TOLRES",1e-6,"tolerance in the residual norm for the Newton iteration",&porofluidmultiphasedyn);
+  DoubleParameter("TOLINC",1e-6,"tolerance in the increment norm for the Newton iteration",&porofluidmultiphasedyn);
 
   setStringToIntegralParameter<int>("INITIALFIELD","zero_field",
                                "Initial Field for transport problem",

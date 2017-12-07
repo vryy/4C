@@ -49,7 +49,6 @@ THETA                           0.52
 LINEAR_SOLVER                   1
 INITIALFIELD                    field_by_condition
 INITFUNCNO                      -1
-CONVTOL                         1e-08
 ABSTOLRES                       -1
 ITEMAX                          50
 FLUX_PROJ_METHOD                none
