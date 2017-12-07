@@ -1236,6 +1236,9 @@ int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(
   Epetra_SerialDenseMatrix* elemat1_epetra
   )
 {
+  // prepare nurbs
+  PrepareNurbsEval(ele,discretization);
+
   // check length
   if (lm.size() != nen_*numdofpernode_)
     dserror("Location vector length does not match!");

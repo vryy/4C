@@ -38,7 +38,7 @@ LM_QUAD              quad
 ----------------------------------------------------THERMAL DYNAMIC
 ADAPTCONV                       No
 DIVERCONT                       continue
-DYNAMICTYP                      Statics
+DYNAMICTYP                      Statics // GenAlpha
 ITERNORM                        L2
 LINEAR_SOLVER                   1
 MAXITER                         5
@@ -65,6 +65,9 @@ E 11 - NUMDOF 1 ONOFF 1 VAL 0 FUNCT 0
 -----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 E 6 - NUMDOF 1 ONOFF 1 VAL 1 FUNCT 1
+------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
+DVOL 1
+E 1 - NUMDOF 1 ONOFF 1 VAL 1 FUNCT 1
 -------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF  2
 E 5 - 1 Slave Active
@@ -1387,5 +1390,5 @@ CP     123  COORD  +2.000000000000e+00  +2.000000000000e+00  +2.000000000000e+00
     12 THERMO NURBS27    60    61    62    65    66    67    70    71    72    85    86    87    90    91    92    95    96    97   110   111   112   115   116   117   120   121   122  MAT 1
     13 THERMO NURBS27    61    62    63    66    67    68    71    72    73    86    87    88    91    92    93    96    97    98   111   112   113   116   117   118   121   122   123  MAT 1
 ----------------------------------------------------------RESULT DESCRIPTION
-THERMAL DIS thermo NODE 20 QUANTITY temp VALUE 7.34343472909945949e-01 TOLERANCE 1e-12
+THERMAL DIS thermo NODE 20 QUANTITY temp VALUE 2.59820012309226822e+00 TOLERANCE 1e-12
 -----------------------------------------------------------------------END
