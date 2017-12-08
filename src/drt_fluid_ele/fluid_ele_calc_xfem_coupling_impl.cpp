@@ -3256,7 +3256,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty_Proje
         {
           for (unsigned jvel = 0; jvel < nsd_; ++jvel)
           {
-            C_umus_(mIndex(ir,ivel),sIndex(ic,ivel)) -= tmp_val*proj_matrix_(ivel,jvel);
+            C_umus_(mIndex(ir,jvel),sIndex(ic,ivel)) -= tmp_val*proj_matrix_(ivel,jvel);
           }
         }
       }
@@ -3278,7 +3278,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty_Proje
         {
           for (unsigned jvel=0; jvel < nsd_; ++jvel)
           {
-            C_usus_(sIndex(ir,ivel),sIndex(ic,ivel)) += tmp_val*proj_matrix_(ivel,jvel);
+            C_usus_(sIndex(ir,jvel),sIndex(ic,ivel)) += tmp_val*proj_matrix_(ivel,jvel);
           }
         }
       }
@@ -3299,7 +3299,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty_Proje
         {
           for (unsigned jvel=0; jvel < nsd_; ++jvel)
           {
-            C_usum_(sIndex(ir,ivel),mIndex(ic,ivel)) -= tmp_val*proj_matrix_(ivel,jvel);
+            C_usum_(sIndex(ir,jvel),mIndex(ic,ivel)) -= tmp_val*proj_matrix_(ivel,jvel);
           }
         }
       }
