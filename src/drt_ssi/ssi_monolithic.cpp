@@ -15,12 +15,14 @@
 */
 /*--------------------------------------------------------------------------*/
 #include "ssi_monolithic.H"
+#include "ssi_coupling.H"
 #include "ssi_monolithic_convcheck_strategies.H"
 #include "ssi_monolithic_resulttest.H"
 
 #include <Epetra_Time.h>
 
 #include "../drt_adapter/ad_str_ssiwrapper.H"
+#include "../drt_adapter/ad_str_structure_new.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
@@ -887,8 +889,28 @@ void SSI::SSI_Mono::PrepareTimeStep()
  *--------------------------------------------------------------------------*/
 void SSI::SSI_Mono::Setup()
 {
-  // call base class routine
-  SSI_Base::Setup();
+  // check initialization
+  CheckIsInit();
+
+  // set up scalar transport field
+  scatra_->ScaTraField()->Setup();
+
+  // pass initial scalar field to structural discretization to correctly compute initial accelerations
+  DRT::Problem::Instance()->GetDis("structure")->SetState(1,"temperature",scatra_->ScaTraField()->Phinp());
+
+  // set up structural base algorithm
+  struct_adapterbase_ptr_->Setup();
+
+  // extract and cast wrapper
+  structure_ = Teuchos::rcp_dynamic_cast<::ADAPTER::SSIStructureWrapper>(struct_adapterbase_ptr_->StructureField());
+  if(structure_ == Teuchos::null)
+    dserror("Invalid structural wrapper!");
+
+  // set up helper class for field coupling
+  ssicoupling_->Setup();
+
+  // set up materials
+  ssicoupling_->AssignMaterialPointers(struct_adapterbase_ptr_->StructureField()->Discretization(),scatra_->ScaTraField()->Discretization());
 
   // check maps from scalar transport and structure discretizations
   if(scatra_->ScaTraField()->DofRowMap()->NumGlobalElements() == 0)
@@ -928,6 +950,12 @@ void SSI::SSI_Mono::Setup()
     maps_structure_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*structure_->Discretization()->DofRowMap(),maps));
     maps_structure_->CheckForValidMapExtractor();
   }
+
+  // construct vector of zeroes
+  zeros_ = LINALG::CreateVector(*structure_->DofRowMap());
+
+  // set flag
+  SetIsSetup(true);
 
   return;
 }

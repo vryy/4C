@@ -178,6 +178,20 @@ namespace SSI
 
   protected:
 
+    //! check if \ref Setup() was called
+    void CheckIsSetup()
+    {if(not IsSetup()) dserror("Setup() was not called.");};
+
+    //! check if \ref Init() was called
+    void CheckIsInit()
+    {if(not IsInit()) dserror("Init(...) was not called.");};
+
+    //! set flag true after setup or false if setup became invalid
+    void SetIsSetup(bool trueorfalse){issetup_ = trueorfalse;};
+
+    //! set flag true after init or false if init became invalid
+    void SetIsInit(bool trueorfalse){isinit_ = trueorfalse;};
+
     /// interpolate structure quantity to a scatra one (e.g. via volmortar or meshtying)
     const Teuchos::RCP<const Epetra_Vector> StructureToScatra(const Teuchos::RCP<const Epetra_Vector> structurevector) const;
 
@@ -193,59 +207,29 @@ namespace SSI
     /// ptr underlying scatra problem base algorithm
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_;
 
+    /// helper class for applying SSI couplings
+    Teuchos::RCP< SSICouplingBase> ssicoupling_;
+
+    //! Temporary flag to indicate whether old strutural time integration is used.
+    //! todo Remove as soon as structural elements are adapted to new structure.
+    bool use_old_structure_;
+
+    /// a zero vector of full length
+    Teuchos::RCP<Epetra_Vector> zeros_;
+
   private:
 
     ///Set material pointers for matching structure and scatra grids
     void SetMaterialPointersMatchingGrid( Teuchos::RCP<const DRT::Discretization> sourcedis, Teuchos::RCP<const DRT::Discretization> targetdis);
 
-    /// a zero vector of full length
-    Teuchos::RCP<Epetra_Vector> zeros_;
-
     //! Type of coupling strategy between the two fields of the SSI problems
     const INPAR::SSI::FieldCoupling fieldcoupling_;
-
-
-  protected:
-    //! Temporary flag to indicate whether old strutural time integration is used.
-    //! todo Remove as soon as structural elements are adapted to new structure.
-    bool use_old_structure_;
-
-  private:
 
     /// set structure mesh displacement on scatra field
     void SetMeshDisp( Teuchos::RCP<const Epetra_Vector> disp ) ;
 
     /// set structure velocity field on scatra field
     void SetVelocityFields( Teuchos::RCP<const Epetra_Vector> vel ) ;
-
-    /// helper class for applying SSI couplings
-    Teuchos::RCP< SSICouplingBase> ssicoupling_;
-
-  private:
-
-    //! flag indicating if class is setup
-    bool issetup_;
-
-    //! flag indicating if class is initialized
-    bool isinit_;
-
-    //! set flag true after setup or false if setup became invalid
-    void SetIsSetup(bool trueorfalse){issetup_ = trueorfalse;};
-
-    //! set flag true after init or false if init became invalid
-    void SetIsInit(bool trueorfalse){isinit_ = trueorfalse;};
-
-  protected:
-
-    //! check if \ref Setup() was called
-    void CheckIsSetup()
-    {if(not IsSetup()) dserror("Setup() was not called.");};
-
-    //! check if \ref Init() was called
-    void CheckIsInit()
-    {if(not IsInit()) dserror("Init(...) was not called.");};
-
-  public:
 
     //! returns true if Setup() was called and is still valid
     bool IsSetup()
@@ -255,9 +239,11 @@ namespace SSI
     bool IsInit()
     {return isinit_;};
 
+    //! flag indicating if class is setup
+    bool issetup_;
+
+    //! flag indicating if class is initialized
+    bool isinit_;
   }; //SSI_Base
-
-
 }
-
 #endif /* SSI_BASE_H_ */

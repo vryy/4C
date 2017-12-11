@@ -49,10 +49,10 @@ SSI::SSI_Base::SSI_Base(
     struct_adapterbase_ptr_(Teuchos::null),
     structure_(Teuchos::null),
     scatra_(Teuchos::null),
+    ssicoupling_(Teuchos::null),
+    use_old_structure_(false), // todo temporary flag
     zeros_(Teuchos::null),
     fieldcoupling_(DRT::INPUT::IntegralValue<INPAR::SSI::FieldCoupling>(DRT::Problem::Instance()->SSIControlParams(),"FIELDCOUPLING")),
-    use_old_structure_(false), // todo temporary flag
-    ssicoupling_(Teuchos::null),
     issetup_(false),
     isinit_(false)
 {
