@@ -105,15 +105,17 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                "adhesion law governing normal contact of particles",
                                tuple<std::string>(
                                  "None",
-                                 "LennardJones",
                                  "LinearSpring",
-                                 "LinearSpringDamp"
+                                 "LinearSpringDamp",
+                                 "vanderWaalsDMT",
+                                 "regularDMT"
                                  ),
                                tuple<int>(
                                  INPAR::PARTICLE::adhesion_none,
-                                 INPAR::PARTICLE::adhesion_lennardjones,
                                  INPAR::PARTICLE::adhesion_linspring,
-                                 INPAR::PARTICLE::adhesion_linspringdamp
+                                 INPAR::PARTICLE::adhesion_linspringdamp,
+                                 INPAR::PARTICLE::adhesion_vdWDMT,
+                                 INPAR::PARTICLE::adhesion_regDMT
                                  ),
                                &particledyn);
 
@@ -249,10 +251,12 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    DoubleParameter("NORMAL_DAMP_WALL",-1.0,"damping coefficient for normal contact force (wall)",&particledyn);
    DoubleParameter("TANG_DAMP",-1.0,"damping coefficient for tangential contact force",&particledyn);
    DoubleParameter("TANG_DAMP_WALL",-1.0,"damping coefficient for tangential contact force (wall)",&particledyn);
+   DoubleParameter("DAMP_REG_FAC",-1.0,"Apply linearly regularized damping normal force in the interval |g|< PARTICLE_REGDAMDBOUND*r_min",&particledyn);
    DoubleParameter("YOUNG_WALL",-1.0,"Young's modulus of wall",&particledyn);
    DoubleParameter("NUE_WALL",-1.0,"Possion's ratio of wall",&particledyn);
    BoolParameter("TENSION_CUTOFF","no","switch on/off tension cutoff",&particledyn);
    BoolParameter("MOVING_WALLS","no","switch on/off moving walls",&particledyn);
+   DoubleParameter("ROLLING_RESISTANCE",-1.0,"Scaling factor for rolling resistance (-1.0: rolling resistance off)",&particledyn);
    IntParameter("TRANSFER_EVERY",1,"transfer particles every TRANSFER_EVERY steps",&particledyn);
    DoubleParameter("RANDOM_AMPLITUDE",0.0,"random value for initial position",&particledyn);
 
@@ -360,6 +364,8 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    DoubleParameter("ADHESION_NORMAL_EPS",-1.0,"depth of Lennard-Jones adhesion potential well",&particledyn);
    DoubleParameter("ADHESION_MAX_FORCE",-1.0,"maximum adhesion force",&particledyn);
    DoubleParameter("ADHESION_MAX_DISP",-1.0,"maximum displacement from adhesion equilibrium",&particledyn);
+   DoubleParameter("ADHESION_SURFACE_ENERGY",-1.0,"surface energy density for the calculation of the pull-out force",&particledyn);
+   IntParameter("ADHESION_MAXWALLELEID",-1,"Maximal wall element ID to which adhesion forces are applied (-1: apply to all wall elements)",&particledyn);
 }
 
 

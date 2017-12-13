@@ -357,6 +357,13 @@ namespace PARTICLE
     //! return maximum particle-particle or particle-wall penetration
     double MaximumPenetration() const;
 
+    //! return maximum particle-particle penetration
+    double MaximumPenetrationParticle() const;
+
+    //! return maximum particle-wall penetration
+    double MaximumPenetrationWall() const;
+
+
     //! time integration strategy
     const Teuchos::RCP<const PARTICLE::TimIntStrategyBase>& Strategy() const {return strategy_;};
     //@}

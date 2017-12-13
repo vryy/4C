@@ -28,7 +28,8 @@ MAT::PAR::ParticleMat::ParticleMat(
   initDensity_(matdata->GetDouble("DENSITY")),
   initRadius_(matdata->GetDouble("INITRADIUS")),
   poissonRatio_(matdata->GetDouble("NUE")),
-  youngModulus_(matdata->GetDouble("YOUNG"))
+  youngModulus_(matdata->GetDouble("YOUNG")),
+  yieldStrength_(matdata->GetDouble("YIELD"))
 {
 }
 

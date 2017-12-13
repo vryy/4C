@@ -579,6 +579,8 @@ void ParticleFilter::WriteAllResults(PostField* field)
   // particle stuff
   writer_->WriteResult("velocity", "velocity", dofbased, field->problem()->num_dim(), 0);
   writer_->WriteResult("acceleration", "acceleration", dofbased, field->problem()->num_dim(), 0);
+  writer_->WriteResult("ang_velocity", "ang_velocity", dofbased, field->problem()->num_dim(), 0);
+  writer_->WriteResult("ang_acceleration", "ang_acceleration", dofbased, field->problem()->num_dim(), 0);
   writer_->WriteResult("modified_velocity", "modified_velocity", dofbased, field->problem()->num_dim(), 0);
   writer_->WriteResult("radius", "radius", nodebased, 1);
   writer_->WriteResult("density", "density", nodebased, 1);

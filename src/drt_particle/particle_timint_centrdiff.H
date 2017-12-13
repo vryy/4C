@@ -65,6 +65,9 @@ namespace PARTICLE
     //! Do time integration of single step
     virtual int IntegrateStep();
 
+    //! Get extreme values of gap etc.
+    virtual void GetExtremeValues();
+
     //@}
 
   };  // class TimIntCentrDiff

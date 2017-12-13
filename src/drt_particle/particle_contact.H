@@ -92,7 +92,8 @@ namespace PARTICLE
       double dt,
       Teuchos::RCP<Epetra_Vector> sysvec1,
       Teuchos::RCP<Epetra_Vector> sysvec2,
-      Teuchos::RCP<Epetra_FEVector> f_structure = Teuchos::null
+      Teuchos::RCP<Epetra_FEVector> f_structure = Teuchos::null,
+      int timestep = 0
       ) = 0;
 
     /// assemble energies of particles
@@ -112,6 +113,36 @@ namespace PARTICLE
     /// return maximum penetration of particles
     virtual double GetMaxPenetration() {return g_max_; }
 
+    /// return maximum penetration of particles
+    virtual double GetMaxPenetrationParticle() {return g_max_particle_; }
+
+    /// return maximum penetration of particles
+    virtual double GetMaxPenetrationWall() {return g_max_wall_; }
+
+    /// return maximum penetration of particles
+    virtual double GetMaxPenetrationParticleRel() {return g_max_particle_rel_; }
+
+    /// return maximum penetration of particles
+    virtual double GetMaxPenetrationWallRel() {return g_max_wall_rel_; }
+
+    /// return maximum occurring relative stress
+    virtual double GetMaxYieldStressRel() {return yield_max_rel_; }
+
+    /// return maximum penetration of particles
+    virtual double GetAllTimeMaxPenetrationParticle() {return g_alltimemax_particle_; }
+
+    /// return maximum penetration of particles
+    virtual double GetAllTimeMaxPenetrationWall() {return g_alltimemax_wall_; }
+
+    /// return maximum penetration of particles
+    virtual double GetAllTimeMaxPenetrationParticleRel() {return g_alltimemax_particle_rel_; }
+
+    /// return maximum penetration of particles
+    virtual double GetAllTimeMaxPenetrationWallRel() {return g_alltimemax_wall_rel_; }
+
+    /// return maximum occurring relative stress
+    virtual double GetAllTimeMaxYieldStressRel() {return yield_alltimemax_rel_; }
+
     //@}
 
   protected:
@@ -129,6 +160,8 @@ namespace PARTICLE
     double nue_;
     /// particle Young's modulus
     double young_;
+    /// particle yield strength
+    double yield_;
 
     /// minimum expected radius
     double r_min_;
@@ -179,10 +212,41 @@ namespace PARTICLE
     // tension cutoff
     const bool tension_cutoff_;
 
+    // rolling resistance
+    double rolling_resistance_;
+
+    // parameter for regularization of damping contact force
+    double damp_reg_fac_;
+
     /// energy stored in elastic springs due to contact
     double contact_energy_;
+
     /// maximum penetration occurred
     double g_max_;
+
+    /// maximum penetration between particles
+    double g_max_particle_;
+    /// maximum penetration between particle and wall
+    double g_max_wall_;
+    /// maximum penetration between particles
+    double g_max_particle_rel_;
+    /// maximum penetration between particle and wall
+    double g_max_wall_rel_;
+    /// maximum percentage of yield strength occurred
+    double yield_max_rel_;
+    /// maximum penetration between particles
+    double g_alltimemax_particle_;
+    /// maximum penetration between particle and wall
+    double g_alltimemax_wall_;
+    /// maximum penetration between particles
+    double g_alltimemax_particle_rel_;
+    /// maximum penetration between particle and wall
+    double g_alltimemax_wall_rel_;
+    /// maximum percentage of yield strength occurred
+    double yield_alltimemax_rel_;
+
+    /// Wallcontact counter
+    LINALG::Matrix<30,1> wallcontact_counter_;
 
     /// gap between two particles or between particle and wall in adhesion equilibrium
     const double adhesion_eq_gap_;
@@ -196,6 +260,10 @@ namespace PARTICLE
     const double adhesion_max_force_;
     /// maximum displacement from adhesion equilibrium
     const double adhesion_max_disp_;
+    /// surface energy density for the calculation of the pull-out force
+    const double adhesion_surface_energy_;
+    /// surface energy density for the calculation of the pull-out force
+    const int adhesion_maxwalleleID_;
 
     //! write system energy every given step
     const int writeenergyevery_;
@@ -258,7 +326,8 @@ namespace PARTICLE
     const double dt,
     Teuchos::RCP<Epetra_Vector> f_contact,
     Teuchos::RCP<Epetra_Vector> m_contact,
-    Teuchos::RCP<Epetra_FEVector> f_structure);
+    Teuchos::RCP<Epetra_FEVector> f_structure,
+    int timestep);
 
   /// calculate contact with neighboring particles
   void CalcNeighboringParticlesContact(
@@ -282,7 +351,8 @@ namespace PARTICLE
       const Teuchos::RCP<const Epetra_Vector>&          wallveln,            //!< wall velocity
       const Teuchos::RCP<Epetra_Vector>&                f_contact,           //!< global force vector
       const Teuchos::RCP<Epetra_Vector>&                m_contact,           //!< global moment vector
-      const Teuchos::RCP<Epetra_FEVector>&              f_structure          //!< global wall force vector
+      const Teuchos::RCP<Epetra_FEVector>&              f_structure,          //!< global wall force vector
+      int timestep
       );
 
   /// calculate normal contact force for single contact pair
@@ -292,9 +362,11 @@ namespace PARTICLE
     const double radius_j,
     const double v_rel_normal,
     const double m_eff,
+    double& totalnormalforce,
     double& normalcontactforce,
     const int owner_i,
-    const int owner_j
+    const int owner_j,
+    bool iswallele=false
     );
 
   /// calculate tangential contact force
@@ -308,6 +380,20 @@ namespace PARTICLE
     const double dt,
     const int owner_i,
     const int owner_j
+    );
+
+  /// calculate virtual quasi-force for rolling resistance
+  virtual void CalculateVirtualRollingForce(
+    const double normalcontactforce,
+    const LINALG::Matrix<3,1>& normal,
+    LINALG::Matrix<3,1>& tangentrollingforce,
+  const LINALG::Matrix<3,1> angvel_i,
+  const LINALG::Matrix<3,1> angvel_j,
+    const double radius_i,
+    const double radius_j,
+    const int owner_i,
+    const int owner_j,
+    bool iswallele=false
     );
 
   /// check whether normal particle adhesion needs to be evaluated
@@ -576,7 +662,8 @@ namespace PARTICLE
       double dt,
       Teuchos::RCP<Epetra_Vector> disn,
       Teuchos::RCP<Epetra_Vector> veln,
-      Teuchos::RCP<Epetra_FEVector> f_structure);
+      Teuchos::RCP<Epetra_FEVector> f_structure,
+      int timestep);
 
     /// contact for one event is evaluated
     void HandleCollision(

@@ -26,6 +26,10 @@
 #include "particle_handler.H"
 #include <boost/unordered_map.hpp>
 
+//*********************************SPH and DEM************************************************************************************************************************************
+//#define PARTICLE_MINMAXOUTPUT_EVRY 25            //Ouput of minimal/maximal pressures, particle distances etc. every PARTICLE_MINMAXOUTPUT_EVRY time steps
+
+//*********************************SPH********************************************************************************************************************************************
 //Usefull defines (tolerances and constants)
 #define PARTICLE_TENSILESAFETYFAC 0.0000001         //Factor prescribing the minimal particle distance as compared to the average initial particle distance (tensile instabilites)
 #define PARTICLE_COLORLIMIT 0.9                     //Color field limit value to identify free-surface particle
@@ -46,8 +50,10 @@
 //Usefull defines (additional functionalities and debugging tools)
 //#define PARTICLE_ONLYLAPLACETERM                  //Apply only Laplace term in viscous force calculation according to variant 1 (this is sufficient for incompressible flows)
 //#define PARTICLE_BOUNDARYDENSITY                  //Determine the density of boundary particles required for colorfield and density reinitialization on the basis of pressure extrapolation (similar to Adami et al. 2012)
-//#define PARTICLE_MINMAXOUTPUT_EVRY 100              //Ouput of minimal/maximal pressures, particle distances etc. every PARTICLE_MINMAXOUTPUT_EVRY time steps
-//#define PARTICLE_WRITECOLORFIELD                    //Output of colorField_ and fspType_ (free-surface particle type) for paraview
+//#define PARTICLE_WRITECOLORFIELD                  //Output of colorField_ and fspType_ (free-surface particle type) for paraview
+
+//*********************************DEM********************************************************************************************************************************************
+#define PARTICLE_BINNINGCONST 5                     //Constant required for binning strategy
 
 /*----------------------------------------------------------------------*
  | forward declarations                                     ghamm 09/12 |

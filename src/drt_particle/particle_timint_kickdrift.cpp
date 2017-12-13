@@ -86,7 +86,6 @@ int PARTICLE::TimIntKickDrift::IntegrateStep()
   const double dthalf = dt/2.0;  // \f$\Delta t_{n+1/2}\f$
 
   //v_{n+1/2}=v_{n}+dt/2*a_{n-1/2}, with *(*acc_)(0)=a_{n-1/2}
-  //TODO
   veln_->Update(dthalf, *(*acc_)(0), 1.0);
   //Apply modified convection velocity if required
   if (DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"TRANSPORT_VELOCITY")==true)
@@ -123,7 +122,6 @@ int PARTICLE::TimIntKickDrift::IntegrateStep()
   DetermineSPHDensAndAcc(accn_,accmodn_,velmodn_,acc_A,timen_,dt);
 
   //Update of end-velocities v_{n+1}=v_{n+1/2}+dt/2*a_{n+1/2}
-  //TODO
   veln_->Update(dthalf, *accn_, 1.0);
 
   //Apply Dirichlet BCs at t_{n+1} for veln_ and accn_
@@ -132,9 +130,9 @@ int PARTICLE::TimIntKickDrift::IntegrateStep()
   //Determination (and output) of extreme values
   GetExtremeValues();
 
-  double maxvel=0.0;
-  veln_->NormInf(&maxvel);
-  std::cout << std::setprecision(16) <<"maxvel: " << maxvel << std::endl;
+//  double maxvel=0.0;
+//  veln_->NormInf(&maxvel);
+//  std::cout << std::setprecision(16) <<"maxvel: " << maxvel << std::endl;
 
   return 0;
 }

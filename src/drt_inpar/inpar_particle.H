@@ -63,9 +63,10 @@ namespace INPAR
     enum NormalAdhesion
     {
       adhesion_none,
-      adhesion_lennardjones,
       adhesion_linspring,
-      adhesion_linspringdamp
+      adhesion_linspringdamp,
+      adhesion_vdWDMT,
+      adhesion_regDMT
     };
 
     //! type of collision

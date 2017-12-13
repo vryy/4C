@@ -3212,6 +3212,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"INITRADIUS","initial radius of particle");
     AddNamedReal(m,"NUE","poisson ratio",0.0,true);
     AddNamedReal(m,"YOUNG","youngs modulus",0.0,true);
+    AddNamedReal(m,"YIELD","yield strength",0.0,true);
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -3230,6 +3231,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"INITRADIUS","initial radius of particle",0.0,true);
     AddNamedReal(m,"NUE","Poisson ratio",0.0,true);
     AddNamedReal(m,"YOUNG","Young's modulus",0.0,true);
+    AddNamedReal(m,"YIELD","yield strength",0.0,true);
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -3248,6 +3250,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"INITRADIUS","initial radius of particle");
     AddNamedReal(m,"NUE","poisson ratio",0.0,true);
     AddNamedReal(m,"YOUNG","youngs modulus",0.0,true);
+    AddNamedReal(m,"YIELD","yield strength",0.0,true);
     AddNamedReal(m,"BULK_MODULUS","bulk modulus, (1/compressibility) for the liquid phase");
     AddNamedReal(m,"DYNAMIC_VISCOSITY","dynamic (shear) viscosity for the liquid phase");
     AddNamedReal(m,"BULK_VISCOSITY","bulk viscosity for the liquid phase, important only in case of rapid compressions/expansions like shock waves");

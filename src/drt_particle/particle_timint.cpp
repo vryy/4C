@@ -1210,6 +1210,15 @@ void PARTICLE::TimInt::OutputState
   WriteVector("velocity", vel_);
   WriteVector("radius", radius_, false);
 
+  if(collhandler_ != Teuchos::null)
+  {
+    if(angVeln_ != Teuchos::null)
+    {
+      WriteVector("ang_velocity", (*angVel_)(0));
+      WriteVector("ang_acceleration", (*angAcc_)(0));
+    }
+  }
+
   if(writevelacc_)
   {
     WriteVector("acceleration", acc_);
@@ -1666,6 +1675,21 @@ double PARTICLE::TimInt::MaximumPenetration() const
   return collhandler_ == Teuchos::null ? 0. : collhandler_->GetMaxPenetration();
 }
 
+/*----------------------------------------------------------------*
+ | return maximum particle-particle penetration       meier 12/17 |
+ *----------------------------------------------------------------*/
+double PARTICLE::TimInt::MaximumPenetrationParticle() const
+{
+  return collhandler_ == Teuchos::null ? 0. : collhandler_->GetMaxPenetrationParticle();
+}
+
+/*------------------------------------------------------------*
+ | return maximum particle-wall penetration       meier 12/17 |
+ *------------------------------------------------------------*/
+double PARTICLE::TimInt::MaximumPenetrationWall() const
+{
+  return collhandler_ == Teuchos::null ? 0. : collhandler_->GetMaxPenetrationWall();
+}
 
 /*----------------------------------------------------------------------*/
 /* update step */

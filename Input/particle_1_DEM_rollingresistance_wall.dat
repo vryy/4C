@@ -1,0 +1,107 @@
+//
+// Maintainer: Christoph Meier
+//             meier@lnm.mw.tum.de
+//
+==================================================================
+                  General Data File BACI
+==================================================================
+---------------------------------------------------------------------------TITLE
+DEM test case for rolling_resistance interaction particle-wall.
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Particle
+SHAPEFCT                        Meshfree
+RESTART                         0
+--------------------------------------------------------------------------IO
+OUTPUT_BIN                      Yes
+STRUCT_DISP                     Yes
+STRUCT_STRESS                   No
+FLUID_SOL                       No
+FLUID_STRESS                    No
+FLUID_VIS                       No
+WRITE_TO_SCREEN                 Yes
+WRITE_TO_FILE                   No
+LIMIT_OUTP_TO_PROC              -1
+VERBOSITY                       Standard
+--------------------------------------------------------------------BINNING STRATEGY
+CUTOFF_RADIUS                   0.1
+PERIODICONOFF                   0 0 0
+BOUNDINGBOX                     -0.1 -0.1 -0.1 0.3 0.1 0.1
+------------------------------------------------------------PARTICLE DYNAMIC
+DYNAMICTYP                      CentrDiff
+RESULTSEVRY                     100
+RESTARTEVRY                     100
+TIMESTEP                        0.0004
+NUMSTEP                         20000
+MAXTIME                         8
+GRAVITY_ACCELERATION            0.0 0.0 -9.81e-3
+PARTICLE_INTERACTION            NormalAndTangentialContact_DEM
+NORMAL_CONTACT_LAW              LinearSpringDamp
+MIN_RADIUS                      0.01
+MAX_RADIUS                      0.01
+REL_PENETRATION                 0.055
+REL_PENETRATION_WALL            0.055
+MAX_VELOCITY                    3.1e-2
+TENSION_CUTOFF                  Yes
+ROLLING_RESISTANCE              50
+FRICT_COEFF                     1.0
+FRICT_COEFF_WALL                1.0
+COEFF_RESTITUTION               0.8
+COEFF_RESTITUTION_WALL          0.8
+YOUNG_WALL                      210.0E3
+NUE_WALL                        0.3
+RADIUS_DISTRIBUTION             None
+RADIUS_DISTRIBUTION_SIGMA       -1.0
+MOVING_WALLS                    No
+RANDOM_AMPLITUDE                0.00
+TRANSFER_EVERY                  1
+------------------------------------------------NODE COORDS
+PARTICLE 1 COORD 0.0 0.0 0.0
+NODE 1 COORD -0.1 -0.1 -0.01
+NODE 2 COORD -0.1 0.1 -0.01
+NODE 3 COORD 0.3 0.1 -0.01
+NODE 4 COORD 0.3 -0.1 -0.01
+NODE 5 COORD -0.1 -0.1 -0.1
+NODE 6 COORD -0.1 0.1 -0.1
+NODE 7 COORD 0.3 0.1 -0.1
+NODE 8 COORD 0.3 -0.1 -0.1
+----------------------------------------------------------DESIGN DESCRIPTION
+NDPOINT                         0
+NDLINE                          0
+NDSURF                          1
+NDVOL                           0
+NDPARTICLE                      1
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
+DSURF  0
+-------------------------------------------DESIGN PARTICLE DIRICH CONDITIONS
+DPARTICLE                       0
+------------------------------------DESIGN PARTICLE INITIAL FIELD CONDITIONS
+DPARTICLE                       1
+E 1 - Velocity 1
+------------------------------------------------DESIGN SURFACE PARTICLE WALL
+DSURF                           1
+E 1 - 1
+---------------------------------------------------------DNODE-NODE TOPOLOGY
+-----------------------------------------------------DPARTICLE-NODE TOPOLOGY
+NODE 1 DPARTICLE 1
+---------------------------------------------------------DLINE-NODE TOPOLOGY
+---------------------------------------------------------DSURF-NODE TOPOLOGY
+NODE 1 DSURFACE 1
+NODE 2 DSURFACE 1
+NODE 3 DSURFACE 1
+NODE 4 DSURFACE 1
+----------------------------------------------------------DVOL-NODE TOPOLOGY
+----------------------------------------------------------STRUCTURE ELEMENTS
+1 SOLIDH8 HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear EAS none
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION 3.0e-2
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 210.0E3 NUE 0.3 DENS 1.0
+MAT 2 MAT_Particle DENSITY 4.43E-3 INITRADIUS 0.01 NUE 0.342 YOUNG 113.8E3 YIELD 790
+----------------------------------------------------------RESULT DESCRIPTION
+PARTICLE DIS particle NODE 1 QUANTITY velx VALUE  2.04244839014980925e-03 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 1 QUANTITY velz VALUE  2.96348956178151657e-14 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 1 QUANTITY dispx VALUE 7.83128865543596120e-02 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 1 QUANTITY dispz VALUE -6.17591051050005589e-06 TOLERANCE 1.0e-10
+-------------------------------------------------------------------------END

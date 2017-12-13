@@ -113,6 +113,9 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
     collhandler_->Init(disn_, veln_, angVeln_, Radiusn(), orient_, mass_);
 
     intergy_ = collhandler_->EvaluateParticleContact(dt, f_contact, m_contact, f_structure_);
+
+    //Get extreme values of gap etc.
+    GetExtremeValues();
   }
   //--------------------------------------------------------------
 
@@ -130,4 +133,47 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
   ApplyDirichletBC(timen_, Teuchos::null, veln_, accn_, false);
 
   return 0;
+}
+
+/* Determination (and output) of extreme values */
+void PARTICLE::TimIntCentrDiff::GetExtremeValues()
+{
+#ifdef PARTICLE_MINMAXOUTPUT_EVRY
+  if(stepn_%PARTICLE_MINMAXOUTPUT_EVRY==0 || stepn_<2)
+  {
+    double infnorm(0.0);
+    veln_->NormInf(&infnorm);
+    if(discret_->Comm().MyPID()==0)
+    {
+      double g_max_particle= collhandler_->GetMaxPenetrationParticle();
+      double g_max_wall= collhandler_->GetMaxPenetrationWall();
+      double g_max_particle_rel= collhandler_->GetMaxPenetrationParticleRel();
+      double g_max_wall_rel= collhandler_->GetMaxPenetrationWallRel();
+      double yield_max_rel= collhandler_->GetMaxYieldStressRel();
+      double g_alltimemax_particle= collhandler_->GetAllTimeMaxPenetrationParticle();
+      double g_alltimemax_wall= collhandler_->GetAllTimeMaxPenetrationWall();
+      double g_alltimemax_particle_rel= collhandler_->GetAllTimeMaxPenetrationParticleRel();
+      double g_alltimemax_wall_rel= collhandler_->GetAllTimeMaxPenetrationWallRel();
+      double yield_alltimemax_rel= collhandler_->GetAllTimeMaxYieldStressRel();
+      std::cout << "*** Current maximum particle velocity = " << infnorm << std::endl;
+      std::cout << "*** Current maximum percentage of yield strength occurred = " << yield_max_rel << std::endl;
+      std::cout << "*** Current maximum penetration between two particles = " << g_max_particle << std::endl;
+      std::cout << "*** Current maximum penetration between a particle and a wall = " << g_max_wall << std::endl;
+      std::cout << "*** Current maximum relative (to rad) penetration between two particles = " << g_max_particle_rel << std::endl;
+      std::cout << "*** Current maximum relative (to rad) penetration between a particle and a wall = " << g_max_wall_rel << std::endl;
+      std::cout << "*** Alltime maximum percentage of yield strength occurred = " << yield_alltimemax_rel << std::endl;
+      std::cout << "*** Alltime maximum penetration between two particles = " << g_alltimemax_particle << std::endl;
+      std::cout << "*** Alltime maximum penetration between a particle and a wall = " << g_alltimemax_wall << std::endl;
+      std::cout << "*** Alltime maximum relative (to rad) penetration between two particles = " << g_alltimemax_particle_rel << std::endl;
+      std::cout << "*** Alltime maximum relative (to rad) penetration between a particle and a wall = " << g_alltimemax_wall_rel << std::endl;
+
+      std::ofstream penetrationoutput;
+      penetrationoutput.open ("penetrationoutput.csv", std::ofstream::app);
+      if(particle_algorithm_->Step()<2)
+        penetrationoutput << "timestep,g_max_particle,g_max_particle_rel,g_max_wall,g_max_wall_rel,yield_max_rel,g_alltimemax_particle,g_alltimemax_particle_rel,g_alltimemax_wall,g_alltimemax_wall_rel,yield_alltimemax_rel" << std::endl;
+      penetrationoutput << particle_algorithm_->Step() <<"," << g_max_particle << "," << g_max_particle_rel <<"," << g_max_wall << "," << g_max_wall_rel << "," << yield_max_rel <<"," << g_alltimemax_particle << "," << g_alltimemax_particle_rel <<"," << g_alltimemax_wall << "," << g_alltimemax_wall_rel << "," << yield_alltimemax_rel << std::endl;
+      penetrationoutput.close();
+    }
+  }
+#endif
 }

@@ -50,6 +50,8 @@ namespace PAR
     const double poissonRatio_;
     /// youngs modulus
     const double youngModulus_;
+    /// yield strength
+    const double yieldStrength_;
 
     //@}
 
