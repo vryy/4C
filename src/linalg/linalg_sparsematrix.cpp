@@ -785,11 +785,11 @@ void LINALG::SparseMatrix::Assemble(double val, int rgid, int cgid)
 void LINALG::SparseMatrix::FEAssemble(double val, int rgid, int cgid)
 {
   // SumIntoGlobalValues works for filled matrices as well!
-  int errone = (Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(sysmat_))->SumIntoGlobalValues(1, &rgid, 1, &cgid, &val );
+  int errone = (Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(sysmat_,true))->SumIntoGlobalValues(1, &rgid, 1, &cgid, &val );
   // if value not already present , error > 0 then use insert method
   if ( errone > 0 and not Filled() )
   {
-    int errtwo = (Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(sysmat_))->InsertGlobalValues(1, &rgid, 1, &cgid, &val );
+    int errtwo = (Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(sysmat_,true))->InsertGlobalValues(1, &rgid, 1, &cgid, &val );
     if ( errtwo < 0 ) dserror("Epetra_FECrsMatrix::InsertGlobalValues returned error code %d",errtwo);
   }
   else if ( errone < 0 )
