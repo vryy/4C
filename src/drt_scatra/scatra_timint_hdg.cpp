@@ -918,8 +918,6 @@ void SCATRA::TimIntHDG::CalcMatInitial()
 //    double dtmatinit=Teuchos::Time::wallTime()-tcmatinit;
 //    std::cout << "Time measurement evaluate: " << dtmatinit << std::endl;
 
-  sysmat_->Complete();
-
   // Output of non-zeros in system matrix
   if(step_==0 and discret_->Comm().MyPID()==0)
   {

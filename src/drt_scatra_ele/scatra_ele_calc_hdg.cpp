@@ -229,7 +229,6 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::EvaluateService(
   {
     shapes_->Evaluate(*ele);
     ReadGlobalVectors(ele, discretization, la);
-    DRT::ELEMENTS::ScaTraHDG * hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(ele);
 
     return UpdateInteriorVariables(
         hdgele,
@@ -867,7 +866,7 @@ template <DRT::Element::DiscretizationType distype,int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::LocalSolver::
 ComputeInteriorMatrices(DRT::ELEMENTS::ScaTraHDG * hdgele)
 {
-  if (distype == DRT::Element::tet4)
+  if (distype == DRT::Element::tet4 or distype == DRT::Element::tet10)
     ComputeInteriorMatricesTet(hdgele);
   else
     ComputeInteriorMatricesAll(hdgele);

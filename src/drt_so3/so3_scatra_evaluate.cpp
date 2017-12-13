@@ -38,7 +38,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(
 
     if (discretization.HasState(1,"temperature")) //if concentrations were set
     {
-      if (not (distype == DRT::Element::hex8 or distype == DRT::Element::hex27 or distype == DRT::Element::tet4))
+      if (not (distype == DRT::Element::hex8 or distype == DRT::Element::hex27 or distype == DRT::Element::tet4 or distype == DRT::Element::tet10))
         dserror("The Solidscatra elements are only tested for the Hex8, Hex27 and Tet4 case. The following should work, but keep your eyes open (especially with the order of the Gauß points");
 
       /* =========================================================================*/

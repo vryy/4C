@@ -355,15 +355,23 @@ int DRT::ELEMENTS::ScaTraHDG::Initialize()
     int gp;
     //Note: We need to do a dynamic_cast here
     Teuchos::RCP<MAT::Myocard> actmat = Teuchos::rcp_dynamic_cast<MAT::Myocard>(mat);
-    if (this->Shape() == DRT::Element::tet4)
+    int deg = 0;
+    if(degree_old_==1)
+      deg=4*degree_old_;
+    else
+      deg=3*degree_old_;
+    if (this->Shape() == DRT::Element::tet4 or this->Shape() == DRT::Element::tet10)
     {
-      switch(3*degree_old_)
+      switch(deg)
       {
       case 0:
         gp = 1;
         break;
       case 3:
         gp = 5;
+        break;
+      case 4:
+        gp = 11;
         break;
       case 6:
         gp = 24;
@@ -385,7 +393,7 @@ int DRT::ELEMENTS::ScaTraHDG::Initialize()
     }
     else
     {
-      Teuchos::RCP<DRT::UTILS::GaussPoints> quadrature_(DRT::UTILS::GaussPointCache::Instance().Create(this->Shape(),degree_old_*3));
+      Teuchos::RCP<DRT::UTILS::GaussPoints> quadrature_(DRT::UTILS::GaussPointCache::Instance().Create(this->Shape(),deg));
       gp = quadrature_->NumPoints();
     }
     if(actmat->Parameter() != NULL and !actmat->MyocardMat()) // in case we are not in post-process mode

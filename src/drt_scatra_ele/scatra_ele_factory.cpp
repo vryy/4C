@@ -266,14 +266,14 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
       dserror("invalid problem dimension for TET4 transport element!");
     break;
   }
-//  case DRT::Element::tet10:
-//  {
-//    if(ndim==3)
-//      return DefineProblemTypeHDG<DRT::Element::tet10,3>(problem,numdofpernode,numscal,disname);
-//    else
-//      dserror("invalid problem dimension for TET10 transport element!");
-//    break;
-//  }
+  case DRT::Element::tet10:
+  {
+    if(ndim==3)
+      return DefineProblemTypeHDG<DRT::Element::tet10,3>(problem,numdofpernode,numscal,disname);
+    else
+      dserror("invalid problem dimension for TET10 transport element!");
+    break;
+  }
 //  case DRT::Element::wedge6:
 //  {
 //    return ScaTraImpl<DRT::Element::wedge6,3>::Instance(problem,numdofpernode,numscal,disname);

@@ -843,7 +843,12 @@ int DRT::ELEMENTS::Transport::Initialize()
   else if (mat->MaterialType() == INPAR::MAT::m_myocard)
   {
     Teuchos::RCP<MAT::Myocard> actmat = Teuchos::rcp_dynamic_cast<MAT::Myocard>(mat);
-    Teuchos::RCP<DRT::UTILS::GaussPoints> quadrature(DRT::UTILS::GaussPointCache::Instance().Create(this->Shape(),this->Degree()*3));
+    int deg = 0;
+    if (this->Degree() == 1)
+        deg = 4*this->Degree();
+    else
+        deg = 3*this->Degree();
+    Teuchos::RCP<DRT::UTILS::GaussPoints> quadrature(DRT::UTILS::GaussPointCache::Instance().Create(this->Shape(),deg));
     int gp = quadrature->NumPoints();
     if(actmat->Parameter() != NULL and !actmat->MyocardMat()) // in case we are not in post-process mode
     {

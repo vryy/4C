@@ -186,7 +186,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::PrepareM
   Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix> >  difftensor
 )
 {
-  if (distype == DRT::Element::tet4)
+  if (distype == DRT::Element::tet4 or distype == DRT::Element::tet10)
     PrepareMaterialsTet(ele,material,k,difftensor);
   else
     PrepareMaterialsAll(ele,material,k,difftensor);
@@ -340,9 +340,14 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::MatMyoca
 
   int nqpoints;
 
-  if (distype == DRT::Element::tet4)
+  if (distype == DRT::Element::tet4 or distype == DRT::Element::tet10)
   {
-    const DRT::UTILS::IntPointsAndWeights<DRT::UTILS::DisTypeToDim<distype>::dim> intpoints(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(3*this->shapes_->degree_));
+    int deg = 0;
+    if (this->shapes_->degree_==1)
+        deg = 4*this->shapes_->degree_;
+    else
+        deg = 3*this->shapes_->degree_;
+    const DRT::UTILS::IntPointsAndWeights<DRT::UTILS::DisTypeToDim<distype>::dim> intpoints(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(deg));
     nqpoints = intpoints.IP().nquad;
 
     if (nqpoints != actmat->GetNumberOfGP())
@@ -371,7 +376,13 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::MatMyoca
   }
   else
   {
-    Teuchos::RCP<DRT::UTILS::GaussPoints> quadrature_(DRT::UTILS::GaussPointCache::Instance().Create(distype,3*this->shapes_->degree_));
+    int deg = 0;
+    if (this->shapes_->degree_==1)
+        deg = 4*this->shapes_->degree_;
+    else
+        deg = 3*this->shapes_->degree_;
+
+    Teuchos::RCP<DRT::UTILS::GaussPoints> quadrature_(DRT::UTILS::GaussPointCache::Instance().Create(distype,deg));
     nqpoints = quadrature_->NumPoints();
 
     if (nqpoints != actmat->GetNumberOfGP())
@@ -584,7 +595,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::ProjectMa
     const DRT::Element*               ele   //!< the element we are dealing with
     )
 {
-  if (distype == DRT::Element::tet4)
+  if (distype == DRT::Element::tet4 or distype == DRT::Element::tet10)
     return ProjectMaterialFieldTet(ele);
   else
     return ProjectMaterialFieldAll(ele);
@@ -604,15 +615,26 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::ProjectMa
 
   DRT::ELEMENTS::ScaTraHDG * hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(const_cast<DRT::Element*>(ele));
 
+  int deg = 0;
+  if (hdgele->Degree()==1)
+    deg = 4*hdgele->Degree();
+  else
+    deg = 3*hdgele->Degree();
+  int degold = 0;
+  if (hdgele->DegreeOld()==1)
+    degold = 4*hdgele->DegreeOld();
+  else
+    degold = 3*hdgele->DegreeOld();
+
   Teuchos::RCP<DRT::UTILS::ShapeValues<distype> > shapes = Teuchos::rcp(new DRT::UTILS::ShapeValues<distype>(
       hdgele->DegreeOld(),
       this->usescompletepoly_,
-      3*hdgele->Degree()));
+      deg));
 
   Teuchos::RCP<DRT::UTILS::ShapeValues<distype> > shapes_old = Teuchos::rcp(new DRT::UTILS::ShapeValues<distype>(
       hdgele->DegreeOld(),
       this->usescompletepoly_,
-      3*hdgele->DegreeOld()));
+      degold));
 
   shapes->Evaluate(*ele);
   shapes_old->Evaluate(*ele);
@@ -693,8 +715,21 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::ProjectMa
   DRT::UTILS::PolynomialSpaceParams params(distype,hdgele->DegreeOld(),this->usescompletepoly_);
   Teuchos::RCP<DRT::UTILS::PolynomialSpace<probdim> > polySpace = DRT::UTILS::PolynomialSpaceCache<probdim>::Instance().Create(params);
 
-  const DRT::UTILS::IntPointsAndWeights<DRT::UTILS::DisTypeToDim<distype>::dim> intpoints_old(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(3*hdgele->DegreeOld()));
-  const DRT::UTILS::IntPointsAndWeights<DRT::UTILS::DisTypeToDim<distype>::dim> intpoints(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(3*hdgele->Degree()));
+  int deg=0;
+  int degold=0;
+
+  if (hdgele->Degree() == 1)
+    deg = 4*hdgele->Degree();
+  else
+    deg = 3*hdgele->Degree();
+
+  if (hdgele->DegreeOld() == 1)
+    degold = 4*hdgele->DegreeOld();
+  else
+    degold = 3*hdgele->DegreeOld();
+
+  const DRT::UTILS::IntPointsAndWeights<DRT::UTILS::DisTypeToDim<distype>::dim> intpoints_old(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(degold));
+  const DRT::UTILS::IntPointsAndWeights<DRT::UTILS::DisTypeToDim<distype>::dim> intpoints(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(deg));
 
 
   std::vector<Epetra_SerialDenseVector> shape_gp_old(intpoints_old.IP().nquad);

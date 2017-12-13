@@ -207,7 +207,12 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,probdim>::Sysmat(
   // calculation of material at integration points (different number of integration points possible)
   else
   {
-    const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(3*ele->Degree()));
+    int deg = 0;
+    if (ele->Degree() == 1)
+      deg = 4*ele->Degree();
+    else
+      deg = 3*ele->Degree();
+    const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(deg));
 
     //loop over integration points
     for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)

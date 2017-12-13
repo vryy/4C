@@ -258,4 +258,12 @@ void SCATRA::TimIntCardiacMonodomainHDG::ReadRestart(const int step,Teuchos::RCP
 
   activation_time_interpol_.reset(new Epetra_Vector(*discret_->NodeRowMap()));
 
+  //create dofmap for output writing
+  std::vector<int> globaldof;
+  for (int i = 0; i < discret_->NodeRowMap()->NumMyElements(); ++i)
+    globaldof.push_back(discret_->NodeRowMap()->GID(i));
+  // create dof map (one dof for each node)
+  dofmap_ = Teuchos::rcp(new Epetra_Map(-1, (int) globaldof.size(), &globaldof[0], 0, discret_->Comm()));
+
+
 }
