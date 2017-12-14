@@ -2552,7 +2552,7 @@ add_library(ele_opti ${OBJS_DRT_TOPOPT_LIB})
 add_library(ele_s8 ${OBJS_DRT_S8_LIB})
 add_library(ele_membrane ${OBJS_DRT_MEMBRANE_LIB})
 add_library(ele_lubrication ${OBJS_DRT_LUBRICATION_LIB})
-add_library(ele_porofluidmuliphase ${OBJS_DRT_POROFLUIDMULTIPHASE_LIB})
+add_library(ele_porofluidmultiphase ${OBJS_DRT_POROFLUIDMULTIPHASE_LIB})
 add_library(ele_scatra ${OBJS_DRT_SCATRA_LIB})
 add_library(ele_discsh3 ${OBJS_DRT_DISCSH3_LIB})
 add_library(ele_sp3 ${OBJS_DRT_SP3_LIB})
@@ -2575,7 +2575,7 @@ set(ELEMENT_LIBRARIES
   ele_s8
   ele_membrane
   ele_lubrication
-  ele_porofluidmuliphase
+  ele_porofluidmultiphase
   ele_scatra
   ele_sp3
   ele_so
