@@ -90,7 +90,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::Init(
   ittol_ = algoparams.sublist("PARTITIONED").get<double>("CONVTOL");
 
   // restart
-  writerestartevery_ = algoparams.get<int>("RESTARTEVRY");
+  writerestartevery_ = globaltimeparams.get<int>("RESTARTEVRY");
 
   // relaxation parameters
   startomega_ = algoparams.sublist("PARTITIONED").get<double>("STARTOMEGA");
