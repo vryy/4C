@@ -23,7 +23,9 @@ DRT::ParObject* DRT::FIBER::FiberNodeType::Create( const std::vector<char> & dat
 {
   double dummycoord[3] = {999.,999.,999.};
   double dummyfiber[3]   = {1.,0.,0.};
-  DRT::FIBER::FiberNode* object = new DRT::FIBER::FiberNode(-1,dummycoord,dummyfiber,-1);
+  double dummycosy[6]   = {1.,0.,0.,0.,1.,0.};
+  double dummyangle[2]   = {1.,1.};
+  DRT::FIBER::FiberNode* object = new DRT::FIBER::FiberNode(-1,dummycoord,dummyfiber,dummycosy,dummyangle,-1);
   object->Unpack(data);
   return object;
 }
@@ -34,16 +36,42 @@ DRT::ParObject* DRT::FIBER::FiberNodeType::Create( const std::vector<char> & dat
 DRT::FIBER::FiberNode::FiberNode(int           id    ,
                const double* coords,
                const double* fiber,
+               const double* cosy,
+               const double* angle,
                const int     owner)
 :
   DRT::Node(id,coords,owner),
-  fiber_(3)
+  fiber_(3),
+  cir_(3),
+  tan_(3),
+  helix_(0),
+  transverse_(0)
 {
-  double fibernorm = sqrt(fiber[0]*fiber[0]+fiber[1]*fiber[1]+fiber[2]*fiber[2]);
-  if (fibernorm < 1e-13)
-    fibernorm = 1.0;
+  //store fiber information
+  double norm = sqrt(fiber[0]*fiber[0]+fiber[1]*fiber[1]+fiber[2]*fiber[2]);
+  if (norm < 1e-13)
+    norm = 1.0;
   for (unsigned i=0; i<3; ++i)
-    fiber_[i] = fiber[i]/fibernorm;
+    fiber_[i] = fiber[i]/norm;
+
+  //store circumferential direction
+  norm = sqrt(cosy[0]*cosy[0]+cosy[1]*cosy[1]+cosy[2]*cosy[2]);
+  if (norm < 1e-13)
+    norm = 1.0;
+  for (unsigned i=0; i<3; ++i)
+    cir_[i] = cosy[i]/norm;
+
+  //store tangential direction
+  norm = sqrt(cosy[3]*cosy[3]+cosy[4]*cosy[4]+cosy[5]*cosy[5]);
+  if (norm < 1e-13)
+    norm = 1.0;
+  for (unsigned i=0; i<3; ++i)
+    tan_[i] = cosy[i+3]/norm;
+
+  //store helix and transverse angle
+  helix_ = angle[0];
+  transverse_ = angle[1];
+
   return;
 }
 
@@ -56,7 +84,11 @@ DRT::FIBER::FiberNode::FiberNode(int           id    ,
 DRT::FIBER::FiberNode::FiberNode(const DRT::FIBER::FiberNode& old)
   :
   DRT::Node(old),
-  fiber_(old.fiber_)
+  fiber_(old.fiber_),
+  cir_(old.cir_),
+  tan_(old.tan_),
+  helix_(old.helix_),
+  transverse_(old.transverse_)
 {
   return;
 }
@@ -98,6 +130,14 @@ void DRT::FIBER::FiberNode::Pack(DRT::PackBuffer& data) const
   DRT::Node::Pack(data);
   // add fiber
   DRT::Node::AddtoPack(data,fiber_);
+  // add circumferential direction
+  DRT::Node::AddtoPack(data,cir_);
+  // add tangential direction
+  DRT::Node::AddtoPack(data,tan_);
+  // add helix angle
+  DRT::Node::AddtoPack(data,helix_);
+  // add transverse angle
+  DRT::Node::AddtoPack(data,transverse_);
 
   return;
 }
@@ -120,6 +160,14 @@ void DRT::FIBER::FiberNode::Unpack(const std::vector<char>& data)
   DRT::Node::Unpack(basedata);
   // extract fiber
   DRT::Node::ExtractfromPack(position,data,fiber_);
+  // extract circumferential direction
+  DRT::Node::ExtractfromPack(position,data,cir_);
+  // extract tangential direction
+  DRT::Node::ExtractfromPack(position,data,tan_);
+  // extract helix angle
+  DRT::Node::ExtractfromPack(position,data,helix_);
+  // extract transversse angle
+  DRT::Node::ExtractfromPack(position,data,transverse_);
 
   return;
 }

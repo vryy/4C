@@ -397,6 +397,8 @@ void NodeReader::Read()
             // read fiber node
             double coords[3];
             double fiber[3];
+            double cosy[6];
+            double angle[2];
 
             int nodeid;
             //read in the node coordinates and fiber direction
@@ -407,29 +409,77 @@ void NodeReader::Read()
             nodeid--;
             maxnodeid = std::max(maxnodeid, nodeid)+1;
             std::vector<Teuchos::RCP<DRT::Discretization> > diss = FindDisNode(nodeid);
+            std::string tmp3, tmp4, tmp5;
 
-            if (tmp2!="FIBER1") //no fiber information
+            if (tmp2 =="FIBER1") //fiber information
+            {
+              //read in the node fiber information
+              file >> fiber[0] >> fiber[1] >> fiber[2];
+              cosy[0] = cosy[1] = cosy[2] = cosy[3] = cosy[4] = cosy[5] = angle[0] = angle[1] = 0.;
+              for (unsigned i=0; i<diss.size(); ++i)
+              {
+                // create node and add to discretization
+                Teuchos::RCP<DRT::FIBER::FiberNode> node = Teuchos::rcp(new DRT::FIBER::FiberNode(nodeid,coords,fiber,cosy,angle,myrank));
+                diss[i]->AddNode(node);
+              }
+            }
+            else if (tmp2 =="CIR") // circumferential direction
+            {
+              fiber[0] = fiber[1] = fiber[2] = 0.;
+              //read in the circumferential direction
+              file >> cosy[0] >> cosy[1] >> cosy[2];
+              //store current position of file reader
+              file >> tmp3;
+
+              if (tmp3!="TAN") // no tangential direction information
+                dserror("Reading of tangential direction failed!");
+              else
+              {
+                //read in the tangential direction
+                file >> cosy[3] >> cosy[4] >> cosy[5];
+                //store current position of file reader
+                file >> tmp4;
+
+                if (tmp4!="HELIX") //no helix angle information
+                  dserror("Reading of helix angle failed!");
+                else
+                {
+                  //read helix angle
+                  file >> angle[0];
+                  //store current position of file reader
+                  file >> tmp5;
+
+                  if (tmp5!="TRANS") //no transverse angle information
+                    dserror("Reading of transverse angle failed!");
+                  else
+                  {
+                    //read transverse angle
+                    file >> angle[1];
+
+                    for (unsigned i=0; i<diss.size(); ++i)
+                    {
+                      // create node and add to discretization
+                      Teuchos::RCP<DRT::FIBER::FiberNode> node = Teuchos::rcp(new DRT::FIBER::FiberNode(nodeid,coords,fiber,cosy,angle,myrank));
+                      diss[i]->AddNode(node);
+                    }
+                  }
+                }
+              }
+            }
+            else if (tmp2 =="TAN" || tmp2 =="HELIX" || tmp2 =="TRANS") // angle information
+              dserror("Reading of circumferential direction failed!");
+            else //no fiber information
             {
               //go back with file reader in order to make the expression in tmp2 available to tmp in the next iteration step
               file.seekg(length);
               for (unsigned i=0; i<diss.size(); ++i)
               {
                 fiber[0] = fiber[1] = fiber[2] = 0.;
+                cosy[0] = cosy[1] = cosy[2] = cosy[3] = cosy[4] = cosy[5] = angle[0] = angle[1] = 0.;
                 // create node and add to discretization
-                Teuchos::RCP<DRT::FIBER::FiberNode> node = Teuchos::rcp(new DRT::FIBER::FiberNode(nodeid,coords,fiber,myrank));
+                Teuchos::RCP<DRT::FIBER::FiberNode> node = Teuchos::rcp(new DRT::FIBER::FiberNode(nodeid,coords,fiber,cosy,angle,myrank));
                 diss[i]->AddNode(node);
                }
-            }
-            else //fiber information
-            {
-              //read in the node fiber information
-              file >> fiber[0] >> fiber[1] >> fiber[2];
-              for (unsigned i=0; i<diss.size(); ++i)
-              {
-                // create node and add to discretization
-                Teuchos::RCP<DRT::FIBER::FiberNode> node = Teuchos::rcp(new DRT::FIBER::FiberNode(nodeid,coords,fiber,myrank));
-                diss[i]->AddNode(node);
-              }
             }
             ++bcount;
             if (block != nblock-1) // last block takes all the rest

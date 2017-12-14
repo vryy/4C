@@ -68,12 +68,16 @@ public:
 
   \param id     (in): A globally unique fiber node
   \param coords (in): vector of nodal coordinates, length 3
-  \param weight (in): fiber direction
+  \param fiber  (in): fiber direction, length 3
+  \param cosy   (in): circumferential and transverse direction, length 6
+  \param angle  (in): helix and transverse angle, length 2
   \param owner  (in): Owner of this node.
   */
   FiberNode(int           id    ,
          const double* coords,
          const double* fiber,
+         const double* cosy,
+         const double* angle,
          const int     owner );
 
   /*!
@@ -137,6 +141,27 @@ public:
   \brief Return fiber direction
   */
   virtual inline const double* Fiber() const { return &fiber_[0]; }
+
+  /*!
+  \brief Return fiber direction
+  */
+  virtual inline const double* Cir() const { return &cir_[0]; }
+
+  /*!
+  \brief Return fiber direction
+  */
+  virtual inline const double* Tan() const { return &tan_[0]; }
+
+  /*!
+  \brief Return fiber direction
+  */
+  virtual inline double Helix() const { return helix_; }
+
+  /*!
+  \brief Return fiber direction
+  */
+  virtual inline double Transverse() const { return transverse_; }
+
   /*!
   \brief Print this node
 
@@ -147,8 +172,21 @@ public:
   //@}
 
 protected:
+
   //! fiber direction
   std::vector<double> fiber_;
+
+  //! circumferential direction
+  std::vector<double> cir_;
+
+  //! tangential direction
+  std::vector<double> tan_;
+
+  //! helix angle
+  double helix_;
+
+  //! transverse angle
+  double transverse_;
 
 }; // class FiberNode
 
