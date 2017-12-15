@@ -518,11 +518,13 @@ void SSI::SSI_Mono::AssembleODBlockStructureScatra() const
   eleparams.set("action","calc_struct_stiffscalar");
   // set time
   eleparams.set<double>("total time",Time());
+  // set numscatradofspernode
+  eleparams.set<int>("numscatradofspernode",scatra_->ScaTraField()->NumDofPerNode());
 
   // remove state vectors from structure discretization
   structure_->Discretization()->ClearState();
 
-  // and set the current displacement and acceleration state vector
+  // set the current displacement state vector
   structure_->Discretization()->SetState("displacement",structure_->Dispnp());
 
   // create strategy for assembly of structure-scatra matrix block
@@ -848,6 +850,8 @@ void SSI::SSI_Mono::Output()
   // output scalar transport field
   scatra_->ScaTraField()->Output();
 
+  // prepare structure output
+  structure_->PrepareOutput();
   // output structure field
   structure_->Output();
 
@@ -917,6 +921,12 @@ void SSI::SSI_Mono::Setup()
     dserror("Scalar transport discretization does not have any degrees of freedom!");
   if(structure_->DofRowMap()->NumGlobalElements() == 0)
     dserror("Structure discretization does not have any degrees of freedom!");
+
+  // safety check concerning number of transported scalars
+  if(scatra_->ScaTraField()->NumScal() != 1)
+    dserror("Since the ssi_monolithic framework is only implemented for usage in combination with growth laws 'MAT_GrowthLinIso' or 'MAT_GrowthLinANIso' so far "
+        "and these growth laws are implemented for one transported scalar at the moment it is not reasonable to use it with more than one transported scalar. "
+        "So you need to cope with it or change implementation! ;-)");
 
   // additional safety checks
   if(!scatra_->ScaTraField()->IsIncremental())

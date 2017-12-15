@@ -1501,7 +1501,7 @@ protected:
   virtual void PrintHeaderToFile(const std::string& fname)=0;
 
   //! finalize the output of screen and file (just for beauty)
-  void FinalizeOutput(const std::string& fname);
+  void FinalizeOutput(const std::string& fname, const bool isheader = false);
 
   //! evaluate mean and total scalars and print them to file and screen
   virtual void EvaluateIntegralsAndPrintResults(

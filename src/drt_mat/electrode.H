@@ -29,9 +29,9 @@ namespace MAT
     enum OCPModels
     {
       ocp_undefined,
-      ocp_constant,
       ocp_redlichkister,
-      ocp_taralov
+      ocp_taralov,
+      ocp_polynomial
     };
 
     //! parameters for electrode material

@@ -34,7 +34,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(
     const int numscal = discretization.NumDof(1,Nodes()[0]);
 
     if (la[1].Size() != numnod_*numscal)
-      dserror("calc_struct_nlnstiff: Location vector length for concentrations does not match!");
+      dserror("So3_Scatra: PreEvaluate: Location vector length for concentrations does not match!");
 
     if (discretization.HasState(1,"temperature")) //if concentrations were set
     {
@@ -157,9 +157,7 @@ int DRT::ELEMENTS::So3_Scatra< so3_ele, distype>::Evaluate(
     act = So3_Scatra::calc_struct_stiffscalar;
 
   // at the moment all cases need the PreEvaluate routine, since we always need the concentration value at the gp
-  PreEvaluate(params,
-              discretization,
-              la);
+  PreEvaluate(params,discretization,la);
 
   // what action shall be performed
   switch(act)
@@ -167,9 +165,6 @@ int DRT::ELEMENTS::So3_Scatra< so3_ele, distype>::Evaluate(
   // coupling terms K_dS of stiffness matrix K^{SSI} for monolithic SSI
   case So3_Scatra::calc_struct_stiffscalar:
   {
-    // structure-scatra system matrix (off diagonal block)
-    LINALG::Matrix<numdofperelement_,numnod_> stiffmatrix_kdS(elemat1_epetra.A(),true);
-
     Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0,"displacement");
     if (disp == Teuchos::null)
       dserror("Cannot get state vectors 'displacement'");
@@ -179,7 +174,7 @@ int DRT::ELEMENTS::So3_Scatra< so3_ele, distype>::Evaluate(
     DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
 
     // calculate the stiffness matrix
-    nln_kdS_ssi(la,mydisp,&stiffmatrix_kdS,params);
+    nln_kdS_ssi(la,mydisp,elemat1_epetra,params);
 
     break;
   }
@@ -211,7 +206,7 @@ template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::nln_kdS_ssi(
           DRT::Element::LocationArray&                la,
           std::vector<double>&                        disp,             // current displacement
-          LINALG::Matrix<numdofperelement_,numnod_>*  stiffmatrix_kdS,  // (numdim_*numnod_ ; numnod_)
+          Epetra_SerialDenseMatrix&                   stiffmatrix_kdS,  // (numdim_*numnod_ ; numnod_)
           Teuchos::ParameterList&                     params)
 {
   // calculate current and material coordinates of element
@@ -237,6 +232,11 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::nln_kdS_ssi(
   LINALG::Matrix<numdim_,numnod_> N_XYZ(true);
   // compute deformation gradient w.r.t. to material configuration
   LINALG::Matrix<numdim_,numdim_> defgrd(true);
+
+  // get numscatradofspernode from parameter list
+  const int numscatradofspernode = params.get<int>("numscatradofspernode",-1);
+  if (numscatradofspernode == -1)
+    dserror("Could not read 'numscatradofspernode' from parameter list!");
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -296,9 +296,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::nln_kdS_ssi(
 
     /*==== end of call material law ===============================================*/
 
-  // update stiffness matrix kdS (derivative of structure residuals w.r.t. scalar dofs)
-  if (stiffmatrix_kdS != NULL)
-  {
+    // update stiffness matrix kdS (derivative of structure residuals w.r.t. scalar dofs)
     // get integration specific factors from parameter list
     const double theta = params.get<double>("theta");
     const double dtheta_dc = params.get<double>("dtheta_dc");
@@ -306,28 +304,26 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::nln_kdS_ssi(
     // determinant of the jacobian multiplied by gauss weight and above calculated factor
     const double detJ_w_fac = detJ_[gp] * intpoints_.qwgt[gp] * fac;
 
-    // k_dS = k_dS + 2.0 . (B^T . S . N^T) . detJ . w(gp) . fac     is added in the next few lines
-    LINALG::Matrix<numstr_,numnod_> sn(true);
-    sn.MultiplyNT(stress, shapefunct);
-    // integrate stiffness term
-    // k_dS = k_dS + 2.0 . (B^T . S . N^T) . detJ . w(gp) . fac
-    stiffmatrix_kdS->MultiplyTN((2.0*detJ_w_fac), bop, sn, 1.0);
+    // k_dS = 2 . (B^T . S . N^T) . detJ . w(gp) . fac + B^T . Cmat . C . N^T . detJ . w(gp) . fac =
+    //      = B^T . (2 . S + Cmat . C) N^T . detJ . w(gp) . fac
+    // so first pre calculate 2 . S + Cmat . C
+    LINALG::Matrix<numstr_,1> sig(true);
+    sig.Multiply(cmat,cauchygreenvec);
+    sig.Update(2.0,stress,1.0);
+    // now calculate B^T . [2 S + Cmat . C]
+    LINALG::Matrix<numdofperelement_,1> Bsig(true);
+    Bsig.MultiplyTN(bop,sig);
 
-    // k_dS = k_dS + B^T . Cmat . C . N^T . detJ . w(gp) . fac     is added in the next few lines
-    LINALG::Matrix<numdofperelement_,numstr_> bc(true);
-    bc.MultiplyTN(bop,cmat);
-    LINALG::Matrix<numdofperelement_,1> bcc(true);
-    bcc.Multiply(bc,cauchygreenvec);
-    // now the last step is to add the complete term
-    // k_dS = k_dS + B^T . Cmat . C . N^T . detJ . w(gp) . fac
-    stiffmatrix_kdS->MultiplyNT(detJ_w_fac,bcc,shapefunct,1.0);
-
-  }//if (stiffmatrix_kdS != NULL)
-
-  // should not happen to get into the else case
-  else
-    dserror("Why did you get here? Does not make sense!");
-
+    // loop over all rows
+    for(unsigned rowi = 0; rowi < numdofperelement_; ++rowi)
+    {
+      const double factor = detJ_w_fac*Bsig(rowi,0);
+      // loop over column nodes
+      for(unsigned coli = 0; coli < numnod_; ++coli)
+      {
+        stiffmatrix_kdS(rowi,coli*numscatradofspernode) += factor*shapefunct(coli,0);
+      }
+    }
   } // gauss point loop
 
   return;

@@ -802,7 +802,8 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::m_growth_ac_radial:
   case INPAR::MAT::m_growth_ac_radial_refconc:
   case INPAR::MAT::m_growth_const:
-  case INPAR::MAT::m_growth_iso:
+  case INPAR::MAT::m_growth_lin_iso:
+  case INPAR::MAT::m_growth_lin_aniso:
   case INPAR::MAT::mes_coupSVK:
   {
     return Teuchos::null;

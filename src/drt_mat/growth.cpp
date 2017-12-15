@@ -121,11 +121,19 @@ MAT::PAR::Growth::Growth(
     growthlaw_ = params->CreateGrowthLaw();
     break;
   }
-  case INPAR::MAT::m_growth_iso:
+  case INPAR::MAT::m_growth_lin_iso:
   {
     if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::GrowthLawIso(curmat));
-    MAT::PAR::GrowthLawIso* params = static_cast<MAT::PAR::GrowthLawIso*>(curmat->Parameter());
+      curmat->SetParameter(new MAT::PAR::GrowthLawLinIso(curmat));
+    MAT::PAR::GrowthLawLinIso* params = static_cast<MAT::PAR::GrowthLawLinIso*>(curmat->Parameter());
+    growthlaw_ = params->CreateGrowthLaw();
+    break;
+  }
+  case INPAR::MAT::m_growth_lin_aniso:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::GrowthLawLinAnIso(curmat));
+    MAT::PAR::GrowthLawLinAnIso* params = static_cast<MAT::PAR::GrowthLawLinAnIso*>(curmat->Parameter());
     growthlaw_ = params->CreateGrowthLaw();
     break;
   }
@@ -137,17 +145,19 @@ MAT::PAR::Growth::Growth(
   // safety checks
   // get the scatra structure control parameter list
   const Teuchos::ParameterList& ssicontrol = DRT::Problem::Instance()->SSIControlParams();
-  // monolithic ssi coupling algorithm only implemented for MAT_GrowthIso so far
+  // monolithic ssi coupling algorithm only implemented for MAT_GrowthLinIso and MAT_GrowthLinAnIso so far
   if ((DRT::INPUT::IntegralValue<INPAR::SSI::SolutionSchemeOverFields>(ssicontrol,"COUPALGO") == INPAR::SSI::ssi_Monolithic) and
-      (curmat->Type() != INPAR::MAT::m_growth_iso))
+      ((curmat->Type() != INPAR::MAT::m_growth_lin_iso) and (curmat->Type() != INPAR::MAT::m_growth_lin_aniso)))
     dserror("When you use the the 'COUPALGO' 'ssi_Monolithic' from the 'SSI CONTROL' section,"
-        " you need to use the material 'MAT_GrowthIso'! If you want to use another material"
+        " you need to use the material 'MAT_GrowthLinIso' or 'MAT_GrowthLinAnIso'! If you want to use another material"
         " feel free to implement it! ;-)");
 
-  // safety check to ensure that growth is possible throughout the whole simulation time if growth law 'MAT_GrowthIso' is chosen
-  if ((curmat->Type() == INPAR::MAT::m_growth_iso) and ((starttime_ >= 0.0) or (endtime_ >= 0.0)))
-    dserror("Since growth is possible throughout the whole simulation time for the growth law 'MAT_GrowthIso' you should set"
-        " the 'STARTTIME' and 'ENDTIME' to a negative value to ensure this!");
+  // safety check to ensure that growth is possible throughout the whole simulation time if
+  // growth law 'MAT_GrowthLinIso' or 'MAT_GrowthLinAnIso' is chosen
+  if (((curmat->Type() == INPAR::MAT::m_growth_lin_iso) or (curmat->Type() == INPAR::MAT::m_growth_lin_aniso)) and
+      ((starttime_ >= 0.0) or (endtime_ >= 0.0)))
+    dserror("Since growth is possible throughout the whole simulation time for the growth law 'MAT_GrowthLinIso' or 'MAT_GrowthLinAnIso' "
+        "you need to set the 'STARTTIME' and 'ENDTIME' to a negative value to ensure this!");
 
   if(starttime_ > endtime_)
     dserror("WTF! It is not reasonable to have a starttime that is larger than the endtime!");
@@ -169,7 +179,8 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Growth::CreateMaterial()
   case INPAR::MAT::m_growth_ac_radial:
   case INPAR::MAT::m_growth_ac_radial_refconc:
   case INPAR::MAT::m_growth_const:
-  case INPAR::MAT::m_growth_iso:
+  case INPAR::MAT::m_growth_lin_iso:
+  case INPAR::MAT::m_growth_lin_aniso:
     mat = Teuchos::rcp(new MAT::GrowthVolumetric(this));
     break;
   default:

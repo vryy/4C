@@ -16,7 +16,7 @@ simple, academic test case for monolithic scalar-structure interaction:
   Neumann boundary condition is applied
 - homogeneous Neumann boundary conditions are applied to all other sides throughout the simulation
 - structure and scatra fields are coupled via MAT_GrowthIso
-- MAT_GrowthIso: isotropic strain dependent on scalar concentration according to the following equation:
+- MAT_GrowthLinIso: isotropic strain dependent on scalar concentration according to the following equation:
 - strain = [1 + GrowthFac * (c - RefConc)]^(1/3)
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    8
@@ -49,13 +49,10 @@ MATRIXTYPE                      sparse
 SOLVER                          UMFPACK
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_scatra DIFFUSIVITY 0.1
-
 MAT 2 MAT_GrowthVolumetric GROWTHLAW 3 IDMATELASTIC 4 STARTTIME -1. ENDTIME -1.
-
+MAT 3 MAT_GrowthLinIso SCALAR1 1 SCALAR1_GrowthFac 0.1 SCALAR1_RefConc 0.0
 MAT 4 MAT_ElastHyper NUMMAT 1 MATIDS 5 DENS 1.0e-3
 MAT 5 ELAST_CoupSVK YOUNG 1.0 NUE 0.3
-
-MAT 3 MAT_GrowthIso SCALAR1 1 SCALAR1_GrowthFac 0.1 SCALAR1_RefConc 0.0
 ----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 1
 ------------------------------------------------------------FUNCT1
@@ -136,14 +133,4 @@ NODE        27 COORD  1.0000000000000000e+00  1.0000000000000000e+00 -1.00000000
    6 SOLIDH8SCATRA HEX8  6 11 12 7 20 23 24 21    MAT 2 KINEM nonlinear EAS none TYPE Std
    7 SOLIDH8SCATRA HEX8  8 7 15 16 22 21 25 26    MAT 2 KINEM nonlinear EAS none TYPE Std
    8 SOLIDH8SCATRA HEX8  7 12 18 15 21 24 27 25    MAT 2 KINEM nonlinear EAS none TYPE Std
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------LUBRICATION ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
-------------------------------------------------TRANSPORT2 ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------ACOUSTIC ELEMENTS
----------------------------------------------------CELL ELEMENTS
----------------------------------------------------CELLSCATRA ELEMENTS
 ---------------------------------------------------------------END
-// END

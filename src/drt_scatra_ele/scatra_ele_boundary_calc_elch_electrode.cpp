@@ -203,11 +203,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
   const double emasterpotint = funct_master.Dot(emasterphinp[1]);
 
   // compute matrix and vector contributions according to kinetic model for current scatra-scatra interface coupling condition
-  switch(s2icondition.GetInt("kinetic model"))
+  const int kinmodel = s2icondition.GetInt("kinetic model");
+  switch(kinmodel)
   {
     // Butler-Volmer kinetics
     case INPAR::S2I::kinetics_butlervolmer:
     case INPAR::S2I::kinetics_butlervolmerpeltier:
+    case INPAR::S2I::kinetics_butlervolmerreduced:
     {
       // access input parameters associated with current condition
       const int nume = s2icondition.GetInt("e-");
@@ -240,7 +242,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
       const double eta = eslavepotint-emasterpotint-epd;
 
       // Butler-Volmer exchange mass flux density
-      const double j0 = kr*pow(emasterphiint,alphaa)*pow(cmax-eslavephiint,alphaa)*pow(eslavephiint,alphac);
+      const double j0(kinmodel == INPAR::S2I::kinetics_butlervolmerreduced ? kr : kr*pow(emasterphiint,alphaa)*pow(cmax-eslavephiint,alphaa)*pow(eslavephiint,alphac));
 
       // exponential Butler-Volmer terms
       const double expterm1 = exp(alphaa*frt*eta);
@@ -255,8 +257,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
       const double j = j0*expterm*timefacrhsfac;
 
       // core linearizations associated with Butler-Volmer mass flux density
-      const double dj_dc_slave = timefacfac*(kr*pow(emasterphiint,alphaa)*pow(cmax-eslavephiint,alphaa-1.)*pow(eslavephiint,alphac-1.)*(-alphaa*eslavephiint+alphac*(cmax-eslavephiint))*expterm+j0*(-alphaa*frt*epdderiv*expterm1-alphac*frt*epdderiv*expterm2));
-      const double dj_dc_master = timefacfac*j0*alphaa/emasterphiint*expterm;
+      const double dj_dc_slave(kinmodel == INPAR::S2I::kinetics_butlervolmerreduced ? 0.0 : timefacfac*(kr*pow(emasterphiint,alphaa)*pow(cmax-eslavephiint,alphaa-1.)*pow(eslavephiint,alphac-1.)*(-alphaa*eslavephiint+alphac*(cmax-eslavephiint))*expterm+j0*(-alphaa*frt*epdderiv*expterm1-alphac*frt*epdderiv*expterm2)));
+      const double dj_dc_master(kinmodel == INPAR::S2I::kinetics_butlervolmerreduced ? 0.0 : timefacfac*j0*alphaa/emasterphiint*expterm);
       const double dj_dpot_slave = timefacfac*j0*(alphaa*frt*expterm1+alphac*frt*expterm2);
       const double dj_dpot_master = -dj_dpot_slave;
 
@@ -399,10 +401,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
     const double emasterpotint = my::funct_.Dot(emasterphinp[1]);
 
     // compute matrix and vector contributions according to kinetic model for current scatra-scatra interface coupling condition
-    switch(s2icondition->GetInt("kinetic model"))
+    const int kinmodel = s2icondition->GetInt("kinetic model");
+    switch(kinmodel)
     {
       // Butler-Volmer kinetics
       case INPAR::S2I::kinetics_butlervolmer:
+      case INPAR::S2I::kinetics_butlervolmerreduced:
       {
         // access input parameters associated with current condition
         const int nume = s2icondition->GetInt("e-");
@@ -437,7 +441,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
         const double eta = eslavepotint-emasterpotint-epd;
 
         // Butler-Volmer exchange mass flux density
-        const double j0 = kr*pow(emasterphiint,alphaa)*pow(cmax-eslavephiint,alphaa)*pow(eslavephiint,alphac);
+        const double j0(kinmodel == INPAR::S2I::kinetics_butlervolmerreduced ? kr : kr*pow(emasterphiint,alphaa)*pow(cmax-eslavephiint,alphaa)*pow(eslavephiint,alphac));
 
         // exponential Butler-Volmer terms
         const double expterm1 = exp(alphaa*frt*eta);

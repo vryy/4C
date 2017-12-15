@@ -1850,17 +1850,17 @@ class Growth;
   {
     /*----------------------------------------------------------------------*/
     /// material parameters
-    class GrowthLawIso : public Parameter
+    class GrowthLawLinIso : public Parameter
     {
     public:
 
       /// standard constructor
-      GrowthLawIso(
+      GrowthLawLinIso(
         Teuchos::RCP<MAT::PAR::Material> matdata
         );
 
       /// destructor
-      virtual ~GrowthLawIso() { ; }
+      virtual ~GrowthLawLinIso() { ; }
 
       /// @name material parameters
       //@{
@@ -1882,17 +1882,17 @@ class Growth;
 
   }  // namespace PAR
 
-  class GrowthLawIso: public GrowthLawStatic
+  class GrowthLawLinIso: public GrowthLawStatic
   {
 
   public:
 
     //! construct empty material object
-    GrowthLawIso();
-    explicit GrowthLawIso(MAT::PAR::GrowthLawIso* params);
+    GrowthLawLinIso();
+    explicit GrowthLawLinIso(MAT::PAR::GrowthLawLinIso* params);
 
     //! destructor
-    virtual ~GrowthLawIso() { ; }
+    virtual ~GrowthLawLinIso() { ; }
 
 
 
@@ -1957,9 +1957,141 @@ class Growth;
     //@}
 
     //! material type
-    INPAR::MAT::MaterialType MaterialType() const {return INPAR::MAT::m_growth_iso;}
+    INPAR::MAT::MaterialType MaterialType() const {return INPAR::MAT::m_growth_lin_iso;}
 
-    MAT::PAR::GrowthLawIso* Parameter() {return dynamic_cast<MAT::PAR::GrowthLawIso*>(MAT::GrowthLawStatic::Parameter()); }
+    MAT::PAR::GrowthLawLinIso* Parameter() {return dynamic_cast<MAT::PAR::GrowthLawLinIso*>(MAT::GrowthLawStatic::Parameter()); }
+
+    //! add parameter to parameter list
+    void AddParamsToParameterList
+    (
+        Teuchos::ParameterList& params,
+        const double& theta
+    );
+
+    //! Return whether material has a varying material density
+    bool VaryingDensity() const {return false;}
+  };
+
+
+
+
+
+  namespace PAR
+  {
+    /*----------------------------------------------------------------------*/
+    /// material parameters
+    class GrowthLawLinAnIso : public Parameter
+    {
+    public:
+
+      /// standard constructor
+      GrowthLawLinAnIso(
+        Teuchos::RCP<MAT::PAR::Material> matdata
+        );
+
+      /// destructor
+      virtual ~GrowthLawLinAnIso() { ; }
+
+      /// @name material parameters
+      //@{
+      /// scalar that causes growth
+      const int Sc1_;
+      /// growth factor for scalar 1
+      const double Sc1growthfac_;
+      /// value of scalar 1 for that there is no growth
+      const double Sc1refconc_;
+      /// matrix that determines growth direction
+      LINALG::Matrix<3,3> growthdirmat_;
+      //@}
+
+      /// create material instance of matching type with my parameters
+      Teuchos::RCP<MAT::Material> CreateMaterial();
+
+      /// create growth law instance of matching type with my parameters
+      Teuchos::RCP<MAT::GrowthLaw> CreateGrowthLaw();
+
+    };  // class Growth
+
+  }  // namespace PAR
+
+  class GrowthLawLinAnIso: public GrowthLawStatic
+  {
+
+  public:
+
+    //! construct empty material object
+    GrowthLawLinAnIso();
+    explicit GrowthLawLinAnIso(MAT::PAR::GrowthLawLinAnIso* params);
+
+    //! destructor
+    virtual ~GrowthLawLinAnIso() { ; }
+
+
+
+    //! @name Evaluation methods
+    //@{
+
+    /*! \brief evaluate the volumetric growth factor
+     *
+     * \param Out
+     * theta - the volumetric growth factor
+     * \param Out
+     * dthetadC - derivative of theta wrt the chauchy green tensor
+     * \param In
+     * matgrowth - a reference to a growth material
+     * \param In
+     * defgrad - the deformation gradient
+     * \param In
+     * glstrain - the green lagrange strains
+     * \param In
+     * params - a parameter list as handed in from the element
+     * \param In
+     * eleGID - the calling element's GID
+     *
+     *  \author kehl
+     * \date 06/2015
+     */
+    void Evaluate
+    (
+      double* theta,
+      const double& thetaold,
+      LINALG::Matrix<6,1>* dthetadC,
+      MAT::Growth& matgrowth,
+      const LINALG::Matrix<3,3>* defgrd,
+      const LINALG::Matrix<6,1>* glstrain,
+      const LINALG::Matrix<3,1>& refdir,
+      const std::vector<LINALG::Matrix<3,1> >& curdir,
+      const std::vector<LINALG::Matrix<3,3> >& histdefgrd,
+      const double& consttrig,
+      Teuchos::ParameterList& params,
+      const int eleGID
+    );
+
+    //! calculate growth part of deformation gradient
+    void CalcFg
+    (
+      const double& theta,
+      const double& thetaold,
+      const int& gp,
+      const LINALG::Matrix<3,3>* defgrd,
+      const LINALG::Matrix<3,1>& refdir,
+      const std::vector<LINALG::Matrix<3,1> >& curdir,
+      const std::vector<LINALG::Matrix<3,3> >& histdefgrd,
+      LINALG::Matrix<3,3>& F_g
+    );
+
+    //! density scaling of specific growth law
+    double DensityScale(const double theta);
+
+    //! density derivative scaling of specific growth law
+    double DensityDerivScale(const double theta);
+
+    //@}
+
+    //! material type
+    INPAR::MAT::MaterialType MaterialType() const {return INPAR::MAT::m_growth_lin_aniso;}
+
+    MAT::PAR::GrowthLawLinAnIso* Parameter() {return dynamic_cast<MAT::PAR::GrowthLawLinAnIso*>(MAT::GrowthLawStatic::Parameter()); }
 
     //! add parameter to parameter list
     void AddParamsToParameterList

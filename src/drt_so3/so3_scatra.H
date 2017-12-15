@@ -310,7 +310,7 @@ private:
   (
     DRT::Element::LocationArray&                la,               //!< (i): location array
     std::vector<double>&                        disp,             //!< (i): current displacement
-    LINALG::Matrix<numdofperelement_,numnod_>*  stiffmatrix_kdS,  //!< (o): mechanical scalar stiffness term at current gp
+    Epetra_SerialDenseMatrix&                   stiffmatrix_kdS,  //!< (o): mechanical scalar stiffness term at current gp
     Teuchos::ParameterList&                     params            //!< parameter list
   );
 

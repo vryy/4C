@@ -2234,16 +2234,34 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  // simple isotropic growth law, scalar-dependent volumetric growth, constant material density
+  // simple isotropic growth law, scalar-dependent linear volumetric growth, constant material density
   {
     Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("MAT_GrowthIso",
-                                            "scalar dependent isotropic growth law",
-                                            INPAR::MAT::m_growth_iso));
+      = Teuchos::rcp(new MaterialDefinition("MAT_GrowthLinIso",
+                                            "scalar dependent isotropic growth law; volume change linear dependent on scalar",
+                                            INPAR::MAT::m_growth_lin_iso));
 
     AddNamedInt(m,"SCALAR1","number of growth inducing scalar");
     AddNamedReal(m,"SCALAR1_GrowthFac","isotropic growth factor due to scalar 1");
     AddNamedReal(m,"SCALAR1_RefConc","reference concentration of scalar 1 causing no strains");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
+  // simple anisotropic growth law, growth in direction prescribed in input-file, scalar-dependent linear volumetric growth, constant material density
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_GrowthLinAnIso",
+                                            "scalar dependent anisotropic growth law; growth in direction as given in input-file; volume change linear dependent on scalar",
+                                            INPAR::MAT::m_growth_lin_aniso));
+
+    AddNamedInt(m,"SCALAR1","number of growth inducing scalar");
+    AddNamedReal(m,"SCALAR1_GrowthFac","anisotropic growth factor due to scalar 1");
+    AddNamedReal(m,"SCALAR1_RefConc","reference concentration of scalar 1 causing no strains");
+    AddNamedInt(m,"NUMSPACEDIM","Number of space dimension (only 3 valid)");
+    AddNamedRealVector(m,"GrowthDirection","vector that defines the growth direction","NUMSPACEDIM");
 
     AppendMaterialDefinition(matlist,m);
   }

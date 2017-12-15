@@ -62,17 +62,17 @@ MAT::PAR::OCPModels MAT::PAR::Electrode::StringToOCPModel(const std::string& ocp
 {
   OCPModels ocpmodelenum(ocp_undefined);
 
-  // constant value
-  if(ocpmodelstring == "Constant")
-    ocpmodelenum = ocp_constant;
-
   // Redlich-Kister expansion
-  else if(ocpmodelstring == "Redlich-Kister")
+  if(ocpmodelstring == "Redlich-Kister")
     ocpmodelenum = ocp_redlichkister;
 
   // empirical correlation given in Taralov, Taralova, Popov, Iliev, Latz, and Zausch (2012)
   else if(ocpmodelstring == "Taralov")
     ocpmodelenum = ocp_taralov;
+
+  // polynomial
+  else if(ocpmodelstring == "Polynomial")
+    ocpmodelenum = ocp_polynomial;
 
   // unknown model
   else
@@ -185,13 +185,6 @@ double MAT::Electrode::ComputeOpenCircuitPotential(
 
   switch(params_->ocpmodel_)
   {
-    case MAT::PAR::ocp_constant:
-    {
-      ocp = params_->ocppara_[0];
-
-      break;
-    }
-
     // half cell open circuit potential according to Redlich-Kister expansion
     case MAT::PAR::ocp_redlichkister:
     {
@@ -227,6 +220,20 @@ double MAT::Electrode::ComputeOpenCircuitPotential(
       break;
     }
 
+    // polynomial ocp
+    case MAT::PAR::ocp_polynomial:
+    {
+      // add constant
+      ocp = params_->ocppara_[0];
+      // add higher polynomial order terms
+      for(int i=1; i<params_->ocpparanum_; ++i)
+      {
+        ocp += params_->ocppara_[i]*pow(X,i);
+      }
+
+      break;
+    }
+
     default:
     {
       dserror("Model for half cell open circuit potential not recognized!");
@@ -254,13 +261,6 @@ double MAT::Electrode::ComputeFirstDerivOpenCircuitPotential(
 
   switch(params_->ocpmodel_)
   {
-    case MAT::PAR::ocp_constant:
-    {
-      ocpderiv = 0.;
-
-      break;
-    }
-
     // derivative of half cell open circuit potential w.r.t. concentration according to Redlich-Kister expansion
     case MAT::PAR::ocp_redlichkister:
     {
@@ -297,6 +297,18 @@ double MAT::Electrode::ComputeFirstDerivOpenCircuitPotential(
       break;
     }
 
+    // derivative polynomial ocp
+    case MAT::PAR::ocp_polynomial:
+    {
+      for(int i=1; i<params_->ocpparanum_; ++i)
+      {
+        ocpderiv += params_->ocppara_[i]*pow(X,i-1);
+      }
+      ocpderiv /= params_->cmax_;
+
+      break;
+    }
+
     default:
     {
       dserror("Model for half cell open circuit potential not recognized!");
@@ -324,13 +336,6 @@ double MAT::Electrode::ComputeSecondDerivOpenCircuitPotential(
 
   switch(params_->ocpmodel_)
   {
-    case MAT::PAR::ocp_constant:
-    {
-      ocpderiv2 = 0.;
-
-      break;
-    }
-
     // second derivative of half cell open circuit potential w.r.t. concentration according to Redlich-Kister expansion
     case MAT::PAR::ocp_redlichkister:
     {

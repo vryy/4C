@@ -1861,7 +1861,7 @@ double MAT::GrowthLawConst::DensityDerivScale(const double theta)
 /*----------------------------------------------------------------------*
  | constructor (public)                                   schmidt 10/17 |
  *----------------------------------------------------------------------*/
-MAT::PAR::GrowthLawIso::GrowthLawIso(
+MAT::PAR::GrowthLawLinIso::GrowthLawLinIso(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
@@ -1870,8 +1870,10 @@ MAT::PAR::GrowthLawIso::GrowthLawIso(
   Sc1refconc_(matdata->GetDouble("SCALAR1_RefConc"))
 {
   // safety checks
-  if (Sc1_ < 1)
-    dserror("At least one scalar field must induce growth");
+  // in the case when not all scatra dofs are transported scalars, the last scatra dof is a potential and can not be treated as a concentration
+  // but it is treated like that in so3_scatra_evaluate.cpp in the PreEvaluate!
+  if (Sc1_ != 1)
+    dserror("At the moment it is only possible that SCALAR1 induces growth");
   if (Sc1growthfac_ < 0.0)
     dserror("The influence of scalar field SCALAR1 to growth can't be negativ");
   if (Sc1refconc_ < 0.0)
@@ -1880,35 +1882,35 @@ MAT::PAR::GrowthLawIso::GrowthLawIso(
   // check correct masslin type
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   if (DRT::INPUT::IntegralValue<INPAR::STR::MassLin>(sdyn,"MASSLIN") != INPAR::STR::ml_none)
-    dserror("If you use the 'GrowthLawIso' please set 'MASSLIN' in the STRUCTURAL DYNAMIC Section to 'None',"
+    dserror("If you use the 'GrowthLawLinIso' please set 'MASSLIN' in the STRUCTURAL DYNAMIC Section to 'None',"
         " or feel free to implement other possibility!");
 }
 
 
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::GrowthLawIso::CreateMaterial()
+Teuchos::RCP<MAT::Material> MAT::PAR::GrowthLawLinIso::CreateMaterial()
 {
   return Teuchos::null;
 }
 
 
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<MAT::GrowthLaw> MAT::PAR::GrowthLawIso::CreateGrowthLaw()
+Teuchos::RCP<MAT::GrowthLaw> MAT::PAR::GrowthLawLinIso::CreateGrowthLaw()
 {
 
-  return Teuchos::rcp(new MAT::GrowthLawIso(this));
+  return Teuchos::rcp(new MAT::GrowthLawLinIso(this));
 }
 
 
 /*----------------------------------------------------------------------------*/
-MAT::GrowthLawIso::GrowthLawIso()
+MAT::GrowthLawLinIso::GrowthLawLinIso()
   : GrowthLawStatic(NULL)
 {
 }
 
 
 /*----------------------------------------------------------------------------*/
-MAT::GrowthLawIso::GrowthLawIso(MAT::PAR::GrowthLawIso* params)
+MAT::GrowthLawLinIso::GrowthLawLinIso(MAT::PAR::GrowthLawLinIso* params)
   : GrowthLawStatic(params)
 {
 }
@@ -1917,7 +1919,7 @@ MAT::GrowthLawIso::GrowthLawIso(MAT::PAR::GrowthLawIso* params)
 /*----------------------------------------------------------------------*
  | evaluate growth law isotropic (public)                 schmidt 10/17 |
  *----------------------------------------------------------------------*/
-void MAT::GrowthLawIso::Evaluate(double* theta,
+void MAT::GrowthLawLinIso::Evaluate(double* theta,
                                 const double& thetaold,
                                 LINALG::Matrix<6,1>* dthetadC,
                                 MAT::Growth& matgrowth,
@@ -1956,7 +1958,7 @@ void MAT::GrowthLawIso::Evaluate(double* theta,
 /*----------------------------------------------------------------------*
  | calculate growth part of deformation gradient (pub.)   schmidt 10/17 |
  *----------------------------------------------------------------------*/
-void MAT::GrowthLawIso::CalcFg
+void MAT::GrowthLawLinIso::CalcFg
 (
     const double& theta,
     const double& thetaold,
@@ -1969,7 +1971,9 @@ void MAT::GrowthLawIso::CalcFg
 )
 {
   for (int i = 0; i < 3; ++i)
+  {
     F_g(i,i) = theta;
+  }
 
   return;
 }
@@ -1978,7 +1982,7 @@ void MAT::GrowthLawIso::CalcFg
 /*----------------------------------------------------------------------*
  | add parameter to parameterlist (private)               schmidt 10/17 |
  *----------------------------------------------------------------------*/
-void MAT::GrowthLawIso::AddParamsToParameterList(
+void MAT::GrowthLawLinIso::AddParamsToParameterList(
           Teuchos::ParameterList& params,
           const double& theta)
 {
@@ -1999,7 +2003,7 @@ void MAT::GrowthLawIso::AddParamsToParameterList(
 
 
 /*----------------------------------------------------------------------------*/
-double MAT::GrowthLawIso::DensityScale(const double theta)
+double MAT::GrowthLawLinIso::DensityScale(const double theta)
 {
   // density in material configuration is constant
   return 1.0;
@@ -2007,7 +2011,187 @@ double MAT::GrowthLawIso::DensityScale(const double theta)
 
 
 /*----------------------------------------------------------------------------*/
-double MAT::GrowthLawIso::DensityDerivScale(const double theta)
+double MAT::GrowthLawLinIso::DensityDerivScale(const double theta)
+{
+  // derivative of density in material configuration vanishes
+  return 0.0;
+}
+
+
+/*----------------------------------------------------------------------*
+ | constructor (public)                                   schmidt 11/17 |
+ *----------------------------------------------------------------------*/
+MAT::PAR::GrowthLawLinAnIso::GrowthLawLinAnIso(
+  Teuchos::RCP<MAT::PAR::Material> matdata
+  )
+: Parameter(matdata),
+  Sc1_(matdata->GetInt("SCALAR1")),
+  Sc1growthfac_(matdata->GetDouble("SCALAR1_GrowthFac")),
+  Sc1refconc_(matdata->GetDouble("SCALAR1_RefConc")),
+  growthdirmat_(true)
+{
+  // safety checks
+  // in the case when not all scatra dofs are transported scalars, the last scatra dof is a potential and can not be treated as a concentration
+  // but it is treated like that in so3_scatra_evaluate.cpp in the PreEvaluate!
+  if (Sc1_ != 1)
+    dserror("At the moment it is only possible that SCALAR1 induces growth");
+  if (Sc1growthfac_ < 0.0)
+    dserror("The influence of scalar field SCALAR1 to growth can't be negativ");
+  if (Sc1refconc_ < 0.0)
+    dserror("The reference concentration of SCALAR1 can't be negative");
+
+  // get the growth direction vector from input file and check length
+  std::vector<double> growthdirvec = *(matdata->Get<std::vector<double> >("GrowthDirection"));
+  if (growthdirvec.size() != 3)
+    dserror("Since we have a 3D problem here, vector that defines the growth direction also needs to have the size 3!");
+
+  // check correct masslin type
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  if (DRT::INPUT::IntegralValue<INPAR::STR::MassLin>(sdyn,"MASSLIN") != INPAR::STR::ml_none)
+    dserror("If you use the 'GrowthLawLinAnIso' please set 'MASSLIN' in the STRUCTURAL DYNAMIC Section to 'None',"
+        " or feel free to implement other possibility!");
+
+  // fill matrix that determines the growth direction
+  const double growthdirvecnorm = std::sqrt(pow(growthdirvec[0],2.0) + pow(growthdirvec[1],2.0) + pow(growthdirvec[2],2.0));
+  const double invquadrgrowthdirvecnorm = 1.0/(growthdirvecnorm*growthdirvecnorm);
+
+  // loop over all rows and colomns to fill the matrix and scale it correctly on the fly
+  for (unsigned i=0;i<3;++i)
+  {
+    for (unsigned j=0;j<3;++j)
+    {
+      growthdirmat_(i,j) = invquadrgrowthdirvecnorm*growthdirvec[i]*growthdirvec[j];
+    }
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<MAT::Material> MAT::PAR::GrowthLawLinAnIso::CreateMaterial()
+{
+  return Teuchos::null;
+}
+
+
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<MAT::GrowthLaw> MAT::PAR::GrowthLawLinAnIso::CreateGrowthLaw()
+{
+
+  return Teuchos::rcp(new MAT::GrowthLawLinAnIso(this));
+}
+
+
+/*----------------------------------------------------------------------------*/
+MAT::GrowthLawLinAnIso::GrowthLawLinAnIso()
+  : GrowthLawStatic(NULL)
+{
+}
+
+
+/*----------------------------------------------------------------------------*/
+MAT::GrowthLawLinAnIso::GrowthLawLinAnIso(MAT::PAR::GrowthLawLinAnIso* params)
+  : GrowthLawStatic(params)
+{
+}
+
+
+/*----------------------------------------------------------------------*
+ | evaluate growth law isotropic (public)                 schmidt 11/17 |
+ *----------------------------------------------------------------------*/
+void MAT::GrowthLawLinAnIso::Evaluate(double* theta,
+                                const double& thetaold,
+                                LINALG::Matrix<6,1>* dthetadC,
+                                MAT::Growth& matgrowth,
+                                const LINALG::Matrix<3,3>* defgrd,
+                                const LINALG::Matrix<6,1>* glstrain,
+                                const LINALG::Matrix<3,1>& refdir,
+                                const std::vector<LINALG::Matrix<3,1> >& curdir,
+                                const std::vector<LINALG::Matrix<3,3> >& histdefgrd,
+                                const double& consttrig,
+                                Teuchos::ParameterList& params,
+                                const int eleGID)
+{
+
+  // get Gauss point number
+  const int gp = params.get<int>("gp",-1);
+  if (gp == -1)
+    dserror("No Gauss point number provided in material.");
+  //get pointer to vector containing the scalar values at the Gauss points
+  Teuchos::RCP<std::vector<std::vector<double> > > concentrations=
+      params.get< Teuchos::RCP<std::vector<std::vector<double> > > >("gp_conc",Teuchos::rcp(new std::vector<std::vector<double> >(30,std::vector<double>(20,0.0))));
+
+  // get growth law parameters
+  const int Sc1 = Parameter()->Sc1_;
+  const double Sc1growthfac = Parameter()->Sc1growthfac_;
+  const double Sc1refconc = Parameter()->Sc1refconc_;
+
+  const double deltagrowth = Sc1growthfac*(concentrations->at(gp).at(Sc1-1) - Sc1refconc);
+
+  *theta = 1.0 + deltagrowth;
+
+  // no derivative w.r.t. cauchy-green tensor
+  dthetadC->PutScalar(0.0);
+}
+
+
+/*----------------------------------------------------------------------*
+ | calculate growth part of deformation gradient (pub.)   schmidt 11/17 |
+ *----------------------------------------------------------------------*/
+void MAT::GrowthLawLinAnIso::CalcFg
+(
+    const double& theta,
+    const double& thetaold,
+    const int& gp,
+    const LINALG::Matrix<3,3>* defgrd,
+    const LINALG::Matrix<3,1>& refdir,
+    const std::vector<LINALG::Matrix<3,1> >& curdir,
+    const std::vector<LINALG::Matrix<3,3> >& histdefgrd,
+    LINALG::Matrix<3,3>& F_g
+)
+{
+  for (int i = 0; i < 3; ++i)
+  {
+    F_g(i,i) = 1.0;
+  }
+
+  F_g.Update((theta-1.0),Parameter()->growthdirmat_,1.0);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | add parameter to parameterlist (private)               schmidt 11/17 |
+ *----------------------------------------------------------------------*/
+void MAT::GrowthLawLinAnIso::AddParamsToParameterList(
+          Teuchos::ParameterList& params,
+          const double& theta)
+{
+  // calculate dtheta/dc
+  // theta = 1 + Sc1growthfac*(c-c_0)
+  // dtheta/dc = Sc1growthfac
+
+  // get needed parameter
+  const double Sc1growthfac = Parameter()->Sc1growthfac_;
+
+  // we need to add theta and dtheta/dc (c = concentration of scalar) here
+  params.set< double >("theta",theta);
+  params.set< double >("dtheta_dc",Sc1growthfac);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------------*/
+double MAT::GrowthLawLinAnIso::DensityScale(const double theta)
+{
+  // density in material configuration is constant
+  return 1.0;
+}
+
+
+/*----------------------------------------------------------------------------*/
+double MAT::GrowthLawLinAnIso::DensityDerivScale(const double theta)
 {
   // derivative of density in material configuration vanishes
   return 0.0;
