@@ -85,10 +85,11 @@ namespace INPAR
       model_cardiovascular0d      =  3, ///< evaluate the cardiovascular0d model
       model_springdashpot         =  4, ///< evaluate the springdashpot model
       model_lag_pen_constraint    =  5, ///< evaluate the Lagrange or/and penalty enforced constraint models
-      model_partitioned_coupling  =  6, ///< evaluate any partitioned coupling contributions
-      model_beam_interaction_old  =  7, ///< evaluate the model for contact/potential/... interactions of beams
-      model_browniandyn           =  8, ///< evaluate the brownian dynamics model
-      model_beaminteraction       =  9  ///< evaluate beaminteraction model
+      model_monolithic_coupling   =  6, ///< evaluate any monolithic coupling contributions
+      model_partitioned_coupling  =  7, ///< evaluate any partitioned coupling contributions
+      model_beam_interaction_old  =  8, ///< evaluate the model for contact/potential/... interactions of beams
+      model_browniandyn           =  9, ///< evaluate the brownian dynamics model
+      model_beaminteraction       =  10 ///< evaluate beaminteraction model
     };
 
     /// Map model type to string
@@ -116,6 +117,9 @@ namespace INPAR
         break;
       case model_lag_pen_constraint :
         return "Lag-Pen-Constraint";
+        break;
+      case model_monolithic_coupling:
+        return "Monolithic-Coupling";
         break;
       case model_partitioned_coupling:
         return "Partitioned-Coupling";

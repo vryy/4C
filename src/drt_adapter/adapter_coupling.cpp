@@ -629,6 +629,21 @@ void ADAPTER::Coupling::MasterToSlave(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void ADAPTER::Coupling::MasterToSlave(
+    const Epetra_IntVector& mv,
+    Epetra_IntVector& sv) const
+{
+  Epetra_IntVector perm(*permslavedofmap_);
+  std::copy(mv.Values(), mv.Values()+(mv.MyLength()), perm.Values());
+
+  const int err = sv.Export(perm,*slaveexport_,Insert);
+  if (err)
+    dserror("Export to slave distribution returned err=%d",err);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void ADAPTER::Coupling::SlaveToMaster(
     Teuchos::RCP<const Epetra_MultiVector> sv,
     Teuchos::RCP<Epetra_MultiVector> mv) const
@@ -652,6 +667,21 @@ void ADAPTER::Coupling::SlaveToMaster(
   std::copy(sv->Values(), sv->Values()+(sv->MyLength()*sv->NumVectors()), perm.Values());
 
   const int err = mv->Export(perm,*masterexport_,Insert);
+  if (err)
+    dserror("Export to master distribution returned err=%d",err);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::Coupling::SlaveToMaster(
+    const Epetra_IntVector& sv,
+    Epetra_IntVector& mv) const
+{
+  Epetra_IntVector perm(*permmasterdofmap_);
+  std::copy(sv.Values(), sv.Values()+(sv.MyLength()), perm.Values());
+
+  const int err = mv.Export(perm,*masterexport_,Insert);
   if (err)
     dserror("Export to master distribution returned err=%d",err);
 }

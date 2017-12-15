@@ -33,6 +33,7 @@ namespace DRT
 #include <Epetra_Map.h>
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_FEVector.h>
+#include <Epetra_IntVector.h>
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
@@ -398,6 +399,18 @@ namespace ADAPTER
     void SlaveToMaster(
         Teuchos::RCP<const Epetra_MultiVector> sv, ///< slave vector (to be transferred)
         Teuchos::RCP<Epetra_MultiVector> mv ///< master vector (containing result)
+        ) const;
+
+    /// transfer a dof vector from master to slave
+    void MasterToSlave(
+        const Epetra_IntVector& mv, ///< master vector (to be transferred)
+        Epetra_IntVector& sv ///< slave vector (containing result)
+        ) const;
+
+    /// transfer a dof vector from slave to master
+    void SlaveToMaster(
+        const Epetra_IntVector& sv, ///< slave vector (to be transferred)
+        Epetra_IntVector& mv ///< master vector (containing result)
         ) const;
 
     //@}

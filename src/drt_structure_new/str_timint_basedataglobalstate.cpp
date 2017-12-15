@@ -364,6 +364,7 @@ int STR::TIMINT::BaseDataGlobalState::SetupBlockInformation(
       model_block_id_[mt] = 0;
       break;
     }
+    case INPAR::STR::model_monolithic_coupling:
     case INPAR::STR::model_partitioned_coupling:
     {
       // do nothing

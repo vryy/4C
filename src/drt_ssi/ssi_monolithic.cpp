@@ -18,6 +18,7 @@
 #include "ssi_coupling.H"
 #include "ssi_monolithic_convcheck_strategies.H"
 #include "ssi_monolithic_resulttest.H"
+#include "ssi_str_model_evaluator_monolithic.H"
 
 #include <Epetra_Time.h>
 
@@ -853,6 +854,7 @@ void SSI::SSI_Mono::Output()
   // prepare structure output
   structure_->PrepareOutput();
   // output structure field
+  structure_->PrepareOutput();
   structure_->Output();
 
   return;
@@ -901,6 +903,10 @@ void SSI::SSI_Mono::Setup()
 
   // pass initial scalar field to structural discretization to correctly compute initial accelerations
   DRT::Problem::Instance()->GetDis("structure")->SetState(1,"temperature",scatra_->ScaTraField()->Phinp());
+
+  // construct and register structural model evaluator if necessary
+  if(DRT::INPUT::IntegralValue<INPAR::STR::StressType>(DRT::Problem::Instance()->IOParams(),"STRUCT_STRESS") != INPAR::STR::stress_none and scatra_->ScaTraField()->S2ICoupling())
+    struct_adapterbase_ptr_->RegisterModelEvaluator("Monolithic Coupling Model",Teuchos::rcp(new STR::MODELEVALUATOR::MonolithicSSI(Teuchos::rcp(this,false))));
 
   // set up structural base algorithm
   struct_adapterbase_ptr_->Setup();

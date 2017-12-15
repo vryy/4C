@@ -19,6 +19,12 @@
 
 #include "../drt_lib/drt_resulttest.H"
 
+// forward declaration
+namespace DRT
+{
+  class Node;
+}
+
 namespace SSI
 {
   // forward declaration
@@ -45,18 +51,31 @@ namespace SSI
           const Teuchos::RCP<const SSI::SSI_Mono>   ssi_mono   //!< time integrator for monolithic scalar-structure interaction
           );
 
+      //! test quantity associated with a particular node
+      void TestNode(
+          DRT::INPUT::LineDefinition&   res,         //!< input file line containing result test specification
+          int&                          nerr,        //!< number of failed result tests
+          int&                          test_count   //!< number of result tests
+          );
+
       //! test special quantity not associated with a particular element or node
       void TestSpecial(
           DRT::INPUT::LineDefinition&   res,         //!< input file line containing result test specification
           int&                          nerr,        //!< number of failed result tests
-          int&                          test_count   ///< number of result tests
+          int&                          test_count   //!< number of result tests
           );
 
     private:
 
+      //! get nodal result to be tested
+      double ResultNode(
+          const std::string   quantity,   //!< name of quantity to be tested
+          DRT::Node*          node        //!< node carrying the result to be tested
+          ) const;
+
       //! get special result to be tested
       double ResultSpecial(
-          const std::string&   quantity   //! name of quantity to be tested
+          const std::string&   quantity   //!< name of quantity to be tested
           ) const;
 
       //! time integrator for monolithic scalar-structure interaction

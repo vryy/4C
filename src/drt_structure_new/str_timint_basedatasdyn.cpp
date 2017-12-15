@@ -167,8 +167,16 @@ void STR::TIMINT::BaseDataSDyn::Init(
     if (modeltypes_->find(INPAR::STR::model_partitioned_coupling)!=
         modeltypes->end())
     {
+      if(modeltypes_->find(INPAR::STR::model_monolithic_coupling) != modeltypes->end())
+        dserror("Cannot have both monolithic and partitioned coupling at the same time!");
       coupling_model_ptr_ = sdynparams.
           get<Teuchos::RCP<STR::MODELEVALUATOR::Generic> >("Partitioned Coupling Model");
+    }
+    else if (modeltypes_->find(INPAR::STR::model_monolithic_coupling)!=
+             modeltypes->end())
+    {
+      coupling_model_ptr_ = sdynparams.
+          get<Teuchos::RCP<STR::MODELEVALUATOR::Generic> >("Monolithic Coupling Model");
     }
   }
   // ---------------------------------------------------------------------------

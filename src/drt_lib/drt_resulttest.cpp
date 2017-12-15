@@ -378,6 +378,17 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
     .AddOptionalNamedString("NAME")
     ;
 
+  DRT::INPUT::LineDefinition ssi;
+  ssi
+    .AddTag("SSI")
+    .AddNamedString("DIS")
+    .AddNamedInt("NODE")
+    .AddNamedString("QUANTITY")
+    .AddNamedDouble("VALUE")
+    .AddNamedDouble("TOLERANCE")
+    .AddOptionalNamedString("NAME")
+    ;
+
   DRT::INPUT::LineDefinition ssi_special;
   ssi_special
     .AddTag("SSI")
@@ -579,6 +590,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
   lines->Add(porofluidmultiphase);
   lines->Add(scatra);
   lines->Add(scatra_special);
+  lines->Add(ssi);
   lines->Add(ssi_special);
   lines->Add(sti_special);
   lines->Add(red_airway);

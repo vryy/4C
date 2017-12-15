@@ -52,6 +52,9 @@ namespace SSI
       //! destructor
       virtual ~SSI_Mono(){return;};
 
+      //! return scatra-scatra interface coupling adapter for structure field
+      const Teuchos::RCP<ADAPTER::Coupling>& CouplingAdapterStructure() const {return icoup_structure_;};
+
       //! initialize monolithic algorithm
       int Init(
           const Epetra_Comm&              comm,               //!< communicator

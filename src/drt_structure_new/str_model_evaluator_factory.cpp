@@ -84,6 +84,13 @@ Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::
       case INPAR::STR::model_cardiovascular0d:
         (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::Cardiovascular0D());
         break;
+      case INPAR::STR::model_monolithic_coupling:
+      {
+        if (coupling_model_ptr.is_null())
+          dserror("The monolithic coupling model evaluator is not defined.");
+        (*model_map)[*mt_iter] = coupling_model_ptr;
+        break;
+      }
       case INPAR::STR::model_partitioned_coupling:
       {
         if (coupling_model_ptr.is_null())

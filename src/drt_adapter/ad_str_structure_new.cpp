@@ -468,6 +468,24 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
       }
       break;
     }
+    case prb_ssi:
+    {
+      if (prbdyn_->INVALID_TEMPLATE_QUALIFIER
+          isType<Teuchos::RCP<STR::MODELEVALUATOR::Generic> > ("Monolithic Coupling Model"))
+      {
+        const Teuchos::RCP<STR::MODELEVALUATOR::Generic>& coupling_model_ptr =
+          prbdyn_->INVALID_TEMPLATE_QUALIFIER
+          get<Teuchos::RCP<STR::MODELEVALUATOR::Generic> >("Monolithic Coupling Model");
+        if (coupling_model_ptr.is_null())
+          dserror("The monolithic coupling model pointer is not allowed to be Teuchos::null!");
+        // set the model type
+        modeltypes.insert(INPAR::STR::model_monolithic_coupling);
+        // copy the coupling model object pointer into the (temporal) sdyn parameter list
+        sdyn_->set<Teuchos::RCP<STR::MODELEVALUATOR::Generic> >("Monolithic Coupling Model",
+            coupling_model_ptr);
+      }
+      break;
+    }
     default:
       // do nothing
       break;

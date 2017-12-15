@@ -126,6 +126,9 @@ void StructureFilter::WriteAllResults(PostField* field)
   writer_->WriteResult("cell_nodal_normals", "cell_nodal_normals", dofbased, field->problem()->num_dim());
   writer_->WriteResult("cell_adhesion_force", "cell_adhesion_force", dofbased, field->problem()->num_dim());
 
+  // monolithic scalar-structure interaction involving scatra-scatra interface coupling outputs nodal Cauchy stresses instead of Gauss-point ones
+  writer_->WriteResult("nodal_stresses_xyz", "nodal_stresses_xyz", nodebased, 6);
+
   if (stresstype_!="none")
   {
     // although appearing here twice, only one function call to PostStress
