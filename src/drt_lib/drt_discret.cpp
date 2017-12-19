@@ -608,20 +608,18 @@ void DRT::Discretization::SetState(unsigned nds,const std::string& name,Teuchos:
   if (state_.size()<=nds)
     state_.resize(nds+1);
 
-#ifdef DEBUG
-  // safety check if the provided state vector matches the DofMap of the dofset the state supposedly belongs to
-  if (not DofRowMap(nds)->SameAs(state->Map()))
-  {
-    dserror("row map of discretization and state vector %s are different. This is a fatal bug!",name.c_str());
-  }
-#endif
-
   // if it's already in column map just set a reference
   // This is a rough test, but it might be ok at this place. It is an
   // error anyway to hand in a vector that is not related to our dof
   // maps.
   if (vecmap.PointSameAs(*colmap))
   {
+#ifdef DEBUG
+    if (not colmap->SameAs(vecmap))
+    {
+      dserror("col map of discretization and state vector %s are different. This is a fatal bug!",name.c_str());
+    }
+#endif
     // make a copy as in parallel such that no additional RCP points to the state vector
     Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*colmap,false);
     tmp->Update(1.0, *state, 0.0);
@@ -629,6 +627,12 @@ void DRT::Discretization::SetState(unsigned nds,const std::string& name,Teuchos:
   }
   else // if it's not in column map export and allocate
   {
+#ifdef DEBUG
+    if (not DofRowMap(nds)->SameAs(state->Map()))
+    {
+      dserror("row map of discretization and state vector %s are different. This is a fatal bug!",name.c_str());
+    }
+#endif
     Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*colmap,false);
 
     // this is necessary to find out the number of nodesets in the beginning
