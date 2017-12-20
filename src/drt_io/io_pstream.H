@@ -155,6 +155,14 @@ namespace IO
     /// Set verbosity level
     Level& operator()(const verbositylevel level);
 
+    /// \brief Return a pure screen ostream (a.k.a. std::cout)
+    /** \note This is mainly a workaround to use the verbosity levels as well
+     *  as the processor restriction also for standard print() methods which
+     *  typically expect a std::ostream object as input argument.
+     *
+     *  \author hiermeier 12/17 */
+    std::ostream& os(const verbositylevel level  = undef ) const;
+
     /// Return verbosity level
     inline verbositylevel RequestedOutputLevel() const
     {
@@ -202,6 +210,12 @@ namespace IO
 
     // internal variable of Pstream
     Level* level_;
+
+    /// ostream for all non-target procs and inadmissible cases
+    std::ostream* blackholestream_ = NULL;
+
+    /// ostream if all prerequisites are fulfilled
+    std::ostream* mystream_ = NULL;
 
   };  // class Pstream
 

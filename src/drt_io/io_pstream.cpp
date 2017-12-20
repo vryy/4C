@@ -12,6 +12,7 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "io_pstream.H"
+#include <Teuchos_oblackholestream.hpp>
 
 namespace IO
 {
@@ -46,6 +47,13 @@ IO::Pstream::~Pstream()
   if(level_)
     delete level_;
   level_ = NULL;
+
+  if (blackholestream_)
+    delete blackholestream_;
+  blackholestream_ = NULL;
+
+  mystream_ = NULL;
+
   this->close();
 }
 
@@ -94,8 +102,32 @@ void IO::Pstream::setup(
   // prepare the very first line of output
   if (OnPid() and prefixgroupID_)
     buffer_ << groupID_ << ": ";
+
+  // setup mystream
+  blackholestream_ = new Teuchos::oblackholestream;
+  if ( writetoscreen_ and ( comm_->MyPID() == targetpid_ or targetpid_ < 0 ) )
+    mystream_ = &std::cout;
+  else
+    mystream_ = blackholestream_;
 }
 
+/*-----------------------------------------------------------------------*
+ * return a std::ostream following the restrictions      hiermeier 12/17 *
+ *-----------------------------------------------------------------------*/
+std::ostream& IO::Pstream::os( const verbositylevel level ) const
+{
+  if (not is_initialized_)
+    dserror("Setup the output before you use it!");
+
+  if ( level <= RequestedOutputLevel() )
+  {
+    if ( prefixgroupID_ )
+      *mystream_ << prefixgroupID_ << ": ";
+    return *mystream_;
+  }
+  else
+    return *blackholestream_;
+}
 
 /*----------------------------------------------------------------------*
  * close open file handles and reset pstream                  wic 11/12 *
