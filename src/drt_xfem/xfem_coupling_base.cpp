@@ -671,7 +671,8 @@ void XFEM::CouplingBase::Get_ViscPenalty_Stabfac(
     const double& kappa_s,                               ///< Weight parameter (parameter -/slave  side)
     const double& inv_h_k,                               ///< the inverse characteristic element length h_k
     const DRT::ELEMENTS::FluidEleParameterXFEM* params,  ///< parameterlist which specifies interface configuration
-    double& NIT_visc_stab_fac                            ///< viscous part of Nitsche's penalty term
+    double& NIT_visc_stab_fac,                           ///< viscous part of Nitsche's penalty term
+    double& NIT_visc_stab_fac_tang                       ///< viscous part of Nitsche's penalty term in tang direction
     )
 {
   double penscaling = 0.0;
@@ -696,5 +697,13 @@ void XFEM::CouplingBase::Get_ViscPenalty_Stabfac(
       params->IsPseudo2D(),
       params->ViscStabTracEstimate(),
       NIT_visc_stab_fac);
+
+  XFEM::UTILS::NIT_Compute_ViscPenalty_Stabfac(
+      xfele->Shape(),
+      penscaling,
+      params->NITStabScalingTang(),
+      params->IsPseudo2D(),
+      params->ViscStabTracEstimate(),
+      NIT_visc_stab_fac_tang);
   return;
 }

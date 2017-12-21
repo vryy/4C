@@ -1257,7 +1257,8 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
         const double kappa_m = 1.0;
         const double kappa_s = 0.0;
         double visc_stab_fac = 0.0;
-        cond_manager->Get_ViscPenalty_Stabfac(coup_sid, ele,kappa_m,kappa_s, inv_hk,fldparaxfem_,visc_stab_fac);
+        double visc_stab_fac_tang = 0.0;
+        cond_manager->Get_ViscPenalty_Stabfac(coup_sid, ele,kappa_m,kappa_s, inv_hk,fldparaxfem_,visc_stab_fac,visc_stab_fac_tang);
         NIT_Compute_FullPenalty_Stabfac(nit_stabfac,normal,h_k,kappa_m,kappa_s,my::convvelint_,velint_s,visc_stab_fac,true);
 
         const double veln_normal = my::convvelint_.Dot(normal); // TODO: shift this to routine
@@ -3478,7 +3479,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
     //---------------------------------------------------------------------------------
 
     double NIT_visc_stab_fac = 0.0;
-    cond_manager->Get_ViscPenalty_Stabfac(coup_sid, ele,kappa_m,kappa_s, inv_hk,fldparaxfem_,NIT_visc_stab_fac);
+    double NIT_visc_stab_fac_tang = 0.0;
+    cond_manager->Get_ViscPenalty_Stabfac(coup_sid, ele,kappa_m,kappa_s, inv_hk,fldparaxfem_,NIT_visc_stab_fac,NIT_visc_stab_fac_tang);
 
     // define interface force vector w.r.t side (for XFSI)
     Epetra_SerialDenseVector iforce;
@@ -3646,7 +3648,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
               kappa_m,
               viscaf_master_,
               viscaf_slave_,
-              NIT_visc_stab_fac,
+              NIT_visc_stab_fac_tang,
               NIT_full_stab_fac,
               x_gp_lin_,
               coupcond.second,
@@ -3769,7 +3771,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
                 kappa_m,
                 viscaf_master_,
                 viscaf_slave_,
-                NIT_visc_stab_fac,
+                NIT_visc_stab_fac_tang,
                 NIT_full_stab_fac,
                 x_gp_lin_,
                 coupcond.second,

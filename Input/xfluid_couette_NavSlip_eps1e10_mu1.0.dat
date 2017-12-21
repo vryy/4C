@@ -1,8 +1,8 @@
 //
-// Maintainer: Magnus Winter
-// winter@lnm.mw.tum.de
+// Maintainer: Ager Christoph
+// ager@lnm.mw.tum.de
 // http://www.lnm.mw.tum.de
-// 089 - 289-15236
+// 089 - 289-15249
 //
 // XFEM Navier Slip BC couette flow with LS
 ==================================================================
@@ -185,6 +185,7 @@ BOUNDARY_GAUSS_POINTS_BY        Tessellation //Tessellation
 COUPLING_METHOD                 Nitsche
 VISC_ADJOINT_SYMMETRY           yes
 NIT_STAB_FAC                    50.0
+NIT_STAB_FAC_TANG               50.0
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
 VISC_STAB_HK                    ele_vol_div_by_max_ele_surf
 IS_PSEUDO_2D                    yes

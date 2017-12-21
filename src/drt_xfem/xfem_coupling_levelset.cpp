@@ -1087,7 +1087,7 @@ void XFEM::LevelSetCouplingWeakDirichlet::UpdateConfigurationMap_GP(
     double& kappa_m,
     double& visc_m,
     double& visc_s,
-    double& visc_stab,
+    double& visc_stab_tang,       //< viscous tangential NIT Penalty scaling
     double& full_stab,
     const LINALG::Matrix<3,1>& x,
     const DRT::Condition* cond,
@@ -1394,7 +1394,7 @@ void XFEM::LevelSetCouplingNavierSlip::UpdateConfigurationMap_GP(
     double& kappa_m,
     double& visc_m,
     double& visc_s,
-    double& visc_stab,
+    double& visc_stab_tang,       //< viscous tangential NIT Penalty scaling
     double& full_stab,
     const LINALG::Matrix<3,1>& x,
     const DRT::Condition* cond,
@@ -1415,7 +1415,7 @@ void XFEM::LevelSetCouplingNavierSlip::UpdateConfigurationMap_GP(
   {
     double stabnit = 0.0;
     double stabadj = 0.0;
-    XFEM::UTILS::GetNavierSlipStabilizationParameters(full_stab,visc_stab,dynvisc,sliplength,stabnit,stabadj);
+    XFEM::UTILS::GetNavierSlipStabilizationParameters(visc_stab_tang,dynvisc,sliplength,stabnit,stabadj);
     configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = stabnit;
     configuration_map_[INPAR::XFEM::F_Con_t_Row] = std::pair<bool,double>(true,-stabnit); //+sign for penalty!
     configuration_map_[INPAR::XFEM::F_Con_t_Col] = std::pair<bool,double>(true,sliplength/dynvisc);
@@ -1424,7 +1424,7 @@ void XFEM::LevelSetCouplingNavierSlip::UpdateConfigurationMap_GP(
   }
   else
   {
-    configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = visc_stab;
+    configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = visc_stab_tang;
     configuration_map_[INPAR::XFEM::F_Con_t_Row] = std::pair<bool,double>(false,0.0);
     configuration_map_[INPAR::XFEM::F_Con_t_Col] = std::pair<bool,double>(false,0.0);
     configuration_map_[INPAR::XFEM::F_Adj_t_Row].second = 1.0;
@@ -1432,7 +1432,7 @@ void XFEM::LevelSetCouplingNavierSlip::UpdateConfigurationMap_GP(
   }
 
   //Configuration of Penalty Terms
-  configuration_map_[INPAR::XFEM::F_Pen_n_Row].second = visc_stab; //full_stab <-- to keep results!
+  configuration_map_[INPAR::XFEM::F_Pen_n_Row].second = visc_stab_tang; //full_stab <-- to keep results!
 
   return;
 }
@@ -1895,7 +1895,7 @@ void XFEM::LevelSetCouplingTwoPhase::UpdateConfigurationMap_GP(
     double& kappa_m,
     double& visc_m,
     double& visc_s,
-    double& visc_stab,
+    double& visc_stab_tang,       //< viscous tangential NIT Penalty scaling
     double& full_stab,
     const LINALG::Matrix<3,1>& x,
     const DRT::Condition* cond,

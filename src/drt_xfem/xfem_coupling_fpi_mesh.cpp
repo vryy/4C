@@ -133,7 +133,7 @@ void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP(
     double& kappa_m,
     double& visc_m,
     double& visc_s,
-    double& visc_stab,
+    double& visc_stab_tang,       //< viscous tangential NIT Penalty scaling
     double& full_stab,
     const LINALG::Matrix<3,1>& x,
     const DRT::Condition* cond,
@@ -146,7 +146,7 @@ void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP(
 
   double stabnit = 0.0;
   double stabadj = 0.0;
-  XFEM::UTILS::GetNavierSlipStabilizationParameters(full_stab,visc_stab,dynvisc,BJ_coeff_,stabnit,stabadj);
+  XFEM::UTILS::GetNavierSlipStabilizationParameters(visc_stab_tang,dynvisc,BJ_coeff_,stabnit,stabadj);
 
   // Calculation on Porosity will follow soon ... todo
   double porosity;
@@ -179,9 +179,9 @@ switch(coupled_field_)
     configuration_map_[INPAR::XFEM::X_Adj_t_Col] = std::pair<bool,double>(true,1-full_BJ_*porosity);
     configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool,double>(true, BJ_coeff_); //Here we need alpha BJ finally!!! Todo
     //Configuration of Penalty Terms
-    configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool,double>(true,visc_stab);
+    configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool,double>(true,visc_stab_tang);
     configuration_map_[INPAR::XFEM::F_Pen_n_Col] = std::pair<bool,double>(true,1);
-    configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool,double>(true,visc_stab);
+    configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool,double>(true,visc_stab_tang);
     configuration_map_[INPAR::XFEM::X_Pen_n_Col] = std::pair<bool,double>(true,1-porosity);
     configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool,double>(true,stabnit);
     configuration_map_[INPAR::XFEM::F_Pen_t_Col] = std::pair<bool,double>(true,1);
@@ -200,8 +200,8 @@ switch(coupled_field_)
     configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool,double>(true,stabadj);
     configuration_map_[INPAR::XFEM::X_Adj_t_Col] = std::pair<bool,double>(full_BJ_,full_BJ_*porosity);
 //    //Configuration of Penalty Terms
-    configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool,double>(true,visc_stab);
-    configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool,double>(true,visc_stab);
+    configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool,double>(true,visc_stab_tang);
+    configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool,double>(true,visc_stab_tang);
     configuration_map_[INPAR::XFEM::X_Pen_n_Col] = std::pair<bool,double>(true,porosity);
     configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool,double>(true,stabnit);
     configuration_map_[INPAR::XFEM::X_Pen_t_Row] = std::pair<bool,double>(true,stabnit);
@@ -214,7 +214,7 @@ switch(coupled_field_)
    configuration_map_[INPAR::XFEM::X_Con_n_Row] = std::pair<bool,double>(true,1.0);
    configuration_map_[INPAR::XFEM::F_Con_n_Col] = std::pair<bool,double>(true,1.0);
    //Configuration of Penalty Terms
-    configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool,double>(true,visc_stab);
+    configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool,double>(true,visc_stab_tang);
     configuration_map_[INPAR::XFEM::F_Pen_n_Col] = std::pair<bool,double>(true,1.0);
     configuration_map_[INPAR::XFEM::X_Pen_n_Col] = std::pair<bool,double>(true,1-porosity);
 
@@ -226,7 +226,7 @@ switch(coupled_field_)
   case MeshCouplingFPI::pf_pf:
   {
     //Configuration of Penalty Terms
-     configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool,double>(true,visc_stab);
+     configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool,double>(true,visc_stab_tang);
      configuration_map_[INPAR::XFEM::X_Pen_n_Col] = std::pair<bool,double>(true,porosity);
 
      //does nothing but should just be done in case we don't use the adjoint

@@ -447,7 +447,7 @@ protected:
       double& kappa_m,
       double& visc_m,
       double& visc_s,
-      double& visc_stab,
+      double& visc_stab_tang,       //< viscous tangential NIT Penalty scaling
       double& full_stab,
       const LINALG::Matrix<3,1>& x,
       const DRT::Condition* cond,
@@ -588,7 +588,7 @@ protected:
       double& kappa_m,
       double& visc_m,
       double& visc_s,
-      double& visc_stab,
+      double& visc_stab_tang,       //< viscous tangential NIT Penalty scaling
       double& full_stab,
       const LINALG::Matrix<3,1>& x,
       const DRT::Condition* cond,
@@ -700,7 +700,7 @@ protected:
       double& kappa_m,
       double& visc_m,
       double& visc_s,
-      double& visc_stab,
+      double& visc_stab_tang,       //< viscous tangential NIT Penalty scaling
       double& full_stab,
       const LINALG::Matrix<3,1>& x,
       const DRT::Condition* cond,
@@ -811,7 +811,7 @@ protected:
       double& kappa_m,
       double& visc_m,
       double& visc_s,
-      double& visc_stab,
+      double& visc_stab_tang,       //< viscous tangential NIT Penalty scaling
       double& full_stab,
       const LINALG::Matrix<3,1>& x,
       const DRT::Condition* cond,

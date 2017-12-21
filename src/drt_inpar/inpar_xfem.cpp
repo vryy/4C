@@ -174,6 +174,7 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   // viscous and convective Nitsche/MSH stabilization parameter
   DoubleParameter("NIT_STAB_FAC", 35.0, " ( stabilization parameter for Nitsche's penalty term",&xfluid_stab);
+  DoubleParameter("NIT_STAB_FAC_TANG", 35.0, " ( stabilization parameter for Nitsche's penalty tangential term",&xfluid_stab);
 
   setStringToIntegralParameter<int>("VISC_STAB_TRACE_ESTIMATE","CT_div_by_hk","how to estimate the scaling from the trace inequality in Nitsche's method",
                                tuple<std::string>("CT_div_by_hk", "eigenvalue"),

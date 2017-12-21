@@ -265,7 +265,7 @@ public:
       double& kappa_m,              //< fluid sided weighting
       double& visc_m,               //< fluid sided weighting
       double& visc_s,               //< slave sided dynamic viscosity
-      double& visc_stab,            //< viscous NIT Penalty scaling
+      double& visc_stab_tang,       //< viscous tangential NIT Penalty scaling
       double& full_stab,            //< full NIT Penalty scaling
       const LINALG::Matrix<3,1>& x, //< Position x
       const DRT::Condition* cond,   //< Condition
@@ -274,7 +274,7 @@ public:
       double*               derxy   //< local derivatives of shape function for Gauss Point (from fluid element)
       )
   {
-    UpdateConfigurationMap_GP(kappa_m,visc_m,visc_s, visc_stab, full_stab,x,cond,ele,funct,derxy);
+    UpdateConfigurationMap_GP(kappa_m,visc_m,visc_s, visc_stab_tang, full_stab,x,cond,ele,funct,derxy);
     #ifdef DEBUG
     // Do some safety checks, every combination which is not handled correct by the element level should be caught here ...
     // As this check is done for every Gausspoint, just do this in DEBUG Version ...
@@ -363,7 +363,8 @@ public:
       const double& kappa_s,                               ///< Weight parameter (parameter -/slave  side)
       const double& inv_h_k,                               ///< the inverse characteristic element length h_k
       const DRT::ELEMENTS::FluidEleParameterXFEM* params,  ///< parameterlist which specifies interface configuration
-      double& NIT_visc_stab_fac                            ///< viscous part of Nitsche's penalty term
+      double& NIT_visc_stab_fac,                           ///< viscous part of Nitsche's penalty term
+      double& NIT_visc_stab_fac_tang                       ///< viscous part of Nitsche's penalty term in tang direction
       );
 
 
@@ -398,7 +399,7 @@ protected:
       double& kappa_m,    //< fluid sided weighting
       double& visc_m,     //< fluid sided weighting
       double& visc_s,     //< slave sided dynamic viscosity
-      double& visc_stab,  //< viscous NIT Penalty scaling
+      double& visc_stab_tang,       //< viscous tangential NIT Penalty scaling
       double& full_stab,  //< full NIT Penalty scaling
       const LINALG::Matrix<3,1>& x, //<Position x
       const DRT::Condition* cond, //< Condition

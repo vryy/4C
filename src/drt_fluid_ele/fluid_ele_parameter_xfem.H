@@ -90,6 +90,9 @@ public:
   //! scaling factor for the MHVS method (then gamma = 1/n, see publications)
   double NITStabScaling() const{ return nit_stab_gamma_; };
 
+  //! get Nitsche's penalty scaling for tangential terms
+  double NITStabScalingTang() const{ return nit_stab_gamma_tang_; };
+
   //! get information, whether the formulation should be symmetric/skew-symmetric in the adjoint viscous terms
   //! @return true, in case of a symmetric adjoint term
   bool IsViscousAdjointSymmetric() const{ return is_visc_adjoint_symmetric_; }
@@ -186,6 +189,9 @@ private:
   //! scaling factor for the MHVS method (then gamma = 1/n, see publications),
   //! this parameter shall be independent of element type, shape and polynomial degree
   double nit_stab_gamma_;
+
+  //! scaling for penalty term in Nitsche's method in case normal and tangential direction are split
+  double nit_stab_gamma_tang_;
 
   //! flag, that indicates matching signs between the viscous and adjoint viscous Nitsche terms
   //! or between the equivalent MHVS-terms

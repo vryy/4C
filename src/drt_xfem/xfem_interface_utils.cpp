@@ -274,7 +274,6 @@ double XFEM::UTILS::NIT_getTraceEstimateConstant(
  * for Navier Slip Formulation
  *----------------------------------------------------------------------*/
 void XFEM::UTILS::GetNavierSlipStabilizationParameters(
-  const double &                                NIT_full_stab_fac,            ///< full Nitsche stab fac
   const double &                                NIT_visc_stab_fac,            ///< viscous Nitsche stab fac
   double &                                      dynvisc,                      ///< average dynamic viscosity
   double &                                      sliplength,                   ///< sliplength

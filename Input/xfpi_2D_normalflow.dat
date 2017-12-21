@@ -120,6 +120,7 @@ XFLUID_TIMEINT_CHECK_INTERFACETIPS No
 COUPLING_METHOD                 Nitsche
 VISC_ADJOINT_SYMMETRY           no
 NIT_STAB_FAC                    35
+NIT_STAB_FAC_TANG               35
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
 VISC_STAB_HK                    ele_vol_div_by_cut_surf
 IS_PSEUDO_2D                    yes

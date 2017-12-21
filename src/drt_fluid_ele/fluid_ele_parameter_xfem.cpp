@@ -62,6 +62,7 @@ DRT::ELEMENTS::FluidEleParameterXFEM::FluidEleParameterXFEM()
     visc_stab_trace_estimate_(INPAR::XFEM::ViscStab_TraceEstimate_CT_div_by_hk),
     visc_stab_hk_(INPAR::XFEM::ViscStab_hk_vol_equivalent),
     nit_stab_gamma_(0.0),
+    nit_stab_gamma_tang_(0.0),
     is_visc_adjoint_symmetric_(true),
     is_pseudo_2D_(false),
     xff_conv_stab_scaling_(INPAR::XFEM::XFF_ConvStabScaling_none),
@@ -191,6 +192,8 @@ void DRT::ELEMENTS::FluidEleParameterXFEM::SetElementXFEMParameter(
   visc_stab_hk_               = DRT::INPUT::IntegralValue<INPAR::XFEM::ViscStab_hk>(params_xf_stab, "VISC_STAB_HK");
 
   nit_stab_gamma_             = params_xf_stab.get<double>("NIT_STAB_FAC");
+
+  nit_stab_gamma_tang_             = params_xf_stab.get<double>("NIT_STAB_FAC_TANG");
 
   is_visc_adjoint_symmetric_  = DRT::INPUT::IntegralValue<bool>(params_xf_stab,"VISC_ADJOINT_SYMMETRY");
 

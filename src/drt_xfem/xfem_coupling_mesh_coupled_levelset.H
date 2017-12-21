@@ -160,7 +160,7 @@ public:
       double&                    kappa_m,              //< fluid sided weighting
       double&                    visc_m,               //< fluid sided weighting
       double&                    visc_s,               //< slave sided dynamic viscosity
-      double&                    visc_stab,            //< viscous NIT Penalty scaling
+      double&                    visc_stab_tang,       //< viscous tangential NIT Penalty scaling
       double&                    full_stab,            //< full NIT Penalty scaling
       const LINALG::Matrix<3,1>& x,                    //<Position x
       const DRT::Condition*      cond,                 //< Condition
@@ -216,7 +216,7 @@ public:
     {
       double stabnit = 0.0;
       double stabadj = 0.0;
-      XFEM::UTILS::GetNavierSlipStabilizationParameters(full_stab,visc_stab,dynvisc,sliplength,stabnit,stabadj);
+      XFEM::UTILS::GetNavierSlipStabilizationParameters(visc_stab_tang,dynvisc,sliplength,stabnit,stabadj);
       configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = stabnit;
       configuration_map_[INPAR::XFEM::F_Con_t_Row] = std::pair<bool,double>(true,-stabnit); //+sign for penalty!
       configuration_map_[INPAR::XFEM::F_Con_t_Col] = std::pair<bool,double>(true,sliplength/dynvisc);

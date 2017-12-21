@@ -1044,13 +1044,14 @@ void XFEM::ConditionManager::Get_ViscPenalty_Stabfac(
     const double& kappa_s,                               ///< Weight parameter (parameter -/slave  side)
     const double& inv_h_k,                               ///< the inverse characteristic element length h_k
     const DRT::ELEMENTS::FluidEleParameterXFEM* params,  ///< parameterlist which specifies interface configuration
-    double& NIT_visc_stab_fac                            ///< viscous part of Nitsche's penalty term
+    double& NIT_visc_stab_fac,                           ///< viscous part of Nitsche's penalty term
+    double& NIT_visc_stab_fac_tang                       ///< viscous part of Nitsche's penalty term in tang direction
     )
 {
   DRT::Element* coup_ele  = GetCouplingElement(coup_sid,xfele);
   const int coup_idx = GetCouplingIndex(coup_sid, xfele->Id());
 
-  GetCouplingByIdx(coup_idx)->Get_ViscPenalty_Stabfac(xfele,coup_ele,kappa_m,kappa_s,inv_h_k,params,NIT_visc_stab_fac);
+  GetCouplingByIdx(coup_idx)->Get_ViscPenalty_Stabfac(xfele,coup_ele,kappa_m,kappa_s,inv_h_k,params,NIT_visc_stab_fac,NIT_visc_stab_fac_tang);
 
   return;
 }
