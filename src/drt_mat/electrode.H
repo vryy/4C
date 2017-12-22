@@ -63,6 +63,12 @@ namespace MAT
 
         //! parameters underlying half cell open circuit potential model
         const std::vector<double> ocppara_;
+
+        //! lower bound of validity (as a fraction of c_max) for prescribed open circuit potential calculation model
+        const double xmin_;
+
+        //! upper bound of validity (as a fraction of c_max) for prescribed open circuit potential calculation model
+        const double xmax_;
         //! @}
 
       private:

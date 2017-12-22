@@ -555,7 +555,7 @@ void FS3I::PartFPS3I::SetFPSISolution()
 //only needed for two-way coupling; at the moment function is not used
 void FS3I::PartFPS3I::SetStructScatraSolution()
 {
-  fpsi_->PoroField()->StructureField()->Discretization()->SetState(1,"temperature",(scatravec_[1])->ScaTraField()->Phinp());
+  fpsi_->PoroField()->StructureField()->Discretization()->SetState(1,"scalarfield",(scatravec_[1])->ScaTraField()->Phinp());
 }
 
 

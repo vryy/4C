@@ -30,7 +30,9 @@ MAT::PAR::Electrode::Electrode(
   cmax_(matdata->GetDouble("C_MAX")),
   ocpmodel_(StringToOCPModel(*matdata->Get<std::string>("OCP_MODEL"))),
   ocpparanum_(matdata->GetInt("OCP_PARA_NUM")),
-  ocppara_(*matdata->Get<std::vector<double> >("OCP_PARA"))
+  ocppara_(*matdata->Get<std::vector<double> >("OCP_PARA")),
+  xmin_(matdata->GetDouble("X_MIN")),
+  xmax_(matdata->GetDouble("X_MAX"))
 {
   // safety checks
   if(cmax_ < 1.e-12)
@@ -41,6 +43,12 @@ MAT::PAR::Electrode::Electrode(
     dserror("Electrode half cell open circuit potential according to Taralov, Taralova, Popov, Iliev, Latz, and Zausch (2012) needs to be specified by exactly 13 coefficients!");
   if((int) ocppara_.size() != ocpparanum_)
     dserror("Length of coefficient vector for electrode half cell open circuit potential doesn't match prescribed number of coefficients!");
+  if((xmin_ > 1.0) or (xmax_ > 1.0))
+    dserror("Lower bound (X_MIN) and upper bound (X_MAX) of range of validity for ocp calculation model cannot be larger than one since X "
+        "is calculated as c/c_max! If you do not want to prescribe bounds, you have to set the two variables to negative values. "
+        "If you set the bounds to realistic values (i.e. [0,1]) you will get a warning printed to the screen if bounds are violated throughout the simulation time!");
+  if(xmin_ > xmax_)
+    dserror("X_MIN cannot be larger than X_MAX!");
 
   return;
 }
@@ -182,6 +190,14 @@ double MAT::Electrode::ComputeOpenCircuitPotential(
 
   // intercalation fraction
   const double X = concentration/params_->cmax_;
+
+  // print warning to screen if prescribed interval of validity for ocp calculation model is given but not satisfied
+  if(((X < params_->xmin_) or (X > params_->xmax_)) and !(params_->xmax_ < 0.))
+  {
+    std::cout << "WARNING: intercalation fraction X = c/c_max is violating prescribed bounds of ocp calculation model. Calculated "
+        "values might therefore not be reasonable!" << std::endl;
+    std::cout << "X: " << X << " lower bound is: " << params_->xmin_ << "  upper bound is: " << params_->xmax_ << std::endl << std::endl;
+  }
 
   switch(params_->ocpmodel_)
   {

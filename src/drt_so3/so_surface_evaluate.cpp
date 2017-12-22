@@ -3079,8 +3079,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
       dserror("Cannot get displacement vector of structure");
 
     // get scatra state from structure discretization
-    // the state is called temperature in the SSI algo for some odd reason (you don't wanna know, pal)
-    Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState(1,"temperature");
+    Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState(1,"scalarfield");
     if (phinp == Teuchos::null)
       dserror("Cannot get phinp vector of structure");
 

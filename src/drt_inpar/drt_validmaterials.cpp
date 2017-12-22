@@ -640,6 +640,12 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     // model for half cell open circuit potential of electrode
     AddNamedString(matelectrode,"OCP_MODEL","model for half cell open circuit potential of electrode","none");
 
+    // lower bound of range of validity as a fraction of C_MAX for ocp calculation model
+    AddNamedReal(matelectrode,"X_MIN","lower bound of range of validity as a fraction of C_MAX for ocp calculation model",2.0,false);
+
+    // upper bound of range of validity as a fraction of C_MAX for ocp calculation model
+    AddNamedReal(matelectrode,"X_MAX","upper bound of range of validity as a fraction of C_MAX for ocp calculation model",2.0,false);
+
     // number of parameters underlying half cell open circuit potential model
     AddNamedInt(matelectrode,"OCP_PARA_NUM","number of parameters underlying half cell open circuit potential model");
 

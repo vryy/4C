@@ -854,7 +854,6 @@ void SSI::SSI_Mono::Output()
   // prepare structure output
   structure_->PrepareOutput();
   // output structure field
-  structure_->PrepareOutput();
   structure_->Output();
 
   return;
@@ -902,7 +901,7 @@ void SSI::SSI_Mono::Setup()
   scatra_->ScaTraField()->Setup();
 
   // pass initial scalar field to structural discretization to correctly compute initial accelerations
-  DRT::Problem::Instance()->GetDis("structure")->SetState(1,"temperature",scatra_->ScaTraField()->Phinp());
+  DRT::Problem::Instance()->GetDis("structure")->SetState(1,"scalarfield",scatra_->ScaTraField()->Phinp());
 
   // construct and register structural model evaluator if necessary
   if(DRT::INPUT::IntegralValue<INPAR::STR::StressType>(DRT::Problem::Instance()->IOParams(),"STRUCT_STRESS") != INPAR::STR::stress_none and scatra_->ScaTraField()->S2ICoupling())

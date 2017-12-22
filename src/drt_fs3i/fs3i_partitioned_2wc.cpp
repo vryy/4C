@@ -262,7 +262,7 @@ void FS3I::PartFS3I_2WC::SetScaTraValuesInFSI()
 
   // set structure-scalar field in structure
   // (Note potential inconsistencies related to this call in case of generalized-alpha time integration!)
-  fsi_->StructureField()->Discretization()->SetState( 1,"temperature",StructureScalarToStructure(scatravec_[1]->ScaTraField()->Phinp()) );
+  fsi_->StructureField()->Discretization()->SetState( 1,"scalarfield",StructureScalarToStructure(scatravec_[1]->ScaTraField()->Phinp()) );
 
 }
 

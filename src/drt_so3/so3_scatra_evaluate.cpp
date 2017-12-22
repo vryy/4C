@@ -36,7 +36,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(
     if (la[1].Size() != numnod_*numscal)
       dserror("So3_Scatra: PreEvaluate: Location vector length for concentrations does not match!");
 
-    if (discretization.HasState(1,"temperature")) //if concentrations were set
+    if (discretization.HasState(1,"scalarfield")) //if concentrations were set
     {
       if (not (distype == DRT::Element::hex8 or distype == DRT::Element::hex27 or distype == DRT::Element::tet4 or distype == DRT::Element::tet10))
         dserror("The Solidscatra elements are only tested for the Hex8, Hex27 and Tet4 case. The following should work, but keep your eyes open (especially with the order of the Gauß points");
@@ -48,7 +48,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(
           Teuchos::rcp(new std::vector<std::vector<double> >(numgpt_,std::vector<double>(numscal,0.0)));
 
       // check if you can get the scalar state
-      Teuchos::RCP<const Epetra_Vector> concnp = discretization.GetState(1,"temperature");
+      Teuchos::RCP<const Epetra_Vector> concnp = discretization.GetState(1,"scalarfield");
 
       if (concnp==Teuchos::null)
         dserror("calc_struct_nlnstiff: Cannot get state vector 'temperature' ");
@@ -114,7 +114,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(
 
       params.set< Teuchos::RCP<std::vector<std::vector<double> > > >("avg_conc",avgconc);
 
-    } // if (discretization.HasState(1,"temperature"))
+    } // if (discretization.HasState(1,"scalarfield"))
 
     //If you need a pointer to the scatra material, use these lines:
     //we assume that the second material of the structure is the scatra element material

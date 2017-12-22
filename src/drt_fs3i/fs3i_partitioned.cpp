@@ -626,7 +626,7 @@ void FS3I::PartFS3I::SetFSISolution()
 /*----------------------------------------------------------------------*/
 void FS3I::PartFS3I::SetStructScatraSolution() const
 {
-  fsi_->StructureField()->Discretization()->SetState( 1,"temperature",StructureScalarToStructure(scatravec_[1]->ScaTraField()->Phinp()) );
+  fsi_->StructureField()->Discretization()->SetState( 1,"scalarfield",StructureScalarToStructure(scatravec_[1]->ScaTraField()->Phinp()) );
 }
 
 

@@ -127,7 +127,7 @@ void SSI::SSICouplingMatchingVolume::SetScalarField(
     Teuchos::RCP<const Epetra_Vector> phi              /// scalar field to set
     )
 {
-  structure->Discretization()->SetState(1,"temperature",phi);
+  structure->Discretization()->SetState(1,"scalarfield",phi);
 }
 
 /*----------------------------------------------------------------------*/
@@ -378,7 +378,7 @@ void SSI::SSICouplingNonMatchingVolume::SetScalarField(
     Teuchos::RCP<const Epetra_Vector> phi              /// scalar field to set
     )
 {
-  structure->Discretization()->SetState(1,"temperature",volcoupl_structurescatra_->ApplyVectorMapping12(phi));
+  structure->Discretization()->SetState(1,"scalarfield",volcoupl_structurescatra_->ApplyVectorMapping12(phi));
 }
 
 /*----------------------------------------------------------------------*/
@@ -529,5 +529,5 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::SetScalarField(
     Teuchos::RCP<const Epetra_Vector> phi              /// scalar field to set
     )
 {
-  structure->Discretization()->SetState(1,"temperature",phi);
+  structure->Discretization()->SetState(1,"scalarfield",phi);
 }
