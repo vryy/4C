@@ -6,7 +6,7 @@
 
 \level 1
 
-\maintainer Sebastian Kehl
+\maintainer Anna Birzle
 */
 /*----------------------------------------------------------------------*/
 #ifndef GEN_INV_ANALYSIS_H
@@ -146,6 +146,12 @@ private:
   int problem_type_;                // Neumann or Dirichlet Problem
   int np_;                          // number of fitted parameters (default 3, 4 with kappa)
   int nmp_;                         // total number of measured dofs
+
+  /// variables of multiple inverse analysis
+  bool spec_inv_ana_mult_; // define if multiple inverse analysis is used
+
+  /// variables of coupled inverse analysis
+  bool spec_inv_ana_coup_; // define if coupled inverse analysis is used
 
   Epetra_SerialDenseVector mcurve_; // measured displacement of the experiments (target value)
   std::vector<double> timesteps_;   // time values where displacements are measured

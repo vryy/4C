@@ -4,12 +4,12 @@
 
 \brief Input parameters for inverse analysis
 
-\level 3
+\level 2
 
 <pre>
-\maintainer Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
+\maintainer Anna Birzle
+            birzle@lnm.mw.tum.de
+            089-289-15255
 </pre>
 */
 
@@ -36,6 +36,15 @@ namespace INPAR
       inv_none,          // no inverse analysis
       inv_generalized    // generalized inverse analysis
     };
+
+    /// Type of Special Inverse Analysis
+    enum SpecInvAnalysisType
+    {
+      spec_inv_none,          // no special inverse analysis
+      spec_inv_coup,          // coupled inverse analysis: use information of two different experiments, here implemented for pressure-volume-change experiment and tensile test (just applicable for lung)
+      spec_inv_mult           // multible inverse analysis: fit more inverse analysis (different dat-files) in one identification procedure
+    };
+
     /// Update strategy for regularization parameter mu
     enum RegStratUpdate
       {

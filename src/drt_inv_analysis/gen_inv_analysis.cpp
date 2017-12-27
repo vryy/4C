@@ -6,7 +6,7 @@
 
 \level 1
 
-\maintainer Sebastian Kehl
+\maintainer Anna Birzle
 */
 /*----------------------------------------------------------------------*/
 
@@ -252,6 +252,23 @@ steps 25 nnodes 5
        break;
    }
 
+  // special inverse analysis types
+  switch(DRT::INPUT::IntegralValue<int>(iap,"SPECIAL_INV_ANALYSIS"))
+  {
+  case INPAR::STR::spec_inv_mult:
+  {
+    spec_inv_ana_mult_ = 1;
+  }
+  break;
+  case INPAR::STR::spec_inv_coup:
+  {
+    spec_inv_ana_coup_ = 1;
+  }
+  break;
+  default: // normal inverse analysis --> do nothing
+    break;
+  }
+
   check_neg_params_ = DRT::INPUT::IntegralValue<int>(iap,"PARAM_BOUNDS");
 
   // list of materials for each problem instance that should be fitted
@@ -321,8 +338,7 @@ steps 25 nnodes 5
   np_ = p_.Length();
 
   // controlling parameter
-  numb_run_ =  0;     //
-                      // counter of how many runs were made in the inverse analysis
+  numb_run_ =  0;     // counter of how many runs were made in the inverse analysis
 
 }
 

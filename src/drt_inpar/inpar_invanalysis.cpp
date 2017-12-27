@@ -5,10 +5,10 @@
 \brief Input parameters for inverse analysis
 
 <pre>
-\level 3
-\maintainer Sebastian Kehl
-            kehl@lnm.mw.tum.de
-            089-289-10361
+\level 2
+\maintainer Anna Birzle
+            birzle@lnm.mw.tum.de
+            089-289-15255
 </pre>
 */
 
@@ -44,6 +44,19 @@ void INPAR::INVANA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
                                tuple<int>(
                                  INPAR::STR::inv_none,
                                  INPAR::STR::inv_generalized),
+                               &iap);
+
+  // Special types of inv_analysis
+  setStringToIntegralParameter<int>("SPECIAL_INV_ANALYSIS","none",
+                               "types of special inverse analysis",
+                               tuple<std::string>(
+                                 "none",
+                                 "coup",
+                                 "mult"),
+                               tuple<int>(
+                                 INPAR::STR::spec_inv_none,
+                                 INPAR::STR::spec_inv_coup,
+                                 INPAR::STR::spec_inv_mult),
                                &iap);
 
   // tolerance for inv_analysis
