@@ -152,6 +152,7 @@ private:
 
   /// variables of coupled inverse analysis
   bool spec_inv_ana_coup_; // define if coupled inverse analysis is used
+  int nmp_volexp_; // data points of pressure-volume-change experiment
 
   Epetra_SerialDenseVector mcurve_; // measured displacement of the experiments (target value)
   std::vector<double> timesteps_;   // time values where displacements are measured
@@ -283,6 +284,12 @@ public:
   /// Re-initialized micro-scale
   void MultiInvAnaInit();
 
+  /// pressure-volume-change data of lung parenchyma
+  void pVData(std::vector<double>& volexp_deltap, std::vector<double>& volexp_deltaV);
+
+  /// compute pressure value of volume-change and material
+  void ComputePressureNHIso1Coup3(std::vector<double> perturb,
+      std::vector<double> volexp_deltaV,Epetra_SerialDenseMatrix& volexp_p_comp);
 
 };  // class GenInvAnalysis
 

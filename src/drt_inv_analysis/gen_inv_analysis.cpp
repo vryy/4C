@@ -253,6 +253,8 @@ steps 25 nnodes 5
    }
 
   // special inverse analysis types
+  spec_inv_ana_mult_=0;
+  spec_inv_ana_coup_=0;
   switch(DRT::INPUT::IntegralValue<int>(iap,"SPECIAL_INV_ANALYSIS"))
   {
   case INPAR::STR::spec_inv_mult:
@@ -626,7 +628,9 @@ void STR::GenInvAnalysis::NPIntegrate()
 }
 
 //---------------------------------------------------------------------------------------------
-void STR::GenInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix& cmatrix, std::vector<double>& perturb)
+void STR::GenInvAnalysis::CalcNewParameters(
+    Epetra_SerialDenseMatrix& cmatrix,
+    std::vector<double>& perturb)
 {
   // initalization of the Jacobian and other storage
   Epetra_SerialDenseMatrix sto(np_,  np_);
@@ -644,26 +648,129 @@ void STR::GenInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix& cmatrix, s
   // reuse the cmatrix array as J to save storage
   Epetra_SerialDenseMatrix& J = cmatrix;
 
-  //calculating J(p)
-  for (int i=0; i<nmp_; i++)
-    for (int j=0; j<np_; j++)
+  // in case of coupled inverse analysis
+  if (spec_inv_ana_coup_)
+  {
+    // for information on coupled inverse analysis see
+    // Anna M. Birzle, Christian Martin, Stefan Uhlig, Wolfgang A. Wall (2018):
+    // A Nonlinear and Compressible Hyperelastic Material Model of Lung Parenchyma:
+    // Experiments and Numerical Identification (in preperation)
+
+    // get data
+    // of volume-pressure-change experiment
+
+    // number of data points of pressure-volume-change experiment
+    nmp_volexp_ = 287;
+    // initialization of measured pressure and volume-change values
+    std::vector<double> volexp_deltap(nmp_volexp_,0.0);
+    std::vector<double> volexp_deltaV(nmp_volexp_,0.0);
+
+    // get data
+    pVData(volexp_deltap,volexp_deltaV);
+
+
+    // compute pressure from volume-change and paramaters of respective material
+    // this function dependents on the material, which is identified
+    // this function is implemented for: Coupneohooke + Iso1Pow + Coup3Pow
+    // extend new functions, if different materials should be identified
+
+    // computed pressure values
+    Epetra_SerialDenseMatrix volexp_p_comp(nmp_volexp_,np_+1);
+
+    // compute pressure values
+    ComputePressureNHIso1Coup3(perturb,volexp_deltaV,volexp_p_comp);
+
+
+    // normalize data sets
+    // with size of data set and range of data values
+
+    // facnorm of pressure-volume-change experiment
+    // get minimum and maximum of measured pressure values
+    double min_volexp=volexp_deltap[0];
+    double max_volexp=volexp_deltap[0];
+    for(int n=0;n<nmp_volexp_;n++)
     {
-      J(i,j) -= ccurve[i];
-      J(i,j) /= perturb[j];
+      min_volexp=std::min(min_volexp,volexp_deltap[n]);
+      max_volexp=std::max(max_volexp,volexp_deltap[n]);
+    }
+    // calculate facnorm (N_vol)
+    double volexp_fac_norm = sqrt(nmp_volexp_)*(max_volexp-min_volexp);
+
+    // calculate facnorm (N_uniax) of tensile test
+    double min_zug=mcurve_(0);
+    double max_zug=mcurve_(0);
+    for(int n=0;n<nmp_;n++)
+    {
+      min_zug=std::min(min_zug,mcurve_(n));
+      max_zug=std::max(max_zug,mcurve_(n));
+    }
+    double fac_norm = sqrt(nmp_)*(max_zug-min_zug);
+
+    //
+    //calculating Jacobi-Materix J(p)
+    // tensile test data
+    for (int i=0; i<nmp_; i++)
+      for (int j=0; j<np_; j++)
+      {
+        J(i,j) -= ccurve[i];
+        J(i,j) /= perturb[j];
+        J(i,j) /= fac_norm; //normalize J
+      }
+    // add data of pressure-volume-change experiment
+    J.Reshape(nmp_+nmp_volexp_,np_);
+    for (int i=0; i<nmp_volexp_; i++)
+    {
+      for (int j=0; j<np_; j++)
+      {
+        J(i+nmp_,j) = volexp_p_comp(i,j); // perturbated values of pressure
+        J(i+nmp_,j) -= volexp_p_comp(i,np_); // - unperturbated values of pressure
+        J(i+nmp_,j) /= perturb[j]; // /perturbation
+        J(i+nmp_,j) /= volexp_fac_norm; //normalize J
+      }
     }
 
-  //calculating J.T*J)
+    // calculating residuum R
+    // compute residual (measured vs. computed)
+    // tensile test data (displacements)
+    for (int i=0; i<nmp_; i++)
+    {
+      rcurve[i] = mcurve_[i] - ccurve[i];
+      rcurve[i] /= fac_norm; // normalize residuum
+    }
+    // add data (pressure) of pressure-volume-change experiment
+    rcurve.Reshape(nmp_+nmp_volexp_,1);
+    for (int i=0; i<nmp_volexp_; i++)
+    {
+      rcurve[i+nmp_] = volexp_deltap[i] - volexp_p_comp(i,np_);
+      rcurve[i+nmp_] /= volexp_fac_norm;
+    }
+    // end of coupled inverse analysis
+  }
+  // normal inverse analysis
+  else
+  {
+    nmp_volexp_ = 0; // do not add any data
+    //calculating J(p)
+    for (int i=0; i<nmp_; i++)
+      for (int j=0; j<np_; j++)
+      {
+        J(i,j) -= ccurve[i];
+        J(i,j) /= perturb[j];
+      }
+
+    //calculating R
+    // compute residual displacement (measured vs. computed)
+    for (int i=0; i<nmp_; i++)
+      rcurve[i] = mcurve_[i] - ccurve[i];
+  }
+
+  //calculating J.T*J
   sto.Multiply('T','N',1.0,J,J,0.0);
 
   // calculating  J.T*J + mu*diag(J.T*J)
   // do regularization by adding artifical mass on the main diagonal
   for (int i=0; i<np_; i++)
     sto(i,i) += mu_*sto(i,i);
-
-  //calculating R
-  // compute residual displacement (measured vs. computed)
-  for (int i=0; i<nmp_; i++)
-    rcurve[i] = mcurve_[i] - ccurve[i];
 
   // delta_p = (J.T*J+mu*diag(J.T*J))^{-1} * J.T*R
   tmp.Multiply('T','N',1.0,J,rcurve,0.0);
@@ -680,9 +787,11 @@ void STR::GenInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix& cmatrix, s
   p_o_ = p_;
 
 //  // update res based error
-//  for (int i=0; i<nmp_; i++)
-//    rcurve2[i] = (mcurve_[i] - ccurve[i])/mcurve_[i];
-  error_   = rcurve.Norm2()/sqrt(nmp_);
+  if (spec_inv_ana_coup_)
+    error_   = rcurve.Norm2(); // already normalized
+  else
+    error_   = rcurve.Norm2()/sqrt(nmp_);
+
   // Gradient based update of mu based on
   //Kelley, C. T., Liao, L. Z., Qi, L., Chu, M. T., Reese, J. P., & Winton, C. (2009)
   //Projected pseudotransient continuation. SIAM Journal on Numerical Analysis, 46(6), 3071.
@@ -691,7 +800,7 @@ void STR::GenInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix& cmatrix, s
     //get jacobian:
     Epetra_SerialDenseVector Ji(np_);
     for (int i=0; i<np_; i++)
-      for (int j=0; j<nmp_; j++)
+      for (int j=0; j<nmp_+nmp_volexp_; j++)
         Ji[i]+= rcurve[j]*J(j,i);
 
     error_grad_ = Ji.Norm2();
@@ -737,7 +846,8 @@ void STR::GenInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix& cmatrix, s
 
   PrintStorage(delta_p);
 
-  if (check_neg_params_) CheckOptStep();
+  if (check_neg_params_)
+    CheckOptStep();
 
   return;
 }
@@ -2928,4 +3038,222 @@ void STR::GenInvAnalysis::MultiInvAnaInit()
     }
   }
 }
+
+/*----------------------------------------------------------------------*/
+/* data of volume-pressure-change experiment
+ * (just applicable for lung parenchyma)                 abirzle 12/17  */
+void STR::GenInvAnalysis::pVData(
+    std::vector<double>& volexp_deltap,
+    std::vector<double>& volexp_deltaV
+)
+
+{
+  // for description of experiment and measurements see
+  // Birzle A.M., Martin C., Yoshihara L., Uhlig S., Wall W.A. (2018):
+  // Experimental characterization and model identification of the nonlinear compressible material behavior
+  // of lung parenchyma, Journal of the Mechanical Behavior of Biomedical Materials, 77, 754-763
+
+  // pressure values
+  int iend=0;
+  // p=2.5
+  for (int i=0; i<10; i++)
+    volexp_deltap[i]={245.};
+  iend+=10;
+  // p=5
+  for (int i=iend; i<iend+20; i++)
+    volexp_deltap[i]={490.};
+  iend+=20;
+  // p=7.5
+  for (int i=iend; i<iend+36; i++)
+    volexp_deltap[i]={735.};
+  iend+=36;
+  // p=10
+  for (int i=iend; i<iend+35; i++)
+    volexp_deltap[i]={980.};
+  iend+=35;
+  // p=12.5
+  for (int i=iend; i<iend+36; i++)
+    volexp_deltap[i]={1225.};
+  iend+=36;
+  // p=15
+  for (int i=iend; i<iend+37; i++)
+    volexp_deltap[i]={1470.};
+  iend+=37;
+  // p=17.5
+  for (int i=iend; i<iend+36; i++)
+    volexp_deltap[i]={1715.};
+  iend+=36;
+  // p=20
+  for (int i=iend; i<iend+29; i++)
+    volexp_deltap[i]={1960.};
+  iend+=29;
+  // p=25
+  for (int i=iend; i<iend+25; i++)
+    volexp_deltap[i]={2450.};
+  iend+=25;
+  // p=30
+  for (int i=iend; i<iend+23; i++)
+    volexp_deltap[i]={2940.};
+
+  // volume-change values
+  volexp_deltaV={
+      //p=2.5
+      1.6229,1.9215,1.622,1.8658,2.0495,1.5765,1.4661,1.4233,1.7377,1.7867,
+      //p=5
+      3.7862,3.8465,3.3126,3.3772,3.2526,2.6585,3.4688,3.3288,3.2557,3.1412,2.6198,2.7568,4.2779,3.6789,3.6505,3.5996,4.263,3.2006,3.8828,3.64140,
+      //p=7.5
+      5.5336,5.1114,5.2201,5.8763,5.5818,5.0764,5.6554,5.2189,5.4851,5.8187,4.8171,5.2599,4.983,4.8974,5.927,5.416,4.7944,5.1813,5.8164,5.5941,5.4742,4.7867,5.8561,5.321,5.3231,5.9927,5.6989,6.0252,5.8827,6.098,5.2408,4.9775,5.3245,5.799,5.4763,5.5281,
+      //p=10
+      5.1607,5.5248,6.3745,5.2035,5.949,6.5293,5.7254,5.4395,5.5039,6.2416,5.4003,6.0278,5.3075,5.0073,5.5973,5.4907,5.599,6.1918,5.9618,5.5298,6.1709,6.3988,6.1538,6.0434,6.0947,5.7312,5.6098,5.0424,5.963,5.7041,6.0714,5.7577,5.4448,5.3786,6.0825,
+      //p=12.5
+      6.334,6.5669,5.5371,6.5367,5.9702,6.0108,6.1958,5.5998,6.143,6.3129,6.0195,6.4948,6.3385,6.8904,6.2244,6.2614,5.7878,6.4638,6.4166,5.9079,6.4859,6.2747,6.9097,6.4257,5.9645,6.293,6.3622,6.95119426478467,6.95259299289317,6.29096065891005,6.43146272902885,6.76639025833022,5.81392007558196,6.64797014073652,6.78575903857122,6.77079145333657,
+      //p=15
+      6.2694,6.8156,6.4222,6.6779,6.4477,6.946,6.0315,7.1796,5.9834,6.8852,6.816,6.562,6.9666,6.8255,6.6346,7.0178,6.7803,6.9803,6.0881,6.5954,6.8001,6.0148,6.2209,5.9416,5.9046,6.1117,6.8738,6.2452,7.1326,6.1593,6.4043,6.7863,6.6326,7.0466,6.3976,6.3152,7.1319,
+      //p=17.5
+      6.8341,7.0194,7.1327,6.8067,6.6793,6.4689,6.5056,6.9019,7.0894,7.1208,6.636,7.0989,6.6911,6.813,6.943,6.7678,6.2031,6.3,6.7398,6.4996,6.0093,6.726,6.4589,6.46228453249002,6.72269688082884,7.26996172483992,6.59701895651191,6.48882023137021,6.64521277786977,6.53037380729109,6.84867336679295,7.27482643080461,7.28380705707665,6.59131173065240,7.32076484497370,6.50402799776321,
+      //p=20
+      6.6185,7.2038,7.0779,7.3916,6.8441,6.9745,6.4551,6.6086,6.2844,6.7463,6.5037,7.2111,6.8724,6.1147,6.7871,7.1206,6.8298,6.7577,6.9406,6.5804,6.6009,6.772,7.1248,6.9741,6.7305,6.6312,6.9349,6.6075,6.53,
+      //p=25
+      7.1142,7.1994,7.1104,6.9684,7.0248,6.9105,7.2144,7.3821,6.5336,6.9874,7.402,6.9957,7.0756,6.8509,7.0822,7.1881,7.2234,6.9572,7.0065,7.1812,7.2786,7.0574,6.6902,7.288,6.7679,
+      //p=30
+      7.4768,7.63,7.5284,7.3955,8.0542,7.5079,7.8074,7.1117,7.4324,7.5605,7.8052,7.2476,7.0182,7.6021,7.3106,8.1168,7.1584,7.4902,7.8548,7.4139,7.129,7.5809,7.8425};
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*  calculation of pressure-value from volume-change and material paramters
+ * the material paramters depend on the material, which is identified
+ * this function is implemented for  Coupneohooke + Iso1Pow + Coup3Pow
+ * (just applicable for lung parenchyma)                 abirzle 12/17  */
+void STR::GenInvAnalysis::ComputePressureNHIso1Coup3(
+    std::vector<double> perturb,
+    std::vector<double> volexp_deltaV,
+    Epetra_SerialDenseMatrix& volexp_p_comp
+)
+{
+  // this implementation works for the material combination:
+  // Coupneohooke + Iso1Pow + Coup3Pow
+
+  // Saftey check and get not fitted material parameters from dat-file
+  // (correct material combination is not checked)
+  int d1_const = 0;
+  int d3_const = 0;
+  double beta_const = 0.;
+  for (unsigned prob=0; prob<DRT::Problem::NumInstances(); ++prob)
+  {
+    const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance(prob)->Materials()->Map();
+    std::set<int> mymatset = matset_[prob];
+    std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator curr;
+    for (curr=mats.begin(); curr != mats.end(); ++curr)
+    {
+      const Teuchos::RCP<MAT::PAR::Material> actmat = curr->second;
+      if(actmat->Type()==INPAR::MAT::m_elasthyper)
+      {
+        MAT::PAR::ElastHyper* params = dynamic_cast<MAT::PAR::ElastHyper*>(actmat->Parameter());
+        if (!params) dserror("Cannot cast material parameters");
+        const int nummat               = params->nummat_;
+        const std::vector<int>* matids = params->matids_;
+        for (int i=0; i<nummat; ++i)
+        {
+          const int id = (*matids)[i];
+          if (mymatset.size()==0 or mymatset.find(id)!=mymatset.end())
+          {
+            const Teuchos::RCP<MAT::PAR::Material> actelastmat = mats.find(id)->second;
+            if (actelastmat->Type()==INPAR::MAT::mes_iso1pow)
+            {
+              const MAT::ELASTIC::PAR::Iso1Pow* params2 = dynamic_cast<const MAT::ELASTIC::PAR::Iso1Pow*>(actelastmat->Parameter());
+              d1_const   = params2->d_;
+            }
+            else if (actelastmat->Type()==INPAR::MAT::mes_coupneohooke)
+            {
+              const MAT::ELASTIC::PAR::CoupNeoHooke* params2 = dynamic_cast<const MAT::ELASTIC::PAR::CoupNeoHooke*>(actelastmat->Parameter());
+              beta_const   = params2->beta_;
+            }
+            else if (actelastmat->Type()==INPAR::MAT::mes_coup3pow)
+            {
+              const MAT::ELASTIC::PAR::Coup3Pow* params2 = dynamic_cast<const MAT::ELASTIC::PAR::Coup3Pow*>(actelastmat->Parameter());
+              d3_const   = params2->d_;
+            }
+            else
+              dserror("This material is not implemented for coupled inverse analysis, yet.");
+          }
+        }
+      }
+    }
+  }
+
+
+  // Get Parameters
+  // of this material combination
+  Epetra_SerialDenseMatrix volexp_params(np_+1,6); // 6 = number of parameters in this material combination
+
+  // parameter order: cNH, beta, c1, d1, c3, d3
+  // case cNH, c1 and c3 are fitted
+  if(np_==3)
+  {
+    for (int j=0; j<np_+1; j++)
+    {
+      volexp_params(j,0) = p_(0); //cNH
+      volexp_params(j,4) = p_(2); //c3
+    }
+    volexp_params(0,0) += perturb[0];
+    volexp_params(2,4) += perturb[2];
+  }
+  // case cNH, beta, c1 and c3 are fitted
+  else if(np_==4)
+  {
+    for (int j=0; j<np_+1; j++)
+    {
+      volexp_params(j,0) = p_(0); //cNH
+      volexp_params(j,1) = p_(1); //beta
+      volexp_params(j,4) = p_(3); //c3
+    }
+    volexp_params(0,0) += perturb[0];
+    volexp_params(1,1) += perturb[1];
+    volexp_params(3,4) += perturb[3];
+  }
+  else
+    dserror("This case is not implemented, yet.");
+
+  // set fixed parameters
+  if(np_==3) // case cNH, c1 and c3 are fitted
+  {
+    for (int j=0; j<np_+1; j++)
+    {
+      volexp_params(j,1)=beta_const;
+      volexp_params(j,3)=d1_const;
+      volexp_params(j,5)=d3_const;
+      volexp_params(j,2) = p_(2); //c1 -> constant for pV
+    }
+  }
+  else if(np_==4) // case cNH, beta, c1 and c3 are fitted
+  {
+    for (int j=0; j<np_+1; j++)
+    {
+      volexp_params(j,3)=d1_const;
+      volexp_params(j,5)=d3_const;
+      volexp_params(j,2) = p_(2); //c1 -> constant for pV
+    }
+  }
+  else
+    dserror("Something went wrong in the material parameter set.");
+
+  // compute pressure for coupneohooke + iso1pow + coup3pow
+  //Epetra_SerialDenseMatrix volexp_p_comp(nmp_volexp,np_+1);
+  for (int i=0; i<nmp_volexp_; i++) // data set
+    for (int j=0; j<np_+1; j++) // parameter set
+    {
+      //NeoHooke
+      volexp_p_comp(i,j) = 2.* volexp_params(j,0) * std::pow(volexp_deltaV[i],-1./3.) - 2. * volexp_params(j,0) * std::pow(volexp_deltaV[i],-2.*volexp_params(j,1)-1.);
+
+      // Iso1Pow --> no contribution of isomaterials
+
+      // Coup3Pow
+      volexp_p_comp(i,j) += 2./3.*volexp_params(j,4)*volexp_params(j,5)*(std::pow(volexp_deltaV[i],-1./3.))*(std::pow((std::pow(volexp_deltaV[i],(2./3.))-1.),(volexp_params(j,5)-1.)));
+    }
+
+}
+
+
 
