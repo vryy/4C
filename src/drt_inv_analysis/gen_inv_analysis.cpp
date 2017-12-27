@@ -7,7 +7,7 @@
 \level 1
 
 \maintainer Anna Birzle
-*/
+ */
 /*----------------------------------------------------------------------*/
 
 
@@ -84,11 +84,11 @@
 /*----------------------------------------------------------------------*/
 /* standard constructor */
 STR::GenInvAnalysis::GenInvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
-                                    Teuchos::RCP<LINALG::Solver> solver,
-                                    Teuchos::RCP<IO::DiscretizationWriter> output)
-  : discret_(dis),
-    solver_(solver),
-    output_(output)
+    Teuchos::RCP<LINALG::Solver> solver,
+    Teuchos::RCP<IO::DiscretizationWriter> output)
+: discret_(dis),
+  solver_(solver),
+  output_(output)
 {
   int myrank = dis->Comm().MyPID();
 
@@ -138,7 +138,7 @@ steps 25 nnodes 5
 5.000000e-01   -1.759895e+00    1.173949e+00   -2.274916e+00    3.314659e+00   -1.384141e+00    4.857055e+00   8.729911e-01    4.466927e+00  1.214188e+00    8.722325e-01
 
 
-  */
+   */
 
   // open monitor file and read it
   ndofs_ = 0;
@@ -236,21 +236,21 @@ steps 25 nnodes 5
 
   // update strategy for mu
   switch(DRT::INPUT::IntegralValue<INPAR::STR::RegStratUpdate>(iap,"UPDATE_REG"))
-   {
-     case INPAR::STR::reg_update_grad:
-     {
-      reg_update_ = grad_based;
-     }
-     break;
-     case INPAR::STR::reg_update_res:
-     {
-       reg_update_ = res_based;
-     }
-     break;
-     default:
-       dserror("Unknown update strategy for regularization parameter! Fix your input file");
-       break;
-   }
+  {
+  case INPAR::STR::reg_update_grad:
+  {
+    reg_update_ = grad_based;
+  }
+  break;
+  case INPAR::STR::reg_update_res:
+  {
+    reg_update_ = res_based;
+  }
+  break;
+  default:
+    dserror("Unknown update strategy for regularization parameter! Fix your input file");
+    break;
+  }
 
   // special inverse analysis types
   spec_inv_ana_mult_=0;
@@ -618,7 +618,7 @@ void STR::GenInvAnalysis::NPIntegrate()
       error_i_ = error_;
 
   } while (error_i_>tol_ && numb_run_<max_itter && !nodescentdirection_);
-//printf("gmyrank %d reached this point\n",gmyrank); fflush(stdout); exit(0);
+  //printf("gmyrank %d reached this point\n",gmyrank); fflush(stdout); exit(0);
 
 
   // print results to file
@@ -786,7 +786,7 @@ void STR::GenInvAnalysis::CalcNewParameters(
   mu_o_ = mu_;
   p_o_ = p_;
 
-//  // update res based error
+  //  // update res based error
   if (spec_inv_ana_coup_)
     error_   = rcurve.Norm2(); // already normalized
   else
@@ -828,7 +828,7 @@ void STR::GenInvAnalysis::CalcNewParameters(
     }
   }
   else
-  // res_based update
+    // res_based update
   {
     // update output of parameters
     p_print_=p_;
@@ -846,6 +846,9 @@ void STR::GenInvAnalysis::CalcNewParameters(
 
   PrintStorage(delta_p);
 
+  if (spec_inv_ana_coup_)
+    CheckPhysiologicalPVRelationNHIso1Coup3(); // be careful, this function depends on the chosen materials
+
   if (check_neg_params_)
     CheckOptStep();
 
@@ -858,7 +861,7 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
 {
   int myrank = discret_->Comm().MyPID();
   const Teuchos::ParameterList& sdyn
-    = DRT::Problem::Instance()->StructuralDynamicParams();
+  = DRT::Problem::Instance()->StructuralDynamicParams();
   Teuchos::ParameterList xparams;
   xparams.set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
   xparams.set<int>("REDUCED_OUTPUT",0);
@@ -872,33 +875,33 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
   // FixMe The following switch is just a temporal hack, such we can jump between the new and the
   // old structure implementation. Has to be deleted after the clean-up has been finished!
   const enum INPAR::STR::IntegrationStrategy intstrat =
-        DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(sdyn,"INT_STRATEGY");
+      DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(sdyn,"INT_STRATEGY");
   switch (intstrat)
   {
-    // -------------------------------------------------------------------
-    // old implementation
-    // -------------------------------------------------------------------
-    case INPAR::STR::int_old:
-    {
-      Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> adapterbase_old_ptr =
-          Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(sdyn,
-              const_cast<Teuchos::ParameterList&>(sdyn), structdis));
-      structadapter = adapterbase_old_ptr->StructureField();
-      structadapter->Setup();
-      break;
-    }
-    // -------------------------------------------------------------------
-    // new implementation
-    // -------------------------------------------------------------------
-    default:
-    {
-      Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase_ptr =
-          ADAPTER::STR::BuildStructureAlgorithm(sdyn);
-      adapterbase_ptr->Init(sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
-      adapterbase_ptr->Setup();
-      structadapter = adapterbase_ptr->StructureField();
-      break;
-    }
+  // -------------------------------------------------------------------
+  // old implementation
+  // -------------------------------------------------------------------
+  case INPAR::STR::int_old:
+  {
+    Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> adapterbase_old_ptr =
+        Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(sdyn,
+            const_cast<Teuchos::ParameterList&>(sdyn), structdis));
+    structadapter = adapterbase_old_ptr->StructureField();
+    structadapter->Setup();
+    break;
+  }
+  // -------------------------------------------------------------------
+  // new implementation
+  // -------------------------------------------------------------------
+  default:
+  {
+    Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase_ptr =
+        ADAPTER::STR::BuildStructureAlgorithm(sdyn);
+    adapterbase_ptr->Init(sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
+    adapterbase_ptr->Setup();
+    structadapter = adapterbase_ptr->StructureField();
+    break;
+  }
   }
 
 
@@ -961,8 +964,8 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
 /*----------------------------------------------------------------------*/
 /* nested parallelity version of the same method            mwgee 05/12 */
 Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(
-                              bool outputtofile,
-                              Teuchos::RCP<COMM_UTILS::NestedParGroup> group)
+    bool outputtofile,
+    Teuchos::RCP<COMM_UTILS::NestedParGroup> group)
 {
   Teuchos::RCP<Epetra_Comm> lcomm = group->LocalComm();
   Teuchos::RCP<Epetra_Comm> gcomm = group->GlobalComm();
@@ -972,7 +975,7 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(
   //const int ngroup   = group->NumGroups();
 
   const Teuchos::ParameterList& sdyn
-    = DRT::Problem::Instance()->StructuralDynamicParams();
+  = DRT::Problem::Instance()->StructuralDynamicParams();
 
   Teuchos::ParameterList xparams;
   xparams.set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
@@ -988,33 +991,33 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(
   // FixMe The following switch is just a temporal hack, such we can jump between the new and the
   // old structure implementation. Has to be deleted after the clean-up has been finished!
   const enum INPAR::STR::IntegrationStrategy intstrat =
-        DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(sdyn,"INT_STRATEGY");
+      DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(sdyn,"INT_STRATEGY");
   switch (intstrat)
   {
-    // -------------------------------------------------------------------
-    // old implementation
-    // -------------------------------------------------------------------
-    case INPAR::STR::int_old:
-    {
-      Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> adapterbase_old_ptr =
-          Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(sdyn,
-              const_cast<Teuchos::ParameterList&>(sdyn), structdis));
-      structadapter = adapterbase_old_ptr->StructureField();
-      structadapter->Setup();
-      break;
-    }
-    // -------------------------------------------------------------------
-    // new implementation
-    // -------------------------------------------------------------------
-    default:
-    {
-      Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase_ptr =
-          ADAPTER::STR::BuildStructureAlgorithm(sdyn);
-      adapterbase_ptr->Init(sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
-      adapterbase_ptr->Setup();
-      structadapter = adapterbase_ptr->StructureField();
-      break;
-    }
+  // -------------------------------------------------------------------
+  // old implementation
+  // -------------------------------------------------------------------
+  case INPAR::STR::int_old:
+  {
+    Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> adapterbase_old_ptr =
+        Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(sdyn,
+            const_cast<Teuchos::ParameterList&>(sdyn), structdis));
+    structadapter = adapterbase_old_ptr->StructureField();
+    structadapter->Setup();
+    break;
+  }
+  // -------------------------------------------------------------------
+  // new implementation
+  // -------------------------------------------------------------------
+  default:
+  {
+    Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase_ptr =
+        ADAPTER::STR::BuildStructureAlgorithm(sdyn);
+    adapterbase_ptr->Init(sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
+    adapterbase_ptr->Setup();
+    structadapter = adapterbase_ptr->StructureField();
+    break;
+  }
   }
 
   if (structadapter == Teuchos::null) dserror("Failed in creating integrator.");
@@ -1196,39 +1199,20 @@ void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseVector delta_p)
   // print error and parameter
   if (gmyrank==0) // this if should actually not be necessary since there is only gproc 0 in here
   {
-      std::cout << std::endl;
-      printf("################################################");
-      printf("##############################################\n");
-      printf("############################ Inverse Analysis ##");
-      printf("##############################################\n");
-      printf("################################### run ########");
-      printf("##############################################\n");
-      printf("################################### %3i ########",  numb_run_);
-      printf("##############################################\n");
-      printf("################################################");
-      printf("##############################################\n");
+    std::cout << std::endl;
+    printf("################################################");
+    printf("##############################################\n");
+    printf("############################ Inverse Analysis ##");
+    printf("##############################################\n");
+    printf("################################### run ########");
+    printf("##############################################\n");
+    printf("################################### %3i ########",  numb_run_);
+    printf("##############################################\n");
+    printf("################################################");
+    printf("##############################################\n");
 
-      for (int i=0; i < numb_run_+1; i++)
-      {
-        printf("Error: ");
-        printf("%10.3e", error_s_(i));
-        printf("\tGrad_error: ");
-        printf("%10.3e", error_grad_s_(i));
-        printf("\tParameter: ");
-        for (int j=0; j < delta_p.Length(); j++)
-          printf("%10.3e", p_s_(i, j));
-        //printf("\tDelta_p: ");
-        //for (int j=0; j < delta_p.Length(); j++)
-        //  printf("%10.3e", delta_p_s_(i, j));
-        printf("\tmu: ");
-        printf("%10.3e", mu_s_(i));
-        printf("\n");
-      }
-
-      // print final parameters and error with lowest error
-      // in extra last line
-      int i=numb_run_+1;
-      printf("Error and parameters with lowest error:\n");
+    for (int i=0; i < numb_run_+1; i++)
+    {
       printf("Error: ");
       printf("%10.3e", error_s_(i));
       printf("\tGrad_error: ");
@@ -1236,54 +1220,73 @@ void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseVector delta_p)
       printf("\tParameter: ");
       for (int j=0; j < delta_p.Length(); j++)
         printf("%10.3e", p_s_(i, j));
+      //printf("\tDelta_p: ");
+      //for (int j=0; j < delta_p.Length(); j++)
+      //  printf("%10.3e", delta_p_s_(i, j));
+      printf("\tmu: ");
+      printf("%10.3e", mu_s_(i));
       printf("\n");
+    }
 
-// I don't like this printout, there is no legend. Also, its sorted in x and y
-// which is absolutely not guaranteed to be true upon input. So its potentially mixed!
-// I just leave it here because somebody might need it?
-// I commented this out becauses it yields columns of zeros only anyway
-// mwgee
+    // print final parameters and error with lowest error
+    // in extra last line
+    int i=numb_run_+1;
+    printf("Error and parameters with lowest error:\n");
+    printf("Error: ");
+    printf("%10.3e", error_s_(i));
+    printf("\tGrad_error: ");
+    printf("%10.3e", error_grad_s_(i));
+    printf("\tParameter: ");
+    for (int j=0; j < delta_p.Length(); j++)
+      printf("%10.3e", p_s_(i, j));
+    printf("\n");
+
+    // I don't like this printout, there is no legend. Also, its sorted in x and y
+    // which is absolutely not guaranteed to be true upon input. So its potentially mixed!
+    // I just leave it here because somebody might need it?
+    // I commented this out becauses it yields columns of zeros only anyway
+    // mwgee
 #if 0
-      printf("\n");
-      for (int i=0; i < nmp_/2.; i++)
+    printf("\n");
+    for (int i=0; i < nmp_/2.; i++)
+    {
+      printf(" %10.5f ",  mcurve_(i*2));
+      if (numb_run_<15)
       {
-        printf(" %10.5f ",  mcurve_(i*2));
-        if (numb_run_<15)
-        {
-          for (int j=0; j<numb_run_+1; j++)
-            printf(" %10.5f ",  ccurve_s_((i)*2, j));
-        }
-        else
-        {
-          for (int j=numb_run_-14; j<numb_run_+1; j++)
-            printf(" %10.5f ",  ccurve_s_((i)*2, j));
-        }
-        printf("\n");
+        for (int j=0; j<numb_run_+1; j++)
+          printf(" %10.5f ",  ccurve_s_((i)*2, j));
       }
-
-      printf("\n");
-
-      for (int i=0; i < nmp_/2.; i++)
+      else
       {
-        printf(" %10.5f ",  mcurve_((i)*2+1));
-        if (numb_run_<15)
-        {
-          for (int j=0; j<numb_run_+1; j++)
-            printf(" %10.5f ",  ccurve_s_((i)*2+1, j));
-        }
-        else
-        {
-          for (int j=numb_run_-14; j<numb_run_+1; j++)
-            printf(" %10.5f ",  ccurve_s_((i)*2+1, j));
-        }
-        printf("\n");
+        for (int j=numb_run_-14; j<numb_run_+1; j++)
+          printf(" %10.5f ",  ccurve_s_((i)*2, j));
       }
+      printf("\n");
+    }
 
-      printf("################################################");
-      printf("##############################################\n");
-      std::cout << std::endl;
+    printf("\n");
+
+    for (int i=0; i < nmp_/2.; i++)
+    {
+      printf(" %10.5f ",  mcurve_((i)*2+1));
+      if (numb_run_<15)
+      {
+        for (int j=0; j<numb_run_+1; j++)
+          printf(" %10.5f ",  ccurve_s_((i)*2+1, j));
+      }
+      else
+      {
+        for (int j=numb_run_-14; j<numb_run_+1; j++)
+          printf(" %10.5f ",  ccurve_s_((i)*2+1, j));
+      }
+      printf("\n");
+    }
+
+    printf("################################################");
+    printf("##############################################\n");
+    std::cout << std::endl;
 #endif
-      printf("\n"); fflush(stdout);
+    printf("\n"); fflush(stdout);
   }
 
   return;
@@ -1315,7 +1318,7 @@ void STR::GenInvAnalysis::PrintFile()
   std::string para   = name+"_Para.txt";
 
 #if 0 // this only produces columns of zeros anyway
-// it will also burst memory with ccurve_s_ pretty quickly for larger problems
+  // it will also burst memory with ccurve_s_ pretty quickly for larger problems
   cxFile = fopen((xcurve).c_str(), "w");
   for (int i=0; i < nmp_/2.; i++)
   {
@@ -1503,7 +1506,7 @@ void STR::GenInvAnalysis::ReadInParameters()
               p_.Resize(j+2);
               p_[j]   = params2->mue_;
               p_[j+1] = params2->nue_/(1.-2.*params2->nue_);
-             // p_[j+2] = params2->f_;
+              // p_[j+2] = params2->f_;
               break;
             }
             case INPAR::MAT::mes_coupsimopister:
@@ -1905,14 +1908,14 @@ void STR::GenInvAnalysis::ReadInParameters()
               break;
             }
             case INPAR::MAT::mes_coupmyocard:
-                        {
-                          filename_=filename_+"_coupmyocard";
-                          const MAT::ELASTIC::PAR::CoupMyocard* params2 = dynamic_cast<const MAT::ELASTIC::PAR::CoupMyocard*>(actelastmat->Parameter());
-                          int j = p_.Length();
-                          p_.Resize(j+1);
-                          p_[j]   = params2->n_;
-                          break;
-                        }
+            {
+              filename_=filename_+"_coupmyocard";
+              const MAT::ELASTIC::PAR::CoupMyocard* params2 = dynamic_cast<const MAT::ELASTIC::PAR::CoupMyocard*>(actelastmat->Parameter());
+              int j = p_.Length();
+              p_.Resize(j+1);
+              p_[j]   = params2->n_;
+              break;
+            }
             case INPAR::MAT::mes_isoratedep:
             {
               filename_=filename_+"_isoratedep";
@@ -2029,7 +2032,7 @@ void STR::GenInvAnalysis::ReadInParameters()
         break;
         default:
           dserror("Material type not implemented for patches");
-        break;
+          break;
         }
       }
     }
@@ -2173,7 +2176,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_couplogneohooke:
           {
             MAT::ELASTIC::PAR::CoupLogNeoHooke* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::CoupLogNeoHooke*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::CoupLogNeoHooke*>(actelastmat->Parameter());
             params2->SetMue(abs(p_cur(j)));
             params2->SetLambda(abs(p_cur(j+1)));
             j = j+2;
@@ -2182,7 +2185,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_coupexppol:
           {
             MAT::ELASTIC::PAR::CoupExpPol* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::CoupExpPol*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::CoupExpPol*>(actelastmat->Parameter());
             params2->SetA(abs(p_cur(j)));
             params2->SetB(abs(p_cur(j+1)));
             params2->SetC(abs(p_cur(j+2)));
@@ -2192,7 +2195,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_coupneohooke:
           {
             MAT::ELASTIC::PAR::CoupNeoHooke* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::CoupNeoHooke*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::CoupNeoHooke*>(actelastmat->Parameter());
             params2->SetC(abs(p_cur(j)));
             params2->SetBeta(abs(p_cur(j+1)));
             j = j+2;
@@ -2201,17 +2204,17 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_coupblatzko:
           {
             MAT::ELASTIC::PAR::CoupBlatzKo* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::CoupBlatzKo*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::CoupBlatzKo*>(actelastmat->Parameter());
             params2->SetMue(abs(p_cur(j)));
             params2->SetNue((abs(p_cur(j+1)))/(2.*(abs(p_cur(j+1))+1.)));
-           // params2->SetF(abs(p_cur(j+2)));
+            // params2->SetF(abs(p_cur(j+2)));
             j = j+2;
             break;
           }
           case INPAR::MAT::mes_coupsimopister:
           {
             MAT::ELASTIC::PAR::CoupSimoPister* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::CoupSimoPister*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::CoupSimoPister*>(actelastmat->Parameter());
             params2->SetMue(abs(p_cur(j)));
             j = j+1;
             break;
@@ -2219,7 +2222,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_coupSVK:
           {
             MAT::ELASTIC::PAR::CoupSVK* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::CoupSVK*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::CoupSVK*>(actelastmat->Parameter());
             params2->SetLambda(abs(p_cur(j)));
             params2->SetMue(abs(p_cur(j+1)));
             j = j+2;
@@ -2228,7 +2231,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_isoneohooke:
           {
             MAT::ELASTIC::PAR::IsoNeoHooke* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::IsoNeoHooke*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::IsoNeoHooke*>(actelastmat->Parameter());
             params2->SetMue(abs(p_cur(j)));
             j = j+1;
             break;
@@ -2236,7 +2239,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_isoyeoh:
           {
             MAT::ELASTIC::PAR::IsoYeoh* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::IsoYeoh*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::IsoYeoh*>(actelastmat->Parameter());
             params2->SetC1(abs(p_cur(j)));
             params2->SetC2(abs(p_cur(j+1)));
             params2->SetC3(abs(p_cur(j+2)));
@@ -2246,7 +2249,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_iso1pow:
           {
             MAT::ELASTIC::PAR::Iso1Pow* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::Iso1Pow*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::Iso1Pow*>(actelastmat->Parameter());
             params2->SetC(abs(p_cur(j)));
             j = j+1;
             break;
@@ -2254,7 +2257,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_iso2pow:
           {
             MAT::ELASTIC::PAR::Iso2Pow* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::Iso2Pow*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::Iso2Pow*>(actelastmat->Parameter());
             params2->SetC(abs(p_cur(j)));
             j = j+1;
             break;
@@ -2262,7 +2265,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_coup1pow:
           {
             MAT::ELASTIC::PAR::Coup1Pow* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::Coup1Pow*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::Coup1Pow*>(actelastmat->Parameter());
             params2->SetC(abs(p_cur(j)));
             j = j+1;
             break;
@@ -2270,7 +2273,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_coup2pow:
           {
             MAT::ELASTIC::PAR::Coup2Pow* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::Coup2Pow*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::Coup2Pow*>(actelastmat->Parameter());
             params2->SetC(abs(p_cur(j)));
             j = j+1;
             break;
@@ -2278,7 +2281,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_coup3pow:
           {
             MAT::ELASTIC::PAR::Coup3Pow* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::Coup3Pow*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::Coup3Pow*>(actelastmat->Parameter());
             params2->SetC(abs(p_cur(j)));
             j = j+1;
             break;
@@ -2286,7 +2289,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_coup13apow:
           {
             MAT::ELASTIC::PAR::Coup13aPow* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::Coup13aPow*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::Coup13aPow*>(actelastmat->Parameter());
             params2->SetC(abs(p_cur(j)));
             params2->SetA(abs(p_cur(j+1)));
             j = j+2;
@@ -2295,7 +2298,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_coupmooneyrivlin:
           {
             MAT::ELASTIC::PAR::CoupMooneyRivlin* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::CoupMooneyRivlin*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::CoupMooneyRivlin*>(actelastmat->Parameter());
             params2->SetC1(abs(p_cur(j)));
             params2->SetC2(abs(p_cur(j+1)));
             params2->SetC3(abs(p_cur(j+2)));
@@ -2305,7 +2308,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_isoexpopow:
           {
             MAT::ELASTIC::PAR::IsoExpoPow* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::IsoExpoPow*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::IsoExpoPow*>(actelastmat->Parameter());
             params2->SetK1(abs(p_cur(j)));
             params2->SetK2(abs(p_cur(j+1)));
             j = j+2;
@@ -2314,7 +2317,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_isomooneyrivlin:
           {
             MAT::ELASTIC::PAR::IsoMooneyRivlin* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::IsoMooneyRivlin*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::IsoMooneyRivlin*>(actelastmat->Parameter());
             params2->SetC1(abs(p_cur(j)));
             params2->SetC2(abs(p_cur(j+1)));
             j = j+2;
@@ -2323,7 +2326,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_volsussmanbathe:
           {
             MAT::ELASTIC::PAR::VolSussmanBathe* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::VolSussmanBathe*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::VolSussmanBathe*>(actelastmat->Parameter());
             params2->SetKappa(abs(p_cur(j)));
             j = j+1;
             break;
@@ -2331,7 +2334,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_volpenalty:
           {
             MAT::ELASTIC::PAR::VolPenalty* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::VolPenalty*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::VolPenalty*>(actelastmat->Parameter());
             params2->SetEpsilon(abs(p_cur(j)));
             params2->SetGamma(abs(p_cur(j+1)));
             j = j+2;
@@ -2340,7 +2343,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_vologden:
           {
             MAT::ELASTIC::PAR::VolOgden* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::VolOgden*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::VolOgden*>(actelastmat->Parameter());
             params2->SetKappa(abs(p_cur(j)));
             //params2->SetBeta(abs(p_cur(j+1)));
             j = j+1;
@@ -2349,7 +2352,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_volpow:
           {
             MAT::ELASTIC::PAR::VolPow* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::VolPow*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::VolPow*>(actelastmat->Parameter());
             params2->SetA(abs(p_cur(j)));
             //params2->SetExpon(abs(p_cur(j+1)));
             j = j+1;
@@ -2443,7 +2446,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_couplogneohooke:
           {
             MAT::ELASTIC::PAR::CoupLogNeoHooke* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::CoupLogNeoHooke*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::CoupLogNeoHooke*>(actelastmat->Parameter());
             params2->SetMue(abs(p_cur(j)));
             params2->SetLambda(abs(p_cur(j+1)));
             j = j+2;
@@ -2452,7 +2455,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_coupexppol:
           {
             MAT::ELASTIC::PAR::CoupExpPol* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::CoupExpPol*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::CoupExpPol*>(actelastmat->Parameter());
             params2->SetA(abs(p_cur(j)));
             params2->SetB(abs(p_cur(j+1)));
             params2->SetC(abs(p_cur(j+2)));
@@ -2462,7 +2465,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_coupneohooke:
           {
             MAT::ELASTIC::PAR::CoupNeoHooke* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::CoupNeoHooke*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::CoupNeoHooke*>(actelastmat->Parameter());
             params2->SetC(abs(p_cur(j)));
             params2->SetBeta(abs(p_cur(j+1)));
             j = j+2;
@@ -2471,17 +2474,17 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_coupblatzko:
           {
             MAT::ELASTIC::PAR::CoupBlatzKo* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::CoupBlatzKo*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::CoupBlatzKo*>(actelastmat->Parameter());
             params2->SetMue(abs(p_cur(j)));
             params2->SetNue((abs(p_cur(j+1)))/(2.*(abs(p_cur(j+1))+1.)));
-          //  params2->SetF(abs(p_cur(j+2)));
+            //  params2->SetF(abs(p_cur(j+2)));
             j = j+2;
             break;
           }
           case INPAR::MAT::mes_coupsimopister:
           {
             MAT::ELASTIC::PAR::CoupSimoPister* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::CoupSimoPister*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::CoupSimoPister*>(actelastmat->Parameter());
             params2->SetMue(abs(p_cur(j)));
             j = j+1;
             break;
@@ -2489,7 +2492,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_coupSVK:
           {
             MAT::ELASTIC::PAR::CoupSVK* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::CoupSVK*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::CoupSVK*>(actelastmat->Parameter());
             params2->SetLambda(abs(p_cur(j)));
             params2->SetMue(abs(p_cur(j+1)));
             j = j+2;
@@ -2498,7 +2501,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_isoneohooke:
           {
             MAT::ELASTIC::PAR::IsoNeoHooke* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::IsoNeoHooke*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::IsoNeoHooke*>(actelastmat->Parameter());
             params2->SetMue(abs(p_cur(j)));
             j = j+1;
             break;
@@ -2506,7 +2509,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_isoyeoh:
           {
             MAT::ELASTIC::PAR::IsoYeoh* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::IsoYeoh*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::IsoYeoh*>(actelastmat->Parameter());
             params2->SetC1(abs(p_cur(j)));
             params2->SetC2(abs(p_cur(j+1)));
             params2->SetC3(abs(p_cur(j+2)));
@@ -2516,7 +2519,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_iso1pow:
           {
             MAT::ELASTIC::PAR::Iso1Pow* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::Iso1Pow*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::Iso1Pow*>(actelastmat->Parameter());
             params2->SetC(abs(p_cur(j)));
             j = j+1;
             break;
@@ -2524,7 +2527,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_iso2pow:
           {
             MAT::ELASTIC::PAR::Iso2Pow* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::Iso2Pow*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::Iso2Pow*>(actelastmat->Parameter());
             params2->SetC(abs(p_cur(j)));
             j = j+1;
             break;
@@ -2532,7 +2535,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_coup1pow:
           {
             MAT::ELASTIC::PAR::Coup1Pow* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::Coup1Pow*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::Coup1Pow*>(actelastmat->Parameter());
             params2->SetC(abs(p_cur(j)));
             j = j+1;
             break;
@@ -2540,7 +2543,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_coup2pow:
           {
             MAT::ELASTIC::PAR::Coup2Pow* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::Coup2Pow*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::Coup2Pow*>(actelastmat->Parameter());
             params2->SetC(abs(p_cur(j)));
             j = j+1;
             break;
@@ -2548,7 +2551,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_coup3pow:
           {
             MAT::ELASTIC::PAR::Coup3Pow* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::Coup3Pow*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::Coup3Pow*>(actelastmat->Parameter());
             params2->SetC(abs(p_cur(j)));
             j = j+1;
             break;
@@ -2556,7 +2559,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_coup13apow:
           {
             MAT::ELASTIC::PAR::Coup13aPow* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::Coup13aPow*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::Coup13aPow*>(actelastmat->Parameter());
             params2->SetC(abs(p_cur(j)));
             params2->SetA(abs(p_cur(j+1)));
             j = j+2;
@@ -2565,7 +2568,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_coupmooneyrivlin:
           {
             MAT::ELASTIC::PAR::CoupMooneyRivlin* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::CoupMooneyRivlin*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::CoupMooneyRivlin*>(actelastmat->Parameter());
             params2->SetC1(abs(p_cur(j)));
             params2->SetC2(abs(p_cur(j+1)));
             params2->SetC3(abs(p_cur(j+2)));
@@ -2575,7 +2578,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_isoexpopow:
           {
             MAT::ELASTIC::PAR::IsoExpoPow* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::IsoExpoPow*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::IsoExpoPow*>(actelastmat->Parameter());
             params2->SetK1(abs(p_cur(j)));
             params2->SetK2(abs(p_cur(j+1)));
             j = j+2;
@@ -2584,7 +2587,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_isomooneyrivlin:
           {
             MAT::ELASTIC::PAR::IsoMooneyRivlin* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::IsoMooneyRivlin*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::IsoMooneyRivlin*>(actelastmat->Parameter());
             params2->SetC1(abs(p_cur(j)));
             params2->SetC2(abs(p_cur(j+1)));
             j = j+2;
@@ -2593,7 +2596,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_volsussmanbathe:
           {
             MAT::ELASTIC::PAR::VolSussmanBathe* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::VolSussmanBathe*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::VolSussmanBathe*>(actelastmat->Parameter());
             params2->SetKappa(abs(p_cur(j)));
             j = j+1;
             break;
@@ -2601,7 +2604,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_volpenalty:
           {
             MAT::ELASTIC::PAR::VolPenalty* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::VolPenalty*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::VolPenalty*>(actelastmat->Parameter());
             params2->SetEpsilon(abs(p_cur(j)));
             params2->SetGamma(abs(p_cur(j+1)));
             j = j+2;
@@ -2610,7 +2613,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_vologden:
           {
             MAT::ELASTIC::PAR::VolOgden* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::VolOgden*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::VolOgden*>(actelastmat->Parameter());
             params2->SetKappa(abs(p_cur(j)));
             //params2->SetBeta(abs(p_cur(j+1)));
             j = j+1;
@@ -2619,7 +2622,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_volpow:
           {
             MAT::ELASTIC::PAR::VolPow* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::VolPow*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::VolPow*>(actelastmat->Parameter());
             params2->SetA(abs(p_cur(j)));
             //params2->SetExpon(abs(p_cur(j+1)));
             j = j+1;
@@ -2628,7 +2631,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_coupmyocard:
           {
             MAT::ELASTIC::PAR::CoupMyocard* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::CoupMyocard*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::CoupMyocard*>(actelastmat->Parameter());
             params2->SetN(abs(p_cur(j)));
             j = j+1;
             break;
@@ -2636,7 +2639,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_isoratedep:
           {
             MAT::ELASTIC::PAR::IsoRateDep* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::IsoRateDep*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::IsoRateDep*>(actelastmat->Parameter());
             params2->SetN(abs(p_cur(j)));
             j = j+1;
             break;
@@ -2644,9 +2647,9 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           case INPAR::MAT::mes_genmax:
           {
             MAT::ELASTIC::PAR::GenMax* params2 =
-              dynamic_cast<MAT::ELASTIC::PAR::GenMax*>(actelastmat->Parameter());
+                dynamic_cast<MAT::ELASTIC::PAR::GenMax*>(actelastmat->Parameter());
             params2->SetTau(abs(p_cur(j)));
-           // params2->SetBeta(abs(p_cur(j+1)));
+            // params2->SetBeta(abs(p_cur(j+1)));
             j = j+1;
             break;
           }
@@ -3256,4 +3259,90 @@ void STR::GenInvAnalysis::ComputePressureNHIso1Coup3(
 }
 
 
+/*----------------------------------------------------------------------*/
+/* check if pressure-volume-change relation is physiological
+ * for identified material parameters
+ * otherwise do not accept identification step           abirzle 12/17  */
+void STR::GenInvAnalysis::CheckPhysiologicalPVRelationNHIso1Coup3()
+{
 
+  // checked volume change range J in (1,10)
+  const int Jrange = 901;
+  double JpV[Jrange]={};
+  int j=0;
+  for (double i=1.00; i<=10.00; i=i+0.01)
+  {
+    JpV[j] = i;
+    j++;
+  }
+
+  // get constant values from dat-files
+  int d3_const = 0;
+  for (unsigned prob=0; prob<DRT::Problem::NumInstances(); ++prob)
+  {
+    const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance(prob)->Materials()->Map();
+    std::set<int> mymatset = matset_[prob];
+    std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator curr;
+    for (curr=mats.begin(); curr != mats.end(); ++curr)
+    {
+      const Teuchos::RCP<MAT::PAR::Material> actmat = curr->second;
+      if(actmat->Type()==INPAR::MAT::m_elasthyper)
+      {
+        MAT::PAR::ElastHyper* params = dynamic_cast<MAT::PAR::ElastHyper*>(actmat->Parameter());
+        if (!params) dserror("Cannot cast material parameters");
+        const int nummat               = params->nummat_;
+        const std::vector<int>* matids = params->matids_;
+        for (int i=0; i<nummat; ++i)
+        {
+          const int id = (*matids)[i];
+          if (mymatset.size()==0 or mymatset.find(id)!=mymatset.end())
+          {
+            const Teuchos::RCP<MAT::PAR::Material> actelastmat = mats.find(id)->second;
+            if (actelastmat->Type()==INPAR::MAT::mes_coup3pow)
+            {
+              const MAT::ELASTIC::PAR::Coup3Pow* params2 = dynamic_cast<const MAT::ELASTIC::PAR::Coup3Pow*>(actelastmat->Parameter());
+              d3_const   = params2->d_;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // calculate dp/dJ = d^2Psi/dJ^2
+  Epetra_SerialDenseVector dpdJ(Jrange);
+
+  // case cNH, beta, c1 and c3 are fitted
+  if(np_==4)
+  {
+    for (int i=0; i<Jrange; i++)
+    {
+      //NeoHooke
+      dpdJ[i] += -2./3.*p_(0)*pow(JpV[i],-4./3.) + 2.*p_(0)*(2.*p_(1)+1.)*pow(JpV[i],-2.*p_(1)-2.);
+
+      // Iso1Pow --> no contribution of isomaterials
+
+      //Coup3Pow
+      dpdJ[i] += 2./3.*p_(3)*d3_const*(-1./3.*pow(JpV[i],-4./3.)*pow((pow(JpV[i],2./3.)-1.),d3_const-1.) + 2./3.*(d3_const-1.)*pow(JpV[i],-2./3.)*pow((pow(JpV[i],2./3.)-1.),d3_const-2.));
+
+    }
+  }
+  else
+    dserror("This case is not implemented, yet.");
+
+
+  for (int i=0; i<Jrange; i++)
+  {
+    if (dpdJ[i]<0)
+    {
+      std::cout << "at least one negative dpdJ detected: reverse update" << std::endl;
+      // reset the update step in case it was too large and increase regularization;
+      // storage is not touched, so screen print out does not reflect what really happens
+      p_ = p_o_;
+      error_ = error_o_;
+      error_grad_ = error_grad_o_;
+      mu_= mu_o_*2.0;
+      return;
+    }
+  }
+}

@@ -291,6 +291,9 @@ public:
   void ComputePressureNHIso1Coup3(std::vector<double> perturb,
       std::vector<double> volexp_deltaV,Epetra_SerialDenseMatrix& volexp_p_comp);
 
+  /// check if pressure-volume-change-relation is physiological
+  void CheckPhysiologicalPVRelationNHIso1Coup3();
+
 };  // class GenInvAnalysis
 
 }  // namespace STR
