@@ -188,6 +188,10 @@ namespace DRT
         virtual void Evaluate( LINALG::Matrix<nsd_,1> & xside )
         { dserror("There is no concrete slave element available."); }
 
+        //! evaluate shape function, derivatives and transformation w.r.t coupling slave element at gaussian point
+        virtual void Evaluate( LINALG::Matrix<nsd_,1> & xside, LINALG::Matrix<nsd_,1> & rst_slave)
+          { dserror("There is no concrete slave element available.");}
+
         //! compute coupling slave element's characteristic element length (diameter for side element)
         virtual void ComputeCharElementLength( double & h_k )
         { dserror("There is no concrete slave element available."); }

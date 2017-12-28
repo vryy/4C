@@ -39,12 +39,22 @@ ADAPTER::StructurePoroWrapper::StructurePoroWrapper(Teuchos::RCP<Field> field, F
       poro_ = Teuchos::rcp_dynamic_cast<POROELAST::Monolithic>(field_);
       if (poro_ == Teuchos::null)
                   dserror("StructurePoroWrapper: Cast from Field to PoroBase failed!");
-      poro_->SetupSystem(); //if there is a reason, one could move that also somewhere else!
       structure_ = poro_->StructureField();
     break;
     default:
       dserror("StructurePoroWrapper - FieldWrapper::Fieldtype not available for this wrapper!");
     break;
+  }
+}
+
+/// setup
+void ADAPTER::StructurePoroWrapper::Setup()
+{
+  structure_->Setup();
+  if (type_ == FieldWrapper::type_PoroField)
+  {
+    poro_->SetupSystem();
+    poro_->SetupNewton(); //just to avoid modifications in poro (this sets iterinc_ there)
   }
 }
 

@@ -39,6 +39,9 @@ xfluid class and the cut-library
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
 
+#include "../drt_poroelast/poroelast_utils.H"
+#include "../drt_mat/structporo.H"
+
 //! constructor
 XFEM::MeshCouplingFPI::MeshCouplingFPI(
     Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
@@ -48,29 +51,18 @@ XFEM::MeshCouplingFPI::MeshCouplingFPI(
     const double                        time,      ///< time
     const int                           step,       ///< time step
     MeshCouplingFPI::coupled_field      field      ///< which field is coupled to the fluid
-    ) : MeshCoupling(bg_dis,cond_name,cond_dis,coupling_id, time, step,
+    ) : MeshVolCoupling(bg_dis,cond_name,cond_dis,coupling_id, time, step,
         (field==MeshCouplingFPI::ps_ps ? "_ps_ps" : (field==MeshCouplingFPI::ps_pf ? "_ps_pf" : (field==MeshCouplingFPI::pf_ps ? "_pf_ps" : "_pf_pf")))),
         coupled_field_(field)
 {
-  //Todo Calculation of the Porosity in the gausspoint will folllow here soon ...
-  std::cout << RED << "###########################################################################" << END_COLOR << std::endl;
-  std::cout << RED << "###########################################################################" << END_COLOR << std::endl;
-  std::cout << RED << "## WARNING: At the moment we suppose to have a constant porosity of 0.5! ##" << END_COLOR << std::endl;
-  std::cout << RED << "###########################################################################" << END_COLOR << std::endl;
-  std::cout << RED << "###########################################################################" << END_COLOR << std::endl;
 
   //TODO: init here, but set in SetConditionSpecificParameters
   full_BJ_ = true; //Todo Ager: Will create an Input parameter in the *.dat-file ...
-}
 
-/*--------------------------------------------------------------------------*
- *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFPI::Init()
-{
-  XFEM::MeshCoupling::Init();
-
-  // create map from side to embedded element ID
-  CreateCuttingToEmbeddedElementMap();
+  if (!full_BJ_)
+    std::cout << "Actual FPI Formulation is Beavers Joseph Saffmann!" << std::endl;
+  else
+    std::cout << "Actual FPI Formulation is Beavers Joseph!" << std::endl;
 }
 
 /*--------------------------------------------------------------------------*
@@ -83,10 +75,7 @@ void XFEM::MeshCouplingFPI::SetCouplingName()
 
   // replace the set condname by its specification given by the coupling field
   coupl_name_ = str.str();
-
-  std::cout << " the name of the fpi coupling is " << coupl_name_ << std::endl;
 }
-
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
@@ -99,6 +88,24 @@ void XFEM::MeshCouplingFPI::InitStateVectors()
 
   itrueresidual_ = LINALG::CreateVector(*cutterdofrowmap,true);
   iforcecol_     = LINALG::CreateVector(*cutterdofcolmap,true);
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingFPI::DoConditionSpecificSetup()
+{
+  //required for parallel computing - deactived due to linker problem for post processor & cut_test ager 12/16
+#if (0)
+  //XFEM::MeshCoupling::DoConditionSpecificSetup();
+
+  //We do ghosting just for the first fpi coupling object, which is PS_PS, then this is done an we just reconnect to the parent pointers for every cutter_dis_
+  //Actually this reconnecting step should be done in an setup routine, to guarantee, that it is done late enought (no ghosting afterwards...)
+    if (coupled_field_==MeshCouplingFPI::ps_ps)
+      POROELAST::UTILS::CreateVolumeGhosting(*cutter_dis_);
+    else
+      POROELAST::UTILS::ReconnectParentPointers(*cutter_dis_,*cond_dis_);
+
+#endif
 }
 
 /*--------------------------------------------------------------------------*
@@ -133,13 +140,15 @@ void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP(
     double& kappa_m,
     double& visc_m,
     double& visc_s,
-    double& visc_stab_tang,       //< viscous tangential NIT Penalty scaling
+    double& visc_stab_tang,             //< viscous tangential NIT Penalty scaling
     double& full_stab,
     const LINALG::Matrix<3,1>& x,
     const DRT::Condition* cond,
-    DRT::Element *        ele,    //< Element
-    double*               funct,  //< local shape function for Gauss Point (from fluid element)
-    double*               derxy   //< local derivatives of shape function for Gauss Point (from fluid element)
+    DRT::Element *        ele,          //< Element
+    DRT::Element *        bele,     //< Boundary Element
+    double*               funct,        //< local shape function for Gauss Point (from fluid element)
+    double*               derxy,        //< local derivatives of shape function for Gauss Point (from fluid element)
+    LINALG::Matrix<3,1>& rst_slave      //< local coord of gp on slave boundary element
     )
 {
   double dynvisc   = (kappa_m*visc_m + (1.0-kappa_m)*visc_s);
@@ -148,14 +157,9 @@ void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP(
   double stabadj = 0.0;
   XFEM::UTILS::GetNavierSlipStabilizationParameters(visc_stab_tang,dynvisc,BJ_coeff_,stabnit,stabadj);
 
-  // Calculation on Porosity will follow soon ... todo
-  double porosity;
-  //const Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<DISTYPE> > & si,              ///< associated slave element coupling object
-  //int coup_sid                                                             ///< id of the coupling side
-  // porosity = CalcPorosity<DISTYPE>(si,coup_sid);
-  // if (fabs(porosity - 0.5) > 1e-14)
-  //    std::cout << "porosity: " << porosity << std::endl;
-  porosity = 0.5;
+   // Calculation of Porosity
+  double porosity = CalcPorosity(bele,rst_slave);
+
 
   //Overall there are 9 coupling blocks to evaluate for fpi:
   // 1 - ps_ps --> ff,fps,fps,psf
@@ -483,77 +487,156 @@ void XFEM::MeshCouplingFPI::LiftDrag(
   }
 }
 
-/*--------------------------------------------------------------------------*
- *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFPI::CreateCuttingToEmbeddedElementMap()
+// --------------------------------------------------------------------
+// Caluculate the Porosity for this FaceElement Gausspoint   ager 12/16
+// --------------------------------------------------------------------
+double XFEM::MeshCouplingFPI::CalcPorosity(
+    DRT::Element* ele,
+    LINALG::Matrix<3,1>& rst_slave
+    )
 {
-  // fill map between boundary (cutting) element id and its corresponding embedded (coupling) element id
-  for (int ibele=0; ibele< cutter_dis_->NumMyColElements(); ++ ibele)
+  DRT::FaceElement* fele = dynamic_cast<DRT::FaceElement*>(ele);
+  if (!fele) dserror("Cast to Faceele failed!");
+
+  DRT::Element* coupl_ele = fele->ParentElement();
+  if (coupl_ele == NULL) dserror("No coupl_ele!");
+
+  double pres = 0.0;
+  double J = ComputeJacobianandPressure(ele,rst_slave,pres);
+
+  Teuchos::RCP<MAT::StructPoro> poromat;
+  //access second material in structure element
+  if (coupl_ele->NumMaterial() > 1)
   {
-    // boundary element and its nodes
-    DRT::Element* bele = cutter_dis_->lColElement(ibele);
-    const int * bele_node_ids = bele->NodeIds();
-
-    bool bele_found = false;
-
-    // ask all conditioned embedded elements for this boundary element
-    for(int iele = 0; iele< cond_dis_->NumMyColElements(); ++iele)
-    {
-      DRT::Element* ele = cond_dis_->lColElement(iele);
-      const int * ele_node_ids = ele->NodeIds();
-
-      // get nodes for every face of the embedded element
-      std::vector<std::vector<int> > face_node_map = DRT::UTILS::getEleNodeNumberingFaces(ele->Shape());
-
-      // loop the faces of the element and check node equality for every boundary element
-      // Todo: Efficiency?
-      for (int f = 0; f < ele->NumFace(); f++)
-      {
-        bele_found = true;
-
-        const int face_numnode = face_node_map[f].size();
-
-        if(bele->NumNode() != face_numnode) continue; // this face cannot be the right one
-
-        // check all nodes of the boundary element
-        for(int inode=0; inode<bele->NumNode();  ++inode)
-        {
-          // boundary node
-          const int belenodeId = bele_node_ids[inode];
-
-          bool node_found = false;
-          for (int fnode=0; fnode<face_numnode; ++fnode)
-          {
-            const int facenodeId = ele_node_ids[face_node_map[f][fnode]];
-
-            if(facenodeId == belenodeId)
-            {
-              // nodes are the same
-              node_found = true;
-              break;
-            }
-          } // loop nodes of element's face
-          if (node_found==false) // this node is not contained in this face
-          {
-            bele_found = false; // element not the right one, if at least one boundary node is not found
-            break; // node not found
-          }
-        } // loop nodes of boundary element
-
-
-        if (bele_found)
-        {
-          cutting_emb_gid_map_.insert(std::pair<int,int>(bele->Id(),ele->Id()));
-          cutting_emb_face_lid_map_.insert(std::pair<int,int>(bele->Id(),f));
-          break;
-        }
-      } // loop element faces
-      if (bele_found) break; // do not continue the search
-
-    }
-
-    if(bele_found == false)
-      dserror("Corresponding embedded element for boundary element id %i not found on proc %i ! Please ghost corresponding embedded elements on all procs!",
-        bele->Id(), cond_dis_->Comm().MyPID());
+    poromat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(coupl_ele->Material(0));
+    if(poromat->MaterialType() != INPAR::MAT::m_structporo and
+        poromat->MaterialType() != INPAR::MAT::m_structpororeaction and
+        poromat->MaterialType() != INPAR::MAT::m_structpororeactionECM)
+      dserror("invalid structure material for poroelasticity");
   }
+  else
+    dserror("no second material defined for element %i",ele->Id());
+
+  Teuchos::ParameterList params; //empty parameter list;
+  double porosity;
+  poromat->ComputePorosity(
+      params,
+      pres,
+      J,
+      1, // not used
+      porosity,
+      false);
+  return porosity;
+}
+
+// ---------------------------------------------------------------------------------------
+// Compute Jacobian and extract PoroFluidPressure this FaceElement Gausspoint   ager 12/17
+// ------------------------------------------------------------------------------------------
+double XFEM::MeshCouplingFPI::ComputeJacobianandPressure(
+    DRT::Element* ele,
+    LINALG::Matrix<3,1>& rst_slave,
+    double& pres)
+{
+DRT::FaceElement* fele = dynamic_cast<DRT::FaceElement*>(ele);
+if (!fele) dserror("Cast to Faceele failed!");
+
+DRT::Element* coupl_ele = fele->ParentElement();
+
+if (fele->Shape() == DRT::Element::quad4)
+{
+  pres = 0.0;
+
+  const unsigned int SLAVE_NUMDOF = 3;
+
+  DRT::UTILS::CollectedGaussPoints intpoints = DRT::UTILS::CollectedGaussPoints(1); //reserve just for 1 entry ...
+  intpoints.Append(rst_slave(0,0), rst_slave(1,0),0.0, 1.0);
+
+  // get coordinates of gauss point w.r.t. local parent coordinate system
+  LINALG::SerialDenseMatrix pqxg(1,SLAVE_NUMDOF);
+  LINALG::Matrix<SLAVE_NUMDOF,SLAVE_NUMDOF>  derivtrafo(true);
+
+  DRT::UTILS::BoundaryGPToParentGP<SLAVE_NUMDOF>(
+      pqxg,
+      derivtrafo,
+      intpoints ,
+      coupl_ele->Shape(),
+      fele->Shape(),
+      fele->FaceParentNumber());
+
+    LINALG::Matrix<SLAVE_NUMDOF,1> pxsi        (true);
+
+    // coordinates of the current integration point in parent coordinate system
+      for (uint idim=0;idim<SLAVE_NUMDOF ;idim++)
+    {
+      pxsi(idim) = pqxg(0,idim);
+    }
+    if (coupl_ele->Shape() == DRT::Element::hex8)
+    {
+      const size_t PARENT_NEN = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+      LINALG::Matrix<PARENT_NEN,1> pfunc_loc(true); // derivatives of parent element shape functions in parent element coordinate system
+      LINALG::Matrix<SLAVE_NUMDOF,PARENT_NEN> pderiv_loc(true); // derivatives of parent element shape functions in parent element coordinate system
+
+      // evaluate derivatives of parent element shape functions at current integration point in parent coordinate system
+      DRT::UTILS::shape_function<DRT::Element::hex8>(pxsi,pfunc_loc);
+      DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(pxsi,pderiv_loc);
+      //
+      // get Jacobian matrix and determinant w.r.t. spatial configuration
+      //
+      // |J| = det(xjm) * det(Jmat^-1) = det(xjm) * 1/det(Jmat)
+      //
+      //    _                     _
+      //   |  x_1,1  x_2,1  x_3,1  |           d x_i
+      //   |  x_1,2  x_2,2  x_3,2  | = xjm  = --------
+      //   |_ x_1,3  x_2,3  x_3,3 _|           d s_j
+      //    _                     _
+      //   |  X_1,1  X_2,1  X_3,1  |           d X_i
+      //   |  X_1,2  X_2,2  X_3,2  | = Jmat = --------
+      //   |_ X_1,3  X_2,3  X_3,3 _|           d s_j
+      //
+      LINALG::Matrix<SLAVE_NUMDOF,SLAVE_NUMDOF>    xjm;
+      LINALG::Matrix<SLAVE_NUMDOF,SLAVE_NUMDOF>   Jmat;
+
+      LINALG::Matrix<SLAVE_NUMDOF,PARENT_NEN>  xrefe (true);   // material coord. of parent element
+      LINALG::Matrix<SLAVE_NUMDOF,PARENT_NEN>  xcurr (true);   // current  coord. of parent element
+
+      // update element geometry of parent element
+      {
+        DRT::Node** nodes = coupl_ele->Nodes();
+        for (uint inode=0;inode<PARENT_NEN;++inode)
+        {
+          for (unsigned int idof=0;idof<SLAVE_NUMDOF;++idof)
+          {
+            int lid = fulldispnp_->Map().LID(GetCondDis()->Dof(0,coupl_ele->Nodes()[inode],idof));
+
+            const double* x = nodes[inode]->X();
+            xrefe(idof,inode)   = x[idof];
+
+            if (lid != -1)
+              xcurr(idof,inode)   = xrefe(idof,inode) + fulldispnp_->operator [](lid);
+            else
+              dserror("Local ID for dispnp not found (lid = -1)!");
+          }
+          int lidp = fullpres_->Map().LID(lm_struct_x_lm_pres_.operator [](GetCondDis()->Dof(0,coupl_ele->Nodes()[inode],2)));
+
+          if (lidp != -1)
+            pres += fullpres_->operator [](lidp)*pfunc_loc(inode);
+          else
+            dserror("Local ID for pressure not found (lid = -1)!");
+        }
+      }
+
+      xjm.MultiplyNT (pderiv_loc,xcurr);
+      Jmat.MultiplyNT(pderiv_loc,xrefe);
+      double det  = xjm.Determinant();
+      double detJ = Jmat.Determinant();
+      double J = det/detJ;
+      return J;
+    }
+    else
+      dserror("TDetDeformationGradient for type %s not yet implemented, just add your element type!", (DRT::DistypeToString(coupl_ele->Shape())).c_str());
+    return -1.0;
+}
+else
+  dserror("TDetDeformationGradient for type %s not yet implemented, just add your element type!", (DRT::DistypeToString(fele->Shape())).c_str());
+return -1.0;
 }

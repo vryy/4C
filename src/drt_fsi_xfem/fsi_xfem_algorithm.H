@@ -64,6 +64,9 @@ namespace FSI
     //! virtual destructor to support polymorph destruction
     virtual ~AlgorithmXFEM();
 
+    //! setup
+    virtual void Setup();
+
     //! outer level time loop (to be implemented by deriving classes)
     virtual void Timeloop() = 0;
 

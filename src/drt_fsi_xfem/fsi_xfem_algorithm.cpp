@@ -62,15 +62,17 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm,
     Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
         Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
     structureporo_ = Teuchos::rcp(new ADAPTER::StructurePoroWrapper(structure->StructureField(), ADAPTER::StructurePoroWrapper::type_StructureField,true));
-    structureporo_ -> StructureField() ->Setup();
   }
   else if (type == ADAPTER::StructurePoroWrapper::type_PoroField)
   {
     DRT::Problem* problem = DRT::Problem::Instance();
     const Teuchos::ParameterList& poroelastdyn = problem->PoroelastDynamicParams(); // access the problem-specific parameter list
-    structureporo_ = Teuchos::rcp(new ADAPTER::StructurePoroWrapper(Teuchos::rcp(new POROELAST::Monolithic(comm,poroelastdyn)), ADAPTER::StructurePoroWrapper::type_PoroField, true));
-    structureporo_->PoroField()->SetupNewton(); //just to avoid modifications in poro (this sets iterinc_ there)
-    structureporo_ -> StructureField() ->Setup();
+    Teuchos::RCP<POROELAST::Monolithic> poro = Teuchos::rcp_dynamic_cast<POROELAST::Monolithic>(POROELAST::UTILS::CreatePoroAlgorithm(poroelastdyn,comm,false));
+    if (poro == Teuchos::null) //safety check
+      dserror("Couldn't cast poro to POROELAST::Monolithic --> check your COUPALGO in the POROELASTICITY DYNAMIC section!");
+    if (DRT::INPUT::IntegralValue<INPAR::POROELAST::SolutionSchemeOverFields>(poroelastdyn, "COUPALGO") != INPAR::POROELAST::Monolithic)
+      dserror("You created a different poroelast algorithm than monolithic (not combineable with xfpsi at the moment)--> check your COUPALGO in the POROELASTICITY DYNAMIC section!");
+    structureporo_ = Teuchos::rcp(new ADAPTER::StructurePoroWrapper(poro, ADAPTER::StructurePoroWrapper::type_PoroField, true));
   }
   else
     dserror("AlgorithmXFEM cannot handle this Fieldtype for structure!");
@@ -100,6 +102,8 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm,
     dserror("Cast of Fluid to XFluid failed! - Everything fine in SetupFluid()?");
   fluid_->Init(false);
 
+  //Do setup of the fields here
+  structureporo_->Setup();
   return;
 }
 
@@ -112,7 +116,14 @@ FSI::AlgorithmXFEM::~AlgorithmXFEM()
 {
 }
 
-
+/*----------------------------------------------------------------------*
+ | setup (public)                                            ager 12/16 |
+ *----------------------------------------------------------------------*/
+void FSI::AlgorithmXFEM::Setup()
+{
+  //Do setup of the fields here
+  //structureporo_->Setup();
+}
 
 /*----------------------------------------------------------------------*
  | update (protected)                                      schott 08/14 |

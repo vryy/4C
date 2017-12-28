@@ -1030,14 +1030,16 @@ void XFEM::MeshCouplingWeakDirichlet::UpdateConfigurationMap_GP(
     double& kappa_m,
     double& visc_m,
     double& visc_s,
-    double& visc_stab_tang,       //< viscous tangential NIT Penalty scaling
+    double& visc_stab_tang,             //< viscous tangential NIT Penalty scaling
     double& full_stab,
     const LINALG::Matrix<3,1>& x,
     const DRT::Condition* cond,
-    DRT::Element *        ele,
-    double*               funct,
-    double*               derxy
-)
+    DRT::Element *        ele,          //< Element
+    DRT::Element *        bele,     //< Boundary Element
+    double*               funct,        //< local shape function for Gauss Point (from fluid element)
+    double*               derxy,        //< local derivatives of shape function for Gauss Point (from fluid element)
+    LINALG::Matrix<3,1>& rst_slave      //< local coord of gp on slave boundary element
+    )
 {
   //Configuration of Penalty Terms
   configuration_map_[INPAR::XFEM::F_Pen_Row].second = full_stab;
@@ -1454,13 +1456,16 @@ void XFEM::MeshCouplingNavierSlip::UpdateConfigurationMap_GP(
     double& kappa_m,
     double& visc_m,
     double& visc_s,
-    double& visc_stab_tang,       //< viscous tangential NIT Penalty scaling
+    double& visc_stab_tang,             //< viscous tangential NIT Penalty scaling
     double& full_stab,
     const LINALG::Matrix<3,1>& x,
     const DRT::Condition* cond,
-    DRT::Element *        ele,
-    double*               funct,
-    double*               derxy)
+    DRT::Element *        ele,          //< Element
+    DRT::Element *        bele,     //< Boundary Element
+    double*               funct,        //< local shape function for Gauss Point (from fluid element)
+    double*               derxy,        //< local derivatives of shape function for Gauss Point (from fluid element)
+    LINALG::Matrix<3,1>& rst_slave      //< local coord of gp on slave boundary element
+    )
 {
 
   double dynvisc   = (kappa_m*visc_m + (1.0-kappa_m)*visc_s);
@@ -1840,13 +1845,16 @@ void XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP(
     double& kappa_m,
     double& visc_m,
     double& visc_s,
-    double& visc_stab_tang,       //< viscous tangential NIT Penalty scaling
+    double& visc_stab_tang,             //< viscous tangential NIT Penalty scaling
     double& full_stab,
     const LINALG::Matrix<3,1>& x,
     const DRT::Condition* cond,
-    DRT::Element *        ele,
-    double*               funct,
-    double*               derxy)
+    DRT::Element *        ele,          //< Element
+    DRT::Element *        bele,     //< Boundary Element
+    double*               funct,        //< local shape function for Gauss Point (from fluid element)
+    double*               derxy,        //< local derivatives of shape function for Gauss Point (from fluid element)
+    LINALG::Matrix<3,1>& rst_slave      //< local coord of gp on slave boundary element
+    )
 {
 #ifdef DEBUG
   if (kappa_m != 1) dserror("XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP: kappa_m == %d",kappa_m);
@@ -1954,13 +1962,16 @@ void XFEM::MeshCouplingFluidFluid::UpdateConfigurationMap_GP(
     double& kappa_m,
     double& visc_m,
     double& visc_s,
-    double& visc_stab_tang,       //< viscous tangential NIT Penalty scaling
+    double& visc_stab_tang,             //< viscous tangential NIT Penalty scaling
     double& full_stab,
     const LINALG::Matrix<3,1>& x,
     const DRT::Condition* cond,
-    DRT::Element *        ele,
-    double*               funct,
-    double*               derxy)
+    DRT::Element *        ele,          //< Element
+    DRT::Element *        bele,     //< Boundary Element
+    double*               funct,        //< local shape function for Gauss Point (from fluid element)
+    double*               derxy,        //< local derivatives of shape function for Gauss Point (from fluid element)
+    LINALG::Matrix<3,1>& rst_slave      //< local coord of gp on slave boundary element
+    )
 {
 #ifdef DEBUG
   if (!(GetAveragingStrategy() == INPAR::XFEM::Xfluid_Sided ||

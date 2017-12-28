@@ -3536,6 +3536,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
           pos->LocalCoordinates(rst_);
         }
 
+        LINALG::Matrix<3,1> rst_slave; //local coordinates of slave element
         if (is_mesh_coupling_side)
         {
           // project gaussian point from linearized interface to warped side (get/set local side coordinates in SideImpl)
@@ -3545,14 +3546,14 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
           si->ProjectOnSide(x_gp_lin_, x_side_, xi_side);
 
           if (non_xfluid_coupling)
-            ci->Evaluate( x_side_ ); // evaluate embedded element's shape functions at gauss-point coordinates
+            ci->Evaluate( x_side_,rst_slave ); // evaluate embedded element's shape functions at gauss-point coordinates
           else
-            ci->Evaluate( xi_side ); // evaluate side's shape functions at gauss-point coordinates
+            ci->Evaluate( xi_side,rst_slave ); // evaluate side's shape functions at gauss-point coordinates
         }
         else if (is_ls_coupling_side)
         {
           if(cond_manager->IsCoupling( coup_sid, my::eid_ ))
-            ci->Evaluate( x_gp_lin_ ); // evaluate embedded element's shape functions at gauss-point coordinates
+            ci->Evaluate( x_gp_lin_,rst_slave ); // evaluate embedded element's shape functions at gauss-point coordinates
         }
 
         // integration factors
@@ -3653,8 +3654,10 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
               x_gp_lin_,
               coupcond.second,
               ele,
+              side,
               my::funct_.A(),
-              my::derxy_.A());
+              my::derxy_.A(),
+              rst_slave);
 
             //-----------------------------------------------------------------------------
           // evaluate the coupling terms for coupling with current side
@@ -3776,8 +3779,10 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
                 x_gp_lin_,
                 coupcond.second,
                 ele,
+                side,
                 my::funct_.A(),
-                my::derxy_.A());
+                my::derxy_.A(),
+                rst_slave);
 
             const double timefacfacn = surf_fac * (my::fldparatimint_->Dt()-my::fldparatimint_->TimeFac());
             ci->NIT_evaluateCouplingOldState(

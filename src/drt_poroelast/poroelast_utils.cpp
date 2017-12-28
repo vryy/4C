@@ -139,7 +139,8 @@ bool POROELAST::UTILS::CheckPoroMaterial(
  *----------------------------------------------------------------------*/
 Teuchos::RCP<POROELAST::PoroBase> POROELAST::UTILS::CreatePoroAlgorithm(
     const Teuchos::ParameterList& timeparams,
-    const Epetra_Comm& comm)
+    const Epetra_Comm& comm,
+    bool setup_solver)
 {
   DRT::Problem* problem = DRT::Problem::Instance();
 
@@ -198,7 +199,8 @@ Teuchos::RCP<POROELAST::PoroBase> POROELAST::UTILS::CreatePoroAlgorithm(
   } // end switch
 
   //setup solver (if needed)
-  poroalgo->SetupSolver();
+  if (setup_solver)
+    poroalgo->SetupSolver();
 
   return poroalgo;
 }
@@ -281,7 +283,7 @@ Teuchos::RCP<LINALG::MapExtractor> POROELAST::UTILS::BuildPoroSplitter(Teuchos::
 }
 
 /*----------------------------------------------------------------------*
- |                                                         vuong 08/13  |
+ | reset Material pointers after redistribution            vuong 08/13  |
  *----------------------------------------------------------------------*/
 void POROELAST::UTILS::SetMaterialPointersMatchingGrid(
     Teuchos::RCP<const DRT::Discretization> sourcedis,
@@ -351,6 +353,7 @@ void POROELAST::UTILS::CreateVolumeGhosting(DRT::Discretization& idiscret)
       if (!ele)
         dserror("ERROR: Cannot find element with gid %", gid);
       DRT::FaceElement* faceele = dynamic_cast<DRT::FaceElement*>(ele);
+      if (!faceele) dserror("Cast to FaceElement failed!");
 
       int volgid = faceele->ParentElementId();
       //Ghost the parent element additionally
@@ -368,34 +371,40 @@ void POROELAST::UTILS::CreateVolumeGhosting(DRT::Discretization& idiscret)
     voldis[disidx]->ExtendedGhosting(*newelecolmap,true,true,true,false); //no check!!!
   }
 
-  //2 Reconnect Face Element -- Porostructural Parent Element Pointers!
-  {
-    const Epetra_Map* elecolmap = voldis[0]->ElementColMap();
-
-    for (int i = 0; i < ielecolmap->NumMyElements(); ++i)
-    {
-      int gid = ielecolmap->GID(i);
-
-      DRT::Element* ele = idiscret.gElement(gid);
-      if (!ele)
-        dserror("ERROR: Cannot find element with gid %", gid);
-      DRT::FaceElement* faceele = dynamic_cast<DRT::FaceElement*>(ele);
-
-      int volgid = faceele->ParentElementId();
-      if (elecolmap->LID(volgid) == -1) //Volume Discretization has not Element
-        dserror("CreateVolumeGhosting: Element %d does not exist on this Proc!",volgid);
-
-      DRT::Element* vele = voldis[0]->gElement(volgid);
-      if (!vele)
-        dserror("ERROR: Cannot find element with gid %", volgid);
-
-      faceele->SetParentMasterElement(vele,faceele->FaceParentNumber());
-    }
-  }
-
-  {
-    // Material pointers need to be reset after redistribution.
+  //2 Material pointers need to be reset after redistribution.
     POROELAST::UTILS::SetMaterialPointersMatchingGrid(voldis[0], voldis[1]);
+
+  //3 Reconnect Face Element -- Porostructural Parent Element Pointers!
+    POROELAST::UTILS::ReconnectParentPointers(idiscret, *voldis[0]);
+}
+
+/*----------------------------------------------------------------------*
+ | Reconnect Face Element - Parent Element Pointers! (public) ager 12/16|
+ *----------------------------------------------------------------------*/
+void POROELAST::UTILS::ReconnectParentPointers(DRT::Discretization& idiscret,
+                                               DRT::Discretization& voldiscret)
+{
+  const Epetra_Map* ielecolmap = idiscret.ElementColMap();
+  const Epetra_Map* elecolmap = voldiscret.ElementColMap();
+
+  for (int i = 0; i < ielecolmap->NumMyElements(); ++i)
+  {
+    int gid = ielecolmap->GID(i);
+
+    DRT::Element* ele = idiscret.gElement(gid);
+    if (!ele) dserror("ERROR: Cannot find element with gid %", gid);
+
+    DRT::FaceElement* faceele = dynamic_cast<DRT::FaceElement*>(ele);
+    if (!faceele) dserror("Cast to FaceElement failed!");
+
+    int volgid = faceele->ParentElementId();
+    if (elecolmap->LID(volgid) == -1) //Volume Discretization has not Element
+      dserror("CreateVolumeGhosting: Element %d does not exist on this Proc!",volgid);
+
+    DRT::Element* vele = voldiscret.gElement(volgid);
+    if (!vele) dserror("ERROR: Cannot find element with gid %", volgid);
+
+    faceele->SetParentMasterElement(vele,faceele->FaceParentNumber());
   }
 }
 

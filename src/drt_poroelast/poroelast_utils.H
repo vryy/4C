@@ -77,7 +77,8 @@ Teuchos::RCP<LINALG::MapExtractor> BuildPoroSplitter(
 /// create solution algorithm depending on input file
 Teuchos::RCP<POROELAST::PoroBase> CreatePoroAlgorithm(
     const Teuchos::ParameterList& timeparams, //!< problem parameters (i)
-    const Epetra_Comm& comm //!< communicator(i)
+    const Epetra_Comm& comm, //!< communicator(i)
+    bool setup_solve = true //!< setup linear solver for Poroelastic problem (only required if Solve() is called) (i)
     );
 
 /// create solution algorithm depending on input file
@@ -98,6 +99,13 @@ void SetMaterialPointersMatchingGrid(
  (required if an evaluation of gradients is required)!
  */
 void CreateVolumeGhosting(DRT::Discretization& idiscret); //redistributed interface discretization of contact!
+
+/*! Reconnect Face Element - Parent Element Pointers!
+ Parent Element need to be ghosted on the processors where Face Elements
+ exist already.
+ */
+ void ReconnectParentPointers(DRT::Discretization& idiscret,
+                             DRT::Discretization& voldiscret);
 
 //! Determine norm of vector
 double CalculateVectorNorm(const enum INPAR::POROELAST::VectorNorm norm, //!< norm to use

@@ -44,6 +44,9 @@ namespace ADAPTER
     /// constructor
     explicit StructurePoroWrapper(Teuchos::RCP<Field> field, FieldWrapper::Fieldtype type, bool NOXCorrection = false);
 
+    /// setup
+    void Setup();
+
     /// communication object at the interface
     virtual Teuchos::RCP<const STR::AUX::MapExtractor> Interface() const
     { return structure_->Interface(); }

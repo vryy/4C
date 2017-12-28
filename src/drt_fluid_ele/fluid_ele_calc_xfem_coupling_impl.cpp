@@ -289,13 +289,24 @@ void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::GetInterfac
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
-void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::Evaluate( LINALG::Matrix<nsd_,1> & xslave )
+void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::Evaluate( LINALG::Matrix<nsd_,1> & xslave)
+{
+  LINALG::Matrix<3,1> rst_slave(true);
+  Evaluate(xslave,rst_slave);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::Evaluate( LINALG::Matrix<nsd_,1> & xslave, LINALG::Matrix<nsd_,1> & rst_slave)
 {
   // coupling with a 2D element
   if (slave_nsd_ == nsd_ - 1)
   {
     // evaluate shape function at solution
     DRT::UTILS::shape_function_2D( slave_funct_, xslave( 0 ), xslave( 1 ), slave_distype );
+    rst_slave ( 0 ) = xslave ( 0 );
+    rst_slave ( 1 ) = xslave ( 1 );
 //    dserror("You called 3D evaluation routine when coupling with a 2D element.");
     return;
   }
@@ -306,7 +317,6 @@ void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::Evaluate( L
 
   if (slave_nsd_==nsd_)
   {
-    LINALG::Matrix<slave_nsd_,1> rst_slave;
     pos->LocalCoordinates(rst_slave);
     DRT::UTILS::shape_function_3D( slave_funct_, rst_slave( 0 ), rst_slave( 1 ), rst_slave( 2 ), slave_distype );
     DRT::UTILS::shape_function_3D_deriv1( slave_deriv_, rst_slave( 0 ), rst_slave( 1 ), rst_slave( 2 ), slave_distype );

@@ -444,16 +444,19 @@ protected:
 
   //! Updates configurationmap for specific Gausspoint
   virtual void UpdateConfigurationMap_GP(
-      double& kappa_m,
-      double& visc_m,
-      double& visc_s,
-      double& visc_stab_tang,       //< viscous tangential NIT Penalty scaling
-      double& full_stab,
-      const LINALG::Matrix<3,1>& x,
-      const DRT::Condition* cond,
-      DRT::Element *        ele,
-      double*               funct,
-      double*               derxy);
+      double& kappa_m,                  //< fluid sided weighting
+      double& visc_m,                   //< fluid sided weighting
+      double& visc_s,                   //< slave sided dynamic viscosity
+      double& visc_stab_tang,             //< viscous tangential NIT Penalty scaling
+      double& full_stab,                //< full NIT Penalty scaling
+      const LINALG::Matrix<3,1>& x,     //< Position x in global coordinates
+      const DRT::Condition* cond,       //< Condition
+      DRT::Element *        ele,        //< Element
+      DRT::Element *        bele,     //< Boundary Element
+      double*               funct,      //< local shape function for Gauss Point (from fluid element)
+      double*               derxy,      //< local derivatives of shape function for Gauss Point (from fluid element)
+      LINALG::Matrix<3,1>& rst_slave    //< local coord of gp on slave boundary element
+      );
 
 };
 
@@ -585,16 +588,19 @@ protected:
 
   //! Updates configurationmap for specific Gausspoint
   virtual void UpdateConfigurationMap_GP(
-      double& kappa_m,
-      double& visc_m,
-      double& visc_s,
-      double& visc_stab_tang,       //< viscous tangential NIT Penalty scaling
-      double& full_stab,
-      const LINALG::Matrix<3,1>& x,
-      const DRT::Condition* cond,
-      DRT::Element *        ele,
-      double*               funct,
-      double*               derxy);
+      double& kappa_m,                  //< fluid sided weighting
+      double& visc_m,                   //< fluid sided weighting
+      double& visc_s,                   //< slave sided dynamic viscosity
+      double& visc_stab_tang,             //< viscous tangential NIT Penalty scaling
+      double& full_stab,                //< full NIT Penalty scaling
+      const LINALG::Matrix<3,1>& x,     //< Position x in global coordinates
+      const DRT::Condition* cond,       //< Condition
+      DRT::Element *        ele,        //< Element
+      DRT::Element *        bele,     //< Boundary Element
+      double*               funct,      //< local shape function for Gauss Point (from fluid element)
+      double*               derxy,      //< local derivatives of shape function for Gauss Point (from fluid element)
+      LINALG::Matrix<3,1>& rst_slave    //< local coord of gp on slave boundary element
+      );
 
 protected:
 
@@ -697,16 +703,19 @@ protected:
 
   //! Updates configurationmap for specific Gausspoint
   virtual void UpdateConfigurationMap_GP(
-      double& kappa_m,
-      double& visc_m,
-      double& visc_s,
-      double& visc_stab_tang,       //< viscous tangential NIT Penalty scaling
-      double& full_stab,
-      const LINALG::Matrix<3,1>& x,
-      const DRT::Condition* cond,
-      DRT::Element *        ele,
-      double*               funct,
-      double*               derxy);
+      double& kappa_m,                  //< fluid sided weighting
+      double& visc_m,                   //< fluid sided weighting
+      double& visc_s,                   //< slave sided dynamic viscosity
+      double& visc_stab_tang,             //< viscous tangential NIT Penalty scaling
+      double& full_stab,                //< full NIT Penalty scaling
+      const LINALG::Matrix<3,1>& x,     //< Position x in global coordinates
+      const DRT::Condition* cond,       //< Condition
+      DRT::Element *        ele,        //< Element
+      DRT::Element *        bele,     //< Boundary Element
+      double*               funct,      //< local shape function for Gauss Point (from fluid element)
+      double*               derxy,      //< local derivatives of shape function for Gauss Point (from fluid element)
+      LINALG::Matrix<3,1>& rst_slave    //< local coord of gp on slave boundary element
+      );
 
   //------------------------------- vectors -----------------------------
   //! @name cutter-dis state vectors
@@ -808,16 +817,19 @@ protected:
 
   //! Updates configurationmap for specific Gausspoint
   virtual void UpdateConfigurationMap_GP(
-      double& kappa_m,
-      double& visc_m,
-      double& visc_s,
-      double& visc_stab_tang,       //< viscous tangential NIT Penalty scaling
-      double& full_stab,
-      const LINALG::Matrix<3,1>& x,
-      const DRT::Condition* cond,
-      DRT::Element *        ele,
-      double*               funct,
-      double*               derxy);
+      double& kappa_m,                  //< fluid sided weighting
+      double& visc_m,                   //< fluid sided weighting
+      double& visc_s,                   //< slave sided dynamic viscosity
+      double& visc_stab_tang,             //< viscous tangential NIT Penalty scaling
+      double& full_stab,                //< full NIT Penalty scaling
+      const LINALG::Matrix<3,1>& x,     //< Position x in global coordinates
+      const DRT::Condition* cond,       //< Condition
+      DRT::Element *        ele,        //< Element
+      DRT::Element *        bele,     //< Boundary Element
+      double*               funct,      //< local shape function for Gauss Point (from fluid element)
+      double*               derxy,      //< local derivatives of shape function for Gauss Point (from fluid element)
+      LINALG::Matrix<3,1>& rst_slave    //< local coord of gp on slave boundary element
+      );
 
 private:
 

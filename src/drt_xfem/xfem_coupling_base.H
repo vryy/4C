@@ -262,19 +262,21 @@ public:
   }
 
   std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& GetConfigurationmap(
-      double& kappa_m,              //< fluid sided weighting
-      double& visc_m,               //< fluid sided weighting
-      double& visc_s,               //< slave sided dynamic viscosity
-      double& visc_stab_tang,       //< viscous tangential NIT Penalty scaling
-      double& full_stab,            //< full NIT Penalty scaling
-      const LINALG::Matrix<3,1>& x, //< Position x
-      const DRT::Condition* cond,   //< Condition
-      DRT::Element *        ele,    //< Element
-      double*               funct,  //< local shape function for Gauss Point (from fluid element)
-      double*               derxy   //< local derivatives of shape function for Gauss Point (from fluid element)
+      double& kappa_m,                //< fluid sided weighting
+      double& visc_m,                 //< fluid sided weighting
+      double& visc_s,                 //< slave sided dynamic viscosity
+      double& visc_stab_tang,         //< viscous tangential NIT Penalty scaling
+      double& full_stab,              //< full NIT Penalty scaling
+      const LINALG::Matrix<3,1>& x,   //< Position x
+      const DRT::Condition* cond,     //< Condition
+      DRT::Element *        ele,      //< Element
+      DRT::Element *        bele,     //< Boundary Element
+      double*               funct,    //< local shape function for Gauss Point (from fluid element)
+      double*               derxy,    //< local derivatives of shape function for Gauss Point (from fluid element)
+      LINALG::Matrix<3,1>& rst_slave  //< local coord of gp on slave boundary element
       )
   {
-    UpdateConfigurationMap_GP(kappa_m,visc_m,visc_s, visc_stab_tang, full_stab,x,cond,ele,funct,derxy);
+    UpdateConfigurationMap_GP(kappa_m,visc_m,visc_s, visc_stab_tang, full_stab,x,cond,ele,bele,funct,derxy,rst_slave);
     #ifdef DEBUG
     // Do some safety checks, every combination which is not handled correct by the element level should be caught here ...
     // As this check is done for every Gausspoint, just do this in DEBUG Version ...
@@ -396,16 +398,18 @@ protected:
 
   //! Updates configurationmap for specific Gausspoint
   virtual void UpdateConfigurationMap_GP(
-      double& kappa_m,    //< fluid sided weighting
-      double& visc_m,     //< fluid sided weighting
-      double& visc_s,     //< slave sided dynamic viscosity
-      double& visc_stab_tang,       //< viscous tangential NIT Penalty scaling
-      double& full_stab,  //< full NIT Penalty scaling
-      const LINALG::Matrix<3,1>& x, //<Position x
-      const DRT::Condition* cond, //< Condition
-      DRT::Element *        ele,    //< Element
-      double*               funct,  //< local shape function for Gauss Point (from fluid element)
-      double*               derxy   //< local derivatives of shape function for Gauss Point (from fluid element)
+      double& kappa_m,                  //< fluid sided weighting
+      double& visc_m,                   //< fluid sided weighting
+      double& visc_s,                   //< slave sided dynamic viscosity
+      double& visc_stab_tang,             //< viscous tangential NIT Penalty scaling
+      double& full_stab,                //< full NIT Penalty scaling
+      const LINALG::Matrix<3,1>& x,     //< Position x in global coordinates
+      const DRT::Condition* cond,       //< Condition
+      DRT::Element *        ele,        //< Element
+      DRT::Element *        bele,     //< Boundary Element
+      double*               funct,      //< local shape function for Gauss Point (from fluid element)
+      double*               derxy,      //< local derivatives of shape function for Gauss Point (from fluid element)
+      LINALG::Matrix<3,1>& rst_slave    //< local coord of gp on slave boundary element
       ){};
 
   virtual void InitStateVectors(){};

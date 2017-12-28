@@ -147,6 +147,9 @@ namespace DRT
         //!  evaluate shape function, derivatives and transformation w.r.t coupling slave element at gaussian point
         void Evaluate( LINALG::Matrix<nsd_,1> & xside );
 
+        //!  evaluate shape function, derivatives and transformation w.r.t coupling slave element at gaussian point
+        void Evaluate( LINALG::Matrix<nsd_,1> & xside, LINALG::Matrix<nsd_,1> & rst_slave);
+
         //! compute coupling slave element's characteristic element length (for 3D-elements)
         void ComputeCharElementLength( double & h_k );
 

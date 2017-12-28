@@ -80,10 +80,18 @@ void XFEM::XFPCoupling_Manager::SetCouplingStates()
   InsertVector(0,poro_->StructureField()->Dispnp(),0,mcfpi_pf_ps_->IDispnp(),Coupling_Comm_Manager::full_to_partial);
   InsertVector(0,poro_->StructureField()->Dispnp(),0,mcfpi_pf_pf_->IDispnp(),Coupling_Comm_Manager::full_to_partial);
 
-  mcfpi_ps_ps_->SetFullDispnp(poro_->StructureField()->Dispnp(),poro_->FluidField()->ExtractPressurePart(poro_->FluidField()->Velnp()));
-  mcfpi_ps_pf_->SetFullDispnp(poro_->StructureField()->Dispnp(),poro_->FluidField()->ExtractPressurePart(poro_->FluidField()->Velnp()));
-  mcfpi_pf_ps_->SetFullDispnp(poro_->StructureField()->Dispnp(),poro_->FluidField()->ExtractPressurePart(poro_->FluidField()->Velnp()));
-  mcfpi_pf_pf_->SetFullDispnp(poro_->StructureField()->Dispnp(),poro_->FluidField()->ExtractPressurePart(poro_->FluidField()->Velnp()));
+  //As interfaces embedded into the background mesh are fully ghosted, we don't know which
+  Teuchos::RCP<Epetra_Map> sfulldofmap = LINALG::AllreduceEMap(*poro_->StructureField()->Discretization()->DofRowMap());
+  Teuchos::RCP<Epetra_Vector> dispnp_col = Teuchos::rcp(new Epetra_Vector(*sfulldofmap,true));
+  LINALG::Export(*poro_->StructureField()->Dispnp(),*dispnp_col);
+  Teuchos::RCP<Epetra_Map> ffulldofmap = LINALG::AllreduceEMap(*poro_->FluidField()->Discretization()->DofRowMap());
+  Teuchos::RCP<Epetra_Vector> velnp_col = Teuchos::rcp(new Epetra_Vector(*ffulldofmap,true));
+  LINALG::Export(*poro_->FluidField()->Velnp(),*velnp_col);
+
+  mcfpi_ps_ps_->SetFullState(dispnp_col,velnp_col);
+  mcfpi_ps_pf_->SetFullState(dispnp_col,velnp_col);
+  mcfpi_pf_ps_->SetFullState(dispnp_col,velnp_col);
+  mcfpi_pf_pf_->SetFullState(dispnp_col,velnp_col);
 
 
   //2 Set Structural Velocity onto ps mesh coupling
