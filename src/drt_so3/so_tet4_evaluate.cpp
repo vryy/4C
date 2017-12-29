@@ -99,6 +99,8 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
   else if (action=="postprocess_stress")               act = So_tet4::postprocess_stress;
   else if (action=="calc_struct_eleload")              act = So_tet4::calc_struct_eleload;
   else if (action=="calc_struct_fsiload")              act = So_tet4::calc_struct_fsiload;
+  else if (action=="calc_struct_store_istep")          act = So_tet4::struct_calc_store_istep;
+  else if (action=="calc_struct_recover_istep")        act = So_tet4::struct_calc_recover_istep;
   else if (action=="calc_struct_update_istep")         act = So_tet4::calc_struct_update_istep;
   else if (action=="calc_struct_reset_istep")          act = So_tet4::calc_struct_reset_istep;
   else if (action=="calc_struct_reset_all")            act = So_tet4::calc_struct_reset_all;
@@ -113,7 +115,8 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
   else if (action=="multi_readrestart")                act = So_tet4::multi_readrestart;
   else if (action=="calc_struct_recover") return 0;
   else if (action=="calc_struct_predict") return 0;
-  else dserror("Unknown type of action for So_tet4");
+  else
+    dserror("Unknown type of action for So_tet4");
 
   // check for patient specific data
   PATSPEC::GetILTDistance(Id(),params,discretization);
@@ -539,6 +542,42 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
     //==================================================================================
     case calc_struct_fsiload:
       dserror("Case not yet implemented");
+    break;
+
+    //==================================================================================
+    case struct_calc_store_istep:
+    {
+      int timestep = params.get<int>("timestep",-1);
+
+      if (timestep == -1)
+        dserror("Provide timestep number to be stored");
+
+      // due to the multiplicativity and futility to redo prestress steps
+      // other than the last one, no need to store/recover anything
+      // ... but keep in mind
+      if (pstype_ != INPAR::STR::prestress_none) {}
+
+      // Material
+      SolidMaterial()->StoreHistory(timestep);
+    }
+    break;
+
+    //==================================================================================
+    case struct_calc_recover_istep:
+    {
+      int timestep = params.get<int>("timestep",-1);
+
+      if (timestep == -1)
+        dserror("Provide timestep number of the timestep to be recovered");
+
+      // due to the multiplicativity and futility to redo prestress steps
+      // other than the last one, no need to store/recover anything
+      // ... but keep in mind
+      if (pstype_ != INPAR::STR::prestress_none) {}
+
+      // Material
+      SolidMaterial()->SetHistory(timestep);
+    }
     break;
 
     //==================================================================================

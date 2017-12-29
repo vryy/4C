@@ -371,6 +371,8 @@ protected:
     postprocess_stress,
     calc_struct_eleload,
     calc_struct_fsiload,
+    struct_calc_store_istep,
+    struct_calc_recover_istep,
     calc_struct_update_istep,
     calc_struct_reset_istep,  //!< reset elementwise internal variables
                               //!< during iteration to last converged state
