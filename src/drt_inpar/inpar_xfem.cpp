@@ -687,6 +687,12 @@ void INPAR::XFEM::SetValidConditions(const std::vector<Teuchos::RCP<DRT::INPUT::
   xfem_surf_fpi_mono->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("BJ_COEFF",true)));
   xfem_surf_fpi_mono->AddComponent(Teuchos::rcp(new RealVectorConditionComponent("bj_coeff",1,true)));
 
+  xfem_surf_fpi_mono->AddComponent( Teuchos::rcp( new StringConditionComponent(
+        "Variant","BJ",
+        Teuchos::tuple<std::string>("BJ","BJS"),
+        Teuchos::tuple<std::string>("BJ","BJS"),
+        true)));
+
   condlist.push_back(xfem_surf_fpi_mono);
 
 

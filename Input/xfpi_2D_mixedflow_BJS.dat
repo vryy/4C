@@ -4,8 +4,8 @@
 // http://www.lnm.mw.tum.de
 //
 // XFluid_Poroelastic_Interaction (Poro is cut out)
-// Simple Flow parallell to the interface with Beavers-Joseph interface law
-// between Fluid and Poro, stationary solution known
+// Flow threw interface (mixed normal and tangential direction)
+// with Beavers-Joseph interface law between Fluid and Poro
 -----------------------------------------------------------------------TITLE
 created by pre_exodus
 ----------------------------------------------------------------PROBLEM SIZE
@@ -33,7 +33,7 @@ FILESTEPS                       1000
 ------------------------------------------------------POROELASTICITY DYNAMIC
 COUPALGO                        poro_monolithic
 PHYSICAL_TYPE                   Poro
-TIMESTEP                        1000
+TIMESTEP                        0.1
 RESULTSEVRY                     1
 SECONDORDER                     Yes
 CONTIPARTINT                    Yes
@@ -48,25 +48,25 @@ CHARELELENGTH_PC                streamlength
 EVALUATION_TAU                  integration_point
 EVALUATION_MAT                  integration_point
 -----------------------------------------------------------------ALE DYNAMIC
-TIMESTEP                        1000
+TIMESTEP                        0.1
 ALE_TYPE                        solid
 LINEAR_SOLVER                   1 // dummy
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
 DYNAMICTYP                      OneStepTheta
 PREDICT                         ConstDis
-TIMESTEP                        1000
+TIMESTEP                        0.1
 LINEAR_SOLVER                   1 // dummy
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
 -----------------------------------------------------------------FSI DYNAMIC
-MAXTIME                         10000.0
-TIMESTEP                        1000
-NUMSTEP                         10
+MAXTIME                         0.3
+TIMESTEP                        0.1
+NUMSTEP                         3
 RESULTSEVRY                     1
 COUPALGO                        iter_xfem_monolithic
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
-ITEMAX                          5
+ITEMAX                          10
 INFNORMSCALING                  No                            //is used by xfsi!!!
 NORM_INC                        Rel                           // Abs // Mix
 NORM_RESF                       Rel                           // Abs // Mix
@@ -95,7 +95,7 @@ NONLINITER                      Newton
 START_THETA                     1.0
 THETA                           1.0
 TIMEINTEGR                      One_Step_Theta
-TIMESTEP                        1000
+TIMESTEP                        0.1
 PREDICTOR                       steady_state
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based
@@ -149,18 +149,17 @@ COMPONENT 1 FUNCTION 0.0
 COMPONENT 2 FUNCTION 0.0
 COMPONENT 3 FUNCTION 0.5-x // pressure
 -------------------------------------------------RESULT DESCRIPTION
-XFLUID DIS fluid NODE 275 QUANTITY velx VALUE 3.06875376411575862e-01 TOLERANCE 1e-10
-XFLUID DIS fluid NODE 275 QUANTITY vely VALUE 2.97373230509598621e-17 TOLERANCE 1e-10
-XFLUID DIS fluid NODE 275 QUANTITY pressure VALUE 8.99999999999999911e-01 TOLERANCE 1e-10
-XFLUID DIS fluid NODE 380 QUANTITY velx VALUE 3.10313064619790691e-01 TOLERANCE 1e-10
-XFLUID DIS fluid NODE 380 QUANTITY vely VALUE -2.13771241242268640e-17 TOLERANCE 1e-10
-XFLUID DIS fluid NODE 380 QUANTITY pressure VALUE 1.00000000000000103e-01 TOLERANCE 1e-10
+XFLUID DIS fluid NODE 275 QUANTITY velx VALUE 6.32949045881632033e-01 TOLERANCE 1e-10
+XFLUID DIS fluid NODE 275 QUANTITY vely VALUE -1.17585398275541569e-01 TOLERANCE 1e-10
+XFLUID DIS fluid NODE 275 QUANTITY pressure VALUE 7.58778518224740850e-01 TOLERANCE 1e-10
+XFLUID DIS fluid NODE 380 QUANTITY velx VALUE 1.42634322187056906e-01 TOLERANCE 1e-10
+XFLUID DIS fluid NODE 380 QUANTITY vely VALUE -2.18033951162724497e-02 TOLERANCE 1e-10
+XFLUID DIS fluid NODE 380 QUANTITY pressure VALUE 4.88449801268206613e-02 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 50 QUANTITY dispx VALUE 0 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 50 QUANTITY dispy VALUE 0 TOLERANCE 1e-10
-//The solution of the stationary problem would be velx=0.002, vely=0, pressure = linear from 1 to zero
-FLUID DIS porofluid NODE 50 QUANTITY velx VALUE 1.99999999999998963e-03 TOLERANCE 1e-10
-FLUID DIS porofluid NODE 50 QUANTITY vely VALUE 3.14831439745102542e-18 TOLERANCE 1e-10
-FLUID DIS porofluid NODE 50 QUANTITY pressure VALUE 6.00000000000000422e-01 TOLERANCE 1e-10
+FLUID DIS porofluid NODE 50 QUANTITY velx VALUE 2.10076632880135290e-03 TOLERANCE 1e-10
+FLUID DIS porofluid NODE 50 QUANTITY vely VALUE -1.50919950817438226e-03 TOLERANCE 1e-10
+FLUID DIS porofluid NODE 50 QUANTITY pressure VALUE 3.59691419095167442e-01 TOLERANCE 1e-10
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  1
@@ -195,13 +194,11 @@ E 2 - NUMDOF 4 ONOFF 1 0 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // fluid_left
 E 1 - NUMDOF 4 ONOFF 1 0 0 0 VAL 1.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF 4
+DSURF 3
 // fluid_left
 E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 1 0 0 0
 // fluid_right
 E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 1 0 0 0
-// fluid_bottom
-E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // fluid_top
 E 3 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0
 -------------------------------------------DESIGN SURF PORO DIRICH CONDITIONS
@@ -221,7 +218,7 @@ E 8 -
 ----------------------------------DESIGN XFEM FPI MONOLITHIC SURF CONDITIONS
 DSURF                        1
 // poro_bottom
-E 8 - COUPLINGID 1 BJ_COEFF 17.3205080756888
+E 8 - COUPLINGID 1 BJ_COEFF 0.1 BJS
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    21 DLINE 1

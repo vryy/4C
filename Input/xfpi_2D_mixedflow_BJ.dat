@@ -218,7 +218,7 @@ E 8 -
 ----------------------------------DESIGN XFEM FPI MONOLITHIC SURF CONDITIONS
 DSURF                        1
 // poro_bottom
-E 8 - COUPLINGID 1 BJ_COEFF 0.00577350269189626 SLIP_FUNCT 0
+E 8 - COUPLINGID 1 BJ_COEFF 17.3205080756888
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    21 DLINE 1

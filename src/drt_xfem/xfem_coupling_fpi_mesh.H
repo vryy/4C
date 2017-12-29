@@ -191,8 +191,11 @@ protected:
 
   virtual void SetConditionSpecificParameters();
 
+  //! Caluculate the Porosity for J,porosity pair on this FaceElement
+  double CalctrPermeability( DRT::Element* ele, double& porosity, double& J);
+
   //! Caluculate the Porosity for this FaceElement Gausspoint
-  double CalcPorosity( DRT::Element* ele, LINALG::Matrix<3,1>& rst_slave );
+  double CalcPorosity( DRT::Element* ele, LINALG::Matrix<3,1>& rst_slave, double& J );
 
   //! Compute Jacobian and extract PoroFluidPressure this FaceElement Gausspoint
   double ComputeJacobianandPressure( DRT::Element* ele, LINALG::Matrix<3,1>& rst_slave, double& pres);

@@ -41,6 +41,7 @@ xfluid class and the cut-library
 
 #include "../drt_poroelast/poroelast_utils.H"
 #include "../drt_mat/structporo.H"
+#include "../drt_mat/fluidporo.H"
 
 //! constructor
 XFEM::MeshCouplingFPI::MeshCouplingFPI(
@@ -57,12 +58,7 @@ XFEM::MeshCouplingFPI::MeshCouplingFPI(
 {
 
   //TODO: init here, but set in SetConditionSpecificParameters
-  full_BJ_ = true; //Todo Ager: Will create an Input parameter in the *.dat-file ...
 
-  if (!full_BJ_)
-    std::cout << "Actual FPI Formulation is Beavers Joseph Saffmann!" << std::endl;
-  else
-    std::cout << "Actual FPI Formulation is Beavers Joseph!" << std::endl;
 }
 
 /*--------------------------------------------------------------------------*
@@ -151,18 +147,28 @@ void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP(
     LINALG::Matrix<3,1>& rst_slave      //< local coord of gp on slave boundary element
     )
 {
-  double dynvisc   = (kappa_m*visc_m + (1.0-kappa_m)*visc_s);
+  // Calculation on Porosity will follow soon ... todo
+  double J = 0;
+  double porosity = CalcPorosity(bele,rst_slave,J);
 
-  double stabnit = 0.0;
-  double stabadj = 0.0;
-  XFEM::UTILS::GetNavierSlipStabilizationParameters(visc_stab_tang,dynvisc,BJ_coeff_,stabnit,stabadj);
+  double trperm = CalctrPermeability(bele,porosity,J);
 
-   // Calculation of Porosity
-  double porosity = CalcPorosity(bele,rst_slave);
+
+  static double sliplength = trperm/(BJ_coeff_);
+
+  static double dynvisc   = (kappa_m*visc_m + (1.0-kappa_m)*visc_s);
+
+  static double stabnit = 0.0;
+  static double stabadj = 0.0;
+
+  XFEM::UTILS::GetNavierSlipStabilizationParameters(visc_stab_tang,dynvisc,sliplength,stabnit,stabadj);
+
+ // std::cout << "sliplength: " << sliplength << " stabnit: " << stabnit << "full_stab: " << full_stab
+ //     << "stabadj: " << stabadj << std::endl;
 
 
   //Overall there are 9 coupling blocks to evaluate for fpi:
-  // 1 - ps_ps --> ff,fps,fps,psf
+  // 1 - ps_ps --> ff,fps,psf,psps
   // 2 - ps_pf --> fpf,pspf
   // 3 - pf_ps --> pff, pfps
   // 4 - pf_pf --> pfpf
@@ -181,7 +187,7 @@ switch(coupled_field_)
     configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool,double>(true,stabadj);
     configuration_map_[INPAR::XFEM::F_Adj_t_Col] = std::pair<bool,double>(true,1.0);
     configuration_map_[INPAR::XFEM::X_Adj_t_Col] = std::pair<bool,double>(true,1-full_BJ_*porosity);
-    configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool,double>(true, BJ_coeff_); //Here we need alpha BJ finally!!! Todo
+    configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool,double>(true, sliplength); //Here we need alpha BJ finally!!! Todo
     //Configuration of Penalty Terms
     configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool,double>(true,visc_stab_tang);
     configuration_map_[INPAR::XFEM::F_Pen_n_Col] = std::pair<bool,double>(true,1);
@@ -192,7 +198,7 @@ switch(coupled_field_)
     configuration_map_[INPAR::XFEM::X_Pen_t_Row] = std::pair<bool,double>(true,stabnit);
     configuration_map_[INPAR::XFEM::X_Pen_t_Col] = std::pair<bool,double>(true,1-full_BJ_*porosity);
     configuration_map_[INPAR::XFEM::F_Con_t_Row] = std::pair<bool,double>(true,-stabnit); //+sign for penalty!
-    configuration_map_[INPAR::XFEM::F_Con_t_Col] = std::pair<bool,double>(true,BJ_coeff_/dynvisc);
+    configuration_map_[INPAR::XFEM::F_Con_t_Col] = std::pair<bool,double>(true,sliplength/dynvisc);
     configuration_map_[INPAR::XFEM::X_Con_t_Row] = std::pair<bool,double>(true,-stabnit); //+sign for penalty!
     break;
   }
@@ -407,15 +413,29 @@ void XFEM::MeshCouplingFPI::SetConditionSpecificParameters()
       i!=conditions_XFPI.end();
       ++i)
   {
-    (*i)->Print(std::cout);
-
+    const bool full_BJ = (*(*i)->Get<std::string>("Variant") == "BJ");
     if (i!=conditions_XFPI.begin())
+    {
       if (fabs(BJ_coeff_-(*i)->GetDouble("bj_coeff")) > 1e-16)
         dserror("XFEM::MeshCouplingFPI::SetConditionSpecificParameters: You defined two FPI conditions, with different BJ_coeff!");
 
+      if (full_BJ_!= full_BJ)
+        dserror("XFEM::MeshCouplingFPI::SetConditionSpecificParameters: You defined two FPI conditions, with different BJ_coeff!");
+    }
+
     BJ_coeff_ = (*i)->GetDouble("bj_coeff");
+    full_BJ_ = full_BJ;
 
   }
+
+    if (!full_BJ_)
+    {
+      if (coupled_field_ == XFEM::MeshCouplingFPI::ps_ps) std::cout << "==| XFEM::MeshCouplingFPI: Actual FPI Formulation is Beavers Joseph Saffmann! |==" << std::endl;
+    }
+    else
+    {
+      if (coupled_field_ == XFEM::MeshCouplingFPI::ps_ps) std::cout << "==| XFEM::MeshCouplingFPI: Actual FPI Formulation is Beavers Joseph! |==" << std::endl;
+    }
 }
 
 //----------------------------------------------------------------------
@@ -487,12 +507,41 @@ void XFEM::MeshCouplingFPI::LiftDrag(
   }
 }
 
+// ------------------------------------------------------------------------
+// Caluculate the normalized trace of permeability matrix
+//        for J,porosity pair on this FaceElement               ager 12/17
+// ------------------------------------------------------------------------
+double XFEM::MeshCouplingFPI::CalctrPermeability(
+    DRT::Element* ele,
+    double& porosity,
+    double& J
+    )
+{
+  //Calculate normalized trace of permeability matrix
+  DRT::FaceElement* fele = dynamic_cast<DRT::FaceElement*>(ele);
+  if (!fele) dserror("Cast to Faceele failed!");
+  DRT::Element* coupl_ele = fele->ParentElement();
+  if (coupl_ele == NULL) dserror("No coupl_ele!");
+  Teuchos::RCP<MAT::FluidPoro> poromat;
+  //access second material in structure element
+  if (coupl_ele->NumMaterial() > 1)
+    poromat = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(coupl_ele->Material(1));
+  else
+    dserror("no second material defined for element %i",ele->Id());
+
+  static LINALG::Matrix<3,3> reactiontensor(true);
+  poromat->ComputeReactionTensor(reactiontensor, J, porosity);
+
+  return sqrt((1./reactiontensor(0,0) + 1./reactiontensor(1,1) + 1./reactiontensor(2,2))/(poromat->Viscosity()*3));
+}
+
 // --------------------------------------------------------------------
 // Caluculate the Porosity for this FaceElement Gausspoint   ager 12/16
 // --------------------------------------------------------------------
 double XFEM::MeshCouplingFPI::CalcPorosity(
     DRT::Element* ele,
-    LINALG::Matrix<3,1>& rst_slave
+    LINALG::Matrix<3,1>& rst_slave,
+    double& J
     )
 {
   DRT::FaceElement* fele = dynamic_cast<DRT::FaceElement*>(ele);
@@ -502,7 +551,7 @@ double XFEM::MeshCouplingFPI::CalcPorosity(
   if (coupl_ele == NULL) dserror("No coupl_ele!");
 
   double pres = 0.0;
-  double J = ComputeJacobianandPressure(ele,rst_slave,pres);
+  J = ComputeJacobianandPressure(ele,rst_slave,pres);
 
   Teuchos::RCP<MAT::StructPoro> poromat;
   //access second material in structure element
