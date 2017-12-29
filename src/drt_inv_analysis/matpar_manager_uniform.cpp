@@ -137,6 +137,17 @@ void INVANA::MatParManagerUniform::InitParameters()
   if (err!=0)
     dserror("Application of restrictor failed.");
 
+
+  // optparams and projector just on proc0
+  if (Comm().MyPID()==0)
+  {
+    int numentries=projector_->NumMyEntries(0);
+
+    // Changed Projector in Create Projection to 1 and scaled with numentries here
+    // abirzle 12/2017
+    optparams_->Scale(1.0/numentries);
+  }
+
   // set initial values
   optparams_initial_->Scale(1.0,*optparams_);
 
@@ -221,7 +232,8 @@ void INVANA::MatParManagerUniform::CreateProjection()
   {
     // scale length of the row to 1
     int numentries = maps[i]->NumMyElements();
-    std::vector<double> values(numentries, 1.0/sqrt(numentries));
+    //std::vector<double> values(numentries, 1.0/sqrt(numentries));
+    std::vector<double> values(numentries, 1.0);
 
     int err = projector_->InsertGlobalValues(i,numentries,&values[0],maps[i]->MyGlobalElements());
     if (err < 0 )

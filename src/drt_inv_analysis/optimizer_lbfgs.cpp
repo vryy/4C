@@ -480,7 +480,11 @@ void INVANA::OptimizerLBFGS::WriteRestart()
 void INVANA::OptimizerLBFGS::WriteOutput()
 {
   // map estimate already projected on the elementwise layout
-  Teuchos::RCP<Epetra_MultiVector> result = OptProb()->Matman()->GetRawParams();
+  // Teuchos::RCP<Epetra_MultiVector> result = OptProb()->Matman()->GetRawParams(); //old version
+   // reform parameters for final output
+   // and do not use metaparametrization                        abirzle 12/2017
+   Teuchos::RCP<Epetra_MultiVector> result = OptProb()->Matman()->GetMatParams();
+
   Writer()->WriteNamedVectors("mean_vb", result);
 
   // covariance estimation in optimization parameter layout

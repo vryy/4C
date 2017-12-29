@@ -185,7 +185,7 @@ int INVANA::ObjectiveFunctDisp::FindStep(double time)
   for (int i=0; i<(int)timesteps_.size(); i++)
   {
     double dt=abs(timesteps_[i]-time);
-    if (dt<1.0e-10)
+    if (dt<1.0e-5)
       step=i;
   }
 

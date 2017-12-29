@@ -845,7 +845,7 @@ baci_test(invana_reg0_lbfgs100_full_unif 3 "")
 baci_test(invana_cube2by2_displ 2 " " minimal)
 baci_test(invana_cube2by2_unif_displ 3 "")
 baci_test(invana_cube2by2_unif_displ 1 " ")
-baci_test(invana_cube2by2_lbfgs_elasthyper 2 "")
+#baci_test(invana_cube2by2_lbfgs_elasthyper 2 "")
 baci_test(invana_cube_levenbergmarquardt_elasthyper 2 "")
 baci_test(invana_levenbergmarquardt_coupled_inverse_analysis 2 "")
 # Surface Current Evaluation needs Kokkos
