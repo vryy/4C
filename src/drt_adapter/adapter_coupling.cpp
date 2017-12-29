@@ -48,7 +48,9 @@ void ADAPTER::Coupling::SetupConditionCoupling(
     Teuchos::RCP<const Epetra_Map> slavecondmap,
     const std::string& condname,
     const int numdof,
-    bool matchall)
+    bool matchall,
+    const int nds_master,
+    const int nds_slave)
 {
   std::vector<int> masternodes;
   DRT::UTILS::FindConditionedNodes(masterdis,condname,masternodes);
@@ -67,7 +69,7 @@ void ADAPTER::Coupling::SetupConditionCoupling(
     dserror("got %d master nodes but %d slave nodes for coupling",
             mastercount,slavecount);
 
-  SetupCoupling(masterdis, slavedis, masternodes, slavenodes, numdof, matchall);
+  SetupCoupling(masterdis, slavedis, masternodes, slavenodes, numdof, matchall,1.0e-3,nds_master,nds_slave);
 
   // test for completeness
   if (static_cast<int>(masternodes.size())*numdof != masterdofmap_->NumMyElements())
@@ -191,7 +193,9 @@ void ADAPTER::Coupling::SetupCoupling(
     const std::vector<int>& slavenodes,
     const int numdof,
     const bool matchall,
-    const double tolerance)
+    const double tolerance,
+    const int nds_master,
+    const int nds_slave)
 {
   std::vector<int> patchedmasternodes(masternodes);
   std::vector<int> permslavenodes;
@@ -208,7 +212,7 @@ void ADAPTER::Coupling::SetupCoupling(
   Teuchos::RCP<Epetra_Map> permslavenodemap =
     Teuchos::rcp(new Epetra_Map(-1, permslavenodes.size(), &permslavenodes[0], 0, slavedis.Comm()));
 
-  FinishCoupling(masterdis, slavedis, masternodemap, slavenodemap, permslavenodemap, numdof);
+  FinishCoupling(masterdis, slavedis, masternodemap, slavenodemap, permslavenodemap, numdof,nds_master,nds_slave);
 }
 
 
@@ -221,7 +225,9 @@ void ADAPTER::Coupling::SetupCoupling(
     const Epetra_Map& slavenodes,
     const int numdof,
     const bool matchall,
-    const double tolerance)
+    const double tolerance,
+    const int nds_master,
+    const int nds_slave)
 {
   if (masternodes.NumGlobalElements()!=slavenodes.NumGlobalElements() and matchall)
     dserror("got %d master nodes but %d slave nodes for coupling",
@@ -247,7 +253,7 @@ void ADAPTER::Coupling::SetupCoupling(
   Teuchos::RCP<Epetra_Map> permslavenodemap =
     Teuchos::rcp(new Epetra_Map(-1, permslavenodes.size(), &permslavenodes[0], 0, slavedis.Comm()));
 
-  FinishCoupling(masterdis, slavedis, masternodemap, slavenodemap, permslavenodemap, numdof);
+  FinishCoupling(masterdis, slavedis, masternodemap, slavenodemap, permslavenodemap, numdof, nds_master, nds_slave);
 }
 
 
@@ -366,7 +372,9 @@ void ADAPTER::Coupling::FinishCoupling(
     Teuchos::RCP<Epetra_Map> masternodemap,
     Teuchos::RCP<Epetra_Map> slavenodemap,
     Teuchos::RCP<Epetra_Map> permslavenodemap,
-    const int numdof)
+    const int numdof,
+    const int nds_master,
+    const int nds_slave)
 {
   // we expect to get maps of exactly the same shape
   if (not masternodemap->PointSameAs(*permslavenodemap))
@@ -401,7 +409,7 @@ void ADAPTER::Coupling::FinishCoupling(
   permmasternodevec = Teuchos::null;
 
   BuildDofMaps(masterdis,slavedis,masternodemap,slavenodemap,
-      permmasternodemap,permslavenodemap,numdof);
+      permmasternodemap,permslavenodemap,numdof, nds_master, nds_slave);
 }
 
 /*----------------------------------------------------------------------*/
@@ -413,12 +421,14 @@ void ADAPTER::Coupling::BuildDofMaps(
     const Teuchos::RCP<const Epetra_Map>& slavenodemap,
     const Teuchos::RCP<const Epetra_Map>& permmasternodemap,
     const Teuchos::RCP<const Epetra_Map>& permslavenodemap,
-    const int& numdof)
+    const int& numdof,
+    const int nds_master,
+    const int nds_slave)
 {
   BuildDofMaps(masterdis, masternodemap, permmasternodemap, masterdofmap_,
-      permmasterdofmap_, masterexport_, numdof);
+      permmasterdofmap_, masterexport_, numdof, nds_master);
   BuildDofMaps(slavedis,  slavenodemap,  permslavenodemap,  slavedofmap_,
-      permslavedofmap_,  slaveexport_, numdof);
+      permslavedofmap_,  slaveexport_, numdof, nds_slave);
 }
 
 
@@ -431,7 +441,8 @@ void ADAPTER::Coupling::BuildDofMaps(
     Teuchos::RCP<const Epetra_Map>& dofmap,
     Teuchos::RCP<const Epetra_Map>& permdofmap,
     Teuchos::RCP<Epetra_Export>& exporter,
-    const int numdof) const
+    const int numdof,
+    const int nds) const
 {
   // communicate dofs
 
@@ -480,7 +491,7 @@ void ADAPTER::Coupling::BuildDofMaps(
       }
     }
 
-    const std::vector<int> dof = dis.Dof(0,actnode);
+    const std::vector<int> dof = dis.Dof(nds,actnode);
     if (numdof > static_cast<int>(dof.size()))
       dserror("got just %d dofs at node %d (lid=%d) but expected %d",dof.size(),nodes[i],i,numdof);
     copy(&dof[0], &dof[0]+numdof, back_inserter(dofs[nodes[i]]));

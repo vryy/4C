@@ -192,7 +192,9 @@ namespace ADAPTER
                                 Teuchos::RCP<const Epetra_Map> slavecondmap,
                                 const std::string& condname,
                                 const int numdof,
-                                bool matchall=true);
+                                bool matchall=true,
+                                const int nds_master=0,
+                                const int nds_slave=0);
 
     /// setup coupling of nodes marked with condition1 not belonging
     /// also to condition2
@@ -242,7 +244,9 @@ namespace ADAPTER
         const std::vector<int>& slavenodes,
         const int numdof,
         const bool matchall=true,
-        const double tolerance=1.e-3);
+        const double tolerance=1.e-3,
+        const int nds_master=0,
+        const int nds_slave=0);
 
     /*! \brief Setup coupling of given nodes
      *
@@ -272,7 +276,9 @@ namespace ADAPTER
         const Epetra_Map& slavenodes,
         const int numdof,
         const bool matchall=true,
-        const double tolerance=1.e-3);
+        const double tolerance=1.e-3,
+        const int nds_master=0,
+        const int nds_slave=0);
 
     /*! \brief Setup coupling of given nodes and node maps
      *
@@ -477,7 +483,9 @@ namespace ADAPTER
         const Teuchos::RCP<const Epetra_Map>& slavenodemap,
         const Teuchos::RCP<const Epetra_Map>& permmasternodemap,
         const Teuchos::RCP<const Epetra_Map>& permslavenodemap,
-        const int& numdof);
+        const int& numdof,
+        const int nds_master=0,
+        const int nds_slave=0);
 
   private:
 
@@ -508,7 +516,9 @@ namespace ADAPTER
         Teuchos::RCP<Epetra_Map> masternodemap,
         Teuchos::RCP<Epetra_Map> slavenodemap,
         Teuchos::RCP<Epetra_Map> permslavenodemap,
-        const int numdof);
+        const int numdof,
+        const int nds_master=0,
+        const int nds_slave=0);
 
     /// build dof maps from node maps
     /*!
@@ -521,7 +531,8 @@ namespace ADAPTER
         Teuchos::RCP<const Epetra_Map>& dofmap,
         Teuchos::RCP<const Epetra_Map>& permdofmap,
         Teuchos::RCP<Epetra_Export>& exporter,
-        const int numdof) const;
+        const int numdof,
+        const int nds=0) const;
 
   protected:
     /// @name accessors to the private class members for derived classes

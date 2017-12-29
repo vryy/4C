@@ -185,7 +185,9 @@ namespace XFieldField {
         const Teuchos::RCP<const Epetra_Map>& slavenodemap,
         const Teuchos::RCP<const Epetra_Map>& permmasternodemap,
         const Teuchos::RCP<const Epetra_Map>& permslavenodemap,
-        const int& numdof);
+        const int& numdof,
+        const int nds_master=0,
+        const int nds_slave=0);
 
   private:
     /** \brief store the nodal maps and create the corresponding exporter objects

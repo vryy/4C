@@ -204,7 +204,9 @@ void XFEM::XFieldField::Coupling::BuildDofMaps(
     const Teuchos::RCP<const Epetra_Map>& slavenodemap,
     const Teuchos::RCP<const Epetra_Map>& permmasternodemap,
     const Teuchos::RCP<const Epetra_Map>& permslavenodemap,
-    const int& numdof)
+    const int& numdof,
+    const int nds_master,
+    const int nds_slave)
 {
   SaveNodeMaps(masternodemap,slavenodemap,permmasternodemap,permslavenodemap);
 
@@ -212,7 +214,7 @@ void XFEM::XFieldField::Coupling::BuildDofMaps(
   if (numdof!=-1)
   {
     ADAPTER::Coupling::BuildDofMaps(masterdis,slavedis,masternodemap,
-        slavenodemap,permmasternodemap,permslavenodemap,numdof);
+        slavenodemap,permmasternodemap,permslavenodemap,numdof,nds_master,nds_slave);
     return;
   }
 
