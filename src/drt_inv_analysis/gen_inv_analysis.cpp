@@ -354,6 +354,10 @@ void STR::GenInvAnalysis::Integrate()
   int max_itter = iap.get<int>("INV_ANA_MAX_RUN");
   int newfiles = DRT::INPUT::IntegralValue<int>(iap,"NEW_FILES");
 
+  // multiple inverse analysis is just implemented for parallel use
+  if (spec_inv_ana_mult_)
+    dserror("Multiple inverse analysis is just implemented for parallel use.");
+
   // fitting loop
   do
   {
@@ -480,9 +484,10 @@ void STR::GenInvAnalysis::NPIntegrate()
   const int ngroup   = group->NumGroups();
 
   // make some plausability checks:
-  //  np_+1 must divide by the number of groups (np_+1) % ngroup = 0
-  if ( (np_+1)%ngroup != 0)
-    dserror("# material parameters + 1 (%d) must divide by # groups (%d)",np_+1,ngroup);
+  // number of groups must be divide by the number of material parameters np_+1
+  if (ngroup % (np_ + 1) != 0)
+    dserror("# groups (%d) must divide by # material parameters + 1 (%d) ",ngroup,np_+1);
+
 
   // group 0 does the unpermuted solution
   // groups 1 to np_ do the permuted versions
@@ -493,6 +498,10 @@ void STR::GenInvAnalysis::NPIntegrate()
   const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
   int max_itter = iap.get<int>("INV_ANA_MAX_RUN");
   int newfiles = DRT::INPUT::IntegralValue<int>(iap,"NEW_FILES");
+
+  // do special stuff of multiple inverse analysis
+  if (spec_inv_ana_mult_)
+    NPIntegrateMult();
 
   // fitting loop
   do
@@ -519,19 +528,46 @@ void STR::GenInvAnalysis::NPIntegrate()
       if (!gmyrank) printf("perturbation[%d] %15.10e\n",i,perturb[i]);
     }
 
+    // set variables if multiple inverse analysis or normal inverse analysis
+    int i;  // every group start with different material parameter perturbed
+    double nmp;
+    if (spec_inv_ana_mult_)
+    {
+      // in case of multiple inverse analysis: use measured dofs of all experiments
+      nmp=nmp_mult_;
+
+      // get experiment ID of each optimization
+      int expid = iap.get<int>("EXP_ID_MULT_INV_ANA");
+      i = groupid - expid * (np_ + 1);
+
+      //to ensure i does not get smaller than zero
+      //potentially, one can run a single experiment and the exp_id
+      //can then be a number other than zero
+      if (nexp_ == 1)
+        i = groupid;
+    }
+    // normal inverse analysis
+    else
+    {
+      nmp=nmp_;
+      i=groupid; // every group start with different material parameter perturbed
+    }
+
     gcomm->Barrier();
 
     // as the actual inv analysis is on proc 0 only, do only provide storage on proc 0
     Epetra_SerialDenseMatrix cmatrix;
-    if (!gmyrank) cmatrix.Shape(nmp_,np_+1);
+    if (!gmyrank)
+      cmatrix.Shape(nmp,np_+1);
 
     //---------------------------- loop over parameters to fit and build cmatrix
-    int i=groupid; // every group start with different material parameter perturbed
+    // i: every group start with different material parameter perturbed
     for (; i<np_+1; i+=ngroup) // loop with increments of ngroup
     {
       bool outputtofile = false;
       // output only for last run
-      if (i==np_) outputtofile = true;
+      if (i==np_)
+        outputtofile = true;
 
       if (outputtofile)
       {
@@ -554,7 +590,8 @@ void STR::GenInvAnalysis::NPIntegrate()
       // make current set of material parameters
       Epetra_SerialDenseVector p_cur = p_;
       // perturb parameter i
-      if (i!= np_) p_cur[i] = p_[i] + perturb[i];
+      if (i!= np_)
+        p_cur[i] = p_[i] + perturb[i];
 
       // put perturbed material parameters to material laws
       // these are different for every group
@@ -565,28 +602,82 @@ void STR::GenInvAnalysis::NPIntegrate()
       // output at the last step
       Epetra_SerialDenseVector cvector;
       cvector = CalcCvector(outputtofile,group);
+
       // output cvector is on lmyrank=0 of every group
       // all other procs have zero vectors of the same size here
       // communicate cvectors to gmyrank 0 and put into cmatrix
-      for (int j=0; j<ngroup; ++j)
+      gcomm->Barrier();
+      if (spec_inv_ana_mult_)
       {
-        int ssender=0;
-        int sender=0;
-        if (lmyrank==0 && groupid==j) ssender = gmyrank;
-        gcomm->SumAll(&ssender,&sender,1);
-        int n[2];
-        n[0] = cvector.Length();
-        n[1] = i;
-        gcomm->Broadcast(n,2,sender);
-        Epetra_SerialDenseVector sendbuff(n[0]);
-        if (sender==gmyrank) sendbuff = cvector;
-        gcomm->Broadcast(sendbuff.Values(),n[0],sender);
-        if (gmyrank==0) // gproc 0 puts received cvector in cmatrix
+        int pos = 0;
+        // go through all experiments
+        for (int k = 0; k < nexp_; ++k)
         {
-          if (nmp_ != n[0]) dserror("Size mismatch nmp_ %d != n %d",nmp_,n[0]);
-          int ii = n[1];
-          for (int k=0; k<nmp_; ++k)
-            cmatrix(k,ii) = sendbuff[k];
+          // get writing start position of every experiment
+          if (k > 0)
+            pos += nmp_array_mult_[k-1];
+
+          for (int j = 0; j < np_ + 1; ++j)
+          {
+            int ssender = 0;
+            int sender = 0;
+            if (lmyrank == 0 && groupid == (j + k * (np_ + 1)))
+            {
+              ssender = gmyrank;
+            }
+            gcomm->SumAll(&ssender, &sender, 1);
+
+            int n[2];
+            n[0] = cvector.Length();
+            n[1] = i;
+            gcomm->Broadcast(n, 2, sender);
+            Epetra_SerialDenseVector sendbuff(n[0]);
+            if (sender == gmyrank)
+            {
+              //normalize to handle different experiments
+              cvector.Scale(1./facnorm_mult_[k]);
+              sendbuff = cvector;
+            }
+            gcomm->Broadcast(sendbuff.Values(), n[0], sender);
+
+            if (gmyrank == 0) // gproc 0 puts received cvector in cmatrix
+            {
+              int ii = n[1];
+              for (int l = pos; l < n[0] + pos; ++l)
+              {
+                cmatrix(l, ii) = sendbuff[l - pos];
+              }
+            }
+          }
+        }
+      }
+      // normal or coupled inverse analysis
+      else
+      {
+        for (int j=0; j<ngroup; ++j)
+        {
+          int ssender=0;
+          int sender=0;
+          if (lmyrank==0 && groupid==j)
+            ssender = gmyrank;
+          gcomm->SumAll(&ssender,&sender,1);
+
+          int n[2];
+          n[0] = cvector.Length();
+          n[1] = i;
+          gcomm->Broadcast(n,2,sender);
+          Epetra_SerialDenseVector sendbuff(n[0]);
+          if (sender==gmyrank)
+            sendbuff = cvector;
+          gcomm->Broadcast(sendbuff.Values(),n[0],sender);
+          if (gmyrank==0) // gproc 0 puts received cvector in cmatrix
+          {
+            if (nmp_ != n[0])
+              dserror("Size mismatch nmp_ %d != n %d",nmp_,n[0]);
+            int ii = n[1];
+            for (int k=0; k<nmp_; ++k)
+              cmatrix(k,ii) = sendbuff[k];
+          }
         }
       }
 
@@ -597,7 +688,8 @@ void STR::GenInvAnalysis::NPIntegrate()
     } //--------------------------------------------------------------------------------
 
     gcomm->Barrier();
-    if (!gmyrank) CalcNewParameters(cmatrix,perturb);
+    if (!gmyrank)
+      CalcNewParameters(cmatrix,perturb);
 
     // set new material parameters
     // these are the same for all groups
@@ -622,7 +714,131 @@ void STR::GenInvAnalysis::NPIntegrate()
 
 
   // print results to file
-  if (!gmyrank) PrintFile();
+  if (!gmyrank)
+    PrintFile();
+
+  return;
+}
+
+//---------------------------------------------------------------------------------------------
+// Additional calculations of Integrate for Multiple Inverse Analysis
+void STR::GenInvAnalysis::NPIntegrateMult()
+{
+  Teuchos::RCP<COMM_UTILS::NestedParGroup> group = DRT::Problem::Instance()->GetNPGroup();
+  Teuchos::RCP<Epetra_Comm> lcomm = group->LocalComm();
+  Teuchos::RCP<Epetra_Comm> gcomm = group->GlobalComm();
+  const int lmyrank  = lcomm->MyPID();
+  const int gmyrank  = gcomm->MyPID();
+  const int groupid  = group->GroupId();
+  const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
+
+
+  /* general idea: partition the NPGroup into subgroups, each subgroup belongs to one experiment;
+   * then, distribute the single simulation runs (unpertubed and pertubed) in each subgroup to the single procs
+   * this is currently achieved by the input syntax (script) of baci
+   * ngroup has to have the size of (#experiments * (#params +1))
+   * afterwards, send the results of the simulation runs to one cmatrix on proc 0
+   *
+   * the cmatrix is arranged as followed
+   * [u_pertubed_param1_exp1 --- u_pertubed_param2_exp1 --- ... --- u_unpertubed_exp1
+   *  u_pertubed_param1_exp2 --- u_pertubed_param2_exp2 --- ... --- u_unpertubed_exp2
+   *  ........
+   *  u_pertubed_param1_expn --- u_pertubed_param2_expn --- ... --- u_unpertubed_expn]
+   *
+   *  this cmatrix is then forwarded to the CalcNewParametersMult() method
+   *  and a new set of parameters is calculated
+   */
+
+  // get experiment ID of each optimization (starts from 0)
+  int expid = iap.get<int>("EXP_ID_MULT_INV_ANA");
+
+  // get number of experiments
+  int expid_tmp_min = 0;
+  int expid_tmp_max = 0;
+  gcomm->Barrier();
+  gcomm->MinAll(&expid, &expid_tmp_min, 1);
+  gcomm->MaxAll(&expid, &expid_tmp_max, 1);
+
+  if (expid_tmp_min == expid_tmp_max)
+    //if only running one experiment, exp_id has just to be the same on all procs
+    nexp_ = 1;
+  else
+    //if running multiple experiments
+    nexp_ = expid_tmp_max + 1; // calculate number of experiments
+
+  // calculate number of measured dofs of all experiments
+  // in case of multiple inverse analysis: nmp_mult_ stores the number of measured dofs of all experiments
+  gcomm->Barrier();
+  gcomm->SumAll(&nmp_, &nmp_mult_, 1);
+  nmp_mult_ = nmp_mult_ / (np_ + 1); // Input is read for each identified parameter (+1)
+
+  // This method checks for differences in the dat files which could disturb the run
+  CheckDiffDat(expid);
+
+
+
+  if (!gmyrank)
+    // setting up a mcurve_mult_ vector with all measured curves of every experiment
+    mcurve_mult_ = Epetra_SerialDenseVector(nmp_mult_);
+
+
+  gcomm->Barrier();
+  // this is an vector which stores all nmp_ values of every experiment:
+  nmp_array_mult_ = Epetra_SerialDenseVector(nexp_);
+  // this is an vector which stores all facnorms of every experiment:
+  facnorm_mult_ = Epetra_SerialDenseVector(nexp_);
+  int pos = 0;
+  for (int k = 0; k < nexp_; ++k)
+  {
+    int ssender = 0;
+    int sender = 0;
+    if (lmyrank==0 && groupid == k * (np_ + 1))
+    {
+      ssender = gmyrank; //save first proc of each experiment
+
+      nmp_array_mult_[k] = nmp_; // save nmp of each experiment
+
+      // calculate maximum and minimum measurement
+      double min_zug=mcurve_(0);
+      double max_zug=mcurve_(0);
+      for(int n=0;n<nmp_;n++)
+      {
+        min_zug=std::min(min_zug,mcurve_(n));
+        max_zug=std::max(max_zug,mcurve_(n));
+      }
+      // norm of each experiment 1/sqrt(nmp)*(max-min)
+      facnorm_mult_[k] = sqrt(nmp_)*(max_zug-min_zug);
+    }
+    gcomm->SumAll(&ssender, &sender, 1);
+    gcomm->Broadcast(nmp_array_mult_.Values(), nexp_, sender);
+    gcomm->Broadcast(facnorm_mult_.Values(), nexp_, sender);
+
+    if (k > 0)
+      pos += nmp_array_mult_[k-1]; //save position of last experiment
+
+    int n;
+    n = mcurve_.Length();
+    if (nmp_ != n)
+      dserror("Size mismatch nmp_ %d != n %d",nmp_,n);
+    gcomm->Broadcast(&n, 1, sender);
+    Epetra_SerialDenseVector sendbuff(n);
+    if (sender == gmyrank)
+    {
+      //normalize mcurve
+      mcurve_.Scale(1./facnorm_mult_[k]);
+
+      sendbuff = mcurve_;
+    }
+    gcomm->Broadcast(sendbuff.Values(), n, sender);
+
+    if (gmyrank == 0) // gproc 0 puts received mcurve in mcurve_mult (one experiment after each other)
+    {
+      for (int l = pos; l < pos + n; ++l)
+      {
+        mcurve_mult_(l) = sendbuff[l - pos];
+      }
+    }
+  }
 
   return;
 }
@@ -632,18 +848,34 @@ void STR::GenInvAnalysis::CalcNewParameters(
     Epetra_SerialDenseMatrix& cmatrix,
     std::vector<double>& perturb)
 {
+  // in case of multiple inverse analysis: use measured dofs of all experiments
+  double nmp;
+  Epetra_SerialDenseVector mcurve;
+  if (spec_inv_ana_mult_)
+  {
+    nmp=nmp_mult_; // overwrite nmp_
+    mcurve=mcurve_mult_;
+  }
+  // normal or coupled inverse analysis
+  else
+  {
+    nmp=nmp_;
+    mcurve=mcurve_;
+  }
+
   // initalization of the Jacobian and other storage
   Epetra_SerialDenseMatrix sto(np_,  np_);
   Epetra_SerialDenseVector delta_p(np_);
   Epetra_SerialDenseVector tmp(np_);
-  Epetra_SerialDenseVector rcurve(nmp_);
-  Epetra_SerialDenseVector ccurve(nmp_);
+  Epetra_SerialDenseVector rcurve(nmp);
+  Epetra_SerialDenseVector ccurve(nmp);
 
   // copy column with unperturbed values to extra vector
-  for (int i=0; i<nmp_; i++) ccurve[i] = cmatrix(i,np_);
+  for (int i=0; i<nmp; i++)
+    ccurve[i] = cmatrix(i,np_);
 
   // remove the extra column np_+1 with unperturbed values
-  cmatrix.Reshape(nmp_,np_);
+  cmatrix.Reshape(nmp,np_);
 
   // reuse the cmatrix array as J to save storage
   Epetra_SerialDenseMatrix& J = cmatrix;
@@ -697,19 +929,19 @@ void STR::GenInvAnalysis::CalcNewParameters(
     double volexp_fac_norm = sqrt(nmp_volexp_)*(max_volexp-min_volexp);
 
     // calculate facnorm (N_uniax) of tensile test
-    double min_zug=mcurve_(0);
-    double max_zug=mcurve_(0);
-    for(int n=0;n<nmp_;n++)
+    double min_zug=mcurve(0);
+    double max_zug=mcurve(0);
+    for(int n=0;n<nmp;n++)
     {
-      min_zug=std::min(min_zug,mcurve_(n));
-      max_zug=std::max(max_zug,mcurve_(n));
+      min_zug=std::min(min_zug,mcurve(n));
+      max_zug=std::max(max_zug,mcurve(n));
     }
-    double fac_norm = sqrt(nmp_)*(max_zug-min_zug);
+    double fac_norm = sqrt(nmp)*(max_zug-min_zug);
 
     //
     //calculating Jacobi-Materix J(p)
     // tensile test data
-    for (int i=0; i<nmp_; i++)
+    for (int i=0; i<nmp; i++)
       for (int j=0; j<np_; j++)
       {
         J(i,j) -= ccurve[i];
@@ -717,51 +949,54 @@ void STR::GenInvAnalysis::CalcNewParameters(
         J(i,j) /= fac_norm; //normalize J
       }
     // add data of pressure-volume-change experiment
-    J.Reshape(nmp_+nmp_volexp_,np_);
+    J.Reshape(nmp+nmp_volexp_,np_);
     for (int i=0; i<nmp_volexp_; i++)
     {
       for (int j=0; j<np_; j++)
       {
-        J(i+nmp_,j) = volexp_p_comp(i,j); // perturbated values of pressure
-        J(i+nmp_,j) -= volexp_p_comp(i,np_); // - unperturbated values of pressure
-        J(i+nmp_,j) /= perturb[j]; // /perturbation
-        J(i+nmp_,j) /= volexp_fac_norm; //normalize J
+        J(i+nmp,j) = volexp_p_comp(i,j); // perturbated values of pressure
+        J(i+nmp,j) -= volexp_p_comp(i,np_); // - unperturbated values of pressure
+        J(i+nmp,j) /= perturb[j]; // /perturbation
+        J(i+nmp,j) /= volexp_fac_norm; //normalize J
       }
     }
 
     // calculating residuum R
     // compute residual (measured vs. computed)
     // tensile test data (displacements)
-    for (int i=0; i<nmp_; i++)
+    for (int i=0; i<nmp; i++)
     {
-      rcurve[i] = mcurve_[i] - ccurve[i];
+      rcurve[i] = mcurve[i] - ccurve[i];
       rcurve[i] /= fac_norm; // normalize residuum
     }
     // add data (pressure) of pressure-volume-change experiment
-    rcurve.Reshape(nmp_+nmp_volexp_,1);
+    rcurve.Reshape(nmp+nmp_volexp_,1);
     for (int i=0; i<nmp_volexp_; i++)
     {
-      rcurve[i+nmp_] = volexp_deltap[i] - volexp_p_comp(i,np_);
-      rcurve[i+nmp_] /= volexp_fac_norm;
+      rcurve[i+nmp] = volexp_deltap[i] - volexp_p_comp(i,np_);
+      rcurve[i+nmp] /= volexp_fac_norm;
     }
     // end of coupled inverse analysis
   }
-  // normal inverse analysis
+  // normal or multiple inverse analysis
   else
   {
     nmp_volexp_ = 0; // do not add any data
     //calculating J(p)
-    for (int i=0; i<nmp_; i++)
+    for (int i=0; i<nmp; i++)
       for (int j=0; j<np_; j++)
       {
         J(i,j) -= ccurve[i];
         J(i,j) /= perturb[j];
+        // normal inverse analysis: not normalized
+        // multiple inverse analysis: already normalized
       }
 
     //calculating R
     // compute residual displacement (measured vs. computed)
-    for (int i=0; i<nmp_; i++)
-      rcurve[i] = mcurve_[i] - ccurve[i];
+    for (int i=0; i<nmp; i++)
+      rcurve[i] = mcurve[i] - ccurve[i];
+    // multiple invers analysis: both parts already normalized
   }
 
   //calculating J.T*J
@@ -787,10 +1022,10 @@ void STR::GenInvAnalysis::CalcNewParameters(
   p_o_ = p_;
 
   //  // update res based error
-  if (spec_inv_ana_coup_)
+  if ((spec_inv_ana_coup_) || (spec_inv_ana_mult_))
     error_   = rcurve.Norm2(); // already normalized
   else
-    error_   = rcurve.Norm2()/sqrt(nmp_);
+    error_   = rcurve.Norm2()/sqrt(nmp);
 
   // Gradient based update of mu based on
   //Kelley, C. T., Liao, L. Z., Qi, L., Chu, M. T., Reese, J. P., & Winton, C. (2009)
@@ -800,7 +1035,7 @@ void STR::GenInvAnalysis::CalcNewParameters(
     //get jacobian:
     Epetra_SerialDenseVector Ji(np_);
     for (int i=0; i<np_; i++)
-      for (int j=0; j<nmp_+nmp_volexp_; j++)
+      for (int j=0; j<nmp+nmp_volexp_; j++)
         Ji[i]+= rcurve[j]*J(j,i);
 
     error_grad_ = Ji.Norm2();
@@ -842,7 +1077,7 @@ void STR::GenInvAnalysis::CalcNewParameters(
   }
 
   // return cmatrix to previous size and zero out
-  cmatrix.Shape(nmp_,np_+1);
+  cmatrix.Shape(nmp,np_+1);
 
   PrintStorage(delta_p);
 
@@ -955,7 +1190,11 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
     }
   }
 
-  if (!(writestep*ndofs_==nmp_)) dserror("# of monitored timesteps does not match # of timesteps extracted from the simulation ");
+  if (!(writestep*ndofs_==nmp_))
+  {
+    std::cout<<"# of timesteps extracted from the simulation: "<<writestep<<std::endl;
+    dserror("# of monitored timesteps does not match # of timesteps extracted from the simulation ");
+  }
 
   return cvector;
 }
@@ -1074,7 +1313,11 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(
     }
   }
 
-  if (!(writestep*ndofs_==nmp_)) dserror("# of monitored timesteps does not match # of timesteps extracted from the simulation ");
+  if (!(writestep*ndofs_==nmp_))
+  {
+    std::cout<<"writestep: "<<writestep<<std::endl;
+    dserror("# of monitored timesteps does not match # of timesteps extracted from the simulation ");
+  }
 
   return cvector;
 }
@@ -3042,6 +3285,8 @@ void STR::GenInvAnalysis::MultiInvAnaInit()
   }
 }
 
+
+//===========================================================================================
 /*----------------------------------------------------------------------*/
 /* data of volume-pressure-change experiment
  * (just applicable for lung parenchyma)                 abirzle 12/17  */
@@ -3124,6 +3369,8 @@ void STR::GenInvAnalysis::pVData(
   return;
 }
 
+
+//===========================================================================================
 /*----------------------------------------------------------------------*/
 /*  calculation of pressure-value from volume-change and material paramters
  * the material paramters depend on the material, which is identified
@@ -3259,6 +3506,7 @@ void STR::GenInvAnalysis::ComputePressureNHIso1Coup3(
 }
 
 
+//===========================================================================================
 /*----------------------------------------------------------------------*/
 /* check if pressure-volume-change relation is physiological
  * for identified material parameters
@@ -3346,3 +3594,98 @@ void STR::GenInvAnalysis::CheckPhysiologicalPVRelationNHIso1Coup3()
     }
   }
 }
+
+
+//===========================================================================================
+/*----------------------------------------------------------------------*/
+/* check if pressure-volume-change relation is physiological
+ * of multiple inverse analysis                          abirzle 12/17  */
+void STR::GenInvAnalysis::CheckDiffDat(
+    int& expid
+)
+{
+  Teuchos::RCP<COMM_UTILS::NestedParGroup> group = DRT::Problem::Instance()->GetNPGroup();
+  Teuchos::RCP<Epetra_Comm> gcomm = group->GlobalComm();
+  const int groupid = group->GroupId();
+  const int ngroup = group->NumGroups();
+  const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
+
+  // get parameters of each optimization
+  double alpha = iap.get<double>("INV_ALPHA");
+  double beta = iap.get<double>("INV_BETA");
+  int max_itter = iap.get<int>("INV_ANA_MAX_RUN");
+
+  gcomm->Barrier();
+
+  // plausibility check's
+  if (expid < 0)
+    dserror("Wrong (negative) exp_id number in dat file! EXP_ID has to be greater or equal than zero");
+
+  if (!nexp_)
+    dserror("number of experiments is zero!");
+
+  if(!nmp_mult_)
+    dserror("number of measured dofs of all experiments is zero!");
+
+  if ((nexp_ * (np_ + 1)) != ngroup)
+  {
+    std::cout << "Number of experiments (nexp): " << nexp_ << std::endl;
+    std::cout << "Number of parameter to optimize (np) +1 : " << (np_ + 1) << std::endl;
+    std::cout << "Number of specified groups (ngroup): " << ngroup << std::endl;
+    dserror("ngroup has to be nexp*(np+1)!");
+  }
+
+  double tol_min = 0.0;
+  double tol_max = 0.0;
+  gcomm->MinAll(&tol_, &tol_min, 1);
+  gcomm->MaxAll(&tol_, &tol_max, 1);
+  if (tol_min != tol_max)
+    dserror("Tolerance is not the same on every proc!");
+
+  int max_itter_min = 0;
+  int max_itter_max = 0;
+  gcomm->MinAll(&max_itter, &max_itter_min, 1);
+  gcomm->MaxAll(&max_itter, &max_itter_max, 1);
+  if (max_itter_min != max_itter_max)
+    dserror("MAY RUN is not the same on every proc!");
+
+  double alpha_min = 0;
+  double alpha_max = 0;
+  gcomm->MinAll(&alpha, &alpha_min, 1);
+  gcomm->MaxAll(&alpha, &alpha_max, 1);
+  if (alpha_min != alpha_max)
+    dserror("Alpha is not the same in every proc!");
+
+  double beta_min = 0;
+  double beta_max = 0;
+  gcomm->MinAll(&beta, &beta_min, 1);
+  gcomm->MaxAll(&beta, &beta_max, 1);
+  if (beta_min != beta_max)
+    dserror("Beta is not the same in every proc!");
+
+  int check_neg_params_min;
+  int check_neg_params_max;
+  gcomm->MinAll(&check_neg_params_, &check_neg_params_min, 1);
+  gcomm->MaxAll(&check_neg_params_, &check_neg_params_max, 1);
+  if (check_neg_params_min != check_neg_params_max)
+    dserror("check_neg_params_ is not the same in every proc!");
+
+
+  if (nexp_ > 1)
+  {
+    // every proc gets a different expid, this is the ID that identifies the different experiments
+    int expidtmp = -1;
+    for (int i = 1; i < nexp_ + 1; ++i)
+    {
+      if (groupid < i * (np_ + 1) && groupid >= (i - 1) * (np_ + 1))
+        expidtmp = i - 1;
+    }
+    if (expidtmp != expid)
+      dserror(
+          "The files were not read in properly!\n"
+          "The experiment with ID number 0 has to be read in first etc.\n"
+          "Please use following scheme as parameters: Input_1 Output_1 Input_1 Output_2 Input_1 Output_3 Input_1 Output_4 Input_2 Output_1 Input_2 Output_2 etc.");
+  }
+  return;
+}
+

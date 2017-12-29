@@ -149,6 +149,11 @@ private:
 
   /// variables of multiple inverse analysis
   bool spec_inv_ana_mult_; // define if multiple inverse analysis is used
+  int nmp_mult_;      //number of all measured dofs of every experiment
+  int nexp_;          // number of all experiments
+  Epetra_SerialDenseVector mcurve_mult_; // measured displacement of all the experiments (target value of multiple inverse analysis)
+  Epetra_SerialDenseVector nmp_array_mult_; // array of nmp of each experiment
+  Epetra_SerialDenseVector facnorm_mult_; // array of facnorms of each experiment
 
   /// variables of coupled inverse analysis
   bool spec_inv_ana_coup_; // define if coupled inverse analysis is used
@@ -264,6 +269,9 @@ public:
   /// acual inverse analysis loop
   void Integrate();
 
+  /// additional calculations for integrate of multiple inverse analysis
+  void NPIntegrateMult();
+
   /// acual inverse analysis loop (nested parallel version)
   void NPIntegrate();
 
@@ -293,6 +301,9 @@ public:
 
   /// check if pressure-volume-change-relation is physiological
   void CheckPhysiologicalPVRelationNHIso1Coup3();
+
+  /// check if difference in dat-files of multiple inverse analysis occur
+  void CheckDiffDat(int& expid);
 
 };  // class GenInvAnalysis
 

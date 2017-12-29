@@ -43,6 +43,14 @@ macro (baci_test_Nested_Par arg1 arg2 restart)
   set_tests_properties ( ${arg1}-nestedPar PROPERTIES TIMEOUT 200 )
 endmacro (baci_test_Nested_Par)
 
+# Run test case for nested parallelism with multiple inverse analysis
+macro (baci_test_Nested_Par_MultipleInvana arg1 arg2)
+  add_test(NAME ${arg1}-nestedPar-multiple-invana
+    COMMAND ${MPI_DIR}/bin/mpirun -np 4 $<TARGET_FILE:${baciname}> -ngroup=4 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx1  ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx2 ${PROJECT_SOURCE_DIR}/Input/${arg2}.dat xxx1 ${PROJECT_SOURCE_DIR}/Input/${arg2}.dat xxx2)
+
+    set_tests_properties ( ${arg1}-nestedPar-multiple-invana PROPERTIES TIMEOUT 200 )
+endmacro (baci_test_Nested_Par_MultipleInvana)
+
 # Run test case for nested parallelism with copydatfile
 # arg1 is the inputfile
 # arg2 is the number of procs
@@ -1781,6 +1789,7 @@ baci_test(xffsi_monolithic_fs_rotating_beam 4 "")
 baci_test_Nested_Par(tsi_heatconvection_monolithic tsi_heatconvection_monolithic "")
 baci_test_Nested_Par(sohex8_multiscale_macro sohex8_multiscale_npsupport "1")
 baci_test_Nested_Par(sohex8_multiscale_macro_2micro sohex8_multiscale_npsupport "1")
+baci_test_Nested_Par_MultipleInvana(invana_levenbergmarquardt_multiple_inverse_analysis0 invana_levenbergmarquardt_multiple_inverse_analysis1 "")
 baci_test_Nested_Par_CopyDat(nestedpar_copydatfile 2 2 minimal)
 baci_test_Nested_Par_CopyDat(mlmc_framework 2 2)
 baci_test_Nested_Par_CopyDat(mlmc_framework 4 2)

@@ -1,0 +1,161 @@
+// Maintainer: Anna Birzle
+//             birzle@lnm.mw.tum.de
+//             http://www.lnm.mw.tum.de
+//             089 - 289-15255
+==================================================================
+                  General Data File BACI
+==================================================================
+-------------------------------------------------------------TITLE
+created by pre_exodus
+------------------------------------------------------PROBLEM SIZE
+//ELEMENTS    8
+//NODES       27
+DIM           3
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Inverse_Analysis
+RESTART                         0
+--------------------------------------------------------------DISCRETISATION
+NUMFLUIDDIS                     0
+NUMSTRUCDIS                     1
+NUMALEDIS                       0
+NUMTHERMDIS                     0
+--------------------------------------------------------------------------IO
+OUTPUT_BIN                      yes
+STRUCT_DISP                     yes
+STRUCT_STRESS                   2pk
+STRUCT_STRAIN                   gl
+FLUID_SOL                       No
+FLUID_STRESS                    No
+FLUID_VIS                       No
+---------------------------------------------------INVERSE ANALYSIS
+INV_ANALYSIS                    gen
+SPECIAL_INV_ANALYSIS            mult
+EXP_ID_MULT_INV_ANA             0
+INV_ANA_TOL                     1e-7
+INV_ANA_MAX_RUN                 20
+INV_ALPHA                       0.0
+INV_BETA                        0.1
+INV_INITREG                     1
+UPDATE_REG                      GRAD
+MONITORFILE                     invana_cube_mult0.mon
+INV_LIST                        4
+NEW_FILES                       yes
+PARAM_BOUNDS                    yes
+----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   1
+DYNAMICTYP                      Statics //GenAlpha //OneStepTheta
+RESULTSEVRY                     1
+RESTARTEVRY                     100
+NLNSOL                          fullnewton // fullnewton modnewton matfreenewton nlncg ptc
+PREDICT                         ConstVel // Dis
+TIMESTEP                        0.1 //10
+NUMSTEP                         10 //99999
+MAXTIME                         1
+DAMPING                         No
+M_DAMP                          0.005
+K_DAMP                          0.005
+NORM_DISP                       Abs
+NORM_RESF                       Abs
+NORMCOMBI_RESFDISP              And
+TOLDISP                         1.0E-11
+TOLRES                          1.0E-06
+MAXITER                         50
+INT_STRATEGY                    Standard
+------------------------------------------------STRUCT NOX/Printing
+Error                           = No
+Warning                         = No
+Outer Iteration                 = Yes
+Inner Iteration                 = No
+Parameters                      = No
+Details                         = No
+Outer Iteration StatusTest      = No
+Linear Solver Details           = No
+Test Details                    = No
+Debug                           = No
+--------------------------------------------------------------------SOLVER 1
+NAME                            Structure_Solver
+SOLVER                          UMFPACK
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 1
+NDLINE  3
+NDSURF  6
+NDVOL   0
+-----------------------------------------------DESIGN SURF DIRICH CONDITIONS
+DSURF 1
+E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
+DPOINT 1
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+-----------------------------------------------DESIGN LINE DIRICH CONDITIONS
+DLINE 3
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+-----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
+DSURF 1
+E 2 - NUMDOF 3 ONOFF 1 0 0 VAL 5000.0 0.0 0.0 FUNCT 1 0 0 Live Mid
+----------------------------------------------------------------------FUNCT1
+FUNCTION 0.5*(1-cos(0.5*pi*t)) // t0 bis 1
+-----------------------------------------------MATERIALS
+MAT 1 MAT_ViscoElastHyper   NUMMAT 3 MATIDS 2 3 4 DENS 0.0002
+MAT 2 ELAST_CoupNeoHooke YOUNG 2000.0 NUE 0.35
+MAT 3 ELAST_Coup1Pow C 10 D 4
+MAT 4 VISCO_GenMax TAU 0.5 BETA 1 SOLVE OST
+// right material parameters (no reasonable deformation)
+// (be careful, this is a coupled inverse analysis, so besides the monitor-file
+// the pressure-volume-change data defines the material parameters)
+//MAT 1 MAT_ViscoElastHyper   NUMMAT 4 MATIDS 2 3 4 DENS 0.0002
+//MAT 2 ELAST_CoupNeoHooke YOUNG 2000.0 NUE 0.35
+//MAT 3 ELAST_Coup1Pow C 10 D 4
+//MAT 4 VISCO_GenMax TAU 0.1 BETA 1
+-----------------------------------------------DNODE-NODE TOPOLOGY
+NODE    1 DNODE 1
+-----------------------------------------------DLINE-NODE TOPOLOGY
+NODE    1  DLINE 1
+NODE    2  DLINE 1
+NODE    1  DLINE 2
+NODE    4  DLINE 2
+NODE    1  DLINE 3
+NODE    5  DLINE 3
+-----------------------------------------------DSURF-NODE TOPOLOGY
+NODE    1 DSURFACE 1
+NODE    2 DSURFACE 1
+NODE    3 DSURFACE 1
+NODE    4 DSURFACE 1
+NODE    5 DSURFACE 2
+NODE    6 DSURFACE 2
+NODE    7 DSURFACE 2
+NODE    8 DSURFACE 2
+NODE    1 DSURFACE 3
+NODE    2 DSURFACE 3
+NODE    5 DSURFACE 3
+NODE    6 DSURFACE 3
+NODE    3 DSURFACE 4
+NODE    4 DSURFACE 4
+NODE    7 DSURFACE 4
+NODE    8 DSURFACE 4
+NODE    1 DSURFACE 5
+NODE    4 DSURFACE 5
+NODE    5 DSURFACE 5
+NODE    8 DSURFACE 5
+NODE    2 DSURFACE 6
+NODE    3 DSURFACE 6
+NODE    6 DSURFACE 6
+NODE    7 DSURFACE 6
+-------------------------------------------------------NODE COORDS
+NODE 1  COORD -5.0000000000000000e+00 -5.0000000000000000e+00 5.0000000000000000e+00
+NODE 2  COORD -5.0000000000000000e+00 -5.0000000000000000e+00 0.0000000000000000e+00
+NODE 3  COORD -5.0000000000000000e+00 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 4  COORD -5.0000000000000000e+00 0.0000000000000000e+00 5.0000000000000000e+00
+NODE 5  COORD 0.0000000000000000e+00 -5.0000000000000000e+00 5.0000000000000000e+00
+NODE 6  COORD 0.0000000000000000e+00 -5.0000000000000000e+00 0.0000000000000000e+00
+NODE 7  COORD 0.0000000000000000e+00 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 8  COORD 0.0000000000000000e+00 0.0000000000000000e+00 5.0000000000000000e+00
+------------------------------------------------STRUCTURE ELEMENTS
+1 SOLIDH8 HEX8  1 2 3 4 5 6 7 8    MAT 1 KINEM nonlinear EAS none
+----------------------------------------------------FLUID ELEMENTS
+------------------------------------------------------ALE ELEMENTS
+------------------------------------------------TRANSPORT ELEMENTS
+---------------------------------------------------THERMO ELEMENTS
+---------------------------------------------------------------END
+// END

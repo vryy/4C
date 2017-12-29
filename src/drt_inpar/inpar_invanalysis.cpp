@@ -80,6 +80,10 @@ void INPAR::INVANA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
                                   ),
                                  &iap);
 
+  // experiment ID if running multiple files in one inverse analysis
+  // id range is from 0 to #experiments-1
+  IntParameter("EXP_ID_MULT_INV_ANA",-1,"id of experiment",&iap);
+
 
   StringParameter("MONITORFILE","none.monitor",
                   "filename of file containing measured displacements",
