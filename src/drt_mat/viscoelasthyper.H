@@ -285,12 +285,24 @@ private:
         const int eleGID
         );
 
+    /// calculates the stress and elasticity tensor for the viscos Fract-material
+    /// depending on the viscoelastic material isochoric-principal, isochoric-modified
+    /// (volumetric and isochoric equal treaded) or anisotropic stresses and elasticity
+    /// tensors are added
+    virtual void EvaluateViscoFract(
+        LINALG::Matrix<6,1> stress,
+        LINALG::Matrix<6,6> cmat,
+        LINALG::Matrix<6,1>& Q,
+        LINALG::Matrix<6,6>& cmatq,
+        Teuchos::ParameterList& params
+        );
 
     /// @name Flags to specify the viscous formulations
     //@{
     bool isovisco_ ;    ///< global indicator for isotropic splitted viscous formulation
     bool viscogenmax_ ; ///< global indicator for viscous contribution according the SLS-Model
     bool viscogeneralizedgenmax_; ///< global indicator for viscous contribution of the branches according to the generalized Maxwell model
+    bool viscofract_ ; ///< global indicator for viscous contribution according the FSLS-Model
     //@}
 
   private:
@@ -308,6 +320,8 @@ private:
     Teuchos::RCP<std::vector<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > > histbranchstresslast_; ///< stress of the branches of last converged state
     Teuchos::RCP<std::vector<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > > histbranchelaststresscurr_; ///< current elastic stress of the branches
     Teuchos::RCP<std::vector<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > > histbranchelaststresslast_; ///< elastic stress of the branches of last converged state
+    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histfractartstresscurr_; ///< current artificial stress of fractional SLS-model
+    Teuchos::RCP<std::vector<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > > histfractartstresslastall_; ///< artificial fractional stress of all last converged states
 
     bool isinitvis_;  ///< indicates if #Initialized routine has been called
   }; // class ViscoElastHyper

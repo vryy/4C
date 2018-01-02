@@ -1952,8 +1952,23 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AddNamedReal(m,"TAU","relaxation parameter");
     AddNamedReal(m,"BETA","emphasis of viscous to elastic part");
-    AddNamedString(m,"SOLVE","Solution of evolution equation via: OST or CONVOL (convolution integral)","CONVOL");
+    AddNamedString(m,"SOLVE","Solution of evolution equation via: OST or CONVOL (convolution integral)","OST");
 
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*--------------------------------------------------------------------*/
+  // viscos contribution to visohyperelastic material according to FSLS-Model
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("VISCO_Fract",
+                                            "Viscous contribution according to FSLS-Model",
+                                            INPAR::MAT::mes_fract));
+
+    AddNamedReal(m,"TAU","relaxation parameter");
+    AddNamedReal(m,"ALPHA","fractional order derivative");
+    AddNamedReal(m,"BETA","emphasis of viscous to elastic part");
 
     AppendMaterialDefinition(matlist,m);
   }

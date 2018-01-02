@@ -54,6 +54,7 @@ Interface class for materials of (visco)elasthyper toolbox.
 #include "visco_coupmyocard.H"
 #include "visco_isoratedep.H"
 #include "visco_genmax.H"
+#include "visco_fract.H"
 #include "elast_anisoactivestress_evolution.H"
 #include "visco_generalizedgenmax.H"
 #include "elast_couptransverselyisotropic.H"
@@ -381,6 +382,13 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
       curmat->SetParameter(new MAT::ELASTIC::PAR::GenMax(curmat));
     MAT::ELASTIC::PAR::GenMax* params = static_cast<MAT::ELASTIC::PAR::GenMax*>(curmat->Parameter());
     return Teuchos::rcp(new GenMax(params));
+  }
+  case INPAR::MAT::mes_fract:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::Fract(curmat));
+    MAT::ELASTIC::PAR::Fract* params = static_cast<MAT::ELASTIC::PAR::Fract*>(curmat->Parameter());
+    return Teuchos::rcp(new Fract(params));
   }
   case INPAR::MAT::mes_viscopart:
   {

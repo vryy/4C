@@ -453,14 +453,15 @@ namespace MAT
         return;  // do nothing
       };
 
-      //! GenMax
-      virtual void ReadMaterialParameters(
-        double& tau,       //!< relaxation parameter tau
-        double& beta,      //!< emphasis of viscous to elastic part
-        std::string& solve //!< solution variant for time evolution of viscous stress
+      /// Read material parameters of viscogenmax or viscofract
+      virtual void ReadMaterialParametersVisco(
+        double& tau, ///< relaxation parameter tau
+        double& beta, ///< emphasis of viscous to elastic part
+        double& alpha, ///< fractional order derivative (just for visoc_fract)
+        std::string& solve //!< solution variant for time evolution of viscous stress (just for genmax)
         )
       {
-        return; // not implemented in base class. May be overridden in subclass.
+        return;  // do nothing
       };
 
       //! GeneralizedGenMax
@@ -610,7 +611,8 @@ namespace MAT
       virtual void SpecifyViscoFormulation(
           bool& isovisco,    ///< global indicator for isotropic, splitted and viscous formulation
           bool& viscogenmax, ///< global indicator for viscous contribution according to the SLS-Model
-          bool& viscogeneralizedgenmax ///< global indicator for viscoelastic contribution according to the generalized Maxwell Model
+          bool& viscogeneralizedgenmax, ///< global indicator for viscoelastic contribution according to the generalized Maxwell Model
+          bool& viscofract  ///< global indicator for viscous contribution according the FSLS-Model
       )
       {        /* do nothing for non viscoelastic material models */      };
 

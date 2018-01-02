@@ -642,6 +642,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_matelast/visco_isoratedep.cpp
   src/drt_matelast/visco_coupmyocard.cpp
   src/drt_matelast/visco_genmax.cpp
+  src/drt_matelast/visco_fract.cpp
   src/drt_matelast/elast_isovolaaagasser.cpp
   src/drt_matelast/elast_isovolHUdependentneohooke.cpp
   src/drt_matelast/elast_isotestmaterial.cpp
