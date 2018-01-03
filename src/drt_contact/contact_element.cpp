@@ -276,17 +276,17 @@ void CONTACT::CoElement::OldUnitNormalAtXi(
   LINALG::Matrix<3,2> tmp_n_deriv;
   for (int i=0;i<nnodes;++i)
   {
-    FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(Nodes()[i]);
-    if (!fnode)
+    CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(Nodes()[i]);
+    if (!cnode)
       dserror("this is not a FriNode!");
 
     for (int d=0;d<Dim();++d)
     {
-      if (LINALG::Matrix<3,1>(fnode->FriData().Normal_old(),true).Norm2()<0.9)
+      if (LINALG::Matrix<3,1>(cnode->CoData().Normal_old(),true).Norm2()<0.9)
         dserror("where's my old normal");
-      tmp_n(d)+=val(i)*fnode->FriData().Normal_old()[d];
+      tmp_n(d)+=val(i)*cnode->CoData().Normal_old()[d];
       for (int x=0;x<Dim()-1;++x)
-        tmp_n_deriv(d,x)+=deriv(i,x)*fnode->FriData().Normal_old()[d];
+        tmp_n_deriv(d,x)+=deriv(i,x)*cnode->CoData().Normal_old()[d];
     }
   }
   const double l = tmp_n.Norm2();

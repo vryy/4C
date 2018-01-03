@@ -186,6 +186,10 @@ CONTACT::CoInterface::CoInterface(
   if (icontact.get<int>("PROBTYPE")==INPAR::CONTACT::poro)
     SetPoroFlag(true);
 
+  // set ehl contact
+  if (icontact.get<int>("PROBTYPE")==INPAR::CONTACT::ehl)
+    SetEhlFlag(true);
+
   // check for redundant slave storage
   // (needed for self contact but not wanted for general contact)
 //  if ((selfcontact_ or nonSmoothContact_) && redundant != INPAR::MORTAR::redundant_all)
@@ -1611,6 +1615,10 @@ void CONTACT::CoInterface::Initialize()
       cnode->CoPoroData().GetVelDerivnCoup().clear();
       cnode->CoPoroData().GetPresDerivnCoup().clear();
     }
+
+    // just do ehl relevant stuff!
+    if (ehl_)
+      cnode->CoEhlData().Clear();
   }
 
   //**********************************************************************
@@ -14632,6 +14640,226 @@ void CONTACT::CoInterface::AssembleNCoupLin(LINALG::SparseMatrix& sglobal, ADAPT
         if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
       }
     }
+  }
+  return;
+}
+
+/*------------------------------------------------------------------------*
+ | Derivative of D-matrix multiplied with a slave dof vector              |
+ *------------------------------------------------------------------------*/
+void CONTACT::CoInterface::AssembleCoupLinD(LINALG::SparseMatrix& CoupLin,
+                           const Teuchos::RCP<Epetra_Vector> x)
+{
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+
+  // we have: D_jk,c with j = Slave dof
+  //                 with k = Displacement slave dof
+  //                 with c = Displacement slave or master dof
+  // we compute (LinD)_kc = D_jk,c * x_j
+
+  bool scale = DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE");
+  if(scale)
+    dserror("ERROR: LM Nodal Scale is not supported with Sliding ALE");
+
+  for (int j=0;j<snoderowmap_->NumMyElements();++j)
+  {
+
+    int gid = snoderowmap_->GID(j);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
+
+    // Mortar matrix D derivatives
+    std::map<int,std::map<int,double> >& dderiv = cnode->CoData().GetDerivD();
+
+    // get sizes and iterator start
+    int slavesize  = (int)dderiv.size();
+    std::map<int,std::map<int,double> >::iterator scurr = dderiv.begin();
+
+    /********************************************** LinDMatrix **********/
+    // loop over all DISP slave nodes in the DerivD-map of the current slave node
+    for (int k=0;k<slavesize;++k)
+    {
+      int sgid = scurr->first;
+      ++scurr;
+
+      DRT::Node* snode = idiscret_->gNode(sgid);
+      if (!snode) dserror("ERROR: Cannot find node with gid %",sgid);
+      CoNode* csnode = dynamic_cast<CoNode*>(snode);   //current slave node
+
+      // Mortar matrix D derivatives
+      std::map<int,double>& thisdderiv = cnode->CoData().GetDerivD()[sgid];
+      int mapsize = (int)(thisdderiv.size());
+
+      if(cnode->NumDof() != csnode->NumDof())
+        dserror("ERROR: Mortar Nodes on interface must have same number of dofs!");
+
+      // inner product D_{jk,c} * z_j for index j
+      for (int prodj=0;prodj<(cnode->NumDof());++prodj)
+      {
+        int row = csnode->Dofs()[prodj];
+        std::map<int,double>::iterator scolcurr = thisdderiv.begin();
+
+        // loop over all directional derivative entries
+        for (int c=0;c<mapsize;++c)
+        {
+          int col = scolcurr->first;
+          int slavedofgid = cnode->Dofs()[prodj];
+
+          int slavedoflid = x->Map().LID(slavedofgid);
+          if (slavedoflid<0)
+            dserror("invalid slave dof lid");
+          double val = (*x)[slavedoflid]*(scolcurr->second);
+
+          ++scolcurr;
+
+
+          //************   ASSEMBLY INTO THE MATRIX    **********************
+          if (abs(val)>1.0e-12)
+            CoupLin.FEAssemble(val,row,col);
+        }
+        // check for completeness of DerivD-Derivatives-iteration
+        if (scolcurr!=thisdderiv.end())
+          dserror("ERROR: AssembleCoupLin: Not all derivative entries of Lin(D*z_s) considered!");
+      }
+    }
+
+    if (scurr!=dderiv.end())
+      dserror("ERROR: AssembleCoupLin: Not all connected slave nodes to Lin(D*z_s) considered!");
+
+  }
+
+  return;
+}
+
+/*-----------------------------------------------------------------------------------*
+ | Derivative of transposed M-matrix multiplied with a slave dof vector  seitz 01/18 |
+ *-----------------------------------------------------------------------------------*/
+void CONTACT::CoInterface::AssembleCoupLinM(LINALG::SparseMatrix& CoupLin,
+                             const Teuchos::RCP<Epetra_Vector> x)
+{
+  if (!lComm())
+    return;
+
+  // we have: M_jl,c with j = Slave dof
+  //                 with l = Displacement master dof
+  //                 with c = Displacement slave or master dof
+  // we compute (CoupLin)_lc = M_jl,c * x_j
+
+  bool scale = DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE");
+  if(scale)
+    dserror("ERROR: LM Nodal Scale is not supported with Sliding ALE");
+
+  // loop over all slave nodes (row map)
+  for (int j=0;j<snoderowmap_->NumMyElements();++j)
+  {
+    int gid = snoderowmap_->GID(j);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
+
+    // Mortar matrix M derivatives
+    std::map<int,std::map<int,double> >& mderiv = cnode->CoData().GetDerivM();
+
+    // get sizes and iterator start
+    int mastersize = (int)mderiv.size();
+    std::map<int,std::map<int,double> >::iterator mcurr = mderiv.begin();
+
+    /********************************************** LinMMatrix **********/
+    // loop over all master nodes in the DerivM-map of the current LM slave node
+    for (int l=0;l<mastersize;++l)
+    {
+      int mgid = mcurr->first;
+      ++mcurr;
+
+      DRT::Node* mnode = idiscret_->gNode(mgid);
+      if (!mnode) dserror("ERROR: Cannot find node with gid %",mgid);
+      CoNode* cmnode = dynamic_cast<CoNode*>(mnode);
+
+      // Mortar matrix M derivatives
+      std::map<int,double>&thismderiv = cnode->CoData().GetDerivM()[mgid];
+      int mapsize = (int)(thismderiv.size());
+
+      if(cnode->NumDof() != cmnode->NumDof())
+        dserror("ERROR: Mortar Nodes on interface must have same number of dofs!");
+
+      // inner product M_{jl,c} * z_j for index j
+      for (int prodj=0;prodj<(cmnode->NumDof());++prodj)
+      {
+        int row = cmnode->Dofs()[prodj];
+        std::map<int,double>::iterator mcolcurr = thismderiv.begin();
+
+        // loop over all directional derivative entries
+        for (int c=0;c<mapsize;++c)
+        {
+          int col = mcolcurr->first;
+          int slavedofgid = cnode->Dofs()[prodj];
+
+          int slavedoflid = x->Map().LID(slavedofgid);
+          double val = (*x)[slavedoflid]*(mcolcurr->second);
+
+          ++mcolcurr;
+
+          ///************   ASSEMBLY INTO THE MATRIX    **********************
+          if (abs(val)>1.0e-12)
+            CoupLin.FEAssemble(val,row,col);
+        }
+
+        // check for completeness of DerivM-Derivatives-iteration
+        if (mcolcurr!=thismderiv.end())
+          dserror("ERROR: AssembleCoupLin: Not all derivative entries of DerivM considered!");
+      }
+    }//loop over all master nodes, connected to this slave node => Lin(M*z_s) finished
+
+    // check for completeness of DerivM-Master-iteration
+    if (mcurr!=mderiv.end())
+      dserror("ERROR: AssembleCoupLin: Not all master entries of Lin(M*z_s) considered!");
+
+    /*********************************************************************/
+    /*******************       Finished with Lin(M*z_s)         **********/
+    /*********************************************************************/
+  }
+}
+
+/*----------------------------------------------------------------------*
+ | Store nodal quant. to old ones (last conv. time step)  gitterle 02/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::StoreToOld(
+    MORTAR::StrategyBase::QuantityType type)
+{
+    // loop over all slave row nodes on the current interface
+    for (int j = 0; j < SlaveColNodes()->NumMyElements(); ++j)
+    {
+      int gid = SlaveColNodes()->GID(j);
+      DRT::Node* node = idiscret_->gNode(gid);
+      if (!node)
+        dserror("ERROR: Cannot find node with gid %", gid);
+
+      switch (type)
+      {
+      case MORTAR::StrategyBase::dm:
+      {
+        // store D and M entries
+        dynamic_cast<FriNode*>(node)->StoreDMOld();
+        break;
+      }
+      case MORTAR::StrategyBase::pentrac:
+      {
+        // store penalty tractions to old ones
+        dynamic_cast<FriNode*>(node)->StoreTracOld();
+        break;
+      }
+      case MORTAR::StrategyBase::n_old:
+      {
+        dynamic_cast<CoNode*>(node)->StoreOldNormal();
+        break;
+      }
+      default:
+        dserror("ERROR: StoreDMToNodes: Unknown state std::string variable!");
+        break;
+      } // switch
   }
   return;
 }

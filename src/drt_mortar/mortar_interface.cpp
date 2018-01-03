@@ -90,6 +90,7 @@ MORTAR::IDataContainer::IDataContainer()
       inttime_interface_( 0.0 ),
       nurbs_( false ),
       poro_( false ),
+      ehl_( false ),
       isinit_( false )
 {
   /* empty */
@@ -141,7 +142,8 @@ MORTAR::MortarInterface::MortarInterface(
       searchuseauxpos_( idata_.SearchUseAuxPos() ),
       inttime_interface_( idata_.IntTimeInterface() ),
       nurbs_( idata_.IsNurbs() ),
-      poro_( idata_.IsPoro() )
+      poro_( idata_.IsPoro() ),
+      ehl_( idata_.IsEhl() )
 {
   if ( not idata_.IsInit() )
     dserror( "This constructor is only allowed for already initialized "
@@ -215,7 +217,8 @@ MORTAR::MortarInterface::MortarInterface(
     searchuseauxpos_( idata_.SearchUseAuxPos() ),
     inttime_interface_( idata_.IntTimeInterface() ),
     nurbs_( idata_.IsNurbs() ),
-    poro_( idata_.IsPoro() )
+    poro_( idata_.IsPoro() ),
+    ehl_( idata_.IsEhl() )
 {
   idata_.SetIsInit( true );
   id_ = id;
@@ -1021,6 +1024,9 @@ void MORTAR::MortarInterface::InitializeDataContainer()
     mnode->InitializeDataContainer();
     if (poro_) //initialize just for poro contact case!
       mnode->InitializePoroDataContainer();
+    if (ehl_)
+      mnode->InitializeEhlDataContainer();
+
   }
   if (poro_) //as velocities of structure and fluid exist also on master nodes!!!
   {

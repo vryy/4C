@@ -19,6 +19,7 @@
 #include "../drt_contact_aug/contact_augmented_integrator.H"
 #include "contact_nitsche_integrator.H"
 #include "contact_nitsche_integrator_tsi.H"
+#include "contact_ehl_integrator.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -79,6 +80,13 @@ Teuchos::RCP<CONTACT::CoIntegrator> CONTACT::INTEGRATOR::Factory::BuildIntegrato
     {
       integrator = Teuchos::rcp(new CONTACT::CoIntegrator(
           p_mortar,slave_type,comm));
+      break;
+    }
+    case INPAR::CONTACT::solution_ehl:
+    {
+      integrator = Teuchos::rcp( new CONTACT::CoIntegratorEhl(
+          p_mortar,slave_type,comm) );
+
       break;
     }
     default:

@@ -13,6 +13,7 @@
 #ifndef CONTACT_INTERFACE_H
 #define CONTACT_INTERFACE_H
 
+#include "../drt_mortar/mortar_strategy_base.H"
 #include "../drt_mortar/mortar_interface.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../linalg/linalg_sparseoperator.H"
@@ -1049,6 +1050,22 @@ public:
       ADAPTER::Coupling& coupfs,
       bool AssembleVelocityLin = false //if true velocity linearisation will be assembled into sglobal, otherwise lin. w.r.t. displacements!
       );
+
+  // Derivative of D-matrix multiplied with a slave dof vector
+  virtual void AssembleCoupLinD(LINALG::SparseMatrix& CoupLin,
+      const Teuchos::RCP<Epetra_Vector> x);
+
+  // Derivative of (transposed) M-matrix multiplied with a slave dof vector
+  virtual void AssembleCoupLinM(LINALG::SparseMatrix& CoupLin,
+      const Teuchos::RCP<Epetra_Vector> x);
+
+
+  /*! \brief Store current (contact) nodal entries to old ones
+
+   Contact nodes own their current entries and old ones (last converged
+   state) from. p.e. the mortar matrices D and M. This function writes the
+   current ones to the old ones. */
+  virtual void StoreToOld(MORTAR::StrategyBase::QuantityType type);
 
   //@}
 

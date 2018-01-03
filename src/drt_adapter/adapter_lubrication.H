@@ -4,12 +4,9 @@
 
 \brief Lubrication field base algorithm
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15270
-</pre>
+\level 3
+
+\maintainer Alexander Seitz
 */
 /*--------------------------------------------------------------------------*/
 #ifndef SRC_DRT_ADAPTER_ADAPTER_LUBRICATION_H_
@@ -27,6 +24,8 @@ namespace LUBRICATION
 {
   class TimIntImpl;
 }
+
+namespace IO {class DiscretizationWriter;}
 
 namespace Teuchos
 {
@@ -66,6 +65,8 @@ namespace ADAPTER {
 
     /// create result test for Lubrication field
     Teuchos::RCP<DRT::ResultTest> CreateLubricationFieldTest();
+
+    virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter();
 
   private:
 

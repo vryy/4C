@@ -250,6 +250,7 @@ public:
     PoroPartInt,
     PoroPresInt,
     SSICoupling,
+    EHLCoupling,
     SSICouplingSolidToScatra,
     SSICouplingScatraToSolid,
     RedAirwayVentilatorCond,

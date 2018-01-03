@@ -4,21 +4,18 @@
 
 \brief Material model for the lubrication film
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15270
-</pre>
+\level 3
+
+\maintainer Alexander Seitz
 */
 /*--------------------------------------------------------------------------*/
 
 
 #include <vector>
 #include "lubrication_mat.H"
+#include "lubrication_law.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
-#include "../drt_comm/comm_utils.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -26,17 +23,39 @@ Maintainer: Andy Wirtz
 MAT::PAR::LubricationMat::LubricationMat(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
-: Parameter(matdata)
+: Parameter(matdata),
+  density_(matdata->GetDouble("DENSITY")),
+  lubricationlawID_(matdata->GetInt("LUBRICATIONLAWID")),
+  lubricationlaw_(NULL)
 {
-  Epetra_Map dummy_map(1,1,0,*(DRT::Problem::Instance()->GetNPGroup()->LocalComm()));
-  for(int i=first ; i<=last; i++)
-  {
-    matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map,true)));
-  }
-  matparams_.at(viscosity)->PutScalar(matdata->GetDouble("VISCOSITY"));
-  matparams_.at(density)->PutScalar(matdata->GetDouble("DENSITY"));
 
-  return;
+  // retrieve problem instance to read from
+  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+
+  // for the sake of safety
+  if (DRT::Problem::Instance(probinst)->Materials() == Teuchos::null)
+    dserror("Sorry dude, cannot work out problem instance.");
+  // yet another safety check
+  if (DRT::Problem::Instance(probinst)->Materials()->Num() == 0)
+    dserror("Sorry dude, no materials defined.");
+
+  // retrieve validated input line of material ID in question
+  Teuchos::RCP<MAT::PAR::Material> curmat = DRT::Problem::Instance(probinst)->Materials()->ById(lubricationlawID_);
+
+  switch (curmat->Type())
+  {
+  case INPAR::MAT::m_lubrication_law_constant:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::LubricationLawConstant(curmat));
+    lubricationlaw_ = static_cast<MAT::PAR::LubricationLaw*>(curmat->Parameter());
+    break;
+  }
+  default:
+    dserror("invalid material for porosity law %d", curmat->Type());
+    break;
+  }
+
 }
 
 
@@ -45,16 +64,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::LubricationMat::CreateMaterial()
   return Teuchos::rcp(new MAT::LubricationMat(this));
 }
 
-
 MAT::LubricationMatType MAT::LubricationMatType::instance_;
-
-
-void MAT::PAR::LubricationMat::OptParams(std::map<std::string,int>* pnames)
-{
-  pnames->insert(std::pair<std::string,int>("VISC", viscosity));
-  pnames->insert(std::pair<std::string,int>("DENS", density));
-}
-
 
 DRT::ParObject* MAT::LubricationMatType::Create( const std::vector<char> & data )
 {
@@ -126,3 +136,37 @@ void MAT::LubricationMat::Unpack(const std::vector<char>& data)
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",data.size(),position);
 }
+
+/*----------------------------------------------------------------------*
+                                                              wirtz 09/16|
+*----------------------------------------------------------------------*/
+double MAT::LubricationMat::ComputeViscosity( const double press)
+{
+
+//  viscosity = params_->viscosity_;
+//  return;
+
+  double visc=-1.;
+  params_->lubricationlaw_->ComputeViscosity(
+      press,
+      visc);
+
+  return visc;
+}
+
+
+/*----------------------------------------------------------------------*
+                                                              wirtz 09/16|
+*----------------------------------------------------------------------*/
+double MAT::LubricationMat::ComputeViscosityDeriv(const double press)
+{
+  double visc=-1.;
+  double visc_dp=-1;
+  params_->lubricationlaw_->ConstitutiveDerivatives(
+    press,
+    visc,
+    visc_dp);
+
+  return visc_dp;
+}
+

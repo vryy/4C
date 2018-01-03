@@ -699,6 +699,7 @@ public:
   virtual void InitializeDataContainer();
 
   virtual void InitializePoroDataContainer() {dserror("Shouldn't land here..."); return;};
+  virtual void InitializeEhlDataContainer()  {dserror("Shouldn't land here..."); return;};
 
   /*!
    \brief Resets the data container of the node

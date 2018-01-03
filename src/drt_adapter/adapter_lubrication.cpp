@@ -4,12 +4,9 @@
 
 \brief Lubrication field base algorithm
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15270
-</pre>
+\level 3
+
+\maintainer Alexander Seitz
 */
 /*--------------------------------------------------------------------------*/
 
@@ -117,3 +114,6 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::LubricationBaseAlgorithm::CreateLubricati
 {
   return Teuchos::rcp(new LUBRICATION::ResultTest(lubrication_));
 }
+
+Teuchos::RCP<IO::DiscretizationWriter> ADAPTER::LubricationBaseAlgorithm::DiscWriter()
+{return lubrication_->DiscWriter();}

@@ -108,27 +108,27 @@ namespace ADAPTER
         );
 
     //! setup the machinery (hack version (used in UQ to obtain surface normals of slave interface ONLY))
-    void SetupForUQAbuseNormalCalculation(
+    virtual void SetupForUQAbuseNormalCalculation(
         Teuchos::RCP<DRT::Discretization>   slavedis,   ///< slave discretization
         const Epetra_Comm&                  comm        ///< communicator
         );
 
     /// create integration cells
-    void EvaluateGeometry(
+    virtual void EvaluateGeometry(
         std::vector<Teuchos::RCP<MORTAR::IntCell> >&   intcells   //!< vector of mortar integration cells
         );
 
     /// filling matrices by using mortar interface using reference configuration
-    void Evaluate();
+    virtual void Evaluate();
 
     /// filling matrices
-    void Evaluate(Teuchos::RCP<Epetra_Vector> idisp);
+    virtual void Evaluate(Teuchos::RCP<Epetra_Vector> idisp);
 
     /// filling matrices (case of transferring same dofs on two different meshes)
-    void Evaluate(Teuchos::RCP<Epetra_Vector> idispma, Teuchos::RCP<Epetra_Vector> idispsl);
+    virtual void Evaluate(Teuchos::RCP<Epetra_Vector> idispma, Teuchos::RCP<Epetra_Vector> idispsl);
 
     //! filling matrices, including mesh correction
-    void EvaluateWithMeshRelocation(
+    virtual void EvaluateWithMeshRelocation(
         Teuchos::RCP<DRT::Discretization> slavedis,      ///< slave discretization
         Teuchos::RCP<DRT::Discretization> aledis,        ///< ALE discretization
         Teuchos::RCP<Epetra_Vector>&      idisp,         ///< ALE displacements

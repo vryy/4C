@@ -53,7 +53,8 @@ namespace INPAR
       solution_steepest_ascent, ///< steepest ascent approach (based on the augmented formulation)
       solution_std_lagrange,    ///< lagrange strategy (based on the augmented formulation)
       solution_xcontact,        ///< eXtended contact approach
-      solution_nitsche          ///< Nitsche contact solution method
+      solution_nitsche,         ///< Nitsche contact solution method
+      solution_ehl              ///< method for elasto-hydrodynamic lubrication
     };
 
     inline std::string SolvingStrategy2String( enum SolvingStrategy stype )
@@ -149,6 +150,7 @@ namespace INPAR
       tsi,                   ///< coupled TSI problem with contact
       structalewear,         ///< wear problem including ALE shape changes
       poro,                  ///< poroelasticity problem with contact
+      ehl,                   ///< elasto-hydrodymanic lubrication
       other                  ///< other problemtypes
     };
 

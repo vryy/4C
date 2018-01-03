@@ -6,10 +6,7 @@
 
 \level 3
 
-\maintainer Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15270
+\maintainer Alexander Seitz
 
 */
 /*--------------------------------------------------------------------------*/
@@ -50,7 +47,8 @@ DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::LubricationEleCalc(const std
     derxy_(true),   // initialized to zero
     xjm_(true),     // initialized to zero
     xij_(true),     // initialized to zero
-    bodyforce_(true), // size of vector
+    eheinp_(true),
+    edispnp_(true),
     viscmanager_(Teuchos::rcp(new LubricationEleViscManager())),           // viscosity manager for viscosity
     lubricationvarmanager_(Teuchos::rcp(new LubricationEleInternalVariableManager<nsd_,nen_>())),   // internal variable manager
     eid_(0),
@@ -148,6 +146,46 @@ int DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::Evaluate(
 }
 
 /*----------------------------------------------------------------------*
+ * Action type: Evaluate element matrix associated to the linearization
+ * of the residual wrt. the discrete film height (only used for monolithic
+ * EHL problems)
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+int DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::EvaluateEHLMon(
+    DRT::Element*                 ele,
+    Teuchos::ParameterList&       params,
+    DRT::Discretization&          discretization,
+    DRT::Element::LocationArray&  la,
+    Epetra_SerialDenseMatrix&     elemat1_epetra,
+    Epetra_SerialDenseMatrix&     elemat2_epetra,
+    Epetra_SerialDenseVector&     elevec1_epetra,
+    Epetra_SerialDenseVector&     elevec2_epetra,
+    Epetra_SerialDenseVector&     elevec3_epetra
+)
+{
+  //--------------------------------------------------------------------------------
+  // preparations for element
+  //--------------------------------------------------------------------------------
+
+  if(SetupCalc(ele,discretization) == -1)
+    return 0;
+
+  //--------------------------------------------------------------------------------
+  // extract element based or nodal values
+  //--------------------------------------------------------------------------------
+
+  ExtractElementAndNodeValues(ele,params,discretization,la);
+
+  //--------------------------------------------------------------------------------
+  // calculate element off-diagonal-matrix for height linearization in monolithic EHL
+  //--------------------------------------------------------------------------------
+
+  MatrixforEHLMon(ele,elemat1_epetra,elemat2_epetra);
+
+  return 0;
+}
+
+/*----------------------------------------------------------------------*
  | setup element evaluation                                 wirtz 10/15 |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype,int probdim>
@@ -182,7 +220,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::ReadElementCoordinates(
 } //LubricationEleCalc::ReadElementCoordinates
 
 /*----------------------------------------------------------------------*
- | extract element based or nodal values                    wirtz 10/15 |
+ | extract element based or nodal values
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
 void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::ExtractElementAndNodeValues(
@@ -192,20 +230,88 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::ExtractElementAndNodeVa
     DRT::Element::LocationArray&  la
 )
 {
-  // extract local values from the global vectors
+  //1. Extract the tangential velocity
+
+  // nodeset the velocity is defined on
+  const int ndsvel = 1;
+
+  // get the global vector
+  Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(ndsvel, "av_tang_vel");
+  if (vel.is_null())
+    dserror("got NULL pointer for \"av_tang_vel\"");
+
+  const int numveldofpernode = la[ndsvel].lm_.size()/nen_;
+
+  // construct location vector for velocity related dofs
+  std::vector<int> lmvel(nsd_*nen_,-1);
+  for (int inode=0; inode<nen_; ++inode)
+    for (int idim=0; idim<nsd_; ++idim)
+      lmvel[inode*nsd_+idim] = la[ndsvel].lm_[inode*numveldofpernode+idim];
+
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_,nen_> >(*vel,eAvTangVel_,lmvel);
+
+  //2. In case of ale, extract the displacements of the element nodes and update the nodal coordinates
+
+  //Only required, in case of ale:
+  if (params.get<bool>("isale"))
+  {
+    // get number of dofset associated with displacement related dofs
+    const int ndsdisp = 1; //needs further implementation: params.get<int>("ndsdisp");
+    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState(ndsdisp, "dispnp");
+    if (dispnp==Teuchos::null)
+      dserror("Cannot get state vector 'dispnp'");
+
+    // determine number of displacement related dofs per node
+    const int numdispdofpernode = la[ndsdisp].lm_.size()/nen_;
+
+    // construct location vector for displacement related dofs
+    std::vector<int> lmdisp(nsd_*nen_,-1);
+    for (int inode=0; inode<nen_; ++inode)
+      for (int idim=0; idim<nsd_; ++idim)
+        lmdisp[inode*nsd_+idim] = la[ndsdisp].lm_[inode*numdispdofpernode+idim];
+
+    // extract local values of displacement field from global state vector
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_,nen_> >(*dispnp,edispnp_,lmdisp);
+
+    // add nodal displacements to point coordinates
+    xyze_ += edispnp_;
+  }
+
+
+  //3. Extract the film height at the element nodes
+
+  // get number of dofset associated with height dofs
+  const int ndsheight = 1; //needs further implementation: params.get<int>("ndsheight");
+
+  // get the global vector containing the heights
+  Teuchos::RCP<const Epetra_Vector> height = discretization.GetState(ndsheight,"height");
+  if(height == Teuchos::null)
+    dserror("Cannot get state vector height");
+
+  // determine number of height related dofs per node
+  const int numheightdofpernode = la[ndsheight].lm_.size()/nen_;
+
+  // construct location vector for height related dofs
+  std::vector<int> lmheight(nsd_*nen_,-1);
+  for (int inode=0; inode<nen_; ++inode)
+    for (int idim=0; idim<nsd_; ++idim)
+      lmheight[inode*nsd_+idim] = la[ndsheight].lm_[inode*numheightdofpernode+idim];
+
+  // extract local height from global state vector
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_,nen_> >(*height,eheinp_,la[ndsheight].lm_);
+
+  //4. Extract the pressure field at the element nodes
+
+  // get the global vector containing the pressure
   Teuchos::RCP<const Epetra_Vector> prenp = discretization.GetState("prenp");
   if (prenp==Teuchos::null)
     dserror("Cannot get state vector 'prenp'");
 
   //values of pressure field are always in first dofset
   const std::vector<int>&    lm = la[0].lm_;
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*prenp,eprenp_,lm);
 
-  // ---------------------------------------------------------------------
-  // call routine for calculation of body force in element nodes
-  // (time n+alpha_F for generalized-alpha scheme, at time n+1 otherwise)
-  // ---------------------------------------------------------------------
-  BodyForce(ele);
+  // extract the local values at the element nodes
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*prenp,eprenp_,lm);
 
   return;
 }
@@ -219,7 +325,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::Sysmat(
   Epetra_SerialDenseMatrix&             emat,       ///< element matrix to calculate
   Epetra_SerialDenseVector&             erhs        ///< element rhs to calculate
   )
-{
+  {
   //----------------------------------------------------------------------
   // get material parameters (evaluation at element center)
   //----------------------------------------------------------------------
@@ -246,56 +352,135 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::Sysmat(
     //set gauss point variables needed for evaluation of mat and rhs
     SetInternalVariablesForMatAndRHS();
 
+    // calculate height (i.e. the distance of the contacting bodies) at Integration point
+    double heightint(0.0);
+    CalcHeightAtIntPoint(heightint);
+
+    // calculate average surface velocity of the contacting bodies at Integration point
+    LINALG::Matrix<nsd_,1> avrvel(true); //average surface velocity, initialized to zero
+    CalcAvrVelAtIntPoint(avrvel);
+
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
     GetMaterialParams(ele,densn,densnp,densam,visc,iquad);
 
-    // compute rhs containing bodyforce (divided by specific heat capacity) and,
-    // for temperature equation, the time derivative of thermodynamic pressure,
-    // if not constant, and for temperature equation of a reactive
-    // equation system, the reaction-rate term
-    double rhsint(0.0);
-    GetRhsInt(rhsint,densnp);
-
-    //----------------------------------------------------------------
-    // standard Galerkin terms
-    //----------------------------------------------------------------
-
     // integration factors
     const double timefacfac = fac; // works only for stationary problems!
 
-    //----------------------------------------------------------------
-    // 1) element matrix: stationary terms
-    //----------------------------------------------------------------
-
-    // calculation of diffusive element matrix
-    CalcMatDiff(emat,timefacfac);
-
-    //----------------------------------------------------------------
-    // 5) element right hand side
-    //----------------------------------------------------------------
-    //----------------------------------------------------------------
-    // computation of bodyforce (and potentially history) term,
-    // residual, integration factors and standard Galerkin transient
-    // term (if required) on right hand side depending on respective
-    // (non-)incremental stationary or time-integration scheme
-    //----------------------------------------------------------------
     double rhsfac    = fac; // works only for stationary problems!
 
-    //----------------------------------------------------------------
-    // standard Galerkin transient, old part of rhs and bodyforce term
-    //----------------------------------------------------------------
-    CalcRHSHistAndSource(erhs,fac,rhsint);
+    //1) element matrix
 
-    //----------------------------------------------------------------
-    // standard Galerkin terms on right hand side
-    //----------------------------------------------------------------
+    //1.1) calculation of Poiseuille contribution of element matrix
 
-    // diffusive term
-    CalcRHSDiff(erhs,rhsfac);
+    CalcMatPsl(emat,timefacfac,visc,heightint);
+
+    //2) rhs matrix
+
+    //2.1) calculation of Poiseuille contribution of rhs matrix
+
+    CalcRhsPsl(erhs,rhsfac,visc,heightint);
+
+    //2.2) calculation of Wedge contribution of rhs matrix
+
+    CalcRhsWdg(erhs,rhsfac,heightint,avrvel);
 
   }// end loop Gauss points
+
+  return;
+}
+
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::MatrixforEHLMon(
+    DRT::Element*                         ele,        ///< the element whose matrix is calculated
+    Epetra_SerialDenseMatrix&             ematheight,
+    Epetra_SerialDenseMatrix&             ematvel
+)
+{
+  //----------------------------------------------------------------------
+  // get material parameters (evaluation at element center)
+  //----------------------------------------------------------------------
+  // density at t_(n)
+  double densn(1.0);
+  // density at t_(n+1) or t_(n+alpha_F)
+  double densnp(1.0);
+  // density at t_(n+alpha_M)
+  double densam(1.0);
+
+  // fluid viscosity
+  double visc(0.0);
+
+  //----------------------------------------------------------------------
+  // integration loop for one element
+  //----------------------------------------------------------------------
+  // integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(LUBRICATION::DisTypeToOptGaussRule<distype>::rule);
+
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+
+    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+
+    //set gauss point variables needed for evaluation of mat and rhs
+    SetInternalVariablesForMatAndRHS();
+
+    // calculate height (i.e. the distance of the contacting bodies) at Integration point
+    double heightint(0.0);
+    CalcHeightAtIntPoint(heightint);
+
+    // calculate average surface velocity of the contacting bodies at Integration point
+    LINALG::Matrix<nsd_,1> avrvel(true); //average surface velocity, initialized to zero
+    CalcAvrVelAtIntPoint(avrvel);
+
+    //----------------------------------------------------------------------
+    // get material parameters (evaluation at integration point)
+    //----------------------------------------------------------------------
+    GetMaterialParams(ele,densn,densnp,densam,visc,iquad);
+
+    const LINALG::Matrix<nsd_,1>& gradpre = lubricationvarmanager_->GradPre();
+
+    //Linearization of Poiseuille term wrt the film height
+    for (int vi=0; vi<nen_; vi++)
+    {
+      double laplawf(0.0);
+      GetLaplacianWeakFormRHS(laplawf,gradpre,vi);
+      for (int ui=0; ui<nen_; ui++)
+      {
+        double val = fac*(1/(12*visc))*3*heightint*heightint*laplawf*funct_(ui);
+        ematheight(vi,(ui*nsd_)) -= val;
+      }
+    }//end loop for linearization of Poiseuille term wrt the film height
+
+    //Linearization of Couette term wrt the film height
+    for (int vi=0; vi<nen_; vi++)
+    {
+      double val(0.0);
+
+      for (int idim=0; idim<nsd_; idim++)
+      {
+        val += derxy_(idim,vi) * avrvel(idim);
+      }
+
+      for (int ui=0; ui<nen_; ui++)
+      {
+        ematheight(vi,(ui*nsd_)) += fac * val * funct_(ui);
+      }
+    }//end loop for linearization of Couette term wrt the film height
+
+    //Linearization of Couette term wrt the velocities
+    for (int vi=0; vi<nen_; vi++)
+    {
+      for(int ui=0; ui<nen_; ui++)
+      {
+        for(int idim=0; idim<nsd_; idim++)
+        {
+          ematvel(vi,(ui*nsd_+idim)) -= fac*heightint*derxy_(idim,vi)*funct_(ui);
+        }
+      }
+    }//end loop for linearization of Couette term wrt the velocities
+
+  }//end gauß point loop
 
   return;
 }
@@ -323,8 +508,8 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::GetMaterialParams(
   double&             visc,      //!< fluid viscosity
   const int           iquad      //!< id of current gauss point
   )
-{
-// get the material
+  {
+  // get the material
   Teuchos::RCP<MAT::Material> material = ele->Material();
 
   Materials(material,densn,densnp,densam,visc,iquad);
@@ -337,14 +522,14 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::GetMaterialParams(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
 void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::Materials(
-  const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
+  const Teuchos::RCP<MAT::Material> material, //!< pointer to current material
   double&                                 densn,    //!< density at t_(n)
   double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
   double&                                 densam,   //!< density at t_(n+alpha_M)
   double&                                 visc,         //!< fluid viscosity
   const int                               iquad         //!< id of current gauss point
 
-  )
+)
 {
   switch(material->MaterialType())
   {
@@ -363,7 +548,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::Materials(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
 void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::MatLubrication(
-  const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
+  const Teuchos::RCP<MAT::Material> material, //!< pointer to current material
   double&                                 densn,    //!< density at t_(n)
   double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
   double&                                 densam,   //!< density at t_(n+alpha_M)
@@ -372,95 +557,95 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::MatLubrication(
   )
 {
 
-  const Teuchos::RCP<const MAT::LubricationMat>& actmat
-    = Teuchos::rcp_dynamic_cast<const MAT::LubricationMat>(material);
-
+  const Teuchos::RCP<MAT::LubricationMat>& actmat
+    = Teuchos::rcp_dynamic_cast<MAT::LubricationMat>(material);
   // get constant viscosity
-  viscmanager_->SetIsotropicVisc(actmat->Viscosity());
 
+  double pressure = 0.0;
+//  const double pres = my::eprenp_.Dot(my::funct_);
+//  const double pre = lubricationvarmanager_->Prenp();
+//  const double p = eprenp_.Dot(funct_);
+
+  visc = actmat->ComputeViscosity(pressure);
+
+  viscmanager_->SetIsotropicVisc(visc);
   return;
 } // LubricationEleCalc<distype>::MatLubrication
 
-/*-----------------------------------------------------------------------------*
- | compute rhs containing bodyforce                                wirtz 10/15 |
- *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype,int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::GetRhsInt(
-  double&      rhsint,  //!< rhs containing bodyforce at Gauss point
-  const double densnp  //!< density at t_(n+1)
-  )
-{
-  // compute rhs containing bodyforce (divided by specific heat capacity) and,
-  // for temperature equation, the time derivative of thermodynamic pressure,
-  // if not constant, and for temperature equation of a reactive
-  // equation system, the reaction-rate term
-  rhsint = bodyforce_.Dot(funct_);
-
-  return;
-} // GetRhsInt
-
 /*------------------------------------------------------------------- *
- |  calculation of diffusive element matrix               wirtz 10/15 |
+ |  calculation of Poiseuille element matrix
  *--------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalcMatDiff(
-  Epetra_SerialDenseMatrix&     emat,
-  const double                  timefacfac
-  )
+void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalcMatPsl(
+    Epetra_SerialDenseMatrix&     emat,
+    const double                  timefacfac,
+    const double viscosity,
+    const double height
+)
 {
-  // diffusive term
-  const double fac_diffus = timefacfac * viscmanager_->GetIsotropicDiff();
+  // Poiseuille term
+  const double fac_psl = timefacfac*(1/(12*viscosity))*height*height*height;
   for (int vi=0; vi<nen_; ++vi)
   {
     for (int ui=0; ui<nen_; ++ui)
     {
       double laplawf(0.0);
       GetLaplacianWeakForm(laplawf,ui,vi);
-      emat(vi,ui) += fac_diffus*laplawf;
+      emat(vi,ui) -= fac_psl*laplawf;
     }
   }
   return;
 }
 
-/*-------------------------------------------------------------------------------------- *
- |  standard Galerkin transient, old part of rhs and source term             wirtz 10/15 |
- *---------------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------- *
+ |  calculation of Poiseuille rhs matrix
+ *--------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalcRHSHistAndSource(
+void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalcRhsPsl(
   Epetra_SerialDenseVector&     erhs,
-  const double                  fac,
-  const double                  rhsint
+  const double                  rhsfac,
+  const double                  viscosity,
+  const double                  height
   )
 {
-  double vrhs = fac*rhsint;
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    erhs[vi] += vrhs*funct_(vi);
-  }
+  // Poiseuille rhs term
+  const double fac_rhs_psl = rhsfac*(1/(12*viscosity))*height*height*height;
 
-  return;
-}
-
-/*-------------------------------------------------------------------- *
- |  standard Galerkin diffusive term on right hand side    wirtz 10/15 |
- *---------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype,int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalcRHSDiff(
-  Epetra_SerialDenseVector&     erhs,
-  const double                  rhsfac
-  )
-{
   const LINALG::Matrix<nsd_,1>& gradpre = lubricationvarmanager_->GradPre();
-
-  double vrhs = rhsfac*viscmanager_->GetIsotropicDiff();
 
   for (int vi=0; vi<nen_; ++vi)
   {
     double laplawf(0.0);
     GetLaplacianWeakFormRHS(laplawf,gradpre,vi);
-    erhs[vi] -= vrhs*laplawf;
+    erhs[vi] += fac_rhs_psl *laplawf;
   }
+  return;
+}
 
+/*------------------------------------------------------------------- *
+ |  calculation of Wedge rhs matrix
+ *--------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalcRhsWdg(
+  Epetra_SerialDenseVector&     erhs,
+  const double                  rhsfac,
+  const double                  height,
+  const LINALG::Matrix<nsd_,1>  velocity
+  )
+{
+  // Wedge rhs term
+  const double fac_rhs_wdg = rhsfac * height;
+
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    double val(0.0);
+
+    for (int i=0; i<nsd_; ++i)
+    {
+      val += derxy_(i,vi) * velocity(i);
+    }
+    erhs[vi] -= fac_rhs_wdg * val;
+  }
   return;
 }
 
@@ -593,71 +778,37 @@ double DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::EvalShapeFuncAndDeriv
 }
 
 /*-----------------------------------------------------------------------*
-  |  get the body force  (private)                           wirtz 10/15 |
+  |  get the lubrication height interpolated at the Int Point
   *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::BodyForce(
-  const DRT::Element*    ele
+void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalcHeightAtIntPoint(
+  double&             heightint      //!< lubrication height at Int point
   )
 {
-  std::vector<DRT::Condition*> myneumcond;
-
-  // check whether all nodes have a unique Neumann condition
-  switch(nsd_ele_)
+  // interpolate the height at the integration point
+  for (int j = 0; j<nen_; j++)
   {
-  case 3:
-    DRT::UTILS::FindElementConditions(ele, "VolumeNeumann", myneumcond);
-    break;
-  case 2:
-    DRT::UTILS::FindElementConditions(ele, "SurfaceNeumann", myneumcond);
-    break;
-  case 1:
-    DRT::UTILS::FindElementConditions(ele, "LineNeumann", myneumcond);
-    break;
-  default:
-    dserror("Illegal number of spatial dimensions: %d",nsd_ele_);
-    break;
-  }
-
-  if (myneumcond.size()>1)
-    dserror("More than one Neumann condition on one node!");
-
-  if (myneumcond.size()==1)
-  {
-
-    // (SPATIAL) FUNCTION BUSINESS
-    const std::vector<int>* funct = myneumcond[0]->Get<std::vector<int> >("funct");
-
-    // check for potential time curve
-
-    // initialization of time-curve factor
-    const double time = lubricationpara_->Time();
-
-    // get values and switches from the condition
-    const std::vector<int>*    onoff = myneumcond[0]->Get<std::vector<int> >   ("onoff");
-    const std::vector<double>* val   = myneumcond[0]->Get<std::vector<double> >("val"  );
-
-    // function evaluation
-    const int functnum = (funct) ? (*funct)[0] : -1;
-    for (int jnode = 0; jnode < nen_; jnode++)
-    {
-      const double functfac =
-          (functnum > 0) ?
-              DRT::Problem::Instance()->Funct(functnum - 1).Evaluate(0,
-                  (ele->Nodes()[jnode])->X(), time) :
-              1.0;
-      bodyforce_(jnode) = (*onoff)[0]*(*val)[0]*functfac;
-    }
-  }
-  else
-  {
-      // no bodyforce
-      bodyforce_.Clear();
+    heightint += funct_(j)*eheinp_(0,j);//Note that the same value is stored for all space dimensions
   }
 
   return;
+} //ReynoldsEleCalc::CalcHeightAtIntPoint
 
-} //LubricationEleCalc::BodyForce
+/*-----------------------------------------------------------------------*
+  |  get the average velocity of the contacting bodies interpolated at   |
+  |  the Int Point
+  *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalcAvrVelAtIntPoint(
+  LINALG::Matrix<nsd_,1>&    avrvel      //!< average surface velocity at Int point
+  )
+{
+// interpolate the velocities at the integration point
+  avrvel.Multiply(1.,eAvTangVel_,funct_,0.);
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  | evaluate service routine                                 wirtz 10/15 |
@@ -837,10 +988,9 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalErrorComparedToAnaly
             gradpre_exact(dim) = gradpre_exact_vec[dim];
         else
         {
-          // Todo: calc gradpre correctly
-//          std::cout
-//              << "Warning: Gradient of analytical solution cannot be evaluated correctly for lubrication on curved surfaces!"
-//              << std::endl;
+          std::cout
+              << "Warning: Gradient of analytical solution cannot be evaluated correctly for lubrication on curved surfaces!"
+              << std::endl;
           gradpre_exact.Clear();
         }
       }

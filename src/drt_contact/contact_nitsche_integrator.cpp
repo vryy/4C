@@ -253,7 +253,7 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(
     if (frtype_)
     {
       CONTACT::UTILS::BuildTangentVectors<dim>(normal.A(),dnmap_unit,t1.A(),dt1,t2.A(),dt2);
-      RelVelInvariant<dim>(sele,sxi,dsxi,sval,sderiv,mele,mxi,dmxi,mval,mderiv,gap,dgapgp,relVel,relVel_deriv);
+      CONTACT::UTILS::RelVelInvariant<dim>(sele,sxi,dsxi,sval,sderiv,mele,mxi,dmxi,mval,mderiv,gap,dgapgp,relVel,relVel_deriv);
       CONTACT::UTILS::VectorScalarProduct<dim>(t1,dt1,relVel,relVel_deriv,vt1,dvt1);
       CONTACT::UTILS::VectorScalarProduct<dim>(t2,dt2,relVel,relVel_deriv,vt2,dvt2);
 
@@ -640,7 +640,7 @@ void CONTACT::CoIntegratorNitsche::IntegrateAdjointTest(
 
 
 template <int dim>
-void CONTACT::CoIntegratorNitsche::RelVel(
+void CONTACT::UTILS::RelVel(
     MORTAR::MortarElement& ele,
     const LINALG::SerialDenseVector& shape,
     const LINALG::SerialDenseMatrix& deriv,
@@ -664,21 +664,22 @@ void CONTACT::CoIntegratorNitsche::RelVel(
 
 
 template <int dim>
-void CONTACT::CoIntegratorNitsche::RelVelInvariant(
+void CONTACT::UTILS::RelVelInvariant(
     MORTAR::MortarElement& sele,
-    double* sxi,
+    const double* sxi,
     const std::vector<GEN::pairedvector<int,double> >& derivsxi,
     const LINALG::SerialDenseVector& sval,
     const LINALG::SerialDenseMatrix& sderiv,
     MORTAR::MortarElement& mele,
-    double* mxi,
+    const double* mxi,
     const std::vector<GEN::pairedvector<int,double> >& derivmxi,
     const LINALG::SerialDenseVector& mval,
     const LINALG::SerialDenseMatrix& mderiv,
     const double& gap,
     const GEN::pairedvector<int, double>& deriv_gap,
     LINALG::Matrix<dim,1>& relVel,
-    std::vector<GEN::pairedvector<int,double> >& relVel_deriv
+    std::vector<GEN::pairedvector<int,double> >& relVel_deriv,
+    const double fac
 )
 {
   LINALG::Matrix<3,1> n_old;
@@ -687,32 +688,31 @@ void CONTACT::CoIntegratorNitsche::RelVelInvariant(
   for (int i=0;i<sele.NumNode();++i)
     for (int d=0;d<dim;++d)
     {
-      relVel(d)-=sele.GetNodalCoordsOld(d,i)*sval(i);
+      relVel(d)-=sele.GetNodalCoordsOld(d,i)*sval(i)*fac;
 
       for (int e=0;e<dim-1;++e)
         for (GEN::pairedvector<int,double>::const_iterator p=derivsxi[e].begin();p!=derivsxi[e].end();++p)
-          relVel_deriv[d][p->first]-=sele.GetNodalCoordsOld(d,i)*sderiv(i,e)*p->second;
+          relVel_deriv[d][p->first]-=sele.GetNodalCoordsOld(d,i)*sderiv(i,e)*p->second*fac;
     }
 
   for (int i=0;i<mele.NumNode();++i)
     for (int d=0;d<dim;++d)
     {
-      relVel(d)+=mele.GetNodalCoordsOld(d,i)*mval(i);
+      relVel(d)+=mele.GetNodalCoordsOld(d,i)*mval(i)*fac;
 
       for (int e=0;e<dim-1;++e)
         for (GEN::pairedvector<int,double>::const_iterator p=derivmxi[e].begin();p!=derivmxi[e].end();++p)
-          relVel_deriv[d][p->first]+=mele.GetNodalCoordsOld(d,i)*mderiv(i,e)*p->second;
+          relVel_deriv[d][p->first]+=mele.GetNodalCoordsOld(d,i)*mderiv(i,e)*p->second*fac;
     }
-
   for (int d=0;d<dim;++d)
   {
-    relVel(d)+=n_old(d)*gap;
+    relVel(d)+=n_old(d)*gap*fac;
 
     for (int e=0;e<dim-1;++e)
       for (GEN::pairedvector<int,double>::const_iterator p=derivsxi[e].begin();p!=derivsxi[e].end();++p)
-        relVel_deriv[d][p->first]+=gap*d_n_old_dxi(d,e)*p->second;
+        relVel_deriv[d][p->first]+=gap*d_n_old_dxi(d,e)*p->second*fac;
     for (GEN::pairedvector<int,double>::const_iterator p=deriv_gap.begin();p!=deriv_gap.end();++p)
-      relVel_deriv[d][p->first]+=n_old(d)*p->second;
+      relVel_deriv[d][p->first]+=n_old(d)*p->second*fac;
   }
 }
 
@@ -727,6 +727,7 @@ void CONTACT::UTILS::VectorScalarProduct(
 )
 {
   val=v1.Dot(v2);
+  val_deriv.clear();
   val_deriv.resize(v1d[0].size()+v2d[0].size());
   for (int d=0;d<dim;++d)
   {
@@ -941,7 +942,7 @@ void CONTACT::CoIntegratorNitsche::BuildAdjointTest<3>(
 
 
 template
-void CONTACT::CoIntegratorNitsche::RelVel<2>(
+void CONTACT::UTILS::RelVel<2>(
     MORTAR::MortarElement& ,
     const LINALG::SerialDenseVector& ,
     const LINALG::SerialDenseMatrix& ,
@@ -952,7 +953,7 @@ void CONTACT::CoIntegratorNitsche::RelVel<2>(
     );
 
 template
-void CONTACT::CoIntegratorNitsche::RelVel<3>(
+void CONTACT::UTILS::RelVel<3>(
     MORTAR::MortarElement& ,
     const LINALG::SerialDenseVector& ,
     const LINALG::SerialDenseMatrix& ,

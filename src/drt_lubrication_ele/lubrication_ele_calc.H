@@ -4,12 +4,9 @@
 
 \brief main file containing routines for calculation of lubrication element
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15270
-</pre>
+\level 3
+
+\maintainer Alexander Seitz
 */
 /*--------------------------------------------------------------------------*/
 #ifndef SRC_DRT_LUBRICATION_ELE_LUBRICATION_ELE_CALC_H_
@@ -118,6 +115,17 @@ namespace ELEMENTS
                           Epetra_SerialDenseVector&     elevec2_epetra,
                           Epetra_SerialDenseVector&     elevec3_epetra);
 
+     // Evaluate the off-diagonal coupling block of monotlitic EHL matrix
+     virtual int EvaluateEHLMon(DRT::Element*                 ele,
+                          Teuchos::ParameterList&       params,
+                          DRT::Discretization&          discretization,
+                          DRT::Element::LocationArray&  la,
+                          Epetra_SerialDenseMatrix&     elemat1_epetra,
+                          Epetra_SerialDenseMatrix&     elemat2_epetra,
+                          Epetra_SerialDenseVector&     elevec1_epetra,
+                          Epetra_SerialDenseVector&     elevec2_epetra,
+                          Epetra_SerialDenseVector&     elevec3_epetra);
+
      //! evaluate action
      virtual int EvaluateAction(
          DRT::Element*                 ele,
@@ -179,9 +187,21 @@ namespace ELEMENTS
       Epetra_SerialDenseVector&             erhs       //!< element rhs to calculate
     );
 
-    //! get the body force
-    virtual void BodyForce(
-      const DRT::Element*  ele //!< the element we are dealing with
+    //! calculate element off-diagonal-matrix for height-linearization in monolithic EHL
+    virtual void MatrixforEHLMon(
+      DRT::Element*                         ele,       //!< the element we are dealing with
+      Epetra_SerialDenseMatrix&             ematheight,//!< element matrix associated with the linearization of the film height
+      Epetra_SerialDenseMatrix&             ematvel   //!< element matrix associated with the linearization of the velocities
+    );
+
+    //! Calculate the height of the lubrication at the Int point
+    virtual void CalcHeightAtIntPoint(
+      double&             heightint      //!< lubrication height at Int point
+    );
+
+    //! Calculate the average velocity of the contacting bodies at the Int point
+    virtual void CalcAvrVelAtIntPoint(
+      LINALG::Matrix<nsd_,1>&    avrvel      //!< average surface velocity at Int point
     );
 
     //! read element coordinates
@@ -236,7 +256,7 @@ namespace ELEMENTS
 
     //! evaluate material
     virtual void Materials(
-      const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
+      const Teuchos::RCP<MAT::Material> material, //!< pointer to current material
       double&                                 densn,    //!< density at t_(n)
       double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
       double&                                 densam,   //!< density at t_(n+alpha_M)
@@ -246,7 +266,7 @@ namespace ELEMENTS
 
     //! material Lubrication
     virtual void MatLubrication(
-      const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
+      const Teuchos::RCP<MAT::Material> material, //!< pointer to current material
       double&                                 densn,    //!< density at t_(n)
       double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
       double&                                 densam,   //!< density at t_(n+alpha_M)
@@ -287,29 +307,28 @@ namespace ELEMENTS
       return;
     };
 
-    //! compute rhs containing bodyforce
-    virtual void GetRhsInt(
-      double&      rhsint,  //!< rhs containing bodyforce at integration point
-      const double densnp  //!< density at t_(n+1)
+    //! calculation of Poiseuille contribution to element matrix
+    virtual void CalcMatPsl(
+        Epetra_SerialDenseMatrix&     emat,
+        const double                  timefacfac,
+        const double                  viscosity,
+        const double                  height
     );
 
-    //! calculation of diffusive element matrix
-    virtual void CalcMatDiff(
-      Epetra_SerialDenseMatrix&     emat,        //!< element matrix to be filled
-      const double                  timefacfac   //!< domain-integration factor times time-integration factor
+    //! calculation of Poiseuille contribution to RHS matrix
+    virtual void CalcRhsPsl(
+        Epetra_SerialDenseVector&     erhs,
+        const double                  rhsfac,
+        const double                  viscosity,
+        const double                  height
     );
 
-    //! standard Galerkin transient, old part of rhs and source term
-    void CalcRHSHistAndSource(
-      Epetra_SerialDenseVector&     erhs,        //!< element vector to be filled
-      const double                  fac,         //!< domain-integration factor
-      const double                  rhsint       //!< rhs at Gauss point
-    );
-
-    //! standard Galerkin diffusive term on right hand side
-    virtual void CalcRHSDiff(
-      Epetra_SerialDenseVector&     erhs,        //!< element vector to be filled
-      const double                  rhsfac       //!< time-integration factor for rhs times domain-integration factor
+    //! calculation of Wedge contribution to RHS matrix
+    virtual void CalcRhsWdg(
+        Epetra_SerialDenseVector&     erhs,
+        const double                  rhsfac,
+        const double                  height,
+        const LINALG::Matrix<nsd_,1>  velocity
     );
 
     /*========================================================================*/
@@ -346,8 +365,14 @@ namespace ELEMENTS
     //! inverse of transposed jacobian "ds/dx"
     LINALG::Matrix<nsd_,nsd_> xij_;
 
-    //! bodyforce in element nodes
-    LINALG::Matrix<nen_,1> bodyforce_;
+    //!  array for element nodal film height at time n+1, (same scalar value for all space dimensions)
+    LINALG::Matrix<nsd_,nen_>  eheinp_;
+
+    //! Average tangential interface velocity
+    LINALG::Matrix<nsd_,nen_> eAvTangVel_;
+
+    //!  array of element nodal displacement at time n+1
+    LINALG::Matrix<nsd_,nen_> edispnp_;
 
     /*========================================================================*/
     //! @name manager classes for efficient application to various problems

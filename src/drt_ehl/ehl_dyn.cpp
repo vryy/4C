@@ -4,12 +4,9 @@
 
 \brief control routine for elastohydrodynamic lubrication (lubrication structure interaction)
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15270
-</pre>
+\level 3
+
+\maintainer Alexander Seitz
 */
 /*--------------------------------------------------------------------------*/
 
@@ -56,18 +53,6 @@ void ehl_dyn()
   {
   case INPAR::EHL::ehl_IterStagg:
     ehl = Teuchos::rcp(new EHL::Partitioned(comm, ehlparams, lubricationdyn, sdyn, "structure", "lubrication"));
-    break;
-  case INPAR::EHL::ehl_IterStaggFixedRel_LubToStr:
-    ehl = Teuchos::rcp(new EHL::Partitioned_LubToStr_Relax(comm, ehlparams, lubricationdyn, sdyn, "structure", "lubrication"));
-    break;
-  case INPAR::EHL::ehl_IterStaggFixedRel_StrToLub:
-    ehl = Teuchos::rcp(new EHL::Partitioned_StrToLub_Relax(comm, ehlparams, lubricationdyn, sdyn, "structure", "lubrication"));
-    break;
-  case INPAR::EHL::ehl_IterStaggAitken_LubToStr:
-    ehl = Teuchos::rcp(new EHL::Partitioned_LubToStr_Aitken(comm, ehlparams, lubricationdyn, sdyn, "structure", "lubrication"));
-        break;
-  case INPAR::EHL::ehl_IterStaggAitken_StrToLub:
-    ehl = Teuchos::rcp(new EHL::Partitioned_StrToLub_Aitken(comm, ehlparams, lubricationdyn, sdyn, "structure", "lubrication"));
     break;
   case INPAR::EHL::ehl_Monolithic:
     ehl = Teuchos::rcp(new EHL::Monolithic(comm, ehlparams, lubricationdyn, sdyn, "structure", "lubrication"));

@@ -74,6 +74,8 @@ void CONTACT::CoNodeDataContainer::Pack(DRT::PackBuffer& data) const
   DRT::ParObject::AddtoPack(data,kappa_);
   // add activeold_
   DRT::ParObject::AddtoPack(data,activeold_);
+  // add n_old_
+  DRT::ParObject::AddtoPack(data, n_old_, 3 * sizeof(double));
 
   // no need to pack derivs_
   // (these will evaluated anew anyway)
@@ -98,6 +100,9 @@ void CONTACT::CoNodeDataContainer::Unpack(std::vector<char>::size_type& position
   DRT::ParObject::ExtractfromPack(position,data,kappa_);
   // activeold_
   activeold_ = DRT::ParObject::ExtractInt(position,data);
+  // n_old_
+  DRT::ParObject::ExtractfromPack(position, data, n_old_,
+      3 * sizeof(double));
 
   return;
 }
@@ -861,6 +866,21 @@ void CONTACT::CoNode::InitializePoroDataContainer()
   if (coporodata_ == Teuchos::null)
   {
     coporodata_ = Teuchos::rcp(new CONTACT::CoNodePoroDataContainer());
+  }
+
+  return;
+}
+
+/*-----------------------------------------------------------------------*
+ |  Initialize ehl data container                             seitz 11/17|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNode::InitializeEhlDataContainer()
+{
+  // only initialize if not yet done
+
+  if (cEHLdata_ == Teuchos::null)
+  {
+    cEHLdata_ = Teuchos::rcp(new CONTACT::CoNodeEhlDataContainer());
   }
 
   return;
@@ -1797,5 +1817,17 @@ void CONTACT::CoNode::AddNcoupValue(double& val)
 
   // add given value to ncoup
   CoPoroData().GetnCoup() += val;
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Store nodal normals to old ones                         seitz 05/17 |
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNode::StoreOldNormal()
+{
+  // write entries to old ones
+  for (int j = 0; j < 3; ++j)
+    CoData().Normal_old()[j] = MoData().n()[j];
+
   return;
 }

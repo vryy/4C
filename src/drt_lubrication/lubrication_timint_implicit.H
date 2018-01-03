@@ -6,12 +6,7 @@
 
      including stationary solver.
 
-<pre>
-\maintainer Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15270
-</pre>
+\maintainer Alexander Seitz
 
 \level 3
 
@@ -89,6 +84,10 @@ class TimIntImpl
 
 public:
 
+  virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() {return output_;}
+
+  Teuchos::RCP<Epetra_Vector>& InfGapToggle(){return inf_gap_toggle_lub_;}
+
   /*========================================================================*/
   //! @name Constructors and destructors and related methods
   /*========================================================================*/
@@ -111,6 +110,14 @@ public:
   /*========================================================================*/
 
   /*--- set, prepare, and predict ------------------------------------------*/
+
+  //! set the nodal film height
+  void SetHeightField(const int nds,
+      Teuchos::RCP<const Epetra_Vector> height);
+
+  //! set average tangential interface velocity for Reynolds equation
+  void SetAverageVelocityField(const int nds,
+      Teuchos::RCP<const Epetra_Vector> av_vel);
 
   //! add global state vectors specific for time-integration scheme
   virtual void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver=false) = 0;
@@ -180,7 +187,7 @@ public:
   void Evaluate();
 
   //! non-overlapping DOF map for multiple dofsets
-  Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds)
+  Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds=0)
   {
     const Epetra_Map* dofrowmap = discret_->DofRowMap(nds);
     return Teuchos::rcp(new Epetra_Map(*dofrowmap));
@@ -291,6 +298,9 @@ protected:
 
   //! return the right time-scaling-factor for the true residual
   virtual double ResidualScaling() const = 0;
+
+  //! penalty term to ensure positive pressures (cavitation)
+  virtual void AddCavitationPenalty();
 
   //! contains the nonlinear iteration loop
   virtual void NonlinearSolve();
@@ -434,7 +444,7 @@ protected:
   //! number of space dimensions
   int nsd_;
 
-  //! pre at time n+1
+  //! pressure at time n+1
   Teuchos::RCP<Epetra_Vector> prenp_;
 
   /*========================================================================*/
@@ -477,6 +487,9 @@ protected:
 
   Teuchos::RCP<Epetra_Vector> prei_;  //!< residual pressures
                                       //!< \f$\Delta{p}^{<k>}_{n+1}\f$
+
+  //! Dirchlet toggle vector for unprojectable nodes (i.e. infinite gap)
+  Teuchos::RCP<Epetra_Vector> inf_gap_toggle_lub_;
 
   /*========================================================================*/
   //! @name not classified variables - to be kept clean!!!

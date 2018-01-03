@@ -1844,41 +1844,8 @@ void CONTACT::CoAbstractStrategy::StoreToOld(
 {
   // loop over all interfaces
   for (int i = 0; i < (int) Interfaces().size(); ++i)
-  {
-    // loop over all slave row nodes on the current interface
-    for (int j = 0; j < Interfaces()[i]->SlaveColNodes()->NumMyElements(); ++j)
-    {
-      int gid = Interfaces()[i]->SlaveColNodes()->GID(j);
-      DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
-      if (!node)
-        dserror("ERROR: Cannot find node with gid %", gid);
-      FriNode* cnode = dynamic_cast<FriNode*>(node);
+    Interfaces()[i]->StoreToOld(type);
 
-      switch (type)
-      {
-      case MORTAR::StrategyBase::dm:
-      {
-        // store D and M entries
-        cnode->StoreDMOld();
-        break;
-      }
-      case MORTAR::StrategyBase::pentrac:
-      {
-        // store penalty tractions to old ones
-        cnode->StoreTracOld();
-        break;
-      }
-      case MORTAR::StrategyBase::n_old:
-      {
-        cnode->StoreOldNormal();
-        break;
-      }
-      default:
-        dserror("ERROR: StoreDMToNodes: Unknown state std::string variable!");
-        break;
-      } // switch
-    }
-  }
   return;
 }
 

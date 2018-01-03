@@ -4,12 +4,9 @@
 
 \brief Elastohydrodynamic lubrication (lubrication structure interaction) parameters
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15270
-</pre>
+\level 3
+
+\maintainer Alexander Seitz
 */
 /*--------------------------------------------------------------------------*/
 
@@ -64,22 +61,14 @@ void INPAR::EHL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   // Coupling strategy for EHL solvers
   setStringToIntegralParameter<int>(
-                              "COUPALGO","ehl_IterStagg",
+                              "COUPALGO","ehl_Monolithic",
                               "Coupling strategies for EHL solvers",
                               tuple<std::string>(
                                 "ehl_IterStagg",
-                                "ehl_IterStaggFixedRel_LubToStr",
-                                "ehl_IterStaggFixedRel_StrToLub",
-                                "ehl_IterStaggAitken_LubToStr",
-                                "ehl_IterStaggAitken_StrToLub",
                                 "ehl_Monolithic"
                                 ),
                               tuple<int>(
                                 ehl_IterStagg,
-                                ehl_IterStaggFixedRel_LubToStr,
-                                ehl_IterStaggFixedRel_StrToLub,
-                                ehl_IterStaggAitken_LubToStr,
-                                ehl_IterStaggAitken_StrToLub,
                                 ehl_Monolithic
                                 ),
                               &ehldyn);
@@ -162,11 +151,9 @@ void INPAR::EHL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   setStringToIntegralParameter<int>("NLNSOL","fullnewton",
     "Nonlinear solution technique",
     tuple<std::string>(
-      "fullnewton",
-      "ptc"),
+      "fullnewton"),
     tuple<int>(
-      soltech_newtonfull,
-      soltech_ptc),
+      soltech_newtonfull),
     &ehldynmono
     );
 
@@ -220,4 +207,63 @@ void INPAR::EHL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   // convergence tolerance of outer iteration loop
   DoubleParameter("CONVTOL",1e-6,"tolerance for convergence check of outer iteration within partitioned EHL",&ehldynpart);
+
+  // set unprojectable nodes to zero pressure via Dirichlet condition
+  setStringToIntegralParameter<int>("UNPROJ_ZERO_DBC","No",
+    "set unprojectable nodes to zero pressure via Dirichlet condition",
+    yesnotuple,
+    yesnovalue,
+    &ehldyn
+    );
+}
+
+
+void INPAR::EHL::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist)
+{
+  using namespace DRT::INPUT;
+  using Teuchos::tuple;
+  using Teuchos::setStringToIntegralParameter;
+  /*--------------------------------------------------------------------*/
+    // ehl mortar coupling
+
+    std::vector<Teuchos::RCP<ConditionComponent> > ehlcomponents;
+
+    ehlcomponents.push_back(Teuchos::rcp(new IntConditionComponent("Interface ID")));
+    ehlcomponents.push_back(
+      Teuchos::rcp(
+        new StringConditionComponent(
+          "Side","Master",
+          Teuchos::tuple<std::string>("Master","Slave"),
+          Teuchos::tuple<std::string>("Master","Slave"))));
+    ehlcomponents.push_back(
+      Teuchos::rcp(
+        new StringConditionComponent(
+          "Initialization","Active",
+          Teuchos::tuple<std::string>("Inactive","Active"),
+          Teuchos::tuple<std::string>("Inactive","Active"),true)));
+
+    Teuchos::RCP<ConditionDefinition> lineehl =
+      Teuchos::rcp(new ConditionDefinition("DESIGN LINE EHL MORTAR COUPLING CONDITIONS 2D",
+                                           "EHLCoupling",
+                                           "Line EHL Coupling",
+                                           DRT::Condition::EHLCoupling,
+                                           true,
+                                           DRT::Condition::Line));
+    Teuchos::RCP<ConditionDefinition> surfehl =
+      Teuchos::rcp(new ConditionDefinition("DESIGN SURF EHL MORTAR COUPLING CONDITIONS 3D",
+                                           "EHLCoupling",
+                                           "Surface EHL Coupling",
+                                           DRT::Condition::EHLCoupling,
+                                           true,
+                                           DRT::Condition::Surface));
+
+
+    for (unsigned i=0; i<ehlcomponents.size(); ++i)
+    {
+      lineehl->AddComponent(ehlcomponents[i]);
+      surfehl->AddComponent(ehlcomponents[i]);
+    }
+
+    condlist.push_back(lineehl);
+    condlist.push_back(surfehl);
 }

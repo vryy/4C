@@ -39,6 +39,7 @@
 #include "inpar_bio.H"
 #include "inpar_cardiovascular0d.H"
 #include "inpar_ssi.H"
+#include "inpar_ehl.H"
 #include "inpar_particle.H"
 #include "inpar_cavitation.H"
 #include "inpar_beampotential.H"
@@ -1577,6 +1578,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   INPAR::BEAMPOTENTIAL::SetValidConditions(condlist);
 
   INPAR::BEAMINTERACTION::SetValidConditions(condlist);
+
+  INPAR::EHL::SetValidConditions(condlist);
 
   // finally some conditions that do not have their own files yet are problem-specific
   SetMiscellaneousConditions(condlist);

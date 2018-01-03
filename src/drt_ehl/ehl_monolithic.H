@@ -5,12 +5,9 @@
 \brief basis of all monolithic EHL algorithms that perform a coupling between
        the structure field equation and lubrication field equations
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15270
-</pre>
+\level 3
+
+\maintainer Alexander Seitz
 */
 /*--------------------------------------------------------------------------*/
 #ifndef SRC_DRT_EHL_EHL_MONOLITHIC_H_
@@ -26,6 +23,7 @@ Maintainer: Andy Wirtz
 #include "../drt_inpar/inpar_lubrication.H"
 
 #include <Epetra_Time.h>
+#include <Epetra_FEVector.h>
 
 /*----------------------------------------------------------------------*
  |                                                          wirtz 01/16 |
@@ -46,6 +44,27 @@ namespace DRT
   {
     class LocsysManager;
   }
+}
+
+namespace FSI
+{
+  namespace UTILS
+  {
+    class MatrixRowTransform;
+    class MatrixColTransform;
+    class MatrixRowColTransform;
+  }
+}
+
+namespace MORTAR
+{
+  class IntCell;
+  class MortarElement;
+}
+
+namespace CONTACT
+{
+  class CoElement;
 }
 
 //! EHL: Elastohydrodynamic lubrication (lubrication-structure interaction)
@@ -135,16 +154,31 @@ namespace EHL
     //! create linear solver (setup of parameter lists, etc...)
     void CreateLinearSolver();
 
-    //! Evaluate mechanical-lubrication system matrix
-    void ApplyStrCouplMatrix(
-      Teuchos::RCP<LINALG::SparseMatrix> k_sl  //!< mechanical-lubrication stiffness matrix
-      );
-
     //! Evaluate lubrication-mechanical system matrix
     void ApplyLubricationCouplMatrix(
-      Teuchos::RCP<LINALG::SparseMatrix> k_ls  //!< lubrication-mechanical tangent matrix
-      );
+        Teuchos::RCP<LINALG::SparseMatrix> matheight,  //!< lubrication matrix associated with linearization wrt height
+        Teuchos::RCP<LINALG::SparseMatrix> matvel     //!< lubrication matrix associated with linearization wrt velocities
+    );
 
+    void LinPressureForceDisp(
+        Teuchos::RCP<LINALG::SparseMatrix>& ds_dd,
+        Teuchos::RCP<LINALG::SparseMatrix>& dm_dd);
+    void LinPoiseuilleForceDisp(
+        Teuchos::RCP<LINALG::SparseMatrix>& ds_dd,
+        Teuchos::RCP<LINALG::SparseMatrix>& dm_dd);
+    void LinCouetteForceDisp(
+        Teuchos::RCP<LINALG::SparseMatrix>& ds_dd,
+        Teuchos::RCP<LINALG::SparseMatrix>& dm_dd);
+
+    void LinPressureForcePres(
+        Teuchos::RCP<LINALG::SparseMatrix>& ds_dp,
+        Teuchos::RCP<LINALG::SparseMatrix>& dm_dp);
+    void LinPoiseuilleForcePres(
+        Teuchos::RCP<LINALG::SparseMatrix>& ds_dp,
+        Teuchos::RCP<LINALG::SparseMatrix>& dm_dp);
+    void LinCouetteForcePres(
+        Teuchos::RCP<LINALG::SparseMatrix>& ds_dp,
+        Teuchos::RCP<LINALG::SparseMatrix>& dm_dp);
     //@}
 
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
@@ -159,15 +193,6 @@ namespace EHL
 
     //! outer iteration loop
     void NewtonFull();
-
-    //! do pseudo-transient continuation nonlinear iteration
-    //!
-    //! Pseudo-transient continuation is a variant of a full newton which has a
-    //! larger convergence radius than newton and is therefore more stable
-    //! and/or can do larger time steps
-    //!
-    //! originally by mwgee for structural analysis \date 03/12
-    void PTC();
 
     //! @name Output
 
@@ -366,13 +391,6 @@ namespace EHL
     double dtsolve_; //!< linear solver time
     //@}
 
-    //! @name Pseudo-transient continuation parameters
-
-    double ptcdt_;  //!< pseudo time step size for PTC
-    double dti_;  //!< scaling factor for PTC (initially 1/ptcdt_, then adapted)
-
-    //@}
-
     //! @name Various global forces
 
     //! rhs of EHL system
@@ -380,12 +398,6 @@ namespace EHL
 
     //! increment between Newton steps k and k+1 \f$\Delta{x}^{<k>}_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> iterinc_;
-
-    //! global velocities \f${V}_{n+1}\f$ at \f$t_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> vel_;
-
-    //! Dirichlet BCs with local co-ordinate system
-    Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
 
     //@}
 
@@ -400,6 +412,100 @@ namespace EHL
 
   }; // Monolithic
 
+
+//  class MortarCellInterface : public DRT::SingletonDestruction
+//  {
+//    public:
+//
+//    //! evaluate single mortar integration cell of particular slave-side and master-side discretization types
+//    virtual void Evaluate(
+//        Teuchos::RCP<LINALG::SparseMatrix>   imatrix1,          //!< interface matrix 1
+//        Teuchos::RCP<LINALG::SparseMatrix>   imatrix2,          //!< interface matrix 2
+//        Teuchos::RCP<LINALG::SparseMatrix>   imatrix3,          //!< interface matrix 3
+//        Teuchos::RCP<Epetra_Vector>          islaveresidual,    //!< slave-side residual vector
+//        Teuchos::RCP<Epetra_FEVector>        imasterresidual,   //!< master-side residual vector
+//        const DRT::Discretization&           idiscret,          //!< interface discretization
+//        const Teuchos::ParameterList&        params,            //!< parameter list
+//        DRT::Element&               slaveelement,      //!< slave-side mortar element
+//        DRT::Element&               masterelement,     //!< master-side mortar element
+//        MORTAR::IntCell&                     cell,              //!< mortar integration cell
+//        DRT::Element::LocationArray&         la_slave,          //!< slave-side location array
+//        DRT::Element::LocationArray&         la_master          //!< master-side location array
+//        )=0;
+//
+//    protected:
+//
+//      //! protected constructor for singletons
+//      MortarCellInterface(){};
+//
+//      //! protected destructor for singletons
+//      virtual ~MortarCellInterface(){return;};
+//  };
+//
+//  template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
+//  class MortarCellCalc : public MortarCellInterface
+//  {
+//    public:
+//
+//      //! singleton access method
+//      static MortarCellCalc<distypeS,distypeM>* Instance(
+//          bool create = true);
+//
+//      //! singleton destruction
+//      virtual void Done();
+//
+//      //! evaluate single mortar integration cell of particular slave-side and master-side discretization types
+//      virtual void Evaluate(
+//          Teuchos::RCP<LINALG::SparseMatrix>   imatrix1,          //!< interface matrix 1
+//          Teuchos::RCP<LINALG::SparseMatrix>   imatrix2,          //!< interface matrix 2
+//          Teuchos::RCP<LINALG::SparseMatrix>   imatrix3,          //!< interface matrix 3
+//          Teuchos::RCP<Epetra_Vector>          islaveresidual,    //!< slave-side residual vector
+//          Teuchos::RCP<Epetra_FEVector>        imasterresidual,   //!< master-side residual vector
+//          const DRT::Discretization&           idiscret,          //!< interface discretization
+//          const Teuchos::ParameterList&        params,            //!< parameter list
+//          DRT::Element&               slaveelement,      //!< slave-side mortar element
+//          DRT::Element&               masterelement,     //!< master-side mortar element
+//          MORTAR::IntCell&                     cell,              //!< mortar integration cell
+//          DRT::Element::LocationArray&         la_slave,          //!< slave-side location array
+//          DRT::Element::LocationArray&         la_master          //!< master-side location array
+//          );
+//
+//    protected:
+//
+//      //! protected constructor for singletons
+//      MortarCellCalc(){};
+//
+//  }; // class MortarCellCalc
+//
+//  class MortarCellFactory
+//  {
+//    public:
+//
+//      //! constructor
+//      MortarCellFactory(){return;};
+//
+//      //! destructor
+//      virtual ~MortarCellFactory(){return;};
+//
+//      //! provide instance of mortar cell evaluation class of particular slave-side discretization type
+//      static MortarCellInterface* MortarCellCalc(
+//          const DRT::Element&        slaveelement,    //!< slave-side mortar element
+//          const DRT::Element&        masterelement   //!< master-side mortar element
+//          );
+//
+//    private:
+//
+//      //! provide instance of mortar cell evaluation class of particular slave-side and master-side discretization types
+//      template<DRT::Element::DiscretizationType distypeS>
+//      static MortarCellInterface* MortarCellCalc(
+//          const DRT::Element&        masterelement        //!< master-side mortar element
+//          );
+//
+//      //! provide specific instance of mortar cell evaluation class
+//      template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
+//      static MortarCellInterface* MortarCellCalc();
+//
+//  }; // class MortarCellFactory
 } // namespace EHL
 
 

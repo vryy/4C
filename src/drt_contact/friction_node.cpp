@@ -68,8 +68,6 @@ void CONTACT::FriNodeDataContainer::Pack(DRT::PackBuffer& data) const
   DRT::ParObject::AddtoPack(data, tractionLTL_, 3 * sizeof(double));
   // add tractionold_
   DRT::ParObject::AddtoPack(data, tractionoldLTL_, 3 * sizeof(double));
-  // add n_old_
-  DRT::ParObject::AddtoPack(data, n_old_, 3 * sizeof(double));
 
   // add drowsold_,mrowsold_,mnodesold_
   int hasdata = drowsold_.size();
@@ -131,9 +129,6 @@ void CONTACT::FriNodeDataContainer::Unpack(
       3 * sizeof(double));
   // tractionold_
   DRT::ParObject::ExtractfromPack(position, data, tractionoldLTL_,
-      3 * sizeof(double));
-  // n_old_
-  DRT::ParObject::ExtractfromPack(position, data, n_old_,
       3 * sizeof(double));
 
   //drowsold_,mrowsold_,mnodesold_
@@ -602,18 +597,6 @@ void CONTACT::FriNode::StoreTracOld()
 
   for (int j = 0; j < 3; ++j)
     FriData().tractionoldLTL()[j] = FriData().tractionLTL()[j];
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Store nodal normals to old ones                         seitz 05/17 |
- *----------------------------------------------------------------------*/
-void CONTACT::FriNode::StoreOldNormal()
-{
-  // write entries to old ones
-  for (int j = 0; j < 3; ++j)
-    FriData().Normal_old()[j] = MoData().n()[j];
 
   return;
 }

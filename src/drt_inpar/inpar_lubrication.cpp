@@ -4,12 +4,9 @@
 
 \brief Lubrication dynamic parameters
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15270
-</pre>
+\level 3
+
+\maintainer Alexander Seitz
 */
 /*--------------------------------------------------------------------------*/
 
@@ -114,6 +111,11 @@ void INPAR::LUBRICATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
 
   DoubleParameter("TOLRES",1.0E-06,
     "tolerance in the residual norm for the Newton iteration",
+    &lubricationdyn
+    );
+
+  DoubleParameter("PENALTY_CAVITATION",0.,
+    "penalty parameter for regularized cavitation",
     &lubricationdyn
     );
 

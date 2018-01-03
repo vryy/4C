@@ -4,12 +4,9 @@
 
 \brief Interface of Lubrication element evaluation routine
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15270
-</pre>
+\level 3
+
+\maintainer Alexander Seitz
 */
 /*--------------------------------------------------------------------------*/
 
@@ -57,6 +54,16 @@ namespace ELEMENTS
       linearized matrix and the right hand side
      */
     virtual int Evaluate(DRT::Element*                 ele,
+                         Teuchos::ParameterList&       params,
+                         DRT::Discretization&          discretization,
+                         DRT::Element::LocationArray&  la,
+                         Epetra_SerialDenseMatrix&     elemat1_epetra,
+                         Epetra_SerialDenseMatrix&     elemat2_epetra,
+                         Epetra_SerialDenseVector&     elevec1_epetra,
+                         Epetra_SerialDenseVector&     elevec2_epetra,
+                         Epetra_SerialDenseVector&     elevec3_epetra) = 0;
+
+    virtual int EvaluateEHLMon(DRT::Element*                 ele,
                          Teuchos::ParameterList&       params,
                          DRT::Discretization&          discretization,
                          DRT::Element::LocationArray&  la,

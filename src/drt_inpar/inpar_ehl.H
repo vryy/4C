@@ -4,12 +4,9 @@
 
 \brief Elastohydrodynamic lubrication (lubrication structure interaction) parameters
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15270
-</pre>
+\level 3
+
+\maintainer Alexander Seitz
 */
 /*--------------------------------------------------------------------------*/
 #ifndef SRC_DRT_INPAR_INPAR_EHL_H_
@@ -36,10 +33,6 @@ namespace EHL
   enum SolutionSchemeOverFields
   {
     ehl_IterStagg,
-    ehl_IterStaggFixedRel_LubToStr,
-    ehl_IterStaggFixedRel_StrToLub,
-    ehl_IterStaggAitken_LubToStr,
-    ehl_IterStaggAitken_StrToLub,
     ehl_Monolithic
   };
 
@@ -72,8 +65,7 @@ namespace EHL
   //! type of solution techniques
   enum NlnSolTech
   {
-    soltech_newtonfull,  //!< full Newton-Raphson iteration
-    soltech_ptc,  //!< pseudo transient continuation nonlinear iteration
+    soltech_newtonfull  //!< full Newton-Raphson iteration
   };
 
   //! Map solution technique enum to std::string
@@ -85,9 +77,6 @@ namespace EHL
     {
     case soltech_newtonfull :
       return "fullnewton";
-      break;
-    case soltech_ptc :
-      return "ptc";
       break;
     default:
       dserror("Cannot make std::string for solution technique %d", name);
@@ -110,6 +99,8 @@ namespace EHL
   /// set the ehl parameters
   void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
+  /// set specific ehl conditions
+  void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
 
 }  // namespace EHL
 

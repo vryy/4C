@@ -19,6 +19,7 @@
 
 #include <NOX_Epetra_Interface_Preconditioner.H>
 #include "nox_nln_enum_lists.H"
+#include <Teuchos_RCP.hpp>
 
 // forward declarations...
 class Epetra_Map;

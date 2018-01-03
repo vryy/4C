@@ -14,6 +14,7 @@
 #define CONTACT_NODE_H
 
 #include "../drt_mortar/mortar_node.H"
+#include <unordered_map>
 
 /*!
  \brief CONTACT: namespace of the BACI contact and meshtying algorithms
@@ -320,6 +321,13 @@ virtual double* Getjumpltl() { return jumpltl_; }
   virtual GEN::pairedvector<int, double>& GetAlpha() {return alpha_;};
   virtual double& GetAlphaN() {return nalpha_;};
 
+  /*!
+   \brief Return old normal vector (length 3)
+   */
+  virtual inline double* Normal_old()
+  {
+    return n_old_;
+  }
   //@}
 
 protected:
@@ -388,6 +396,8 @@ protected:
   std::map<int, std::map<int, double> > Wc_mu_u_;
 
   //! @}
+
+  double n_old_[3];       // normal of previous time step
 };
 
 namespace AUG {
@@ -736,6 +746,73 @@ protected:
 }; //class CoNodeTSIDataContainer
 
 /*!
+\brief A class containing additional data from EHL contact nodes
+
+This class contains additional information from EHL contact nodes which are
+are not needed for normal contact nodes.
+
+\author seitz (seitz@lnm.mw.tum.de)
+*/
+class CoNodeEhlDataContainer
+{
+public:
+  //! empty c-tor
+  CoNodeEhlDataContainer(){}
+
+  //! d-tor
+  virtual ~CoNodeEhlDataContainer(){};
+
+  //! pack for parallel communication
+  virtual void Pack(DRT::PackBuffer& data) const
+  {/* no need to pack, since terms are re-evaluated after parallel communication */};
+
+  //! unpack and re-init after parallel comunication
+  virtual void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data)
+  {/* no need to pack, since terms are re-evaluated after parallel communication */};
+
+  //! clear all stored data
+  void Clear()
+  {
+    weighted_relTangVel_.Clear();
+    deriv_weighted_relTangVel_.clear();
+    weighted_avTangVel_.Clear();
+    deriv_weighted_avTangVel_.clear();
+    tang_grad_.clear();
+    tang_grad_deriv_.clear();
+    weighted_relTangVel_.Clear();
+    weighted_avTangVel_.Clear();
+  }
+
+  LINALG::Matrix<3,1>& GetWeightedRelTangVel(){return weighted_relTangVel_;}
+  std::unordered_map<int,LINALG::Matrix<3,1>>& GetWeightedRelTangVelDeriv()
+    {return deriv_weighted_relTangVel_;}
+
+  LINALG::Matrix<3,1>& GetWeightedAvTangVel(){return weighted_avTangVel_;}
+  std::unordered_map<int,LINALG::Matrix<3,1>>& GetWeightedAvTangVelDeriv()
+    {return deriv_weighted_avTangVel_;}
+
+  std::unordered_map<int,LINALG::Matrix<3,1>>& GetSurfGrad(){return tang_grad_;}
+  std::unordered_map<int,std::unordered_map<int,LINALG::Matrix<3,1>>>& GetSurfGradDeriv(){return tang_grad_deriv_;}
+
+protected:
+
+  // don't want = operator and cctor
+  CoNodeEhlDataContainer operator = (const CoNodeEhlDataContainer& old);
+  CoNodeEhlDataContainer(const CoNodeEhlDataContainer& old);
+
+  // actual data
+  LINALG::Matrix<3,1> weighted_relTangVel_;
+  std::unordered_map<int,LINALG::Matrix<3,1>> deriv_weighted_relTangVel_;
+
+  LINALG::Matrix<3,1> weighted_avTangVel_;
+  std::unordered_map<int,LINALG::Matrix<3,1>> deriv_weighted_avTangVel_;
+
+  std::unordered_map<int,LINALG::Matrix<3,1>>tang_grad_;
+  std::unordered_map<int,std::unordered_map<int,LINALG::Matrix<3,1>>>tang_grad_deriv_;
+
+};
+
+/*!
  \brief A class for a contact node derived from MORTAR::MortarNode
 
  This class represents a finite element node capable of contact.
@@ -898,6 +975,7 @@ public:
 
   inline CONTACT::CoNodePoroDataContainer& CoPoroData() { return *coporodata_; }
   inline CONTACT::CoNodeTSIDataContainer& CoTSIData() { return *cTSIdata_; }
+  inline CONTACT::CoNodeEhlDataContainer& CoEhlData() { return *cEHLdata_; }
 
   //@}
 
@@ -1061,6 +1139,15 @@ public:
   virtual void InitializePoroDataContainer();
 
   /*!
+  \brief Initializes the ehl data container of the node
+
+  With this function, the container with contact specific quantities/information
+  is initialized.
+
+  */
+  virtual void InitializeEhlDataContainer();
+
+  /*!
   \brief Initializes the TSI data container of the node
   */
   virtual void InitializeTSIDataContainer(double t_ref, double t_dam);
@@ -1091,6 +1178,11 @@ public:
   virtual void AddMNode(int node) {}
 
   virtual bool HasCoTSIData(){return (cTSIdata_!=Teuchos::null);}
+
+  /*!
+   \brief Write nodal normals to old ones
+   */
+  void StoreOldNormal();
   //@}
 
 private:
@@ -1129,6 +1221,8 @@ protected:
   Teuchos::RCP<CONTACT::CoNodePoroDataContainer> coporodata_; //< additional information of proc's poro contact nodes
 
   Teuchos::RCP<CONTACT::CoNodeTSIDataContainer> cTSIdata_;    //< additional information of TSI contact nodes
+
+  Teuchos::RCP<CONTACT::CoNodeEhlDataContainer> cEHLdata_;    //< additional information of TSI contact nodes
 
 };
 // class CoNode

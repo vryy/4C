@@ -205,35 +205,6 @@ protected:
         GEN::pairedvector<int,LINALG::SerialDenseVector>& deriv_adjoint_test
         );
 
-    template <int dim>
-    void RelVel(
-        MORTAR::MortarElement& ele,
-        const LINALG::SerialDenseVector& shape,
-        const LINALG::SerialDenseMatrix& deriv,
-        const std::vector<GEN::pairedvector<int,double> >& dxi,
-        const double fac,
-        LINALG::Matrix<dim,1>& relVel,
-        std::vector<GEN::pairedvector<int,double> >& relVel_deriv
-        );
-
-    template <int dim>
-    void RelVelInvariant(
-        MORTAR::MortarElement& sele,
-        double* sxi,
-        const std::vector<GEN::pairedvector<int,double> >& derivsxi,
-        const LINALG::SerialDenseVector& sval,
-        const LINALG::SerialDenseMatrix& sderiv,
-        MORTAR::MortarElement& mele,
-        double* mxi,
-        const std::vector<GEN::pairedvector<int,double> >& derivmxi,
-        const LINALG::SerialDenseVector& mval,
-        const LINALG::SerialDenseMatrix& mderiv,
-        const double& gap,
-        const GEN::pairedvector<int, double>& deriv_gap,
-        LINALG::Matrix<dim,1>& relVel,
-        std::vector<GEN::pairedvector<int,double> >& relVel_deriv
-);
-
 
     double theta_;
     INPAR::CONTACT::NitscheWeighting nit_wgt_;
@@ -248,6 +219,38 @@ protected:
 
 namespace UTILS
 {
+template <int dim>
+
+// actually not the velocity but the displacement increment
+void RelVelInvariant(
+    MORTAR::MortarElement& sele,
+    const double* sxi,
+    const std::vector<GEN::pairedvector<int,double> >& derivsxi,
+    const LINALG::SerialDenseVector& sval,
+    const LINALG::SerialDenseMatrix& sderiv,
+    MORTAR::MortarElement& mele,
+    const double* mxi,
+    const std::vector<GEN::pairedvector<int,double> >& derivmxi,
+    const LINALG::SerialDenseVector& mval,
+    const LINALG::SerialDenseMatrix& mderiv,
+    const double& gap,
+    const GEN::pairedvector<int, double>& deriv_gap,
+    LINALG::Matrix<dim,1>& relVel,
+    std::vector<GEN::pairedvector<int,double> >& relVel_deriv,
+    const double fac=1.
+);
+
+template <int dim>
+void RelVel(
+    MORTAR::MortarElement& ele,
+    const LINALG::SerialDenseVector& shape,
+    const LINALG::SerialDenseMatrix& deriv,
+    const std::vector<GEN::pairedvector<int,double> >& dxi,
+    const double fac,
+    LINALG::Matrix<dim,1>& relVel,
+    std::vector<GEN::pairedvector<int,double> >& relVel_deriv
+    );
+
 template <int dim>
 void VectorScalarProduct(
     const LINALG::Matrix<dim,1>& v1,
@@ -265,7 +268,7 @@ void BuildTangentVectors_3D(
     std::vector<GEN::pairedvector<int,double> >& dt1,
     double* t2p,
     std::vector<GEN::pairedvector<int,double> >& dt2
-    );//{dserror("stop");}
+    );
 
 template <int dim>
 void BuildTangentVectors(

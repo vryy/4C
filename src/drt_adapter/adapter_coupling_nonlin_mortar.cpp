@@ -194,7 +194,7 @@ void ADAPTER::CouplingNonLinMortar::ReadMortarCondition(
   // Coupling condition is defined by "MORTAR COUPLING CONDITIONS"
   // There is only one discretization (masterdis == slavedis). Therefore, the node set have to be
   // separated beforehand.
-  if(couplingcond=="Mortar")
+  if(couplingcond=="Mortar" || couplingcond=="Contact" || couplingcond=="EHLCoupling")
   {
     std::vector<DRT::Condition*> conds;
     std::vector<DRT::Condition*> conds_master(0);

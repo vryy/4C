@@ -6,12 +6,7 @@
 
      including stationary solver.
 
-<pre>
-\maintainer Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15270
-</pre>
+\maintainer Alexander Seitz
 
 \level 3
 
@@ -106,7 +101,7 @@ void LUBRICATION::TimIntImpl::Init()
 
   // ensure that degrees of freedom in the discretization have been set
   if ((not discret_->Filled()) or (not discret_->HaveDofs()))
-    discret_->FillComplete();
+    dserror("discretization not completed");
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -287,6 +282,12 @@ void LUBRICATION::TimIntImpl::TimeLoop()
     // prepare time step
     // -------------------------------------------------------------------
     PrepareTimeStep();
+
+    // -------------------------------------------------------------------
+    //                  set the auxiliary dofs
+    // -------------------------------------------------------------------
+    SetHeightField(1,Teuchos::null);
+    SetAverageVelocityField(1,Teuchos::null);
 
     // -------------------------------------------------------------------
     //                  solve nonlinear / linear equation
@@ -496,6 +497,24 @@ void LUBRICATION::TimIntImpl::ApplyNeumannBC
   return;
 } // LUBRICATION::TimIntImpl::ApplyNeumannBC
 
+/*----------------------------------------------------------------------*
+ | add cavitation penalty contribution to matrix and rhs    seitz 12/17 |
+ *----------------------------------------------------------------------*/
+void LUBRICATION::TimIntImpl::AddCavitationPenalty()
+{
+  const double penalty_param=params_->get<double>("PENALTY_CAVITATION");
+  for (int i=0;i<DofRowMap()->NumMyElements();++i)
+  {
+    const double pressure = Prenp()->operator [](i);
+    if (pressure>=0.)
+      continue;
+
+    const int gid = DofRowMap()->GID(i);
+    sysmat_->Assemble(-penalty_param,gid,gid);
+    residual_->operator [](i)+=penalty_param*pressure;
+  }
+}
+
 
 /*----------------------------------------------------------------------*
  | contains the assembly process for matrix and rhs         wirtz 11/15 |
@@ -520,6 +539,9 @@ void LUBRICATION::TimIntImpl::AssembleMatAndRHS()
   // action for elements
   eleparams.set<int>("action",LUBRICATION::calc_mat_and_rhs);
 
+  // provide bool whether ale or not, i.e. if the mesh is displaced
+  eleparams.set<bool>("isale",isale_);
+
   // provide displacement field in case of ALE
   if(isale_)
     eleparams.set<int>("ndsdisp",nds_disp_);
@@ -530,46 +552,12 @@ void LUBRICATION::TimIntImpl::AssembleMatAndRHS()
   // add state vectors according to time-integration scheme
   AddTimeIntegrationSpecificVectors();
 
-  // call loop over elements (with or without subgrid-diffusivity(-scaling) vector)
+  // call loop over elements
   discret_->Evaluate(eleparams,sysmat_,residual_);
-
-//  (SystemMatrix()->EpetraMatrix())->Print(std::cout); // kn nis
-
   discret_->ClearState();
 
-  //----------------------------------------------------------------------
-  // apply weak Dirichlet boundary conditions
-  //----------------------------------------------------------------------
-  {
-    Teuchos::ParameterList mhdbcparams;
-
-    // set action for elements
-    mhdbcparams.set<int>("action",LUBRICATION::bd_calc_weak_Dirichlet);
-
-    AddTimeIntegrationSpecificVectors();
-
-    // evaluate all mixed hybrid Dirichlet boundary conditions
-    discret_->EvaluateCondition
-      (mhdbcparams          ,
-       sysmat_              ,
-       Teuchos::null        ,
-       residual_            ,
-       Teuchos::null        ,
-       Teuchos::null        ,
-       "LineWeakDirichlet");
-
-    discret_->EvaluateCondition
-      (mhdbcparams          ,
-       sysmat_              ,
-       Teuchos::null        ,
-       residual_            ,
-       Teuchos::null        ,
-       Teuchos::null        ,
-       "SurfaceWeakDirichlet");
-
-    // clear state
-    discret_->ClearState();
-  }
+  // add cavitation penalty
+  AddCavitationPenalty();
 
   // potential residual scaling and potential addition of Neumann terms
   ScalingAndNeumann(); //TODO: do we have to call this function twice??
@@ -627,6 +615,11 @@ void LUBRICATION::TimIntImpl::NonlinearSolve()
       TEUCHOS_FUNC_TIME_MONITOR("LUBRICATION:       + apply DBC to system");
 
       LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,zeros_,*(dbcmaps_->CondMap()));
+
+      // additionally apply Dirichlet condition to unprojectable nodes
+      // (gap undefined, i.e. no reasonalbe Reynolds equation to be solved)
+      if (inf_gap_toggle_lub_!=Teuchos::null)
+        LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,zeros_,inf_gap_toggle_lub_);
     }
 
     // abort nonlinear iteration if desired
@@ -771,6 +764,32 @@ bool LUBRICATION::TimIntImpl::AbortNonlinIter(
   return false;
 } // TimIntImpl::AbortNonlinIter
 
+/*----------------------------------------------------------------------*
+ | Set the nodal film height at time n+1                    Seitz 12/17 |
+ *----------------------------------------------------------------------*/
+void LUBRICATION::TimIntImpl::SetHeightField(const int nds,
+    Teuchos::RCP<const Epetra_Vector> gap)
+{
+  if (gap == Teuchos::null)
+    dserror("Gap vector is empty.");
+  discret_->SetState(nds,"height",gap);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | Set the nodal average tangential velocity at time n+1    Seitz 12/17 |
+ *----------------------------------------------------------------------*/
+void LUBRICATION::TimIntImpl::SetAverageVelocityField(const int nds,
+      Teuchos::RCP<const Epetra_Vector> av_vel)
+{
+  if (nds >= discret_->NumDofSets())
+    dserror("Too few dofsets on lubrication discretization!");
+  if (av_vel==Teuchos::null)
+    dserror("no velocity provided");
+
+  discret_->SetState(nds,"av_tang_vel",av_vel);
+}
 
 /*----------------------------------------------------------------------*
  | Calculate problem specific norm                          wirtz 11/15 |
@@ -1141,6 +1160,9 @@ Teuchos::RCP<LINALG::SparseMatrix> LUBRICATION::TimIntImpl::SystemMatrix()
  *----------------------------------------------------------------------*/
 void LUBRICATION::TimIntImpl::Evaluate()
 {
+  // put zero pressure value, where no gap is defined
+  if (inf_gap_toggle_lub_!=Teuchos::null)
+    LINALG::ApplyDirichlettoSystem(prenp_, residual_, zeros_, inf_gap_toggle_lub_);
 
   // call elements to calculate system matrix and rhs and assemble
   AssembleMatAndRHS();
@@ -1149,6 +1171,10 @@ void LUBRICATION::TimIntImpl::Evaluate()
   // residual values are supposed to be zero at Dirichlet boundaries
   LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,zeros_,*(dbcmaps_->CondMap()));
 
+  // additionally apply Dirichlet condition to unprojectable nodes
+  // (gap undefined, i.e. no reasonalbe Reynolds equation to be solved)
+  if (inf_gap_toggle_lub_!=Teuchos::null)
+    LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,zeros_,inf_gap_toggle_lub_);
 }
 
 /*----------------------------------------------------------------------*

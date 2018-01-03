@@ -65,7 +65,7 @@ namespace ADAPTER
     \brief initialize routine
 
     */
-    void Setup(
+    virtual void Setup(
                Teuchos::RCP<DRT::Discretization>   masterdis,
                Teuchos::RCP<DRT::Discretization>   slavedis,
                std::vector<int>                    coupleddof,

@@ -239,13 +239,6 @@ public:
   {
     return tractionoldLTL_;
   }
-  /*!
-   \brief Return old normal vector (length 3)
-   */
-  virtual inline double* Normal_old()
-  {
-    return n_old_;
-  }
 
   //@}
 
@@ -278,8 +271,6 @@ protected:
   // penalty related quantities
   double tractionLTL_[3];    // traction vector of current time step
   double tractionoldLTL_[3]; // traction vector of previous time step
-
-  double n_old_[3];       // normal of previous time step
 };
 // class FriNodeDataContainer
 
@@ -662,11 +653,6 @@ public:
 
    */
   void StoreTracOld();
-
-  /*!
-   \brief Write nodal normals to old ones
-   */
-  void StoreOldNormal();
 
   /*!
    \brief Initializes the data container of the node

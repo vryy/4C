@@ -210,8 +210,22 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             "lubrication material",
                                             INPAR::MAT::m_lubrication));
 
-    AddNamedReal(m,"VISCOSITY","lubricant viscosity");
+    AddNamedInt(m,"LUBRICATIONLAWID","lubrication law id");
     AddNamedReal(m,"DENSITY","lubricant density");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+
+  /*----------------------------------------------------------------------*/
+  // constant lubrication material law
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_lubrication_law_constant",
+                                            "constant lubrication material law",
+                                            INPAR::MAT::m_lubrication_law_constant));
+
+    AddNamedReal(m,"VISCOSITY","lubricant viscosity");
 
     AppendMaterialDefinition(matlist,m);
   }

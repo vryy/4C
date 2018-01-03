@@ -540,6 +540,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/growth_law.cpp
   src/drt_mat/herschelbulkley.cpp
   src/drt_mat/ion.cpp
+  src/drt_mat/lubrication_law.cpp
   src/drt_mat/lubrication_mat.cpp
   src/drt_mat/material.cpp
   src/drt_mat/material_service.cpp
@@ -671,6 +672,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_coupling_mortar.cpp
   src/drt_adapter/adapter_coupling_nonlin_mortar.cpp
   src/drt_adapter/adapter_coupling_poro_mortar.cpp
+  src/drt_adapter/adapter_coupling_ehl_mortar.cpp
   src/drt_adapter/adapter_coupling_volmortar.cpp
   src/drt_adapter/ad_field_wrapper.cpp
   src/drt_adapter/ad_fld_fluid.cpp
@@ -2187,6 +2189,7 @@ set(OBJS_DRT_CONTACT
   src/drt_contact/contact_integrator.cpp
   src/drt_contact/contact_nitsche_integrator.cpp
   src/drt_contact/contact_nitsche_integrator_tsi.cpp
+  src/drt_contact/contact_ehl_integrator.cpp
   src/drt_contact/contact_integrator_factory.cpp
   src/drt_contact/contact_integrator_assemble.cpp
   src/drt_contact/contact_interface.cpp

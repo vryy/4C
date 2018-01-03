@@ -567,6 +567,16 @@ public:
   {
     return poro_;
   }
+
+  inline bool& IsEhl()
+  {
+    return ehl_;
+  }
+
+  inline bool IsEhl() const
+  {
+    return ehl_;
+  }
   /// @}
 
   /// @name DataContainer specific functions
@@ -636,6 +646,7 @@ private:
 
   bool                               nurbs_; ///< flag for nurbs shape functions
   bool                               poro_;  ///< flag if poro contact problem!
+  bool                               ehl_;   ///< flag if ehl contact problem!
 
 private:
   bool isinit_;                     ///< Is this data container object initialized?
@@ -1318,6 +1329,7 @@ public:
   void PrintShapeFcn() { std::cout << shapefcn_ << std::endl; };
 
   void SetPoroFlag(bool poro){poro_ = poro;}
+  void SetEhlFlag(bool ehl){ehl_ = ehl;}
 
   //@}
 
@@ -1565,6 +1577,7 @@ protected:
 
   bool&                               nurbs_; ///< ref. to flag for nurbs shape functions
   bool&                               poro_;  ///< ref. to flag if poro contact problem!
+  bool&                               ehl_;  ///< ref. to flag if ehl contact problem!
 
   /// @}
 }; // class MortarInterface

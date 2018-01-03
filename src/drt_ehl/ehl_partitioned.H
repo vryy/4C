@@ -4,12 +4,9 @@
 
 \brief class for partitioned elastohydrodynamic lubrication (lubrication structure interaction)
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15270
-</pre>
+\level 3
+
+\maintainer Alexander Seitz
 */
 /*--------------------------------------------------------------------------*/
 #ifndef SRC_DRT_EHL_EHL_PARTITIONED_H_
@@ -73,129 +70,6 @@ protected:
 
 
 };
-
-//! class to deal with displacement relaxated partioned EHL. Relaxation parameter is constant
-class Partitioned_StrToLub_Relax : public Partitioned
-{
-public:
-
-  //!explicit constructor
-  explicit Partitioned_StrToLub_Relax(const Epetra_Comm& comm,
-      const Teuchos::ParameterList& globaltimeparams,
-      const Teuchos::ParameterList& lubricationparams,
-      const Teuchos::ParameterList& structparams,
-      const std::string struct_disname,
-      const std::string lubrication_disname);
-
-  //!virtual destructor
-  virtual ~Partitioned_StrToLub_Relax(){};
-
-protected:
-  //! perform iteration loop between fields with relaxed displacements
-  void OuterLoop();
-
-  //! //! calculate relaxation parameter
-  virtual void CalcOmega( double& omega , const int itnum );
-
-  //! relaxation parameter
-  double omega_;
-};
-
-//! class to deal with displacement relaxated partioned EHL. Relaxation parameter is calculated via Aitken
-class Partitioned_StrToLub_Aitken : public Partitioned_StrToLub_Relax
-{
-public:
-
-  //!explicit constructor
-  explicit Partitioned_StrToLub_Aitken(const Epetra_Comm& comm,
-      const Teuchos::ParameterList& globaltimeparams,
-      const Teuchos::ParameterList& lubricationparams,
-      const Teuchos::ParameterList& structparams,
-      const std::string struct_disname,
-      const std::string lubrication_disname);
-
-  //!virtual destructor
-  virtual ~Partitioned_StrToLub_Aitken(){};
-
-protected:
-
-  //! Calculate relaxation parameter via Aitken
-  virtual void CalcOmega( double& omega , const int itnum );
-
-  //! displacement increment of the outer loop
-  Teuchos::RCP<Epetra_Vector> del_;
-
-  //! displacement increment of the outer loop
-  Teuchos::RCP<Epetra_Vector> delhist_;
-
-  //! maximal relaxation parameter
-  double maxomega_;
-
-  //! minimal relaxation parameter
-  double minomega_;
-};
-
-//! class to deal with pressure relaxated partioned EHL. Relaxation parameter is constant
-class Partitioned_LubToStr_Relax : public Partitioned
-{
-public:
-
-  //!explicit constructor
-  explicit Partitioned_LubToStr_Relax(const Epetra_Comm& comm,
-      const Teuchos::ParameterList& globaltimeparams,
-      const Teuchos::ParameterList& lubricationparams,
-      const Teuchos::ParameterList& structparams,
-      const std::string struct_disname,
-      const std::string lubrication_disname);
-
-  //!virtual destructor
-  virtual ~Partitioned_LubToStr_Relax(){};
-
-protected:
-  //! perform iteration loop between fields with relaxed pressure
-  void OuterLoop();
-
-  //! calculate relaxation parameter
-  virtual void CalcOmega( double& omega , const int itnum );
-
-  //! relaxation parameter
-  double omega_;
-};
-
-//! class to deal with pressure relaxated partioned EHL. Relaxation parameter is calculated via Aitken
-class Partitioned_LubToStr_Aitken : public Partitioned_LubToStr_Relax
-{
-public:
-
-  //!explicit constructor
-  explicit Partitioned_LubToStr_Aitken(const Epetra_Comm& comm,
-      const Teuchos::ParameterList& globaltimeparams,
-      const Teuchos::ParameterList& lubricationparams,
-      const Teuchos::ParameterList& structparams,
-      const std::string struct_disname,
-      const std::string lubrication_disname);
-
-  //!virtual destructor
-  virtual ~Partitioned_LubToStr_Aitken(){};
-
-protected:
-
-  //! Calculate relaxation parameter via Aitken
-  virtual void CalcOmega( double& omega , const int itnum );
-
-  //! displacement increment of the outer loop
-  Teuchos::RCP<Epetra_Vector> del_;
-
-  //! displacement increment of the outer loop
-  Teuchos::RCP<Epetra_Vector> delhist_;
-
-  //! maximal relaxation parameter
-  double maxomega_;
-
-  //! minimal relaxation parameter
-  double minomega_;
-};
-
 }
 
 #endif /* SRC_DRT_EHL_EHL_PARTITIONED_H_ */

@@ -2,12 +2,9 @@
 \file lubrication_ele_evaluate.cpp
 \brief
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089-289-15270
-</pre>
+\level 3
+
+\maintainer Alexander Seitz
 
 */
 
@@ -44,6 +41,21 @@ int DRT::ELEMENTS::Lubrication::Evaluate(
     case LUBRICATION::calc_mat_and_rhs:
     {
       return DRT::ELEMENTS::LubricationFactory::ProvideImpl(Shape(),discretization.Name())->Evaluate(
+              this,
+              params,
+              discretization,
+              la,
+              elemat1,
+              elemat2,
+              elevec1,
+              elevec2,
+              elevec3
+              );
+      break;
+    }
+    case LUBRICATION::calc_lubrication_coupltang:
+    {
+      return DRT::ELEMENTS::LubricationFactory::ProvideImpl(Shape(),discretization.Name())->EvaluateEHLMon(
               this,
               params,
               discretization,

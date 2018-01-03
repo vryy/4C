@@ -4,12 +4,9 @@
 
 \brief Material model for the lubrication film
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15270
-</pre>
+\level 3
+
+\maintainer Alexander Seitz
 */
 /*--------------------------------------------------------------------------*/
 #ifndef SRC_DRT_MAT_LUBRICATION_MAT_H_
@@ -26,6 +23,8 @@ namespace MAT
   namespace PAR
   {
 
+  class LubricationLaw;
+
     /*----------------------------------------------------------------------*/
     /// parameters for scalar transport material
     class LubricationMat : public Parameter
@@ -40,12 +39,19 @@ namespace MAT
       /// destructor
       virtual ~LubricationMat() { ; }
 
+      /// density
+      const double density_;
+
+      /// lubrication law ID
+      int lubricationlawID_;
+
+      //@}
+
+      //implementation of lubrication law
+      LubricationLaw* lubricationlaw_;
+
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
-
-      void OptParams(std::map<std::string, int>* pnames);
-
-      enum matparamnames_{viscosity, density, first=viscosity, last=density};
 
     };  // class Lubrication
 
@@ -122,11 +128,15 @@ private:
     /// return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new LubricationMat( *this ) ); }
 
-    /// viscosity
-    double Viscosity(int eleid=-1) const { return params_->GetParameter(params_->viscosity,eleid); }
+    /// compute current viscosity
+    double ComputeViscosity( const double press           ///< (i) lubrication pressure
+                           ) ;
+
+    //! evaluate constitutive relation for viscosity and compute derivatives
+    double ComputeViscosityDeriv(const double press);
 
     /// density
-    double Density(int eleid=-1) const { return params_->GetParameter(params_->density,eleid); }
+    double Density() const { return params_->density_; }
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
