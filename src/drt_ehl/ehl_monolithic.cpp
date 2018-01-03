@@ -135,28 +135,6 @@ EHL::Monolithic::Monolithic(
 
 
 /*----------------------------------------------------------------------*
- | read restart information for given time step (public)    wirtz 01/16 |
- *----------------------------------------------------------------------*/
-void EHL::Monolithic::ReadRestart(int step)
-{
-  lubrication_->LubricationField()->ReadRestart(step);
-  StructureField()->ReadRestart(step);
-
-  // pass the current coupling variables to the respective field
-  ApplyStructCouplingState(StructureField()->Dispnp(),StructureField()->Velnp());
-  ApplyLubricationCouplingState(lubrication_->LubricationField()->Prenp());
-
-  // second ReadRestart needed due to the coupling variables
-  lubrication_->LubricationField()->ReadRestart(step);
-  StructureField()->ReadRestart(step);
-
-  SetTimeStep(StructureField()->TimeOld(),step);
-
-  return;
-}  // ReadRestart()
-
-
-/*----------------------------------------------------------------------*
  | prepare time step (public)                               wirtz 01/16 |
  *----------------------------------------------------------------------*/
 void EHL::Monolithic::PrepareTimeStep()
@@ -953,25 +931,12 @@ void EHL::Monolithic::SetupRHS()
   // create full monolithic rhs vector
   rhs_ = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
 
-  //  Teuchos::RCP<Epetra_Vector> lub_rhs = Teuchos::rcp(new Epetra_Vector(*lubrication_->LubricationField()->RHS()));
-  Teuchos::RCP<Epetra_Vector> lub_rhs = Teuchos::rcp_const_cast<Epetra_Vector>(lubrication_->LubricationField()->RHS());
-
-//  if (inf_gap_toggle_lub_!=Teuchos::null)
-//    for (int i=0;i<lub_rhs->Map().NumMyElements();++i)
-//    {
-//      if (abs(inf_gap_toggle_lub_->operator [](
-//          inf_gap_toggle_lub_->Map().LID(lub_rhs->Map().GID(i)))-1)<1.e-2)
-//        lub_rhs->operator [](i)=0.;
-//    }
-
   // fill the EHL rhs vector rhs_ with the single field rhs
   SetupVector(
     *rhs_,
     StructureField()->RHS(),
-    lub_rhs
-//    lubrication_->LubricationField()->RHS()
+    lubrication_->LubricationField()->RHS()
     );
-
 }  // SetupRHS()
 
 
@@ -1928,8 +1893,6 @@ void EHL::Monolithic::SetDefaultParameters()
  *----------------------------------------------------------------------*/
 void EHL::Monolithic::PrepareOutput()
 {
-  //set pressures on structure field for evaluating stresses
-  ApplyLubricationCouplingState(lubrication_->LubricationField()->Prenp());
   // prepare output (i.e. calculate stresses, strains, energies)
   StructureField()->PrepareOutput();
 
@@ -1938,38 +1901,6 @@ void EHL::Monolithic::PrepareOutput()
 }
 /*----------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------*
- | apply pressure state on structure discretization         wirtz 01/16 |
- *----------------------------------------------------------------------*/
-void EHL::Monolithic::ApplyLubricationCouplingState(Teuchos::RCP<const Epetra_Vector> pre,
-                                              Teuchos::RCP<const Epetra_Vector> pre_res)
-{
-//  EHL::Algorithm::ApplyLubricationCouplingState(pre,pre_res);
-}  // ApplyLubricationCouplingState()
-
-
-/*----------------------------------------------------------------------*
- | apply structural displacements and velocities on         wirtz 01/16 |
- | lubrication discretization                                           |
- *----------------------------------------------------------------------*/
-void EHL::Monolithic::ApplyStructCouplingState(Teuchos::RCP<const Epetra_Vector> disp,
-                                              Teuchos::RCP<const Epetra_Vector> vel)
-{
-
-  Teuchos::RCP<Epetra_Vector> vec_lub = Teuchos::rcp(new Epetra_Vector(
-      *lubrication_->LubricationField()->Discretization()->DofRowMap(1)));
-  if (disp != Teuchos::null)
-  {
-    LINALG::Export(*disp,*vec_lub);
-    lubrication_->LubricationField()->Discretization()->SetState(1, "displacement", vec_lub);
-  }
-  if (vel != Teuchos::null)
-  {
-    LINALG::Export(*vel,*vec_lub);
-    lubrication_->LubricationField()->Discretization()->SetState(1, "velocity", vec_lub);
-  }
-
-}  // ApplyStructCouplingState()
 
 void EHL::Monolithic::LinPressureForceDisp(
     Teuchos::RCP<LINALG::SparseMatrix>&  ds_dd,

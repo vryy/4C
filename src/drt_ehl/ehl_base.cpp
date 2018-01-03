@@ -93,12 +93,18 @@ EHL::Base::Base(const Epetra_Comm& comm,
  *----------------------------------------------------------------------*/
 void EHL::Base::ReadRestart( int restart )
 {
-
   if (restart)
   {
     lubrication_->LubricationField()->ReadRestart(restart);
     structure_->ReadRestart(restart);
     SetTimeStep(structure_->TimeOld(), restart);
+
+    mortaradapter_->Interface()->SetState(MORTAR::state_old_displacement,*structure_->Dispn());
+    mortaradapter_->Interface()->SetState(MORTAR::state_new_displacement,*structure_->Dispn());
+    mortaradapter_->Interface()->EvaluateNodalNormals();
+    mortaradapter_->Interface()->ExportNodalNormals();
+    mortaradapter_->Interface()->StoreToOld(MORTAR::StrategyBase::n_old);
+    mortaradapter_->Integrate(structure_->Dispnp(),Dt());
   }
 
   return;

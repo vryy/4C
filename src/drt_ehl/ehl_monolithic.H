@@ -129,11 +129,6 @@ namespace EHL
     //! outer level EHL time loop
     virtual void Timeloop();
 
-    //! read restart data
-    virtual void ReadRestart(
-      int step  //!< step number where the calculation is continued
-      );
-
     //! @name Apply current field state to system
 
     //! setup composed right hand side from field solvers
@@ -309,15 +304,6 @@ namespace EHL
 
     //! enum for STR time integartion
     enum INPAR::STR::DynamicType strmethodname_;
-
-
-    //! apply pressure state on structure discretization
-    virtual void ApplyLubricationCouplingState(Teuchos::RCP<const Epetra_Vector> pre,
-                                  Teuchos::RCP<const Epetra_Vector> pre_res=Teuchos::null);
-
-    //! apply structural displacements and velocities on lubrication discretization
-    virtual void ApplyStructCouplingState(Teuchos::RCP<const Epetra_Vector> disp,
-                                  Teuchos::RCP<const Epetra_Vector> vel);
 
   private:
 
