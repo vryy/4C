@@ -7714,7 +7714,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_Lin(
 /*----------------------------------------------------------------------*
  |  Do lin. entries for weighted Gap at GP                   farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_G_Lin(
+void CONTACT::CoIntegrator::GP_G_Lin(
      int& iter,
      MORTAR::MortarElement& sele,
      MORTAR::MortarElement& mele,

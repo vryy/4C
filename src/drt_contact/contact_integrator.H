@@ -625,7 +625,7 @@ protected:
    \brief evaluate weighted Gap entries at GP
 
    */
-  void inline GP_G_Lin(
+  void GP_G_Lin(
       int& iter,
       MORTAR::MortarElement& sele,
       MORTAR::MortarElement& mele,
