@@ -56,6 +56,7 @@
 #include "../drt_matelast/visco_coupmyocard.H"
 #include "../drt_matelast/visco_isoratedep.H"
 #include "../drt_matelast/visco_genmax.H"
+#include "../drt_matelast/visco_fract.H"
 #include "../drt_structure/strtimint_create.H"
 #include "../drt_structure/strtimint.H"
 #include "../drt_stru_multi/microstatic.H"
@@ -436,7 +437,8 @@ void STR::GenInvAnalysis::Integrate()
     }
 
     discret_->Comm().Barrier();
-    if (!myrank) CalcNewParameters(cmatrix,perturb);
+    if (!myrank)
+      CalcNewParameters(cmatrix,perturb);
 
     // set new material parameters
     discret_->Comm().Broadcast(&p_[0],p_.Length(),0);
@@ -459,7 +461,8 @@ void STR::GenInvAnalysis::Integrate()
 
 
   // print results to file
-  if (!myrank) PrintFile();
+  if (!myrank)
+    PrintFile();
 
   // stop supporting processors in multi scale simulations
   Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetNPGroup()->SubComm();
@@ -1087,6 +1090,11 @@ void STR::GenInvAnalysis::CalcNewParameters(
   if (check_neg_params_)
     CheckOptStep();
 
+  // the parameter alpha of the fractional visocelasticity model needs to be smaller then 1
+  // apply constrain just, if viscofract material is used (otherwise the position is by default 9999)
+  if (viscofract_alpha_position_ != 9999)
+    ConstrainAlpha();
+
   return;
 }
 
@@ -1297,7 +1305,8 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(
     // get the displacements of the monitored timesteps
     {
 
-      if (abs(time-timesteps_[writestep]) < 1.0e-5)
+      //if (abs(time-timesteps_[writestep]) < 1.0e-5)
+      if (abs(time-timesteps_[writestep]) < 1.0e-4)
       {
         Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve(*(structadapter->Dispnp()));
         if (!lmyrank)
@@ -1699,6 +1708,9 @@ void STR::GenInvAnalysis::ReadInParameters()
         {
           const int id = (*matids)[i];
 
+          // default value of alpha position (to check, if alpha is fitted)
+          viscofract_alpha_position_=9999;
+
           if (mymatset.size()==0 or mymatset.find(id)!=mymatset.end())
           {
             const Teuchos::RCP<MAT::PAR::Material> actelastmat = mats.find(id)->second;
@@ -1933,6 +1945,9 @@ void STR::GenInvAnalysis::ReadInParameters()
         for (int i=0; i<nummat; ++i)
         {
           const int id = (*matids)[i];
+
+          // default value of alpha position (to check, if alpha is fitted)
+          viscofract_alpha_position_=9999;
 
           if (mymatset.size()==0 or mymatset.find(id)!=mymatset.end())
           {
@@ -2178,6 +2193,18 @@ void STR::GenInvAnalysis::ReadInParameters()
               //p_[j+1]   = params2->beta_;
               break;
             }
+            case INPAR::MAT::mes_fract:
+            {
+              filename_=filename_+"_fract";
+              const MAT::ELASTIC::PAR::Fract* params2 = dynamic_cast<const MAT::ELASTIC::PAR::Fract*>(actelastmat->Parameter());
+              int j = p_.Length();
+              p_.Resize(j+3);
+              p_[j]   = params2->tau_;
+              p_[j+1]   = params2->alpha_;
+              p_[j+2]   = params2->beta_;
+              viscofract_alpha_position_ = j+1; //comment out this line if alpha is not fit!
+              break;
+            }
             default:
               dserror("cannot deal with this material");
               break;
@@ -2211,6 +2238,7 @@ void STR::GenInvAnalysis::ReadInParameters()
       case INPAR::MAT::mes_vologden:
       case INPAR::MAT::mes_isoratedep:
       case INPAR::MAT::mes_genmax:
+      case INPAR::MAT::mes_fract:
       case INPAR::MAT::m_struct_multiscale:
         break;
       default:
@@ -2632,6 +2660,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
     case INPAR::MAT::mes_coupmyocard:
     case INPAR::MAT::mes_isoratedep:
     case INPAR::MAT::mes_genmax:
+    case INPAR::MAT::mes_fract:
     case INPAR::MAT::m_struct_multiscale:
       break;
 
@@ -2894,6 +2923,16 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
             params2->SetTau(abs(p_cur(j)));
             // params2->SetBeta(abs(p_cur(j+1)));
             j = j+1;
+            break;
+          }
+          case INPAR::MAT::mes_fract:
+          {
+            MAT::ELASTIC::PAR::Fract* params2 =
+                dynamic_cast<MAT::ELASTIC::PAR::Fract*>(actelastmat->Parameter());
+            params2->SetTau(abs(p_cur(j)));
+            params2->SetAlpha(abs(p_cur(j+1)));
+            params2->SetBeta(abs(p_cur(j+2)));
+            j = j+3;
             break;
           }
           default:
@@ -3689,3 +3728,22 @@ void STR::GenInvAnalysis::CheckDiffDat(
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/* Constraint optimization:
+ * In viscofractional model: alpha has to be always below 1
+ * otherwise: do not accept optimization step               abirzle 12/17
+ */
+void STR::GenInvAnalysis::ConstrainAlpha()
+{
+  if (p_(viscofract_alpha_position_) > 1.0)
+  {
+    std::cout << "WARNING: alpha > 1: reverse update" << std::endl;
+    // reset the update step in case it was too large and increase regularization;
+    // storage is not touched, so screen print out does not reflect what really happens
+    p_ = p_o_;
+    error_ = error_o_;
+    error_grad_ = error_grad_o_;
+    mu_= mu_o_*2.0;
+    return;
+  }
+}

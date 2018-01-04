@@ -196,6 +196,8 @@ private:
 
   // parameter for finding starting point in p_ of material parameters of coupexppol-material
   int coupexppol_parameter_position_;
+  // stores position of parameter alpha in p_ of material viscofract
+  int viscofract_alpha_position_;
 
   Epetra_SerialDenseVector p_;             // parameter vector
   Epetra_SerialDenseVector p_o_;           // parameters of the last step
@@ -304,6 +306,10 @@ public:
 
   /// check if difference in dat-files of multiple inverse analysis occur
   void CheckDiffDat(int& expid);
+
+  /// Constrain alpha of viscofract-material
+  void ConstrainAlpha();
+
 
 };  // class GenInvAnalysis
 
