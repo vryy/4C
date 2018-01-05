@@ -1636,6 +1636,9 @@ void STR::GenInvAnalysis::ReadInParameters()
 
     std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator curr;
 
+    // default value of alpha position (to check, if alpha is fitted)
+    viscofract_alpha_position_=9999;
+
     for (curr=mats.begin(); curr != mats.end(); ++curr)
     {
       const Teuchos::RCP<MAT::PAR::Material> actmat = curr->second;
@@ -1707,9 +1710,6 @@ void STR::GenInvAnalysis::ReadInParameters()
         for (int i=0; i<nummat; ++i)
         {
           const int id = (*matids)[i];
-
-          // default value of alpha position (to check, if alpha is fitted)
-          viscofract_alpha_position_=9999;
 
           if (mymatset.size()==0 or mymatset.find(id)!=mymatset.end())
           {
@@ -1945,9 +1945,6 @@ void STR::GenInvAnalysis::ReadInParameters()
         for (int i=0; i<nummat; ++i)
         {
           const int id = (*matids)[i];
-
-          // default value of alpha position (to check, if alpha is fitted)
-          viscofract_alpha_position_=9999;
 
           if (mymatset.size()==0 or mymatset.find(id)!=mymatset.end())
           {
