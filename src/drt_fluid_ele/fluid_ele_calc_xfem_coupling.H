@@ -192,10 +192,6 @@ namespace DRT
         virtual void Evaluate( LINALG::Matrix<nsd_,1> & xside, LINALG::Matrix<nsd_,1> & rst_slave)
           { dserror("There is no concrete slave element available.");}
 
-        //! compute coupling slave element's characteristic element length (diameter for side element)
-        virtual void ComputeCharElementLength( double & h_k )
-        { dserror("There is no concrete slave element available."); }
-
         //! compute interface force for side nodes
         virtual void ComputeInterfaceForce(
            Epetra_SerialDenseVector &   iforce,     ///< interface force vector
@@ -213,8 +209,8 @@ namespace DRT
         )
         { dserror("There is no concrete slave element available."); }
 
-        //! evaluate shape functions and derivatives at element center
-        virtual double EvalShapeFuncAndDerivsAtEleCenter()
+        //! evaluate element volume
+        virtual double EvalElementVolume()
         { dserror("There is no concrete slave element available."); return 0.0; }
       };
 

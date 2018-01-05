@@ -849,10 +849,8 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
   // get the element volume
   // ---------------------------------------------------------------------
 
-  // evaluate shape functions and derivatives at element center
-  my::EvalShapeFuncAndDerivsAtEleCenter();
-  // set element area or volume
-  const double vol = my::fac_;
+//  // set element area or volume
+  const double vol =  XFEM::UTILS::EvalElementVolume<distype>(my::xyze_,&(my::weights_),&(my::myknots_));
 
   //-----------------------------------------------------------------------------------
   //         evaluate element length, stabilization factors and average weights
@@ -863,7 +861,7 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
   double inv_hk = 0.0;
 
   // take a volume based element length
-  h_k = ComputeVolEqDiameter(vol);
+  h_k = XFEM::UTILS::ComputeVolEqDiameter(vol);
   inv_hk = 1.0/h_k;
 
 
@@ -1006,7 +1004,7 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
 
     if (cond_manager->HasAveragingStrategy(INPAR::XFEM::Xfluid_Sided))
     {
-      h_k = ComputeCharEleLength(ele, ele_xyze, cond_manager, vcSet, bcells, bintpoints);
+      h_k = XFEM::UTILS::ComputeCharEleLength<distype>(ele, ele_xyze, cond_manager, vcSet, bcells, bintpoints,fldparaxfem_->ViscStabHK());
       inv_hk = 1.0 / h_k;
     }
 
@@ -1036,7 +1034,7 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
         // compute transformation factor, normal vector and global Gauss point coordiantes
         if(bc->Shape() != DRT::Element::dis_none) // Tessellation approach
         {
-          ComputeSurfaceTransformation(drs, x_gp_lin, normal, bc, eta);
+          XFEM::UTILS::ComputeSurfaceTransformation(drs, x_gp_lin, normal, bc, eta);
         }
         else // MomentFitting approach
         {
@@ -1259,7 +1257,21 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
         double visc_stab_fac = 0.0;
         double visc_stab_fac_tang = 0.0;
         cond_manager->Get_ViscPenalty_Stabfac(coup_sid, ele,kappa_m,kappa_s, inv_hk,fldparaxfem_,visc_stab_fac,visc_stab_fac_tang);
-        NIT_Compute_FullPenalty_Stabfac(nit_stabfac,normal,h_k,kappa_m,kappa_s,my::convvelint_,velint_s,visc_stab_fac,true);
+
+        XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
+          nit_stabfac,  ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
+          normal,
+          h_k,
+          kappa_m, //weights (only existing for Nitsche currently!!)
+          kappa_s, //weights (only existing for Nitsche currently!!)
+          my::convvelint_,
+          velint_s,
+          visc_stab_fac,   ///< Nitsche's viscous scaling part of penalty term
+          my::fldparatimint_->TimeFac(),my::fldparatimint_->IsStationary(),
+          densaf_master_,densaf_slave_,
+          fldparaxfem_->MassConservationScaling(), fldparaxfem_->MassConservationCombination(),fldparaxfem_->NITStabScaling(),
+          fldparaxfem_->ConvStabScaling(),fldparaxfem_->XffConvStabScaling(),my::fldpara_->IsConservative(),
+          true);
 
         const double veln_normal = my::convvelint_.Dot(normal); // TODO: shift this to routine
         double NIT_inflow_stab = std::max(0.0,-veln_normal);
@@ -1387,7 +1399,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
   if (my::fldpara_->PhysicalType()==INPAR::FLUID::oseen) my::SetAdvectiveVelOseen(ele);
 
   // compute characteristic element length based on the background element
-  const double h_k = ComputeCharEleLength(ele,ele_xyze,cond_manager,vcSet,bcells,bintpoints);
+  const double h_k = XFEM::UTILS::ComputeCharEleLength<distype>(ele,ele_xyze,cond_manager,vcSet,bcells,bintpoints,fldparaxfem_->ViscStabHK());
 
   //--------------------------------------------------------
   // declaration of matrices & rhs
@@ -1804,7 +1816,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
         // compute transformation factor, normal vector and global Gauss point coordiantes
         if(bc->Shape() != DRT::Element::dis_none) // Tessellation approach
         {
-          ComputeSurfaceTransformation(drs, x_gp_lin, normal, bc, eta);
+          XFEM::UTILS::ComputeSurfaceTransformation(drs, x_gp_lin, normal, bc, eta);
         }
         else // MomentFitting approach
         {
@@ -1987,7 +1999,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
               double kappa_s;
               cond_manager->GetAverageWeights(coup_sid, ele, kappa_m, kappa_s, non_xfluid_coupling);
 
-              NIT_Compute_FullPenalty_Stabfac(
+              XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
                 NIT_full_stab_fac,  ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
                 normal,
                 h_k,
@@ -1995,8 +2007,11 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
                 kappa_s, //weights (only existing for Nitsche currently!!)
                 my::convvelint_,
                 velint_s,
-                NIT_visc_stab_fac   ///< Nitsche's viscous scaling part of penalty term
-              );
+                NIT_visc_stab_fac,   ///< Nitsche's viscous scaling part of penalty term
+                my::fldparatimint_->TimeFac(),my::fldparatimint_->IsStationary(),
+                densaf_master_,densaf_slave_,
+                fldparaxfem_->MassConservationScaling(), fldparaxfem_->MassConservationCombination(),fldparaxfem_->NITStabScaling(),
+                fldparaxfem_->ConvStabScaling(),fldparaxfem_->XffConvStabScaling(),my::fldpara_->IsConservative());
 
               si_nit.at(coup_sid)->ApplyConvStabTerms(
                 ci[coup_sid],
@@ -2023,7 +2038,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
               double kappa_s;
               cond_manager->GetAverageWeights(coup_sid, ele, kappa_m, kappa_s, non_xfluid_coupling);
 
-              NIT_Compute_FullPenalty_Stabfac(
+              XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
                 NIT_full_stab_fac,  ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
                 normal,
                 h_k,
@@ -2031,8 +2046,11 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
                 kappa_s, //weights (only existing for Nitsche currently!!)
                 my::convvelint_,
                 velint_s,
-                NIT_visc_stab_fac   ///< Nitsche's viscous scaling part of penalty term
-              );
+                NIT_visc_stab_fac,   ///< Nitsche's viscous scaling part of penalty term
+                my::fldparatimint_->TimeFac(),my::fldparatimint_->IsStationary(),
+                densaf_master_,densaf_slave_,
+                fldparaxfem_->MassConservationScaling(), fldparaxfem_->MassConservationCombination(),fldparaxfem_->NITStabScaling(),
+                fldparaxfem_->ConvStabScaling(),fldparaxfem_->XffConvStabScaling(),my::fldpara_->IsConservative());
 
               si_nit.at(coup_sid)->ApplyConvStabTerms(
                 ci[coup_sid],
@@ -3226,7 +3244,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
 
   if (cond_manager->HasAveragingStrategy(INPAR::XFEM::Xfluid_Sided))
   {
-    h_k = ComputeCharEleLength(ele, ele_xyze, cond_manager, vcSet, bcells, bintpoints);
+    h_k = XFEM::UTILS::ComputeCharEleLength<distype>(ele, ele_xyze, cond_manager, vcSet, bcells, bintpoints,fldparaxfem_->ViscStabHK());
     inv_hk = 1.0 / h_k;
   }
 
@@ -3457,7 +3475,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
 #if(0)
         std::cout.precision(15);
         std::cout << "C_T/hk (formula): "
-            << NIT_getTraceEstimateConstant(ele_distype)/ComputeCharEleLength(coupl_ele, coupl_xyze, cond_manager, vcSet, bcells, bintpoints, emb, side);
+            << NIT_getTraceEstimateConstant(ele_distype)/XFEM::UTILS::ComputeCharEleLength<distype>(coupl_ele, coupl_xyze, cond_manager, vcSet, bcells, bintpoints,fldparaxfem_->ViscStabHK(), emb, side);
         << " max_eigenvalue ~ C_T/hk: "
             <<  my::fldpara_->Get_TraceEstimate_MaxEigenvalue(coup_sid)
             << " max_eigenvalue*h_k = C_T: "<< my::fldpara_->Get_TraceEstimate_MaxEigenvalue(coup_sid)*h_k << " vs: C_T (formula) " << NIT_getTraceEstimateConstant(ele_distype) << std::endl;
@@ -3467,7 +3485,9 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
       else // ... char. length defined otherwise
       {
         // compute characteristic element length based on the embedded element
-        h_k = ComputeCharEleLength(coupl_ele, coupl_xyze, cond_manager, vcSet, bcells, bintpoints, ci, side);
+        h_k = XFEM::UTILS::ComputeCharEleLength<distype>(coupl_ele, coupl_xyze, cond_manager, vcSet, bcells, bintpoints,fldparaxfem_->ViscStabHK()
+            , ci
+            , side);
         inv_hk = 1.0 / h_k;
       }
     }
@@ -3511,9 +3531,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
         // compute transformation factor, normal vector and global Gauss point coordinates
         if (bc->Shape() != DRT::Element::dis_none) // Tessellation approach
         {
-          TEUCHOS_FUNC_TIME_MONITOR( "FluidEleCalcXFEM::ComputeSurfaceTransformation" );
-
-          ComputeSurfaceTransformation(drs, x_gp_lin_, normal_, bc, eta);
+          XFEM::UTILS::ComputeSurfaceTransformation(drs, x_gp_lin_, normal_, bc, eta);
         }
         else // MomentFitting approach
         {
@@ -3587,7 +3605,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
         //Extract slave velocity at Gausspoint
         ci->GetInterfaceVelnp(velint_s_);
 
-        NIT_Compute_FullPenalty_Stabfac(
+        XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
             NIT_full_stab_fac,             ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
             normal_,
             h_k,
@@ -3595,8 +3613,11 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
             kappa_s,
             my::convvelint_,
             velint_s_,
-            NIT_visc_stab_fac             ///< Nitsche's viscous scaling part of penalty term
-            );
+            NIT_visc_stab_fac,   ///< Nitsche's viscous scaling part of penalty term
+            my::fldparatimint_->TimeFac(),my::fldparatimint_->IsStationary(),
+            densaf_master_,densaf_slave_,
+            fldparaxfem_->MassConservationScaling(), fldparaxfem_->MassConservationCombination(),fldparaxfem_->NITStabScaling(),
+            fldparaxfem_->ConvStabScaling(),fldparaxfem_->XffConvStabScaling(),my::fldpara_->IsConservative());
 
 
         //-----------------------------------------------------------------------------
@@ -3757,7 +3778,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
               velintn_s_.Clear();
               ci->GetInterfaceVeln(velintn_s_);
 
-              NIT_Compute_FullPenalty_Stabfac(
+              XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
                 NIT_full_stab_fac_n,  ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
                 normal_,
                 h_k,
@@ -3765,8 +3786,11 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
                 kappa_s, //weights (only existing for Nitsche currently!!)
                 my::convvelintn_,
                 velintn_s_,
-                NIT_visc_stab_fac   ///< Nitsche's viscous scaling part of penalty term
-              );
+                NIT_visc_stab_fac,   ///< Nitsche's viscous scaling part of penalty term
+                my::fldparatimint_->TimeFac(),my::fldparatimint_->IsStationary(),
+                densaf_master_,densaf_slave_,
+                fldparaxfem_->MassConservationScaling(), fldparaxfem_->MassConservationCombination(),fldparaxfem_->NITStabScaling(),
+                fldparaxfem_->ConvStabScaling(),fldparaxfem_->XffConvStabScaling(),my::fldpara_->IsConservative());
             }
 
             //Get Configuration Map
@@ -4220,144 +4244,6 @@ void FluidEleCalcXFEM<distype>::NIT_BuildPatchCuiui(
 }
 
 /*--------------------------------------------------------------------------------
- *    compute stabilization factor for the Nitsche's penalty term
- *--------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void FluidEleCalcXFEM<distype>::NIT_Compute_FullPenalty_Stabfac(
-    double &                           NIT_full_stab_fac,             ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
-    const LINALG::Matrix<my::nsd_,1>&  normal,                        ///< interface-normal vector
-    const double                       h_k,                           ///< characteristic element length
-    const double                       kappa_m,                        ///< Weight parameter (parameter +/master side)
-    const double                       kappa_s,                        ///< Weight parameter (parameter -/slave  side)
-    const LINALG::Matrix<my::nsd_,1>&  velint_m,                      ///< Master side velocity at gauss-point
-    const LINALG::Matrix<my::nsd_,1>&  velint_s,                      ///< Slave side velocity at gauss-point
-    const double                       NIT_visc_stab_fac,             ///< Nitsche's viscous scaling part of penalty term
-    bool                               error_calc                     ///< when called in error calculation, don't add the inflow terms
-)
-{
-  //TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::NIT_Compute_FullPenalty_Stabfac");
-
-  //------------------------------------------------------------------------------
-  // compute the full Nitsche parameter
-
-  /*
-   * Depending on the flow regime, the factor alpha of Nitsches penalty term
-   * (\alpha * [v],[u]) can take various forms.
-   * Based on INPAR::XFEM::MassConservationCombination, we choose:
-   *
-   *                       (1)           (2)          (3)
-   *                    /  \mu    \rho             h * \rho         \
-   *  NIT :=  \gamma * |    --  +  -- * |u|_inf  + ----------------- |
-   *                    \   h      6               12 * \theta * dt /
-   *
-   *       OR:
-   *                    /  \mu    \rho             h * \rho         \
-   *  NIT :=  max      |    --  ;  -- * |u|_inf  ; ----------------- | *\gamma
-   *                    \   h      6               12 * \theta * dt /
-   *
-   *          (1) NIT_visc_stab_fac = \gamma * \mu/h
-   *
-   *          (2) convective contribution
-   *
-   *          (3) transient contribution
-   *
-   * see Schott and Rasthofer, 'A face-oriented stabilized Nitsche-type extended variational
-   * multiscale method for incompressible two-phase flow', Int. J. Numer. Meth. Engng, 2014
-   *
-   *
-   * If INPAR::XFEM::MassConservationScaling_only_visc is set, we choose only (1),
-   * no matter if the combination option max or sum is active!
-   *
-   */
-
-
-  // (1)
-  NIT_full_stab_fac = NIT_visc_stab_fac;
-
-  if (fldparaxfem_->MassConservationScaling() == INPAR::XFEM::MassConservationScaling_full)
-  {
-    //TODO: Raffaela: which velocity has to be evaluated for these terms in ALE? the convective velocity or the velint?
-    double velnorminf_m = velint_m.NormInf(); // relative convective velocity
-    double velnorminf_s = velint_s.NormInf();
-
-    // take the maximum of viscous & convective contribution or the sum?
-    if (fldparaxfem_->MassConservationCombination() == INPAR::XFEM::MassConservationCombination_max)
-    {
-      NIT_full_stab_fac = std::max(NIT_full_stab_fac,fldparaxfem_->NITStabScaling() * (kappa_m*densaf_master_*fabs(velnorminf_m)+kappa_s*densaf_slave_*fabs(velnorminf_s)) / 6.0);
-      if (! my::fldparatimint_->IsStationary())
-        NIT_full_stab_fac= std::max( fldparaxfem_->NITStabScaling() * h_k * ( kappa_m*densaf_master_ + kappa_s*densaf_slave_ ) / (12.0 * my::fldparatimint_->TimeFac()),NIT_full_stab_fac);
-    }
-    else // the sum
-    {
-      // (2)
-      NIT_full_stab_fac += fldparaxfem_->NITStabScaling() * (kappa_m*densaf_master_*fabs(velnorminf_m)+kappa_s*densaf_slave_*fabs(velnorminf_s)) / 6.0; //THIS ONE NEEDS CHANGING!
-
-      // (3)
-      if (! my::fldparatimint_->IsStationary())
-        NIT_full_stab_fac += fldparaxfem_->NITStabScaling() * h_k * ( kappa_m*densaf_master_ + kappa_s*densaf_slave_ ) / (12.0 * my::fldparatimint_->TimeFac());
-    }
-  }
-  else if (fldparaxfem_->MassConservationScaling() != INPAR::XFEM::MassConservationScaling_only_visc)
-    dserror("Unknown scaling choice in calculation of Nitsche's penalty parameter");
-
-  if (my::fldpara_->IsConservative() and (fldparaxfem_->XffConvStabScaling() != INPAR::XFEM::XFF_ConvStabScaling_none
-                                       or fldparaxfem_->ConvStabScaling()    != INPAR::XFEM::ConvStabScaling_none ) )
-  {
-    dserror("convective stabilization is not available for conservative form of Navier-Stokes, but possible to implement!");
-  }
-
-  //----------------------------------------------------------------------------------------------
-  // add inflow terms to ensure coercivity at inflow boundaries in the convective limit
-
-  if ((fldparaxfem_->ConvStabScaling() == INPAR::XFEM::ConvStabScaling_none &&
-       fldparaxfem_->XffConvStabScaling() == INPAR::XFEM::XFF_ConvStabScaling_none) ||
-       fldparaxfem_->XffConvStabScaling() == INPAR::XFEM::XFF_ConvStabScaling_only_averaged || error_calc)
-    return;
-
-  const double veln_normal = velint_m.Dot(normal);
-
-  double NIT_inflow_stab = 0.0;
-
-  if (fldparaxfem_->XffConvStabScaling() == INPAR::XFEM::XFF_ConvStabScaling_upwinding)
-  {
-    NIT_inflow_stab = fabs(veln_normal)*0.5;
-  }
-  else
-  {
-    INPAR::XFEM::ConvStabScaling conv_stab_scaling = fldparaxfem_->ConvStabScaling();
-    if (conv_stab_scaling == INPAR::XFEM::ConvStabScaling_abs_inflow)
-    {
-      //      | u*n |
-      NIT_inflow_stab = fabs(veln_normal);
-    }
-    else if (conv_stab_scaling == INPAR::XFEM::ConvStabScaling_inflow)
-    {
-      //      ( -u*n ) if (u*n)<0 (inflow), conv_stabfac >= 0
-      NIT_inflow_stab = std::max(0.0,-veln_normal);
-    }
-    else
-      dserror("No valid INPAR::XFEM::ConvStabScaling for xfluid/xfsi problems");
-  }
-
-  NIT_inflow_stab *= densaf_master_; //my::densaf_;
-
-  // Todo (kruse): it is planned to add the inflow contributions independent from the max. option!
-  // This version is only kept to shift the adaption of test results to a single commit.
-  if (fldparaxfem_->MassConservationCombination() == INPAR::XFEM::MassConservationCombination_max)
-  {
-    NIT_full_stab_fac = std::max(NIT_full_stab_fac,NIT_inflow_stab);
-  }
-  else if (fldparaxfem_->MassConservationCombination() == INPAR::XFEM::MassConservationCombination_sum)
-  {
-    NIT_full_stab_fac += NIT_inflow_stab;
-  }
-  else
-    dserror("Unknown combination type in calculation of Nitsche's penalty parameter.");
-
-  return;
-}
-
-/*--------------------------------------------------------------------------------
  * prepare coupling matrices, that include contributions from convective stabilization
  * and contributions from previous time steps (rhs)
  *--------------------------------------------------------------------------------*/
@@ -4400,43 +4286,6 @@ void FluidEleCalcXFEM<distype>::HybridLM_CreateSpecialContributionMatrices(
     side_matrices_extra[3].Shape(patchlm.size(), patchlm.size());              //Cuiui
   }
 }
-
-
-/*--------------------------------------------------------------------------------
- * compute transformation factor for surface integration, normal, local and global gp coordinates
- *--------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void FluidEleCalcXFEM<distype>::ComputeSurfaceTransformation(
-    double &                    drs,         ///< surface transformation factor
-    LINALG::Matrix<3,1> &       x_gp_lin,    ///< global coordiantes of gaussian point
-    LINALG::Matrix<3,1> &       normal,      ///< normal vector on boundary cell
-    GEO::CUT::BoundaryCell *    bc,          ///< boundary cell
-    const LINALG::Matrix<2,1> & eta          ///< local coordinates of gaussian point w.r.t boundarycell
-)
-{
-
-  normal.Clear();
-
-  // get normal vector on linearized boundary cell, x-coordinates of gaussian point and surface transformation factor
-  switch ( bc->Shape() )
-  {
-  case DRT::Element::tri3:
-  {
-    bc->Transform<DRT::Element::tri3>(eta, x_gp_lin, normal, drs);
-    break;
-  }
-  case DRT::Element::quad4:
-  {
-    bc->Transform<DRT::Element::quad4>(eta, x_gp_lin, normal, drs);
-    break;
-  }
-  default:
-    throw std::runtime_error( "unsupported integration cell type" );
-  }
-
-  return;
-}
-
 
 
 /*----------------------------------------------------------------------*
@@ -4623,323 +4472,7 @@ void FluidEleCalcXFEM<distype>::CalculateContinuityXFEM(
                           my::intpoints_);
 }
 
-/*--------------------------------------------------------------------------------
- * compute characteristic element length
- *--------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-double FluidEleCalcXFEM<distype>::ComputeCharEleLength(
-    DRT::Element *                                                        ele,                   ///< fluid element
-    Epetra_SerialDenseMatrix &                                            ele_xyze,              ///< element coordinates
-    const Teuchos::RCP<XFEM::ConditionManager> &                          cond_manager,          ///< XFEM condition manager
-    const GEO::CUT::plain_volumecell_set &                                vcSet,                 ///< volumecell sets for volume integration
-    const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &          bcells,                ///< bcells for boundary cell integration
-    const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &     bintpoints,            ///< integration points for boundary cell integration
-    Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype> >  emb,                   ///< pointer to the embedded coupling implementation
-    DRT::Element *                                                        face                   ///< side element in 3D
-)
-{
-  //TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::ComputeCharEleLength");
 
-  const INPAR::XFEM::ViscStab_hk visc_stab_hk = fldparaxfem_->ViscStabHK();
-
-  const int coup_sid = bintpoints.begin()->first;
-  const INPAR::XFEM::AveragingStrategy averaging_strategy = cond_manager->GetAveragingStrategy(coup_sid,ele->Id());
-  if (emb == Teuchos::null and averaging_strategy == INPAR::XFEM::Embedded_Sided)
-    dserror("no coupling interface available, however Embedded_Sided coupling is activated!");
-
-  // characteristic element length to be computed
-  double h_k = 0.0;
-
-  // measure of the face (surface in 3D, line in 2D) or measure of the cut-face
-  double meas_surf = 0.0;
-
-  // measure of the element volume or measure of the physical cut part of the element volume
-  double meas_vol = 0.0;
-
-  switch (visc_stab_hk)
-  {
-  //---------------------------------------------------
-  // volume-equivalent diameter
-  //---------------------------------------------------
-  case INPAR::XFEM::ViscStab_hk_vol_equivalent:
-  {
-    // evaluate shape functions and derivatives at element center
-    if(averaging_strategy == INPAR::XFEM::Embedded_Sided)
-    {
-      // evaluate shape functions and derivatives at element center w.r.t embedded element
-      meas_vol = emb->EvalShapeFuncAndDerivsAtEleCenter();
-    }
-    else
-    {
-      // evaluate shape functions and derivatives at element center w.r.t background element
-      my::EvalShapeFuncAndDerivsAtEleCenter();
-      meas_vol = my::fac_;
-    }
-
-    // compute h_k as volume-equivalent diameter and directly return the value
-    return h_k = ComputeVolEqDiameter(meas_vol);
-
-    break;
-  }
-  //---------------------------------------------------
-  // compute h_k as physical/cut volume divided by physical partial/cut surface measure
-  // ( used to estimate the cut-dependent inverse estimate on cut elements, not useful for sliver and/or dotted cut situations)
-  //---------------------------------------------------
-  case INPAR::XFEM::ViscStab_hk_cut_vol_div_by_cut_surf:
-  {
-    if(averaging_strategy == INPAR::XFEM::Embedded_Sided)
-      dserror("ViscStab_hk_cut_vol_div_by_cut_surf not reasonable for Embedded_Sided_Coupling!");
-
-    // compute the cut surface measure
-    meas_surf = ComputeMeasCutSurf(bintpoints, bcells);
-
-    if (fabs(meas_surf) < 1.e-8)  dserror("Element contribution to interface has zero size.");
-
-    // compute the cut volume measure
-    for( GEO::CUT::plain_volumecell_set::const_iterator i=vcSet.begin();i!=vcSet.end();++i )
-    {
-      GEO::CUT::VolumeCell* vc = *i;
-      meas_vol += vc->Volume();
-    }
-
-    if(meas_vol < 0.0) dserror(" measure of cut partial volume is smaller than 0.0: %f Attention with increasing Nitsche-Parameter!!!", meas_vol);
-
-    break;
-  }
-  //---------------------------------------------------
-  // full element volume divided by physical partial/cut surface measure ( used to estimate the cut-dependent inverse estimate on cut elements, however, avoids problems with sliver cuts, not useful for dotted cuts)
-  //---------------------------------------------------
-  case INPAR::XFEM::ViscStab_hk_ele_vol_div_by_cut_surf:
-  {
-    if(averaging_strategy == INPAR::XFEM::Embedded_Sided)
-      dserror("ViscStab_hk_ele_vol_div_by_cut_surf not reasonable for Embedded_Sided_Coupling!");
-
-    // compute the cut surface measure
-    meas_surf = ComputeMeasCutSurf(bintpoints, bcells);
-
-    // evaluate shape functions and derivatives at element center
-    // compute the full element volume measure
-    my::EvalShapeFuncAndDerivsAtEleCenter();
-    meas_vol = my::fac_;
-
-    break;
-  }
-  //---------------------------------------------------
-  // full element volume divided by surface measure ( used for uncut situations, standard weak Dirichlet boundary/coupling conditions)
-  //---------------------------------------------------
-  case INPAR::XFEM::ViscStab_hk_ele_vol_div_by_ele_surf:
-  {
-    if(averaging_strategy != INPAR::XFEM::Embedded_Sided)
-      dserror("ViscStab_hk_ele_vol_div_by_ele_surf just reasonable for Embedded_Sided_Coupling!");
-
-    DRT::FaceElement* fele = dynamic_cast<DRT::FaceElement*>(face);
-    if (!fele) dserror("Cast to FaceElement failed!");
-
-    //---------------------------------------------------
-    // compute the uncut element's surface measure
-    meas_surf = ComputeMeasFace(ele, ele_xyze, fele->FaceParentNumber());
-
-    // evaluate shape functions and derivatives at element center w.r.t embedded element
-    // compute the full element volume measure
-    meas_vol = emb->EvalShapeFuncAndDerivsAtEleCenter();
-
-    break;
-  }
-  //---------------------------------------------------
-  case INPAR::XFEM::ViscStab_hk_ele_vol_div_by_max_ele_surf:
-  //---------------------------------------------------
-  {
-    if(averaging_strategy == INPAR::XFEM::Embedded_Sided)
-      dserror("ViscStab_hk_ele_vol_div_by_max_ele_surf not reasonable for Embedded_Sided_Coupling!");
-
-    // compute the uncut element's surface measure
-    const int numfaces = DRT::UTILS::getNumberOfElementFaces(ele->Shape());
-
-    // loop all surfaces
-    for(int lid=0; lid< numfaces; ++lid)
-    {
-      meas_surf = std::max(meas_surf, ComputeMeasFace(ele, ele_xyze, lid));
-    }
-
-    // evaluate shape functions and derivatives at element center
-    // compute the full element volume measure
-    my::EvalShapeFuncAndDerivsAtEleCenter();
-    meas_vol = my::fac_;
-
-    break;
-  }
-  default:
-    dserror("unknown type of characteristic element length");
-    break;
-  }
-
-  //--------------------------------------
-  // compute the final element length if fraction-based computation and not returned yet
-  h_k = meas_vol / meas_surf;
-  //--------------------------------------
-
-  // check plausibility
-  if(h_k < 1e-14) dserror("the characteristic element length is zero or smaller, it has not been set properly!");
-
-  return h_k;
-}
-
-/*--------------------------------------------------------------------------------
- * compute the measure of the elements surface with given local id
- *--------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-double FluidEleCalcXFEM<distype>::ComputeMeasFace(
-    DRT::Element *            ele,              ///< fluid element
-    Epetra_SerialDenseMatrix& ele_xyze,         ///< element coordinates
-    const int                 local_face_id     ///< the local id of the face w.r.t the fluid element
-)
-{
-  // get the shape of the face
-  DRT::Element::DiscretizationType face_shape = DRT::UTILS::getEleFaceShapeType(ele->Shape(), local_face_id);
-
-  // get the current node coordinates, extract them from the element's node coordinates
-  const int numnode_face = DRT::UTILS::getNumberOfElementNodes(face_shape);
-  Epetra_SerialDenseMatrix xyze_face( my::nsd_, numnode_face);
-
-  // map for numbering of nodes of the surfaces
-  std::vector< std::vector<int> > map = DRT::UTILS::getEleNodeNumberingFaces(ele->Shape());
-
-  // extract the surface's node coordinates from the element's nodes coordinates
-  for(int n=0; n<numnode_face; ++n)
-  {
-    const int node_lid = map[local_face_id][n];
-    for(int idim = 0; idim < my::nsd_; ++idim)
-      xyze_face(idim,n) = ele_xyze(idim,node_lid);
-  }
-
-  // the metric tensor and the area of an infintesimal surface element
-  Epetra_SerialDenseMatrix  metrictensor(my::nsd_-1,my::nsd_-1);
-  double                    drs = 0.0;
-
-  if(my::nsd_ != 3) dserror("don't call this function for non-3D examples, adapt the following for 2D!");
-
-  DRT::UTILS::GaussRule2D gaussrule = DRT::UTILS::intrule2D_undefined;
-  switch(face_shape)
-  {
-  case DRT::Element::quad4:
-  case DRT::Element::quad8:
-  case DRT::Element::quad9:
-    gaussrule = DRT::UTILS::intrule_quad_1point;
-    break;
-  case DRT::Element::tri3:
-  case DRT::Element::tri6:
-    gaussrule = DRT::UTILS::intrule_tri_1point;
-    break;
-  default:
-    dserror("shape type unknown!\n"); break;
-  }
-
-  double meas_face = 0.0;
-
-  /*----------------------------------------------------------------------*
-    |               start loop over integration points                     |
-   *----------------------------------------------------------------------*/
-  const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule);
-  for (int gpid=0; gpid<intpoints.nquad; ++gpid)
-  {
-    const double e0 = intpoints.qxg[gpid][0];
-    const double e1 = intpoints.qxg[gpid][1];
-
-    Epetra_SerialDenseMatrix deriv( my::nsd_-1, numnode_face);
-
-    // get shape functions and derivatives in the plane of the element
-    DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, face_shape);
-
-    // compute measure tensor for surface element and the infinitesimal
-    // area element drs for the integration
-    DRT::UTILS::ComputeMetricTensorForSurface(xyze_face,deriv,metrictensor,&drs);
-
-    meas_face += intpoints.qwgt[gpid] * drs;
-
-  }
-
-  return meas_face;
-}
-
-/*--------------------------------------------------------------------------------
- * pre-compute the measure of all side's surface cutting the element
- *--------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-double FluidEleCalcXFEM<distype>::ComputeMeasCutSurf(
-    const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary cell integration points
-    const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells             ///< boundary cells
-    )
-{
-  double surf = 0.0;
-
-  //--------------------------------------------
-  // loop intersecting sides
-  // map of side-element id and Gauss points
-  for ( std::map<int, std::vector<DRT::UTILS::GaussIntegration> >::const_iterator i=bintpoints.begin();
-        i!=bintpoints.end();
-        ++i )
-  {
-    int sid = i->first;
-    const std::vector<DRT::UTILS::GaussIntegration> & cutintpoints = i->second;
-
-    // get side's boundary cells
-    std::map<int, std::vector<GEO::CUT::BoundaryCell*> >::const_iterator j = bcells.find( sid );
-    if ( j==bcells.end() )
-      dserror( "missing boundary cell" );
-
-    const std::vector<GEO::CUT::BoundaryCell*> & bcs = j->second;
-    if ( bcs.size()!=cutintpoints.size() )
-      dserror( "boundary cell integration rules mismatch" );
-
-    //--------------------------------------------
-    // loop boundary cells w.r.t current cut side
-    //--------------------------------------------
-    for ( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=cutintpoints.begin();
-          i!=cutintpoints.end();
-          ++i )
-    {
-      const DRT::UTILS::GaussIntegration & gi = *i;
-      GEO::CUT::BoundaryCell * bc = bcs[i - cutintpoints.begin()]; // get the corresponding boundary cell
-
-      //--------------------------------------------
-      // loop gausspoints w.r.t current boundary cell
-      //--------------------------------------------
-      for ( DRT::UTILS::GaussIntegration::iterator iquad=gi.begin(); iquad!=gi.end(); ++iquad )
-      {
-        double drs = 0.0; // transformation factor between reference cell and linearized boundary cell
-
-        const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
-
-        LINALG::Matrix<3,1> normal(true);
-
-        LINALG::Matrix<3,1> x_gp_lin(true); // gp in xyz-system on linearized interface
-
-        // compute transformation factor, normal vector and global Gauss point coordiantes
-        if(bc->Shape() != DRT::Element::dis_none) // Tessellation approach
-        {
-          ComputeSurfaceTransformation(drs, x_gp_lin, normal, bc, eta);
-        }
-        else // MomentFitting approach
-        {
-          drs = 1.0;
-          normal = bc->GetNormalVector();
-          const double* gpcord = iquad.Point();
-          for (int idim=0;idim<3;++idim)
-          {
-            x_gp_lin(idim,0) = gpcord[idim];
-          }
-        }
-
-        const double surf_fac = drs*iquad.Weight();
-
-        surf += surf_fac;
-
-      } //loop gausspoints w.r.t current boundary cell
-    } // loop boundary cells
-  } // loop intersecting sides
-
-  return surf;
-}
 
 template <DRT::Element::DiscretizationType distype>
 void FluidEleCalcXFEM<distype>::GetMaterialParametersVolumeCell( Teuchos::RCP<const MAT::Material>  material,
@@ -4983,8 +4516,6 @@ void FluidEleCalcXFEM<distype>::GetMaterialParametersVolumeCell( Teuchos::RCP<co
 
   } // end namespace ELEMENTS
 } // end namespace DRT
-
-
 
 // Ursula is responsible for this comment!
 template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::hex8>;

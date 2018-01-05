@@ -292,19 +292,6 @@ private:
   //! get the constant which satisfies the trace inequality depending on the spatial dimension and polynomial order of the element
   double NIT_getTraceEstimateConstant(const DRT::Element::DiscretizationType ele_distype);
 
-  //! compute full scaling of Nitsche's penalty term (xfluid-fluid)
-  void NIT_Compute_FullPenalty_Stabfac(
-          double &                           NIT_full_stab_fac,             ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
-          const LINALG::Matrix<my::nsd_,1>&  normal,                        ///< interface-normal vector
-          const double                       h_k,                           ///< characteristic element length
-          const double                       kappa1,                        ///< Weight parameter (parameter +/master side)
-          const double                       kappa2,                        ///< Weight parameter (parameter -/slave  side)
-          const LINALG::Matrix<my::nsd_,1>&  velint_m,                      ///< Master side velocity at gauss-point
-          const LINALG::Matrix<my::nsd_,1>&  velint_s,                      ///< Slave side velocity at gauss-point
-          const double                       NIT_visc_stab_fac,             ///< Nitsche's viscous scaling part of penalty term
-          bool                               error_calc = false             ///< when called in error calculation, don't add the inflow terms
-  );
-
   //! prepare coupling matrices, that include contributions from convective stabilization
   void HybridLM_CreateSpecialContributionMatrices(
       const Teuchos::RCP<XFEM::ConditionManager> &            cond_manager,            ///< XFEM condition manager
@@ -333,15 +320,6 @@ private:
       DRT::Discretization &                  cutdis,    ///< cut discretization
       std::vector<int> &                     lm,        ///< local dof map
       Epetra_SerialDenseVector &             iforce     ///< interface force vector
-  );
-
-  //! compute transformation factor for surface integration, normal, local and global gp coordinates
-  void ComputeSurfaceTransformation(
-      double &                    drs,         ///< surface transformation factor
-      LINALG::Matrix<3,1> &       x_gp_lin,    ///< global coordiantes of gaussian point
-      LINALG::Matrix<3,1> &       normal,      ///< normal vector on boundary cell
-      GEO::CUT::BoundaryCell *    bc,          ///< boundary cell
-      const LINALG::Matrix<2,1> & eta          ///< local coordinates of gaussian point w.r.t boundarycell
   );
 
   //! evaluate shape function and derivative at point with local coordinates rst
@@ -411,41 +389,6 @@ private:
       const bool                                                                                eval_side_coupling,
       const bool                                                                                is_MHVS
   );
-
-  //! compute characteristic element length h_k
-  //! \author kruse \date 06/14
-  double ComputeCharEleLength(
-      DRT::Element *                                                        ele,                   ///< fluid element
-      Epetra_SerialDenseMatrix &                                            ele_xyze,              ///< element coordinates
-      const Teuchos::RCP<XFEM::ConditionManager> &                          cond_manager,          ///< XFEM condition manager
-      const GEO::CUT::plain_volumecell_set &                                vcSet,                 ///< volumecell sets for volume integration
-      const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &          bcells,                ///< bcells for boundary cell integration
-      const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &     bintpoints,            ///< integration points for boundary cell integration
-      Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype> >  emb = Teuchos::null,   ///< pointer to the embedded coupling implementation
-      DRT::Element *                                                        face = NULL            ///< side element in 3D
-  );
-
-  //! compute the measure of the elements surface with given local id
-  double ComputeMeasFace(
-      DRT::Element *            ele,              ///< fluid element
-      Epetra_SerialDenseMatrix& ele_xyze,         ///< element coordinates
-      const int                 local_face_id     ///< the local id of the face w.r.t the fluid element
-  );
-
-  //! pre-compute the measure of the element's intersecting surface
-  double ComputeMeasCutSurf(
-      const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary cell integration points
-      const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells             ///< boundary cells
-  );
-
-  //! compute volume-equivalent diameter
-  inline double ComputeVolEqDiameter(double vol)
-  {
-    // get element length for tau_Mp/tau_C: volume-equival. diameter/sqrt(3)
-    const double hk = std::pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
-
-    return hk;
-  }
 
   //! Initiates dummy variables and calls FLuidEleCalc GetMaterialParams routine.
   void GetMaterialParametersVolumeCell( Teuchos::RCP<const MAT::Material>  material,

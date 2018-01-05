@@ -27,6 +27,8 @@
 #include "../drt_cut/cut_boundarycell.H"
 #include "../drt_cut/cut_position.H"
 
+#include "../drt_xfem/xfem_interface_utils.H"
+
 #include <Teuchos_TimeMonitor.hpp>
 
 namespace DRT
@@ -343,72 +345,6 @@ void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::Evaluate( L
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
-void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::ComputeCharElementLength( double & h_k )
-{
-  // only for 3d elements
-  if (slave_nsd_ != nsd_)
-    dserror("Computation of characteristic element length only possible for a 3d slave element!");
-
-  //const double vol = VolumeViaNumIntegration<DISTYPE>(emb_xyze_);
-  const unsigned numnode = DRT::UTILS::DisTypeToNumNodePerEle<slave_distype>::numNodePerElement;
-
-  // use one point integration rule to calculate hk at element center
-  DRT::UTILS::GaussRule3D integrationrule_stabili = DRT::UTILS::intrule3D_undefined;
-
-  switch (slave_distype)
-  {
-    case DRT::Element::hex8:
-    case DRT::Element::hex20:
-    case DRT::Element::hex27:
-        integrationrule_stabili = DRT::UTILS::intrule_hex_1point;
-      break;
-    case DRT::Element::tet4:
-    case DRT::Element::tet10:
-        integrationrule_stabili = DRT::UTILS::intrule_tet_1point;
-      break;
-    case DRT::Element::wedge6:
-    case DRT::Element::wedge15:
-        integrationrule_stabili = DRT::UTILS::intrule_wedge_1point;
-      break;
-    case DRT::Element::pyramid5:
-        integrationrule_stabili = DRT::UTILS::intrule_pyramid_1point;
-      break;
-    default:
-      dserror("invalid discretization type for fluid3");
-      integrationrule_stabili = DRT::UTILS::intrule3D_undefined;
-      break;
-  }
-
-  // integration points
-  const DRT::UTILS::IntegrationPoints3D intpoints(integrationrule_stabili);
-
-  // shape functions and derivs at element center
-  LINALG::Matrix<3,1> e;
-  e(0) = intpoints.qxg[0][0];
-  e(1) = intpoints.qxg[0][1];
-  e(2) = intpoints.qxg[0][2];
-  const double wquad = intpoints.qwgt[0];
-
-  LINALG::Matrix<3,numnode> deriv;
-  DRT::UTILS::shape_function_3D_deriv1(deriv, e(0), e(1), e(2), slave_distype);
-
-  // get Jacobian matrix and determinant
-  // xjm_ = deriv_(i,k)*xyze(j,k);
-  LINALG::Matrix<3,3> xjm;
-  xjm.MultiplyNT(deriv,slave_xyze_);
-
-  const double vol = wquad * xjm.Determinant();
-
-  // get element length for tau_Mp/tau_C: volume-equival. diameter/sqrt(3)
-  h_k = std::pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
-
-  return;
-}
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
@@ -611,64 +547,21 @@ void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::ProjectOnSi
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
-double SlaveElementRepresentation<distype,slave_distype,slave_numdof>::EvalShapeFuncAndDerivsAtEleCenter()
+double SlaveElementRepresentation<distype,slave_distype,slave_numdof>::EvalElementVolume()
 {
-  // use one-point Gauss rule
-  DRT::UTILS::IntPointsAndWeights<slave_nsd_> intpoints_stab(DRT::ELEMENTS::DisTypeToStabGaussRule<slave_distype>::rule);
-
-  return EvalShapeFuncAndDerivsAtIntPoint((intpoints_stab.IP().qxg)[0],intpoints_stab.IP().qwgt[0]);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
-double SlaveElementRepresentation<distype,slave_distype,slave_numdof>::EvalShapeFuncAndDerivsAtIntPoint(
-  const double* gpcoord,  // actual integration point (coords)
-  double gpweight// actual integration point (weight)
-  )
-{
-  LINALG::Matrix<nsd_,1>    slave_xsi;     ///< local coordinates of Gaussian point
-  LINALG::Matrix<nsd_,nsd_> slave_xjm;     ///< jacobi matrix
-  LINALG::Matrix<nsd_,nsd_> slave_xji;     ///< inverse of jacobi matrix
-
-  for (unsigned idim=0;idim<nsd_;++idim)
+  switch(DRT::UTILS::DisTypeToDim<slave_distype>::dim)
   {
-    slave_xsi(idim) = gpcoord[idim];
+    case 3:
+    {
+     return XFEM::UTILS::EvalElementVolume<slave_distype>(slave_xyze_);
+     break;
+    }
+    default:
+    {
+      dserror("Element volume for non 3D element type?");
+      return 0.0;
+    }
   }
-
-
-  // shape functions and their first derivatives
-  DRT::UTILS::shape_function<slave_distype>(slave_xsi,slave_funct_);
-  DRT::UTILS::shape_function_deriv1<slave_distype>(slave_xsi,slave_deriv_);
-
-  // get Jacobian matrix and determinant
-  // actually compute its transpose....
-  /*
-    +-            -+ T      +-            -+
-    | dx   dx   dx |        | dx   dy   dz |
-    | --   --   -- |        | --   --   -- |
-    | dr   ds   dt |        | dr   dr   dr |
-    |              |        |              |
-    | dy   dy   dy |        | dx   dy   dz |
-    | --   --   -- |   =    | --   --   -- |
-    | dr   ds   dt |        | ds   ds   ds |
-    |              |        |              |
-    | dz   dz   dz |        | dx   dy   dz |
-    | --   --   -- |        | --   --   -- |
-    | dr   ds   dt |        | dt   dt   dt |
-    +-            -+        +-            -+
-  */
-  slave_xjm.MultiplyNT(slave_deriv_,slave_xyze_);
-  double det = slave_xji.Invert(slave_xjm);
-
-  if (det < 1E-16)
-    dserror("GLOBAL ELEMENT \nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", det);
-
-  // compute global first derivates
-  slave_derxy_.Multiply(slave_xji,slave_deriv_);
-
-  // compute integration factor
-  return gpweight*det;
 }
 
 /*----------------------------------------------------------------------*

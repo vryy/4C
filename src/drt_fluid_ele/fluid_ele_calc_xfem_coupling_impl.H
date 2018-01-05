@@ -150,9 +150,6 @@ namespace DRT
         //!  evaluate shape function, derivatives and transformation w.r.t coupling slave element at gaussian point
         void Evaluate( LINALG::Matrix<nsd_,1> & xside, LINALG::Matrix<nsd_,1> & rst_slave);
 
-        //! compute coupling slave element's characteristic element length (for 3D-elements)
-        void ComputeCharElementLength( double & h_k );
-
         //! compute interface force
         void ComputeInterfaceForce(
           Epetra_SerialDenseVector &   iforce,     ///< interface force vector
@@ -167,21 +164,14 @@ namespace DRT
           LINALG::Matrix<nsd_,1> & xi_side       ///< local coordinates of projected gaussian point w.r.t side
         );
 
-        //! evaluate shape functions and derivatives at element center
-        //! @return the integration factor
-        double EvalShapeFuncAndDerivsAtEleCenter();
+        //! evaluate element volume
+        double EvalElementVolume();
 
       protected:
 
         //! default constructor
         SlaveElementRepresentation()
         {SlaveElementInterface<distype>::DefineStateNames(slave_distype,disp_statename_,vel_statename_,veln_statename_);};
-
-        //! evaluate shape functions and derivatives at integration point
-        double EvalShapeFuncAndDerivsAtIntPoint(
-          const double* gpcoord,  //< actual integration point (coords)
-          double gpweight         //< actual integration point (weight)
-          );
 
         //! @name accessors for derived classes
         //@{
