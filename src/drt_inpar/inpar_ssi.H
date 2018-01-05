@@ -60,6 +60,7 @@ namespace SSI
   enum MatrixType
   {
     matrix_undefined,
+    matrix_block,
     matrix_sparse
   };
 

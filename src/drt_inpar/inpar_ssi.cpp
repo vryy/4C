@@ -152,10 +152,12 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "type of global system matrix in global system of equations",
       tuple<std::string>(
           "undefined",
+          "block",
           "sparse"
           ),
       tuple<int>(
           INPAR::SSI::matrix_undefined,
+          INPAR::SSI::matrix_block,
           INPAR::SSI::matrix_sparse
           ),
       &ssidynmono

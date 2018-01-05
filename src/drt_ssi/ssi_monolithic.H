@@ -20,6 +20,8 @@
 
 #include "ssi_base.H"
 
+#include "../drt_inpar/inpar_s2i.H"
+
 // forward declarations
 namespace ADAPTER
 {
@@ -30,6 +32,7 @@ namespace LINALG
 {
   class MultiMapExtractor;
   class Solver;
+  class SparseMatrix;
 }
 
 namespace SCATRA
@@ -100,8 +103,29 @@ namespace SSI
       //! assemble off-diagonal structure-scatra block of global system matrix
       void AssembleODBlockStructureScatra() const;
 
+      //! build null spaces associated with blocks of global system matrix
+      void BuildNullSpaces() const;
+
+      //! compute inverse sums of absolute values of matrix row entries
+      void ComputeInvRowSums(
+          const LINALG::SparseMatrix&          matrix,      //!< matrix
+          const Teuchos::RCP<Epetra_Vector>&   invrowsums   //!< inverse sums of absolute values of row entries in matrix
+          ) const;
+
       //! return global map of degrees of freedom
       const Teuchos::RCP<const Epetra_Map>& DofRowMap() const;
+
+      //! equilibrate matrix rows
+      void EquilibrateMatrixRows(
+          LINALG::SparseMatrix&                matrix,      //!< matrix
+          const Teuchos::RCP<Epetra_Vector>&   invrowsums   //!< sums of absolute values of row entries in matrix
+          ) const;
+
+      //! equilibrate global system of equations if necessary
+      void EquilibrateSystem(
+          const Teuchos::RCP<LINALG::SparseOperator>&   systemmatrix,   //!< system matrix
+          const Teuchos::RCP<Epetra_Vector>&            residual        //!< residual vector
+          ) const;
 
       //! finite difference check for global system matrix
       void FDCheck();
@@ -136,8 +160,11 @@ namespace SSI
       //! counter for Newton-Raphson iterations
       unsigned iter_;
 
+      //! map extractor associated with all degrees of freedom inside structural field
+      Teuchos::RCP<const LINALG::MultiMapExtractor> map_structure_;
+
       //! map for interior and master-side structural degrees of freedom
-      Teuchos::RCP<const Epetra_Map> map_structure_;
+      Teuchos::RCP<const Epetra_Map> map_structure_condensed_;
 
       //! global map extractor (0: scalar transport, 1: structure)
       Teuchos::RCP<LINALG::MapExtractor> maps_;
@@ -145,8 +172,14 @@ namespace SSI
       //! structural map extractor (0: other degrees of freedom, 1: slave-side degrees of freedom, 2: master-side degrees of freedom)
       Teuchos::RCP<const LINALG::MultiMapExtractor> maps_structure_;
 
+      //! map extractor associated with blocks of global system matrix
+      Teuchos::RCP<const LINALG::MultiMapExtractor> maps_systemmatrix_;
+
       //! type of global system matrix in global system of equations
       const INPAR::SSI::MatrixType matrixtype_;
+
+      //! type of scalar transport system matrix
+      INPAR::S2I::MatrixType matrixtype_scatra_;
 
       //! global residual vector on right-hand side of global system of equations
       Teuchos::RCP<Epetra_Vector> residual_;
