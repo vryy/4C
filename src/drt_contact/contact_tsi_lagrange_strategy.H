@@ -125,9 +125,7 @@ public:
       Teuchos::RCP<Epetra_Vector>& combined_RHS,
       Teuchos::RCP<ADAPTER::Coupling> coupST,
       Teuchos::RCP<const Epetra_Vector> dis,
-      Teuchos::RCP<const Epetra_Vector> temp,
-      Teuchos::RCP<const LINALG::MapExtractor> str_dbc,
-      Teuchos::RCP<const LINALG::MapExtractor> thr_dbc
+      Teuchos::RCP<const Epetra_Vector> temp
       );
 
   //Overload CONTACT::CoLagrangeStrategy::Recover as this is called in the structure --> no enought information available for monolithically coupled algorithms!
@@ -138,9 +136,6 @@ public:
       Teuchos::RCP<Epetra_Vector> sinc,/// displacement  increment
       Teuchos::RCP<Epetra_Vector> tinc,/// thermal  increment
       Teuchos::RCP<ADAPTER::Coupling> coupST);
-
-  //! @name little helpers
-  inline void AddVector(Epetra_Vector& src,Epetra_Vector& dst);
 
   void StoreNodalQuantities(
       MORTAR::StrategyBase::QuantityType type,Teuchos::RCP<ADAPTER::Coupling> coupST);
@@ -225,6 +220,12 @@ protected:
   // pointer to TSI coupling object
   Teuchos::RCP<ADAPTER::Coupling> coupST_;
 }; // class CoTSILagrangeStrategy
+
+namespace UTILS
+{
+//! @name little helpers
+inline void AddVector(Epetra_Vector& src,Epetra_Vector& dst);
+}
 } // namespace CONTACT
 
 
