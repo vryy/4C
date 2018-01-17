@@ -222,17 +222,7 @@ bool STR::IMPLICIT::OneStepTheta::ApplyForce(const Epetra_Vector& x,
   // ---------------------------------------------------------------------------
   // set the time step dependent parameters for the element evaluation
   ResetEvalParams();
-  const bool ok = ModelEval().ApplyForce(x,f,theta_);
-
-  if (not ok)
-    return ok;
-
-  // ---------------------------------------------------------------------------
-  // evaluate the mid state at t_{n+theta}^{i}
-  // ---------------------------------------------------------------------------
-  AddViscoMassContributions(f);
-
-  return ok;
+  return ModelEval().ApplyForce(x,f,theta_);
 }
 
 /*----------------------------------------------------------------------------*
@@ -252,11 +242,6 @@ bool STR::IMPLICIT::OneStepTheta::ApplyStiff(
 
   if (not ok)
     return ok;
-
-  // ---------------------------------------------------------------------------
-  // evaluate the mid state at t_{n+theta}^{i}
-  // ---------------------------------------------------------------------------
-  AddViscoMassContributions(jac);
 
   jac.Complete();
 
@@ -281,12 +266,6 @@ bool STR::IMPLICIT::OneStepTheta::ApplyForceStiff(
   if (not ok)
     return ok;
 
-  // ---------------------------------------------------------------------------
-  // add the visco and mass contributions
-  // ---------------------------------------------------------------------------
-  AddViscoMassContributions(f);
-  AddViscoMassContributions(jac);
-
   jac.Complete();
 
   return ok;
@@ -297,17 +276,7 @@ bool STR::IMPLICIT::OneStepTheta::ApplyForceStiff(
 bool STR::IMPLICIT::OneStepTheta::AssembleForce( Epetra_Vector& f,
     const std::vector<INPAR::STR::ModelType>* without_these_models ) const
 {
-  const bool ok = ModelEval().AssembleForce( theta_, f, without_these_models );
-
-  if (not ok)
-    return ok;
-
-  // ---------------------------------------------------------------------------
-  // evaluate the mid state at t_{n+theta}^{i}
-  // ---------------------------------------------------------------------------
-  AddViscoMassContributions( f );
-
-  return ok;
+  return ModelEval().AssembleForce( theta_, f, without_these_models );
 }
 
 /*----------------------------------------------------------------------------*

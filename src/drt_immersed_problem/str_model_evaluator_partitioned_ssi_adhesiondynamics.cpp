@@ -24,7 +24,8 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 STR::MODELEVALUATOR::PartitionedSSIAdhesionDynamics::PartitionedSSIAdhesionDynamics()
-  : adhesion_dynamics_(false),
+  : PartitionedSSI(Teuchos::null),
+    adhesion_dynamics_(false),
     penalty_(0.0),
     num_bound_species_(-1),
     adhesion_force_ptr_(Teuchos::null),

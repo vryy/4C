@@ -23,6 +23,11 @@ namespace ADAPTER{
 class Structure;
 } // namespace ADAPTER
 
+namespace SSI
+{
+  class SSI_Part;
+}
+
 namespace STR {
 
 namespace MODELEVALUATOR {
@@ -31,7 +36,9 @@ namespace MODELEVALUATOR {
   {
   public:
     //! constructor
-    PartitionedSSI();
+    PartitionedSSI(
+        const Teuchos::RCP<const SSI::SSI_Part>   ssi_part   //!< partitioned algorithm for scalar-structure interaction
+        );
 
     //! destructor
     virtual ~PartitionedSSI() {};
@@ -72,8 +79,7 @@ namespace MODELEVALUATOR {
     //! Assemble the jacobian at \f$t_{n+1}\f$ not needed in partitioned scheme
     virtual bool AssembleJacobian(
         LINALG::SparseOperator& jac,
-        const double & timefac_np) const
-    {return true;};
+        const double & timefac_np) const;
 
     //! [derived]
     virtual void WriteRestart(
@@ -93,8 +99,7 @@ namespace MODELEVALUATOR {
     virtual void RunPreComputeX(
         const Epetra_Vector& xold,
         Epetra_Vector& dir_mutable,
-        const NOX::NLN::Group& curr_grp )
-    { return; };
+        const NOX::NLN::Group& curr_grp );
 
     //! recover condensed Lagrange multipliers
     virtual void RecoverState(
@@ -144,6 +149,10 @@ namespace MODELEVALUATOR {
     virtual Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const;
     //! @}
 
+  private:
+
+    //! partitioned algorithm for scalar-structure interaction
+    const Teuchos::RCP<const SSI::SSI_Part> ssi_part_;
   }; // class PartitionedSSI
 
 } // namespace MODELEVALUATOR

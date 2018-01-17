@@ -451,10 +451,14 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
     case prb_thermo_fsi:
     case prb_fsi_xfem:
     case prb_pasi:
+    case prb_ssi:
     {
       if (prbdyn_->INVALID_TEMPLATE_QUALIFIER
           isType<Teuchos::RCP<STR::MODELEVALUATOR::Generic> > ("Partitioned Coupling Model"))
       {
+        if (prbdyn_->INVALID_TEMPLATE_QUALIFIER
+            isType<Teuchos::RCP<STR::MODELEVALUATOR::Generic> > ("Monolithic Coupling Model"))
+          dserror("Cannot have both partitioned and monolithic coupling at the same time!");
         const Teuchos::RCP<STR::MODELEVALUATOR::Generic>& coupling_model_ptr =
           prbdyn_->INVALID_TEMPLATE_QUALIFIER
           get<Teuchos::RCP<STR::MODELEVALUATOR::Generic> >("Partitioned Coupling Model");
@@ -466,11 +470,8 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
         sdyn_->set<Teuchos::RCP<STR::MODELEVALUATOR::Generic> >("Partitioned Coupling Model",
             coupling_model_ptr);
       }
-      break;
-    }
-    case prb_ssi:
-    {
-      if (prbdyn_->INVALID_TEMPLATE_QUALIFIER
+
+      else if (prbdyn_->INVALID_TEMPLATE_QUALIFIER
           isType<Teuchos::RCP<STR::MODELEVALUATOR::Generic> > ("Monolithic Coupling Model"))
       {
         const Teuchos::RCP<STR::MODELEVALUATOR::Generic>& coupling_model_ptr =

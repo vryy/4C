@@ -140,13 +140,8 @@ bool STR::ModelEvaluator::InitializeInertiaAndDamping(const Epetra_Vector& x,
       STR::MODELEVALUATOR::Structure&>(Evaluator(INPAR::STR::model_structure));
 
   str_model.Reset(x);
-  bool ok = str_model.InitializeInertiaAndDamping();
 
-  // Assemble the jacobian matrix
-  const Vector me_vec( 1, Teuchos::rcpFromRef( str_model ) );
-  AssembleJacobian( ok, me_vec, 1.0, jac );
-
-  return ok;
+  return str_model.InitializeInertiaAndDamping();
 }
 
 /*----------------------------------------------------------------------------*
@@ -346,12 +341,18 @@ bool STR::ModelEvaluator::ApplyInitialForce(const Epetra_Vector& x,
   PostEvaluate( ok, *me_vec_ptr_ );
 
   // ---------------------------------------------------------------------------
-  // put everything together
+  // put everything together, including mass and viscous contributions
   // ---------------------------------------------------------------------------
   AssembleForce( ok, *me_vec_ptr_, 1.0, f );
 
-  return ok;
+  // ---------------------------------------------------------------------------
+  // subtract mass and viscous contributions from initial force vector
+  // ---------------------------------------------------------------------------
+  f.Scale(-1.);
+  int_ptr_->AddViscoMassContributions(f);
+  f.Scale(-1.);
 
+  return ok;
 }
 
 /*----------------------------------------------------------------------------*

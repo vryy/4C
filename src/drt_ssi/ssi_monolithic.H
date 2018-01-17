@@ -55,9 +55,6 @@ namespace SSI
       //! destructor
       virtual ~SSI_Mono(){return;};
 
-      //! return scatra-scatra interface coupling adapter for structure field
-      const Teuchos::RCP<ADAPTER::Coupling>& CouplingAdapterStructure() const {return icoup_structure_;};
-
       //! initialize monolithic algorithm
       int Init(
           const Epetra_Comm&              comm,               //!< communicator
@@ -81,8 +78,8 @@ namespace SSI
       //! setup global system of equations
       void SetupSystem();
 
-      //! test results
-      void TestResults(const Epetra_Comm& comm) const;
+      //! return algebraic solver for global system of equations
+      const LINALG::Solver& Solver() const {return *solver_;};
 
       //! time loop
       void Timeloop();
@@ -136,8 +133,8 @@ namespace SSI
       //! prepare time step
       void PrepareTimeStep();
 
-      //! setup scatra-scatra interface coupling adapter for structure field
-      void SetupCouplingAdapterStructure();
+      //! set up structural model evaluator for scalar-structure interaction
+      void SetupModelEvaluator() const;
 
       //! evaluate time step using Newton-Raphson iteration
       void Solve();
@@ -151,26 +148,14 @@ namespace SSI
       //! time for solution of global system of equations
       double dtsolve_;
 
-      //! scatra-scatra interface coupling adapter for structure field
-      Teuchos::RCP<ADAPTER::Coupling> icoup_structure_;
-
       //! global increment vector for Newton-Raphson iteration
       Teuchos::RCP<Epetra_Vector> increment_;
-
-      //! counter for Newton-Raphson iterations
-      unsigned iter_;
 
       //! map extractor associated with all degrees of freedom inside structural field
       Teuchos::RCP<const LINALG::MultiMapExtractor> map_structure_;
 
-      //! map for interior and master-side structural degrees of freedom
-      Teuchos::RCP<const Epetra_Map> map_structure_condensed_;
-
       //! global map extractor (0: scalar transport, 1: structure)
       Teuchos::RCP<LINALG::MapExtractor> maps_;
-
-      //! structural map extractor (0: other degrees of freedom, 1: slave-side degrees of freedom, 2: master-side degrees of freedom)
-      Teuchos::RCP<const LINALG::MultiMapExtractor> maps_structure_;
 
       //! map extractor associated with blocks of global system matrix
       Teuchos::RCP<const LINALG::MultiMapExtractor> maps_systemmatrix_;

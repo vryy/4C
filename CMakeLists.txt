@@ -2414,10 +2414,10 @@ src/drt_ssi/ssi_clonestrategy.cpp
 src/drt_ssi/ssi_coupling.cpp
 src/drt_ssi/ssi_monolithic.cpp
 src/drt_ssi/ssi_monolithic_convcheck_strategies.cpp
-src/drt_ssi/ssi_monolithic_resulttest.cpp
 src/drt_ssi/ssi_partitioned.cpp
 src/drt_ssi/ssi_partitioned_1wc.cpp
 src/drt_ssi/ssi_partitioned_2wc.cpp
+src/drt_ssi/ssi_resulttest.cpp
 src/drt_ssi/ssi_utils.cpp
 src/drt_ssi/ssi_str_model_evaluator_monolithic.cpp
 src/drt_ssi/ssi_str_model_evaluator_partitioned.cpp

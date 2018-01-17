@@ -112,12 +112,7 @@ NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormUpdate::checkStatus(
   // old solution (i.e. the number of iterations is greater than zero).
   int niters = problem.getNumIterations();
   if (niters == 0)
-  {
-    // set some default values
-    normUpdate_ = Teuchos::rcp(new std::vector<double>(nChecks_,1.0e+12));
-    normRefSol_ = Teuchos::rcp(new std::vector<double>(nChecks_,1.0));
-    return gStatus_;
-  }
+    return checkStatusFirstIter();
 
   // ---------------------------------------------------------
   // Begin check for convergence criteria #1 (local check)
@@ -200,6 +195,17 @@ NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormUpdate::checkStatus(
                 ? NOX::StatusTest::Converged : NOX::StatusTest::Unconverged;
 
   return gStatus_;
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormUpdate::checkStatusFirstIter()
+{
+  // set some default values
+  normUpdate_ = Teuchos::rcp(new std::vector<double>(nChecks_,1.0e+12));
+  normRefSol_ = Teuchos::rcp(new std::vector<double>(nChecks_,1.0));
+  return NOX::StatusTest::Unconverged;
 }
 
 
@@ -313,4 +319,16 @@ void NOX::NLN::StatusTest::NormUpdate::throwError(
      << " - " << errorMsg << std::endl;
   }
   throw "NOX Error";
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+NOX::StatusTest::StatusType
+NOX::NLN::StatusTest::NormUpdateSkipFirstIter::checkStatusFirstIter()
+{
+  // set some default values
+  normUpdate_ = Teuchos::rcp(new std::vector<double>(nChecks_,0.0));
+  normRefSol_ = Teuchos::rcp(new std::vector<double>(nChecks_,1.0));
+  return NOX::StatusTest::Converged;
 }

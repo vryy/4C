@@ -1,8 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ssi_monolithic_resulttest.cpp
+\file ssi_resulttest.cpp
 
-\brief result testing functionality for monolithic scalar-structure interaction problems
+\brief result testing functionality for scalar-structure interaction problems
 
 \level 2
 
@@ -14,7 +14,7 @@
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#include "ssi_monolithic_resulttest.H"
+#include "ssi_resulttest.H"
 
 #include "ssi_monolithic.H"
 #include "ssi_str_model_evaluator_monolithic.H"
@@ -26,17 +26,19 @@
 
 #include "../drt_scatra/scatra_timint_implicit.H"
 
+#include "../linalg/linalg_solver.H"
+
 /*----------------------------------------------------------------------*
  | constructor                                               fang 11/17 |
  *----------------------------------------------------------------------*/
-SSI::SSI_Mono_ResultTest::SSI_Mono_ResultTest(
-    const Teuchos::RCP<const SSI::SSI_Mono>   ssi_mono   //!< time integrator for monolithic scalar-structure interaction
+SSI::SSIResultTest::SSIResultTest(
+    const Teuchos::RCP<const SSI::SSI_Base>   ssi_base   //!< time integrator for scalar-structure interaction
     )
     // call base class constructor
   : DRT::ResultTest("SSI"),
 
-    // store pointer to time integrator for monolithic scalar-structure interaction
-    ssi_mono_(ssi_mono)
+    // store pointer to time integrator for scalar-structure interaction
+    ssi_base_(ssi_base)
 {
   return;
 }
@@ -45,7 +47,7 @@ SSI::SSI_Mono_ResultTest::SSI_Mono_ResultTest(
 /*----------------------------------------------------------------------*
  | get nodal result to be tested                             fang 12/17 |
  *----------------------------------------------------------------------*/
-double SSI::SSI_Mono_ResultTest::ResultNode(
+double SSI::SSIResultTest::ResultNode(
     const std::string   quantity,   //!< name of quantity to be tested
     DRT::Node*          node        //!< node carrying the result to be tested
     ) const
@@ -57,7 +59,7 @@ double SSI::SSI_Mono_ResultTest::ResultNode(
   if(!quantity.compare(0,6,"stress"))
   {
     // extract nodal stresses
-    const Epetra_MultiVector& stresses = dynamic_cast<const STR::MODELEVALUATOR::MonolithicSSI&>(ssi_mono_->StructureField()->ModelEvaluator(INPAR::STR::model_monolithic_coupling)).Stresses();
+    const Epetra_MultiVector& stresses = dynamic_cast<const STR::MODELEVALUATOR::MonolithicSSI&>(ssi_base_->StructureField()->ModelEvaluator(INPAR::STR::model_monolithic_coupling)).Stresses();
 
     // extract local node ID
     const int lid = stresses.Map().LID(node->Id());
@@ -86,35 +88,56 @@ double SSI::SSI_Mono_ResultTest::ResultNode(
     dserror("Quantity '%s' not supported in result test!", quantity.c_str());
 
   return result;
-} // SSI::SSI_Mono_ResultTest::ResultNode
+} // SSI::SSIResultTest::ResultNode
 
 
 /*----------------------------------------------------------------------*
  | get special result to be tested                           fang 11/17 |
  *----------------------------------------------------------------------*/
-double SSI::SSI_Mono_ResultTest::ResultSpecial(
+double SSI::SSIResultTest::ResultSpecial(
     const std::string&   quantity   //!< name of quantity to be tested
     ) const
 {
   // initialize variable for result
   double result(0.);
 
-  // number of Newton-Raphson iterations in last time step
+  // number of outer coupling iterations (partitioned SSI) or Newton-Raphson iterations (monolithic SSI) in last time step
   if(quantity == "numiterlastnonlinearsolve")
-    result = (double) ssi_mono_->Iter();
+    result = (double) ssi_base_->Iter();
+
+  // number of iterations performed by linear solver during last Newton-Raphson iteration (monolithic SSI only)
+  else if(quantity == "numiterlastlinearsolve")
+  {
+    // safety check
+    if(SSI_Mono().Solver().Params().get("solver","none") != "aztec")
+      dserror("Must have Aztec solver for result test involving number of solver iterations during last Newton-Raphson iteration!");
+    result = (double) SSI_Mono().Solver().getNumIters();
+  }
 
   // catch unknown quantity strings
   else
-    dserror("Quantity '%s' not supported by result testing functionality for monolithic scalar-structure interaction!",quantity.c_str());
+    dserror("Quantity '%s' not supported by result testing functionality for scalar-structure interaction!",quantity.c_str());
 
   return result;
-} // SSI::SSI_Mono_ResultTest::ResultSpecial
+} // SSI::SSIResultTest::ResultSpecial
+
+
+/*---------------------------------------------------------------------------------*
+ | return time integrator for monolithic scalar-structure interaction   fang 01/18 |
+ *---------------------------------------------------------------------------------*/
+const SSI::SSI_Mono& SSI::SSIResultTest::SSI_Mono() const
+{
+  const SSI::SSI_Mono* const ssi_mono = dynamic_cast<const SSI::SSI_Mono* const>(ssi_base_.get());
+  if(ssi_mono == NULL)
+    dserror("Couldn't access time integrator for monolithic scalar-structure interaction!");
+  return *ssi_mono;
+}
 
 
 /*-------------------------------------------------------------------------------------*
  | test quantity associated with a particular node                          fang 12/17 |
  *-------------------------------------------------------------------------------------*/
-void SSI::SSI_Mono_ResultTest::TestNode(
+void SSI::SSIResultTest::TestNode(
     DRT::INPUT::LineDefinition&   res,         //!< input file line containing result test specification
     int&                          nerr,        //!< number of failed result tests
     int&                          test_count   //!< number of result tests
@@ -124,10 +147,10 @@ void SSI::SSI_Mono_ResultTest::TestNode(
   std::string dis;
   res.ExtractString("DIS",dis);
   const DRT::Discretization* discretization(NULL);
-  if(dis == ssi_mono_->ScaTraField()->ScaTraField()->Discretization()->Name())
-    discretization = ssi_mono_->ScaTraField()->ScaTraField()->Discretization().get();
-  else if(dis == ssi_mono_->StructureField()->Discretization()->Name())
-    discretization = ssi_mono_->StructureField()->Discretization().get();
+  if(dis == ssi_base_->ScaTraField()->ScaTraField()->Discretization()->Name())
+    discretization = ssi_base_->ScaTraField()->ScaTraField()->Discretization().get();
+  else if(dis == ssi_base_->StructureField()->Discretization()->Name())
+    discretization = ssi_base_->StructureField()->Discretization().get();
   else
     dserror("Invalid discretization name!");
 
@@ -156,20 +179,20 @@ void SSI::SSI_Mono_ResultTest::TestNode(
   }
 
   return;
-} // SSI::SSI_Mono_ResultTest::TestNode
+} // SSI::SSIResultTest::TestNode
 
 
 /*-------------------------------------------------------------------------------------*
  | test special quantity not associated with a particular element or node   fang 11/17 |
  *-------------------------------------------------------------------------------------*/
-void SSI::SSI_Mono_ResultTest::TestSpecial(
+void SSI::SSIResultTest::TestSpecial(
     DRT::INPUT::LineDefinition&   res,         //!< input file line containing result test specification
     int&                          nerr,        //!< number of failed result tests
     int&                          test_count   //!< number of result tests
     )
 {
   // make sure that quantity is tested only by one processor
-  if(ssi_mono_->Comm().MyPID() == 0)
+  if(ssi_base_->Comm().MyPID() == 0)
   {
     // extract name of quantity to be tested
     std::string quantity;
@@ -185,4 +208,4 @@ void SSI::SSI_Mono_ResultTest::TestSpecial(
   }
 
   return;
-} // SSI::SSI_Mono_ResultTest::TestSpecial
+} // SSI::SSIResultTest::TestSpecial

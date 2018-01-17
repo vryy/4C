@@ -66,7 +66,8 @@ Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::
     status_test = this->BuildNormFTest(p,u,true);
   else if (test_type == "NormWRMS")
     status_test = this->BuildNormWRMSTest(p, u);
-  else if (test_type == "NormUpdate")
+  else if (test_type == "NormUpdate" or
+           test_type == "NormUpdateSkipFirstIter")
     status_test = this->BuildNormUpdateTest(p, u);
   else if (test_type == "ActiveSet")
     status_test = this->BuildActiveSetTest(p, u);
@@ -319,18 +320,26 @@ Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::
   } // loop over all quantity types
 
   // build the normUpdate status test
-  Teuchos::RCP<NOX::NLN::StatusTest::NormUpdate> status_test =
-      Teuchos::rcp(new NOX::NLN::StatusTest::NormUpdate(
-          quantitytypes,
-          toltypes,
-          tolerances,
-          normtypes,
-          scaletypes,
-          alpha,
-          beta,
-          &u));
-
-  return status_test;
+  if(Teuchos::get<std::string>(p, "Test Type") == "NormUpdateSkipFirstIter")
+    return Teuchos::rcp(new NOX::NLN::StatusTest::NormUpdateSkipFirstIter(
+               quantitytypes,
+               toltypes,
+               tolerances,
+               normtypes,
+               scaletypes,
+               alpha,
+               beta,
+               &u));
+  else
+    return Teuchos::rcp(new NOX::NLN::StatusTest::NormUpdate(
+               quantitytypes,
+               toltypes,
+               tolerances,
+               normtypes,
+               scaletypes,
+               alpha,
+               beta,
+               &u));
 }
 
 /*----------------------------------------------------------------------------*

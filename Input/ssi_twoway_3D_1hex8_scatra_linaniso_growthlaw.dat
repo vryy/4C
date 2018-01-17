@@ -1,0 +1,113 @@
+//
+// Maintainer: Rui Fang
+// fang@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de/
+// 089 - 289-15251
+//
+==================================================================
+                  General Data File BACI
+==================================================================
+-------------------------------------------------------------TITLE
+simple, academic test case for monolithic scalar-structure interaction:
+- three-dimensional problem involving standard scalar transport
+- cubic domain discretized by 1 hex8 element
+- constant initial value 0.0 of transported scalar
+- scalar is ramped from 0 to 10 via volume dirichlet condition
+- structure and scatra fields are coupled via MAT_GrowthLinAnIso
+- MAT_GrowthLinAnIso: anisotropic strain dependent on scalar concentration according to the following equation
+  (growth-direction is prescribed via vector in Input-File):
+- strain = [1 + GrowthFac * (c - RefConc)]
+------------------------------------------------------PROBLEM SIZE
+//ELEMENTS    1
+//NODES       8
+DIM           3
+-------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Structure_Scalar_Interaction
+----------------------------------------------------------------IO
+STDOUTEVRY                      0
+------------------------------------------------STRUCTURAL DYNAMIC
+DYNAMICTYP                      OneStepTheta
+LINEAR_SOLVER                   1
+INT_STRATEGY                    Standard
+PREDICT                         TangDis
+--------------------------------------------STRUCT NOX/Status Test
+XML File                        = ssi_part_struct_solver.xml
+------------------------------------------SCALAR TRANSPORT DYNAMIC
+LINEAR_SOLVER                   1
+SOLVERTYPE                      nonlinear
+VELOCITYFIELD                   Navier_Stokes
+INITIALFIELD                    field_by_function
+INITFUNCNO                      1
+CONVFORM                        conservative
+-------------------------------------------------------SSI CONTROL
+NUMSTEP                         100
+TIMESTEP                        0.1
+COUPALGO                        ssi_IterStagg
+SCATRATIMINTTYPE                Standard
+----------------------------------------------------------SOLVER 1
+SOLVER                          UMFPACK
+---------------------------------------------------------MATERIALS
+MAT 1 MAT_scatra DIFFUSIVITY 0.1
+MAT 2 MAT_GrowthVolumetric GROWTHLAW 3 IDMATELASTIC 4 STARTTIME -1. ENDTIME -1.
+MAT 3 MAT_GrowthLinAnIso SCALAR1 1 SCALAR1_GrowthFac 0.1 SCALAR1_RefConc 0.0 NUMSPACEDIM 3 GrowthDirection 1.0 1.0 0.0
+MAT 4 MAT_ElastHyper NUMMAT 1 MATIDS 5 DENS 1.0e-3
+MAT 5 ELAST_CoupSVK YOUNG 1.0 NUE 0.3
+----------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 1
+------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION t
+------------------------------------------------RESULT DESCRIPTION
+SCATRA DIS scatra NODE 7 QUANTITY phi VALUE 9.99999999999998046e+00 TOLERANCE 1.e-08
+STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE -4.99403341856858252e-01 TOLERANCE 1.e-10
+STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE -4.99403341856840766e-01 TOLERANCE 1.e-10
+STRUCTURE DIS structure NODE 2 QUANTITY dispz VALUE 0.00000000000000000e+00 TOLERANCE 1.e-20
+STRUCTURE DIS structure NODE 4 QUANTITY dispx VALUE 5.24498278221976984e-05 TOLERANCE 1.e-14
+STRUCTURE DIS structure NODE 4 QUANTITY dispy VALUE -5.24498278023427243e-05 TOLERANCE 1.e-14
+STRUCTURE DIS structure NODE 4 QUANTITY dispz VALUE 0.00000000000000000e+00 TOLERANCE 1.e-20
+STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE -5.24498278108726646e-05 TOLERANCE 1.e-14
+STRUCTURE DIS structure NODE 6 QUANTITY dispy VALUE 5.24498278003617107e-05 TOLERANCE 1.e-14
+STRUCTURE DIS structure NODE 6 QUANTITY dispz VALUE 0.00000000000000000e+00 TOLERANCE 1.e-20
+STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE 4.99403341856871130e-01 TOLERANCE 1.e-10
+STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE 4.99403341856838434e-01 TOLERANCE 1.e-10
+STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE 0.00000000000000000e+00 TOLERANCE 1.e-20
+SSI SPECIAL QUANTITY numiterlastnonlinearsolve VALUE 2.00000000000000000e+00 TOLERANCE 1.e-20
+------------------------------------------------DESIGN DESCRIPTION
+NDVOL   1
+NDSURF  2
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
+DSURF  2
+E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT none none none
+E 2 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT none none none
+----------------------------DESIGN VOL TRANSPORT DIRICH CONDITIONS
+DVOL   1
+E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 1
+-----------------------------------------------DSURF-NODE TOPOLOGY
+NODE 2 DSURFACE 1
+NODE 3 DSURFACE 1
+NODE 6 DSURFACE 1
+NODE 7 DSURFACE 1
+NODE 1 DSURFACE 2
+NODE 4 DSURFACE 2
+NODE 5 DSURFACE 2
+NODE 8 DSURFACE 2
+------------------------------------------------DVOL-NODE TOPOLOGY
+NODE 1 DVOL 1
+NODE 2 DVOL 1
+NODE 3 DVOL 1
+NODE 4 DVOL 1
+NODE 5 DVOL 1
+NODE 6 DVOL 1
+NODE 7 DVOL 1
+NODE 8 DVOL 1
+-------------------------------------------------------NODE COORDS
+NODE 1 COORD -1.0000000000000000e+00 -5.0000000000000000e-01  5.0000000000000000e-01
+NODE 2 COORD -1.0000000000000000e+00 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 3 COORD -1.0000000000000000e+00  5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 4 COORD -1.0000000000000000e+00  5.0000000000000000e-01  5.0000000000000000e-01
+NODE 5 COORD  0.0000000000000000e+00 -5.0000000000000000e-01  5.0000000000000000e-01
+NODE 6 COORD  0.0000000000000000e+00 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 7 COORD  0.0000000000000000e+00  5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 8 COORD  0.0000000000000000e+00  5.0000000000000000e-01  5.0000000000000000e-01
+------------------------------------------------STRUCTURE ELEMENTS
+1 SOLIDH8SCATRA HEX8  1 2 3 4 5 6 7 8 MAT 2 KINEM nonlinear EAS none TYPE Std
+---------------------------------------------------------------END

@@ -10,15 +10,16 @@
              http://www.lnm.mw.tum.de
 
  *------------------------------------------------------------------------------------------------*/
+#include "ssi_partitioned.H"
+
+#include "ssi_str_model_evaluator_partitioned.H"
 
 #include "../linalg/linalg_utils.H"
 
-#include "../drt_adapter/ad_str_wrapper.H"
+#include "../drt_adapter/ad_str_structure_new.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
 #include "../drt_scatra/scatra_timint_implicit.H"
-
-#include "ssi_partitioned.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -55,9 +56,14 @@ int SSI::SSI_Part::Init(const Epetra_Comm& comm,
   returnvar =
       SSI::SSI_Base::Init(comm, globaltimeparams,scatraparams,structparams,struct_disname, scatra_disname,isAle);
 
+  // safety check
+  if(scatra_->ScaTraField()->S2ICoupling() and structparams.get<std::string>("PREDICT") != "TangDis")
+    dserror("Must have TangDis predictor for structural field in partitioned scalar-structure interaction simulations "
+            "involving scatra-scatra interface coupling! Otherwise, Dirichlet boundary conditions on master-side degrees "
+            "of freedom are not transferred to slave-side degrees of freedom!");
+
   return returnvar;
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -69,3 +75,14 @@ void SSI::SSI_Part::Setup()
   return;
 }
 
+/*---------------------------------------------------------------------------------*
+ | set up structural model evaluator for scalar-structure interaction   fang 01/18 |
+ *---------------------------------------------------------------------------------*/
+void SSI::SSI_Part::SetupModelEvaluator() const
+{
+  // build and register ssi model evaluator
+  Teuchos::RCP<STR::MODELEVALUATOR::Generic> ssi_model_ptr = Teuchos::rcp(new STR::MODELEVALUATOR::PartitionedSSI(Teuchos::rcp(this,false)));
+  struct_adapterbase_ptr_->RegisterModelEvaluator("Partitioned Coupling Model",ssi_model_ptr);
+
+  return;
+}

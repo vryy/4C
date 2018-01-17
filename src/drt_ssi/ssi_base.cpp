@@ -15,12 +15,14 @@
 
 #include "ssi_partitioned.H"
 #include "ssi_coupling.H"
+#include "ssi_resulttest.H"
 #include "ssi_utils.H"
 #include "ssi_str_model_evaluator_partitioned.H"
 
 #include "../drt_adapter/ad_str_ssiwrapper.H"
 #include "../drt_adapter/ad_str_structure_new.H"
 #include "../drt_adapter/ad_str_factory.H"
+#include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -28,7 +30,8 @@
 #include "../drt_lib/drt_utils_createdis.H"
 #include "ssi_clonestrategy.H"
 
-#include"../drt_inpar/inpar_volmortar.H"
+#include "../drt_inpar/inpar_s2i.H"
+#include "../drt_inpar/inpar_volmortar.H"
 
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra_ele/scatra_ele.H"
@@ -46,6 +49,10 @@ SSI::SSI_Base::SSI_Base(
     const Teuchos::ParameterList& globaltimeparams
     ) :
     AlgorithmBase(comm, globaltimeparams),
+    icoup_structure_(Teuchos::null),
+    iter_(0),
+    map_structure_condensed_(Teuchos::null),
+    maps_structure_(Teuchos::null),
     struct_adapterbase_ptr_(Teuchos::null),
     structure_(Teuchos::null),
     scatra_(Teuchos::null),
@@ -202,59 +209,133 @@ int SSI::SSI_Base::Init(
  *----------------------------------------------------------------------*/
 void SSI::SSI_Base::Setup()
 {
-  // make sure Init(...) was called first
+  // check initialization
   CheckIsInit();
 
-  if (not use_old_structure_)
-  {
-    // if adapter base has not already been set up outside.
-    if(not struct_adapterbase_ptr_->IsSetup() )
-    {
-      // build and register ssi model evaluator
-      Teuchos::RCP<STR::MODELEVALUATOR::Generic> ssi_model_ptr =
-          Teuchos::rcp(new STR::MODELEVALUATOR::PartitionedSSI());
-
-      struct_adapterbase_ptr_ -> RegisterModelEvaluator("Partitioned Coupling Model",ssi_model_ptr);
-
-      // call Setup() on structure base algorithm (wrapper is created inside)
-      struct_adapterbase_ptr_->Setup();
-
-      // get wrapper and cast it to specific type
-      // do not do so, in case the wrapper has already been set from outside
-      if(structure_ == Teuchos::null)
-        structure_ =
-            Teuchos::rcp_dynamic_cast< ::ADAPTER::SSIStructureWrapper>(
-                struct_adapterbase_ptr_->StructureField());
-
-      if(structure_ == Teuchos::null)
-        dserror("No valid pointer to ADAPTER::SSIStructureWrapper !\n"
-            "Either cast failed, or no valid wrapper was set using SetStructureWrapper(...) !");
-
-      // set pointer to model evaluator in SSIStructureWrapper
-      structure_ ->
-          SetModelEvaluatorPtr(Teuchos::rcp_dynamic_cast<STR::MODELEVALUATOR::PartitionedSSI>(ssi_model_ptr));
-    }
-  }
-  else
-    structure_->Setup();
-
-  // call Setup() on scatra field
+  // set up scalar transport field
   scatra_->ScaTraField()->Setup();
 
-  // setup coupling objects including dof sets
+  // pass initial scalar field to structural discretization to correctly compute initial accelerations
+  DRT::Problem::Instance()->GetDis("structure")->SetState(1,"scalarfield",scatra_->ScaTraField()->Phinp());
+
+  // only relevant for new structural time integration
+  // only if adapter base has not already been set up outside
+  if(not use_old_structure_ and not struct_adapterbase_ptr_->IsSetup())
+  {
+    // set up structural model evaluator
+    SetupModelEvaluator();
+
+    // set up structural base algorithm
+    struct_adapterbase_ptr_->Setup();
+
+    // get wrapper and cast it to specific type
+    // do not do so, in case the wrapper has already been set from outside
+    if(structure_ == Teuchos::null)
+      structure_ = Teuchos::rcp_dynamic_cast<::ADAPTER::SSIStructureWrapper>(struct_adapterbase_ptr_->StructureField());
+
+    if(structure_ == Teuchos::null)
+      dserror("No valid pointer to ADAPTER::SSIStructureWrapper !\n"
+              "Either cast failed, or no valid wrapper was set using SetStructureWrapper(...) !");
+  }
+
+  // for old structural time integration
+  else if(use_old_structure_)
+    structure_->Setup();
+
+  // check maps from scalar transport and structure discretizations
+  if(scatra_->ScaTraField()->DofRowMap()->NumGlobalElements() == 0)
+    dserror("Scalar transport discretization does not have any degrees of freedom!");
+  if(structure_->DofRowMap()->NumGlobalElements() == 0)
+    dserror("Structure discretization does not have any degrees of freedom!");
+
+  // set up helper class for field coupling
   ssicoupling_->Setup();
 
-  // construct zeros_ vector
-  zeros_ = LINALG::CreateVector(*structure_->DofRowMap(), true);
+  // construct vector of zeroes
+  zeros_ = LINALG::CreateVector(*structure_->DofRowMap());
 
-  // re-connect the material pointers.
-  // At this point all the ghosting should have been done
-  ssicoupling_->AssignMaterialPointers(
-      structure_->Discretization(),
-      scatra_->ScaTraField()->Discretization() );
+  // set up materials
+  ssicoupling_->AssignMaterialPointers(structure_->Discretization(),scatra_->ScaTraField()->Discretization());
 
-  // set flag issetup true
+  // set up scatra-scatra interface coupling
+  if(scatra_->ScaTraField()->S2ICoupling())
+  {
+    // set up scatra-scatra interface coupling adapter for structure field
+    SetupCouplingAdapterStructure();
+
+    // set up map for interior and master-side structural degrees of freedom
+    map_structure_condensed_ = LINALG::SplitMap(*structure_->Discretization()->DofRowMap(),*icoup_structure_->SlaveDofMap());
+
+    // set up structural map extractor holding interior and interface maps of degrees of freedom
+    std::vector<Teuchos::RCP<const Epetra_Map> > maps(0,Teuchos::null);
+    maps.push_back(LINALG::SplitMap(*map_structure_condensed_,*icoup_structure_->MasterDofMap()));
+    maps.push_back(icoup_structure_->SlaveDofMap());
+    maps.push_back(icoup_structure_->MasterDofMap());
+    maps_structure_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*structure_->Discretization()->DofRowMap(),maps));
+    maps_structure_->CheckForValidMapExtractor();
+  }
+
+  // set flag
   SetIsSetup(true);
+
+  return;
+}
+
+/*----------------------------------------------------------------------------------*
+ | set up scatra-scatra interface coupling adapter for structure field   fang 08/17 |
+ *----------------------------------------------------------------------------------*/
+void SSI::SSI_Base::SetupCouplingAdapterStructure()
+{
+  // initialize integer vectors for global IDs of master-side and slave-side interface nodes on structure discretization
+  std::vector<int> inodegidvec_master;
+  std::vector<int> inodegidvec_slave;
+
+  // extract scatra-scatra interface coupling conditions from structure discretization
+  std::vector<DRT::Condition*> conditions(0,NULL);
+  structure_->Discretization()->GetCondition("S2ICoupling",conditions);
+
+  // loop over all conditions
+  for(unsigned icondition=0; icondition<conditions.size(); ++icondition)
+  {
+    // extract current condition
+    DRT::Condition* const condition = conditions[icondition];
+
+    // extract interface side associated with current condition
+    const int side = condition->GetInt("interface side");
+
+    // extract nodes associated with current condition
+    const std::vector<int>* const inodegids = condition->Nodes();
+
+    // loop over all nodes
+    for(unsigned inode=0; inode<inodegids->size(); ++inode)
+    {
+      // extract ID of current node
+      const int inodegid = (*inodegids)[inode];
+
+      // insert global ID of current node into associated vector only if node is owned by current processor
+      // need to make sure that node is stored on current processor, otherwise cannot resolve "->Owner()"
+      if(structure_->Discretization()->HaveGlobalNode(inodegid) and structure_->Discretization()->gNode(inodegid)->Owner() == structure_->Discretization()->Comm().MyPID())
+        side == INPAR::S2I::side_master ? inodegidvec_master.push_back(inodegid) : inodegidvec_slave.push_back(inodegid);
+    }
+  }
+
+  // remove potential duplicates from vectors
+  std::sort(inodegidvec_master.begin(),inodegidvec_master.end());
+  inodegidvec_master.erase(unique(inodegidvec_master.begin(),inodegidvec_master.end()),inodegidvec_master.end());
+  std::sort(inodegidvec_slave.begin(),inodegidvec_slave.end());
+  inodegidvec_slave.erase(unique(inodegidvec_slave.begin(),inodegidvec_slave.end()),inodegidvec_slave.end());
+
+  // setup scatra-scatra interface coupling adapter for structure field
+  icoup_structure_ = Teuchos::rcp(new ADAPTER::Coupling());
+  icoup_structure_->SetupCoupling(
+      *structure_->Discretization(),
+      *structure_->Discretization(),
+      inodegidvec_master,
+      inodegidvec_slave,
+      DRT::Problem::Instance()->NDim(),
+      true,
+      1.e-8
+      );
 
   return;
 }
@@ -460,6 +541,7 @@ void SSI::SSI_Base::TestResults(const Epetra_Comm& comm) const
 
   problem->AddFieldTest(structure_->CreateFieldTest());
   problem->AddFieldTest(scatra_->CreateScaTraFieldTest());
+  problem->AddFieldTest(Teuchos::rcp(new SSI::SSIResultTest(Teuchos::rcp(this,false))));
   problem->TestAll(comm);
 }
 

@@ -35,6 +35,16 @@ namespace IMPLICIT {
     //! Set state variables (derived)
     virtual void SetState(const Epetra_Vector& x);
 
+    /*! \brief Add the viscous and mass contributions to the right hand side (TR-rule)
+     *
+     * \remark Not implemented for the Generalized Energy Momentum time integrator. */
+    virtual void AddViscoMassContributions(Epetra_Vector& f) const;
+
+    /*! \brief Add the viscous and mass contributions to the jacobian (TR-rule)
+     *
+     * \remark Not implemented for the Generalized Energy Momentum time integrator. */
+    virtual void AddViscoMassContributions(LINALG::SparseOperator& jac) const;
+
     //! Apply the rhs only (derived)
     virtual bool ApplyForce(const Epetra_Vector& x,
         Epetra_Vector& f);

@@ -43,6 +43,23 @@ namespace IMPLICIT {
     //! Set state variables (derived)
     virtual void SetState(const Epetra_Vector& x) = 0;
 
+    /*! \brief Add the viscous and mass contributions to the right hand side (TR-rule)
+     *
+     * \remark The remaining contributions have been considered in the corresponding model
+     *         evaluators. This is due to the fact, that some models use a different
+     *         time integration scheme for their terms (e.g. GenAlpha for the structure
+     *         and OST for the remaining things). */
+    virtual void AddViscoMassContributions(Epetra_Vector& f) const = 0;
+
+    /*! \brief Add the viscous and mass contributions to the jacobian (TR-rule)
+     *
+     * \remark The remaining blocks have been considered in the corresponding model
+     *         evaluators. This is due to the fact, that some models use a different
+     *         time integration scheme for their terms (e.g. GenAlpha for the structure
+     *         and OST for the remaining things). Furthermore, constraint/Lagrange
+     *         multiplier blocks need no scaling anyway. */
+    virtual void AddViscoMassContributions(LINALG::SparseOperator& jac) const = 0;
+
     //! derived
     virtual bool ApplyForce(const Epetra_Vector& x,
         Epetra_Vector& f) = 0;

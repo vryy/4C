@@ -31,7 +31,7 @@ namespace Abstract {
 } // namespace Abstract
 namespace NLN {
 namespace StatusTest {
-  //! Absolute and relative convergence tests based on the norm of the increment.
+  //! \brief Absolute and relative convergence tests based on the norm of the increment.
   /*!
    I recommend to use the weighted root mean square test (normwrms), instead or additionally
    (AND combination)!
@@ -108,6 +108,9 @@ namespace StatusTest {
         const NOX::Solver::Generic& problem);
 
   private:
+    //! check status in first nonlinear iteration step
+    virtual NOX::StatusTest::StatusType checkStatusFirstIter();
+
     //! throws an NOX error
     void throwError(
         const std::string& functionName,
@@ -167,9 +170,54 @@ namespace StatusTest {
 
     //! Flag that tells the print method whether to print the criteria 3 information.
     bool printCriteria3Info_;
-
-
   }; // class NormUpdate
+
+
+  //! \brief Absolute and relative convergence tests based on the norm of the increment, skipping the
+  //! first nonlinear iteration.
+  /*!
+   * This derived class mostly does exactly the same as the parent class, with only one exception:
+   * In the very first nonlinear iteration, the status check is skipped, i.e., the return value always
+   * indicates convergence. Only the second and subsequent nonlinear iterations are actually checked.
+   *
+   * Exemplary application:
+   * ----------------------
+   * During outer iterations in partitioned multi-field simulations, the structural field might no longer
+   * change when outer convergence is almost achieved, and thus skipping the status test in the first
+   * nonlinear iteration might save unnecessary calls of the linear solver. This requires, however,
+   * that the structural residual is checked instead of the structural increment, and that outer
+   * non-convergence is reliably indicated thereby. Experience has shown that this is usually the
+   * case when standard nonlinear solution techniques, such as the plain Newton-Raphson method, are
+   * employed, but one should still be aware thereof.
+   *
+   * \date 01/2018
+   * \author fang (fang@lnm.mw.tum.de)
+   */
+  class NormUpdateSkipFirstIter : public NormUpdate
+  {
+    public:
+      //! Constructor.
+      NormUpdateSkipFirstIter(
+          const std::vector<NOX::NLN::StatusTest::QuantityType>& checkList,
+          const std::vector<NormUpdate::ToleranceType>& toltype,
+          const std::vector<double>& tolerance,
+          const std::vector<NOX::Abstract::Vector::NormType>& ntype,
+          const std::vector<NormUpdate::ScaleType>& stype,
+          const double& alpha,
+          const double& beta,
+          const NOX::Utils* u = NULL
+          ) :
+          // call base class constructor
+          NormUpdate(checkList,toltype,tolerance,ntype,stype,alpha,beta,u)
+      {return;};
+
+      //! Destructor.
+      virtual ~NormUpdateSkipFirstIter(){return;};
+
+    private:
+      //! check status in first nonlinear iteration step
+      virtual NOX::StatusTest::StatusType checkStatusFirstIter();
+  }; // class NormUpdateSkipFirstIter
 } // namespace StatusTest
 } // namespace NLN
 } // namespace NOX

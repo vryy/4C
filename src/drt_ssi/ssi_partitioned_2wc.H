@@ -102,9 +102,6 @@ namespace SSI
     //! prepare time step for single fields
     virtual void PrepareTimeStep(bool printheader = true);
 
-    // return current iteration step
-    int Itnum(){return itnum_;};
-
     //! update time step and print to screen
     virtual void UpdateAndOutput();
 
@@ -153,12 +150,6 @@ namespace SSI
     double ittol_;
     //! maximum iteration steps
     int itmax_;
-
-  private:
-
-    //! current iteration step
-    int itnum_;
-
   };
 
   //! class to deal with displacement relaxated partioned 2WC SSI. Relaxation parameter is constant
@@ -219,26 +210,26 @@ namespace SSI
     virtual ~SSI_Part2WC_SolidToScatra_Relax_Aitken(){};
 
     /*!
-    \brief Setup this object
+    \brief Setup all class internal objects and members
 
-     Initializes members and performs problem specific setup.
+    Setup() is not supposed to have any input arguments !
+
+    Must only be called after Init().
+
+    Construct all objects depending on the parallel distribution and
+    relying on valid maps like, e.g. the state vectors, system matrices, etc.
+
+    Call all Setup() routines on previously initialized internal objects and members.
 
     \note Must only be called after parallel (re-)distribution of discretizations is finished !
-          Otherwise, vectors may have wrong maps.
+          Otherwise, e.g. vectors may have wrong maps.
 
     \warning none
     \return void
-    \date 08/16
-    \author rauch
+    \date 01/18
+    \author fang
     */
-    virtual int Init(
-        const Epetra_Comm& comm,
-        const Teuchos::ParameterList& globaltimeparams,
-        const Teuchos::ParameterList& scatraparams,
-        const Teuchos::ParameterList& structparams,
-        const std::string struct_disname,
-        const std::string scatra_disname,
-        bool isAle);
+    void Setup();
 
   protected:
 
@@ -308,26 +299,26 @@ namespace SSI
     virtual ~SSI_Part2WC_ScatraToSolid_Relax_Aitken(){};
 
     /*!
-    \brief Setup this object
+    \brief Setup all class internal objects and members
 
-     Initializes members and performs problem specific setup.
+    Setup() is not supposed to have any input arguments !
+
+    Must only be called after Init().
+
+    Construct all objects depending on the parallel distribution and
+    relying on valid maps like, e.g. the state vectors, system matrices, etc.
+
+    Call all Setup() routines on previously initialized internal objects and members.
 
     \note Must only be called after parallel (re-)distribution of discretizations is finished !
-          Otherwise, vectors may have wrong maps.
+          Otherwise, e.g. vectors may have wrong maps.
 
     \warning none
     \return void
-    \date 08/16
-    \author rauch
+    \date 01/18
+    \author fang
     */
-    virtual int Init(
-        const Epetra_Comm& comm,
-        const Teuchos::ParameterList& globaltimeparams,
-        const Teuchos::ParameterList& scatraparams,
-        const Teuchos::ParameterList& structparams,
-        const std::string struct_disname,
-        const std::string scatra_disname,
-        bool isAle);
+    void Setup();
 
   protected:
 

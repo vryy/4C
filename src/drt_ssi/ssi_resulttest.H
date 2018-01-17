@@ -1,8 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ssi_monolithic_resulttest.H
+\file ssi_resulttest.H
 
-\brief result testing functionality for monolithic scalar-structure interaction problems
+\brief result testing functionality for scalar-structure interaction problems
 
 \level 2
 
@@ -27,28 +27,29 @@ namespace DRT
 
 namespace SSI
 {
-  // forward declaration
+  // forward declarations
+  class SSI_Base;
   class SSI_Mono;
 
   /*!
-    \brief result testing functionality for monolithic scalar-structure interaction problems
+    \brief result testing functionality for scalar-structure interaction problems
 
-    This class provides result testing functionality for quantities associated with monolithic
-    scalar-structure interaction as an overall problem type. Quantities associated with either
-    the scalar or the structural field are not tested by this class, but by field-specific result
-    testing classes. Feel free to extend this class if necessary.
+    This class provides result testing functionality for quantities associated with
+    scalar-structure interaction as an overall problem type. Quantities associated
+    with either the scalar or the structural field are not tested by this class, but
+    by field-specific result testing classes. Feel free to extend this class if necessary.
 
     \sa ResultTest
     \author fang
     \date 11/2017
   */
-  class SSI_Mono_ResultTest : public DRT::ResultTest
+  class SSIResultTest : public DRT::ResultTest
   {
     public:
 
       //! constructor
-      SSI_Mono_ResultTest(
-          const Teuchos::RCP<const SSI::SSI_Mono>   ssi_mono   //!< time integrator for monolithic scalar-structure interaction
+      SSIResultTest(
+          const Teuchos::RCP<const SSI::SSI_Base>   ssi_base   //!< time integrator for scalar-structure interaction
           );
 
       //! test quantity associated with a particular node
@@ -78,8 +79,11 @@ namespace SSI
           const std::string&   quantity   //!< name of quantity to be tested
           ) const;
 
-      //! time integrator for monolithic scalar-structure interaction
-      const Teuchos::RCP<const SSI::SSI_Mono> ssi_mono_;
+      //! return time integrator for monolithic scalar-structure interaction
+      const SSI::SSI_Mono& SSI_Mono() const;
+
+      //! time integrator for scalar-structure interaction
+      const Teuchos::RCP<const SSI::SSI_Base> ssi_base_;
   };
 }
 #endif

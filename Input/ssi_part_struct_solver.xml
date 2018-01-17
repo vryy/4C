@@ -24,7 +24,7 @@
       <!-- END: Combo AND - Test 0: "NormF" -->
       <!-- BEGIN: Combo AND - Test 1: "NormWRMS" -->
       <ParameterList name="Test 1">
-        <Parameter name="Test Type"          type="string" value="NormUpdate" />
+        <Parameter name="Test Type"          type="string" value="NormUpdateSkipFirstIter" />
         <Parameter name="Alpha"              type="double" value="1.0" />
         <Parameter name="Beta"               type="double" value="0.5" />
         <!-- NormWRMS - Quantity 0: Check the increment of the structural displacements -->

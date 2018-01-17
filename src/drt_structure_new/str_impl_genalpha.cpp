@@ -252,17 +252,7 @@ bool STR::IMPLICIT::GenAlpha::ApplyForce(const Epetra_Vector& x,
   // ---------------------------------------------------------------------------
   // set the time step dependent parameters for the element evaluation
   ResetEvalParams();
-  const bool ok = ModelEval().ApplyForce(x,f,1.0-GetIntParam());
-
-  if (not ok)
-    return ok;
-
-  // ---------------------------------------------------------------------------
-  // add the visco and mass contributions
-  // ---------------------------------------------------------------------------
-  AddViscoMassContributions(f);
-
-  return ok;
+  return ModelEval().ApplyForce(x,f,1.0-GetIntParam());
 }
 
 /*----------------------------------------------------------------------------*
@@ -282,11 +272,6 @@ bool STR::IMPLICIT::GenAlpha::ApplyStiff(
 
   if (not ok)
     return ok;
-
-  // ---------------------------------------------------------------------------
-  // add the visco and mass contributions
-  // ---------------------------------------------------------------------------
-  AddViscoMassContributions(jac);
 
   jac.Complete();
 
@@ -311,12 +296,6 @@ bool STR::IMPLICIT::GenAlpha::ApplyForceStiff(
   if (not ok)
     return ok;
 
-  // ---------------------------------------------------------------------------
-  // add the visco and mass contributions
-  // ---------------------------------------------------------------------------
-  AddViscoMassContributions(f);
-  AddViscoMassContributions(jac);
-
   jac.Complete();
 
   return ok;
@@ -330,18 +309,8 @@ bool STR::IMPLICIT::GenAlpha::AssembleForce( Epetra_Vector& f,
   CheckInitSetup();
 
   // set the time step dependent parameters for the assembly
-  const bool ok = ModelEval().AssembleForce( 1.0-GetIntParam(), f,
+  return ModelEval().AssembleForce( 1.0-GetIntParam(), f,
       without_these_models );
-
-  if (not ok)
-    return ok;
-
-  // ---------------------------------------------------------------------------
-  // add the visco and mass contributions
-  // ---------------------------------------------------------------------------
-  AddViscoMassContributions(f);
-
-  return ok;
 }
 
 /*----------------------------------------------------------------------------*
@@ -352,18 +321,8 @@ bool STR::IMPLICIT::GenAlpha::AssembleJac( LINALG::SparseOperator& jac,
   CheckInitSetup();
 
   // set the time step dependent parameters for the assembly
-  const bool ok = ModelEval().AssembleJacobian( 1.0-GetIntParam(), jac,
+  return ModelEval().AssembleJacobian( 1.0-GetIntParam(), jac,
       without_these_models );
-
-  if (not ok)
-    return ok;
-
-  // ---------------------------------------------------------------------------
-  // add the visco and mass contributions
-  // ---------------------------------------------------------------------------
-  AddViscoMassContributions(jac);
-
-  return ok;
 }
 
 

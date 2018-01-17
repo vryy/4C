@@ -83,6 +83,10 @@ protected:
   ///do one time step (one way coupled) or one inner iteration loop step (two way coupled), depending on coupling algorithm
   virtual void DoScatraStep() = 0 ;
 
+private:
+
+  //! set up structural model evaluator for scalar-structure interaction
+  void SetupModelEvaluator() const;
 };
 
 }

@@ -196,8 +196,7 @@ void SSI::SSI_Part2WC_ADHESIONDYNAMICS::UpdateAndOutput()
  *------------------------------------------------------------------------*/
 void SSI::SSI_Part2WC_ADHESIONDYNAMICS::PreOperator2()
 {
-
-  if(Itnum()!=1 and use_old_structure_)
+  if(iter_ != 1 and use_old_structure_)
   {
     // NOTE: the predictor is NOT called in here. Just the screen output is not correct.
     // we only get norm of the evaluation of the structure problem

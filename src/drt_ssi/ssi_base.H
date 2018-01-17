@@ -25,11 +25,17 @@
 
 namespace ADAPTER
 {
+  class Coupling;
   class Structure;
   class ScaTraTimIntImpl;
-  class SSIStructureWrapper;
   class ScaTraBaseAlgorithm;
+  class SSIStructureWrapper;
   class StructureBaseAlgorithmNew;
+}
+
+namespace LINALG
+{
+  class MultiMapExtractor;
 }
 
 namespace SSI
@@ -55,6 +61,12 @@ namespace SSI
 
     /// virtual destructor
     virtual ~SSI_Base(){};
+
+    //! return scatra-scatra interface coupling adapter for structure field
+    const Teuchos::RCP<ADAPTER::Coupling>& CouplingAdapterStructure() const {return icoup_structure_;};
+
+    //! return counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling iterations (partitioned algorithm)
+    const unsigned& Iter() const {return iter_;};
 
     /*! \brief Allows to set structure adapter base from outside (multiphysics).
      *
@@ -125,6 +137,10 @@ namespace SSI
     \author rauch  */
     virtual void Setup();
 
+    //! returns true if Setup() was called and is still valid
+    bool IsSetup() const
+    {return issetup_;};
+
     /*! \brief Setup discretizations and dofsets
 
      Init coupling object \ref ssicoupling_ and
@@ -147,6 +163,12 @@ namespace SSI
         const Epetra_Comm& comm,
         const std::string& struct_disname,
         const std::string& scatra_disname);
+
+    //! return structural map extractor (0: other degrees of freedom, 1: slave-side degrees of freedom, 2: master-side degrees of freedom)
+    const Teuchos::RCP<const LINALG::MultiMapExtractor>& MapsStructure() const {return maps_structure_;};
+
+    //! return map for interior and master-side structural degrees of freedom
+    const Teuchos::RCP<const Epetra_Map>& MapStructureCondensed() const {return map_structure_condensed_;};
 
     /// setup
     virtual void SetupSystem() = 0;
@@ -192,11 +214,29 @@ namespace SSI
     //! set flag true after init or false if init became invalid
     void SetIsInit(bool trueorfalse){isinit_ = trueorfalse;};
 
+    //! set up scatra-scatra interface coupling adapter for structure field
+    void SetupCouplingAdapterStructure();
+
+    //! set up structural model evaluator for scalar-structure interaction
+    virtual void SetupModelEvaluator() const = 0;
+
     /// interpolate structure quantity to a scatra one (e.g. via volmortar or meshtying)
     const Teuchos::RCP<const Epetra_Vector> StructureToScatra(const Teuchos::RCP<const Epetra_Vector> structurevector) const;
 
     /// interpolate scatra quantity to a structure one (e.g. via volmortar or meshtying)
     const Teuchos::RCP<const Epetra_Vector> ScatraToStructure(const Teuchos::RCP<const Epetra_Vector> scatravector) const;
+
+    //! scatra-scatra interface coupling adapter for structure field
+    Teuchos::RCP<ADAPTER::Coupling> icoup_structure_;
+
+    //! counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling iterations (partitioned algorithm)
+    unsigned int iter_;
+
+    //! map for interior and master-side structural degrees of freedom
+    Teuchos::RCP<const Epetra_Map> map_structure_condensed_;
+
+    //! structural map extractor (0: other degrees of freedom, 1: slave-side degrees of freedom, 2: master-side degrees of freedom)
+    Teuchos::RCP<const LINALG::MultiMapExtractor> maps_structure_;
 
     /// ptr to the underlying structure problem base algorithm
     Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> struct_adapterbase_ptr_;
@@ -230,10 +270,6 @@ namespace SSI
 
     /// set structure velocity field on scatra field
     void SetVelocityFields( Teuchos::RCP<const Epetra_Vector> vel ) ;
-
-    //! returns true if Setup() was called and is still valid
-    bool IsSetup()
-    {return issetup_;};
 
     //! returns true if Init(..) was called and is still valid
     bool IsInit()

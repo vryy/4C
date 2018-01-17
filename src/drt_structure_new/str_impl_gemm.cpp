@@ -48,6 +48,22 @@ void STR::IMPLICIT::Gemm::SetState(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::IMPLICIT::Gemm::AddViscoMassContributions(Epetra_Vector& f) const
+{
+  dserror("Not implemented!");
+  return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::IMPLICIT::Gemm::AddViscoMassContributions(LINALG::SparseOperator& jac) const
+{
+  dserror("Not implemented!");
+  return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool STR::IMPLICIT::Gemm::ApplyForce(const Epetra_Vector& x,
         Epetra_Vector& f)
 {

@@ -103,6 +103,16 @@ namespace IMPLICIT {
     //! @}
 
   protected:
+    /*! \brief Add the viscous and mass contributions to the right hand side (TR-rule)
+     *
+     * \remark Nothing needs to be done in the static case. */
+    virtual void AddViscoMassContributions(Epetra_Vector& f) const {return;};
+
+    /*! \brief Add the viscous and mass contributions to the jacobian (TR-rule)
+     *
+     * \remark Nothing needs to be done in the static case. */
+    virtual void AddViscoMassContributions(LINALG::SparseOperator& jac) const {return;};
+
     //! reset the time step dependent parameters for the element evaluation [derived]
     virtual void ResetEvalParams();
   };

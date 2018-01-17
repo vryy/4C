@@ -181,11 +181,10 @@ void STR::Integrator::EquilibrateInitialState()
    * rows) on the Dirichlet DoFs in order to calculate correct reaction
    * forces.*/
   stiff_ptr->Add(*GlobalState().GetMassMatrix(),false,1.0,0.0);
+  stiff_ptr->Complete();
 
   // treatment of elements with special element technology (e.g. pressure DOFs)
   GlobalState().ApplyElementTechnologyToAccelerationSystem( *stiff_ptr, *rhs_ptr );
-
-  stiff_ptr->Complete();
 
   // ---------------------------------------------------------------------------
   // build a NOX::NLN::STR::LinearSystem

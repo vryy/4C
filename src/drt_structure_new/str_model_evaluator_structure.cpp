@@ -226,6 +226,9 @@ bool STR::MODELEVALUATOR::Structure::AssembleForce(Epetra_Vector& f,
       GState().GetFstructureOld();
   LINALG::AssembleMyVector(1.0,f,1.0,*fstructold_ptr);
 
+  // add the visco and mass contributions
+  Int().AddViscoMassContributions(f);
+
   return true;
 }
 
@@ -237,6 +240,10 @@ bool STR::MODELEVALUATOR::Structure::AssembleJacobian(
 {
   int err = Stiff().Scale(timefac_np);
   GState().AssignModelBlock(jac,Stiff(),Type(),DRT::UTILS::block_displ_displ);
+
+  // add the visco and mass contributions
+  Int().AddViscoMassContributions(jac);
+
   return (err==0);
 }
 

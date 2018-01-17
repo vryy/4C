@@ -15,7 +15,6 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_utils.H"
 
-#include "../drt_adapter/ad_str_wrapper.H"
 #include "../drt_adapter/ad_str_ssiwrapper.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
@@ -31,8 +30,7 @@ SSI::SSI_Part2WC::SSI_Part2WC(const Epetra_Comm& comm,
     scaincnp_(Teuchos::null),
     dispincnp_(Teuchos::null),
     ittol_(-1.0),
-    itmax_(-1),
-    itnum_(0)
+    itmax_(-1)
 {
   // Keep this constructor empty!
   // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
@@ -190,7 +188,7 @@ void SSI::SSI_Part2WC::DoScatraStep()
  *----------------------------------------------------------------------*/
 void SSI::SSI_Part2WC::PreOperator1()
 {
-  if(Itnum()!=1 and use_old_structure_)
+  if(iter_ != 1 and use_old_structure_)
   {
     // NOTE: the predictor is NOT called in here. Just the screen output is not correct.
     // we only get norm of the evaluation of the structure problem
@@ -220,12 +218,12 @@ void SSI::SSI_Part2WC::PrepareTimeStep(bool printheader)
   if(printheader)
     PrintHeader();
 
+  SetStructSolution(structure_->Dispnp(),structure_->Velnp());
+  scatra_->ScaTraField()->PrepareTimeStep();
+
   SetScatraSolution(scatra_->ScaTraField()->Phinp());
   //NOTE: the predictor of the structure is called in here
   structure_-> PrepareTimeStep();
-
-  SetStructSolution(structure_->Dispnp(),structure_->Velnp());
-  scatra_->ScaTraField()->PrepareTimeStep();
 }
 
 /*----------------------------------------------------------------------*/
@@ -265,7 +263,7 @@ void SSI::SSI_Part2WC::IterUpdateStates()
 void SSI::SSI_Part2WC::OuterLoop()
 {
   // reset iteration number
-  itnum_ = 0;
+  iter_ = 0;
   bool stopnonliniter = false;
 
   if (Comm().MyPID()==0)
@@ -276,7 +274,7 @@ void SSI::SSI_Part2WC::OuterLoop()
   while (stopnonliniter==false)
   {
     // increment iteration number
-    itnum_++;
+    iter_++;
 
     // update the states to the last solutions obtained
     IterUpdateStates();
@@ -297,7 +295,7 @@ void SSI::SSI_Part2WC::OuterLoop()
 
     // check convergence for all fields
     // stop iteration loop if converged
-    stopnonliniter = ConvergenceCheck(Itnum());
+    stopnonliniter = ConvergenceCheck(iter_);
   }
 
   return;
@@ -453,7 +451,7 @@ int SSI::SSI_Part2WC_SolidToScatra_Relax::Init(
  *----------------------------------------------------------------------*/
 void SSI::SSI_Part2WC_SolidToScatra_Relax::OuterLoop()
 {
-  int  itnum = 0;
+  iter_ = 0;
   bool stopnonliniter = false;
 
   if (Comm().MyPID()==0)
@@ -469,9 +467,9 @@ void SSI::SSI_Part2WC_SolidToScatra_Relax::OuterLoop()
 
   while (stopnonliniter==false)
   {
-    itnum++;
+    ++iter_;
 
-    if (itnum == 1)
+    if (iter_ == 1)
     {
       dispnp->Update(1.0,*(structure_->Dispnp()),0.0); //TSI does Dispn()
       velnp->Update(1.0,*(structure_->Velnp()),0.0);
@@ -489,11 +487,8 @@ void SSI::SSI_Part2WC_SolidToScatra_Relax::OuterLoop()
     // solve scalar transport equation
     DoScatraStep();
 
-    // set scalar fields
-    SetScatraSolution(scatra_->ScaTraField()->Phinp());
-
     //prepare a partitioned structure step
-    if(itnum!=1)
+    if(iter_ != 1 and use_old_structure_)
       structure_->PreparePartitionStep();
 
     // solve structural system
@@ -503,10 +498,10 @@ void SSI::SSI_Part2WC_SolidToScatra_Relax::OuterLoop()
 
     // check convergence for all fields and stop iteration loop if
     // convergence is achieved overall
-    stopnonliniter = ConvergenceCheck(itnum);
+    stopnonliniter = ConvergenceCheck(iter_);
 
     // get relaxation parameter
-    CalcOmega(omega_,itnum);
+    CalcOmega(omega_,iter_);
 
     // do the relaxation
     // d^{i+1} = omega^{i+1} . d^{i+1} + (1- omega^{i+1}) d^i
@@ -514,10 +509,19 @@ void SSI::SSI_Part2WC_SolidToScatra_Relax::OuterLoop()
     dispnp->Update(omega_,*dispincnp_,1.0);
 
     // since the velocity field has to fit to the relaxated displacements we also have to relaxate them.
-    // since the velocity depends nonlinear on the displacements we can just approximate them via finite differences here.
-    velnp = CalcVelocity(dispnp);
+    if(use_old_structure_)
+      // since the velocity depends nonlinear on the displacements we can just approximate them via finite differences here.
+      velnp = CalcVelocity(dispnp);
+    else
+    {
+      // consistent derivation of velocity field from displacement field
+      // SetState(dispnp) will automatically be undone during the next evaluation of the structural field
+      structure_->SetState(dispnp);
+      velnp->Update(1.,*structure_->Velnp(),0.);
+    }
   }
 
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -545,26 +549,17 @@ SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken::SSI_Part2WC_SolidToScatra_Relax_Ait
 }
 
 /*----------------------------------------------------------------------*
- | Setup this class                                         rauch 08/16 |
+ | Setup this class                                          fang 01/18 |
  *----------------------------------------------------------------------*/
-int SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken::Init(
-    const Epetra_Comm& comm,
-    const Teuchos::ParameterList& globaltimeparams,
-    const Teuchos::ParameterList& scatraparams,
-    const Teuchos::ParameterList& structparams,
-    const std::string struct_disname,
-    const std::string scatra_disname,
-    bool isAle)
+void SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken::Setup()
 {
-  int returnvar=0;
+  // call setup of base class
+  SSI::SSI_Part2WC::Setup();
 
-  // call init of base class
-  returnvar=
-  SSI::SSI_Part2WC::Init(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname,isAle);
-
+  // setup old scatra increment vector
   dispincnpold_ = LINALG::CreateVector(*structure_->DofRowMap(0),true);
 
-  return returnvar;
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -673,7 +668,7 @@ int SSI::SSI_Part2WC_ScatraToSolid_Relax::Init(
  *----------------------------------------------------------------------*/
 void SSI::SSI_Part2WC_ScatraToSolid_Relax::OuterLoop()
 {
-  int  itnum = 0;
+  iter_ = 0;
   bool stopnonliniter = false;
 
   if (Comm().MyPID()==0)
@@ -687,9 +682,9 @@ void SSI::SSI_Part2WC_ScatraToSolid_Relax::OuterLoop()
 
   while (stopnonliniter==false)
   {
-    itnum++;
+    ++iter_;
 
-    if (itnum == 1)
+    if (iter_ == 1)
     {
       phinp->Update(1.0,*(scatra_->ScaTraField()->Phinp()),0.0); //TSI does Dispn()
     }
@@ -704,25 +699,22 @@ void SSI::SSI_Part2WC_ScatraToSolid_Relax::OuterLoop()
     // set relaxed scalars
     SetScatraSolution(phinp);
 
-    //prepare partioned tructure step
-    if(itnum!=1)
+    // prepare partitioned structure step
+    if(iter_ != 1 and use_old_structure_)
       structure_->PreparePartitionStep();
 
     // solve structural system
     DoStructStep();
-
-    // set mesh displacement and velocity fields
-    SetStructSolution( structure_->Dispnp() , structure_->Velnp() );
 
     // solve scalar transport equation
     DoScatraStep();
 
     // check convergence for all fields and stop iteration loop if
     // convergence is achieved overall
-    stopnonliniter = ConvergenceCheck(itnum);
+    stopnonliniter = ConvergenceCheck(iter_);
 
     // get relaxation parameter
-    CalcOmega(omega_,itnum);
+    CalcOmega(omega_,iter_);
 
     // do the relaxation
     // d^{i+1} = omega^{i+1} . d^{i+1} + (1- omega^{i+1}) d^i
@@ -756,26 +748,17 @@ SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken::SSI_Part2WC_ScatraToSolid_Relax_Ait
 }
 
 /*----------------------------------------------------------------------*
- | Setup this class                                         rauch 08/16 |
+ | Setup this class                                          fang 01/18 |
  *----------------------------------------------------------------------*/
-int SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken::Init(
-    const Epetra_Comm& comm,
-    const Teuchos::ParameterList& globaltimeparams,
-    const Teuchos::ParameterList& scatraparams,
-    const Teuchos::ParameterList& structparams,
-    const std::string struct_disname,
-    const std::string scatra_disname,
-    bool isAle)
+void SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken::Setup()
 {
-  int returnvar=0;
-
   // call setup of base class
-  returnvar=
-  SSI::SSI_Part2WC::Init(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname,isAle);
+  SSI::SSI_Part2WC::Setup();
 
-  scaincnpold_ = LINALG::CreateVector(*structure_->DofRowMap(0),true);
+  // setup old scatra increment vector
+  scaincnpold_ = LINALG::CreateVector(*scatra_->ScaTraField()->Discretization()->DofRowMap(),true);
 
-  return returnvar;
+  return;
 }
 
 /*----------------------------------------------------------------------*

@@ -17,7 +17,7 @@
 #include "ssi_monolithic.H"
 #include "ssi_coupling.H"
 #include "ssi_monolithic_convcheck_strategies.H"
-#include "ssi_monolithic_resulttest.H"
+#include "ssi_resulttest.H"
 #include "ssi_str_model_evaluator_monolithic.H"
 
 #include <Epetra_Time.h>
@@ -60,12 +60,8 @@ SSI::SSI_Mono::SSI_Mono(
     // initialize member variables
     dtele_(0.),
     dtsolve_(0.),
-    icoup_structure_(Teuchos::null),
-    iter_(0),
     map_structure_(Teuchos::null),
-    map_structure_condensed_(Teuchos::null),
     maps_(Teuchos::null),
-    maps_structure_(Teuchos::null),
     maps_systemmatrix_(Teuchos::null),
     matrixtype_(DRT::INPUT::IntegralValue<INPAR::SSI::MatrixType>(globaltimeparams.sublist("MONOLITHIC"),"MATRIXTYPE")),
     matrixtype_scatra_(INPAR::S2I::matrix_sparse),
@@ -1581,48 +1577,16 @@ void SSI::SSI_Mono::PrepareTimeStep()
  *--------------------------------------------------------------------------*/
 void SSI::SSI_Mono::Setup()
 {
-  // check initialization
-  CheckIsInit();
+  // call base class routine
+  SSI_Base::Setup();
 
-  // set up scalar transport field
-  scatra_->ScaTraField()->Setup();
-
-  // pass initial scalar field to structural discretization to correctly compute initial accelerations
-  DRT::Problem::Instance()->GetDis("structure")->SetState(1,"scalarfield",scatra_->ScaTraField()->Phinp());
-
-  // construct and register structural model evaluator if necessary
-  if(DRT::INPUT::IntegralValue<INPAR::STR::StressType>(DRT::Problem::Instance()->IOParams(),"STRUCT_STRESS") != INPAR::STR::stress_none and scatra_->ScaTraField()->S2ICoupling())
-    struct_adapterbase_ptr_->RegisterModelEvaluator("Monolithic Coupling Model",Teuchos::rcp(new STR::MODELEVALUATOR::MonolithicSSI(Teuchos::rcp(this,false))));
-
-  // set up structural base algorithm
-  struct_adapterbase_ptr_->Setup();
-
-  // extract and cast wrapper
-  structure_ = Teuchos::rcp_dynamic_cast<::ADAPTER::SSIStructureWrapper>(struct_adapterbase_ptr_->StructureField());
-  if(structure_ == Teuchos::null)
-    dserror("Invalid structural wrapper!");
-
-  // set up helper class for field coupling
-  ssicoupling_->Setup();
-
-  // set up materials
-  ssicoupling_->AssignMaterialPointers(struct_adapterbase_ptr_->StructureField()->Discretization(),scatra_->ScaTraField()->Discretization());
-
-  // check maps from scalar transport and structure discretizations
-  if(scatra_->ScaTraField()->DofRowMap()->NumGlobalElements() == 0)
-    dserror("Scalar transport discretization does not have any degrees of freedom!");
-  if(structure_->DofRowMap()->NumGlobalElements() == 0)
-    dserror("Structure discretization does not have any degrees of freedom!");
-
-  // safety check concerning number of transported scalars
+  // safety checks
   if(scatra_->ScaTraField()->NumScal() != 1)
     dserror("Since the ssi_monolithic framework is only implemented for usage in combination with growth laws 'MAT_GrowthLinIso' or 'MAT_GrowthLinANIso' so far "
         "and these growth laws are implemented for one transported scalar at the moment it is not reasonable to use it with more than one transported scalar. "
         "So you need to cope with it or change implementation! ;-)");
-
-  // additional safety check
   if(!scatra_->ScaTraField()->IsIncremental())
-    dserror("Must have incremental solution approach for scalar-structure interaction!");
+    dserror("Must have incremental solution approach for monolithic scalar-structure interaction!");
 
   // set up scatra-scatra interface coupling
   if(scatra_->ScaTraField()->S2ICoupling())
@@ -1635,27 +1599,7 @@ void SSI::SSI_Mono::Setup()
       dserror("Invalid scatra-scatra interface coupling strategy!");
     if(strategy_scatra_->CouplingType() != INPAR::S2I::coupling_matching_nodes)
       dserror("Monolithic scalar-structure interaction only implemented for scatra-scatra interface coupling with matching interface nodes!");
-
-    // set up scatra-scatra interface coupling adapter for structure field
-    SetupCouplingAdapterStructure();
-
-    // set up map for interior and master-side structural degrees of freedom
-    map_structure_condensed_ = LINALG::SplitMap(*structure_->Discretization()->DofRowMap(),*icoup_structure_->SlaveDofMap());
-
-    // set up structural map extractor holding interior and interface maps of degrees of freedom
-    std::vector<Teuchos::RCP<const Epetra_Map> > maps(0,Teuchos::null);
-    maps.push_back(LINALG::SplitMap(*map_structure_condensed_,*icoup_structure_->MasterDofMap()));
-    maps.push_back(icoup_structure_->SlaveDofMap());
-    maps.push_back(icoup_structure_->MasterDofMap());
-    maps_structure_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*structure_->Discretization()->DofRowMap(),maps));
-    maps_structure_->CheckForValidMapExtractor();
   }
-
-  // construct vector of zeroes
-  zeros_ = LINALG::CreateVector(*structure_->DofRowMap());
-
-  // set flag
-  SetIsSetup(true);
 
   return;
 }
@@ -1857,60 +1801,13 @@ void SSI::SSI_Mono::SetupSystem()
 
 
 /*---------------------------------------------------------------------------------*
- | setup scatra-scatra interface coupling adapter for structure field   fang 08/17 |
+ | set up structural model evaluator for scalar-structure interaction   fang 01/18 |
  *---------------------------------------------------------------------------------*/
-void SSI::SSI_Mono::SetupCouplingAdapterStructure()
+void SSI::SSI_Mono::SetupModelEvaluator() const
 {
-  // initialize integer vectors for global IDs of master-side and slave-side interface nodes on structure discretization
-  std::vector<int> inodegidvec_master;
-  std::vector<int> inodegidvec_slave;
-
-  // extract scatra-scatra interface coupling conditions from structure discretization
-  std::vector<DRT::Condition*> conditions(0,NULL);
-  structure_->Discretization()->GetCondition("S2ICoupling",conditions);
-
-  // loop over all conditions
-  for(unsigned icondition=0; icondition<conditions.size(); ++icondition)
-  {
-    // extract current condition
-    DRT::Condition* const condition = conditions[icondition];
-
-    // extract interface side associated with current condition
-    const int side = condition->GetInt("interface side");
-
-    // extract nodes associated with current condition
-    const std::vector<int>* const inodegids = condition->Nodes();
-
-    // loop over all nodes
-    for(unsigned inode=0; inode<inodegids->size(); ++inode)
-    {
-      // extract ID of current node
-      const int inodegid = (*inodegids)[inode];
-
-      // insert global ID of current node into associated vector only if node is owned by current processor
-      // need to make sure that node is stored on current processor, otherwise cannot resolve "->Owner()"
-      if(structure_->Discretization()->HaveGlobalNode(inodegid) and structure_->Discretization()->gNode(inodegid)->Owner() == structure_->Discretization()->Comm().MyPID())
-        side == INPAR::S2I::side_master ? inodegidvec_master.push_back(inodegid) : inodegidvec_slave.push_back(inodegid);
-    }
-  }
-
-  // remove potential duplicates from vectors
-  std::sort(inodegidvec_master.begin(),inodegidvec_master.end());
-  inodegidvec_master.erase(unique(inodegidvec_master.begin(),inodegidvec_master.end()),inodegidvec_master.end());
-  std::sort(inodegidvec_slave.begin(),inodegidvec_slave.end());
-  inodegidvec_slave.erase(unique(inodegidvec_slave.begin(),inodegidvec_slave.end()),inodegidvec_slave.end());
-
-  // setup scatra-scatra interface coupling adapter for structure field
-  icoup_structure_ = Teuchos::rcp(new ADAPTER::Coupling());
-  icoup_structure_->SetupCoupling(
-      *structure_->Discretization(),
-      *structure_->Discretization(),
-      inodegidvec_master,
-      inodegidvec_slave,
-      DRT::Problem::Instance()->NDim(),
-      true,
-      1.e-8
-      );
+  // construct and register structural model evaluator if necessary
+  if(DRT::INPUT::IntegralValue<INPAR::STR::StressType>(DRT::Problem::Instance()->IOParams(),"STRUCT_STRESS") != INPAR::STR::stress_none and scatra_->ScaTraField()->S2ICoupling())
+    struct_adapterbase_ptr_->RegisterModelEvaluator("Monolithic Coupling Model",Teuchos::rcp(new STR::MODELEVALUATOR::MonolithicSSI(Teuchos::rcp(this,false))));
 
   return;
 }
@@ -1983,21 +1880,6 @@ void SSI::SSI_Mono::Solve()
 
     // structure field is updated during the next Newton-Raphson iteration step
   } // Newton-Raphson iteration
-
-  return;
-}
-
-
-/*--------------------------------------------------------------------------*
- | test results                                                  fang 11/17 |
- *--------------------------------------------------------------------------*/
-void SSI::SSI_Mono::TestResults(const Epetra_Comm& comm) const
-{
-  // activate result testing for monolithic scalar-structure interaction
-  DRT::Problem::Instance()->AddFieldTest(Teuchos::rcp(new SSI::SSI_Mono_ResultTest(Teuchos::rcp(this,false))));
-
-  // call base class routine
-  SSI_Base::TestResults(comm);
 
   return;
 }
