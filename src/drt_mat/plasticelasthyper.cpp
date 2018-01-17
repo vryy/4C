@@ -398,10 +398,10 @@ void MAT::PlasticElastHyper::SetupTSI(const int numgp,
                                       const INPAR::TSI::DissipationMode mode)
 {
   // dissipation mode
-  if (mode!=INPAR::TSI::pl_flow)
+  if (mode==INPAR::TSI::pl_multiplier)
     if (MatParams()->rY_11_!=0. || MatParams()->rY_22_!=0. || MatParams()->rY_33_!=0. ||
         MatParams()->rY_12_!=0. || MatParams()->rY_23_!=0. || MatParams()->rY_13_!=0.)
-      dserror("TSI with Hill plasticity only with DISSIPATION_MODE pl_flow");
+      dserror("TSI with Hill plasticity not available with DISSIPATION_MODE pl_multiplier");
   SetDissipationMode(mode);
 
   // allocate memory
@@ -427,12 +427,12 @@ void MAT::PlasticElastHyper::SetupTSI(const int numgp,
     dserror("no thermo-plasticitiy with plastic spin");
 
   /// Hill TSI only with pl_flow dissipation
-  if (MatParams()->rY_11_!=0. && DisMode()!=INPAR::TSI::pl_flow)
-    dserror("hill thermo plasticity only with dissipation mode pl_flow");
+  if (MatParams()->rY_11_!=0. && mode==INPAR::TSI::pl_multiplier)
+    dserror("hill thermo plasticity not with dissipation mode pl_multiplier");
 
   /// viscoplastic TSI only with  pl_flow dissipation
-  if (Visc()!=0. &&  DisMode()!=INPAR::TSI::pl_flow)
-    dserror("thermo-visco-plasticity only with dissipation mode pl_flow");
+  if (Visc()!=0. && mode==INPAR::TSI::pl_multiplier)
+    dserror("thermo-visco-plasticity not with dissipation mode pl_multiplier");
   return;
 }
 
