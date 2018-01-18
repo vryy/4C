@@ -141,7 +141,7 @@ void ADAPTER::CouplingEhlMortar::AssembleNormals()
 
   for (int i=0;i<interface_->SlaveRowNodes()->NumMyElements();++i)
   {
-    DRT::Node* node = Interface()->Discret().lRowNode(i);
+    DRT::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
     if (!node) dserror("node not found");
     CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
     if (!cnode) dserror("not a contact node");
@@ -157,7 +157,7 @@ void ADAPTER::CouplingEhlMortar::AssembleNormalsDeriv()
   Nderiv_ = Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_,81,false,false));
   for (int i=0;i<interface_->SlaveRowNodes()->NumMyElements();++i)
   {
-    DRT::Node* node = Interface()->Discret().lRowNode(i);
+    DRT::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
     if (!node) dserror("node not found");
     CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
     if (!cnode) dserror("not a contact node");
@@ -175,7 +175,7 @@ void ADAPTER::CouplingEhlMortar::AssembleRealGap()
 
   for (int i=0;i<interface_->SlaveRowNodes()->NumMyElements();++i)
   {
-    DRT::Node* node = Interface()->Discret().lRowNode(i);
+    DRT::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
     if (!node) dserror("node not found");
     CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
     if (!cnode) dserror("not a contact node");
@@ -200,7 +200,7 @@ void ADAPTER::CouplingEhlMortar::AssembleRealGapDeriv()
 
   for (int i=0;i<interface_->SlaveRowNodes()->NumMyElements();++i)
   {
-    DRT::Node* node = Interface()->Discret().lRowNode(i);
+    DRT::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
     if (!node) dserror("node not found");
     CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
     if (!cnode) dserror("not a contact node");
@@ -252,7 +252,7 @@ void ADAPTER::CouplingEhlMortar::AssembleInterfaceVelocities(const double dt)
 
   for (int i=0;i<interface_->SlaveRowNodes()->NumMyElements();++i)
   {
-    DRT::Node* node = Interface()->Discret().lRowNode(i);
+    DRT::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
     if (!node) dserror("node not found");
     CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
     if (!cnode) dserror("not a contact node");
@@ -329,7 +329,7 @@ void ADAPTER::CouplingEhlMortar::AssembleSurfGrad()
 
   for (int i=0;i<interface_->SlaveRowNodes()->NumMyElements();++i)
   {
-    DRT::Node* node = Interface()->Discret().lRowNode(i);
+    DRT::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
     if (!node) dserror("ERROR: Cannot find node");
     CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
     if (!cnode)
@@ -361,7 +361,7 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::CouplingEhlMortar::AssembleSurfGradD
 
   for (int i=0;i<interface_->SlaveRowNodes()->NumMyElements();++i)
   {
-    DRT::Node* node = Interface()->Discret().lRowNode(i);
+    DRT::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
     if (!node) dserror("ERROR: Cannot find node");
     CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
     if (!cnode)
