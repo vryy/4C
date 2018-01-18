@@ -54,6 +54,7 @@ MATID                           1
 SKIPINITDER                     Yes
 MATLAB_STATE_OUTPUT             No
 CALCERROR                       AnalyticSeries
+CALCERRORNO                     100                              // When AnalyticSeries is used it indicates the number of iterations for the series
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-10
 ABSTOLRES                       1e-16
@@ -67,8 +68,9 @@ DEFINITION_TAU                  Zero
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
 ----------------------------------------SCALAR TRANSPORT DYNAMIC/VARIATIONAL
-SEMIMPLICITFUNCTIONAL   Yes
+SEMIMPLICITFUNCTIONAL           Yes
 BLOCKPRECOND                    Yes
+ANALYTIC2PARAVIEW               No
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          Aztec_MSR
 AZPREC                          AMGnxn

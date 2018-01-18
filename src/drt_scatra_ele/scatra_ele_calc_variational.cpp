@@ -270,15 +270,21 @@ void DRT::ELEMENTS::ScaTraEleCalVariational<distype>::CalcMatAndRhs(
 
     // Chemical potential R_{\mu} (local part)
       CalcRhsGeneric( erhs, k+offsetChemPotential,
-              fac,
+            fac,
             VarManager()->Phin(k) - VarManager()->Phinp(k),
             my::funct_);
 
-      //Chemical potential R_{\mu} (global part)
-      CalcRhsGeneric( erhs, k+offsetChemPotential,
-              my::scatraparatimint_->Dt() * fac,
+    // Chemical potential R_{\mu} (global part)
+    CalcRhsGeneric( erhs, k+offsetChemPotential,
+            my::scatraparatimint_->Dt() * fac,
             DiffManager()->GetDissipationPot1deriv(k),
             my::derxy_);
+
+    // Chemical potential R_{\mu} (body force / external source)
+    CalcRhsGeneric( erhs, k+offsetChemPotential,
+            my::scatraparatimint_->Dt() * fac,
+            rhsint,
+            my::funct_);
 
     //----------------------------------------------------------------------
     // 1) MATRIX: Tangent concentration
@@ -336,11 +342,11 @@ void DRT::ELEMENTS::ScaTraEleCalVariational<distype>::CalcRhsGeneric(
  *--------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalVariational<distype>:: CalcRhsGeneric(
-  Epetra_SerialDenseVector&           erhs,       //!< element vector to be filled
-  const int                           k,            //!< index of current scalar
-  const double &                      discrFact,    //!< discrete factors(time &temporal discretization, weights, Jacobian, etc...)
-  const LINALG::Matrix<my::nsd_,1> &    kernel, //!< integral kernel (excluding shape functions)
-  const LINALG::Matrix<my::nsd_,my::nen_> & sfunct  //!< first shape function
+  Epetra_SerialDenseVector&                 erhs,       //!< element vector to be filled
+  const int                                 k,          //!< index of current scalar
+  const double &                            discrFact,  //!< discrete factors(time &temporal discretization, weights, Jacobian, etc...)
+  const LINALG::Matrix<my::nsd_,1> &        kernel,     //!< integral kernel (excluding shape functions)
+  const LINALG::Matrix<my::nsd_,my::nen_> & sfunct      //!< first shape function
 ) const
 {
    LINALG::Matrix<my::nen_,1> temporalParam;
@@ -363,7 +369,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalVariational<distype>::CalcMatGeneric(
       Epetra_SerialDenseMatrix &     emat,        //!< element matrix to be filled
       const int &                    row,         //!< starting row position index
-    const int &                    col,         //!< starting column position index
+      const int &                    col,         //!< starting column position index
       const double &                 discrFact,   //!< discrete factors(time &temporal discretization, weights, Jacobian, etc...)
       const double &                 kernel,      //!< integral kernel (excluding shape functions)
       const LINALG::Matrix<my::nen_,1> & sfunct,      //!< first shape function
@@ -402,7 +408,6 @@ void DRT::ELEMENTS::ScaTraEleCalVariational<distype>::CalcMatGeneric(
       const LINALG::Matrix<my::nsd_,my::nen_> & tfunct    //!< second shape function
       ) const
 {
-//    std::cout<< "scatra_ele_calc_variaitonal.cpp(CalcMatGeneric-1)" <<std::endl;
   //----------------------------------------------------------------
   // standard Galerkin transient term
   //----------------------------------------------------------------
@@ -621,7 +626,7 @@ void DRT::ELEMENTS::ScaTraEleCalVariational<distype>::SetInternalVariablesForMat
   // set internal variables derived from chemical diffusion under a variational formulation
   VarManager()->SetInternalVariablesVariationalChemDiff(my::funct_,my::derxy_,my::ephinp_,my::ephin_,my::econvelnp_,my::ehist_, ephi0_);
   return;
-} // DRT::ELEMENTS::ScaTraEleCalVarialine3tional<distype>::SetInternalVariablesForMatAndRHS()
+} // DRT::ELEMENTS::ScaTraEleCalVariational<distype>::SetInternalVariablesForMatAndRHS()
 
 
 /*---------------------------------------------------------------------*
@@ -634,124 +639,205 @@ void DRT::ELEMENTS::ScaTraEleCalVariational<distype>::CalErrorComparedToAnalytSo
   Epetra_SerialDenseVector&             errors
   )
 {
-  switch(DRT::INPUT::get<INPAR::SCATRA::CalcError>(params, "calcerrorflag"))
-  {
-  case INPAR::SCATRA::calcerror_AnalyticSeries:
-  {
-      //   References:
-      //   John Crank
-      //   "Mathematics of Diffusion"
-      //    Plane sheet problem
-      //   1975, Ed II, 22-24 Eq(2.54)
+  // set constants for analytical solution
+  const double t = my::scatraparatimint_->Time();
 
-    // safety checks
-    if (DRT::INPUT::get<SCATRA::Action>(params,"action") != SCATRA::calc_error)
-      dserror("My friend you have issues... How did you get here?");
-    if (my::numscal_ != 1)
-      dserror("Numscal_ != 1 The solution is only coded for 1 species so far.");
+  // safety checks
+  if (DRT::INPUT::get<SCATRA::Action>(params,"action") != SCATRA::calc_error)
+    dserror("This area is supposed to be to evaluate errors!");
+  if (my::numscal_ != 1)
+    dserror("Numscal_ != 1 The solution is only coded for 1 species so far.");
 
-    if (my::scatraparatimint_->Time() == 0.0)
-      break;
-    else if (my::nsd_ == 1)
+  if (t != 0.0)
     {
-      // Set constants for analytical solution
-    // Series parameters
-    int series_end = 100;
-    // Gets Dirichlet condition
-    double Cext = params.get<double>("Dirichlet_values");
-    // Gets current simulation time
-    const double t = my::scatraparatimint_->Time();
-    // Gets length of the domain
-    double L = params.get<double>("length_domain");
-    // Access material for post-process solution of chemical potential
-    Teuchos::RCP<const MAT::Material> material = ele->Material();
-      const Teuchos::RCP<const MAT::ScatraMatVarChemDiffusion>& actmat
-            = Teuchos::rcp_dynamic_cast<const MAT::ScatraMatVarChemDiffusion>(material);
-
-
-    // integration points and weights
-    // more GP than usual due to (possible) cos/exp fcts in analytical solutions
-    const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
-
-    // working arrays
-    LINALG::Matrix<1,1>         ChemPot_int(true);
-    LINALG::Matrix<1,1>         ChemPot_Analytic(true);
-    LINALG::Matrix<1,1>         Con_int(true);
-    LINALG::Matrix<1,1>         Con_Analytic(true);
-    LINALG::Matrix<1,1>         delta_ChemPot(true);
-    LINALG::Matrix<1,1>         delta_Con(true);
-    LINALG::Matrix<my::nsd_,1>  xint(true);
-
-    // start loop over integration points
-    for (int iquad=0;iquad<intpoints.IP().nquad;iquad++)
+    switch(DRT::INPUT::get<INPAR::SCATRA::CalcError>(params, "calcerrorflag"))
     {
-      const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+    case INPAR::SCATRA::calcerror_AnalyticSeries:
+    {
+        //   References:
+        //   John Crank
+        //   "Mathematics of Diffusion"
+        //    Plane sheet problem
+        //   1975, Ed II, 22-24 Eq(2.54)
 
-      // density at t_(n)
-      std::vector<double> densn(my::numscal_,1.0);
-      // density at t_(n+1) or t_(n+alpha_F)
-      std::vector<double> densnp(my::numscal_,1.0);
-      // density at t_(n+alpha_M)
-      std::vector<double> densam(my::numscal_,1.0);
-
-      // get material parameter (constants values)
-      // SetInternalVariablesForMatAndRHS();
-      //GetMaterialParams(ele,densn,densnp,densam,visc);
-
-      // get values of concentration at integration point
-      Con_int(0) = my::funct_.Dot(my::ephinp_[0]);
-      // get chemical potential solution at integration point
-      ChemPot_int = my::funct_.Dot(my::ephinp_[1]);
-      // get global coordinate of integration point
-      xint.Multiply(my::xyze_,my::funct_);
-
-      // compute various constants
-      const double D = DiffManager()->GetIsotropicDiff(0);
-      const double mu_0 = DiffManager()->GetRefMu(0);
-      const double c_0 = DiffManager()->GetRefC(0);
-      const double RT = DiffManager()->GetRT();
-      double Analytic_con;
-
-      // Series parameters
-      double sum1 = 0;
-      double sum2 = 0;
-
-      for (int m=0; m<series_end; ++m)
+      if (my::nsd_ == 1)
       {
-      sum1 = sum1 + pow(-1,m) * erfc(((2*m+1)*L - xint(0) )/(2*sqrt(D*t)));
-      sum2 = sum2 + pow(-1,m) * erfc(((2*m+1)*L + xint(0) )/(2*sqrt(D*t)));
-      }  // Series loop
+        // Set constants for analytical solution
+      // Series parameters
+      if (!params.isParameter("error function number"))
+        dserror("You forgot to specify the number of iterations to be taken by the series. Specify it using the parameter CALCERRORNO in the datfile");
+      const int series_end = params.get<int>("error function number");
 
-      Analytic_con = (Cext-c_0)*(sum1 + sum2) + c_0;
-      Con_Analytic = Analytic_con;
+      // Gets Dirichlet condition
+      double Cext = params.get<double>("Dirichlet_values");
+      // Gets current simulation time
+      const double t = my::scatraparatimint_->Time();
+      // Gets length of the domain
+      double L = params.get<double>("length_domain");
+      // Access material for post-process solution of chemical potential
+      Teuchos::RCP<const MAT::Material> material = ele->Material();
+        const Teuchos::RCP<const MAT::ScatraMatVarChemDiffusion>& actmat
+              = Teuchos::rcp_dynamic_cast<const MAT::ScatraMatVarChemDiffusion>(material);
 
-      // compute analytical solution for chemical potential (post-process relation, hence, independet of dimmension)
-      ChemPot_Analytic = actmat->ComputeInternalEnergy(Analytic_con, mu_0, c_0,RT,1);
 
-      // compute differences between analytical solution and numerical solution
-      //delta_ChemPot = ChemPot_int - ChemPot_Analytic;
-      delta_ChemPot.Update(1.0,ChemPot_int,-1.0,ChemPot_Analytic);
-      delta_Con.Update(1.0,Con_int,-1.0,Con_Analytic);
+      // integration points and weights
+      // more GP than usual due to (possible) cos/exp fcts in analytical solutions
+      const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
 
-      // add square to L2 error
-      errors[0] += delta_Con(0)*delta_Con(0)*fac;       // Difference in concentration
-      errors[1] += delta_ChemPot(0)*delta_ChemPot(0)*fac;   // Difference in chemical potential
-      errors[2] += Con_Analytic(0)*Con_Analytic(0)*fac;     // L2 Analytic concentration
-      errors[3] += ChemPot_Analytic(0)*ChemPot_Analytic(0)*fac;   // L2 chemical potential
+      // working arrays
+      LINALG::Matrix<1,1>         ChemPot_int(true);
+      LINALG::Matrix<1,1>         ChemPot_Analytic(true);
+      LINALG::Matrix<1,1>         Con_int(true);
+      LINALG::Matrix<1,1>         Con_Analytic(true);
+      LINALG::Matrix<1,1>         delta_ChemPot(true);
+      LINALG::Matrix<1,1>         delta_Con(true);
+      LINALG::Matrix<my::nsd_,1>  xint(true);
 
-    } // end of loop over integration points
-    } // if Analytic series dim ==1
-      else
-          dserror("Analytic solution not coded for this spatial dimension");
-    }
-  break;
-  default:
-  {
-  my::CalErrorComparedToAnalytSolution(ele,params,errors);
+      // start loop over integration points
+      for (int iquad=0;iquad<intpoints.IP().nquad;iquad++)
+      {
+        const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+
+        // density at t_(n)
+        std::vector<double> densn(my::numscal_,1.0);
+        // density at t_(n+1) or t_(n+alpha_F)
+        std::vector<double> densnp(my::numscal_,1.0);
+        // density at t_(n+alpha_M)
+        std::vector<double> densam(my::numscal_,1.0);
+
+        // get values of concentration at integration point
+        Con_int(0) = my::funct_.Dot(my::ephinp_[0]);
+        // get chemical potential solution at integration point
+        ChemPot_int = my::funct_.Dot(my::ephinp_[1]);
+        // get global coordinate of integration point
+        xint.Multiply(my::xyze_,my::funct_);
+
+        // compute various constants
+        const double D = DiffManager()->GetIsotropicDiff(0);
+        const double mu_0 = DiffManager()->GetRefMu(0);
+        const double c_0 = DiffManager()->GetRefC(0);
+        const double RT = DiffManager()->GetRT();
+        double Analytic_con;
+
+        // Series parameters
+        double sum1 = 0;
+        double sum2 = 0;
+
+        for (int m=0; m<series_end; ++m)
+        {
+        sum1 = sum1 + pow(-1,m) * erfc(((2*m+1)*L - xint(0) )/(2*sqrt(D*t)));
+        sum2 = sum2 + pow(-1,m) * erfc(((2*m+1)*L + xint(0) )/(2*sqrt(D*t)));
+        }  // Series loop
+
+        Analytic_con = (Cext-c_0)*(sum1 + sum2) + c_0;
+        Con_Analytic = Analytic_con;
+
+        // compute analytical solution for chemical potential (post-process relation, hence, independet of dimmension)
+        ChemPot_Analytic = actmat->ComputeInternalEnergy(Analytic_con, mu_0, c_0,RT,1);
+
+        // compute differences between analytical solution and numerical solution
+        //delta_ChemPot = ChemPot_int - ChemPot_Analytic;
+        delta_ChemPot.Update(1.0,ChemPot_int,-1.0,ChemPot_Analytic);
+        delta_Con.Update(1.0,Con_int,-1.0,Con_Analytic);
+
+        // add square to L2 error
+        errors[0] += delta_Con(0)*delta_Con(0)*fac;       // Difference in concentration
+        errors[1] += delta_ChemPot(0)*delta_ChemPot(0)*fac;   // Difference in chemical potential
+        errors[2] += Con_Analytic(0)*Con_Analytic(0)*fac;     // L2 Analytic concentration
+        errors[3] += ChemPot_Analytic(0)*ChemPot_Analytic(0)*fac;   // L2 chemical potential
+
+      } // end of loop over integration points
+      } // if Analytic series dim ==1
+        else
+            dserror("Analytic solution not coded for this spatial dimension");
+      }
     break;
-  }
-  } //switch(errortype)
 
+    case INPAR::SCATRA::calcerror_byfunction:
+    {
+      const int errorfunctno = params.get<int>("error function number");
+
+      // analytical solution
+      double  phi_exact(0.0);
+      double  deltaphi(0.0);
+      //! spatial gradient of current scalar value
+      LINALG::Matrix<my::nsd_,1>  gradphi(true);
+      LINALG::Matrix<my::nsd_,1>  gradphi_exact(true);
+      LINALG::Matrix<my::nsd_,1>  deltagradphi(true);
+      LINALG::Matrix<1,1>         ChemPot_int(true);
+      LINALG::Matrix<1,1>         ChemPot_Analytic(true);
+      //LINALG::Matrix<1,1>         Con_int(true);
+      LINALG::Matrix<1,1>         Con_Analytic(true);
+      LINALG::Matrix<1,1>         delta_ChemPot(true);
+      //LINALG::Matrix<1,1>         delta_Con(true);
+
+      // more GP than usual due to (possible) cos/exp fcts in analytical solutions
+      const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
+      // start loop over integration points
+      for (int iquad=0;iquad<intpoints.IP().nquad;iquad++)
+      {
+        const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+
+        // get coordinates at integration point
+        // gp reference coordinates
+        LINALG::Matrix<my::nsd_,1> xyzint(true);
+        xyzint.Multiply(my::xyze_,my::funct_);
+
+        // function evaluation requires a 3D position vector!!
+        double position[3]={0.0,0.0,0.0};
+
+        for (unsigned dim=0; dim<my::nsd_; ++dim)
+          position[dim] = xyzint(dim);
+
+        // Set constants for solution of dual variable
+        // Access material for post-process solution of chemical potential
+        Teuchos::RCP<const MAT::Material> material = ele->Material();
+          const Teuchos::RCP<const MAT::ScatraMatVarChemDiffusion>& actmat
+                = Teuchos::rcp_dynamic_cast<const MAT::ScatraMatVarChemDiffusion>(material);
+        // compute various constants
+        //const double D = DiffManager()->GetIsotropicDiff(0);
+        const double mu_0 = DiffManager()->GetRefMu(0);
+        const double c_0 = DiffManager()->GetRefC(0);
+        const double RT = DiffManager()->GetRT();
+
+        for(int k=0;k<my::numscal_;k+=2)
+        {
+          // scalar at integration point at time step n+1
+          const double phinp = my::funct_.Dot(my::ephinp_[k]);
+          // get chemical potential solution at integration point
+          ChemPot_int = my::funct_.Dot(my::ephinp_[k+1]);
+          // spatial gradient of current scalar value
+          gradphi.Multiply(my::derxy_,my::ephinp_[k]);
+
+          phi_exact = DRT::Problem::Instance()->Funct(errorfunctno-1).Evaluate(k,position,t);
+          Con_Analytic = phi_exact;
+
+          // compute analytical solution for chemical potential (post-process relation, hence, independet of dimmension)
+          ChemPot_Analytic = actmat->ComputeInternalEnergy(phi_exact, mu_0, c_0,RT,1);
+
+          // compute differences between analytical solution and numerical solution
+          //delta_ChemPot = ChemPot_int - ChemPot_Analytic;
+          delta_ChemPot.Update(1.0,ChemPot_int,-1.0,ChemPot_Analytic);
+          //delta_Con.Update(1.0,Con_int,-1.0,Con_Analytic);
+          deltaphi = phinp - phi_exact;
+
+          // add square to L2 error
+          errors[k+0] += deltaphi*deltaphi*fac;       // Difference in concentration
+          //errors[k+0] += delta_Con(0)*delta_Con(0)*fac;       // Difference in concentration
+          errors[k+1] += delta_ChemPot(0)*delta_ChemPot(0)*fac;   // Difference in chemical potential
+          errors[k+2] += Con_Analytic(0)*Con_Analytic(0)*fac;     // L2 Analytic concentration
+          errors[k+3] += ChemPot_Analytic(0)*ChemPot_Analytic(0)*fac;   // L2 chemical potential
+        }
+      } // loop over integration points
+      break;
+    }
+    default:
+    {
+      my::CalErrorComparedToAnalytSolution(ele,params,errors);
+      break;
+    }
+    } //switch(errortype)
+  }
   return;
 } // CalErrorComparedToAnalytSolution
 

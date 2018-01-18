@@ -82,14 +82,14 @@ public:
   //! @name general framework //TODO try to make them static to access them also from the element and simplify code
   /*========================================================================*/
   void AnalyticSolution_SeriesErrorFnt(
-  double &Conc,     //!< Concentration
-  const int series_end, //!< stopping number for the series TODO (add it as a control parameter)
-  const double  x,    //!< evaluation position in x
-  const double  t,    //!< evaluation time
-  const double  L,    //!< length of the domain
-  const double  D,    //!< Diffusion parameter
-  const double  c_0,  //!< initial/reference concentration
-  const double  Cext  //!< concentration at Dirichlet nodes
+  double &Conc,         //!< Concentration
+  const int series_end, //!< stopping number for the series
+  const double  x,      //!< evaluation position in x
+  const double  t,      //!< evaluation time
+  const double  L,      //!< length of the domain
+  const double  D,      //!< Diffusion parameter
+  const double  c_0,    //!< initial/reference concentration
+  const double  Cext    //!< concentration at Dirichlet nodes
   );
 
   void PostProcess_ChemPot(

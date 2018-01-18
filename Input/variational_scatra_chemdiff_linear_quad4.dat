@@ -66,8 +66,9 @@ DEFINITION_TAU                  Zero
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
 ----------------------------------------SCALAR TRANSPORT DYNAMIC/VARIATIONAL
-SEMIMPLICITFUNCTIONAL   No
+SEMIMPLICITFUNCTIONAL           No
 BLOCKPRECOND                    No
+ANALYTIC2PARAVIEW               No
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS

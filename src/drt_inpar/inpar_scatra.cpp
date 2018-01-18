@@ -343,6 +343,7 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   BoolParameter("SEMIMPLICITFUNCTIONAL","no","Flag to evaluate concentration implicitly or explicitly on the functional",&scatra_variational);
   BoolParameter("BLOCKPRECOND","NO","Switch to block-preconditioned family of solvers, only works with block preconditioners like CheapSIMPLE!",&scatra_variational);
+  BoolParameter("ANALYTIC2PARAVIEW","NO","Flag to send the analytic solution to Paraview, if provided!",&scatra_variational);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scatra_nonlin = scatradyn.sublist(

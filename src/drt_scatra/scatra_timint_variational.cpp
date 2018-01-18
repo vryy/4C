@@ -80,7 +80,8 @@ void SCATRA::TimIntVariational::Setup()
   phi0_ = LINALG::CreateVector(*dofrowmap,true);
   ScaTraTimIntImpl::Setup();
 
-  if (calcerror_ == INPAR::SCATRA::calcerror_AnalyticSeries && nsd_ == 1)
+  if ((calcerror_ == INPAR::SCATRA::calcerror_AnalyticSeries && nsd_ == 1 ) ||
+      (calcerror_ == INPAR::SCATRA::calcerror_byfunction))
     phiAnalytic_ = LINALG::CreateVector(*dofrowmap,true);
 
   return;
@@ -131,7 +132,8 @@ void SCATRA::TimIntVariational::AddTimeIntegrationSpecificVectors(bool forcedinc
 
   discret_->SetState("phi0",phi0_);
 
-  if (calcerror_ == INPAR::SCATRA::calcerror_AnalyticSeries && nsd_ == 1)
+  if ((calcerror_ == INPAR::SCATRA::calcerror_AnalyticSeries && nsd_ == 1) ||
+      (calcerror_ == INPAR::SCATRA::calcerror_byfunction))
     discret_->SetState("phiAnalytic",phiAnalytic_);
 
   return;
@@ -325,13 +327,22 @@ void SCATRA::TimIntVariational::EvaluateErrorComparedToAnalyticalSol()
           L = node->X()[0];
       }
 
-      // create the parameters for the error calculation
+      //Verify all the parameters were specified in the dat file
+      if (!params_->isParameter("CALCERRORNO"))
+        dserror("You forgot to specify the number of iterations to be taken by the series. Specify it using the parameter CALCERRORNO in the datfile");
+
+      // Set the parameters for the error calculation in the element
       Teuchos::ParameterList eleparams;
+      const int errorfunctnumber = params_->get<int>("CALCERRORNO");
+      if(errorfunctnumber<1)
+        dserror("The value for stopping parameter CALCERRORNO for the series evaluation must be specified in the datfile and be positive!");
+      eleparams.set<int>("error function number",errorfunctnumber);
       eleparams.set<int>("action",SCATRA::calc_error);
       eleparams.set("total time",time_);
       eleparams.set<int>("calcerrorflag",calcerror_);
       eleparams.set<double> ("Dirichlet_values",Cext);
       eleparams.set<double> ("length_domain",L);
+
       // set vector values needed by elements
       discret_->ClearState();
       discret_->SetState("phinp",phinp_);
@@ -340,13 +351,8 @@ void SCATRA::TimIntVariational::EvaluateErrorComparedToAnalyticalSol()
       Teuchos::RCP<Epetra_SerialDenseVector> errors
         = Teuchos::rcp(new Epetra_SerialDenseVector(4));
 
-//      std::cout << "scatra_timin_variational.cpp(EvaluateErrorComparedToAnalyticalSol)" << std::endl;
-//      std::cout << "errors1 = " << *errors << std::endl;
-
       discret_->EvaluateScalars(eleparams, errors);
       discret_->ClearState();
-
-//      std::cout << "errors2 = " << *errors << std::endl;
 
       double error_DiffConcentration = 0.0;
       double error_DiffChemPot = 0.0;
@@ -378,8 +384,61 @@ void SCATRA::TimIntVariational::EvaluateErrorComparedToAnalyticalSol()
         (*relerrors_)[0] = error_DiffConcentration/L2_AnalyticConcentration; //TODO:Update to n species, see for referenceSCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
         (*relerrors_)[1] = error_DiffChemPot/L2_AnalyticChemPot;
       }
+    break;
+  }
+  case INPAR::SCATRA::calcerror_byfunction:
+  {
+    // create the parameters for the error calculation
+    Teuchos::ParameterList eleparams;
+    eleparams.set<int>("action",SCATRA::calc_error);
+    eleparams.set<int>("calcerrorflag",calcerror_);
 
+    //Get Error function number and past it to the elements
+    const int errorfunctnumber = params_->get<int>("CALCERRORNO");
+    if(errorfunctnumber<1)
+      dserror("invalid value of parameter CALCERRORNO for error function evaluation!");
 
+    eleparams.set<int>("error function number",errorfunctnumber);
+
+    //provide displacement field in case of ALE
+    if (isale_)
+      eleparams.set<int>("ndsdisp",nds_disp_);
+
+    // set vector values needed by elements
+    discret_->ClearState();
+    discret_->SetState("phinp",phinp_);
+
+    // get (squared) error values
+    Teuchos::RCP<Epetra_SerialDenseVector> errors = Teuchos::rcp(new Epetra_SerialDenseVector(4*NumDofPerNode()));
+    discret_->EvaluateScalars(eleparams,errors);
+    discret_->ClearState();
+
+    // error parameters
+    double error_DiffConcentration = 0.0;
+    double error_DiffChemPot = 0.0;
+    double L2_AnalyticConcentration = 0.0;
+    double L2_AnalyticChemPot = 0.0;
+
+    // for the L2 norm, we need the square root
+    error_DiffConcentration = sqrt((*errors)[0]);
+    error_DiffChemPot = sqrt((*errors)[1]);
+    L2_AnalyticConcentration = sqrt((*errors)[2]);
+    L2_AnalyticChemPot = sqrt((*errors)[3]);
+
+    if (myrank_ == 0 && time_ !=0)
+    {
+      printf("\nRelative L2_error (time = %f):\n", time_);
+      printf(" concentration %15.8e\n chemical potential %15.8e\n \n",
+          error_DiffConcentration/L2_AnalyticConcentration,error_DiffChemPot/L2_AnalyticChemPot);
+    }
+    if (step_ == 0)
+      SaveError2File(0.0,0.0);
+    else
+    {
+      SaveError2File(error_DiffConcentration/L2_AnalyticConcentration,error_DiffChemPot/L2_AnalyticChemPot);
+      (*relerrors_)[0] = error_DiffConcentration/L2_AnalyticConcentration; //TODO:Update to n species, see for referenceSCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
+      (*relerrors_)[1] = error_DiffChemPot/L2_AnalyticChemPot;
+    }
     break;
   }
   default:
@@ -495,73 +554,113 @@ void SCATRA::TimIntVariational::OutputState()
 
   ScaTraTimIntImpl::OutputState();
 
-  if (calcerror_ == INPAR::SCATRA::calcerror_AnalyticSeries )
+  if (!DRT::INPUT::IntegralValue<int>(params_->sublist("VARIATIONAL"),"ANALYTIC2PARAVIEW"))
+    return;
+  switch(calcerror_)
   {
-    if (nsd_ == 1)
+  case INPAR::SCATRA::calcerror_byfunction:
+  case INPAR::SCATRA::calcerror_AnalyticSeries:
+  {
+    if (time_ == 0)
+      *phiAnalytic_ = *phinp_;
+
+    if (nsd_ != 1 && calcerror_ == INPAR::SCATRA::calcerror_AnalyticSeries)
+      dserror("An analytic series solution is not defined for this dimension ");
+
+    const int numdofpernode = NumDofPerNode();
+    Teuchos::RCP<DRT::Discretization>    discret = Discretization();
+    double L=0;                                   // Saves length of the domain when needed
+
+    // Extracts imposed Dirichlet condition
+    Teuchos::RCP<Epetra_Vector> phinpDirichlet = dbcmaps_->ExtractCondVector(phinp_);
+    double Cext = phinpDirichlet->operator [](0); // Special condition since is Dirichlet only at one point
+
+    if (calcerror_ == INPAR::SCATRA::calcerror_AnalyticSeries)
     {
-
-      if (time_ == 0)
+      for (int i=0;i<discret->NodeRowMap()->NumMyElements();++i)
       {
-        *phiAnalytic_ = *phinp_;
-      }
-      else
-      {
-        const int numdofpernode = NumDofPerNode();
-        // Extracts imposed Dirichlet condition
-        Teuchos::RCP<Epetra_Vector> phinpDirichlet = dbcmaps_->ExtractCondVector(phinp_);
-        double Cext = phinpDirichlet->operator [](0); // Special condition since is Dirichlet only at one point
-
-        // Gets length of the domain
-        double L=0;
-        Teuchos::RCP<DRT::Discretization>    discret = Discretization();
-        for (int i=0;i<discret->NodeRowMap()->NumMyElements();++i)
-        {
-          // Get the coordinates of the mesh
-          int gid = discret->NodeRowMap()->GID(i);
-          DRT::Node* node = discret->gNode(gid);
-          if (node->X()[0] > L)
-            L = node->X()[0];
-        }
-
         // Get the coordinates of the mesh
-        for (int i=0;i<discret->NodeRowMap()->NumMyElements();++i)
+        int gid = discret->NodeRowMap()->GID(i);
+        DRT::Node* node = discret->gNode(gid);
+        if (node->X()[0] > L)
+          L = node->X()[0];
+      }
+    }
+
+    // Get the coordinates of the mesh
+    for (int i=0;i<discret->NodeRowMap()->NumMyElements();++i)
+    {
+      // Get the coordinates of the mesh
+      int gid = discret->NodeRowMap()->GID(i);
+      DRT::Node* node = discret->gNode(gid);
+      double my_x_coord=node->X()[0];
+      double my_y_coord=node->X()[1];
+      double my_z_coord=node->X()[2];
+
+      // Extracts material parameters
+      DRT::Element** elelist = node->Elements();
+      const Teuchos::RCP<MAT::Material> matlistptr = elelist[0]->Material();
+      dsassert(matlistptr->MaterialType() == INPAR::MAT::m_var_chemdiffusion, "material is not of type m_var_chemdiffusion");
+      const Teuchos::RCP<const MAT::ScatraMatVarChemDiffusion>& actmat
+          = Teuchos::rcp_dynamic_cast<const MAT::ScatraMatVarChemDiffusion>(matlistptr);
+
+
+      double c_analytic(0);   // Analytic solution concentration
+      double mu_analytic(0);  // Analytic solution chemical potential
+
+      switch(calcerror_)
+      {
+      case INPAR::SCATRA::calcerror_AnalyticSeries://Computes concentration
+      {
+        const int series_end = params_->get<int>("CALCERRORNO"); // Number of iterations for analytic series
+
+        if (time_ != 0)
         {
-          // Get the coordinates of the mesh
-          int gid = discret->NodeRowMap()->GID(i);
-          DRT::Node* node = discret->gNode(gid);
-          double my_x_coord=node->X()[0];
-          //double my_y_coord=node->X()[1];
-          //double my_z_coord=node->X()[2];
-
-
-          // Extracts material parameters
-          DRT::Element** elelist = node->Elements();
-          const Teuchos::RCP<MAT::Material> matlistptr = elelist[0]->Material();
-          dsassert(matlistptr->MaterialType() == INPAR::MAT::m_var_chemdiffusion, "material is not of type m_var_chemdiffusion");
-          const Teuchos::RCP<const MAT::ScatraMatVarChemDiffusion>& actmat
-              = Teuchos::rcp_dynamic_cast<const MAT::ScatraMatVarChemDiffusion>(matlistptr);
-
-
-          double c_analytic(0);   // Analytic solution concentration
-          double mu_analytic(0);  // Analytic solution chemical potential
-          int series_end = 100;
-
           AnalyticSolution_SeriesErrorFnt(c_analytic,series_end,my_x_coord, time_,L,actmat->Diffusivity(0),actmat->RefC(),Cext);
           PostProcess_ChemPot(mu_analytic,c_analytic,node);
+        }
+        break;
+      }//case INPAR::SCATRA::calcerror_AnalyticSeries:
+      case INPAR::SCATRA::calcerror_byfunction:
+      {
 
-          phiAnalytic_->operator [](i*numdofpernode) = c_analytic;
-          phiAnalytic_->operator [](i*numdofpernode+1) = mu_analytic;
+        // function evaluation requires a 3D position vector!!
+        double position[3]={0.0,0.0,0.0};
+        position[0] = my_x_coord;
+        position[1] = my_y_coord;
+        position[2] = my_z_coord;
 
-        }// For computation for all nodes
+        // gets function to evaluate
+        const int errorfunctno = params_->get<int>("CALCERRORNO");
+        if(errorfunctno<1)
+          dserror("invalid value of parameter CALCERRORNO for error function evaluation!");
 
+        // Ensures we only output one species solution (since it is only code like this so far)
+        int k = 0;                //TODO: Remove when updating for multple species
+        if (numdofpernode != 2)
+          dserror("The output is coded only for one species");
+
+        // Computes concentration
+        c_analytic = DRT::Problem::Instance()->Funct(errorfunctno-1).Evaluate(k,position,time_);
+        PostProcess_ChemPot(mu_analytic,c_analytic,node);
+        break;
       }
-      output_->WriteVector("phiAnalytic", phiAnalytic_);
-    }
-    else
-    {
-      dserror("Analytic solution is not defined for this dimension ");
-    }
-  }
+      default :
+        break;
+      }//switch(calcerror_)
+
+      phiAnalytic_->operator [](i*numdofpernode) = c_analytic;
+      phiAnalytic_->operator [](i*numdofpernode+1) = mu_analytic;
+
+
+    }// For computation for all nodes
+
+    output_->WriteVector("phiAnalytic", phiAnalytic_);
+    break;
+  }//case
+  default:
+    break;
+  }//switch(calcerror_)
 
   return;
 } // ScaTraTimIntImpl::OutputState
@@ -578,7 +677,6 @@ void SCATRA::TimIntVariational::SaveError2File(
     temp << NumDofPerNode()/2;
     const std::string simulation = problem_->OutputControlFile()->FileName();
     const std::string fname = simulation+".relerror";
-    //const std::string fname = simulation+"_species"+temp.str()+"_time.relerror";
 
     std::ofstream f;
 
@@ -607,7 +705,7 @@ void SCATRA::TimIntVariational::SaveError2File(
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntVariational::AnalyticSolution_SeriesErrorFnt(
     double &Conc,     //!< Concentration
-    const int series_end, //!< stopping number for the series TODO (add it as a control parameter)
+    const int series_end, //!< stopping number for the series
     const double  x,    //!< evaluation position in x
     const double  t,    //!< evaluation time
     const double  L,    //!< length of the domain
