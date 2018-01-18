@@ -108,7 +108,7 @@ PostVtuWriter::WriteGeo()
     // check for beam element that potentially needs special treatment due to Hermite interpolation
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
-    if (ele->IsNurbsElement())
+    if ( DRT::UTILS::IsNurbsDisType( ele->Shape() ) )
     {
       WriteGeoNurbsEle(ele,celltypes,outNodeId,celloffset,coordinates);
     }
@@ -303,7 +303,7 @@ PostVtuWriter::WriteDofResultStep(
     // check for beam element that potentially needs special treatment due to Hermite interpolation
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
-    if (ele->IsNurbsElement())
+    if ( DRT::UTILS::IsNurbsDisType( ele->Shape() ) )
     {
       WirteDofResultStepNurbsEle(ele,ncomponents,numdf,solution,ghostedData,from,fillzeros);
     }
@@ -342,7 +342,7 @@ PostVtuWriter::WriteDofResultStep(
     }
 
   } // loop over all elements
-  dsassert((int)solution.size() == ncomponents*nnodes, "internal error");
+//  dsassert((int)solution.size() == ncomponents*nnodes, "internal error");
 
   // start the scalar fields that will later be written
   if (currentPhase_ == INIT)
@@ -411,34 +411,36 @@ PostVtuWriter::WriteNodalResultStep(
 
   for (int e=0; e<dis->NumMyRowElements(); ++e)
   {
-  const DRT::Element* ele = dis->lRowElement(e);
+    const DRT::Element* ele = dis->lRowElement(e);
 
-  if (ele->IsNurbsElement()==false)
-  {
-    const std::vector<int> &numbering =
-        DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(ele->Shape()).second;
-    for (int n=0; n<ele->NumNode(); ++n)
+    if ( DRT::UTILS::IsNurbsDisType( ele->Shape() ) )
     {
-    for (int idf=0; idf<numdf; ++idf)
+      WriteNodalResultStepNurbsEle(ele,ncomponents,numdf,solution,ghostedData);
+    }
+    else
     {
-      Epetra_Vector* column = (*ghostedData)(idf);
+      const std::vector<int> &numbering =
+          DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(ele->Shape()).second;
+      for (int n=0; n<ele->NumNode(); ++n)
+      {
+        for (int idf=0; idf<numdf; ++idf)
+        {
+          Epetra_Vector* column = (*ghostedData)(idf);
 
-      int lid = ghostedData->Map().LID(ele->Nodes()[numbering[n]]->Id());
+          int lid = ghostedData->Map().LID(ele->Nodes()[numbering[n]]->Id());
 
-      if (lid > -1)
-      solution.push_back((*column)[lid]);
-      else {
-      dserror("received illegal node local id: %d", lid);
+          if (lid > -1)
+          solution.push_back((*column)[lid]);
+          else {
+          dserror("received illegal node local id: %d", lid);
+          }
+        }
+        for (int d=numdf; d<ncomponents; ++d)
+          solution.push_back(0.);
       }
     }
-    for (int d=numdf; d<ncomponents; ++d)
-      solution.push_back(0.);
-    }
-  }
-  else
-    WriteNodalResultStepNurbsEle(ele,ncomponents,numdf,solution,ghostedData);
   } // loop over all elements
-  dsassert((int)solution.size() == ncomponents*nnodes, "internal error");
+//  dsassert((int)solution.size() == ncomponents*nnodes, "internal error");
 
 
   // start the scalar fields that will later be written
@@ -543,76 +545,152 @@ PostVtuWriter::WriteElementResultStep(
   this->WriteSolutionVector(solution, ncomponents, name, file);
 }
 
-void
-PostVtuWriter::WriteGeoNurbsEle(const DRT::Element* ele,std::vector<uint8_t>& celltypes,
-      int& outNodeId,std::vector<int32_t>& celloffset,std::vector<double>& coordinates)
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void PostVtuWriter::WriteGeoNurbsEle(
+    const DRT::Element* ele,
+    std::vector<uint8_t>& celltypes,
+    int& outNodeId,
+    std::vector<int32_t>& celloffset,
+    std::vector<double>& coordinates) const
 {
-  Teuchos::RCP<DRT::Discretization> dis = this->GetField()->discretization();
-
   switch (ele->Shape())
   {
-  case DRT::Element::nurbs27:
-  {
-    const std::vector<int> &numbering =
-        DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(DRT::Element::hex27).second;
-
-    celltypes.push_back(
-        DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(DRT::Element::hex27).first );
-
-    LINALG::Matrix<27,1> weights;
-    const DRT::Node* const* nodes = ele->Nodes();
-    for (int inode=0; inode<27; inode++)
+    case DRT::Element::nurbs2:
     {
-      const DRT::NURBS::ControlPoint* cp
-        =
-        dynamic_cast<const DRT::NURBS::ControlPoint* > (nodes[inode]);
-
-      weights(inode) = cp->W();
+      WriteGeoNurbsEle<DRT::Element::nurbs2>( ele, celltypes, outNodeId,
+          celloffset, coordinates );
+      break;
     }
-    DRT::NURBS::NurbsDiscretization* nurbsdis
-      =
-      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*dis));
-
-    if(nurbsdis==NULL)
+    case DRT::Element::nurbs3:
     {
-      dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
+      WriteGeoNurbsEle<DRT::Element::nurbs3>( ele, celltypes, outNodeId,
+          celloffset, coordinates );
+      break;
     }
-    std::vector<Epetra_SerialDenseVector> myknots(3);
-    bool zero_ele=(*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,ele->Id());
-    if (zero_ele)
-      return;
-    for (int n=0; n<ele->NumNode(); ++n)
+    case DRT::Element::nurbs4:
     {
-      LINALG::Matrix<27,1> funct;
-      LINALG::Matrix<3,27> deriv;
-      LINALG::Matrix<3,1> gpa;
-      gpa = DRT::UTILS::getNodeCoordinates(numbering[n],DRT::Element::hex27);
-      DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
-        (funct                 ,
-         deriv                 ,
-         gpa                   ,
-         myknots               ,
-         weights               ,
-         DRT::Element::nurbs27);
-      double X[3]={0.,0.,0.};
-      for (int i=0;i<3;++i)
-        for (int m=0;m<27;++m)
-          X[i] += funct(m)*(nodes[m]->X()[i]);
-
-      for (int d=0; d<3; ++d)
-        coordinates.push_back(X[d]);
+      WriteGeoNurbsEle<DRT::Element::nurbs4>( ele, celltypes, outNodeId,
+          celloffset, coordinates );
+      break;
     }
-    outNodeId += ele->NumNode();
-    celloffset.push_back(outNodeId);
-  }
-  break;
-
-  default:
-    dserror("VTK output not yet implemented for given NURBS element");
-    break;
+    case DRT::Element::nurbs9:
+    {
+      WriteGeoNurbsEle<DRT::Element::nurbs9>( ele, celltypes, outNodeId,
+          celloffset, coordinates );
+      break;
+    }
+    case DRT::Element::nurbs8:
+    {
+      WriteGeoNurbsEle<DRT::Element::nurbs8>( ele, celltypes, outNodeId,
+          celloffset, coordinates );
+      break;
+    }
+    case DRT::Element::nurbs27:
+    {
+      WriteGeoNurbsEle<DRT::Element::nurbs27>( ele, celltypes, outNodeId,
+          celloffset, coordinates );
+      break;
+    }
+    default:
+      dserror("VTK output not yet implemented for given NURBS element");
+      exit(EXIT_FAILURE);
   }
 
   return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template < DRT::Element::DiscretizationType nurbs_type >
+void PostVtuWriter::WriteGeoNurbsEle(
+    const DRT::Element* ele,std::vector<uint8_t>& celltypes,
+    int& outNodeId,
+    std::vector<int32_t>& celloffset,
+    std::vector<double>& coordinates) const
+{
+  const unsigned NUMNODES = DRT::UTILS::DisTypeToNumNodePerEle<nurbs_type>::numNodePerElement;
+  const unsigned DIM = DRT::UTILS::DisTypeToDim<nurbs_type>::dim;
+
+  const DRT::Element::DiscretizationType mapped_dis_type =
+      MapNurbsDisTypeToLagrangeDisType( nurbs_type );
+
+  const std::vector<int> &numbering =
+      DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(mapped_dis_type).second;
+
+  Teuchos::RCP<const DRT::Discretization> dis = this->GetField()->discretization();
+
+  celltypes.push_back(
+      DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(mapped_dis_type).first );
+
+  LINALG::Matrix<NUMNODES,1> weights;
+  const DRT::Node* const* nodes = ele->Nodes();
+  for (unsigned inode=0; inode<NUMNODES; inode++)
+  {
+    const DRT::NURBS::ControlPoint* cp =
+        dynamic_cast<const DRT::NURBS::ControlPoint* > (nodes[inode]);
+
+    weights(inode) = cp->W();
+  }
+  const DRT::NURBS::NurbsDiscretization* nurbsdis =
+      dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(dis.get());
+
+  if ( not nurbsdis )
+    dserror("Cast to NURBS discretization failed.\n");
+
+  std::vector<Epetra_SerialDenseVector> myknots(3);
+
+  const bool zero_ele = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,ele->Id());
+
+  if (zero_ele)
+    return;
+
+  for (int n=0; n<ele->NumNode(); ++n)
+  {
+    LINALG::Matrix<NUMNODES,1> funct;
+    LINALG::Matrix<DIM,NUMNODES> deriv; // dummy
+    LINALG::Matrix<3,1> gpa;
+
+    gpa = DRT::UTILS::getNodeCoordinates(numbering[n],mapped_dis_type);
+
+    DRT::NURBS::UTILS::nurbs_get_funct_deriv( funct, deriv, gpa, myknots,
+        weights, nurbs_type);
+
+    double X[3]={0.,0.,0.};
+    for (unsigned i=0;i<3;++i)
+      for (unsigned m=0;m<NUMNODES;++m)
+        X[i] += funct(m)*(nodes[m]->X()[i]);
+
+    for (unsigned d=0; d<3; ++d)
+      coordinates.push_back(X[d]);
+  }
+  outNodeId += ele->NumNode();
+  celloffset.push_back(outNodeId);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+DRT::Element::DiscretizationType PostVtuWriter::MapNurbsDisTypeToLagrangeDisType(
+      const DRT::Element::DiscretizationType nurbs_dis_type ) const
+{
+  switch ( nurbs_dis_type )
+  {
+    case DRT::Element::nurbs2:
+      return DRT::Element::line2;
+    case DRT::Element::nurbs3:
+      return DRT::Element::line3;
+    case DRT::Element::nurbs4:
+      return DRT::Element::quad4;
+    case DRT::Element::nurbs9:
+      return DRT::Element::quad9;
+    case DRT::Element::nurbs8:
+      return DRT::Element::hex8;
+    case DRT::Element::nurbs27:
+      return DRT::Element::hex27;
+    default:
+      dserror("No known mapping from NURBS to Lagrange.");
+      exit(EXIT_FAILURE);
+  }
 }
 
 void
@@ -646,86 +724,147 @@ PostVtuWriter::WriteGeoBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
   celloffset.push_back(outNodeId);
 }
 
-void
-PostVtuWriter::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncomponents,const int numdf,
-      std::vector<double>& solution,Teuchos::RCP<Epetra_Vector> ghostedData,
-      const int from, const bool fillzeros)
+void PostVtuWriter::WirteDofResultStepNurbsEle(
+    const DRT::Element* ele,
+    int ncomponents,
+    const int numdf,
+    std::vector<double>& solution,
+    Teuchos::RCP<Epetra_Vector> ghostedData,
+    const int from,
+    const bool fillzeros) const
 {
-  const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
-  std::vector<int> nodedofs;
-
   switch (ele->Shape())
   {
-  case DRT::Element::nurbs27:
-  {
-    const std::vector<int> &numbering =
-        DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(DRT::Element::hex27).second;
-
-    LINALG::Matrix<27,1> weights;
-    const DRT::Node* const* nodes = ele->Nodes();
-    for (int inode=0; inode<27; inode++)
+    case DRT::Element::nurbs2:
     {
-      const DRT::NURBS::ControlPoint* cp
-      =
-          dynamic_cast<const DRT::NURBS::ControlPoint* > (nodes[inode]);
-
-      weights(inode) = cp->W();
+      WirteDofResultStepNurbsEle<DRT::Element::nurbs2>( ele, ncomponents,
+          numdf, solution, ghostedData, from, fillzeros );
+      break;
     }
-    DRT::NURBS::NurbsDiscretization* nurbsdis
-    =
-        dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*dis));
-
-    if(nurbsdis==NULL)
+    case DRT::Element::nurbs3:
     {
-      dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
+      WirteDofResultStepNurbsEle<DRT::Element::nurbs3>( ele, ncomponents,
+          numdf, solution, ghostedData, from, fillzeros );
+      break;
     }
-    std::vector<Epetra_SerialDenseVector> myknots(3);
-    bool zero_ele=(*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,ele->Id());
-    if (zero_ele)
-      return;
-    for (int n=0; n<ele->NumNode(); ++n)
+    case DRT::Element::nurbs4:
     {
-      LINALG::Matrix<27,1> funct;
-      LINALG::Matrix<3,27> deriv;
-      LINALG::Matrix<3,1> gpa;
-      gpa = DRT::UTILS::getNodeCoordinates(numbering[n],DRT::Element::hex27);
-      DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
-      (funct                 ,
-          deriv                 ,
-          gpa                   ,
-          myknots               ,
-          weights               ,
-          DRT::Element::nurbs27);
-      double val[numdf] ; for (int d=0;d<numdf;++d) val[d]=0.;
-      for (int m=0;m<27;++m)
-      {
-        nodedofs.clear();
-        dis->Dof(ele->Nodes()[m], nodedofs);
-        for (int d=0; d<numdf; ++d)
-        {
-          const int lid = ghostedData->Map().LID(nodedofs[d+from]);
-          if (lid > -1)
-            val[d] += funct(m)*((*ghostedData)[lid]);
-          else
-          {
-            if(fillzeros)
-              val[d] += 0.;
-            else
-              dserror("received illegal dof local id: %d", lid);
-          }
-        }
-      }
-      for (int d=0;d<numdf;++d)
-        solution.push_back(val[d]);
+      WirteDofResultStepNurbsEle<DRT::Element::nurbs4>( ele, ncomponents,
+          numdf, solution, ghostedData, from, fillzeros );
+      break;
     }
-    break;
-  } // end case nurbs27
-  default:
-    dserror("VTK output not yet implemented for given NURBS element");
-    break;
+    case DRT::Element::nurbs9:
+    {
+      WirteDofResultStepNurbsEle<DRT::Element::nurbs9>( ele, ncomponents,
+          numdf, solution, ghostedData, from, fillzeros );
+      break;
+    }
+    case DRT::Element::nurbs8:
+    {
+      WirteDofResultStepNurbsEle<DRT::Element::nurbs8>( ele, ncomponents,
+          numdf, solution, ghostedData, from, fillzeros );
+      break;
+    }
+    case DRT::Element::nurbs27:
+    {
+      WirteDofResultStepNurbsEle<DRT::Element::nurbs27>( ele, ncomponents,
+          numdf, solution, ghostedData, from, fillzeros );
+      break;
+    }
+    default:
+      dserror("VTK output not yet implemented for given NURBS element");
+      break;
   }// end switch shape
+
   return;
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template < DRT::Element::DiscretizationType nurbs_type >
+void PostVtuWriter::WirteDofResultStepNurbsEle(
+    const DRT::Element* ele,
+    int ncomponents,
+    const int numdf,
+    std::vector<double>& solution,
+    Teuchos::RCP<Epetra_Vector> ghostedData,
+    const int from,
+    const bool fillzeros ) const
+{
+  const unsigned NUMNODES = DRT::UTILS::DisTypeToNumNodePerEle<nurbs_type>::numNodePerElement;
+  const unsigned DIM = DRT::UTILS::DisTypeToDim<nurbs_type>::dim;
+
+  const Teuchos::RCP<const DRT::Discretization> dis = field_->discretization();
+  std::vector<int> nodedofs;
+
+  const DRT::Element::DiscretizationType mapped_dis_type =
+      MapNurbsDisTypeToLagrangeDisType( nurbs_type );
+
+  const std::vector<int> &numbering =
+      DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(mapped_dis_type).second;
+
+  LINALG::Matrix<NUMNODES,1> weights;
+  const DRT::Node* const* nodes = ele->Nodes();
+  for (unsigned inode=0; inode<NUMNODES; inode++)
+  {
+    const DRT::NURBS::ControlPoint* cp =
+        dynamic_cast<const DRT::NURBS::ControlPoint* > (nodes[inode]);
+
+    weights(inode) = cp->W();
+  }
+  const DRT::NURBS::NurbsDiscretization* nurbsdis =
+      dynamic_cast<const DRT::NURBS::NurbsDiscretization*>( dis.get() );
+
+  if( not nurbsdis )
+    dserror("Cast to NURBS discretization failed.\n");
+
+  std::vector<Epetra_SerialDenseVector> myknots(3);
+  const bool zero_ele=(*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,ele->Id());
+
+  if (zero_ele)
+    return;
+
+  for (unsigned n=0; n<NUMNODES; ++n)
+  {
+    LINALG::Matrix<NUMNODES,1> funct;
+    LINALG::Matrix<DIM,NUMNODES> deriv;
+    LINALG::Matrix<3,1> gpa;
+
+    gpa = DRT::UTILS::getNodeCoordinates(numbering[n],mapped_dis_type);
+
+    DRT::NURBS::UTILS::nurbs_get_funct_deriv( funct, deriv,gpa,myknots,weights,
+        nurbs_type);
+
+    double val[numdf] ;
+    std::fill( val, val+numdf, 0.0 );
+
+    for (unsigned m=0; m<NUMNODES; ++m)
+    {
+      nodedofs.clear();
+      dis->Dof(ele->Nodes()[m], nodedofs);
+      for (int d=0; d<numdf; ++d)
+      {
+        const int lid = ghostedData->Map().LID(nodedofs[d+from]);
+        if (lid > -1)
+          val[d] += funct(m)*((*ghostedData)[lid]);
+        else
+        {
+          if(fillzeros)
+            val[d] += 0.;
+          else
+            dserror("received illegal dof local id: %d", lid);
+        }
+      }
+    }
+
+    for (int d=0;d<numdf;++d)
+      solution.push_back(val[d]);
+
+    for (int d=numdf; d<ncomponents; ++d)
+      solution.push_back(0.);
+  }
+}
+
 
 void
 PostVtuWriter::WriteDofResultStepBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
@@ -792,60 +931,116 @@ PostVtuWriter::WriteDofResultStepBeamEle(const DRT::ELEMENTS::Beam3Base* beamele
 
 void
 PostVtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents,const int numdf,
-    std::vector<double>& solution,Teuchos::RCP<Epetra_MultiVector> ghostedData)
+    std::vector<double>& solution,Teuchos::RCP<Epetra_MultiVector> ghostedData) const
 {
-  const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
 
   switch (ele->Shape())
   {
-  case DRT::Element::nurbs27:
-  {
-  const std::vector<int> &numbering =
-      DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(DRT::Element::hex27).second;
+    case DRT::Element::nurbs2:
+    {
+      WriteNodalResultStepNurbsEle<DRT::Element::nurbs2>( ele, ncomponents,
+          numdf, solution, ghostedData );
+      break;
+    }
+    case DRT::Element::nurbs3:
+    {
+      WriteNodalResultStepNurbsEle<DRT::Element::nurbs3>( ele, ncomponents,
+          numdf, solution, ghostedData );
+      break;
+    }
+    case DRT::Element::nurbs4:
+    {
+      WriteNodalResultStepNurbsEle<DRT::Element::nurbs4>( ele, ncomponents,
+          numdf, solution, ghostedData );
+      break;
+    }
+    case DRT::Element::nurbs9:
+    {
+      WriteNodalResultStepNurbsEle<DRT::Element::nurbs9>( ele, ncomponents,
+          numdf, solution, ghostedData );
+      break;
+    }
+    case DRT::Element::nurbs8:
+    {
+      WriteNodalResultStepNurbsEle<DRT::Element::nurbs8>( ele, ncomponents,
+          numdf, solution, ghostedData );
+      break;
+    }
+    case DRT::Element::nurbs27:
+    {
+      WriteNodalResultStepNurbsEle<DRT::Element::nurbs27>( ele, ncomponents,
+          numdf, solution, ghostedData );
+      break;
+    }
+    default:
+      dserror("VTK output not yet implemented for given NURBS element");
+      break;
+  } // end switch ele shape
+  return;
+}
 
-  LINALG::Matrix<27,1> weights;
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template < DRT::Element::DiscretizationType nurbs_type >
+void PostVtuWriter::WriteNodalResultStepNurbsEle(
+    const DRT::Element* ele,
+    int ncomponents,
+    const int numdf,
+    std::vector<double>& solution,
+    Teuchos::RCP<Epetra_MultiVector> ghostedData) const
+{
+  const unsigned NUMNODES = DRT::UTILS::DisTypeToNumNodePerEle<nurbs_type>::numNodePerElement;
+  const unsigned DIM = DRT::UTILS::DisTypeToDim<nurbs_type>::dim;
+
+  const Teuchos::RCP<const DRT::Discretization> dis = field_->discretization();
+  std::vector<int> nodedofs;
+
+  const DRT::Element::DiscretizationType mapped_dis_type =
+      MapNurbsDisTypeToLagrangeDisType( nurbs_type );
+
+  const std::vector<int> &numbering =
+      DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(mapped_dis_type).second;
+
+  LINALG::Matrix<NUMNODES,1> weights;
   const DRT::Node* const* nodes = ele->Nodes();
-  for (int inode=0; inode<27; inode++)
+  for (unsigned inode=0; inode<NUMNODES; inode++)
   {
-    const DRT::NURBS::ControlPoint* cp
-    =
+    const DRT::NURBS::ControlPoint* cp =
         dynamic_cast<const DRT::NURBS::ControlPoint* > (nodes[inode]);
 
     weights(inode) = cp->W();
   }
-  DRT::NURBS::NurbsDiscretization* nurbsdis
-  =
-      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*dis));
 
-  if(nurbsdis==NULL)
-  {
-    dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
-  }
+  const DRT::NURBS::NurbsDiscretization* nurbsdis =
+      dynamic_cast<const DRT::NURBS::NurbsDiscretization*>( dis.get() );
+
+  if( not nurbsdis )
+    dserror("Cast to NURBS discretization failed.\n");
+
   std::vector<Epetra_SerialDenseVector> myknots(3);
   bool zero_ele=(*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,ele->Id());
   if (zero_ele)
     return;
   double val[numdf];
-  for (int n=0; n<ele->NumNode(); ++n)
+  for (unsigned n=0; n<NUMNODES; ++n)
   {
-    LINALG::Matrix<27,1> funct;
-    LINALG::Matrix<3,27> deriv;
+    LINALG::Matrix<NUMNODES,1> funct;
+    LINALG::Matrix<DIM,NUMNODES> deriv;
     LINALG::Matrix<3,1> gpa;
-    gpa = DRT::UTILS::getNodeCoordinates(numbering[n],DRT::Element::hex27);
-    DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
-    (funct                 ,
-        deriv                 ,
-        gpa                   ,
-        myknots               ,
-        weights               ,
-        DRT::Element::nurbs27);
 
-    for (int i=0;i<numdf;++i)val[i]=0.;
+    gpa = DRT::UTILS::getNodeCoordinates(numbering[n],mapped_dis_type);
+
+    DRT::NURBS::UTILS::nurbs_get_funct_deriv(funct, deriv, gpa, myknots,
+        weights, nurbs_type );
+
+    for (int i=0;i<numdf;++i)
+      val[i]=0.;
+
     for (int idf=0; idf<numdf; ++idf)
     {
       Epetra_Vector* column = (*ghostedData)(idf);
 
-      for (int m=0;m<27;++m)
+      for (unsigned m=0;m<NUMNODES;++m)
       {
         int lid = ghostedData->Map().LID(ele->Nodes()[m]->Id());
         if (lid>-1)
@@ -854,17 +1049,89 @@ PostVtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncompon
           dserror("received illegal node local id: %d", lid);
       }
     }
+
     for (int d=0;d<numdf;++d)
       solution.push_back(val[d]);
 
     for (int d=numdf; d<ncomponents; ++d)
       solution.push_back(0.);
   }
-  break;
-  }// end nurbs27 case
-  default:
-    dserror("VTK output not yet implemented for given NURBS element");
-    break;
-  } // end switch ele shape
-  return;
 }
+
+/*----------------------------------------------------------------------------*/
+template void PostVtuWriter::WriteGeoNurbsEle<DRT::Element::nurbs2>(
+    const DRT::Element* ele,std::vector<uint8_t>& celltypes,
+    int& outNodeId,std::vector<int32_t>& celloffset,
+    std::vector<double>& coordinates) const;
+template void PostVtuWriter::WriteGeoNurbsEle<DRT::Element::nurbs3>(
+    const DRT::Element* ele,std::vector<uint8_t>& celltypes,
+    int& outNodeId,std::vector<int32_t>& celloffset,
+    std::vector<double>& coordinates) const;
+template void PostVtuWriter::WriteGeoNurbsEle<DRT::Element::nurbs4>(
+    const DRT::Element* ele,std::vector<uint8_t>& celltypes,
+    int& outNodeId,std::vector<int32_t>& celloffset,
+    std::vector<double>& coordinates) const;
+template void PostVtuWriter::WriteGeoNurbsEle<DRT::Element::nurbs9>(
+    const DRT::Element* ele,std::vector<uint8_t>& celltypes,
+    int& outNodeId,std::vector<int32_t>& celloffset,
+    std::vector<double>& coordinates) const;
+template void PostVtuWriter::WriteGeoNurbsEle<DRT::Element::nurbs8>(
+    const DRT::Element* ele,std::vector<uint8_t>& celltypes,
+    int& outNodeId,std::vector<int32_t>& celloffset,
+    std::vector<double>& coordinates) const;
+template void PostVtuWriter::WriteGeoNurbsEle<DRT::Element::nurbs27>(
+    const DRT::Element* ele,std::vector<uint8_t>& celltypes,
+    int& outNodeId,std::vector<int32_t>& celloffset,
+    std::vector<double>& coordinates) const;
+
+/*----------------------------------------------------------------------------*/
+template void PostVtuWriter::WirteDofResultStepNurbsEle<DRT::Element::nurbs2>(
+    const DRT::Element* ele, int ncomponents, const int numdf,
+    std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData,
+    const int from, const bool fillzeros ) const;
+template void PostVtuWriter::WirteDofResultStepNurbsEle<DRT::Element::nurbs3>(
+    const DRT::Element* ele, int ncomponents, const int numdf,
+    std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData,
+    const int from, const bool fillzeros ) const;
+template void PostVtuWriter::WirteDofResultStepNurbsEle<DRT::Element::nurbs4>(
+    const DRT::Element* ele, int ncomponents, const int numdf,
+    std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData,
+    const int from, const bool fillzeros ) const;
+template void PostVtuWriter::WirteDofResultStepNurbsEle<DRT::Element::nurbs9>(
+    const DRT::Element* ele, int ncomponents, const int numdf,
+    std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData,
+    const int from, const bool fillzeros ) const;
+template void PostVtuWriter::WirteDofResultStepNurbsEle<DRT::Element::nurbs8>(
+    const DRT::Element* ele, int ncomponents, const int numdf,
+    std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData,
+    const int from, const bool fillzeros ) const;
+template void PostVtuWriter::WirteDofResultStepNurbsEle<DRT::Element::nurbs27>(
+    const DRT::Element* ele, int ncomponents, const int numdf,
+    std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData,
+    const int from, const bool fillzeros ) const;
+
+/*----------------------------------------------------------------------------*/
+template void PostVtuWriter::WriteNodalResultStepNurbsEle<DRT::Element::nurbs2>(
+    const DRT::Element* ele, int ncomponents,
+    const int numdf, std::vector<double>& solution,
+    Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
+template void PostVtuWriter::WriteNodalResultStepNurbsEle<DRT::Element::nurbs3>(
+    const DRT::Element* ele, int ncomponents,
+    const int numdf, std::vector<double>& solution,
+    Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
+template void PostVtuWriter::WriteNodalResultStepNurbsEle<DRT::Element::nurbs4>(
+    const DRT::Element* ele, int ncomponents,
+    const int numdf, std::vector<double>& solution,
+    Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
+template void PostVtuWriter::WriteNodalResultStepNurbsEle<DRT::Element::nurbs9>(
+    const DRT::Element* ele, int ncomponents,
+    const int numdf, std::vector<double>& solution,
+    Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
+template void PostVtuWriter::WriteNodalResultStepNurbsEle<DRT::Element::nurbs8>(
+    const DRT::Element* ele, int ncomponents,
+    const int numdf, std::vector<double>& solution,
+    Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
+template void PostVtuWriter::WriteNodalResultStepNurbsEle<DRT::Element::nurbs27>(
+    const DRT::Element* ele, int ncomponents,
+    const int numdf, std::vector<double>& solution,
+    Teuchos::RCP<Epetra_MultiVector> ghostedData) const;

@@ -18,18 +18,26 @@ Here is everything related with reading a bc file
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::elem_def>& eledefs, std::vector<EXODUS::cond_def>& condefs)
+void EXODUS::ReadBCFile(
+    const std::string& bcfile,
+    std::vector<EXODUS::elem_def>& eledefs,
+    std::vector<EXODUS::cond_def>& condefs)
 {
   // first we read the whole file into one stream/std::string
   std::stringstream bcstream;
   const char *bcfilechar = bcfile.c_str();
+
   std::ifstream bcfstream(bcfilechar, std::ifstream::in);
   if (!bcfstream.good()){
     std::cout << std::endl << "Unable to open file: " << bcfile << std::endl;
     dserror("Unable to open bc-file");
   }
-  while (bcfstream.good()) bcstream << (char) bcfstream.get();
+
+  while (bcfstream.good())
+    bcstream << (char) bcfstream.get();
+
   bcfstream.close();
+
   // std::string which contains the whole file
   std::string allconds = bcstream.str();
   allconds.erase(allconds.end()-1);  //delete last 'whatisthis'-char
@@ -37,12 +45,31 @@ void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::elem_def>
   // get rid of first part
   size_t found;
   found = allconds.find("BCSPECS");
-  if (found==std::string::npos) dserror ("No specifications found in bcfile");
+  if (found==std::string::npos)
+    dserror ("No specifications found in bcfile. BCSPECS section is missing!");
   allconds.erase(allconds.begin(),allconds.begin()+found);
 
-  // get rid of 'validconditions' part
+  // get rid of 'validconditions' part, if it can be found
   found = allconds.find("VALIDCONDITIONS");
-  allconds.erase(allconds.begin()+found,allconds.end());
+  if ( found != std::string::npos )
+    allconds.erase(allconds.begin()+found,allconds.end());
+
+  // erase all comments
+  size_t comment_start = allconds.find_first_of("//");
+  size_t comment_end = 0;
+  while ( comment_start != std::string::npos )
+  {
+    if ( allconds[comment_start-1] != '\n' )
+    {
+      comment_end = comment_start+2;
+      comment_start = allconds.find_first_of( "//", comment_end );
+      continue;
+    }
+
+    comment_end = allconds.find_first_of('\n',comment_start);
+    allconds.erase( comment_start, comment_end-comment_start );
+    comment_start = allconds.find_first_of("//", comment_start-1);
+  }
 
   // define markers
   const std::string ebmarker("*eb");

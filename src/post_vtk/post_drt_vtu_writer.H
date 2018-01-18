@@ -114,8 +114,26 @@ protected:
   virtual void WriteGeo();
 
   //! write the geometry of Nurbs Element
-  virtual void WriteGeoNurbsEle(const DRT::Element* ele,std::vector<uint8_t>& celltypes,
-      int& outNodeId,std::vector<int32_t>& celloffset,std::vector<double>& coordinates);
+  virtual void WriteGeoNurbsEle(
+      const DRT::Element* ele,
+      std::vector<uint8_t>& celltypes,
+      int& outNodeId,
+      std::vector<int32_t>& celloffset,
+      std::vector<double>& coordinates) const;
+
+  /*! Generalization of the former non-template method for all implemented NURBS
+   *  discretization types
+   *
+   *  \author hiermeier (originally Seitz) \date 10/17 */
+  template < DRT::Element::DiscretizationType nurbs_type >
+  void WriteGeoNurbsEle(
+      const DRT::Element* ele,
+      std::vector<uint8_t>& celltypes,
+      int& outNodeId,std::vector<int32_t>& celloffset,
+      std::vector<double>& coordinates) const;
+
+  DRT::Element::DiscretizationType MapNurbsDisTypeToLagrangeDisType(
+      const DRT::Element::DiscretizationType nurbs_dis_type ) const;
 
   //! write the geometry of beam element (special treatment due to Hermite interpolation)
   virtual void WriteGeoBeamEle(
@@ -129,7 +147,21 @@ protected:
   //! Write a single result step for one Nurbs Element
   virtual void WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncomponents,const int numdf,
       std::vector<double>& solution,Teuchos::RCP<Epetra_Vector> ghostedData,
-      const int from, const bool fillzeros);
+      const int from, const bool fillzeros) const;
+
+  /*! Generalization of the former non-template method for all implemented NURBS
+   *  discretization types
+   *
+   *  \author hiermeier (originally Seitz) \date 10/17 */
+  template < DRT::Element::DiscretizationType nurbs_type >
+  void WirteDofResultStepNurbsEle(
+      const DRT::Element* ele,
+      int ncomponents,
+      const int numdf,
+      std::vector<double>& solution,
+      Teuchos::RCP<Epetra_Vector> ghostedData,
+      const int from,
+      const bool fillzeros ) const;
 
   virtual void WriteDofResultStepBeamEle(
       const DRT::ELEMENTS::Beam3Base* beamele,
@@ -143,7 +175,19 @@ protected:
 
   //! Write a single result step for one Nurbs Element
   virtual void WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents,const int numdf,
-      std::vector<double>& solution,Teuchos::RCP<Epetra_MultiVector> ghostedData);
+      std::vector<double>& solution,Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
+
+  /*! Generalization of the former non-template method for all implemented NURBS
+   *  discretization types
+   *
+   *  \author hiermeier (originally Seitz) \date 10/17 */
+  template < DRT::Element::DiscretizationType nurbs_type >
+  void WriteNodalResultStepNurbsEle(
+      const DRT::Element* ele,
+      int ncomponents,
+      const int numdf,
+      std::vector<double>& solution,
+      Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
 
 };
 

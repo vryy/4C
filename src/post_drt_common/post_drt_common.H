@@ -286,6 +286,7 @@ public:
 
   //! returns the discretization of this field
   Teuchos::RCP<DRT::Discretization> discretization() { return dis_; }
+  Teuchos::RCP<const DRT::Discretization> discretization() const { return dis_; }
 
   //! returns the number of output processors
   int num_output_procs() const { return num_output_procs_; }

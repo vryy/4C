@@ -1967,7 +1967,8 @@ void EnsightWriter::WriteDofResultStepForNurbs(
       else if(name == "norcontactstress" || name == "tancontactstress" || name == "interfacetraction" ||
           name == "slaveforces" || name == "masterforces" || name == "norslaveforce" ||
           name == "tanslaveforce" || name == "normasterforce" || name == "tanmasterforce" ||
-          name == "wear")
+          name == "wear" || name == "norslaveforcelm" || name == "norslaveforceg" ||
+          name == "normasterforcelm" || name == "normasterforceg" )
       {
         if(dim!=numdf)
         {
@@ -2177,7 +2178,8 @@ void EnsightWriter::WriteDofResultStepForNurbs(
     else if(name == "norcontactstress" || name == "tancontactstress" || name == "interfacetraction" ||
         name == "slaveforces" || name == "masterforces" || name == "norslaveforce" ||
         name == "tanslaveforce" || name == "normasterforce" || name == "tanmasterforce" ||
-        name == "wear")
+        name == "wear" || name == "norslaveforcelm" || name == "norslaveforceg" ||
+        name == "normasterforcelm" || name == "normasterforceg")
     {
       my_data.resize(dim*numnp);
 

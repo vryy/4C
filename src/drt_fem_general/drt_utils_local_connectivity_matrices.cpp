@@ -2182,3 +2182,21 @@ int DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
   }
   return -1;
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool DRT::UTILS::IsNurbsDisType( const DRT::Element::DiscretizationType dis_type )
+{
+  switch ( dis_type )
+  {
+    case DRT::Element::nurbs2:
+    case DRT::Element::nurbs3:
+    case DRT::Element::nurbs4:
+    case DRT::Element::nurbs9:
+    case DRT::Element::nurbs8:
+    case DRT::Element::nurbs27:
+      return true;
+    default:
+      return false;
+  }
+}

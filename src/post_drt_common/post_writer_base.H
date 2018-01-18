@@ -1,15 +1,17 @@
-/*
- \file post_drt_writer_base.H
+/*----------------------------------------------------------------------*/
+/*!
+\file post_writer_base.H
 
- \brief contains base class for a generic output filter (ensight and vtk are derived from this class)
+\brief contains base class for a generic output filter (ensight and vtk are derived from this class)
 
- <pre>
- Maintainer: Martin Kronbichler
- kronbichler@lnm.mw.tum.de
- http://www.lnm.mw.tum.de/
- 089 - 289-15235
- </pre>
- */
+<pre>
+\level 2
+\maintainer Martin Kronbichler
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef POST_DRT_WRITER_BASE_H_
 #define POST_DRT_WRITER_BASE_H_
@@ -51,6 +53,12 @@ public:
 
   //! return the field specified at construction
   PostField* GetField()
+  {
+    dsassert(field_ != NULL, "No field has been set");
+    return field_;
+  }
+
+  const PostField* GetField() const
   {
     dsassert(field_ != NULL, "No field has been set");
     return field_;

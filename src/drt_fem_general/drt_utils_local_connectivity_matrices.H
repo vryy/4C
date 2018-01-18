@@ -1016,58 +1016,95 @@ namespace UTILS
       const int faceId, const int faceNodeId);
 
   /*!
-   * Returns the geometric center of the element in local coordinates
+   * \brief Get the geometric center of the element in local coordinates
    *
-   * \tparam   dim  dimension of the element space (e.g. dim=2 for quad4)
+   * @param[in]  dim  dimension of the element space (e.g. dim=2 for quad4)
+   * @param[out] pos  local center position
    */
-  template<int dim>
+  template<unsigned dim>
   LINALG::Matrix<dim,1> getLocalCenterPosition(
+    const DRT::Element::DiscretizationType   distype,  ///< shape of the element
+    LINALG::Matrix<dim,1>& pos                         ///< center position
+    )
+  {
+    switch(distype)
+    {
+      case DRT::Element::line2:
+      case DRT::Element::line3:
+      case DRT::Element::nurbs2:
+      case DRT::Element::nurbs3:
+      {
+        pos = 0.0;
+        break;
+      }
+      case DRT::Element::quad4:
+      case DRT::Element::quad6:
+      case DRT::Element::quad8:
+      case DRT::Element::quad9:
+      case DRT::Element::nurbs4:
+      case DRT::Element::nurbs9:
+      {
+        pos = 0.0;
+        break;
+      }
+      case DRT::Element::tri3:
+      case DRT::Element::tri6:
+      {
+        pos = 1.0/3.0;
+        break;
+      }
+      case DRT::Element::hex8:
+      case DRT::Element::hex16:
+      case DRT::Element::hex18:
+      case DRT::Element::hex20:
+      case DRT::Element::hex27:
+      {
+        pos = 0.0;
+        break;
+      }
+      case DRT::Element::tet4:
+      case DRT::Element::tet10:
+      {
+        pos = 1.0/4.0;
+        break;
+      }
+      case DRT::Element::wedge6:
+      case DRT::Element::wedge15:
+      {
+        pos = 1.0/3.0;
+        pos( 2, 0 ) = 0;
+        break;
+      }
+      case DRT::Element::pyramid5:
+      {
+        pos = 0.0;
+        pos( 2, 0 ) = 0.25;
+        break;
+      }
+      default:
+      {
+        dserror("discretization type %s not yet implemented",
+            DRT::DistypeToString(distype).c_str());
+        exit( EXIT_FAILURE );
+      }
+    }
+    return pos;
+  }
+
+  /*!
+   * \brief Returns the geometric center of the element in local coordinates
+   *
+   * @param[in] dim  dimension of the element space (e.g. dim=2 for quad4)
+   *
+   * \return local center position.
+   */
+  template<unsigned dim>
+  inline LINALG::Matrix<dim,1> getLocalCenterPosition(
     const DRT::Element::DiscretizationType   distype     ///< shape of the element
     )
   {
-    LINALG::Matrix<dim,1> pos;
-    switch(distype)
-    {
-        case DRT::Element::line2 :  case DRT::Element::line3 :
-        {
-            pos = 0.0;
-            break;
-        }
-        case DRT::Element::quad4 : case DRT::Element::quad6 : case DRT::Element::quad8 : case DRT::Element::quad9 :
-        {
-            pos = 0.0;
-            break;
-        }
-        case DRT::Element::tri3 : case DRT::Element::tri6 :
-        {
-            pos = 1.0/3.0;
-            break;
-        }
-        case DRT::Element::hex8 : case DRT::Element::hex16 : case DRT::Element::hex18 : case DRT::Element::hex20 : case DRT::Element::hex27 :
-        {
-            pos = 0.0;
-            break;
-        }
-        case DRT::Element::tet4 : case DRT::Element::tet10 :
-        {
-            pos = 1.0/4.0;
-            break;
-        }
-        case DRT::Element::wedge6 : case DRT::Element::wedge15 :
-        {
-            pos = 1.0/3.0;
-            pos( 2, 0 ) = 0;
-            break;
-        }
-        case DRT::Element::pyramid5 :
-        {
-            pos = 0.0;
-            pos( 2, 0 ) = 0.25;
-            break;
-        }
-        default:
-            dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str()); break;
-    }
+    LINALG::Matrix<dim,1> pos( false );
+    getLocalCenterPosition( distype, pos );
     return pos;
   }
 
@@ -1104,6 +1141,20 @@ namespace UTILS
     static const int value = 1;
   };
 
+  /// a trait to identify NURBS discretization types
+  template< DRT::Element::DiscretizationType type >
+  struct is_nurbs_dis_type { static const bool value = false; };
+
+  /// supported/known NURBS types
+  template <> struct is_nurbs_dis_type<DRT::Element::nurbs2> { static const bool value = true; };
+  template <> struct is_nurbs_dis_type<DRT::Element::nurbs3> { static const bool value = true; };
+  template <> struct is_nurbs_dis_type<DRT::Element::nurbs4> { static const bool value = true; };
+  template <> struct is_nurbs_dis_type<DRT::Element::nurbs9> { static const bool value = true; };
+  template <> struct is_nurbs_dis_type<DRT::Element::nurbs8> { static const bool value = true; };
+  template <> struct is_nurbs_dis_type<DRT::Element::nurbs27>{ static const bool value = true; };
+
+  /// return TRUE if the given dis_type is a NURBS type
+  bool IsNurbsDisType( const DRT::Element::DiscretizationType dis_type );
 
 } // namespace UTILS
 } // namespace DRT
