@@ -123,11 +123,11 @@ void SSI::SSICouplingMatchingVolume::SetVelocityFields(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolume::SetScalarField(
-    Teuchos::RCP< ::ADAPTER::Structure> structure,     /// underlying structure of the SSI problem,
-    Teuchos::RCP<const Epetra_Vector> phi              /// scalar field to set
+    DRT::Discretization&                structdis,   //!< structural discretization
+    Teuchos::RCP<const Epetra_Vector>   phi          //!< scalar field
     )
 {
-  structure->Discretization()->SetState(1,"scalarfield",phi);
+  structdis.SetState(1,"scalarfield",phi);
 }
 
 /*----------------------------------------------------------------------*/
@@ -256,8 +256,8 @@ void SSI::SSICouplingNonMatchingBoundary::SetVelocityFields(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingBoundary::SetScalarField(
-    Teuchos::RCP< ::ADAPTER::Structure> structure,     /// underlying structure of the SSI problem,
-    Teuchos::RCP<const Epetra_Vector> phi              /// scalar field to set
+    DRT::Discretization&                structdis,   //!< structural discretization
+    Teuchos::RCP<const Epetra_Vector>   phi          //!< scalar field
     )
 {
   dserror("transferring scalar state to structure discretization not implemented for "
@@ -374,11 +374,11 @@ void SSI::SSICouplingNonMatchingVolume::SetVelocityFields(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingVolume::SetScalarField(
-    Teuchos::RCP< ::ADAPTER::Structure> structure,     /// underlying structure of the SSI problem,
-    Teuchos::RCP<const Epetra_Vector> phi              /// scalar field to set
+    DRT::Discretization&                structdis,   //!< structural discretization
+    Teuchos::RCP<const Epetra_Vector>   phi          //!< scalar field
     )
 {
-  structure->Discretization()->SetState(1,"scalarfield",volcoupl_structurescatra_->ApplyVectorMapping12(phi));
+  structdis.SetState(1,"scalarfield",volcoupl_structurescatra_->ApplyVectorMapping12(phi));
 }
 
 /*----------------------------------------------------------------------*/
@@ -525,9 +525,9 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::SetVelocityFields(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolumeAndBoundary::SetScalarField(
-    Teuchos::RCP< ::ADAPTER::Structure> structure,     /// underlying structure of the SSI problem,
-    Teuchos::RCP<const Epetra_Vector> phi              /// scalar field to set
+    DRT::Discretization&                structdis,   //!< structural discretization
+    Teuchos::RCP<const Epetra_Vector>   phi          //!< scalar field
     )
 {
-  structure->Discretization()->SetState(1,"scalarfield",phi);
+  structdis.SetState(1,"scalarfield",phi);
 }

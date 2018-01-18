@@ -71,9 +71,9 @@ namespace SSI
 
     //! set scatra solution on structure field
     virtual void SetScalarField(
-        Teuchos::RCP< ::ADAPTER::Structure> structure,     //!< underlying structure of the SSI problem,
-        Teuchos::RCP<const Epetra_Vector> phi              //!< scalar field to set
-        ) =0;
+        DRT::Discretization&                structdis,   //!< structural discretization
+        Teuchos::RCP<const Epetra_Vector>   phi          //!< scalar field
+        )=0;
   };
 
   //! solid-scatra coupling for matching volume meshes
@@ -122,8 +122,8 @@ namespace SSI
 
     //! set scatra solution on structure field
     virtual void SetScalarField(
-        Teuchos::RCP< ::ADAPTER::Structure> structure,     //!< underlying structure of the SSI problem,
-        Teuchos::RCP<const Epetra_Vector> phi              //!< scalar field to set
+        DRT::Discretization&                structdis,   //!< structural discretization
+        Teuchos::RCP<const Epetra_Vector>   phi          //!< scalar field
         );
 
   private:
@@ -209,8 +209,8 @@ namespace SSI
 
     //! set scatra solution on structure field
     virtual void SetScalarField(
-        Teuchos::RCP< ::ADAPTER::Structure> structure,     //!< underlying structure of the SSI problem,
-        Teuchos::RCP<const Epetra_Vector> phi              //!< scalar field to set
+        DRT::Discretization&                structdis,   //!< structural discretization
+        Teuchos::RCP<const Epetra_Vector>   phi          //!< scalar field
         );
 
   private:
@@ -312,8 +312,8 @@ namespace SSI
 
     //! set scatra solution on structure field
     virtual void SetScalarField(
-        Teuchos::RCP< ::ADAPTER::Structure> structure,     //!< underlying structure of the SSI problem,
-        Teuchos::RCP<const Epetra_Vector> phi              //!< scalar field to set
+        DRT::Discretization&                structdis,   //!< structural discretization
+        Teuchos::RCP<const Epetra_Vector>   phi          //!< scalar field
         );
 
   private:
@@ -403,8 +403,8 @@ namespace SSI
 
     //! set scatra solution on structure field
     virtual void SetScalarField(
-        Teuchos::RCP< ::ADAPTER::Structure> structure,     //!< underlying structure of the SSI problem,
-        Teuchos::RCP<const Epetra_Vector> phi              //!< scalar field to set
+        DRT::Discretization&                structdis,   //!< structural discretization
+        Teuchos::RCP<const Epetra_Vector>   phi          //!< scalar field
         );
 
   private:

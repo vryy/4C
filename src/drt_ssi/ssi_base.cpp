@@ -212,11 +212,11 @@ void SSI::SSI_Base::Setup()
   // check initialization
   CheckIsInit();
 
+  // set up helper class for field coupling
+  ssicoupling_->Setup();
+
   // set up scalar transport field
   scatra_->ScaTraField()->Setup();
-
-  // pass initial scalar field to structural discretization to correctly compute initial accelerations
-  DRT::Problem::Instance()->GetDis("structure")->SetState(1,"scalarfield",scatra_->ScaTraField()->Phinp());
 
   // only relevant for new structural time integration
   // only if adapter base has not already been set up outside
@@ -224,6 +224,10 @@ void SSI::SSI_Base::Setup()
   {
     // set up structural model evaluator
     SetupModelEvaluator();
+
+    // pass initial scalar field to structural discretization to correctly compute initial accelerations
+    if(DRT::INPUT::IntegralValue<INPAR::SSI::SolutionSchemeOverFields>(DRT::Problem::Instance()->SSIControlParams(),"COUPALGO") != INPAR::SSI::ssi_OneWay_SolidToScatra)
+      ssicoupling_->SetScalarField(*DRT::Problem::Instance()->GetDis("structure"),scatra_->ScaTraField()->Phinp());
 
     // set up structural base algorithm
     struct_adapterbase_ptr_->Setup();
@@ -247,9 +251,6 @@ void SSI::SSI_Base::Setup()
     dserror("Scalar transport discretization does not have any degrees of freedom!");
   if(structure_->DofRowMap()->NumGlobalElements() == 0)
     dserror("Structure discretization does not have any degrees of freedom!");
-
-  // set up helper class for field coupling
-  ssicoupling_->Setup();
 
   // construct vector of zeroes
   zeros_ = LINALG::CreateVector(*structure_->DofRowMap());
@@ -566,7 +567,7 @@ void SSI::SSI_Base::SetScatraSolution( Teuchos::RCP<const Epetra_Vector> phi )
   CheckIsInit();
   CheckIsSetup();
 
-  ssicoupling_->SetScalarField(structure_,phi);
+  ssicoupling_->SetScalarField(*structure_->Discretization(),phi);
 }
 
 /*----------------------------------------------------------------------*/
