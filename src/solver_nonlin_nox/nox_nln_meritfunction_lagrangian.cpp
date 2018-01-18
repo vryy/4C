@@ -24,9 +24,15 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::MeritFunction::Lagrangian::Lagrangian(const Teuchos::RCP<NOX::Utils>& u)
-    : meritFunctionName_("Lagrangian")
+NOX::NLN::MeritFunction::Lagrangian::Lagrangian(
+    const std::string& identifier,
+    const Teuchos::RCP<NOX::Utils>& u)
+    : lagrangian_type_(mrtfct_vague),
+      meritFunctionName_()
 {
+  SetType( identifier );
+  meritFunctionName_ = MeritFuncName2String( Type() );
+
   utils_ = u;
 }
 
@@ -165,6 +171,51 @@ double NOX::NLN::MeritFunction::Lagrangian::computeSaddlePointModel(
 const std::string& NOX::NLN::MeritFunction::Lagrangian::name() const
 {
   return meritFunctionName_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+std::map<std::string,NOX::NLN::MeritFunction::MeritFctName>
+NOX::NLN::MeritFunction::Lagrangian::GetSupportedTypeList() const
+{
+  std::map<std::string,MeritFctName> type_names;
+
+  type_names[ "Lagrangian" ] = mrtfct_lagrangian;
+  type_names[ "Lagrangian Active" ] = mrtfct_lagrangian_active;
+
+  return type_names;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void NOX::NLN::MeritFunction::Lagrangian::SetType(
+    const std::string& identifier )
+{
+  static const std::map<std::string,MeritFctName> supported_type_names =
+      GetSupportedTypeList();
+
+  auto cit = supported_type_names.cbegin();
+  while ( cit != supported_type_names.cend() )
+  {
+    if ( boost::iequals(identifier,cit->first) )
+    {
+      lagrangian_type_ = cit->second;
+      break;
+    }
+    ++cit;
+  }
+
+  if ( cit == supported_type_names.cend() )
+  {
+    std::cout << "\n\n=====================================================\n";
+    std::cout << "Supported Lagrangian type names:\n"
+        "EXPECTED INPUT [= deduced merit function type]\n";
+    for ( const auto& supported_pair : supported_type_names )
+      std::cout << supported_pair.first << " [= " <<
+          MeritFuncName2String(supported_pair.second) << "]\n";
+
+    dserror( "Unknown type name: \"%s\"", identifier.c_str() );
+  }
 }
 
 /*----------------------------------------------------------------------*

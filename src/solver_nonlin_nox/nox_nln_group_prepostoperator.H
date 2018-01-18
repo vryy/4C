@@ -117,6 +117,34 @@ namespace GROUP {
         const double& step,
         const NOX::NLN::Group& curr_grp);
 
+    /*! User defined method that will be executed at the beginning
+     *  of a call to NOX::NLN::Group::applyJacobianInverse().
+     *
+     *  \param rhs    : read-only access to the rhs vector
+     *  \param result : full access to the result vector
+     *  \param xold   : read-only access to the state vector
+     *  \param grp    : read only access to the group object
+     */
+    virtual void runPreApplyJacobianInverse(
+        const NOX::Abstract::Vector& rhs,
+        NOX::Abstract::Vector& result,
+        const NOX::Abstract::Vector& xold,
+        const NOX::NLN::Group& grp );
+
+    /*! User defined method that will be executed at the end
+     *  of a call to NOX::NLN::Group::applyJacobianInverse().
+     *
+     *  \param rhs    : read-only access to the rhs vector
+     *  \param result : full access to the result vector
+     *  \param xold   : read-only access to the old state vector
+     *  \param grp    : read only access to the group object
+     */
+    virtual void runPostApplyJacobianInverse(
+        const NOX::Abstract::Vector& rhs,
+        NOX::Abstract::Vector& result,
+        const NOX::Abstract::Vector& xold,
+        const NOX::NLN::Group& grp );
+
   protected:
     //! Flag that determines if a pre/post operator has been supplied by user.
     bool havePrePostOperator_;
@@ -187,5 +215,32 @@ inline void NOX::NLN::GROUP::PrePostOperator::runPostComputeX(
   }
 }
 
+inline void NOX::NLN::GROUP::PrePostOperator::runPreApplyJacobianInverse(
+    const NOX::Abstract::Vector& rhs,
+    NOX::Abstract::Vector& result,
+    const NOX::Abstract::Vector& xold,
+    const NOX::NLN::Group& grp )
+{
+  if (havePrePostOperator_)
+  {
+    Map::iterator it;
+    for (it=prePostOperatorMapPtr_->begin();it!=prePostOperatorMapPtr_->end();++it)
+      it->second->runPreApplyJacobianInverse(rhs,result,xold,grp);
+  }
+}
+
+inline void NOX::NLN::GROUP::PrePostOperator::runPostApplyJacobianInverse(
+    const NOX::Abstract::Vector& rhs,
+    NOX::Abstract::Vector& result,
+    const NOX::Abstract::Vector& xold,
+    const NOX::NLN::Group& grp )
+{
+  if (havePrePostOperator_)
+  {
+    Map::iterator it;
+    for (it=prePostOperatorMapPtr_->begin();it!=prePostOperatorMapPtr_->end();++it)
+      it->second->runPostApplyJacobianInverse(rhs,result,xold,grp);
+  }
+}
 
 #endif /* SRC_SOLVER_NONLIN_NOX_NOX_NLN_GROUP_PREPOSTOPERATOR_H_ */

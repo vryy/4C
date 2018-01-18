@@ -21,6 +21,7 @@
 
 #include <NOX_Utils.H>
 #include <NOX_Abstract_Vector.H>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 // supported inner status tests
 #include "nox_nln_inner_statustest_armijo.H"
@@ -160,6 +161,24 @@ NOX::NLN::INNER::StatusTest::Factory::BuildFilterTest(
    * approximation. */
   const double gamma_alpha = p.get<double>( "Gamma Alpha" );
 
+  // read second order correction parameters
+  const bool use_soc = p.get<bool>( "Second Order Correction" );
+  NOX::NLN::CorrectionType soc_type = NOX::NLN::CorrectionType::vague;
+  if ( use_soc )
+  {
+    static const Teuchos::Array<std::string> soc_types =
+        Teuchos::tuple<std::string>( "auto", "cheap", "full" );
+    Teuchos::setStringToIntegralParameter<NOX::NLN::CorrectionType>(
+        "SOC Type","auto","Second order correction type. Per default the SOC "
+        "type is set to \"auto\".", soc_types,
+        Teuchos::tuple<NOX::NLN::CorrectionType>(
+            NOX::NLN::CorrectionType::soc_automatic,
+            NOX::NLN::CorrectionType::soc_cheap,
+            NOX::NLN::CorrectionType::soc_full ), &p );
+    soc_type = Teuchos::getIntegralValue<NOX::NLN::CorrectionType>(p,"SOC Type");
+  }
+
+  // build internal Armijo test
   Teuchos::RCP<Generic> armijo = BuildArmijoTest( p.sublist("Filter-Armijo"), u );
 
   Teuchos::RCP<NOX::NLN::INNER::StatusTest::Filter> status_test_ptr =
@@ -171,6 +190,8 @@ NOX::NLN::INNER::StatusTest::Factory::BuildFilterTest(
           sf,
           st,
           gamma_alpha,
+          use_soc,
+          soc_type,
           u ) );
 
   return status_test_ptr;

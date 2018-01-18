@@ -78,9 +78,18 @@ namespace GROUP {
     //! derived
     virtual NOX::Abstract::Group::ReturnType computeF();
 
+    //! derived
+    NOX::Abstract::Group::ReturnType applyJacobianInverse (
+        Teuchos::ParameterList &p,
+        const NOX::Epetra::Vector &input,
+        NOX::Epetra::Vector &result) const;
+
     //! Compute and store \f$F(x)\f$ and the jacobian \f$\frac{\partial F(x)}{\partial x}\f$ at the same time.
     //! This can result in a huge performance gain in some special cases, e.g. contact problems.
     virtual NOX::Abstract::Group::ReturnType computeFandJacobian();
+
+    NOX::Abstract::Group::ReturnType computeCorrectionSystem(
+        const enum NOX::NLN::CorrectionType type );
 
     //! set right hand side
     NOX::Abstract::Group::ReturnType setF(Teuchos::RCP<NOX::Epetra::Vector> Fptr);
@@ -127,6 +136,13 @@ namespace GROUP {
         const std::vector<NOX::Abstract::Vector::NormType>& type,
         const std::vector<StatusTest::QuantityType>& chQ,
         Teuchos::RCP<const std::vector<StatusTest::NormUpdate::ScaleType> > scale) const;
+
+    //! create a backup state
+    virtual void CreateBackupState(
+        const NOX::Abstract::Vector& dir ) const;
+
+    //! recover from stored backup state
+    virtual void RecoverFromBackupState();
 
     //! @name reset the pre/post operator wrapper objects
     //! @{

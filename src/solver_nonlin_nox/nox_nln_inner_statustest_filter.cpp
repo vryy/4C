@@ -25,9 +25,11 @@
 #include "nox_nln_linesearch_generic.H"
 #include "nox_nln_solver_linesearchbased.H"
 #include "nox_nln_statustest_activeset.H"
+#include "nox_nln_group.H"
 
 #include "../drt_lib/drt_dserror.H"
 
+#include <Teuchos_Time.hpp>
 #include <NOX_MeritFunction_Generic.H>
 #include <NOX_Solver_Generic.H>
 
@@ -40,6 +42,9 @@ double NOX::NLN::INNER::StatusTest::Filter::Point::gamma_theta_( 0.0 );
 std::vector<bool> NOX::NLN::INNER::StatusTest::Filter::Point::isvalid_scaling_;
 LINALG::SerialDenseVector NOX::NLN::INNER::StatusTest::Filter::Point::scale_;
 LINALG::SerialDenseVector NOX::NLN::INNER::StatusTest::Filter::Point::weights_;
+std::set<Teuchos::RCP<NOX::NLN::INNER::StatusTest::Filter::Point>,
+  NOX::NLN::INNER::StatusTest::rcp_comp<NOX::NLN::INNER::StatusTest::Filter::Point> >
+NOX::NLN::INNER::StatusTest::Filter::Point::filter_point_register_;
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -51,6 +56,8 @@ NOX::NLN::INNER::StatusTest::Filter::Filter(
     const double sf,
     const double st,
     const double gamma_alpha,
+    const bool use_soc,
+    const NOX::NLN::CorrectionType soc_type,
     const NOX::Utils& utils )
     : status_( status_unevaluated ),
       theta_( infeasibility_vec ),
@@ -58,6 +65,8 @@ NOX::NLN::INNER::StatusTest::Filter::Filter(
       curr_fpoints_( plain_point_pair( Teuchos::null, Teuchos::null ) ),
       filter_(),
       non_dominated_filter_points_(),
+      backup_(),
+      soc_( SOCBase::create(*this,use_soc,soc_type) ),
       gamma_alpha_( gamma_alpha ),
       amin_obj_( 1.0 ),
       amin_theta_( 1.0 ),
@@ -69,6 +78,7 @@ NOX::NLN::INNER::StatusTest::Filter::Filter(
       model_mixed_terms_(),
       armijo_test_( armijo ),
       is_ftype_step_( false ),
+      filter_status_( FilterStatusType::unevaluated ),
       utils_( utils )
 {
   Point::resetStaticMembers( 1, theta_.number_, weight_objective_func,
@@ -82,12 +92,38 @@ NOX::NLN::INNER::StatusTest::Filter::Filter(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void NOX::NLN::INNER::StatusTest::Filter::Reset()
+{
+  filter_.clear();
+  Point::resetStaticMembers();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void NOX::NLN::INNER::StatusTest::Filter::Point::setMarginSafetyFactors()
 {
-  gamma_obj_ = std::min<double>( 0.001,
+  gamma_obj_ = std::min<double>( 1.0e-6,
       1.0 / ( 2.0*std::sqrt<double>( static_cast<double>( num_coords_ ) ).real() ) );
 
   gamma_theta_ = gamma_obj_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void NOX::NLN::INNER::StatusTest::Filter::Point::resetStaticMembers()
+{
+  if ( isvalid_scaling_.size() < num_coords_ )
+    isvalid_scaling_.resize( num_coords_, false );
+  else
+    std::fill( isvalid_scaling_.begin(), isvalid_scaling_.end(), false );
+
+  scale_.LightResize( num_coords_ );
+
+  // initialize the scale_ vector
+  std::fill( scale_.A(), scale_.A()+num_coords_, 1.0 );
+
+  // clear the filter point register
+  filter_point_register_.clear();
 }
 
 /*----------------------------------------------------------------------------*
@@ -101,16 +137,13 @@ void NOX::NLN::INNER::StatusTest::Filter::Point::resetStaticMembers(
   num_obj_coords_ = num_obj_coords;
   num_coords_ = num_theta_coords + num_obj_coords;
 
-  isvalid_scaling_.resize( num_coords_, false );
-  scale_.LightResize( num_coords_ );
   weights_.LightResize( num_coords_ );
-
-  // initialize the scale_ vector
-  std::fill( scale_.A(), scale_.A()+num_coords_, 1.0 );
 
   // initialize the weights vector
   std::fill( weights_.A(), weights_.A()+num_obj_coords_, weight_objective_func );
   std::fill( weights_.A()+num_obj_coords_, weights_.A()+num_coords_, weight_infeasibility_func );
+
+  resetStaticMembers();
 }
 
 /*----------------------------------------------------------------------------*
@@ -135,20 +168,56 @@ NOX::NLN::INNER::StatusTest::Filter::Point::create(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::NLN::INNER::StatusTest::Filter::Point>
-NOX::NLN::INNER::StatusTest::Filter::Point::makeFilterPoint( const Point& p )
+NOX::NLN::INNER::StatusTest::Filter::Point::makeFilterPoint(
+    const Point& p, const bool do_scaling )
 {
   Teuchos::RCP<Point> fp_ptr = Teuchos::rcp( new Point( p ) );
   Point& fp = *fp_ptr;
 
   if ( not fp.is_filter_point_ )
   {
-    fp.scale();
+    if ( do_scaling )
+      fp.scale();
     fp.setNorm();
     fp.setMargin();
     fp.is_filter_point_ = true;
   }
 
+  addFilterPointToRegister( fp_ptr );
   return fp_ptr;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void NOX::NLN::INNER::StatusTest::Filter::Point::addFilterPointToRegister(
+    const Teuchos::RCP<Point>& fp_ptr )
+{
+  for ( const Teuchos::RCP<Point>& reg_fp_ptr : filter_point_register_ )
+  {
+    // erase all old filter points which are no longer in use
+    if ( reg_fp_ptr.strong_count() == 1 )
+      filter_point_register_.erase( reg_fp_ptr );
+  }
+
+  filter_point_register_.insert( fp_ptr );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void NOX::NLN::INNER::StatusTest::Filter::Point::scaleCoordinateOfAllRegisteredFilterPoints(
+    const int id )
+{
+  if ( isvalid_scaling_[id] )
+    return;
+
+  for ( const Teuchos::RCP<Point>& reg_fp_ptr : filter_point_register_ )
+  {
+    reg_fp_ptr->coords_(id) *= scale_(id);
+    reg_fp_ptr->setNorm();
+    reg_fp_ptr->setMargin();
+  }
+
+  isvalid_scaling_[id] = true;
 }
 
 /*----------------------------------------------------------------------------*
@@ -170,7 +239,7 @@ void NOX::NLN::INNER::StatusTest::Filter::Point::scale()
       if ( not isvalid_scaling_[i] )
       {
         scale_(i) = weights_(i) / std::abs( coords_(i) );
-        isvalid_scaling_[i] = true;
+        scaleCoordinateOfAllRegisteredFilterPoints( i );
       }
 
       coords_(i) *= scale_(i);
@@ -205,11 +274,12 @@ void NOX::NLN::INNER::StatusTest::Filter::Point::setNorm()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 std::ostream& NOX::NLN::INNER::StatusTest::Filter::Point::print(
-    std::ostream& stream, int par_indent_length, const NOX::Utils& u ) const
+    std::ostream& stream, int par_indent_length, const NOX::Utils* u ) const
 {
   std::string par_indent;
   par_indent.assign(par_indent_length,' ');
 
+  stream << par_indent;
   if ( is_filter_point_ )
   {
     stream << "Filter-Point -- { ";
@@ -227,7 +297,7 @@ std::ostream& NOX::NLN::INNER::StatusTest::Filter::Point::print(
   }
   stream << " } with norm = " << NOX::Utils::sciformat( norm_, OUTPUT_PRECISION ) << ";\n";
 
-  if ( u.isPrintType( NOX::Utils::Details ) )
+  if ( !u or u->isPrintType( NOX::Utils::Details ) )
   {
     stream << par_indent << "margin = { ";
     for ( unsigned i=0; i<num_coords_; ++i )
@@ -273,13 +343,57 @@ unsigned NOX::NLN::INNER::StatusTest::Filter::Infeasibility::findMaxThetaId(
 
   while ( i < number_ )
   {
-   if ( theta_values[max_theta_id] < theta_values[i] )
-     max_theta_id = i;
+    if ( theta_values[max_theta_id] < theta_values[i] )
+      max_theta_id = i;
 
    ++i;
   }
 
   return max_theta_id;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void NOX::NLN::INNER::StatusTest::Filter::InitPoints(
+    const Interface::Required &  interface,
+    const NOX::Solver::Generic & solver,
+    const NOX::Abstract::Group & grp )
+{
+  const int iter_newton = solver.getNumIterations();
+  const NOX::MeritFunction::Generic& merit_func = interface.GetMeritFunction();
+
+  switch ( iter_newton )
+  {
+    case 0:
+    {
+      dserror( "Not supposed to be called for Newton iteration zero!" );
+      break;
+    }
+    // --------------------------------------------------------------------
+    // compute the point coordinates of the first reference state
+    // which is accepted by default and clear the old filter
+    // --------------------------------------------------------------------
+    case 1:
+    {
+      Reset();
+      curr_points_.first = Point::create( merit_func, theta_, grp );
+      curr_fpoints_.first = Point::makeFilterPoint( *curr_points_.first, false );
+
+      break;
+    }
+    // --------------------------------------------------------------------
+    // Move the previously accepted point to the first position at the very
+    // beginning of each Newton step (except for the very first Newton step)
+    // --------------------------------------------------------------------
+    default:
+    {
+      // set accepted trial point at the first position
+      curr_points_.first = curr_points_.second;
+      curr_fpoints_.first = curr_fpoints_.second;
+
+      break;
+    }
+  }
 }
 
 /*----------------------------------------------------------------------------*
@@ -297,45 +411,16 @@ NOX::NLN::INNER::StatusTest::Filter::CheckStatus(
     dserror( "Dynamic cast failed!" );
   const NOX::NLN::LineSearch::Generic& linesearch = *linesearch_ptr;
 
-  const NOX::Abstract::Vector& dir = linesearch.GetSearchDirection();
-
-  const int iter_ls = interface.GetNumIterations();
-  const int iter_newton = solver.getNumIterations();
-
-
-  const NOX::MeritFunction::Generic& merit_func = interface.GetMeritFunction();
-
   // do stuff at the beginning of a line search call
+  const int iter_ls = interface.GetNumIterations();
   if ( iter_ls == 0 )
   {
-    switch ( iter_newton )
-    {
-      // --------------------------------------------------------------------
-      // compute the point coordinates of the first reference state
-      // which is accepted by default
-      // --------------------------------------------------------------------
-      case 0:
-      {
-        curr_points_.first = Point::create( merit_func, theta_, grp );
-        curr_fpoints_.first = Point::makeFilterPoint( *curr_points_.first );
-        break;
-      }
-      // --------------------------------------------------------------------
-      // Move the accepted point to the first position at the very beginning
-      // of each Newton step (except for the first Newton step)
-      // --------------------------------------------------------------------
-      default:
-      {
-        // set accepted  trial point at the first position
-        curr_points_.first = curr_points_.second;
-        curr_fpoints_.first = curr_fpoints_.second;
+    const NOX::Abstract::Vector& dir = linesearch.GetSearchDirection();
 
-        break;
-      }
-    }
+    InitPoints( interface, solver, grp );
 
     // setup the linear and quadratic model terms in the beginning
-    SetupModelTerms( dir, grp, merit_func );
+    SetupModelTerms( dir, grp, interface );
 
     // compute the minimal step length estimates
     ComputeMinimalStepLengthEstimates();
@@ -343,30 +428,48 @@ NOX::NLN::INNER::StatusTest::Filter::CheckStatus(
     // setup armijo test
     armijo_test_->CheckStatus( interface, solver, grp, checkType );
 
+    // create a back-up of the last accepted state
+    backup_.create( grp, dir );
+
     status_ = status_unevaluated;
 
     return status_;
   }
+
+  ExecuteCheckStatus( linesearch, solver, grp, checkType );
+
+  return PostCheckStatus( linesearch, solver, grp, checkType );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void NOX::NLN::INNER::StatusTest::Filter::ExecuteCheckStatus(
+    const NOX::NLN::LineSearch::Generic& linesearch,
+    const NOX::Solver::Generic & solver,
+    const NOX::Abstract::Group & grp,
+    NOX::StatusTest::CheckType   checkType )
+{
+  const NOX::MeritFunction::Generic& merit_func = linesearch.GetMeritFunction();
 
   // reset the f-type flag
   is_ftype_step_ = false;
 
   // compute the new point coordinates of the trial point
   curr_points_.second = Point::create( merit_func, theta_, grp );
-  curr_fpoints_.second = Point::makeFilterPoint( *curr_points_.second );
+  curr_fpoints_.second = Point::makeFilterPoint( *curr_points_.second, true );
 
   // trial filter point
   const Point& trial_fp = *curr_fpoints_.second;
-  status_ = AcceptabilityCheck( trial_fp );
+  filter_status_ = AcceptabilityCheck( trial_fp );
 
   // get current step length
   const double step = linesearch.GetStepLength();
 
-  switch ( status_ )
+  switch ( filter_status_ )
   {
     // if the current trial point is not in the taboo region, we will check a
     // 2-nd criterion
-    case status_converged:
+    case FilterStatusType::passed_point_by_point:
     {
       // ------------------------------------------
       // Final F-Type check
@@ -374,7 +477,7 @@ NOX::NLN::INNER::StatusTest::Filter::CheckStatus(
       if ( CheckFTypeSwitchingCondition( step ) )
       {
         is_ftype_step_ = true;
-        status_ = armijo_test_->CheckStatus( interface, solver, grp, checkType );
+        status_ = armijo_test_->CheckStatus( linesearch, solver, grp, checkType );
       }
       // ------------------------------------------
       // Final filter check
@@ -387,23 +490,338 @@ NOX::NLN::INNER::StatusTest::Filter::CheckStatus(
           AugmentFilter();
       }
 
+      if ( status_ != status_converged )
+        IsAdmissibleStep( solver, step );
+
+      break;
+    }
+    case FilterStatusType::rejected:
+    {
+      if ( IsAdmissibleStep( solver, step ) )
+        status_ = status_step_too_long;
+
       break;
     }
     default:
     {
-      const enum NOX::StatusTest::StatusType active_set_status =
-          GetActiveSetStatus( solver );
-
-      if ( step < gamma_alpha_ * amin_ and active_set_status != NOX::StatusTest::Unconverged )
-        dserror("The step-length is too short! We can't find a feasible solution "
-            "in the current search direction! (active-set status = %s)",
-            NOX::NLN::StatusTest::StatusType2String( active_set_status ).c_str() );
-
-      break;
+      dserror("Unexpected filter status type: "
+          "The filer %s.", FilterStatus2String( filter_status_ ).c_str() );
     }
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+NOX::NLN::INNER::StatusTest::StatusType
+NOX::NLN::INNER::StatusTest::Filter::PostCheckStatus(
+    const NOX::NLN::LineSearch::Generic& linesearch,
+    const NOX::Solver::Generic & solver,
+    const NOX::Abstract::Group & grp,
+    NOX::StatusTest::CheckType   checkType )
+{
+  const int iter_ls = linesearch.GetNumIterations();
+  if ( iter_ls == 1 and status_ == status_step_too_long )
+  {
+    if ( amin_theta_ > 0.25 )
+      return SufficientLinearInfeasibilityReduction(
+          linesearch, solver, grp, checkType );
+
+    return soc_->execute( linesearch, solver, grp, checkType );
+  }
+  else
+  {
+    ThrowIfStepTooShort(linesearch,solver);
   }
 
   return status_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void NOX::NLN::INNER::StatusTest::Filter::ThrowIfStepTooShort(
+    const NOX::NLN::LineSearch::Generic& linesearch,
+    const NOX::Solver::Generic & solver ) const
+{
+  const double& step = linesearch.GetStepLength();
+  const enum NOX::StatusTest::StatusType active_set_status =
+      GetActiveSetStatus( solver );
+
+  if ( step < gamma_alpha_ * amin_ )
+    dserror("The step-length is too short! We can't find a feasible solution "
+        "in the current search direction! (active-set status = %s)",
+        NOX::NLN::StatusTest::StatusType2String( active_set_status ).c_str() );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::Filter::
+SufficientLinearInfeasibilityReduction(
+    const NOX::NLN::LineSearch::Generic& linesearch,
+    const NOX::Solver::Generic & solver,
+    const NOX::Abstract::Group & grp,
+    NOX::StatusTest::CheckType   checkType )
+{
+  NOX::Abstract::Group& mutable_grp = const_cast<NOX::Abstract::Group&>( grp );
+  NOX::NLN::Group& nln_grp = dynamic_cast<NOX::NLN::Group&>( mutable_grp );
+
+  // un-do the last step
+  RecoverFromBackup( nln_grp );
+
+  nln_grp.computeCorrectionSystem(
+      NOX::NLN::CorrectionType::sufficient_linear_infeasibility_reduction );
+
+  // copy parameter list and perform an additional solver call
+  Teuchos::ParameterList pnewton( solver.getList().sublist("Direction").
+      sublist("Newton").sublist("Linear Solver") );
+  nln_grp.computeNewton(pnewton);
+
+  // setup the linear and quadratic model terms in the beginning
+  SetupModelTerms( nln_grp.getNewton(), grp, linesearch );
+
+  // compute the minimal step length estimates
+  ComputeMinimalStepLengthEstimates();
+
+  nln_grp.computeX( grp, nln_grp.getNewton(), linesearch.GetStepLength() );
+  nln_grp.computeF();
+
+  // recursive call
+  return CheckStatus(linesearch, solver, grp, checkType );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+NOX::NLN::INNER::StatusTest::StatusType
+NOX::NLN::INNER::StatusTest::Filter::SecondOrderCorrection::execute(
+    const NOX::NLN::LineSearch::Generic& linesearch,
+    const NOX::Solver::Generic & solver,
+    const NOX::Abstract::Group & grp,
+    NOX::StatusTest::CheckType   checkType )
+{
+  NOX::Abstract::Group& mutable_grp = const_cast<NOX::Abstract::Group&>( grp );
+  NOX::NLN::Group& nln_grp = dynamic_cast<NOX::NLN::Group&>( mutable_grp );
+  curr_type_ = whichType( solver );
+
+  {
+    const double t_start = Teuchos::Time::wallTime();
+    computeSystem( nln_grp, solver );
+    solve( linesearch, solver, nln_grp );
+    time_exe_ = Teuchos::Time::wallTime()-t_start;
+  }
+
+  postprocess( linesearch, solver, nln_grp, checkType );
+
+  return filter_.GetStatus();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+NOX::NLN::CorrectionType
+NOX::NLN::INNER::StatusTest::Filter::SecondOrderCorrection::whichType(
+    const NOX::Solver::Generic& solver ) const
+{
+  switch ( user_type_ )
+  {
+    // if an user-specified SOC type is provided we use that one
+    case CorrectionType::soc_cheap:
+    case CorrectionType::soc_full:
+      return user_type_;
+    // let the algorithm decide
+    case CorrectionType::soc_automatic:
+      return automaticTypeChoice( solver );
+    // no SOC correction type
+    default:
+    {
+      dserror("Unsupported Second Order Correction type detected. "
+          "Given type = \"%s\"", CorrectionType2String(user_type_).c_str());
+      exit(EXIT_FAILURE);
+    }
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+NOX::NLN::CorrectionType
+NOX::NLN::INNER::StatusTest::Filter::SecondOrderCorrection::automaticTypeChoice(
+    const NOX::Solver::Generic& solver ) const
+{
+  const enum NOX::StatusTest::StatusType active_set_status =
+      filter_.GetActiveSetStatus( solver );
+
+  switch ( active_set_status )
+  {
+    /* If the active-set seems to be converged, we will perform the cheap
+     * correction. */
+    case NOX::StatusTest::Converged:
+      return CorrectionType::soc_cheap;
+    /* If the active-set is not yet converged or the status is undefined, a full
+     * step will be performed. */
+    default:
+      return CorrectionType::soc_full;
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void NOX::NLN::INNER::StatusTest::Filter::SecondOrderCorrection::postprocess(
+    const NOX::NLN::LineSearch::Generic& linesearch,
+    const NOX::Solver::Generic& solver,
+    NOX::Abstract::Group& grp,
+    NOX::StatusTest::CheckType checkType )
+{
+  try
+  {
+    grp.computeF();
+    filter_.ExecuteCheckStatus( linesearch, solver, grp, checkType );
+  }
+  catch ( const char* e )
+  {
+    filter_.utils_.out( NOX::Utils::Warning ) << "WARNING: computeF failed "
+        "after the SOC step. Recover and start line-search...\n";
+  }
+
+  if ( filter_.GetStatus() != status_converged )
+  {
+    const double t_start = Teuchos::Time::wallTime();
+    filter_.RecoverFromBackup( grp );
+    time_recover_ = Teuchos::Time::wallTime()-t_start;
+  }
+
+  print( filter_.utils_.out() );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void NOX::NLN::INNER::StatusTest::Filter::SecondOrderCorrection::solve(
+    const NOX::NLN::LineSearch::Generic& linesearch,
+    const NOX::Solver::Generic& solver,
+    NOX::Abstract::Group& grp ) const
+{
+  // copy parameter list and perform the second order correction step
+  Teuchos::ParameterList pnewton( solver.getList().sublist("Direction").
+      sublist("Newton").sublist("Linear Solver") );
+
+  grp.computeNewton(pnewton);
+  grp.computeX( grp, grp.getNewton(), linesearch.GetStepLength() );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void NOX::NLN::INNER::StatusTest::Filter::SecondOrderCorrection::computeSystem(
+    NOX::NLN::Group& grp,
+    const NOX::Solver::Generic& solver ) const
+{
+  switch ( curr_type_ )
+  {
+    /* If the active-set seems to be converged, we will perform the cheap
+     * correction. */
+    case CorrectionType::soc_cheap:
+      grp.computeCorrectionSystem( curr_type_ );
+      break;
+    /* If the active-set is not yet converged or the status is undefined, a full
+     * step will be performed. */
+    default:
+      grp.computeFandJacobian();
+      break;
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void NOX::NLN::INNER::StatusTest::Filter::SecondOrderCorrection::print(
+    std::ostream& os ) const
+{
+  os << "\n" << NOX::Utils::fill(46,'=') << "\n";
+  os << "Performed a Second Order Correction (SOC) step\n";
+  os << "User SOC-type  = " << CorrectionType2String( user_type_ ) << "\n";
+  os << "SOC-type       = " << CorrectionType2String( curr_type_ ) << "\n";
+  os << "Execution time = " << time_exe_ << " sec.\n";
+  os << "New status     = " << StatusType2String(filter_.GetStatus()) << "\n";
+  if ( filter_.GetStatus() != status_converged )
+    os << "Recover time   = " << time_recover_ << " sec.\n";
+  os << NOX::Utils::fill(46,'=') << "\n";
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void NOX::NLN::INNER::StatusTest::Filter::BackupState::create(
+    const NOX::Abstract::Group & grp,
+    const NOX::Abstract::Vector& dir )
+{
+  const NOX::NLN::Group* nln_grp_ptr = dynamic_cast<const NOX::NLN::Group*>( &grp );
+  if ( not nln_grp_ptr )
+    dserror( "Dynamic_cast failed!" );
+
+  if ( xvector_.is_null() )
+  {
+    const NOX::Epetra::Vector& nox_epetra_x =
+        dynamic_cast<const NOX::Epetra::Vector&>( grp.getX() );
+    xvector_ = Teuchos::rcp( new NOX::Epetra::Vector( nox_epetra_x ) );
+  }
+  else
+    xvector_->update( 1.0, grp.getX(), 0.0 );
+
+  normf_ = grp.getF().norm( NOX::Abstract::Vector::TwoNorm );
+
+  nln_grp_ptr->CreateBackupState( dir );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void NOX::NLN::INNER::StatusTest::Filter::BackupState::recover(
+    NOX::Abstract::Group& grp ) const
+{
+  if ( xvector_.is_null() )
+    dserror( "The xvector_ is not set!" );
+
+  grp.setX( *xvector_ );
+
+  NOX::NLN::Group& nln_grp = dynamic_cast<NOX::NLN::Group&>( grp );
+  nln_grp.RecoverFromBackupState();
+
+  nln_grp.computeF();
+
+  checkRecoveredState( nln_grp.getF() );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void NOX::NLN::INNER::StatusTest::Filter::BackupState::checkRecoveredState(
+    const NOX::Abstract::Vector& f ) const
+{
+  const double recovered_normf = f.norm(NOX::Abstract::Vector::TwoNorm);
+  static const double rtol = std::numeric_limits<double>::epsilon();
+
+  const double ratiof = recovered_normf/normf_;
+
+  if ( ratiof < 1.0-rtol or ratiof > 1.0+rtol )
+    dserror( "The recovery from the previously stored state failed! "
+        "[recovery_normf / backup_normf = %.15e ]", ratiof );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void NOX::NLN::INNER::StatusTest::Filter::RecoverFromBackup(
+    NOX::Abstract::Group& grp ) const
+{
+  backup_.recover( grp );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool NOX::NLN::INNER::StatusTest::Filter::IsAdmissibleStep(
+    const NOX::Solver::Generic& solver,
+    const double& step ) const
+{
+  const enum NOX::StatusTest::StatusType active_set_status =
+      GetActiveSetStatus( solver );
+
+  if ( step < gamma_alpha_ * amin_ and active_set_status != NOX::StatusTest::Unconverged )
+    dserror("The step-length is too short: %e < %e\n "
+        "We can't find a feasible solution in the current search direction! "
+        "(active-set status = %s)", step, gamma_alpha_*amin_,
+        NOX::NLN::StatusTest::StatusType2String( active_set_status ).c_str() );
+
+  return true;
 }
 
 /*----------------------------------------------------------------------------*
@@ -455,33 +873,44 @@ void NOX::NLN::INNER::StatusTest::Filter::AugmentFilter()
   filter_.resize( non_dominated_filter_points_.size() + 1, Teuchos::null );
   plain_point_set::iterator it = filter_.begin();
 
-  for ( plain_point_set::const_iterator cit = non_dominated_filter_points_.begin();
-      cit != non_dominated_filter_points_.end(); ++cit, ++it )
+  if ( non_dominated_filter_points_.empty() )
   {
-    const Teuchos::RCP<Point>& fp_ptr = *cit;
-
-    if ( new_fp_ptr->norm_ < fp_ptr->norm_ )
+    filter_[0] = new_fp_ptr;
+  }
+  else
+  {
+    bool is_inserted = false;
+    for ( plain_point_set::const_iterator cit = non_dominated_filter_points_.begin();
+        cit != non_dominated_filter_points_.end(); ++cit, ++it )
     {
-      *it = new_fp_ptr;
-      ++it;
+      const Teuchos::RCP<Point>& fp_ptr = *cit;
+
+      if ( !is_inserted and new_fp_ptr->norm_ < fp_ptr->norm_ )
+      {
+        *(it++) = new_fp_ptr;
+        is_inserted = true;
+      }
+
+      *it = *cit;
     }
-    *it = *cit;
+
+    if ( !is_inserted )
+      filter_.back() = new_fp_ptr;
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum NOX::NLN::INNER::StatusTest::StatusType
+enum NOX::NLN::INNER::StatusTest::FilterStatusType
 NOX::NLN::INNER::StatusTest::Filter::AcceptabilityCheck( const Point& trial_fp )
 {
-  if ( Prefiltering( trial_fp ) )
-    return status_converged;
+  const unsigned prefiltering_index = Prefiltering( trial_fp );
 
   /* If prefiltering did not succeed, we perform the acceptability check point
    * by point */
-  bool passed_check = false;
-  for ( plain_point_set::const_iterator cit = filter_.begin();
-      cit != filter_.end(); ++cit )
+  // if the current filter is empty the check passes by default
+  bool passed_check = true;
+  for ( auto cit = filter_.begin(); cit!=filter_.begin()+prefiltering_index; ++cit )
   {
     const Point& fp = **cit;
 
@@ -498,20 +927,31 @@ NOX::NLN::INNER::StatusTest::Filter::AcceptabilityCheck( const Point& trial_fp )
 
     // If the check failed for one filter point, the whole test failed.
     if ( not passed_check )
+    {
+      if ( utils_.isPrintType( NOX::Utils::Debug ) )
+      {
+        utils_.out() << "\n======================\n";
+        utils_.out() << "rejected by:\n";
+        fp.print(std::cout);
+        utils_.out() << "\n======================\n";
+      }
       break;
+    }
   }
 
-  return ( passed_check ? status_converged : status_step_too_long );
+  return ( passed_check ? FilterStatusType::passed_point_by_point
+      : FilterStatusType::rejected );
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::INNER::StatusTest::Filter::Prefiltering(
+unsigned NOX::NLN::INNER::StatusTest::Filter::Prefiltering(
     const Point& trial_fp )
 {
   bool success = false;
 
-  const double sqrt_theta_num = std::sqrt<double>( static_cast<double>( theta_.number_ ) ).real();
+  const double sqrt_theta_num =
+      std::sqrt<double>( static_cast<double>( theta_.number_ ) ).real();
 
   unsigned prefiltering_index = 0;
   for ( plain_point_set::const_iterator cit = filter_.begin();
@@ -531,8 +971,14 @@ bool NOX::NLN::INNER::StatusTest::Filter::Prefiltering(
 
   if ( success )
     IdentifyNonDominatedFilterPoints( trial_fp, prefiltering_index );
+  else
+  {
+    non_dominated_filter_points_.resize( filter_.size(), Teuchos::null );
+    std::copy( filter_.begin(), filter_.end(),
+        non_dominated_filter_points_.begin() );
+  }
 
-  return success;
+  return prefiltering_index;
 }
 
 /*----------------------------------------------------------------------------*
@@ -567,7 +1013,9 @@ void NOX::NLN::INNER::StatusTest::Filter::IdentifyNonDominatedFilterPoints(
     // If the trial filter point does not dominate the current filter point, we
     // will keep the current filter point in our filter point set.
     if ( num_dominated_coords < fp.num_coords_ )
+    {
       non_dominated_filter_points_.push_back( *cit );
+    }
   }
 }
 
@@ -576,9 +1024,10 @@ void NOX::NLN::INNER::StatusTest::Filter::IdentifyNonDominatedFilterPoints(
 void NOX::NLN::INNER::StatusTest::Filter::SetupModelTerms(
     const NOX::Abstract::Vector& dir,
     const NOX::Abstract::Group& grp,
-    const NOX::MeritFunction::Generic& merit_func )
+    const Interface::Required &  interface )
 {
-  if ( merit_func.name() == "Lagrangian" )
+  const NOX::MeritFunction::Generic& merit_func = interface.GetMeritFunction();
+  if ( dynamic_cast<const MeritFunction::Lagrangian*>( &merit_func ) )
   {
     const NOX::NLN::MeritFunction::Lagrangian& lagrangian =
         dynamic_cast<const NOX::NLN::MeritFunction::Lagrangian&>( merit_func );
@@ -646,7 +1095,8 @@ NOX::NLN::INNER::StatusTest::Filter::MinimalStepLengthEstimateOfObjFuncFilterChe
        |  s_f* (L_k + a * LIN(L_k)) < s_f * L_k - s_t * gamma_f * theta_k, |
        |                                                                   |
        |  where s_f and s_t are the scaling factors for the objective      |
-       |  and constraint values, respectively.                             |
+       |  and constraint values, respectively. Note that we assume that    |
+          LIN(L_k) is negative, i.e. descent direction.                    |
        |                                                                   |
        | => a > - (s_t/s_f) * (gamma_f * theta_k)/LIN(L_k).                |
        *-------------------------------------------------------------------*/
@@ -723,27 +1173,29 @@ NOX::NLN::INNER::StatusTest::Filter::MinimalStepLengthEstimateOfFTypeCondition()
   double lBound = 0.0;
   double uBound = 1.0;
 
-  const double d = std::pow( scale_of_max_theta, st_ ) / std::pow( Point::scale_(0), sf_ );
+  const double d = std::pow( scale_of_max_theta, st_ ) /
+      std::pow( Point::scale_(0), sf_ );
 
-  if ( computeFTypeSwitchingCondition( lBound, d ) > 0.0 )
+  const double f_lbound = computeFTypeSwitchingCondition( lBound, d );
+  if ( f_lbound > 0.0 )
     dserror("The function value for the lower bound is greater than zero!");
 
-  if ( computeFTypeSwitchingCondition( uBound, d ) < 0.0 )
+  const double f_ubound = computeFTypeSwitchingCondition( uBound, d );
+  if ( f_ubound < 0.0 )
     dserror("The function value for the upper bound is lower than zero!");
 
-  // set initial value
-  double amin = lBound;
+  // set initial value (secant value)
+  double amin = f_lbound / ( f_lbound - f_ubound );
 
   // newton control parameters
-  const unsigned itermax = 10;
+  static const double TOL_LOCAL_NEWTON = 1.0e-8;
+  static const unsigned ITERMAX = 50;
   unsigned iter = 0;
   bool isconverged = false;
 
-  const double TOL_LOCAL_NEWTON = 1.0e-8;
-
-  while ( not isconverged and iter < itermax )
+  while ( not isconverged and iter < ITERMAX )
   {
-    double f = computeFTypeSwitchingCondition( amin, d );
+    const double f = computeFTypeSwitchingCondition( amin, d );
 
     // update lower bound
     if ( f < 0.0 and amin > lBound )
@@ -768,7 +1220,7 @@ NOX::NLN::INNER::StatusTest::Filter::MinimalStepLengthEstimateOfFTypeCondition()
     ++iter;
   }
   if ( not isconverged )
-    dserror( "The local Newton did not converge! " );
+    dserror( "The local Newton did not converge in %d steps!", iter );
 
   return amin;
 }
@@ -836,7 +1288,8 @@ double NOX::NLN::INNER::StatusTest::Filter::Infeasibility::minimalStepLengthEsti
   {
     double amin_theta = 1.0;
 
-    // Is the current search direction a descent direction for the infeasibility measure?
+    /* Is the current search direction a descent direction for the infeasibility
+     * measure? */
     if ( theta_slope[i] < 0.0 )
     {
       amin_theta = -Point::gamma_theta_ * accepted_theta[i] / theta_slope[i];
@@ -899,12 +1352,22 @@ std::ostream & NOX::NLN::INNER::StatusTest::Filter::Print(
   par_indent += indent_str;
   const int par_length = par_indent.size();
 
-  stream << indent_str << "CURRENT POINT PAIR \n{\n";
-  stream << par_indent << "Accepted previous point:\n";
+  stream << indent_str << "The filter " << FilterStatus2String( filter_status_ )
+      << ".\n";
+  stream << par_indent << "CURRENT POINT PAIR \n{\n";
+  stream << par_indent << "+ Previously accepted point:\n";
   curr_points_.first->print( stream, par_length, utils_ );
 
-  stream << par_indent << "Current trial point:\n";
+  stream << par_indent << "+ Current trial point:\n";
   curr_points_.second->print( stream, par_length, utils_ );
+  stream << "}\n";
+
+  stream << indent_str << "CURRENT FILTER POINT PAIR \n{\n";
+  stream << par_indent << "+ Previously accepted filter point:\n";
+  curr_fpoints_.first->print( stream, par_length, utils_ );
+
+  stream << par_indent << "+ Current trial filter point:\n";
+  curr_fpoints_.second->print( stream, par_length, utils_ );
   stream << "}\n";
 
   stream << indent_str << "FILTER\n{\n";
@@ -964,7 +1427,7 @@ std::ostream & NOX::NLN::INNER::StatusTest::Filter::Print(
     stream << NOX::Utils::sciformat( Point::scale_(i), OUTPUT_PRECISION );
   }
   stream << " };\n";
-  stream << par_indent << "Valid scales           = {";
+  stream << par_indent << "Valid scales     = {";
   for ( const bool valid_scale : Point::isvalid_scaling_  )
   {
     stream << " ";

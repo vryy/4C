@@ -14,9 +14,6 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef NOX_NLN_CONSTRAINT_GROUP_CPP_
-#define NOX_NLN_CONSTRAINT_GROUP_CPP_
-
 #include "nox_nln_constraint_group.H"
 #include "nox_nln_interface_required.H"
 #include "nox_nln_aux.H"
@@ -57,6 +54,18 @@ Teuchos::RCP<NOX::Abstract::Group> NOX::NLN::CONSTRAINT::Group::clone(CopyType t
   Teuchos::RCP<NOX::Abstract::Group> newgrp =
     Teuchos::rcp(new NOX::NLN::CONSTRAINT::Group(*this, type));
   return newgrp;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+NOX::Abstract::Group& NOX::NLN::CONSTRAINT::Group::operator=(const NOX::Epetra::Group& source)
+{
+  NOX::NLN::Group::operator=(source);
+
+  userConstraintInterfaces_ =
+      dynamic_cast<const NOX::NLN::CONSTRAINT::Group&>(source).userConstraintInterfaces_;
+
+  return *this;
 }
 
 /*----------------------------------------------------------------------------*
@@ -109,11 +118,11 @@ double NOX::NLN::CONSTRAINT::Group::GetModelValue(
   double mrtFctVal = NOX::NLN::Group::GetModelValue( mf_type );
 
   // constraint contributions
-  for ( ReqInterfaceMap::const_iterator constr_iter = userConstraintInterfaces_.begin();
-        constr_iter != userConstraintInterfaces_.end(); ++constr_iter )
-    mrtFctVal += constr_iter->second->GetModelValue( mf_type );
+  double constr_contr = 0.0;
+  for ( const auto& constr_iter : userConstraintInterfaces_ )
+    constr_contr += constr_iter.second->GetModelValue( mf_type );
 
-  return mrtFctVal;
+  return mrtFctVal + constr_contr;
 }
 
 /*----------------------------------------------------------------------------*
@@ -133,9 +142,8 @@ double NOX::NLN::CONSTRAINT::Group::GetLinearizedModelTerms(
   const Epetra_Vector& dir_epetra = dir_nox_epetra.getEpetraVector();
 
   // constraint contributions
-  for ( ReqInterfaceMap::const_iterator constr_iter = userConstraintInterfaces_.begin();
-        constr_iter != userConstraintInterfaces_.end(); ++constr_iter )
-    linVal += constr_iter->second->GetLinearizedModelTerms( dir_epetra,
+  for ( const auto& constr_iter : userConstraintInterfaces_ )
+    linVal += constr_iter.second->GetLinearizedModelTerms( dir_epetra,
         mf_type, linorder, lintype );
 
   return linVal;
@@ -386,5 +394,3 @@ void NOX::NLN::CONSTRAINT::Group::throwError(
   }
   throw "NOX Error";
 }
-
-#endif /* NOX_NLN_CONSTRAINT_GROUP_CPP_ */

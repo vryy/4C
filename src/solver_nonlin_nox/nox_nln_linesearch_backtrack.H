@@ -85,7 +85,7 @@ namespace LineSearch {
 
   protected:
     //! print inner status test results
-    void PrintUpdate();
+    void PrintUpdate( std::ostream& os ) const;
 
     //! Disable the internal exception checks during the evaluation
     void DisableInternalExceptionChecks() const;

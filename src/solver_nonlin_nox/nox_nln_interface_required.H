@@ -91,6 +91,16 @@ namespace Interface {
       dserror("The evaluation of the lumped mass matrix is not implemented!");
       return Teuchos::null;
     }
+
+    virtual void CreateBackupState( const Epetra_Vector& dir )
+    {
+      dserror( "There is no meaningful implementation for this method!" );
+    }
+
+    virtual void RecoverFromBackupState()
+    {
+      dserror( "There is no meaningful implementation for this method!" );
+    }
   };
 } // namespace Interface
 } // namespace STR

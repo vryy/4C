@@ -31,6 +31,9 @@ namespace NOX {
 namespace Abstract {
   class Vector;
 } // namespace Abstract
+namespace LineSearch {
+  class Generic;
+} // namespace LineSearch
 namespace NLN {
   class Group;
   class LinearSystem;
@@ -127,11 +130,13 @@ namespace Abstract {
     /** User defined method that will be executed at the end
      *  of a call to NOX::NLN::LinearSystem::applyJacobianInverse().
      *
+     * \param result : full access to the result vector
      * \param rhs    : full access to the rhs vector
      * \param jac    : full access to the jacobian
      * \param linsys : read only access to the linear system object
      */
     virtual void runPostApplyJacobianInverse(
+        NOX::Abstract::Vector& result,
         NOX::Abstract::Vector& rhs,
         LINALG::SparseOperator& jac,
         const NOX::NLN::LinearSystem& linsys)
@@ -240,6 +245,52 @@ namespace Abstract {
         const double& step,
         const NOX::NLN::Group& curr_grp)
     { return; };
+
+    /*! User defined method that will be executed at the beginning
+     *  of a call to NOX::NLN::Group::applyJacobianInverse().
+     *
+     *  \param rhs    : read-only access to the rhs vector
+     *  \param result : full access to the result vector
+     *  \param xold   : read-only access to the jacobian
+     *  \param grp    : read only access to the group object
+     */
+    virtual void runPreApplyJacobianInverse(
+        const NOX::Abstract::Vector& rhs,
+        NOX::Abstract::Vector& result,
+        const NOX::Abstract::Vector& xold,
+        const NOX::NLN::Group& grp )
+    { return; };
+
+    /*! User defined method that will be executed at the end
+     *  of a call to NOX::NLN::Group::applyJacobianInverse().
+     *
+     *  \param rhs    : read-only access to the rhs vector
+     *  \param result : full access to the result vector
+     *  \param xold   : read-only access to the jacobian
+     *  \param grp    : read only access to the group object
+     */
+    virtual void runPostApplyJacobianInverse(
+        const NOX::Abstract::Vector& rhs,
+        NOX::Abstract::Vector& result,
+        const NOX::Abstract::Vector& xold,
+        const NOX::NLN::Group& grp )
+    {return; };
+
+    ///@}
+
+    /** @name NLN::LineSearch Pre/Post Operator
+     *  This pre/post operator is used in the NOX::NLN::LineSearch classes.
+     */
+    ///@{
+    /** User defined method that will be executed before the step is modified in
+     *  the line search routine.
+     *
+     * \param solver     : Access to the underlying solver object.
+     * \param linesearch : Access to the line search object. */
+    virtual void runPreModifyStepLength(
+        const NOX::Solver::Generic& solver,
+        const NOX::LineSearch::Generic& linesearch )
+    { return; }
 
     ///@}
 

@@ -78,12 +78,19 @@ namespace MeritFunction {
     enum MeritFctName Type() const;
 
   private:
+    /// \brief Get a list of currently supported infeasibility merit function types
+    /** This list is a sub-list of the merit function enumerator list.
+     *
+     *  \author hiermeier \date 12/17 */
+    std::map<std::string,MeritFctName> GetSupportedTypeList() const;
+
+    /// Set the infeasibility merit function type
     void SetType( const std::string& type_name );
 
   private:
 //    const NOX::Utils& utils_;
 
-    enum Type infeasibility_type_;
+    enum MeritFctName infeasibility_type_;
 
     std::string meritFunctionName_;
   };

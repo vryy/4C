@@ -87,6 +87,36 @@ namespace NLN {
     opt_equality_constrained,   ///< pure equality constrained optimization problem
     opt_inequality_constrained  ///< inequality or mixed optimization problem
   };
+
+  /// Correction types
+  enum class CorrectionType : int
+  {
+    vague,                ///< undefined correction type
+    soc_automatic,        ///< let the algorithm choose which SOC strategy to follow
+    soc_cheap,            ///< cheap SOC step, reuse the old system of equations
+    soc_full,             ///< do full SOC step in the flavor of the watch dog method
+    sufficient_linear_infeasibility_reduction
+  };
+
+  //! Map second order correction type enum to std::string
+  inline std::string CorrectionType2String(const enum CorrectionType type )
+  {
+    switch (type)
+    {
+      case CorrectionType::vague :
+        return "CorrectionType::vague";
+      case CorrectionType::soc_cheap :
+        return "CorrectionType::soc_cheap";
+      case CorrectionType::soc_full :
+        return "CorrectionType::soc_full";
+      case CorrectionType::soc_automatic:
+        return "CorrectionType::soc_automatic";
+      default :
+        return "Unknown second order correction Type";
+    }
+    exit(EXIT_FAILURE);
+  };
+
 namespace LinSystem {
   //! supported LinearSystem types
   enum LinearSystemType : int
@@ -181,8 +211,37 @@ namespace MeritFunction {
   {
     mrtfct_sum_of_squares,          //!< sum of squares merit function
     mrtfct_lagrangian,              //!< lagrangian merit function
-    mrtfct_infeasibility_two_norm   //!< infeasibility merit function
+    mrtfct_lagrangian_active,       //!< lagrangian considering only the active contributions
+    mrtfct_infeasibility_two_norm,  //!< infeasibility merit function
+    mrtfct_infeasibility_two_norm_active,  /*!< infeasibility merit function,
+                                    *  considering only the active contributions */
+    mrtfct_energy,                  //!< representative energy value
+    mrtfct_vague                    //!< unspecified
   };
+
+  inline std::string MeritFuncName2String(
+      const enum MeritFctName mrt_func )
+  {
+    switch ( mrt_func )
+    {
+      case mrtfct_sum_of_squares:
+        return "mrtfct_sum_of_squares";
+      case mrtfct_lagrangian:
+        return "mrtfct_lagrangian";
+      case mrtfct_lagrangian_active:
+        return "mrtfct_lagrangian_active";
+      case mrtfct_infeasibility_two_norm:
+        return "mrtfct_infeasibility_two_norm";
+      case mrtfct_infeasibility_two_norm_active:
+        return "mrtfct_infeasibility_two_norm_active";
+      case mrtfct_energy:
+        return "mrtfct_energy";
+      case mrtfct_vague:
+        return "mrtfct_vague";
+      default:
+        return "INVALID_merit_function_name";
+    }
+  }
 
 } // namespace MeritFunction
 

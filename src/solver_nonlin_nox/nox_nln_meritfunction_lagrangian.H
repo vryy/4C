@@ -43,7 +43,7 @@ class Lagrangian : public virtual NOX::MeritFunction::Generic
 {
 public:
   //! Constructor
-  Lagrangian(const Teuchos::RCP<NOX::Utils>& u);
+  Lagrangian(const std::string& identifier, const Teuchos::RCP<NOX::Utils>& u);
 
   //! Destructor
   virtual ~Lagrangian() {};
@@ -110,10 +110,19 @@ public:
   //! return the name of the merit function
   inline enum MeritFctName Type() const
   {
-    return mrtfct_lagrangian;
+    return lagrangian_type_;
   }
 
 private:
+  /// \brief Get a list of currently supported Lagrangian merit function types
+  /** This list is a sub-list of the merit function enumerator list.
+   *
+   *  \author hiermeier \date 12/17 */
+  std::map<std::string,MeritFctName> GetSupportedTypeList() const;
+
+  /// Set the Lagrangian merit function type
+  void SetType( const std::string& identifier );
+
   //! Throws NOX error
   void throwError(
       const std::string& functionName,
@@ -123,6 +132,8 @@ private:
 
   //!Printing utilities.
   Teuchos::RCP<NOX::Utils> utils_;
+
+  enum MeritFctName lagrangian_type_;
 
   //! name of this function
   std::string meritFunctionName_;

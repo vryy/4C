@@ -16,6 +16,7 @@
 #include "nox_nln_linesearch_backtrack.H" // class definition
 #include "nox_nln_statustest_normf.H"
 #include "nox_nln_solver_linesearchbased.H"
+#include "nox_nln_linesearch_prepostoperator.H"
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -74,6 +75,8 @@ bool NOX::NLN::LineSearch::Backtrack::reset
   }
   allowExceptions_ = p.get("Allow Exceptions",false);
 
+  prePostOperatorPtr_ = Teuchos::rcp( new PrePostOperator( params ) );
+
   return true;
 }
 
@@ -123,9 +126,7 @@ bool NOX::NLN::LineSearch::Backtrack::compute(
   if (not epetraOldGrpPtr->isJacobian())
     throwError("compute()","Ownership changed unexpectedly!");
 
-  /* If the solution passed into the line search method fulfills the inner
-   * stopping criterion already during the setup process, the line search
-   * method will not attempt to find a capable step length. */
+  /* Setup the inner status test */
   status_ = innerTestsPtr_->CheckStatus(*this,s,oldGrp,checkType_);
 
   // increase iteration counter after initialization
@@ -172,8 +173,7 @@ bool NOX::NLN::LineSearch::Backtrack::compute(
     if (not allowExceptions_)
       dserror("An exception occurred: %s",e);
 
-    if (utils_->isPrintType(NOX::Utils::Warning))
-        utils_->out() << "WARNING: Error caught = " << e << "\n";
+    utils_->out(NOX::Utils::Warning) << "WARNING: Error caught = " << e << "\n";
 
     status_ = NOX::NLN::INNER::StatusTest::status_step_too_long;
     failed = true;
@@ -184,16 +184,14 @@ bool NOX::NLN::LineSearch::Backtrack::compute(
   // -------------------------------------------------
   // print header if desired
   // -------------------------------------------------
-  if (utils_->isPrintType(NOX::Utils::InnerIteration))
-  {
-    utils_->out() << "\n" << NOX::Utils::fill(72,'=') << "\n"
-        << "-- Backtrack Line Search -- \n";
-  }
+
+  utils_->out(NOX::Utils::InnerIteration) << "\n" << NOX::Utils::fill(72,'=')
+      << "\n" << "-- Backtrack Line Search -- \n";
 
   if (not failed)
   {
     status_ = innerTestsPtr_->CheckStatus(*this,s,grp,checkType_);
-    PrintUpdate();
+    PrintUpdate( utils_->out(NOX::Utils::InnerIteration) );
   }
   // -------------------------------------------------
   // inner backtracking loop
@@ -203,12 +201,15 @@ bool NOX::NLN::LineSearch::Backtrack::compute(
     // -------------------------------------------------
     // reduce step length
     // -------------------------------------------------
+    prePostOperatorPtr_->runPreModifyStepLength( s, *this );
     step *= reductionFactor_;
 
     // -------------------------------------------------
-    // update the solution vector and get a trial point
+    // - update the solution vector and get a trial point
+    // - increase line search step counter
     // -------------------------------------------------
     grp.computeX(oldGrp, dir, step);
+    ++lsIters_;
 
     try
     {
@@ -216,7 +217,7 @@ bool NOX::NLN::LineSearch::Backtrack::compute(
       if (rtype != NOX::Abstract::Group::Ok)
         throwError("compute","Unable to compute F!");
       status_ = innerTestsPtr_->CheckStatus(*this,s,grp,checkType_);
-      PrintUpdate();
+      PrintUpdate( utils_->out(NOX::Utils::InnerIteration) );
     }
     // catch error of the computeF method
     catch (const char* e)
@@ -229,16 +230,14 @@ bool NOX::NLN::LineSearch::Backtrack::compute(
 
       status_ = NOX::NLN::INNER::StatusTest::status_step_too_long;
     }
+
     // clear the exception checks after the try/catch block
     ClearInternalExceptionChecks();
   }
   // -------------------------------------------------
   // print footer if desired
   // -------------------------------------------------
-  if (utils_->isPrintType(NOX::Utils::InnerIteration))
-  {
-    utils_->out() << NOX::Utils::fill(72,'=') << "\n";
-  }
+  utils_->out(NOX::Utils::InnerIteration) << NOX::Utils::fill(72,'=') << "\n";
 
   if (status_ == NOX::NLN::INNER::StatusTest::status_step_too_short)
     throwError("compute()","The current step is too short and no "
@@ -301,25 +300,24 @@ void NOX::NLN::LineSearch::Backtrack::SetStepLength(double& step)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LineSearch::Backtrack::PrintUpdate()
+void NOX::NLN::LineSearch::Backtrack::PrintUpdate(
+    std::ostream& os ) const
 {
   // Print the status test parameters at each iteration if requested
-  if ((status_ == NOX::NLN::INNER::StatusTest::status_step_too_long) and
-      (utils_->isPrintType(NOX::Utils::InnerIteration)))
+  if ( status_ == NOX::NLN::INNER::StatusTest::status_step_too_long )
   {
-    utils_->out() << NOX::Utils::fill(72,'-') << "\n";
-    utils_->out() << "-- Inner Status Test Results --\n";
-    innerTestsPtr_->Print(utils_->out());
-    utils_->out() << NOX::Utils::fill(72,'-') << "\n";
+    os << NOX::Utils::fill(72,'-') << "\n";
+    os << "-- Inner Status Test Results --\n";
+    innerTestsPtr_->Print( os );
+    os << NOX::Utils::fill(72,'-') << "\n";
   }
   // Print the final parameter values of the status test
-  if ((status_ != NOX::NLN::INNER::StatusTest::status_step_too_long) and
-      (utils_->isPrintType(NOX::Utils::InnerIteration)))
+  if ( status_ != NOX::NLN::INNER::StatusTest::status_step_too_long )
   {
-    utils_->out() << NOX::Utils::fill(72,'-') << "\n";
-    utils_->out() << "-- Final Inner Status Test Results --\n";
-    innerTestsPtr_->Print(utils_->out());
-    utils_->out() << NOX::Utils::fill(72,'-') << "\n";
+    os << NOX::Utils::fill(72,'-') << "\n";
+    os << "-- Final Inner Status Test Results --\n";
+    innerTestsPtr_->Print( os );
+    os << NOX::Utils::fill(72,'-') << "\n";
   }
 }
 

@@ -35,6 +35,9 @@ namespace LINALG {
   class SparseMatrix;
 } // namespace LINALG
 namespace NOX {
+namespace Abstract {
+  class Group;
+} // namespace Abstract
 namespace Epetra {
   class Scaling;
 namespace Interface {
@@ -132,6 +135,12 @@ namespace LinSystem {
 
     //! Evaluate the Jacobian and the right hand side based on the solution vector x at once.
     virtual bool computeFandJacobian(const NOX::Epetra::Vector& x, NOX::Epetra::Vector& rhs);
+
+    bool computeCorrectionSystem(
+        const enum NOX::NLN::CorrectionType type,
+        const NOX::Abstract::Group& grp,
+        const NOX::Epetra::Vector& x,
+        NOX::Epetra::Vector& rhs);
 
     //! derived
     virtual bool applyJacobian(const NOX::Epetra::Vector& input,

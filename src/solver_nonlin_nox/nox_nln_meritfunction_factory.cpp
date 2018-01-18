@@ -92,9 +92,10 @@ NOX::NLN::MeritFunction::Factory::BuildConstrainedMeritFunction(
     // default NOX case, no pointer necessary
     mrtFctPtr = Teuchos::null;
   }
-  else if (mftype=="Lagrangian")
+  else if (mftype.substr(0,10)=="Lagrangian")
   {
-    mrtFctPtr = Teuchos::rcp(new Lagrangian(noxNlnGlobalData.GetNoxUtilsPtr()));
+    mrtFctPtr = Teuchos::rcp(new Lagrangian(
+        mftype, noxNlnGlobalData.GetNoxUtilsPtr()));
   }
   else
   {

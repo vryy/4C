@@ -26,6 +26,9 @@ namespace LINALG{
 }
 
 namespace NOX {
+namespace Abstract {
+  class Group;
+} // namespace Abstract
 namespace NLN {
 namespace Interface{
 
@@ -41,11 +44,21 @@ public:
 
   /*! \brief Compute RHS and Jacobian at once.
    *
-   * Returns true if computation was successful. */
+   *  \return TRUE if computation was successful. */
   virtual bool computeFandJacobian(
       const Epetra_Vector& x,
       Epetra_Vector& rhs,
       Epetra_Operator& jac) = 0;
+
+  /*! \brief Compute the correction system of given type.
+   *
+   *  \return TRUE if computation was successful. */
+  virtual bool computeCorrectionSystem(
+      const enum CorrectionType type,
+      const NOX::Abstract::Group& grp,
+      const Epetra_Vector& x,
+      Epetra_Vector& rhs,
+      Epetra_Operator& jac ) { return false; };
 
   virtual Teuchos::RCP<LINALG::SparseMatrix> CalcJacobianContributionsFromElementLevelForPTC() = 0;
 };

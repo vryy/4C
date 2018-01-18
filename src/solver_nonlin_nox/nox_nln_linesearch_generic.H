@@ -22,15 +22,17 @@
 namespace NOX {
 namespace NLN {
 namespace LineSearch {
+  class PrePostOperator;
+
   class Generic : public NOX::LineSearch::Generic,
                   public NOX::NLN::INNER::StatusTest::Interface::Required
   {
   public:
     //! constructor
-    Generic() {};
+    Generic() = default;
 
     //! destructor
-    virtual ~Generic() {};
+    virtual ~Generic() = default;
 
     //! @name NOX::NLN::LineSearch::Generic
     //! @{
@@ -61,6 +63,9 @@ namespace LineSearch {
     //! get the merit function
     virtual const NOX::MeritFunction::Generic& GetMeritFunction() const = 0;
     //! @}
+
+  protected:
+    Teuchos::RCP<PrePostOperator> prePostOperatorPtr_ = Teuchos::null;
   };
 }
 }

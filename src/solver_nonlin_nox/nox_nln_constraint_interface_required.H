@@ -66,7 +66,7 @@ namespace Interface {
     virtual double GetModelValue( NOX::NLN::MeritFunction::MeritFctName name ) const
     {
       dserror("GetObjectiveModelValue() is not implemented!");
-      return -1.0;
+      exit( EXIT_FAILURE );
     };
 
     //! Get the desired linearization terms of the objective model

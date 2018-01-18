@@ -314,7 +314,7 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(
       utils_.out() << "NOX::NLN::LinearSystem::applyJacobianInverse -- "
           "linear solve failed\n";
 
-    prePostOperatorPtr_->runPostApplyJacobianInverse(nonConstInput,Jacobian(),*this);
+    prePostOperatorPtr_->runPostApplyJacobianInverse( result, nonConstInput,Jacobian(),*this);
     return false;
   }
 
@@ -328,7 +328,7 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(
   double endTime = timer_.WallTime();
   timeApplyJacbianInverse_ += (endTime - startTime);
 
-  prePostOperatorPtr_->runPostApplyJacobianInverse(nonConstInput,Jacobian(),*this);
+  prePostOperatorPtr_->runPostApplyJacobianInverse(result, nonConstInput,Jacobian(),*this);
 
   return true;
 }
@@ -369,8 +369,8 @@ bool NOX::NLN::LinearSystem::computeFandJacobian(
   prePostOperatorPtr_->runPreComputeFandJacobian(rhs.getEpetraVector(),
       Jacobian(),x.getEpetraVector(),*this);
 
-  bool success = Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Jacobian>
-      (jacInterfacePtr_)->computeFandJacobian(x.getEpetraVector(),
+  const bool success = Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Jacobian>
+      (jacInterfacePtr_,true)->computeFandJacobian(x.getEpetraVector(),
       rhs.getEpetraVector(),Jacobian());
 
   prePostOperatorPtr_->runPostComputeFandJacobian(rhs.getEpetraVector(),
@@ -378,6 +378,26 @@ bool NOX::NLN::LinearSystem::computeFandJacobian(
   return success;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool NOX::NLN::LinearSystem::computeCorrectionSystem(
+    const enum CorrectionType type,
+    const NOX::Abstract::Group& grp,
+    const NOX::Epetra::Vector& x,
+    NOX::Epetra::Vector& rhs )
+{
+  prePostOperatorPtr_->runPreComputeFandJacobian(rhs.getEpetraVector(),
+      Jacobian(),x.getEpetraVector(),*this);
+
+  const bool success = Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Jacobian>
+      (jacInterfacePtr_,true)->computeCorrectionSystem( type, grp,
+          x.getEpetraVector(), rhs.getEpetraVector(), Jacobian() );
+
+  prePostOperatorPtr_->runPostComputeFandJacobian(rhs.getEpetraVector(),
+      Jacobian(),x.getEpetraVector(),*this);
+
+  return success;
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

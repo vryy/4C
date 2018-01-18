@@ -52,6 +52,8 @@ namespace CONSTRAINT {
     //! generate a clone of the given object concerning the given \c CopyType
     Teuchos::RCP<NOX::Abstract::Group> clone(CopyType type) const;
 
+    virtual NOX::Abstract::Group& operator=(const NOX::Epetra::Group& source);
+
     //! Returns the interface map
     const ReqInterfaceMap& GetConstrInterfaces() const;
 
@@ -65,6 +67,7 @@ namespace CONSTRAINT {
 
     // @name "Get" functions
     //@{
+
     /// derived
     virtual double GetModelValue(
         const enum NOX::NLN::MeritFunction::MeritFctName merit_func_type ) const;

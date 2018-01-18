@@ -20,6 +20,7 @@
 
 #include "../drt_lib/drt_dserror.H"
 
+#include <boost/algorithm/string/predicate.hpp>
 #include <Teuchos_ParameterList.hpp>
 
 /*----------------------------------------------------------------------------*
@@ -28,22 +29,56 @@ NOX::NLN::MeritFunction::Infeasibility::Infeasibility(
     const Teuchos::ParameterList& params,
     const NOX::Utils& u )
     : /* utils_( u ), */
-      infeasibility_type_( type_vague )
+      infeasibility_type_( mrtfct_vague )
 {
   const std::string& type_name = params.get<std::string>( "Type" );
   SetType( type_name );
 
-  meritFunctionName_ = "Infeasibility measure (" + type_name +")";
+  meritFunctionName_ = MeritFuncName2String(Type());
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+std::map<std::string,NOX::NLN::MeritFunction::MeritFctName>
+NOX::NLN::MeritFunction::Infeasibility::GetSupportedTypeList() const
+{
+  std::map<std::string,MeritFctName> type_names;
+
+  type_names[ "Two Norm" ] = mrtfct_infeasibility_two_norm;
+  type_names[ "Two Norm Active" ] = mrtfct_infeasibility_two_norm_active;
+
+  return type_names;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::NLN::MeritFunction::Infeasibility::SetType( const std::string& type_name )
 {
-  if ( type_name == "Two Norm" )
-    infeasibility_type_ = type_two_norm;
-  else
+  static const std::map<std::string,MeritFctName> supported_type_names =
+      GetSupportedTypeList();
+
+  auto cit = supported_type_names.cbegin();
+  while ( cit != supported_type_names.cend() )
+  {
+    if ( boost::iequals(type_name,cit->first) )
+    {
+      infeasibility_type_ = cit->second;
+      break;
+    }
+    ++cit;
+  }
+
+  if ( cit == supported_type_names.cend() )
+  {
+    std::cout << "\n\n=====================================================\n";
+    std::cout << "Supported infeasibility type names:\n"
+        "EXPECTED INPUT [= deduced merit function type]\n";
+    for ( const auto& supported_pair : supported_type_names )
+      std::cout << supported_pair.first << " [= " <<
+          MeritFuncName2String(supported_pair.second) << "]\n";
+
     dserror( "Unknown type name: \"%s\"", type_name.c_str() );
+  }
 }
 
 /*----------------------------------------------------------------------------*
@@ -129,15 +164,5 @@ const std::string& NOX::NLN::MeritFunction::Infeasibility::name() const
 enum NOX::NLN::MeritFunction::MeritFctName
 NOX::NLN::MeritFunction::Infeasibility::Type() const
 {
-  switch ( infeasibility_type_ )
-  {
-    case type_two_norm:
-      return mrtfct_infeasibility_two_norm;
-    default:
-    {
-      dserror( "Unknown infeasibility type!" );
-      exit( EXIT_FAILURE );
-    }
-  }
-
+  return infeasibility_type_;
 }

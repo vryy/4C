@@ -37,8 +37,8 @@ namespace LinSystem {
   //! currently supported pre/post operators
   enum PrePostOpType
   {
-    prepost_ptc,    //!< pseudo transient continuation pre/post operator
-    prepost_dbc     //!< dirichlet boundary condition pre/post operator
+    prepost_ptc,         //!< pseudo transient continuation pre/post operator
+    prepost_dbc          //!< dirichlet boundary condition pre/post operator
   };
 
 /*!
@@ -93,11 +93,14 @@ namespace LinSystem {
     /*! User defined method that will be executed at the end
         of a call to NOX::NLN::LinearSystem::applyJacobianInverse().
 
+       \param result : full access to the result vector
        \param rhs    : full access to the rhs vector
        \param jac    : full access to the jacobian
        \param linsys : read only access to the linear system object
      */
-    virtual void runPostApplyJacobianInverse(NOX::Abstract::Vector& rhs,
+    virtual void runPostApplyJacobianInverse(
+        NOX::Abstract::Vector& result,
+        NOX::Abstract::Vector& rhs,
         LINALG::SparseOperator& jac,
         const NOX::NLN::LinearSystem& linsys);
 
@@ -181,6 +184,7 @@ inline void NOX::NLN::LinSystem::PrePostOperator::runPreApplyJacobianInverse(
 }
 
 inline void NOX::NLN::LinSystem::PrePostOperator::runPostApplyJacobianInverse(
+    NOX::Abstract::Vector& result,
     NOX::Abstract::Vector& rhs,
     LINALG::SparseOperator& jac,
     const NOX::NLN::LinearSystem& linsys)
@@ -189,7 +193,7 @@ inline void NOX::NLN::LinSystem::PrePostOperator::runPostApplyJacobianInverse(
   {
     Map::iterator it;
     for (it=prePostOperatorMapPtr_->begin();it!=prePostOperatorMapPtr_->end();++it)
-      it->second->runPostApplyJacobianInverse(rhs,jac,linsys);
+      it->second->runPostApplyJacobianInverse(result,rhs,jac,linsys);
   }
 }
 

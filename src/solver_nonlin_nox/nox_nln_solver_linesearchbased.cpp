@@ -172,6 +172,13 @@ NOX::StatusTest::Generic* NOX::NLN::Solver::LineSearchBased::GetOuterStatusTest(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+NOX::StatusTest::StatusType NOX::NLN::Solver::LineSearchBased::getStatus() const
+{
+  return status;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 template <class T>
 NOX::StatusTest::StatusType NOX::NLN::Solver::LineSearchBased::GetStatus() const
 {

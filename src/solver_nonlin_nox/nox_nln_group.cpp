@@ -166,12 +166,10 @@ NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeF()
   if (isF())
     return NOX::Abstract::Group::Ok;
 
-  bool status = false;
-
-  status = userInterfacePtr->computeF(xVector.getEpetraVector(),
+  const bool success = userInterfacePtr->computeF(xVector.getEpetraVector(),
       RHSVector.getEpetraVector(),NOX::Epetra::Interface::Required::Residual);
 
-  if (status == false)
+  if ( not success )
   {
     throw "NOX::NLN::Group::computeF() - fill failed";
   }
@@ -225,6 +223,55 @@ NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeFandJacobian()
   }
 
   return ret;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+NOX::Abstract::Group::ReturnType NOX::NLN::Group::applyJacobianInverse (
+    Teuchos::ParameterList &p,
+    const NOX::Epetra::Vector &input,
+    NOX::Epetra::Vector &result) const
+{
+  prePostOperatorPtr_->runPreApplyJacobianInverse(
+      input, result, xVector, *this );
+
+  NOX::Abstract::Group::ReturnType status =
+      NOX::Epetra::Group::applyJacobianInverse(p,input,result);
+
+  prePostOperatorPtr_->runPostApplyJacobianInverse(
+      input, result, xVector, *this );
+
+  return status;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeCorrectionSystem(
+    const enum NOX::NLN::CorrectionType type )
+{
+  prePostOperatorPtr_->runPreComputeF(RHSVector.getEpetraVector(),*this);
+
+  Teuchos::RCP<NOX::NLN::LinearSystem> nlnSharedLinearSystem =
+      Teuchos::rcp_dynamic_cast<NOX::NLN::LinearSystem>(sharedLinearSystem.getObject(this));
+
+  if (nlnSharedLinearSystem.is_null())
+    dserror( "Dynamic cast of the shared linear system failed!" );
+
+  isValidRHS = false;
+  isValidJacobian = false;
+
+  const bool success =
+      nlnSharedLinearSystem->computeCorrectionSystem( type, *this, xVector, RHSVector );
+
+  if ( not success )
+    dserror( "computeCheapSOCSystem failed!" );
+
+  isValidRHS = true;
+  isValidJacobian = true;
+
+  prePostOperatorPtr_->runPostComputeF(RHSVector.getEpetraVector(),*this);
+
+  return NOX::Abstract::Group::Ok;
 }
 
 /*----------------------------------------------------------------------------*
@@ -543,4 +590,36 @@ void NOX::NLN::Group::throwError(
 const Epetra_BlockMap& NOX::NLN::Group::getDofMap() const
 {
   return xVector.getEpetraVector().Map();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void NOX::NLN::Group::CreateBackupState(
+    const NOX::Abstract::Vector& dir ) const
+{
+  Teuchos::RCP<NOX::NLN::Interface::Required> nln_required =
+      Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Required>(userInterfacePtr);
+
+  if ( nln_required.is_null() )
+    dserror( "Dynamic cast failed." );
+
+  const NOX::Epetra::Vector* epetra_dir =
+      dynamic_cast<const NOX::Epetra::Vector*>( &dir );
+  if ( not epetra_dir )
+    dserror( "Dynamic cast failed." );
+
+  nln_required->CreateBackupState( epetra_dir->getEpetraVector() );
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void NOX::NLN::Group::RecoverFromBackupState()
+{
+  Teuchos::RCP<NOX::NLN::Interface::Required> nln_required =
+      Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Required>(userInterfacePtr);
+
+  if ( nln_required.is_null() )
+    dserror( "Dynamic cast failed." );
+
+  nln_required->RecoverFromBackupState();
 }

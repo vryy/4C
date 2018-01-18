@@ -47,6 +47,26 @@ namespace Interface {
     status_converged = 1
   };
 
+  inline std::string StatusType2String( enum StatusType status )
+  {
+    switch ( status )
+    {
+      case status_unevaluated:
+        return "status_unevaluated";
+      case status_failed:
+        return "status_failed";
+      case status_no_descent_direction:
+        return "status_no_descent_direction";
+      case status_step_too_short:
+        return "status_step_too_short";
+      case status_step_too_long:
+        return "status_step_too_long";
+      case status_converged:
+        return "status_converged";
+      default:
+        return "Unknown NOX:NLN:INNER::StatusTest::StatusType";
+    }
+  }
 
   class Generic
   {

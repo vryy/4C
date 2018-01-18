@@ -1961,6 +1961,7 @@ set(OBJS_SOLVER_NONLIN_NOX
   src/solver_nonlin_nox/nox_nln_group.cpp
   src/solver_nonlin_nox/nox_nln_group_prepostoperator.cpp
   src/solver_nonlin_nox/nox_nln_linesearch_factory.cpp
+  src/solver_nonlin_nox/nox_nln_linesearch_prepostoperator.cpp
   src/solver_nonlin_nox/nox_nln_direction_factory.cpp
   src/solver_nonlin_nox/nox_nln_meritfunction_factory.cpp
   src/solver_nonlin_nox/nox_nln_solver_factory.cpp
