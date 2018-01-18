@@ -10,7 +10,7 @@
 
   \level 2
 
-  \maintainer Magnus Winter
+  \maintainer Christoph Ager
 
 */
 /*----------------------------------------------------------------------------*/

@@ -5,7 +5,7 @@
 
 \level 1
 
-\maintainer Magnus Winter
+\maintainer Martin Kronbichler
 *-----------------------------------------------------------------------*/
 
 #ifndef UNIT_IO_PSTREAM_H_

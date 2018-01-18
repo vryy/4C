@@ -5,7 +5,7 @@
 
 \level 1
 
-\maintainer Magnus Winter
+\maintainer Martin Kronbichler
 *-----------------------------------------------------------------------*/
 
 #ifndef UNIT_DRT_DOMAINREADER_H_

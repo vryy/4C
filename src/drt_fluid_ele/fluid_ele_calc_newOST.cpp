@@ -7,10 +7,10 @@
 \level 3
 
 <pre>
-\maintainer Magnus Winter & Volker Gravemeier
-            {winter,vgravem}@lnm.mw.tum.de
+\maintainer Volker Gravemeier
+            vgravem@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15236/-245
+            089 - 289-15245
 </pre>
 */
 /*----------------------------------------------------------------------*/

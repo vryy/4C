@@ -4,8 +4,8 @@
 
 \brief Input parameters for fluid and related problems
 
-\maintainer Magnus Winter
-            winter@lnm.mw.tum.de
+\maintainer Martin Kronbichler
+            kronbikronbichlerr@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 
 \level 1

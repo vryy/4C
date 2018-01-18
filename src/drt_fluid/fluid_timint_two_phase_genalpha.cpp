@@ -3,9 +3,11 @@
 \file fluid_timint_two_phase_genalpha.cpp
 \brief TimIntTwoPhaseGenAlpha
 
+\level 2
+
 <pre>
-Maintainers: Magnus Winter & Martin Kronbichler
-             {winter,kronbichler}@lnm.mw.tum.de
+\maintainer Christoph Ager & Martin Kronbichler
+             {ager,kronbichler}@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15236/-235
 </pre>

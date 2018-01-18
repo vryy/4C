@@ -6,8 +6,8 @@
 
 \level 3
 
-\maintainer Magnus Winter
-            winter@lnm.mw.tum.de
+\maintainer Christoph Ager
+            ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089/28915236
 
