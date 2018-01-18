@@ -1419,7 +1419,7 @@ void CONTACT::CoInterface::InitializeDataContainer()
   // we need this master node data container to create an averaged
   // nodal normal field on the master side for the smoothed cpp
   // normal field!
-  if(DRT::INPUT::IntegralValue<int>(IParams(),"CPP_NORMALS"))
+  if(DRT::INPUT::IntegralValue<int>(IParams(),"CPP_NORMALS") || nonSmoothContact_)
   {
     const Teuchos::RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(MasterRowNodes()));
 
@@ -1433,22 +1433,6 @@ void CONTACT::CoInterface::InitializeDataContainer()
       mnode->InitializeDataContainer();
     }
   }
-  else if(nonSmoothContact_)
-  {
-    const Teuchos::RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(MasterRowNodes()));
-
-    for (int i = 0; i < masternodes->NumMyElements(); ++i)
-    {
-      int gid = masternodes->GID(i);
-      DRT::Node* node = Discret().gNode(gid);
-      if (!node)
-        dserror("ERROR: Cannot find node with gid %i", gid);
-      CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(node);
-      mnode->InitializeDataContainer();
-    }
-  }
-
-
 
   return;
 }
