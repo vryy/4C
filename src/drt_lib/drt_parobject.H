@@ -18,12 +18,13 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <type_traits>
 #include <string>
 #include "../linalg/linalg_serialdensematrix.H"
 #include <Epetra_SerialDenseVector.h>
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "drt_pack_buffer.H"
-#include "../headers/pairedvector.H"
+#include "../headers/pairedmatrix.H"
 
 namespace DRT
 {
@@ -299,25 +300,78 @@ public:
   /*!
    \brief Add stuff to the end of a char vector data
 
-   This method is templated for pairedvector<T,U>
+   This method is a template for pairedvector<Ts...>
    \param data (in/out) : char string stuff shall be added to
-   \param stuff (in)    : pairedvector<T,U> that get's added to stuff
+   \param stuff (in)    : pairedvector<Ts...> that get's added to stuff
 
    */
-  template<typename T, typename U>
-  static void AddtoPack(PackBuffer& data, const GEN::pairedvector<T, U> & stuff)
+  template<typename... Ts>
+  static void AddtoPack(PackBuffer& data, const GEN::pairedvector<Ts...> & stuff)
   {
     int numentries = (int) stuff.size();
     AddtoPack(data, numentries);
 
-    // iterator
-    typename GEN::pairedvector<T, U>::const_iterator colcurr;
+    int i = 0;
+    for (const auto& colcurr : stuff )
+    {
+      AddtoPack(data, colcurr.first);
+      AddtoPack(data, colcurr.second);
+      ++i;
+    }
+
+    if (i != numentries)
+      dserror("Something wrong with number of elements");
+
+    return;
+  }
+
+  /*!
+   \brief Add stuff to the end of a char vector data first
+
+   This method is a template for std::vector< pairedvector<Ts...> >
+   \param data (in/out) : char string stuff shall be added to
+   \param stuff (in)    : std::vector<pairedvector<Ts...> > that get's added to stuff
+
+   */
+  template<typename... Ts>
+  static void AddtoPack(PackBuffer& data,
+      const std::vector<GEN::pairedvector<Ts...> > & stuff)
+  {
+    int numentries = (int) stuff.size();
+    AddtoPack(data, numentries);
 
     int i = 0;
-    for (colcurr = stuff.begin(); colcurr != stuff.end(); ++colcurr)
+    for ( auto& paired_vec : stuff )
     {
-      AddtoPack(data, colcurr->first);
-      AddtoPack(data, colcurr->second);
+      AddtoPack( data, paired_vec );
+      ++i;
+    }
+
+    if (i != numentries)
+      dserror("Something wrong with number of elements");
+
+    return;
+  }
+
+  /*!
+   \brief Add stuff to the end of a char vector data first
+
+   This method is a template for std::vector< pairedmatrix<Ts...> >
+   \param data (in/out) : char string stuff shall be added to
+   \param stuff (in)    : std::vector<pairedmatrix<Ts...> > that get's added to stuff
+
+   */
+  template<typename... Ts>
+  static void AddtoPack(PackBuffer& data,
+      const std::vector<GEN::pairedmatrix<Ts...> > & stuff)
+  {
+    int numentries = (int) stuff.size();
+    AddtoPack(data, numentries);
+
+    int i = 0;
+    for ( const typename GEN::pairedmatrix_base<Ts...>::type& paired_mat : stuff )
+    {
+      AddtoPack( data, paired_mat );
       ++i;
     }
 
@@ -460,7 +514,7 @@ public:
   /*!
    \brief Extract stuff from a char vector data and increment position
 
-   This method is templated for all basic type like int char double enum.
+   This method is a template for all basic types like int char double enum.
    To be precise, it will work for all objects where sizeof(kind) is well defined.
 
    \param position (in/out) : place in data where to extract stuff. Position will be incremented by sizeof(kind)
@@ -468,6 +522,16 @@ public:
    \param stuff (out)       : basic data type (float int double char ...) to extract from data
 
    */
+  template <typename T>
+  static typename std::enable_if<std::is_pod<T>::value,void>::type
+  ExtractfromPack(std::vector<char>::size_type& position,
+      const std::vector<char>& data, T& stuff)
+  {
+    int size = sizeof(T);
+    memcpy(&stuff, &data[position], size);
+    position += size;
+  }
+
   static void ExtractfromPack(std::vector<char>::size_type& position,
       const std::vector<char>& data, int& stuff)
   {
@@ -596,16 +660,16 @@ public:
   /*!
    \brief Extract stuff from a char vector data and increment position
 
-   This method is templated for stuff of type pairedvector<T,U>
+   This method is a template for stuff of type pairedvector<Key,T0,Ts...>
 
    \param position (in/out) : place in data where to extract stuff. Position will be incremented by this method
    \param data (in)         : char vector where stuff is extracted from
-   \param stuff (out)       : pairedvector<T,U> to extract from data
+   \param stuff (out)       : pairedvector<Key,T0,Ts...> to extract from data
 
    */
-  template<typename T, typename U>
+  template<typename Key, typename T0, typename... Ts>
   static void ExtractfromPack(std::vector<char>::size_type& position,
-      const std::vector<char>& data, GEN::pairedvector<T, U>& stuff)
+      const std::vector<char>& data, GEN::pairedvector<Key, T0, Ts...>& stuff)
   {
 
     int numentries = 0;
@@ -616,8 +680,8 @@ public:
 
     for (int i = 0; i < numentries; i++)
     {
-      T first;
-      U second;
+      Key first;
+      T0 second;
       ExtractfromPack(position, data, first);
       ExtractfromPack(position, data, second);
 
@@ -631,7 +695,74 @@ public:
   /*!
    \brief Extract stuff from a char vector data and increment position
 
-   This method is templated for stuff of type std::set<T, U>
+   This method is a template for stuff of type std::vector< pairedvector<Ts...> >
+
+   \param position (in/out) : place in data where to extract stuff. Position will be incremented by this method
+   \param data (in)         : char vector where stuff is extracted from
+   \param stuff (out)       : std::vector< pairedvector<Ts...> > to extract from data
+
+   */
+  template<typename... Ts>
+  static void ExtractfromPack(std::vector<char>::size_type& position,
+      const std::vector<char>& data, std::vector<GEN::pairedvector<Ts...> >& stuff)
+  {
+
+    int numentries = 0;
+    ExtractfromPack(position, data, numentries);
+
+    stuff.clear();
+    stuff.resize(numentries);
+
+    GEN::pairedvector<Ts...> paired_vec;
+    for (int i = 0; i < numentries; i++)
+    {
+      ExtractfromPack(position, data, paired_vec);
+
+
+      //add to map
+      stuff[i] = paired_vec;
+    }
+
+    return;
+  }
+
+  /*!
+   \brief Extract stuff from a char vector data and increment position
+
+   This method is templated for stuff of type std::vector< pairedmatrix<Ts...> >
+
+   \param position (in/out) : place in data where to extract stuff. Position will be incremented by this method
+   \param data (in)         : char vector where stuff is extracted from
+   \param stuff (out)       : std::vector< pairedmatrix<Ts...> > to extract from data
+
+   */
+  template<typename... Ts>
+  static void ExtractfromPack(std::vector<char>::size_type& position,
+      const std::vector<char>& data, std::vector<GEN::pairedmatrix<Ts...> >& stuff)
+  {
+
+    int numentries = 0;
+    ExtractfromPack(position, data, numentries);
+
+    stuff.clear();
+    stuff.resize(numentries);
+
+    typename GEN::pairedmatrix_base<Ts...>::type paired_mat;
+    for (int i = 0; i < numentries; i++)
+    {
+      ExtractfromPack(position, data, paired_mat);
+
+      //add to map
+      stuff[i] = paired_mat;
+    }
+
+    return;
+  }
+
+  /*!
+   \brief Extract stuff from a char vector data and increment position
+
+   This method is templated for stuff of type std::set<T>
 
    \param position (in/out) : place in data where to extract stuff. Position will be incremented by this method
    \param data (in)         : char vector where stuff is extracted from
