@@ -369,52 +369,42 @@ class ScaTraEleDiffManagerVar : public ScaTraEleDiffManager
     //! Set Dissipation Potential
     void SetDissipationPot(
       const Teuchos::RCP<const MAT::ScatraMatVarChemDiffusion>  material,     //!< pointer to current material
-      double                                          concentration,  //!< Concentration at t_(n+1)
-      const double                                        refC,       //!< Reference concentration
-      const LINALG::Matrix<NSD,1>                   chemicalfield,  //!< Chemical field at t_(n+1)
-      const double                                        mobility,     //!< mobility
-    const int                         k       //!< species number
+      double                         concentration,   //!< Concentration at t_(n+1)
+      const double                   refC,            //!< Reference concentration
+      const LINALG::Matrix<NSD,1>    chemicalfield,   //!< Chemical field at t_(n+1)
+      const double                   mobility,        //!< mobility
+    const int                        k                //!< species number
       )
     {
-      if ( material->ModelType() == MAT::PAR::chemdiff_linear)
-        concentration = refC;
-      DissipationPot_[k]=(1/2)*(concentration*mobility)* dot(chemicalfield,chemicalfield); //TODO check if this works or requires .dot()
+      material->ComputeDissipationPot<NSD>(concentration, refC, chemicalfield, mobility, DissipationPot_[k]);
       return;
     }
 
     //! Set Dissipation Potential 1st derivative
     void SetDissipationPot1deriv(
-    const Teuchos::RCP<const MAT::ScatraMatVarChemDiffusion>  material,     //!< pointer to current material
-      double                                          concentration,  //!< Concentration at t_(n+1)
-      const double                                        refC,       //!< Reference concentration
-    const LINALG::Matrix<NSD,1>                         chemicalfield,  //!< Chemical field at t_(n+1)
-    const double                                        mobility,     //!< mobility
-    const int                         k       //!< species number
+      const Teuchos::RCP<const MAT::ScatraMatVarChemDiffusion>  material,     //!< pointer to current material
+      double                         concentration,   //!< Concentration at t_(n+1)
+      const double                   refC,            //!< Reference concentration
+      const LINALG::Matrix<NSD,1>    chemicalfield,   //!< Chemical field at t_(n+1)
+      const double                   mobility,        //!< mobility
+      const int                      k                //!< species number
     )
     {
-      if ( material->ModelType() == MAT::PAR::chemdiff_linear)
-        concentration = refC;
-      // this                 <--         double a          * matrix      * double this
-      DissipationPot1deriv_[k].Update(concentration*mobility,chemicalfield,0.);
-//      DissipationPot1deriv_[k]= (concentration*mobility)* chemicalfield;
+      material->ComputeDissipationPot_D1<NSD>(concentration, refC, chemicalfield, mobility, DissipationPot1deriv_[k]);
       return;
     }
 
     //! Set Dissipation Potential 2nd derivative
     void SetDissipationPot2deriv(
     const Teuchos::RCP<const MAT::ScatraMatVarChemDiffusion>  material,     //!< pointer to current material
-      double                                          concentration,  //!< Concentration at t_(n+1)
-      const double                                        refC,       //!< Reference concentration
-    const LINALG::Matrix<NSD,1>                         chemicalfield,  //!< Chemical field at t_(n+1)
-    const double                                        mobility,     //!< mobility
-    const int                         k       //!< species number
+      double                          concentration,      //!< Concentration at t_(n+1)
+      const double                    refC,               //!< Reference concentration
+    const LINALG::Matrix<NSD,1>       chemicalfield,      //!< Chemical field at t_(n+1)
+    const double                      mobility,           //!< mobility
+    const int                         k                   //!< species number
     )
     {
-      if ( material->ModelType() == MAT::PAR::chemdiff_linear)
-        concentration = refC;
-      DissipationPot2deriv_[k].PutScalar(0.);
-      for (int d=0; d<NSD; ++d)
-        DissipationPot2deriv_[k](d,d) = (concentration*mobility);
+      material->ComputeDissipationPot_D2<NSD>(concentration, refC, chemicalfield, mobility, DissipationPot2deriv_[k]);
       return;
     }
 

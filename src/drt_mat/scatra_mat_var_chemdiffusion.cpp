@@ -19,6 +19,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_comm/comm_utils.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -148,11 +149,11 @@ MAT::PAR::Models MAT::PAR::ScatraMatVarChemDiffusion::StringToModel(const std::s
  | compute internal energy for chemical diffusion           deanda 08/17 |
  *----------------------------------------------------------------------*/
 double MAT::ScatraMatVarChemDiffusion::ComputeInternalEnergy(
-    const double concentration, //!< Concentration
-  const double refMu,     //!< Reference chemical potential
-  const double refC,          //!< Reference concentration
-  const double rt,            //!< factor RT
-  const int orderderivative //!< Order of the derivative to use
+  const double concentration,     //!< Concentration
+  const double refMu,             //!< Reference chemical potential
+  const double refC,              //!< Reference concentration
+  const double rt,                //!< factor RT
+  const int orderderivative       //!< Order of the derivative to use
   ) const
 {
   double IntEnergy(0.);
@@ -252,11 +253,11 @@ double MAT::ScatraMatVarChemDiffusion::ComputeInternalEnergy(
  | compute dual internal energy for chemical diffusion      deanda 08/17 |
  *----------------------------------------------------------------------*/
 double MAT::ScatraMatVarChemDiffusion::ComputeDualInternalEnergy(
-    const double ChemPot,     //!< Chemical Potential
-  const double refMu,     //!< Reference chemical potential
+  const double ChemPot,       //!< Chemical Potential
+  const double refMu,         //!< Reference chemical potential
   const double refC,          //!< Reference concentration
   const double rt,            //!< factor RT
-  const int orderderivative //!< Order of the derivative to use
+  const int orderderivative   //!< Order of the derivative to use
   ) const
 {
   double DualIntEnergy(0.);
@@ -340,94 +341,70 @@ double MAT::ScatraMatVarChemDiffusion::ComputeDualInternalEnergy(
   return DualIntEnergy;
 } // MAT::ScatraMatVarChemDiffusion::ComputeDualInternalEnergy
 
+///*----------------------------------------------------------------------*
+// | compute dissipation function for chemical diffusion      deanda 01/18 |
+// *----------------------------------------------------------------------*/
 
-///*----------------------------------------------------------------------*
-// | compute dissipation function for chemical diffusion      deanda 08/17 |
-// *----------------------------------------------------------------------*/
-//double MAT::ScatraMatVarChemDiffusion::ComputeDissipationFunciton(
-//  const double concentration,     //!< Concentration
-//  const double chemicalfield,   //!< Chemical field -> Negative gradient of the chemical potential
-//  const double mobility,          //!< Mobility parameter
-//  const int orderderivative   //!< Order of the derivative to use
-//  ) const
-//{
-//  double DissipFnt(0.);
-//      switch (orderderivative)
-//      {
-//          // Computes dissipation function
-//          case 0:
-//          {
-//          DissipFnt = (1/2)*(concentration*mobility)*chemicalfield*chemicalfield;
-//          break;
-//          }
-//          // Computes dissipation first derivative
-//          case 1:
-//          {
-//          DissipFnt = (concentration*mobility)*chemicalfield;
-//          break;
-//          }
-//          // Computes dissipation second derivative
-//          case 2:
-//          {
-//          DissipFnt = (concentration*mobility);
-//          break;
-//          }
-//          // Computes dissipation higher derivatives
-//          default:
-//          {
-//          DissipFnt = 0.0;
-//          break;
-//          }
-//      }//switch (orderderivative)
-//
-//  return DissipFnt;
-//} // MAT::ScatraMatVarChemDiffusion::ComputeDissipationFunciton
-//
-///*----------------------------------------------------------------------*
-// | compute dissipation function for chemical diffusion      deanda 08/17 |
-// *----------------------------------------------------------------------*/
-//double MAT::ScatraMatVarChemDiffusion::ComputeDissipationFunciton(
-//  const double concentration,     //!< Concentration
-//  const double chemicalfield,   //!< Chemical field -> Negative gradient of the chemical potential
-//  const double mobility,          //!< Mobility parameter
-//  ) const
-//{
-//  double DissipFnt(0.);
-//
-//
-//  DissipFnt = (1/2)*(concentration*mobility)*chemicalfield*chemicalfield;
-//
-//  return DissipFnt;
-//} // MAT::ScatraMatVarChemDiffusion::ComputeDissipationFunciton
-//
-///*----------------------------------------------------------------------*
-// | compute dissipation function 1st derivative            deanda 08/17 |
-// *----------------------------------------------------------------------*/
-//std::vector<double> MAT::ScatraMatVarChemDiffusion::ComputeDissipationFunciton1deriv(
-//  const double concentration,           //!< Concentration
-//  const std::vector<double> chemicalfield,  //!< Chemical field -> Negative gradient of the chemical potential
-//  const double mobility,                //!< Mobility parameter
-//  ) const
-//{
-//  std::vector<double> DissipFnt(0.);
-//
-//      DissipFnt = (concentration*mobility)*chemicalfield;
-//
-//  return DissipFnt;
-//} // MAT::ScatraMatVarChemDiffusion::ComputeDissipationFunciton1deriv
-//
-///*----------------------------------------------------------------------*
-// | compute dissipation function 2nd derivative            deanda 08/17 |
-// *----------------------------------------------------------------------*/
-//LINALG::Matrix<NSD,NEN> MAT::ScatraMatVarChemDiffusion::ComputeDissipationFunciton1deriv(
-//  const double concentration,           //!< Concentration
-//  const std::vector<double> chemicalfield,  //!< Chemical field -> Negative gradient of the chemical potential
-//  const double mobility,                //!< Mobility parameter
-//  ) const
-//{
-//  LINALG::Matrix<NSD,NEN> DissipFnt(true);
-//
-//      DissipFnt = concentration*mobility;
-//
-//  return DissipFnt;
-//} // MAT::ScatraMatVarChemDiffusion::ComputeDissipationFunciton1deriv
+//! Set Dissipation Potential
+template<int NSD>
+void MAT::ScatraMatVarChemDiffusion::ComputeDissipationPot(
+   double concentration                        //!< Concentration at t_(n+1)
+  ,const double& refC                          //!< Reference concentration
+  ,const LINALG::Matrix<NSD,1>& chemicalfield  //!< Chemical field at t_(n+1)
+  ,const double& mobility                      //!< mobility
+  ,double& DissipationPot                      //!< Output
+  )const
+{
+  if ( params_->chemdiff_model_ == MAT::PAR::chemdiff_linear)
+    concentration = refC;
+  DissipationPot = (0.5)*(concentration*mobility)* chemicalfield.Dot(chemicalfield);
+  return;
+}
+
+//! Set Dissipation Potential 1st derivative
+template<int NSD>
+void MAT::ScatraMatVarChemDiffusion::ComputeDissipationPot_D1(
+   double concentration                         //!< Concentration at t_(n+1)
+  ,const double& refC                           //!< Reference concentration
+  ,const LINALG::Matrix<NSD,1>& chemicalfield   //!< Chemical field at t_(n+1)
+  ,const double& mobility                       //!< mobility
+  ,LINALG::Matrix<NSD,1>& DissipationPot1deriv  //!< Output
+)const
+{
+  DissipationPot1deriv.PutScalar(0.);
+  if ( params_->chemdiff_model_ == MAT::PAR::chemdiff_linear)
+    concentration = refC;
+  DissipationPot1deriv.Update(concentration*mobility,chemicalfield,0.);
+  return;
+}
+
+//! Set Dissipation Potential 2nd derivative
+template<int NSD>
+void MAT::ScatraMatVarChemDiffusion::ComputeDissipationPot_D2(
+   double concentration                             //!< Concentration at t_(n+1)
+  ,const double& refC                               //!< Reference concentration
+  ,const LINALG::Matrix<NSD,1>& chemicalfield       //!< Chemical field at t_(n+1)
+  ,const double&  mobility                          //!< mobility
+ ,LINALG::Matrix<NSD,NSD>& DissipationPot2deriv     //!< Output
+)const
+{
+  DissipationPot2deriv.PutScalar(0.);
+  if ( params_->chemdiff_model_ == MAT::PAR::chemdiff_linear)
+    concentration = refC;
+  for (int d=0; d<NSD; ++d)
+    DissipationPot2deriv(d,d) = (concentration*mobility);
+  return;
+}
+
+//ComputeDissipationPot
+template void MAT::ScatraMatVarChemDiffusion::ComputeDissipationPot<1>(double, const double&, const LINALG::Matrix<1,1>&, const double&, double& )const;//
+template void MAT::ScatraMatVarChemDiffusion::ComputeDissipationPot<2>(double, const double&, const LINALG::Matrix<2,1>&, const double&, double& )const;
+template void MAT::ScatraMatVarChemDiffusion::ComputeDissipationPot<3>(double, const double&, const LINALG::Matrix<3,1>&, const double&, double& )const;
+//ComputeDissipationPot_D1
+template void MAT::ScatraMatVarChemDiffusion::ComputeDissipationPot_D1<1>(double, const double&, const LINALG::Matrix<1,1>&, const double&, LINALG::Matrix<1,1>&)const;
+template void MAT::ScatraMatVarChemDiffusion::ComputeDissipationPot_D1<2>(double, const double&, const LINALG::Matrix<2,1>&, const double&, LINALG::Matrix<2,1>&)const;
+template void MAT::ScatraMatVarChemDiffusion::ComputeDissipationPot_D1<3>(double, const double&, const LINALG::Matrix<3,1>&, const double&, LINALG::Matrix<3,1>&)const;
+//ComputeDissipationPot_D2
+template void MAT::ScatraMatVarChemDiffusion::ComputeDissipationPot_D2<1>(double, const double&, const LINALG::Matrix<1,1>&, const double& , LINALG::Matrix<1,1>&)const;
+template void MAT::ScatraMatVarChemDiffusion::ComputeDissipationPot_D2<2>(double, const double&, const LINALG::Matrix<2,1>&, const double& , LINALG::Matrix<2,2>&)const;
+template void MAT::ScatraMatVarChemDiffusion::ComputeDissipationPot_D2<3>(double, const double&, const LINALG::Matrix<3,1>&, const double& , LINALG::Matrix<3,3>&)const;

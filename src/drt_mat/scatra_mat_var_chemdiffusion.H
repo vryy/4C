@@ -96,10 +96,20 @@ private:
 /// wrapper for scalar transport material
 class ScatraMatVarChemDiffusion: public ScatraMat
 {
+private:
+  /// my material parameters
+  MAT::PAR::ScatraMatVarChemDiffusion* params_;
+//  int nsd_; //DRT::Problem::Instance()->ScalarTransportDynamicParams().get<int>("NSD")
+//  int numscal_; //DRT::Problem::Instance()->ScalarTransportDynamicParams().get<int>("NSD")
+
 public:
 
   /// construct empty material object
-  ScatraMatVarChemDiffusion();
+  ScatraMatVarChemDiffusion();//:
+//    ScatraMatVarChemDiffusion()
+//  ,nsd_(DRT::Problem::Instance()->ScalarTransportDynamicParams().get<int>("NSD"))
+//  ,numscal_(DRT::Problem::Instance()->ScalarTransportDynamicParams().get<int>("NUMSCAL"))
+//  {return;}
 
   /// construct the material object given material parameters
   explicit ScatraMatVarChemDiffusion(MAT::PAR::ScatraMatVarChemDiffusion* params);
@@ -189,26 +199,47 @@ public:
 
   //! Compute the internal energy of the system and its derivatives
   double ComputeInternalEnergy(
-    const double concentration,   //!< Concentration
-    const double refMu,     //!< Reference chemical potential
-    const double refC,          //!< Reference concentration
-    const double rt,              //!< factor RT
-    const int orderderivative   //!< Order of the derivative to use
+    const double concentration,     //!< Concentration
+    const double refMu,             //!< Reference chemical potential
+    const double refC,              //!< Reference concentration
+    const double rt,                //!< factor RT
+    const int orderderivative       //!< Order of the derivative to use
       ) const;
 
   double ComputeDualInternalEnergy(
-    const double ChemPot,     //!< Chemical Potential
-    const double refMu,     //!< Reference chemical potential
-    const double refC,          //!< Reference concentration
-    const double rt,            //!< factor RT
-    const int orderderivative //!< Order of the derivative to use
+    const double ChemPot,           //!< Chemical Potential
+    const double refMu,             //!< Reference chemical potential
+    const double refC,              //!< Reference concentration
+    const double rt,                //!< factor RT
+    const int orderderivative       //!< Order of the derivative to use
     ) const;
 
-private:
+  template<int NSD>
+  void ComputeDissipationPot(
+     double concentration                        //!< Concentration at t_(n+1)
+    ,const double& refC                          //!< Reference concentration
+    ,const LINALG::Matrix<NSD,1>& chemicalfield  //!< Chemical field at t_(n+1)
+    ,const double& mobility                      //!< mobility
+    ,double& DissipationPot                      //!< Output
+    ) const;
 
-  /// my material parameters
-  MAT::PAR::ScatraMatVarChemDiffusion* params_;
+  template<int NSD>
+  void ComputeDissipationPot_D1(
+     double concentration                         //!< Concentration at t_(n+1)
+    ,const double& refC                           //!< Reference concentration
+    ,const LINALG::Matrix<NSD,1>& chemicalfield   //!< Chemical field at t_(n+1)
+    ,const double& mobility                       //!< mobility
+    ,LINALG::Matrix<NSD,1>& DissipationPot1deriv  //!< Output
+  ) const;
 
+  template<int NSD>
+  void ComputeDissipationPot_D2(
+     double concentration                             //!< Concentration at t_(n+1)
+    ,const double& refC                               //!< Reference concentration
+    ,const LINALG::Matrix<NSD,1>& chemicalfield       //!< Chemical field at t_(n+1)
+    ,const double&  mobility                          //!< mobility
+    ,LINALG::Matrix<NSD,NSD>& DissipationPot2deriv    //!< Output
+  ) const;
 };
 
 }
