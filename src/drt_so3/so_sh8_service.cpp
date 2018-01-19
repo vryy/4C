@@ -1,15 +1,17 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/**
 \file so_sh8_service.cpp
-\brief
+\brief Service functionality for the solid shell8 elements
 
 <pre>
-Maintainer: Alexander Popp
+\maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
 </pre>
-
-*----------------------------------------------------------------------*/
+\level 1
+*/
+/*----------------------------------------------------------------------*/
 
 #include "so_hex8.H"
 #include "so_sh8.H"
@@ -346,7 +348,7 @@ const std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > DRT::ELEMENTS::So_sh
   const double t[NUMNOD_SOH8] = {-1.0,-1.0,-1.0,-1.0, 1.0, 1.0, 1.0, 1.0};
 //  const double t[NUMNOD_SOH8] = {0.0,0.0,0.0,0.0, 0.0, 0.0, 0.0, 0.0};
   // fill up df w.r.t. rst directions (NUMDIM) at each gp
-  for (int i=0; i<NUMGPT_SOH8; ++i) {
+  for (int i=0; i<NUMNOD_SOH8; ++i) {
     // df wrt to r for each node(0..7) at each gp [i]
     (derivs[i])(0,0) = -(1.0-s[i])*(1.0-t[i])*0.125;
     (derivs[i])(0,1) =  (1.0-s[i])*(1.0-t[i])*0.125;

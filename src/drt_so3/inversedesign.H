@@ -1,14 +1,16 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/**
 \file inversedesign.H
-
+\brief special element adaptions for inverse design
 <pre>
-Maintainer: Michael Gee
+\maintainer Michael Gee
             gee@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15239
 </pre>
-
-*----------------------------------------------------------------------*/
+\level 2
+*/
+/*----------------------------------------------------------------------*/
 #ifndef INVERSEDESIGN_H
 #define INVERSEDESIGN_H
 
@@ -17,6 +19,7 @@ Maintainer: Michael Gee
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_mat/material.H"
 
+#include "so_hex8.H"
 
 namespace LINALG
 {
@@ -29,7 +32,6 @@ namespace ELEMENTS
 {
 class So_tet4;
 class So_weg6;
-class So_hex8;
 
 class InvDesignType : public DRT::ParObjectType
 {
@@ -134,11 +136,11 @@ public:
       std::vector<int>&         lm,             ///< location matrix
       std::vector<double>&      disp,           ///< current displacements
       std::vector<double>&      residual,       ///< current residuum
-      LINALG::Matrix<24,24>* stiffmatrix,    ///< element stiffness matrix
-      LINALG::Matrix<24,24>* massmatrix,     ///< element mass matrix
-      LINALG::Matrix<24,1>* force,          ///< element internal force vector
-      LINALG::Matrix<8,6>* elestress,      ///< stresses at GP
-      LINALG::Matrix<8,6>* elestrain,      ///< strains at GP
+      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,    ///< element stiffness matrix
+      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,     ///< element mass matrix
+      LINALG::Matrix<NUMDOF_SOH8,1>* force,          ///< element internal force vector
+      LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestress,      ///< stresses at GP
+      LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestrain,      ///< strains at GP
       Teuchos::ParameterList&            params,         ///< algorithmic parameters e.g. time
       const INPAR::STR::StressType iostress,    ///< stress output option
       const INPAR::STR::StrainType iostrain);   ///< strain output option

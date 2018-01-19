@@ -94,7 +94,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
           std::vector<Epetra_SerialDenseMatrix>** M_GP,    // M-matrix evaluated at GPs
           double& detJ0,                      // det of Jacobian at origin
           LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>& T0invT,   // maps M(origin) local to global
-          const LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8>& xrefe)    // material element coords
+          const LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8>& xrefe) const  // material element coords
 {
   // vector of df(origin)
   static double df0_vector[NUMDIM_SOH8*NUMNOD_SOH8] =
@@ -187,10 +187,10 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
     */
     if (!M_mild_eval){ // if true M already evaluated
       // (r,s,t) gp-locations of fully integrated linear 8-node Hex
-      const double gploc    = 1.0/sqrt(3.0);    // gp sampling point value for linear fct
-      const double r[NUMGPT_SOH8] = {-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc,-gploc};
-      const double s[NUMGPT_SOH8] = {-gploc,-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc};
-      const double t[NUMGPT_SOH8] = {-gploc,-gploc,-gploc,-gploc, gploc, gploc, gploc, gploc};
+      const double* r = soh8_get_coordinate_of_gausspoints( 0 );
+      const double* s = soh8_get_coordinate_of_gausspoints( 1 );
+      const double* t = soh8_get_coordinate_of_gausspoints( 2 );
+
       // fill up M at each gp
       for (int i=0; i<NUMGPT_SOH8; ++i) {
         M_mild[i].Shape(MAT::NUM_STRESS_3D,neas_);
@@ -220,10 +220,10 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
     */
     if (!M_full_eval){ // if true M already evaluated
       // (r,s,t) gp-locations of fully integrated linear 8-node Hex
-      const double gploc    = 1.0/sqrt(3.0);    // gp sampling point value for linear fct
-      const double r[NUMGPT_SOH8] = {-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc,-gploc};
-      const double s[NUMGPT_SOH8] = {-gploc,-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc};
-      const double t[NUMGPT_SOH8] = {-gploc,-gploc,-gploc,-gploc, gploc, gploc, gploc, gploc};
+      const double* r = soh8_get_coordinate_of_gausspoints( 0 );
+      const double* s = soh8_get_coordinate_of_gausspoints( 1 );
+      const double* t = soh8_get_coordinate_of_gausspoints( 2 );
+
       // fill up M at each gp
       for (int i=0; i<NUMGPT_SOH8; ++i) {
         M_full[i].Shape(MAT::NUM_STRESS_3D,neas_);
@@ -253,10 +253,10 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
       */
       if (!M_sosh8_eval){ // if true M already evaluated
         // (r,s,t) gp-locations of fully integrated linear 8-node Hex
-        const double gploc    = 1.0/sqrt(3.0);    // gp sampling point value for linear fct
-        const double r[NUMGPT_SOH8] = {-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc,-gploc};
-        const double s[NUMGPT_SOH8] = {-gploc,-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc};
-        const double t[NUMGPT_SOH8] = {-gploc,-gploc,-gploc,-gploc, gploc, gploc, gploc, gploc};
+        const double* r = soh8_get_coordinate_of_gausspoints( 0 );
+        const double* s = soh8_get_coordinate_of_gausspoints( 1 );
+        const double* t = soh8_get_coordinate_of_gausspoints( 2 );
+
         // fill up M at each gp
         for (int i=0; i<NUMGPT_SOH8; ++i) {
           M_sosh8[i].Shape(MAT::NUM_STRESS_3D,neas_);
@@ -284,10 +284,8 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
       */
       if (!M_sosh8_eval){ // if true M already evaluated
         // (r,s,t) gp-locations of fully integrated linear 8-node Hex
-        const double gploc    = 1.0/sqrt(3.0);    // gp sampling point value for linear fct
-        //const double r[NUMGPT_SOH8] = {-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc,-gploc};
-        //const double s[NUMGPT_SOH8] = {-gploc,-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc};
-        const double t[NUMGPT_SOH8] = {-gploc,-gploc,-gploc,-gploc, gploc, gploc, gploc, gploc};
+        const double* t = soh8_get_coordinate_of_gausspoints( 2 );
+
         // fill up M at each gp
         for (int i=0; i<NUMGPT_SOH8; ++i) {
           M_sosh8[i].Shape(MAT::NUM_STRESS_3D,neas_);

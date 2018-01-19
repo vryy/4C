@@ -69,8 +69,10 @@ namespace ELEMENTS {
     struct_poro_calc_scatracoupling,        //!< calculate stiffness matrix related to scatra coupling within porous medium problem
     struct_poro_calc_prescoupling,          //!< calculate stiffness matrix related to pressure coupling within porous medium problem
     struct_calc_fluid_traction,             //!< calculate fluid traction on immersed boundary
-    struct_calc_cur_normal_at_point,         //!< calculate normal on immersed boundary surface
-    struct_calc_addjacPTC                   //!< calculate elment based PTC contributions
+    struct_calc_cur_normal_at_point,        //!< calculate normal on immersed boundary surface
+    struct_calc_addjacPTC,                  //!< calculate elment based PTC contributions
+    struct_create_backup,                   //!< create a backup state of the internally store state quantities (e.g. EAS, material history, etc.)
+    struct_recover_from_backup              //!< recover from previously stored backup state
   };  // enum ActionType
 
   //! Map action type enum to std::string
@@ -80,121 +82,88 @@ namespace ELEMENTS {
     {
       case none:
         return "none";
-        break;
       case struct_calc_linstiff:
         return "struct_calc_linstiff";
-        break;
       case struct_calc_nlnstiff:
         return "struct_calc_nlnstiff";
-        break;
       case struct_calc_internalforce:
         return "struct_calc_internalforce";
-        break;
       case struct_calc_internalinertiaforce:
         return "struct_calc_internalinertiaforce";
-        break;
       case struct_calc_linstiffmass:
         return "struct_calc_linstiffmass";
-        break;
       case struct_calc_nlnstiffmass:
         return "struct_calc_nlnstiffmass";
-        break;
       case struct_calc_nlnstifflmass:
         return "struct_calc_nlnstifflmass";
-        break;
       case struct_calc_nlnstiff_gemm:
         return "struct_calc_nlnstiff_gemm";
-        break;
+      case struct_calc_predict:
+        return "struct_calc_predict";
       case struct_calc_recover:
         return "struct_calc_recover";
-        break;
       case struct_calc_stress:
         return "struct_calc_stress";
-        break;
       case struct_calc_eleload:
         return "struct_calc_eleload";
-        break;
       case struct_calc_fsiload:
         return "struct_calc_fsiload";
-        break;
       case struct_calc_update_istep:
         return "struct_calc_update_istep";
-        break;
       case struct_calc_reset_istep:
         return "struct_calc_reset_istep";
-        break;
       case struct_calc_store_istep:
         return "struct_calc_store_istep";
-        break;
       case struct_calc_recover_istep:
         return "struct_calc_recover_istep";
-        break;
       case struct_calc_reset_all:
         return "struct_calc_reset_all";
-        break;
       case struct_calc_energy:
         return "struct_calc_energy";
-        break;
       case struct_calc_errornorms:
         return "struct_calc_errornorms";
-        break;
       case struct_postprocess_stress:
         return "struct_postprocess_stress";
-        break;
       case struct_update_prestress:
         return "struct_update_prestress";
-        break;
       case inversedesign_update:
         return "inversedesign_update";
-        break;
       case inversedesign_switch:
         return "inversedesign_switch";
-        break;
       case multi_readrestart:
         return "multi_readrestart";
-        break;
       case multi_init_eas:
         return "multi_init_eas";
-        break;
       case multi_set_eas:
         return "multi_set_eas";
-        break;
       case multi_calc_dens:
         return "multi_calc_dens";
-        break;
       case shell_calc_stc_matrix:
         return "shell_calc_stc_matrix";
-        break;
       case shell_calc_stc_matrix_inverse:
         return "shell_calc_stc_matrix_inverse";
-        break;
-        case struct_calc_ptcstiff:
+      case struct_calc_ptcstiff:
         return "struct_calc_ptcstiff";
-        break;
       case struct_calc_stifftemp:
         return "struct_calc_stifftemp";
-        break;
       case struct_calc_global_gpstresses_map:
         return "struct_calc_global_gpstresses_map";
-        break;
       case struct_interpolate_velocity_to_point:
         return "struct_interpolate_velocity_to_point";
-        break;
       case struct_calc_brownianforce:
         return "struct_calc_brownianforce";
-        break;
       case struct_calc_brownianstiff:
         return "struct_calc_brownianstiff";
-        break;
       case struct_calc_fluid_traction:
         return "struct_calc_fluid_traction";
-        break;
       case struct_calc_cur_normal_at_point:
         return "struct_calc_cur_normal_at_point";
-        break;
+      case struct_create_backup:
+        return "struct_create_backup";
+      case struct_recover_from_backup:
+        return "struct_recover_from_backup";
       default:
         return "unknown";
-        break;
     }
     return "";
   }; // ActionType2String

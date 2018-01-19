@@ -18,7 +18,6 @@
 #include "../linalg/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "so_tet4.H"
-#include "so_hex8.H"
 #include "so_weg6.H"
 #include "../drt_lib/drt_node.H"
 

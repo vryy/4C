@@ -17,6 +17,8 @@
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_mat/material.H"
+#include "../drt_fem_general/drt_utils_gausspoints.H"
+
 
 #include "so_base.H"
 
@@ -26,9 +28,9 @@
 const int NUMNOD_SOH8 = 8;      ///< number of nodes
 const int NODDOF_SOH8 = 3;      ///< number of dofs per node
 const int NUMDOF_SOH8 = 24;     ///< total dofs per element
-const int NUMGPT_SOH8 = 8;      ///< total gauss points per element
 const int NUMDIM_SOH8 = 3;      ///< number of dimensions
-
+const int NUMGPT_PER_DIM_SOH8 = 2; ///< number of gauss points per dimension
+const int NUMGPT_SOH8 = std::pow<int>( NUMGPT_PER_DIM_SOH8, NUMDIM_SOH8 );  ///< total gauss points per element
 
 namespace DRT
 {
@@ -517,6 +519,16 @@ protected:
   //! don't want = operator
   So_hex8& operator = (const So_hex8& old);
 
+  /** \brief access one coordinate of all defined GPs
+   *
+   *  A pointer to the array of the GP-coordinate is returned. If dim==0
+   *  the r-coordinate of all GPs will be returned. For dim==1 the s-coordinate
+   *  and for dim==2 the t-coordinate.
+   *
+   *  \param(in) dim: Desired coordinate.
+   *  \author hiermeier \date 12/17 */
+  const double* soh8_get_coordinate_of_gausspoints(
+        const unsigned dim ) const;
 
   //! init the inverse of the jacobian and its determinant in the material configuration
   virtual void InitJacobianMapping();
@@ -604,7 +616,7 @@ protected:
           std::vector<Epetra_SerialDenseMatrix>** M_GP,    // M-matrix evaluated at GPs
           double& detJ0,                      // det of Jacobian at origin
           LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>& T0invT,   // maps M(origin) local to global
-          const LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8>& xrefe);    // material element coords
+          const LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8>& xrefe) const;    // material element coords
 
   /*! \brief Calculate the deformation gradient that is consistent
    *         with modified (e.g. EAS) GL strain tensor.
@@ -618,7 +630,7 @@ protected:
    */
   void CalcConsistentDefgrd(LINALG::Matrix<3,3> defgrd_disp,
                             LINALG::Matrix<6,1> glstrain_mod,
-                            LINALG::Matrix<3,3>& defgrd_mod);
+                            LINALG::Matrix<3,3>& defgrd_mod) const;
 
 
   //! @name Multi-scale related stuff
@@ -693,9 +705,42 @@ private:
    * \date 04/16 */
   void soh8_recover(
       const std::vector<int>&         lm,
-      const std::vector<double>&      disp,
       const std::vector<double>&      residual);
 
+  void soh8_computeEASInc(
+      const std::vector<double>& residual,
+      Epetra_SerialDenseMatrix* const eas_inc );
+
+  /** \brief create a backup of the eas state consisting of enhanced strains and
+   *  the enhanced strain increment
+   *
+   *  Since this function is optional, the backup data is only allocated if
+   *  it is really needed.
+   *
+   *  \author hiermeier \date 12/17 */
+  void soh8_create_eas_backup_state(
+      const std::vector<double>& displ_incr );
+
+  /** \brief recover a backup of the eas state consisting of enhanced strains
+   *  and the enhanced strain increment
+   *
+   *  Since this function is optional, the backup data can only be accessed if
+   *  soh8_create_eas_backup_state has been called previously.
+   *
+   *  \author hiermeier \date 12/17 */
+  void soh8_recover_from_eas_backup_state();
+
+  /** \brief convert the number of Gauss points per dimension to corresponding
+   *  maximal exactly integrable polynomial degree
+   *
+   *  \author hiermeier \date 12/17 */
+  static int soh8_convertNumGpPerDimToDegree()
+  {
+    return 2*NUMGPT_PER_DIM_SOH8 - 1;
+  }
+
+private:
+  static const DRT::UTILS::GaussIntegration gp_rule_;
 }; // class So_hex8
 
 

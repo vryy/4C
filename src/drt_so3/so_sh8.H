@@ -1,14 +1,17 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/**
 \file so_sh8.H
+\brief solid shell8 element formulation
 
 <pre>
-Maintainer: Alexander Popp
+\maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
 </pre>
-
-*----------------------------------------------------------------------*/
+\level 1
+*/
+/*----------------------------------------------------------------------*/
 #ifndef SO_SH8_H
 #define SO_SH8_H
 
@@ -259,7 +262,7 @@ protected:
             std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> >** deriv_sp,   ///< derivs eval. at all sampling points
             std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> >& jac_sps,     ///< jac at all sampling points
             std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> >& jac_cur_sps, ///< current jac at all sampling points
-            LINALG::Matrix<num_ans*num_sp,NUMDOF_SOH8>& B_ans_loc); ///< modified B
+            LINALG::Matrix<num_ans*num_sp,NUMDOF_SOH8>& B_ans_loc) const; ///< modified B
 
   //! Evaluate transformation matrix T (parameter->material) at gp
   void sosh8_evaluateT(const LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>& jac,///< actual jacobian
@@ -302,6 +305,70 @@ protected:
 
   const std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > sosh8_derivs_sdc();
 
+  /** \brief Evaluate the reference and current jacobian as well as the
+   *  respective determinants */
+  bool sosh8_evaluatejacobians(
+      const unsigned gp,
+      const std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> >& derivs,
+      const LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8>& xrefe,
+      const LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8>& xcurr,
+      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>& jac_ref,
+      double& detJ_ref,
+      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>& jac_curr,
+      double& detJ_curr ) const;
+
+  /** \brief evaluate the jacobian and the determinant for the given GP */
+  void sosh8_evaluatejacobian(
+      const unsigned gp,
+      const std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> >& derivs,
+      const LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8>& x,
+      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>& jac,
+      double& detJ ) const;
+
+  /** \brief Evaluate the determinant of the current jacobian at each element
+   *  corner and return the smallest value */
+  double sosh8_get_min_det_jac_at_corners(
+      const LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8>& xcurr ) const;
+
+  /** \brief Get the local B-operator */
+  void sosh8_get_bop_loc(
+      const unsigned gp,
+      const std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> >& derivs,
+      const LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>& jac_curr,
+      const double* r,
+      const double* s,
+      const LINALG::Matrix<num_ans*num_sp,NUMDOF_SOH8>& B_ans_loc,
+      LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOH8>& bop_loc ) const;
+
+  /** \brief Get the local green lagrange strain */
+  void sosh8_get_glstrain_loc(
+      const unsigned gp,
+      const LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>& jac_curr,
+      const LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>& jac,
+      const std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> >& jac_sps,
+      const std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> >& jac_cur_sps,
+      const double* r,
+      const double* s,
+      LINALG::Matrix<MAT::NUM_STRESS_3D,1>& lstrain ) const;
+
+  void sosh8_error_handling(
+      const double& det_curr,
+      Teuchos::ParameterList& params,
+      const int line_id );
+
+  void sosh8_get_deformationgradient(
+      const unsigned gp,
+      const std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> >& derivs,
+      const LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8>& xcurr,
+      const LINALG::Matrix<MAT::NUM_STRESS_3D,1>& glstrain,
+      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>& defgrd ) const;
+
+  double sosh8_calc_energy(
+      const std::vector<double>& disp,
+      Teuchos::ParameterList& params );
+
+  double sosh8_third_invariant(
+      const LINALG::Matrix<MAT::NUM_STRESS_3D,1>& glstrain ) const;
 }; // class So_sh8
 
 

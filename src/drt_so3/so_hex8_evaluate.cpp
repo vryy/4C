@@ -392,20 +392,20 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
     case ELEMENTS::struct_calc_recover:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp =
-          discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res  =
-          discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+
       if (disp==Teuchos::null || res==Teuchos::null)
         dserror("Cannot get state vectors \"displacement\" "
           "and/or \"residual displacement\"");
-      std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      soh8_recover(lm,mydisp,myres);
+
+      soh8_recover(lm,myres);
       /* ToDo Probably we have to recover the history information of some special
        * materials as well.                                 hiermeier 04/2016  */
+
       break;
     }
     //==================================================================================
@@ -828,7 +828,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
         if (eastype_ != soh8_easnone)
         {
           M.LightShape(MAT::NUM_STRESS_3D,neas_);
-          // map local M to global, also enhancement is refered to element origin
+          // map local M to global, also enhancement is referred to element origin
           // M = detJ0/detJ T0^{-T} . M
           //Epetra_SerialDenseMatrix Mtemp(M); // temp M for Matrix-Matrix-Product
           // add enhanced strains = M . alpha to GL strains to "unlock" element
@@ -850,6 +850,20 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
           default: dserror("Don't know what to do with EAS type %d", eastype_); break;
           }
         } // ------------------------------------------------------------------ EAS
+
+        if ( defgrd.Determinant() <= 0.0 )
+        {
+          if ( IsParamsInterface() and StrParamsInterface().IsTolerateErrors() )
+          {
+            StrParamsInterface().SetEleEvalErrorFlag(
+                STR::ELEMENTS::ele_error_negative_def_gradient);
+            return 0;
+          }
+          else
+          {
+            dserror( "Negative deformation gradient!" );
+          }
+        }
 
         // call material for evaluation of strain energy function
         double psi = 0.0;
@@ -1402,13 +1416,36 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
   }
   break;
   //==================================================================================
-
   case ELEMENTS::struct_calc_predict:
   {
     // do nothing here
     break;
   }
+  //==================================================================================
+  // create a backup state for all internally stored variables (e.g. EAS)
+  case ELEMENTS::struct_create_backup:
+  {
+    Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+    if ( res.is_null() )
+      dserror("Cannot get state vector \"residual displacement\"" );
 
+    // extract the part for this element
+    std::vector<double> myres(lm.size());
+    DRT::UTILS::ExtractMyValues(*res,myres,lm);
+
+    soh8_create_eas_backup_state( myres );
+
+    break;
+  }
+  //==================================================================================
+  /* recover internally stored state variables from a previously created backup
+   * state (e.g. EAS) */
+  case ELEMENTS::struct_recover_from_backup:
+  {
+    soh8_recover_from_eas_backup_state();
+
+    break;
+  }
   default:
     dserror("Unknown type of action for So_hex8");
     break;
@@ -1530,6 +1567,29 @@ int DRT::ELEMENTS::So_hex8::EvaluateNeumann(Teuchos::ParameterList&   params,
   return 0;
 } // DRT::ELEMENTS::So_hex8::EvaluateNeumann
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+const double* DRT::ELEMENTS::So_hex8::soh8_get_coordinate_of_gausspoints(
+      const unsigned dim ) const
+{
+  static LINALG::Matrix<NUMGPT_SOH8,NUMDIM_SOH8> coordinates_of_gps(false);
+  static bool init = false;
+
+  if ( not init)
+  {
+    if ( gp_rule_.NumPoints() != NUMGPT_SOH8 )
+      dserror( "Inconsistent number of GPs: "
+          "%d != %d", gp_rule_.NumPoints(), NUMGPT_SOH8 );
+
+    for ( unsigned gp=0; gp<NUMGPT_SOH8; ++gp )
+      for ( unsigned d=0; d<NUMDIM_SOH8; ++d )
+        coordinates_of_gps(gp,d) = gp_rule_.Point(gp)[d];
+    // do it only once
+    init = true;
+  }
+
+  return &coordinates_of_gps(0,dim);
+}
 
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)              gee 04/08|
@@ -1612,9 +1672,38 @@ void DRT::ELEMENTS::So_hex8::InitJacobianMapping(std::vector<double>& dispmat)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex8::soh8_computeEASInc(
+    const std::vector<double>& residual,
+    Epetra_SerialDenseMatrix* const eas_inc )
+{
+  Epetra_SerialDenseMatrix* oldKaainv =
+      data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
+  Epetra_SerialDenseMatrix* oldKda       =
+      data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
+  Epetra_SerialDenseMatrix* oldfeas      =
+      data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
+  if (!oldKaainv|| !oldKda || !oldfeas)
+    dserror("Missing EAS history data");
+
+  // we need the (residual) displacement at the previous step
+  LINALG::SerialDenseVector res_d_eas(NUMDOF_SOH8);
+  for (int i = 0; i < NUMDOF_SOH8; ++i)
+    res_d_eas(i) = residual[i];
+  // --- EAS default update ---------------------------
+  Epetra_SerialDenseMatrix eashelp(neas_,1);
+  /*----------- make multiplication eashelp = oldLt * disp_incr[kstep] */
+  oldKda->Multiply(false,res_d_eas,eashelp);
+  /*---------------------------------------- add old Rtilde to eashelp */
+  eashelp += *oldfeas;
+  /*--------- make multiplication alpha_inc = - old Dtildinv * eashelp */
+  oldKaainv->Multiply(false,eashelp,*eas_inc);
+  eas_inc->Scale(-1.0);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::soh8_recover(
     const std::vector<int>&         lm,
-    const std::vector<double>&      disp,
     const std::vector<double>&      residual)
 {
   // for eas
@@ -1648,28 +1737,9 @@ void DRT::ELEMENTS::So_hex8::soh8_recover(
       StrParamsInterface().SumIntoMyPreviousSolNorm(NOX::NLN::StatusTest::quantity_eas,
           neas_,(*alpha)[0],Owner());
 
-      Epetra_SerialDenseMatrix* oldKaainv =
-          data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
-      Epetra_SerialDenseMatrix* oldKda       =
-          data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
-      Epetra_SerialDenseMatrix* oldfeas      =
-          data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
-      if (!oldKaainv|| !oldKda || !oldfeas)
-        dserror("Missing EAS history data");
+      // compute the eas increment
+      soh8_computeEASInc( residual, eas_inc );
 
-      // we need the (residual) displacement at the previous step
-      LINALG::SerialDenseVector res_d_eas(NUMDOF_SOH8);
-      for (int i = 0; i < NUMDOF_SOH8; ++i)
-        res_d_eas(i) = residual[i];
-      // --- EAS default update ---------------------------
-      Epetra_SerialDenseMatrix eashelp(neas_,1);
-      /*----------- make multiplication eashelp = oldLt * disp_incr[kstep] */
-      oldKda->Multiply(false,res_d_eas,eashelp);
-      /*---------------------------------------- add old Rtilde to eashelp */
-      eashelp += *oldfeas;
-      /*--------- make multiplication alpha_inc = - old Dtildinv * eashelp */
-      oldKaainv->Multiply(false,eashelp,*eas_inc);
-      eas_inc->Scale(-1.0);
       /*--------------------------- update alpha += step_length * alfa_inc */
       for (int i=0;i<neas_;++i)
         (*alpha)(i,0) += step_length*(*eas_inc)(i,0);
@@ -1692,6 +1762,13 @@ void DRT::ELEMENTS::So_hex8::soh8_recover(
        *            alpha_new = alpha_new + new_step * alpha_inc */
       for (int i=0;i<neas_;++i)
         (*alpha)(i,0) += (step_length-old_step_length_)*(*eas_inc)(i,0);
+
+//      {
+//        std::cout << "EAS #" << Id() << ":\n";
+//        alpha->Print( std::cout );
+//        eas_inc->Print( std::cout );
+//        std::cout << "\n";
+//      }
     } // if (nhyb_)
   } // else
   // save the old step length
@@ -1706,6 +1783,8 @@ void DRT::ELEMENTS::So_hex8::soh8_recover(
   // the element internal stuff should be up-to-date for now...
   return;
 }
+
+
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                             maf 04/07|
@@ -1811,7 +1890,11 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
     oldKaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
     oldKda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
     eas_inc = data_.GetMutable<Epetra_SerialDenseMatrix>("eas_inc");
-    if (!alpha || !oldKaainv || !oldKda || !oldfeas || !eas_inc) dserror("Missing EAS history-data");
+
+    if (!alpha || !oldKaainv || !oldKda || !oldfeas || !eas_inc)
+      dserror("Missing EAS history-data");
+
+    // ============================== DEPRECATED ==============================
     // FixMe deprecated implementation
     if (not IsParamsInterface())
     {
@@ -1859,6 +1942,8 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
         }
       }
     } // if (not IsInterface())
+    // ============================== DEPRECATED ==============================
+
     /* end of EAS Update ******************/
 
     // EAS portion of internal forces, also called enhacement vector s or Rtilde
@@ -3017,22 +3102,14 @@ void DRT::ELEMENTS::So_hex8::soh8_lumpmass(LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH
 const std::vector<LINALG::Matrix<NUMNOD_SOH8,1> > DRT::ELEMENTS::So_hex8::soh8_shapefcts() const
 {
   std::vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts(NUMGPT_SOH8);
-  // (r,s,t) gp-locations of fully integrated linear 8-node Hex
-  const double gploc    = 1.0/sqrt(3.0);    // gp sampling point value for linear fct
-  const double r[NUMGPT_SOH8] = {-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc,-gploc};
-  const double s[NUMGPT_SOH8] = {-gploc,-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc};
-  const double t[NUMGPT_SOH8] = {-gploc,-gploc,-gploc,-gploc, gploc, gploc, gploc, gploc};
+
   // fill up nodal f at each gp
-  for (int i=0; i<NUMGPT_SOH8; ++i) {
-    (shapefcts[i])(0) = (1.0-r[i])*(1.0-s[i])*(1.0-t[i])*0.125;
-    (shapefcts[i])(1) = (1.0+r[i])*(1.0-s[i])*(1.0-t[i])*0.125;
-    (shapefcts[i])(2) = (1.0+r[i])*(1.0+s[i])*(1.0-t[i])*0.125;
-    (shapefcts[i])(3) = (1.0-r[i])*(1.0+s[i])*(1.0-t[i])*0.125;
-    (shapefcts[i])(4) = (1.0-r[i])*(1.0-s[i])*(1.0+t[i])*0.125;
-    (shapefcts[i])(5) = (1.0+r[i])*(1.0-s[i])*(1.0+t[i])*0.125;
-    (shapefcts[i])(6) = (1.0+r[i])*(1.0+s[i])*(1.0+t[i])*0.125;
-    (shapefcts[i])(7) = (1.0-r[i])*(1.0+s[i])*(1.0+t[i])*0.125;
+  for ( unsigned gp=0; gp<NUMGPT_SOH8; ++gp )
+  {
+    const LINALG::Matrix<NUMDIM_SOH8,1> rst_gp( gp_rule_.Point(gp), true );
+    DRT::UTILS::shape_function<DRT::Element::hex8>( rst_gp, shapefcts[gp] );
   }
+
   return shapefcts;
 }
 
@@ -3043,43 +3120,14 @@ const std::vector<LINALG::Matrix<NUMNOD_SOH8,1> > DRT::ELEMENTS::So_hex8::soh8_s
 const std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > DRT::ELEMENTS::So_hex8::soh8_derivs() const
 {
   std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs(NUMGPT_SOH8);
-  // (r,s,t) gp-locations of fully integrated linear 8-node Hex
-  const double gploc    = 1.0/sqrt(3.0);    // gp sampling point value for linear fct
-  const double r[NUMGPT_SOH8] = {-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc,-gploc};
-  const double s[NUMGPT_SOH8] = {-gploc,-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc};
-  const double t[NUMGPT_SOH8] = {-gploc,-gploc,-gploc,-gploc, gploc, gploc, gploc, gploc};
+
   // fill up df w.r.t. rst directions (NUMDIM) at each gp
-  for (int i=0; i<NUMGPT_SOH8; ++i) {
-    // df wrt to r for each node(0..7) at each gp [i]
-    (derivs[i])(0,0) = -(1.0-s[i])*(1.0-t[i])*0.125;
-    (derivs[i])(0,1) =  (1.0-s[i])*(1.0-t[i])*0.125;
-    (derivs[i])(0,2) =  (1.0+s[i])*(1.0-t[i])*0.125;
-    (derivs[i])(0,3) = -(1.0+s[i])*(1.0-t[i])*0.125;
-    (derivs[i])(0,4) = -(1.0-s[i])*(1.0+t[i])*0.125;
-    (derivs[i])(0,5) =  (1.0-s[i])*(1.0+t[i])*0.125;
-    (derivs[i])(0,6) =  (1.0+s[i])*(1.0+t[i])*0.125;
-    (derivs[i])(0,7) = -(1.0+s[i])*(1.0+t[i])*0.125;
-
-    // df wrt to s for each node(0..7) at each gp [i]
-    (derivs[i])(1,0) = -(1.0-r[i])*(1.0-t[i])*0.125;
-    (derivs[i])(1,1) = -(1.0+r[i])*(1.0-t[i])*0.125;
-    (derivs[i])(1,2) =  (1.0+r[i])*(1.0-t[i])*0.125;
-    (derivs[i])(1,3) =  (1.0-r[i])*(1.0-t[i])*0.125;
-    (derivs[i])(1,4) = -(1.0-r[i])*(1.0+t[i])*0.125;
-    (derivs[i])(1,5) = -(1.0+r[i])*(1.0+t[i])*0.125;
-    (derivs[i])(1,6) =  (1.0+r[i])*(1.0+t[i])*0.125;
-    (derivs[i])(1,7) =  (1.0-r[i])*(1.0+t[i])*0.125;
-
-    // df wrt to t for each node(0..7) at each gp [i]
-    (derivs[i])(2,0) = -(1.0-r[i])*(1.0-s[i])*0.125;
-    (derivs[i])(2,1) = -(1.0+r[i])*(1.0-s[i])*0.125;
-    (derivs[i])(2,2) = -(1.0+r[i])*(1.0+s[i])*0.125;
-    (derivs[i])(2,3) = -(1.0-r[i])*(1.0+s[i])*0.125;
-    (derivs[i])(2,4) =  (1.0-r[i])*(1.0-s[i])*0.125;
-    (derivs[i])(2,5) =  (1.0+r[i])*(1.0-s[i])*0.125;
-    (derivs[i])(2,6) =  (1.0+r[i])*(1.0+s[i])*0.125;
-    (derivs[i])(2,7) =  (1.0-r[i])*(1.0+s[i])*0.125;
+  for ( unsigned gp=0; gp<NUMGPT_SOH8; ++gp )
+  {
+    const LINALG::Matrix<NUMDIM_SOH8,1> rst_gp( gp_rule_.Point(gp), true );
+    DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>( rst_gp, derivs[gp] );
   }
+
   return derivs;
 }
 
@@ -3089,12 +3137,98 @@ const std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > DRT::ELEMENTS::So_he
 const std::vector<double> DRT::ELEMENTS::So_hex8::soh8_weights() const
 {
   std::vector<double> weights(NUMGPT_SOH8);
-  for (int i = 0; i < NUMGPT_SOH8; ++i) {
-    weights[i] = 1.0;
-  }
+  for ( unsigned gp=0; gp<NUMGPT_SOH8; ++gp )
+    weights[gp] = gp_rule_.Weight( gp );
+
   return weights;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex8::soh8_create_eas_backup_state(
+    const std::vector<double>& displ_incr )
+{
+  if (eastype_ == soh8_easnone)
+    return;
+
+  // --- create EAS state backup ----------------------------------------------
+  {
+    const Epetra_SerialDenseMatrix* alpha =
+        data_.Get<Epetra_SerialDenseMatrix>("alpha");
+    if ( not alpha )
+      dserror( "Can't access the current enhanced strain state." );
+
+    Epetra_SerialDenseMatrix* alpha_backup_ptr =
+        data_.GetMutable<Epetra_SerialDenseMatrix>("alpha_backup");
+    if ( alpha_backup_ptr )
+      *alpha_backup_ptr = *alpha;
+    else
+      data_.Add("alpha_backup",*alpha);
+  }
+
+  // --- create EAS increment backup ------------------------------------------
+  {
+    // compute the current eas increment
+    Epetra_SerialDenseMatrix eas_inc(neas_,1);
+    soh8_computeEASInc( displ_incr, &eas_inc );
+
+    Epetra_SerialDenseMatrix* eas_inc_backup_ptr =
+        data_.GetMutable<Epetra_SerialDenseMatrix>("eas_inc_backup");
+    if ( eas_inc_backup_ptr )
+      *eas_inc_backup_ptr = eas_inc;
+    else
+      data_.Add("eas_inc_backup",eas_inc);
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex8::soh8_recover_from_eas_backup_state()
+{
+  if ( eastype_ == soh8_easnone )
+    return;
+
+  Epetra_SerialDenseMatrix* alpha = NULL;
+  Epetra_SerialDenseMatrix* eas_inc = NULL;
+
+  // --- recover state from EAS backup ----------------------------------------
+  {
+    const Epetra_SerialDenseMatrix* alpha_backup =
+        data_.Get<Epetra_SerialDenseMatrix>("alpha_backup");
+    if ( not alpha_backup )
+      dserror( "Can't access the enhanced strain backup state. Did you "
+          "create a backup? See soh8_create_eas_backup_state()." );
+
+    alpha = data_.GetMutable<Epetra_SerialDenseMatrix>(
+        "alpha");
+    if ( not alpha )
+      dserror( "Can't access the enhanced strain state." );
+
+    *alpha = *alpha_backup;
+  }
+
+  // --- recover increment from EAS backup ------------------------------------
+  {
+    const Epetra_SerialDenseMatrix* eas_inc_backup =
+        data_.Get<Epetra_SerialDenseMatrix>("eas_inc_backup");
+    if ( not eas_inc_backup )
+      dserror( "Can't access the enhanced strain increment backup. Did you "
+          "create a backup? See soh8_create_eas_backup_state()." );
+
+    eas_inc = data_.GetMutable<Epetra_SerialDenseMatrix>(
+        "eas_inc");
+    if ( not eas_inc )
+      dserror( "Can't access the enhanced strain increment." );
+
+    *eas_inc = *eas_inc_backup;
+  }
+
+  // Finally, we have to update the backup state, otherwise a follow-up
+  // step length adaption will lead to a wrong eas state.
+  {
+   old_step_length_ = 0.0;
+  }
+}
 
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  gee 04/08|
@@ -3474,7 +3608,7 @@ void DRT::ELEMENTS::So_hex8::PK2toCauchy(
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::CalcConsistentDefgrd(LINALG::Matrix<3,3> defgrd_disp,
     LINALG::Matrix<6,1> glstrain_mod,
-    LINALG::Matrix<3,3>& defgrd_mod)
+    LINALG::Matrix<3,3>& defgrd_mod) const
 {
   LINALG::Matrix<3,3> R;      // rotation tensor
   LINALG::Matrix<3,3> U_mod;  // modified right stretch tensor
