@@ -493,7 +493,8 @@ IO::DiscretizationWriter::DiscretizationWriter()           /* PROTECTED */
       resultfile_changed_(-1),
       meshfile_changed_(-1),
       output_(Teuchos::null),
-      binio_(false)
+      binio_(false),
+      spatial_approx_("")
 {
   // intentionally left blank
 }
@@ -512,7 +513,8 @@ IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<DRT::Discretization>
       resultgroup_(-1),
       resultfile_changed_(-1),
       meshfile_changed_(-1),
-      output_(DRT::Problem::Instance()->OutputControlFile())
+      output_(DRT::Problem::Instance()->OutputControlFile()),
+      spatial_approx_(DRT::Problem::Instance()->SpatialApproximation())
 {
   if (output_!=Teuchos::null)
     binio_ = output_->BinIO();
@@ -539,7 +541,8 @@ IO::DiscretizationWriter::DiscretizationWriter(
       resultfile_changed_(-1),
       meshfile_changed_(-1),
       output_( Teuchos::null ),
-      binio_( false )
+      binio_( false ),
+      spatial_approx_( writer.spatial_approx_ )
 {
   output_ = ( control.is_null() ? writer.output_ : control );
   if ( not output_.is_null() )
@@ -698,7 +701,7 @@ void IO::DiscretizationWriter::NewResultFile(int numb_run)
   if(binio_)
   {
     CreateNewResultAndMeshFile();
-    output_->NewResultFile(numb_run);
+    output_->NewResultFile(numb_run,spatial_approx_);
   }
 }
 
@@ -711,7 +714,7 @@ void IO::DiscretizationWriter::NewResultFile(std::string name_appendix,
   if(binio_)
   {
     CreateNewResultAndMeshFile();
-    output_->NewResultFile(name_appendix, numb_run);
+    output_->NewResultFile(name_appendix, numb_run, spatial_approx_);
   }
 }
 
@@ -722,7 +725,7 @@ void IO::DiscretizationWriter::NewResultFile(std::string name)
   if(binio_)
   {
     CreateNewResultAndMeshFile();
-    output_->NewResultFile(name);
+    output_->NewResultFile(name, spatial_approx_);
   }
 }
 
@@ -733,7 +736,7 @@ void IO::DiscretizationWriter::OverwriteResultFile()
   if(binio_)
   {
     CreateNewResultAndMeshFile();
-    output_->OverwriteResultFile();
+    output_->OverwriteResultFile(spatial_approx_);
   }
 }
 

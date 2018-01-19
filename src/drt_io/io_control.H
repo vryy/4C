@@ -98,17 +98,28 @@ namespace IO
     int BinIO() const { return create_controlfile_; }
 
     /// overwrites result files for the inverse analysis
-    void OverwriteResultFile();
+    void OverwriteResultFile( const std::string& spatial_approx );
     /// creates new result files for the inverse analysis
-    void NewResultFile(int numb_run);
+    void NewResultFile( int numb_run, const std::string& spatial_approx);
     /// creates new result files for the mlmc
-    void NewResultFile(std::string name_appendix, int numb_run);
+    void NewResultFile(
+        const std::string& name_appendix,
+        int numb_run,
+        const std::string& spatial_approx );
 
     /// creates new result files
-    void NewResultFile(std::string name );
+    void NewResultFile(
+        std::string name,
+        const std::string& spatial_approx );
 
     /// return my processor ID
     inline int MyRank() const { return myrank_; };
+
+  private:
+
+    void WriteHeader(
+        const std::string& control_file_name,
+        const std::string& spatial_approx );
 
   private:
     std::string problemtype_;

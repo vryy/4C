@@ -421,6 +421,8 @@ protected:
 
   // do we want binary output
   bool binio_;
+
+  std::string spatial_approx_;
 };
 
 

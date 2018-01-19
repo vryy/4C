@@ -104,30 +104,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
   {
     std::stringstream name;
     name << filename_ << ".control";
-    if (controlfile_.is_open())
-      controlfile_.close();
-    controlfile_.open(name.str().c_str(),std::ios_base::out);
-    if (not controlfile_)
-      dserror("could not open control file '%s' for writing", name.str().c_str());
-
-    time_t time_value;
-    time_value = time(NULL);
-
-    char hostname[31];
-    struct passwd *user_entry;
-    user_entry = getpwuid(getuid());
-    gethostname(hostname, 30);
-
-    controlfile_ << "# baci output control file\n"
-                 << "# created by "
-                 << user_entry->pw_name
-                 << " on " << hostname << " at " << ctime(&time_value)
-                 << "# using code revision " << (CHANGEDREVISION+0) << " \n\n"
-                 << "input_file = \"" << inputfile << "\"\n"
-                 << "problem_type = \"" << problemtype << "\"\n"
-                 << "spatial_approximation = \"" << spatial_approx << "\"\n"
-                 << "ndim = " << ndim << "\n"
-                 << "\n";
+    WriteHeader( name.str(), spatial_approx );
 
     // insert back reference
     if (restart)
@@ -228,48 +205,12 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
     }
   }
 
-  if (myrank_==0)
+  if ( create_controlfile_ )
   {
     std::stringstream name;
     name << filename_ << ".control";
-    if(create_controlfile_)
-    {
-    controlfile_.open(name.str().c_str(),std::ios_base::out);
-    if (not controlfile_)
-      dserror("could not open control file '%s' for writing", name.str().c_str());
-    }
 
-    time_t time_value;
-    time_value = time(NULL);
-
-    char hostname[31];
-    struct passwd *user_entry;
-    user_entry = getpwuid(getuid());
-    gethostname(hostname, 30);
-    if(create_controlfile_)
-    {
-      controlfile_ << "# baci output control file\n"
-                   << "# created by "
-                   << user_entry->pw_name
-                   << " on " << hostname << " at " << ctime(&time_value)
-                   << "# using code revision " << (CHANGEDREVISION+0) << " \n\n"
-                   << "input_file = \"" << inputfile << "\"\n"
-                   << "problem_type = \"" << problemtype << "\"\n"
-                   << "spatial_approximation = \"" << spatial_approx << "\"\n"
-                   << "ndim = " << ndim << "\n"
-                   << "\n";
-
-      // insert back reference
-      if (restart && create_controlfile_)
-      {
-        size_t pos = restartname_.rfind('/');
-        controlfile_ << "restarted_run = \""
-                     << ((pos!=std::string::npos) ? restartname_.substr(pos+1) : restartname_)
-                     << "\"\n\n";
-      }
-
-      controlfile_ << std::flush;
-    }
+    WriteHeader( name.str(), spatial_approx );
   }
 }
 
@@ -319,44 +260,20 @@ IO::OutputControl::OutputControl( const OutputControl& ocontrol,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::OutputControl::OverwriteResultFile()
+void IO::OutputControl::OverwriteResultFile( const std::string& spatial_approx )
 {
-  if (myrank_==0)
-  {
-    controlfile_.close();
-    std::stringstream name;
-    name << filename_ << ".control";
-    controlfile_.open(name.str().c_str(),std::ios_base::out);
-    if (not controlfile_)
-      dserror("could not open control file '%s' for writing", name.str().c_str());
+  std::stringstream name;
+  name << filename_ << ".control";
 
-    time_t time_value;
-    time_value = time(NULL);
-
-    char hostname[31];
-    struct passwd *user_entry;
-    user_entry = getpwuid(getuid());
-    gethostname(hostname, 30);
-
-    controlfile_ << "# baci output control file\n"
-                 << "# created by "
-                 << user_entry->pw_name
-                 << " on " << hostname << " at " << ctime(&time_value)
-                 << "# using code revision " << (CHANGEDREVISION+0) << " \n\n"
-                 << "input_file = \"" << inputfile_ << "\"\n"
-                 << "problem_type = \"" << problemtype_ << "\"\n"
-                 << "spatial_approximation = \"" << "Polynomial" << "\"\n"
-                 << "ndim = " << ndim_ << "\n"
-                 << "\n";
-
-    controlfile_ << std::flush;
-  }
+  WriteHeader( name.str(), spatial_approx );
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::OutputControl::NewResultFile(int numb_run)
+void IO::OutputControl::NewResultFile(
+    int numb_run,
+    const std::string& spatial_approx )
 {
   if (filename_.rfind("_run_")!=std::string::npos)
   {
@@ -371,63 +288,51 @@ void IO::OutputControl::NewResultFile(int numb_run)
   filename_ = name.str();
   name << ".control";
 
-  if (myrank_==0)
-  {
-    controlfile_.close();
-    controlfile_.open(name.str().c_str(),std::ios_base::out);
-    if (not controlfile_)
-      dserror("could not open control file '%s' for writing", name.str().c_str());
 
-    time_t time_value;
-    time_value = time(NULL);
-
-    char hostname[31];
-    struct passwd *user_entry;
-    user_entry = getpwuid(getuid());
-    gethostname(hostname, 30);
-
-    controlfile_ << "# baci output control file\n"
-                 << "# created by "
-                 << user_entry->pw_name
-                 << " on " << hostname << " at " << ctime(&time_value)
-                 << "# using code revision " << (CHANGEDREVISION+0) << " \n\n"
-                 << "input_file = \"" << inputfile_ << "\"\n"
-                 << "problem_type = \"" << problemtype_ << "\"\n"
-                 << "spatial_approximation = \"" << "Polynomial" << "\"\n"
-                 << "ndim = " << ndim_ << "\n"
-                 << "\n";
-
-    controlfile_ << std::flush;
-  }
+  WriteHeader( name.str(), spatial_approx );
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::OutputControl::NewResultFile(std::string name_appendix, int numb_run)
+void IO::OutputControl::NewResultFile(
+    const std::string& name_appendix,
+    int numb_run,
+    const std::string& spatial_approx )
 {
   std::stringstream name;
   name  << name_appendix;
   name << "_run_"<< numb_run;
 
-  NewResultFile( name.str() );
+  NewResultFile( name.str(), spatial_approx );
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::OutputControl::NewResultFile(std::string name)
+void IO::OutputControl::NewResultFile(
+    std::string name,
+    const std::string& spatial_approx )
 {
   filename_ = name;
   name += ".control";
 
+  WriteHeader( name, spatial_approx );
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void IO::OutputControl::WriteHeader(
+    const std::string& control_file_name,
+    const std::string& spatial_approx )
+{
   if (myrank_==0)
   {
-    controlfile_.close();
-    // bool b = controlfile_.fail();
-    // IO::cout << b << IO::endl;
+    if (controlfile_.is_open())
+      controlfile_.close();
 
-    controlfile_.open(name.c_str(),std::ios_base::out);
+    controlfile_.open(control_file_name.c_str(),std::ios_base::out);
     if (not controlfile_)
-      dserror("could not open control file '%s' for writing", name.c_str());
+      dserror("Could not open control file '%s' for writing",
+          control_file_name.c_str());
 
     time_t time_value;
     time_value = time(NULL);
@@ -444,7 +349,7 @@ void IO::OutputControl::NewResultFile(std::string name)
                  << "# using code revision " << (CHANGEDREVISION+0) << " \n\n"
                  << "input_file = \"" << inputfile_ << "\"\n"
                  << "problem_type = \"" << problemtype_ << "\"\n"
-                 << "spatial_approximation = \"" << "Polynomial" << "\"\n"
+                 << "spatial_approximation = \"" << spatial_approx << "\"\n"
                  << "ndim = " << ndim_ << "\n"
                  << "\n";
 

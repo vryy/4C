@@ -19,6 +19,8 @@
 #include "io_control.H"
 #include "io_pstream.H"
 
+#include "../drt_lib/drt_globalproblem.H"
+
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 
 #include <boost/filesystem.hpp>
@@ -70,16 +72,16 @@ void IO::EveryIterationWriter::Setup()
 {
   ThrowIfNotInitialized( __LINE__ );
 
-  const std::string dir_name( ParentWriter().Output()->FileNameOnlyPrefix() +
-      "_every_iter");
+  /* Remove the restart counter from the folder name. Note that the restart
+   * counter stays a part of the final file name of the corresponding step. */
+  const std::string filename_without_restart = RemoveRestartCountFromFileName(
+      ParentWriter().Output()->FileNameOnlyPrefix() );
+
+  const std::string dir_name( filename_without_restart + "_every_iter");
 
   std::string file_dir_path = ExtractPath( ParentWriter().Output()->FileName() );
   file_dir_path += dir_name;
   CreateDirectory( file_dir_path );
-
-  std::string restart_dir_path = ExtractPath( ParentWriter().Output()->RestartName() );
-  restart_dir_path += dir_name;
-  CreateDirectory( restart_dir_path );
 
   // modify the prefix and copy possible restart number
   std::string prefix;
@@ -121,9 +123,17 @@ std::string IO::EveryIterationWriter::CreateRunDirectory(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void IO::EveryIterationWriter::CreateDirectory( const std::string& dir_path ) const
+void IO::EveryIterationWriter::CreateDirectory(
+    const std::string& dir_path ) const
 {
-  if ( myrank_ != 0)
+  IO::CreateDirectory( dir_path, myrank_ );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void IO::CreateDirectory( const std::string& dir_path, const int myrank )
+{
+  if ( myrank != 0)
     return;
 
   boost::filesystem::path dir( dir_path );
@@ -134,8 +144,7 @@ void IO::EveryIterationWriter::CreateDirectory( const std::string& dir_path ) co
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::string IO::EveryIterationWriter::ExtractPath(
-    const std::string& full_filename ) const
+std::string IO::ExtractPath( const std::string& full_filename )
 {
   std::string filename_path;
   size_t pos = full_filename.rfind('/');
@@ -144,6 +153,36 @@ std::string IO::EveryIterationWriter::ExtractPath(
     filename_path = full_filename.substr(0,pos+1);
 
   return filename_path;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+std::string IO::ExtractFileName( const std::string& full_filename )
+{
+  std::string filenameonly = full_filename;
+
+  size_t pos = full_filename.rfind('/');
+  if (pos!=std::string::npos)
+  {
+    filenameonly = full_filename.substr(pos+1);
+  }
+
+  return filenameonly;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+std::string IO::RemoveRestartCountFromFileName( const std::string& filename )
+{
+  const int restart_count = DRT::Problem::Instance()->Restart();
+  if ( restart_count == 0 )
+    return filename;
+
+  size_t pos = filename.rfind('-');
+  if (pos==std::string::npos)
+    dserror("Couldn't find the restart separator \"-\"!");
+
+  return filename.substr( 0, pos );
 }
 
 /*----------------------------------------------------------------------------*
@@ -218,4 +257,55 @@ void IO::EveryIterationWriter::AddNewtonIteration( const int newton_iteration )
 
   interface_->PrepareOutput();
   interface_->OutputState( *every_iter_writer_, write_owner_each_newton_iteration_ );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void IO::EveryIterationWriter::AddLineSearchIteration(
+    const int newton_iteration,
+    const int linesearch_iteration )
+{
+  ThrowIfNotSetup( __LINE__ );
+
+  if ( not WriteThisStep() )
+    return;
+
+  if ( not isnewton_initialized_ )
+    dserror( "Call InitNewtonIteration() first!" );
+
+  if ( linesearch_iteration >= static_cast<int>(MAX_NUMBER_LINE_SEARCH_ITERATIONS_) )
+    dserror("The EveryIterationWriter does not support more than %d line search"
+        " steps. If this number is exceeded, the counters will get mixed up.",
+        MAX_NUMBER_LINE_SEARCH_ITERATIONS_-1);
+
+  const int counter = MAX_NUMBER_LINE_SEARCH_ITERATIONS_ * newton_iteration
+      + linesearch_iteration;
+  every_iter_writer_->WriteMesh( counter, counter );
+  every_iter_writer_->NewStep( counter, counter );
+
+  interface_->PrepareOutput();
+  interface_->OutputState( *every_iter_writer_, write_owner_each_newton_iteration_ );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int IO::CountLinesInFile( const std::string& filepath )
+{
+  std::ifstream myfile( filepath );
+
+  if ( not myfile.is_open() )
+    return -1;
+
+  // new lines will be skipped unless we stop it from happening:
+  myfile.unsetf(std::ios_base::skipws);
+
+  // count the newlines with an algorithm specialized for counting:
+  int line_count = std::count(
+      std::istream_iterator<char>(myfile),
+      std::istream_iterator<char>(),
+      '\n');
+
+  myfile.close();
+
+  return line_count;
 }
