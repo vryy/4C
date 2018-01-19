@@ -387,7 +387,7 @@ protected:
    \brief evaluate D/M-matrix entries at GP
 
    */
-  void inline GP_DM(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+  void GP_DM(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
       LINALG::SerialDenseVector& lmval, LINALG::SerialDenseVector& sval,
       LINALG::SerialDenseVector& mval, double& jac, double& wgt, bool& bound);
 
@@ -467,7 +467,7 @@ protected:
    \brief lin D/M-matrix entries at GP
 
    */
-  void inline GP_3D_DM_Lin(
+  void GP_3D_DM_Lin(
       MORTAR::MortarElement& sele,
       MORTAR::MortarElement& mele,
       LINALG::SerialDenseVector& sval,
@@ -534,7 +534,7 @@ protected:
    \brief evaluate weighted Gap entries at GP
 
    */
-  void inline GP_3D_wGap(
+  void GP_3D_wGap(
       MORTAR::MortarElement& sele,
       LINALG::SerialDenseVector& sval,
       LINALG::SerialDenseVector& lmval,

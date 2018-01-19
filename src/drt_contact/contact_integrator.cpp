@@ -5977,7 +5977,7 @@ void CONTACT::CoIntegrator::IntegrateGP_2D(
 /*----------------------------------------------------------------------*
  |  Compute entries for D and M matrix at GP                 farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_DM(
+void CONTACT::CoIntegrator::GP_DM(
      MORTAR::MortarElement& sele,
      MORTAR::MortarElement& mele,
      LINALG::SerialDenseVector& lmval,
@@ -6383,7 +6383,7 @@ void inline CONTACT::CoIntegrator::GP_2D_wGap(
 /*----------------------------------------------------------------------*
  |  Compute entries for weighted Gap at GP                   farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_3D_wGap(
+void CONTACT::CoIntegrator::GP_3D_wGap(
      MORTAR::MortarElement& sele,
      LINALG::SerialDenseVector& sval,
      LINALG::SerialDenseVector& lmval,
@@ -7838,7 +7838,7 @@ void CONTACT::CoIntegrator::GP_G_Lin(
 /*----------------------------------------------------------------------*
  |  Compute entries for bound DM                             farah 07/16|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_3D_DM_Lin_bound(
+void CONTACT::CoIntegrator::GP_3D_DM_Lin_bound(
     MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele,
     LINALG::SerialDenseVector& sval,
