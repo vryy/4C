@@ -29,7 +29,8 @@ MAT::PAR::ScatraMatMultiPoro::ScatraMatMultiPoro(
 : ScatraMat(matdata),
   density_(matdata->GetDouble("DENSITY")),
   phaseID_(matdata->GetInt("PHASEID")),
-  delta_(matdata->GetDouble("DELTA"))
+  delta_(matdata->GetDouble("DELTA")),
+  min_sat_(matdata->GetDouble("MIN_SAT"))
 {
 }
 

@@ -289,6 +289,7 @@ MAT::PAR::FluidPoroSingleVolFrac::FluidPoroSingleVolFrac(Teuchos::RCP<MAT::PAR::
   scalardependentflux_(matdata->GetInt("AddScalarDependentFlux")),
   numscal_(matdata->GetInt("NUMSCAL")),
   scalardiffs_(*(matdata->Get<std::vector<double> >("SCALARDIFFS"))),
+  omega_half_(*(matdata->Get<std::vector<double> >("OMEGA_HALF"))),
   isinit_(false)
 {
   // retrieve problem instance to read from
@@ -311,11 +312,17 @@ MAT::PAR::FluidPoroSingleVolFrac::FluidPoroSingleVolFrac(Teuchos::RCP<MAT::PAR::
   if(scalardependentflux_ && scalardiffs_.size() == 0)
     dserror("AddScalarDependentFlux has been set to YES, but length of SCALARDIFFS is equal to zero");
 
+  if(scalardependentflux_ && omega_half_.size() == 0)
+    dserror("AddScalarDependentFlux has been set to YES, but length of OMEGA_HALF is equal to zero");
+
   if(!scalardependentflux_ && numscal_ > 0)
     dserror("AddScalarDependentFlux has been set to NO, but NUMSCAL is greater than zero");
 
   if(!scalardependentflux_ && scalardiffs_.size() > 0)
     dserror("AddScalarDependentFlux has been set to NO, but length of SCALARDIFFS is greater than zero");
+
+  if(!scalardependentflux_ && omega_half_.size() > 0)
+    dserror("AddScalarDependentFlux has been set to NO, but length of OMEGA_HALF is greater than zero");
 
 }
 

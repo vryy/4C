@@ -295,8 +295,18 @@ class PhaseManagerInterface
     //! check if volume frac 'volfracnum' has additional scalar dependent flux of scalar 'iscal'
     virtual bool HasAddScalarDependentFlux(int volfracnum, int iscal) const=0;
 
+    //! check if volume frac 'volfracnum' has receptor kinetic-law of scalar 'iscal'
+    //! see: Anderson, A. R. A. & Chaplain, M. A. J.
+    //       Continuous and discrete mathematical models of tumor-induced angiogenesis
+    virtual bool HasReceptorKineticLaw(int volfracnum, int iscal) const=0;
+
     //! return scalar diffusivity of of scalar 'iscal' of volume fraction 'volfracnum'
     virtual double ScalarDiff(int volfracnum, int iscal) const=0;
+
+    //! return omega half of scalar 'iscal' of volume fraction 'volfracnum' for receptor kinetic law
+    //! see: Anderson, A. R. A. & Chaplain, M. A. J.
+    //       Continuous and discrete mathematical models of tumor-induced angiogenesis
+    virtual double OmegaHalf(int volfracnum, int iscal) const=0;
 
     //@}
 
@@ -557,9 +567,21 @@ class PhaseManagerCore : public PhaseManagerInterface
     virtual bool HasAddScalarDependentFlux(int volfracnum, int iscal) const
     {dserror("HasAddScalarDependentFlux not available for this phase manager!");return false;};
 
+    //! check if volume frac 'volfracnum' has receptor kinetic-law of scalar 'iscal'
+    //! see: Anderson, A. R. A. & Chaplain, M. A. J.
+    //       Continuous and discrete mathematical models of tumor-induced angiogenesis
+    virtual bool HasReceptorKineticLaw(int volfracnum, int iscal) const
+    {dserror("HasReceptorKineticLaw not available for this phase manager!");return false;};
+
     //! return scalar diffusivities of scalar 'iscal' of volume fraction 'volfracnum'
     virtual double ScalarDiff(int volfracnum, int iscal) const
     {dserror("ScalarDiff not available for this phase manager!");return 0.0;};
+
+    //! return omega half of scalar 'iscal' of volume fraction 'volfracnum' for receptor kinetic law
+    //! see: Anderson, A. R. A. & Chaplain, M. A. J.
+    //       Continuous and discrete mathematical models of tumor-induced angiogenesis
+    virtual double OmegaHalf(int volfracnum, int iscal) const
+    {dserror("OmegaHalf not available for this phase manager!");return 0.0;};
 
     //! get scalar to phase ID
     virtual int ScalarToPhaseID(int iscal) const
@@ -864,9 +886,21 @@ class PhaseManagerDecorator : public PhaseManagerInterface
     virtual bool HasAddScalarDependentFlux(int volfracnum, int iscal) const
     {return phasemanager_->HasAddScalarDependentFlux(volfracnum, iscal);};
 
+    //! check if volume frac 'volfracnum' has receptor kinetic-law of scalar 'iscal'
+    //! see: Anderson, A. R. A. & Chaplain, M. A. J.
+    //       Continuous and discrete mathematical models of tumor-induced angiogenesis
+    virtual bool HasReceptorKineticLaw(int volfracnum, int iscal) const
+    {return phasemanager_->HasReceptorKineticLaw(volfracnum, iscal);};
+
     //! return scalar diffusivities of scalar 'iscal' of volume fraction 'volfracnum'
     virtual double ScalarDiff(int volfracnum, int iscal) const
     {return phasemanager_->ScalarDiff(volfracnum, iscal);};
+
+    //! return omega half of scalar 'iscal' of volume fraction 'volfracnum' for receptor kinetic law
+    //! see: Anderson, A. R. A. & Chaplain, M. A. J.
+    //       Continuous and discrete mathematical models of tumor-induced angiogenesis
+    virtual double OmegaHalf(int volfracnum, int iscal) const
+    {return phasemanager_->OmegaHalf(volfracnum, iscal);};
 
     //@}
 
@@ -1255,8 +1289,18 @@ class PhaseManagerVolFrac : public PhaseManagerDecorator
     //! return scalar diffusivity of scalar 'iscal' of volume fraction 'volfracnum'
     virtual double ScalarDiff(int volfracnum, int iscal) const;
 
+    //! return omega half of scalar 'iscal' of volume fraction 'volfracnum' for receptor kinetic law
+    //! see: Anderson, A. R. A. & Chaplain, M. A. J.
+    //       Continuous and discrete mathematical models of tumor-induced angiogenesis
+    virtual double OmegaHalf(int volfracnum, int iscal) const;
+
     //! check if volume frac 'volfracnum' has additional scalar dependent flux of scalar 'iscal'
     virtual bool HasAddScalarDependentFlux(int volfracnum, int iscal) const;
+
+    //! check if volume frac 'volfracnum' has receptor kinetic-law of scalar 'iscal'
+    //! see: Anderson, A. R. A. & Chaplain, M. A. J.
+    //       Continuous and discrete mathematical models of tumor-induced angiogenesis
+    virtual bool HasReceptorKineticLaw(int volfracnum, int iscal) const;
 
     //@}
 
@@ -1271,6 +1315,8 @@ class PhaseManagerVolFrac : public PhaseManagerDecorator
     std::vector<bool> hasaddscalardpendentflux_;
     //! matrix for scalar diffusivities
     std::vector < std::vector<double> > scalardiffs_;
+    //! matrix for omega half values of receptor-kinetic law
+    std::vector < std::vector<double> > omega_half_;
 
   };
 

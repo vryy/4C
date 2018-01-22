@@ -123,6 +123,8 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
           VarManager()->SetPhaseID(k,poromat->PhaseID());
           // set delta in the variablemanager
           VarManager()->SetDelta(poromat->Delta(), k);
+          // set minimum saturation in the variablemanager
+          VarManager()->SetMinSat(poromat->MinSat(), k);
           break;
         }
 
@@ -146,6 +148,8 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
         VarManager()->SetPhaseID(0,poromat->PhaseID());
         // set delta in the variablemanager
         VarManager()->SetDelta(poromat->Delta(), 0);
+        // set minimum saturation in the variablemanager
+        VarManager()->SetMinSat(poromat->MinSat(), 0);
         break;
       }
 
@@ -379,7 +383,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoro(
   double porosity = 0.0;
   // d_eff = d_0 * (porosity * saturation(k))^delta
   double d_eff = 0.0;
-  if(fabs(VarManager()->Saturation(k)) > minimum_saturation_)
+  if(fabs(VarManager()->Saturation(k)) > VarManager()->GetMinSat(k))
   {
     porosity = VarManager()->FluidPhaseManager()->Porosity()*VarManager()->Saturation(k)*actmat->Density();
     d_eff = std::pow(VarManager()->FluidPhaseManager()->Porosity()*VarManager()->Saturation(k),actmat->Delta());
@@ -577,7 +581,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConv(
   )
 {
   // case of zero saturation
-  if(fabs(VarManager()->Saturation(k)) > minimum_saturation_)
+  if(fabs(VarManager()->Saturation(k)) > VarManager()->GetMinSat(k))
   {
     //the only difference to the base class version is, that there is no scaling with the density
     pororeac::CalcMatConv(emat,k,timefacfac,1.0,sgconv);
@@ -597,7 +601,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatMass(
     const double &                 densam
   )
 {
-  if(fabs(VarManager()->Saturation(k)) > minimum_saturation_)
+  if(fabs(VarManager()->Saturation(k)) > VarManager()->GetMinSat(k))
   {
     //the only difference to the base class version is, that there is no scaling with the density
     pororeac::CalcMatMass(emat,k,fac,densam);
@@ -670,7 +674,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcConvODMesh(
   )
 {
   // case of zero saturation
-  if(fabs(VarManager()->Saturation(k)) > minimum_saturation_)
+  if(fabs(VarManager()->Saturation(k)) > VarManager()->GetMinSat(k))
   {
     const int curphase = VarManager()->GetPhaseID(k);
     const int numfluidphases = VarManager()->FluidPhaseManager()->NumFluidPhases();
@@ -858,7 +862,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcLinMassODMesh(
 )
 {
   // case of zero saturation
-  if(fabs(VarManager()->Saturation(k)) > minimum_saturation_)
+  if(fabs(VarManager()->Saturation(k)) > VarManager()->GetMinSat(k))
   {
     // call base class
     my::CalcLinMassODMesh(emat,
@@ -907,7 +911,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcHistAndSourceODMesh
 )
 {
   // case of zero saturation
-  if(fabs(VarManager()->Saturation(k)) > minimum_saturation_)
+  if(fabs(VarManager()->Saturation(k)) > VarManager()->GetMinSat(k))
   {
     //const int curphase = VarManager()->GetPhaseID(k);
     const int numfluidphases = VarManager()->FluidPhaseManager()->NumFluidPhases();
@@ -975,7 +979,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcDiffODMesh(
   )
 {
   // case of zero saturation
-  if(fabs(VarManager()->Saturation(k)) > minimum_saturation_)
+  if(fabs(VarManager()->Saturation(k)) > VarManager()->GetMinSat(k))
   {
     // call base class
     my::CalcDiffODMesh(emat,k,ndofpernodemesh,diffcoeff,fac,rhsfac,J,gradphi,convelint,dJ_dmesh);
@@ -1033,7 +1037,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcReactODMesh(
   )
 {
   // case of zero saturation
-  if(fabs(VarManager()->Saturation(k)) > minimum_saturation_)
+  if(fabs(VarManager()->Saturation(k)) > VarManager()->GetMinSat(k))
   {
     // call base class
     my::CalcReactODMesh(emat,k,ndofpernodemesh,rhsfac,rea_phi,J,dJ_dmesh);
@@ -1143,7 +1147,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConvODFluid(
 )
 {
   // case of zero saturation
-  if(fabs(VarManager()->Saturation(k)) > minimum_saturation_)
+  if(fabs(VarManager()->Saturation(k)) > VarManager()->GetMinSat(k))
   {
     const int curphase = VarManager()->GetPhaseID(k);
     const int numfluidphases = VarManager()->FluidPhaseManager()->NumFluidPhases();
@@ -1258,7 +1262,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcLinMassODFluid(
   )
 {
   // case of zero saturation
-  if(fabs(VarManager()->Saturation(k)) > minimum_saturation_)
+  if(fabs(VarManager()->Saturation(k)) > VarManager()->GetMinSat(k))
   {
     const int curphase = VarManager()->GetPhaseID(k);
     const int numfluidphases = VarManager()->FluidPhaseManager()->NumFluidPhases();
@@ -1337,7 +1341,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcHistAndSourceODFlui
   )
 {
   // case of zero saturation
-  if(fabs(VarManager()->Saturation(k)) > minimum_saturation_)
+  if(fabs(VarManager()->Saturation(k)) > VarManager()->GetMinSat(k))
   {
     const int curphase = VarManager()->GetPhaseID(k);
     const int numfluidphases = VarManager()->FluidPhaseManager()->NumFluidPhases();
@@ -1416,7 +1420,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcReactODFluid(
     const double                       rea_phi
   )
 {
-  if (my::reamanager_->Active() && fabs(VarManager()->Saturation(k)) > minimum_saturation_)
+  if (my::reamanager_->Active() && fabs(VarManager()->Saturation(k)) > VarManager()->GetMinSat(k))
   {
     const int curphase = VarManager()->GetPhaseID(k);
     const int numfluidphases = VarManager()->FluidPhaseManager()->NumFluidPhases();
@@ -1448,7 +1452,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcDiffODFluid(
   )
 {
   // case of zero saturation
-  if(fabs(VarManager()->Saturation(k)) > minimum_saturation_)
+  if(fabs(VarManager()->Saturation(k)) > VarManager()->GetMinSat(k))
   {
     const int curphase = VarManager()->GetPhaseID(k);
     const int numfluidphases = VarManager()->FluidPhaseManager()->NumFluidPhases();

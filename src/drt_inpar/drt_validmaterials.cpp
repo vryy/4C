@@ -350,6 +350,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"SCNUM","schmidt number",0.0,true);
     AddNamedReal(m,"DENSIFICATION","densification coefficient",0.0,true);
     AddNamedReal(m,"DELTA","delta",0.0,true);
+    AddNamedReal(m,"MIN_SAT","minimum saturation under which also corresponding mass fraction is equal to zero",1.0e-9,true);
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -2719,6 +2720,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedBool(m,"AddScalarDependentFlux","Is there additional scalar dependent flux (yes) or (no)");
     AddNamedInt(m,"NUMSCAL","Number of scalars",0,true);
     AddNamedRealVector(m,"SCALARDIFFS","Diffusivities for additional scalar-dependent flux","NUMSCAL",0.0,true);
+    AddNamedRealVector(m,"OMEGA_HALF","Constant for receptor kinetic law","NUMSCAL",1.0e13,true);
 
     AppendMaterialDefinition(matlist,m);
   }

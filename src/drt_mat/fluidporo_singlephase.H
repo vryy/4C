@@ -123,6 +123,8 @@ namespace MAT
         const int numscal_;
         /// their diffusivities
         const std::vector<double> scalardiffs_;
+        /// constant omega_half for receptor kinetic law
+        const std::vector<double> omega_half_;
 
         //@}
 
@@ -479,6 +481,12 @@ namespace MAT
       std::vector<double> ScalarDiffs() const
       {
         return params_->scalardiffs_;
+      }
+
+      /// return omega_half for scalar-dependent flux
+      std::vector<double> OmegaHalf() const
+      {
+        return params_->omega_half_;
       }
 
     private:

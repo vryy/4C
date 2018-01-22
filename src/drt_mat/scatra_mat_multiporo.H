@@ -50,6 +50,8 @@ public:
   //  Three phase flow dynamics in tumor growth. Computational Mechanics, 53:465–484,
   //  2014.
   const double delta_;
+  // minimum saturation under which also corresponding mass fraction is equal to zero
+  const double min_sat_;
 
 };
 // class Scatra
@@ -165,6 +167,12 @@ public:
   virtual double Delta() const
   {
     return params_->delta_;
+  }
+
+  /// return minimum saturation
+  virtual double MinSat() const
+  {
+    return params_->min_sat_;
   }
 
 private:

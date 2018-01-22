@@ -356,9 +356,6 @@ public:
   //! penalty factor to avoid very small "densities"
   const double penalty_ = 1.0;
 
-  //! under this saturation we assume that also the corresponding mass fraction is equal to zero
-  const double minimum_saturation_ = 1.0e-9;
-
   //! do we use L2-projection or evaluation at GP
   bool L2_projection_ = false;
 
@@ -381,6 +378,7 @@ public:
     solidpressure_(0.0),
     scalartophaseID_(numscal,-1),
     delta_(numscal,0.0),
+    min_sat_(numscal,0.0),
     materialset_(false),
     myaction_(SCATRA::Action::calc_mat_and_rhs)
   {return;}
@@ -614,6 +612,12 @@ public:
     delta_[k] = delta;
   };
 
+  //! set minimum saturation
+  void SetMinSat(const double minsat, const int k)
+  {
+    min_sat_[k] = minsat;
+  };
+
   //! set action
   void SetAction(const SCATRA::Action action)
   {
@@ -625,6 +629,12 @@ public:
   double GetDelta(const int k)
   {
     return delta_[k];
+  };
+
+  //! get minimum saturation
+  double GetMinSat(const int k)
+  {
+    return min_sat_[k];
   };
 
   //! get action
@@ -751,6 +761,8 @@ private:
   std::vector<int > scalartophaseID_;
   //! delta for effective diffusivity
   std::vector<double> delta_;
+  //! minimum saturation under which the corresponding mass fraction is assumed to be zero
+  std::vector<double> min_sat_;
   //! check if multiphase material has been set
   bool materialset_;
 

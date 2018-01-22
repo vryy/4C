@@ -5974,6 +5974,39 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,nen>::Evalua
 
             }
           }
+
+          // additional linearization of receptor kinetic law
+          if(phasemanager.HasReceptorKineticLaw(ivolfrac-numfluidphases, iscal))
+          {
+            // get scalars
+            const std::vector<double> scalars = *variablemanager.Scalarnp();
+            const std::vector<LINALG::Matrix<nsd,1> >& gradscalarnp = *variablemanager.GradScalarnp();
+
+            // corrrectly scale difftensor
+            // d diff / d omega = D_0*(-1.0)*w_half/(w_half+w)^2
+            //                    value from above * (-1.0)/(w_half+w)
+            difftensoraddflux.Scale(-1.0/(phasemanager.OmegaHalf(ivolfrac-numfluidphases, iscal)+scalars[iscal]));
+
+            static LINALG::Matrix<nsd,1> diffflux2(true);
+            diffflux2.Multiply(difftensoraddflux,gradscalarnp[iscal]);
+
+            for (int vi=0; vi<nen; ++vi)
+            {
+              const int fvi = vi*numdofpernode+ivolfrac;
+
+              double laplawf = 0.0;
+              for (int j = 0; j<nsd; j++)
+                laplawf += derxy(j, vi)*diffflux2(j);
+
+              for (int ui=0; ui<nen; ++ui)
+              {
+                const int fui = ui*numscal+iscal;
+                mymat(fvi,fui) += timefacfac*funct(ui)*laplawf;
+
+              }
+            }
+
+          }
         }
       }
     }

@@ -1481,6 +1481,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::Setup(
   volfracdensity_.resize(numvolfrac);
   volfracpressure_.resize(numvolfrac);
   scalardiffs_.resize(numvolfrac);
+  omega_half_.resize(numvolfrac);
 
   hasaddscalardpendentflux_.resize(numvolfrac,false);
 
@@ -1506,16 +1507,14 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::Setup(
     for (int i = 0; i < nsd; i++)
       (difftensorsvolfrac_[ivolfrac])(i, i) = diffusivity;
 
+    // get constant values
     volfracdensity_[ivolfrac] = singlevolfracmat.Density();
     volfracpressure_[ivolfrac] = singlevolfracmat.Pressure();
 
+    // for faster check
     if(singlevolfracmat.HasAddScalarDependentFlux())
     {
-      if(phasemanager_->NumScal() != singlevolfracmat.NumScal())
-        dserror("Wrong number of scalars for additional scalar dependent flux");
       hasaddscalardpendentflux_[ivolfrac] = true;
-      scalardiffs_[ivolfrac].resize(singlevolfracmat.NumScal());
-      scalardiffs_[ivolfrac] = singlevolfracmat.ScalarDiffs();
     }
   }
 
@@ -1540,6 +1539,45 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::EvaluateGPState(
 
   // recalculate the solid pressure
   phasemanager_->RecalculateSolidPressure(phasemanager_->Porosity(),volfracpressure_);
+
+  const int totalnumdof = phasemanager_->TotalNumDof();
+  const int numfluidphases = phasemanager_->NumFluidPhases();
+  const int numvolfrac = totalnumdof - numfluidphases;
+
+  // get material
+  dsassert(phasemanager_->Element()->Material(matnum)!=Teuchos::null,"Material of element is null pointer!");
+  const MAT::Material& material = *(phasemanager_->Element()->Material(matnum));
+
+  for (int ivolfrac = 0; ivolfrac < numvolfrac; ivolfrac++)
+  {
+    //get the single phase material
+    const MAT::FluidPoroSingleVolFrac& singlevolfracmat =
+        POROFLUIDMULTIPHASE::ELEUTILS::GetSingleVolFracMatFromMaterial(material,ivolfrac+numfluidphases);
+
+    if(this->HasAddScalarDependentFlux(ivolfrac))
+    {
+      if(phasemanager_->NumScal() != singlevolfracmat.NumScal())
+        dserror("Wrong number of scalars for additional scalar dependent flux");
+
+      // has to be inside loop, otherwise phasemanager might not have scalars
+      const std::vector<double> scalars = *varmanager.Scalarnp();
+
+      // constant scalar diffs
+      scalardiffs_[ivolfrac].resize(singlevolfracmat.NumScal());
+      scalardiffs_[ivolfrac] = singlevolfracmat.ScalarDiffs();
+
+      // omega half
+      omega_half_[ivolfrac].resize(singlevolfracmat.NumScal());
+      omega_half_[ivolfrac] = singlevolfracmat.OmegaHalf();
+
+      // receptor-kinetic law:
+      // Anderson, A. R. A. & Chaplain, M. A. J.:
+      // Continuous and discrete mathematical models of tumor-induced angiogenesis
+      for(int iscal = 0; iscal < phasemanager_->NumScal(); iscal++)
+        (scalardiffs_[ivolfrac])[iscal] *=
+            ((omega_half_[ivolfrac])[iscal])/((omega_half_[ivolfrac])[iscal]+scalars[iscal]);
+    }
+  }
 
   return;
  }
@@ -1593,7 +1631,7 @@ bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::HasAddScalarDepe
 }
 
 /*---------------------------------------------------------------------------*
- * get densities for volume fractions                       kremheller 08/17 |
+ * check if additional scalar flux dependency active        kremheller 08/17 |
 *---------------------------------------------------------------------------*/
 template<int nsd>
 bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::HasAddScalarDependentFlux(
@@ -1606,7 +1644,20 @@ bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::HasAddScalarDepe
 }
 
 /*---------------------------------------------------------------------------*
- * get densities for volume fractions                       kremheller 08/17 |
+ * check if receptor-kinetic law active                     kremheller 01/18 |
+*---------------------------------------------------------------------------*/
+template<int nsd>
+bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::HasReceptorKineticLaw(
+    int volfracnum,
+    int iscal) const
+{
+  phasemanager_->CheckIsEvaluated();
+
+  return ((omega_half_[volfracnum])[iscal] < 1.0e12);
+}
+
+/*---------------------------------------------------------------------------*
+ * get scalar diffs for volume fractions                    kremheller 08/17 |
 *---------------------------------------------------------------------------*/
 template<int nsd>
 double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::ScalarDiff(
@@ -1616,6 +1667,19 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::ScalarDiff(
   phasemanager_->CheckIsEvaluated();
 
   return (scalardiffs_[volfracnum])[iscal];
+}
+
+/*---------------------------------------------------------------------------*
+ * get scalar omega half for volume fractions               kremheller 01/18 |
+*---------------------------------------------------------------------------*/
+template<int nsd>
+double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::OmegaHalf(
+    int volfracnum,
+    int iscal) const
+{
+  phasemanager_->CheckIsEvaluated();
+
+  return (omega_half_[volfracnum])[iscal];
 }
 
 /*----------------------------------------------------------------------*
