@@ -2987,10 +2987,11 @@ void shape_function_hermite_1D(
   {
   case DRT::Element::line2:
   {
-    funct(0) = 0.25 * (2.0 - 3.0 * r + pow(r, 3.0));
-    funct(1) = l / 8.0 * (1.0 - r - r * r + pow(r, 3.0));
-    funct(2) = 0.25 * (2.0 + 3.0 * r - pow(r, 3.0));
-    funct(3) = l / 8.0 * (-1.0 - r + r * r + pow(r, 3.0));
+    const T r_p3 = r * r * r;
+    funct(0) = 0.25 * (2.0 - 3.0 * r + r_p3 );
+    funct(1) = l / 8.0 * (1.0 - r - r * r + r_p3 );
+    funct(2) = 0.25 * (2.0 + 3.0 * r - r_p3 );
+    funct(3) = l / 8.0 * (-1.0 - r + r * r + r_p3 );
     break;
   }
   default:
@@ -3119,20 +3120,23 @@ void shape_function_hermite_1D_order5(
   {
   case DRT::Element::line2:
   {
-    funct(0) = 0.0625 * (8 - 15 * r + 10 * pow(r, 3) - 3 * pow(r, 5));
+    const T r_p3 = r * r * r;
+    const T r_p4 = r_p3 * r;
+    const T r_p5 = r_p4 * r;
+    funct(0) = 0.0625 * (8 - 15 * r + 10 * r_p3 - 3 * r_p5);
     funct(1) = 0.03125 * l
-        * (5 - 7 * r - 6 * r * r + 10 * pow(r, 3) + 1 * pow(r, 4)
-            - 3 * pow(r, 5));
+        * (5 - 7 * r - 6 * r * r + 10 * r_p3 + 1 * r_p4
+            - 3 * r_p5 );
     funct(2) = 0.015625 * l * l
-        * (1 - 1 * r - 2 * r * r + 2 * pow(r, 3) + 1 * pow(r, 4)
-            - 1 * pow(r, 5));
-    funct(3) = 0.0625 * (8 + 15 * r - 10 * pow(r, 3) + 3 * pow(r, 5));
+        * (1 - 1 * r - 2 * r * r + 2 * r_p3 + 1 * r_p4
+            - 1 * r_p5 );
+    funct(3) = 0.0625 * (8 + 15 * r - 10 * r_p3 + 3 * r_p5 );
     funct(4) = 0.03125 * l
-        * (-5 - 7 * r + 6 * r * r + 10 * pow(r, 3) - 1 * pow(r, 4)
-            - 3 * pow(r, 5));
+        * (-5 - 7 * r + 6 * r * r + 10 * r_p3 - 1 * r_p4
+            - 3 * r_p5 );
     funct(5) = 0.015625 * l * l
-        * (1 + 1 * r - 2 * r * r - 2 * pow(r, 3) + 1 * pow(r, 4)
-            + 1 * pow(r, 5));
+        * (1 + 1 * r - 2 * r * r - 2 * r_p3 + 1 * r_p4
+            + 1 * r_p5 );
     break;
   }
   default:
@@ -3160,16 +3164,18 @@ void shape_function_hermite_1D_order5_deriv1(
   {
   case DRT::Element::line2:
   {
-    funct(0) = 0.0625 * (-15 + 30 * r * r - 15 * pow(r, 4));
+    const T r_p3 = r * r * r;
+    const T r_p4 = r_p3 * r;
+    funct(0) = 0.0625 * (-15 + 30 * r * r - 15 * r_p4 );
     funct(1) = 0.03125 * l
-        * (-7 - 12 * r + 30 * r * r + 4 * pow(r, 3) - 15 * pow(r, 4));
+        * (-7 - 12 * r + 30 * r * r + 4 * r_p3 - 15 * r_p4 );
     funct(2) = 0.015625 * l * l
-        * (-1 - 4 * r + 6 * r * r + 4 * pow(r, 3) - 5 * pow(r, 4));
-    funct(3) = 0.0625 * (15 - 30 * r * r + 15 * pow(r, 4));
+        * (-1 - 4 * r + 6 * r * r + 4 * r_p3 - 5 * r_p4 );
+    funct(3) = 0.0625 * (15 - 30 * r * r + 15 * r_p4 );
     funct(4) = 0.03125 * l
-        * (-7 + 12 * r + 30 * r * r - 4 * pow(r, 3) - 15 * pow(r, 4));
+        * (-7 + 12 * r + 30 * r * r - 4 * r_p3 - 15 * r_p4 );
     funct(5) = 0.015625 * l * l
-        * (1 - 4 * r - 6 * r * r + 4 * pow(r, 3) + 5 * pow(r, 4));
+        * (1 - 4 * r - 6 * r * r + 4 * r_p3 + 5 * r_p4 );
     break;
   }
   default:
@@ -3197,14 +3203,15 @@ void shape_function_hermite_1D_order5_deriv2(
   {
   case DRT::Element::line2:
   {
-    funct(0) = 0.0625 * (60 * r - 60 * pow(r, 3));
-    funct(1) = 0.03125 * l * (-12 + 60 * r + 12 * r * r - 60 * pow(r, 3));
+    const T r_p3 = r * r * r;
+    funct(0) = 0.0625 * (60 * r - 60 * r_p3 );
+    funct(1) = 0.03125 * l * (-12 + 60 * r + 12 * r * r - 60 * r_p3 );
     funct(2) = 0.015625 * l * l
-        * (-4 + 12 * r + 12 * r * r - 20 * pow(r, 3));
-    funct(3) = 0.0625 * (-60 * r + 60 * pow(r, 3));
-    funct(4) = 0.03125 * l * (12 + 60 * r - 12 * r * r - 60 * pow(r, 3));
+        * (-4 + 12 * r + 12 * r * r - 20 * r_p3 );
+    funct(3) = 0.0625 * (-60 * r + 60 * r_p3 );
+    funct(4) = 0.03125 * l * (12 + 60 * r - 12 * r * r - 60 * r_p3 );
     funct(5) = 0.015625 * l * l
-        * (-4 - 12 * r + 12 * r * r + 20 * pow(r, 3));
+        * (-4 - 12 * r + 12 * r * r + 20 * r_p3 );
     break;
   }
   default:
