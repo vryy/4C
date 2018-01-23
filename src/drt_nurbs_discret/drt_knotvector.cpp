@@ -251,6 +251,15 @@ bool DRT::NURBS::Knotvector::GetEleKnots(
   std::vector<int> cartids(dim_);
   int         npatch;
 
+  // ToDo The current NURBS implementation relies totally on a set of consecutively
+  // increasing GIDs starting at 0. This should be fixed if mixed discretizations
+  // shall be considered. Otherwise the elements belonging to the NURBS
+  // discretization must be a closed set placed always at the beginning
+  // of an element list which seems to be a unnecessary and non-intuitive restriction.
+  // hiermeier 11/17
+
+//  gid = gid - 3773;
+
   ConvertEleGidToKnotIds(gid,npatch,cartids);
 
   // use them to aquire the required knots

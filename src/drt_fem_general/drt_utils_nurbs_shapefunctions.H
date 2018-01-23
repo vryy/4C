@@ -99,12 +99,12 @@ namespace UTILS
     \param weights            (i)
     \param distype            (i)
 
-    \return void
+    \return TRUE if successful
 
   */
 
   template<class V, class WG>
-  void nurbs_get_1D_funct(
+  bool nurbs_get_1D_funct(
     V                                      & nurbs_shape_funct  ,
     const double                           & u                  ,
     const Epetra_SerialDenseVector         & knots              ,
@@ -265,6 +265,9 @@ namespace UTILS
     sum_funct_weight+=weights(rr)*bezier_shape_funct(rr);
   }
 
+  if ( sum_funct_weight == 0.0 )
+    return false;
+
   /* Compute Nurbs basis functions
 
 
@@ -286,7 +289,7 @@ namespace UTILS
     nurbs_shape_funct(rr)=weights(rr)*bezier_shape_funct(rr)/sum_funct_weight;
   }
 
-  return;
+  return true;
 }
 
 
@@ -384,12 +387,12 @@ namespace UTILS
   \param weights            (i)
   \param distype            (i)
 
-  \return void
+  \return TRUE, if successful
 
   */
 
   template <class VF,class VD,class WG>
-  void nurbs_get_1D_funct_deriv(
+  bool nurbs_get_1D_funct_deriv(
     VF                                     & nurbs_shape_funct,
     VD                                     & nurbs_shape_deriv,
     const double                           & u                ,
@@ -572,6 +575,9 @@ namespace UTILS
     sum_deriv_weight+=weights(rr)*bezier_shape_deriv(rr);
   }
 
+  if ( sum_funct_weight == 0.0 )
+    return false;
+
   /* Compute Nurbs basis functions
 
 
@@ -638,12 +644,12 @@ namespace UTILS
     nurbs_shape_deriv(0,rr)*=Ju;
   }
 
-  return;
+  return true;
 }
 
 
 template <class VF,class MD, class MSD,class UV,class WG>
-void nurbs_get_1D_funct_deriv_deriv2(
+bool nurbs_get_1D_funct_deriv_deriv2(
     VF                                     & nurbs_shape_funct ,
     MD                                     & nurbs_shape_deriv ,
     MSD                                    & nurbs_shape_deriv2,
@@ -749,6 +755,8 @@ void nurbs_get_1D_funct_deriv_deriv2(
     sum_deriv2_weight+= weights(rr)*bezier_shape_deriv2(rr);
   }
 
+  if ( sum_funct_weight == 0.0 )
+    return false;
 
   // loop all basis functions
   for(int rr=0;rr<size;++rr)
@@ -757,19 +765,19 @@ void nurbs_get_1D_funct_deriv_deriv2(
     nurbs_shape_funct(rr)=weights(rr)*bezier_shape_funct(rr)/sum_funct_weight;
 
     // loop directions to compute derivatives
-    nurbs_shape_deriv(rr)  = bezier_shape_deriv(rr)*sum_funct_weight;
-    nurbs_shape_deriv(rr) -= bezier_shape_funct(rr)*sum_deriv_weight;
-    nurbs_shape_deriv(rr) *= weights(rr)/(sum_funct_weight*sum_funct_weight);
+    nurbs_shape_deriv(0,rr)  = bezier_shape_deriv(rr)*sum_funct_weight;
+    nurbs_shape_deriv(0,rr) -= bezier_shape_funct(rr)*sum_deriv_weight;
+    nurbs_shape_deriv(0,rr) *= weights(rr)/(sum_funct_weight*sum_funct_weight);
 
     // second derivative
-    nurbs_shape_deriv2(rr) =2*bezier_shape_funct(rr)*sum_deriv_weight*sum_deriv_weight;
-    nurbs_shape_deriv2(rr)/=sum_funct_weight;
-    nurbs_shape_deriv2(rr)-=bezier_shape_funct(rr)  *sum_deriv2_weight;
-    nurbs_shape_deriv2(rr)-=bezier_shape_deriv(rr)*sum_deriv_weight;
-    nurbs_shape_deriv2(rr)-=bezier_shape_deriv(rr)*sum_deriv_weight;
-    nurbs_shape_deriv2(rr)/=sum_funct_weight;
-    nurbs_shape_deriv2(rr)+=bezier_shape_deriv2(rr);
-    nurbs_shape_deriv2(rr)*=weights(rr)/sum_funct_weight;
+    nurbs_shape_deriv2(0,rr) =2*bezier_shape_funct(rr)*sum_deriv_weight*sum_deriv_weight;
+    nurbs_shape_deriv2(0,rr)/=sum_funct_weight;
+    nurbs_shape_deriv2(0,rr)-=bezier_shape_funct(rr)  *sum_deriv2_weight;
+    nurbs_shape_deriv2(0,rr)-=bezier_shape_deriv(rr)*sum_deriv_weight;
+    nurbs_shape_deriv2(0,rr)-=bezier_shape_deriv(rr)*sum_deriv_weight;
+    nurbs_shape_deriv2(0,rr)/=sum_funct_weight;
+    nurbs_shape_deriv2(0,rr)+=bezier_shape_deriv2(rr);
+    nurbs_shape_deriv2(0,rr)*=weights(rr)/sum_funct_weight;
   }
 
   // -----------------------------------------------
@@ -778,11 +786,11 @@ void nurbs_get_1D_funct_deriv_deriv2(
   // -----------------------------------------------
   for(int rr=0;rr<size;++rr)
   {
-    nurbs_shape_deriv(rr) *=Ju;
-    nurbs_shape_deriv2(rr)*=Ju*Ju;
+    nurbs_shape_deriv(0,rr) *=Ju;
+    nurbs_shape_deriv2(0,rr)*=Ju*Ju;
   }
 
-  return;
+  return true;
 
 }
 
@@ -867,11 +875,11 @@ PART  II: PROJECTING TO NURBS SHAPE FUNCTIONS
 \param weights            (i)
 \param distype            (i)
 
-\return void
+\return TRUE, if successful
 
 */
 template <class VF,class UV,class WG>
-void nurbs_get_2D_funct(
+bool nurbs_get_2D_funct(
     VF                                          & nurbs_shape_funct,
     const UV                                    & uv               ,
     const std::vector<Epetra_SerialDenseVector> & knots            ,
@@ -1064,6 +1072,9 @@ void nurbs_get_2D_funct(
     sum_funct_weight+=weights(rr)*bezier_shape_funct(rr);
   }
 
+  if ( sum_funct_weight == 0.0 )
+    return false;
+
   /* Compute Nurbs basis functions
 
 
@@ -1085,7 +1096,7 @@ void nurbs_get_2D_funct(
     nurbs_shape_funct(rr)=weights(rr)*bezier_shape_funct(rr)/sum_funct_weight;
   }
 
-  return;
+  return true;
 }
 
 
@@ -1199,11 +1210,11 @@ PART III: TRANSFORMING DERIVATIVES FROM xi/eta TO u/v
 \param weights            (i)
 \param distype            (i)
 
-\return void
+\return TRUE, if successful
 
 */
 template <class VF,class UV,class MD,class WG>
-void nurbs_get_2D_funct_deriv(
+bool nurbs_get_2D_funct_deriv(
     VF                                     & nurbs_shape_funct,
     MD                                     & nurbs_shape_deriv,
     const UV                               & uv               ,
@@ -1428,6 +1439,9 @@ void nurbs_get_2D_funct_deriv(
     }
   }
 
+  if ( sum_funct_weight == 0.0 )
+    return false;
+
   /* Compute Nurbs basis functions
 
 
@@ -1502,7 +1516,7 @@ void nurbs_get_2D_funct_deriv(
     nurbs_shape_deriv(1,rr)*=Jv;
   }
 
-  return;
+  return true;
 }
 
 
@@ -1621,12 +1635,12 @@ PART III: TRANSFORMING DERIVATIVES FROM xi/eta TO u/v
 \param weights            (i)
 \param distype            (i)
 
-\return void
+\return TRUE, if successful
 
 */
 
 template <class VF,class MD, class MSD,class UV,class WG>
-void nurbs_get_2D_funct_deriv_deriv2(
+bool nurbs_get_2D_funct_deriv_deriv2(
     VF                                     & nurbs_shape_funct ,
     MD                                     & nurbs_shape_deriv ,
     MSD                                    & nurbs_shape_deriv2,
@@ -1920,6 +1934,9 @@ void nurbs_get_2D_funct_deriv_deriv2(
     sum_deriv2_weight[2]+=weights(rr)*bezier_shape_deriv2(2,rr);
   }
 
+  if ( sum_funct_weight == 0.0 )
+    return false;
+
   /* Compute Nurbs basis functions
 
 
@@ -2109,7 +2126,7 @@ void nurbs_get_2D_funct_deriv_deriv2(
     nurbs_shape_deriv2(2,rr)*=Ju*Jv;
   }
 
-  return;
+  return true;
 }
 
 
@@ -2217,12 +2234,12 @@ PART  II: PROJECTING TO NURBS SHAPE FUNCTIONS
 \param weights            (i)
 \param distype            (i)
 
-\return void
+\return TRUE, if successful
 
 */
 
 template <class V,class UV,class WG>
-void nurbs_get_3D_funct(
+bool nurbs_get_3D_funct(
     V                                      & nurbs_shape_funct,
     const UV                               & uv               ,
     const std::vector<Epetra_SerialDenseVector> & knots       ,
@@ -2467,6 +2484,9 @@ void nurbs_get_3D_funct(
     sum_funct_weight+=weights(rr)*bezier_shape_funct(rr);
   }
 
+  if ( sum_funct_weight == 0.0 )
+    return false;
+
   // loop all basis functions
   for(int rr=0;rr<size;++rr)
   {
@@ -2488,7 +2508,7 @@ void nurbs_get_3D_funct(
     nurbs_shape_funct(rr)=weights(rr)*bezier_shape_funct(rr)/sum_funct_weight;
   }
 
-  return;
+  return true;
 
 }
 
@@ -2636,12 +2656,12 @@ PART III: TRANSFORMING DERIVATIVES FROM xi/eta/nu TO u/v/w
 \param weights            (i)
 \param distype            (i)
 
-\return void
+\return TRUE, if successful
 
 */
 
 template <class VF,class UV,class MD,class WG>
-void nurbs_get_3D_funct_deriv(
+bool nurbs_get_3D_funct_deriv(
     VF                                     & nurbs_shape_funct,
     MD                                     & nurbs_shape_deriv,
     const UV                               & uv               ,
@@ -2944,6 +2964,9 @@ void nurbs_get_3D_funct_deriv(
     }
   }
 
+  if ( sum_funct_weight == 0.0 )
+    return false;
+
   // loop all basis functions
   for(int rr=0;rr<size;++rr)
   {
@@ -3024,7 +3047,7 @@ void nurbs_get_3D_funct_deriv(
     nurbs_shape_deriv(2,rr)*=Jw;
   }
 
-  return;
+  return true;
 }
 
 
@@ -3257,12 +3280,12 @@ PART III: TRANSFORMING DERIVATIVES FROM xi/eta TO u/v
 \param weights            (i)
 \param distype            (i)
 
-\return void
+\return TRUE, if successful
 
 */
 
 template <class VF,class MD, class MSD,class UV,class WG>
-void nurbs_get_3D_funct_deriv_deriv2(
+bool nurbs_get_3D_funct_deriv_deriv2(
     VF                                     & nurbs_shape_funct ,
     MD                                     & nurbs_shape_deriv ,
     MSD                                    & nurbs_shape_deriv2,
@@ -3676,6 +3699,9 @@ void nurbs_get_3D_funct_deriv_deriv2(
     }
   }
 
+  if ( sum_funct_weight == 0.0 )
+    return false;
+
   const double fact=2.0/sum_funct_weight;
 
   // loop all basis functions
@@ -3902,13 +3928,13 @@ void nurbs_get_3D_funct_deriv_deriv2(
     nurbs_shape_deriv2(5,rr)*=JvJw;
   }
 
-  return;
+  return true;
 }
 
 
 //! Evaluate basis functions, first and second derivatives of nurbs basis functions.
 template <class VF,class MD, class MSD,class UV,class WG>
-void nurbs_get_funct_deriv_deriv2(
+bool nurbs_get_funct_deriv_deriv2(
        VF                                     & nurbs_shape_funct ,
        MD                                     & nurbs_shape_deriv ,
        MSD                                    & nurbs_shape_deriv2,
@@ -3919,45 +3945,48 @@ void nurbs_get_funct_deriv_deriv2(
 {
   switch (DRT::UTILS::getDimension(distype))
   {
-  case 3:
-  {
-    DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv_deriv2
-    (nurbs_shape_funct   ,
-        nurbs_shape_deriv  ,
-        nurbs_shape_deriv2,
-        uv    ,
-        knots,
-        weights,
-        distype );
-    break;
+    case 3:
+    {
+      return DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv_deriv2
+      (nurbs_shape_funct   ,
+          nurbs_shape_deriv  ,
+          nurbs_shape_deriv2,
+          uv    ,
+          knots,
+          weights,
+          distype );
+    }
+    case 2:
+    {
+      return DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2
+      (nurbs_shape_funct   ,
+          nurbs_shape_deriv  ,
+          nurbs_shape_deriv2,
+          uv    ,
+          knots,
+          weights,
+          distype );
+    }
+    case 1:
+    {
+      return DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv_deriv2
+      (nurbs_shape_funct   ,
+          nurbs_shape_deriv  ,
+          nurbs_shape_deriv2,
+          uv(0)    ,
+          knots[0],
+          weights,
+          distype );
+    }
+    default:
+      dserror("dimension of the element is not correct");
+      exit( EXIT_FAILURE );
   }
-  case 2:
-  {
-    DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2
-    (nurbs_shape_funct   ,
-        nurbs_shape_deriv  ,
-        nurbs_shape_deriv2,
-        uv    ,
-        knots,
-        weights,
-        distype );
-    break;
-  }
-  case 1:
-  {
-     dserror("No second derivatives for 1D Nurbs implemented.");
-    break;
-  }
-  default:
-    dserror("dimension of the element is not correct");
-    break;
-  }
-  return;
 }
 
 //! Evaluate basis functions and first derivatives of nurbs basis functions.
 template <class VF,class MD,class UV,class WG>
-void nurbs_get_funct_deriv(
+bool nurbs_get_funct_deriv(
        VF                                     & nurbs_shape_funct ,
        MD                                     & nurbs_shape_deriv ,
        const UV                               & uv                ,
@@ -3967,49 +3996,46 @@ void nurbs_get_funct_deriv(
 {
   switch (DRT::UTILS::getDimension(distype))
   {
-  case 3:
-  {
-    DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
-    (nurbs_shape_funct,
-        nurbs_shape_deriv,
-        uv,
-        knots,
-        weights,
-        distype );
-    break;
+    case 3:
+    {
+      return DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
+      (nurbs_shape_funct,
+          nurbs_shape_deriv,
+          uv,
+          knots,
+          weights,
+          distype );
+    }
+    case 2:
+    {
+      return DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
+      (nurbs_shape_funct,
+          nurbs_shape_deriv,
+          uv,
+          knots,
+          weights,
+          distype );
+    }
+    case 1:
+    {
+      return DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv
+      (nurbs_shape_funct,
+          nurbs_shape_deriv,
+          uv(0),
+          knots[0],
+          weights,
+          distype );
+    }
+    default:
+      dserror("dimension of the element is not correct");
+      exit( EXIT_FAILURE );
   }
-  case 2:
-  {
-    DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
-    (nurbs_shape_funct,
-        nurbs_shape_deriv,
-        uv,
-        knots,
-        weights,
-        distype );
-    break;
-  }
-  case 1:
-  {
-    DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv
-    (nurbs_shape_funct,
-        nurbs_shape_deriv,
-        uv(0),
-        knots[0],
-        weights,
-        distype );
-    break;
-  }
-  default:
-    dserror("dimension of the element is not correct"); break;
-  }
-  return;
 }
 
 
 //! Evaluate basis functions of nurbs basis functions.
 template <class VF,class UV,class WG>
-void nurbs_get_funct(
+bool nurbs_get_funct(
        VF                                     & nurbs_shape_funct ,
        const UV                               & uv                ,
        const std::vector<Epetra_SerialDenseVector> & knots             ,
@@ -4018,40 +4044,37 @@ void nurbs_get_funct(
 {
   switch (DRT::UTILS::getDimension(distype))
   {
-  case 3:
-  {
-    DRT::NURBS::UTILS::nurbs_get_3D_funct
-    (nurbs_shape_funct,
-        uv,
-        knots,
-        weights,
-        distype );
-    break;
+    case 3:
+    {
+      return DRT::NURBS::UTILS::nurbs_get_3D_funct
+      (nurbs_shape_funct,
+          uv,
+          knots,
+          weights,
+          distype );
+    }
+    case 2:
+    {
+      return DRT::NURBS::UTILS::nurbs_get_2D_funct
+      (nurbs_shape_funct,
+          uv,
+          knots,
+          weights,
+          distype );
+    }
+    case 1:
+    {
+      return DRT::NURBS::UTILS::nurbs_get_1D_funct
+      (nurbs_shape_funct,
+          uv(0),
+          knots[0],
+          weights,
+          distype );
+    }
+    default:
+      dserror("dimension of the element is not correct");
+      exit( EXIT_FAILURE );
   }
-  case 2:
-  {
-    DRT::NURBS::UTILS::nurbs_get_2D_funct
-    (nurbs_shape_funct,
-        uv,
-        knots,
-        weights,
-        distype );
-    break;
-  }
-  case 1:
-  {
-    DRT::NURBS::UTILS::nurbs_get_1D_funct
-    (nurbs_shape_funct,
-        uv(0),
-        knots[0],
-        weights,
-        distype );
-    break;
-  }
-  default:
-    dserror("dimension of the element is not correct"); break;
-  }
-  return;
 }
 
 }// namespace UTILS
