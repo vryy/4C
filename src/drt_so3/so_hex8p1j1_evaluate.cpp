@@ -216,7 +216,7 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
           {
             double& s = (*((*poststress)(i)))[lid]; // resolve pointer for faster access
             s = 0.;
-            for (int j = 0; j < NUMGPT_SOH8; ++j)
+            for (unsigned j = 0; j < NUMGPT_SOH8; ++j)
             {
               s += gpstress(j,i);
             }
@@ -391,7 +391,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(
   // in case of prestressing, build defgrd wrt to last stored configuration
   LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(false);
   LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> mod_defgrd(true);
-  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+  for (unsigned gp=0; gp<NUMGPT_SOH8; ++gp)
   {
 
     /* get the inverse of the Jacobian matrix which looks like:
@@ -1120,7 +1120,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::test_stiffmat(
     // in case of prestressing, build defgrd wrt to last stored configuration
     LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(false);
     LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> mod_defgrd(true);
-    for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+    for (unsigned gp=0; gp<NUMGPT_SOH8; ++gp)
     {
       /* get the inverse of the Jacobian matrix which looks like:
       **            [ x_,r  y_,r  z_,r ]^-1

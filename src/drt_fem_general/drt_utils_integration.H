@@ -115,6 +115,39 @@ inline bool IntRuleIsOpen(DRT::UTILS::GaussRule3D intrule)
   return open;
 }
 
+/// get total number of GPs of the 3D Gauss rule at compile time
+template<GaussRule3D rule>
+struct GaussRule3DToNumGaussPoints {};
+template <> struct GaussRule3DToNumGaussPoints<intrule3D_undefined> { static const unsigned value = 0; };
+template <> struct GaussRule3DToNumGaussPoints<intrule_hex_1point> { static const unsigned value = 1; };
+template <> struct GaussRule3DToNumGaussPoints<intrule_hex_8point> { static const unsigned value = 8; };
+template <> struct GaussRule3DToNumGaussPoints<intrule_hex_18point> { static const unsigned value = 18; };
+template <> struct GaussRule3DToNumGaussPoints<intrule_hex_27point> { static const unsigned value = 27; };
+template <> struct GaussRule3DToNumGaussPoints<intrule_hex_64point> { static const unsigned value = 64; };
+template <> struct GaussRule3DToNumGaussPoints<intrule_hex_125point> { static const unsigned value = 125; };
+template <> struct GaussRule3DToNumGaussPoints<intrule_hex_216point> { static const unsigned value = 216; };
+template <> struct GaussRule3DToNumGaussPoints<intrule_hex_343point> { static const unsigned value = 343; };
+template <> struct GaussRule3DToNumGaussPoints<intrule_hex_512point> { static const unsigned value = 512; };
+template <> struct GaussRule3DToNumGaussPoints<intrule_hex_729point> { static const unsigned value = 729; };
+template <> struct GaussRule3DToNumGaussPoints<intrule_hex_1000point> { static const unsigned value = 1000; };
+template <> struct GaussRule3DToNumGaussPoints<intrule_tet_1point> { static const unsigned value = 1; };
+template <> struct GaussRule3DToNumGaussPoints<intrule_tet_4point> { static const unsigned value = 4; };
+template <> struct GaussRule3DToNumGaussPoints<intrule_tet_4point_gauss_radau> { static const unsigned value = 4; };
+template <> struct GaussRule3DToNumGaussPoints<intrule_tet_5point> { static const unsigned value = 5; };
+template <> struct GaussRule3DToNumGaussPoints<intrule_tet_10point> { static const unsigned value = 10; };
+template <> struct GaussRule3DToNumGaussPoints<intrule_tet_11point> { static const unsigned value = 11; };
+template <> struct GaussRule3DToNumGaussPoints<intrule_tet_15point> { static const unsigned value = 15; };
+template <> struct GaussRule3DToNumGaussPoints<intrule_tet_24point> { static const unsigned value = 24; };
+template <> struct GaussRule3DToNumGaussPoints<intrule_tet_64point_peano> { static const unsigned value = 64; };
+template <> struct GaussRule3DToNumGaussPoints<intrule_tet_45point> { static const unsigned value = 45; };
+template <> struct GaussRule3DToNumGaussPoints<intrule_tet_125point_peano> { static const unsigned value = 125; };
+template <> struct GaussRule3DToNumGaussPoints<intrule_tet_343point_peano> { static const unsigned value = 343; };
+template <> struct GaussRule3DToNumGaussPoints<intrule_tet_729point_peano> { static const unsigned value = 729; };
+template <> struct GaussRule3DToNumGaussPoints<intrule_wedge_1point> { static const unsigned value = 1; };
+template <> struct GaussRule3DToNumGaussPoints<intrule_wedge_6point> { static const unsigned value = 6; };
+template <> struct GaussRule3DToNumGaussPoints<intrule_wedge_9point> { static const unsigned value = 9; };
+template <> struct GaussRule3DToNumGaussPoints<intrule_pyramid_1point> { static const unsigned value = 1; };
+template <> struct GaussRule3DToNumGaussPoints<intrule_pyramid_8point> { static const unsigned value = 8; };
 
 //! supported 2d integration rules
 //!
@@ -475,6 +508,11 @@ public:
   //! get reference to the integration points and weights
   const IntegrationPoints3D& IP() const {return intpoints_;};
 
+  inline unsigned NumPoints() const { return IP().nquad; };
+  inline unsigned NumDimension() const { return 3; }
+  inline const double* Point( int point ) const { return IP().qxg[point]; };
+  inline double Weight( int point ) const { return IP().qwgt[point]; };
+
 private:
   //! integration points and weights for 3D
   IntegrationPoints3D intpoints_;
@@ -494,6 +532,11 @@ public:
   //! get reference to the integration points and weights
   const IntegrationPoints2D& IP() const {return intpoints_;};
 
+  inline unsigned NumPoints() const { return IP().nquad; };
+  inline unsigned NumDimension() const { return 2; }
+  inline const double* Point( int point ) const { return IP().qxg[point]; };
+  inline double Weight( int point ) const { return IP().qwgt[point]; };
+
 private:
   //! integration points and weights for 3D
   IntegrationPoints2D intpoints_;
@@ -512,6 +555,11 @@ public:
 
   //! get reference to the integration points and weights
   const IntegrationPoints1D& IP() const {return intpoints_;};
+
+  inline unsigned NumPoints() const { return IP().nquad; };
+  inline unsigned NumDimension() const { return 1; }
+  inline const double* Point( int point ) const { return IP().qxg[point]; };
+  inline double Weight( int point ) const { return IP().qwgt[point]; };
 
 private:
   //! integration points and weights for 3D

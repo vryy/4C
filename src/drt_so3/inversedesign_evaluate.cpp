@@ -658,7 +658,7 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(
   //---------------------------------------------------------------------
   //---------------------------------------------------------------------
   // loop gaussian points
-  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+  for (unsigned gp=0; gp<NUMGPT_SOH8; ++gp)
   {
     //----------------------------------- get inverse of Jacobian mapping
     const double detj = ele->detJ_[gp];
@@ -914,7 +914,7 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(
     } // if (massmatrix)
     //*******************************************************************
 
-  } // for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+  } // for (unsigned gp=0; gp<NUMGPT_SOH8; ++gp)
   //---------------------------------------------------------------------
   //---------------------------------------------------------------------
 
@@ -950,7 +950,7 @@ void DRT::ELEMENTS::InvDesign::soh8_StoreMaterialConfiguration(
   LINALG::Matrix<3,3> invJ;
   LINALG::Matrix<3,NUMNOD_SOH8> N_XYZ;
   LINALG::Matrix<3,3> F;
-  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+  for (unsigned gp=0; gp<NUMGPT_SOH8; ++gp)
   {
     // compute invJ and detJ
     invJ.Multiply(derivs[gp],xrefe);

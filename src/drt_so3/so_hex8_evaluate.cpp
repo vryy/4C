@@ -294,7 +294,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       //----------------------------------------------------------------
       // loop over all Gauss points
       //----------------------------------------------------------------
-      for (int ip=0; ip<NUMGPT_SOH8; ++ip)
+      for (unsigned ip=0; ip<NUMGPT_SOH8; ++ip)
       {
         const double density = Material()->Density(ip);
         const double wgt = gpweights[ip];
@@ -526,7 +526,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
           {
             double& s = (*((*poststress)(i)))[lid]; // resolve pointer for faster access
             s = 0.;
-            for (int j = 0; j < NUMGPT_SOH8; ++j)
+            for (unsigned j = 0; j < NUMGPT_SOH8; ++j)
             {
               s += gpstress(j,i);
             }
@@ -632,7 +632,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
         time_ = 0.0;
         LINALG::Matrix<3,3> Id(true);
         Id(0,0) = Id(1,1) = Id(2,2) = 1.0;
-        for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+        for (unsigned gp=0; gp<NUMGPT_SOH8; ++gp)
         {
           prestress_->MatrixtoStorage(gp,Id,prestress_->FHistory());
           prestress_->MatrixtoStorage(gp,invJ_[gp],prestress_->JHistory());
@@ -706,7 +706,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       }
 
       // loop over all Gauss points
-      for (int gp=0; gp<NUMGPT_SOH8; gp++)
+      for (unsigned gp=0; gp<NUMGPT_SOH8; gp++)
       {
         // Gauss weights and Jacobian determinant
         double fac = detJ_[gp] * weights[gp];
@@ -934,7 +934,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       //----------------------------------------------------------------
       // loop over all Gauss points
       //----------------------------------------------------------------
-      for (int gp=0; gp<NUMGPT_SOH8; gp++)
+      for (unsigned gp=0; gp<NUMGPT_SOH8; gp++)
       {
         // Gauss weights and Jacobian determinant
         double fac = detJ_[gp] * weights[gp];
@@ -1266,7 +1266,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
     LINALG::Matrix<3,3> deltaF;
     LINALG::Matrix<3,3> Fhist;
     LINALG::Matrix<3,3> Fnew;
-    for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+    for (unsigned gp=0; gp<NUMGPT_SOH8; ++gp)
     {
       prestress_->StoragetoMatrix(gp,deltaF,gpdefgrd);
       prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
@@ -1364,7 +1364,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       gpstress->Shape(NUMGPT_SOH8,MAT::NUM_STRESS_3D);
 
       //move stresses to serial dense matrix
-      for(int i=0;i<NUMGPT_SOH8;i++)
+      for(unsigned i=0;i<NUMGPT_SOH8;i++)
       {
         for(int j=0;j<MAT::NUM_STRESS_3D;j++)
         {
@@ -1377,7 +1377,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       gpstrain->Shape(NUMGPT_SOH8,MAT::NUM_STRESS_3D);
 
       //move stresses to serial dense matrix
-      for(int i=0;i<NUMGPT_SOH8;i++)
+      for(unsigned i=0;i<NUMGPT_SOH8;i++)
       {
         for(int j=0;j<MAT::NUM_STRESS_3D;j++)
         {
@@ -1518,7 +1518,7 @@ int DRT::ELEMENTS::So_hex8::EvaluateNeumann(Teuchos::ParameterList&   params,
     xrefe(i,2) = x[2];
   }
   /* ================================================= Loop over Gauss Points */
-  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+  for (unsigned gp=0; gp<NUMGPT_SOH8; ++gp)
   {
 
     // compute the Jacobian matrix
@@ -1581,7 +1581,7 @@ const double* DRT::ELEMENTS::So_hex8::soh8_get_coordinate_of_gausspoints(
       dserror( "Inconsistent number of GPs: "
           "%d != %d", gp_rule_.NumPoints(), NUMGPT_SOH8 );
 
-    for ( unsigned gp=0; gp<NUMGPT_SOH8; ++gp )
+    for ( unsigned gp=0; gp< gp_rule_.NumPoints(); ++gp )
       for ( unsigned d=0; d<NUMDIM_SOH8; ++d )
         coordinates_of_gps(gp,d) = gp_rule_.Point(gp)[d];
     // do it only once
@@ -1608,7 +1608,7 @@ void DRT::ELEMENTS::So_hex8::InitJacobianMapping()
   }
   invJ_.resize(NUMGPT_SOH8);
   detJ_.resize(NUMGPT_SOH8);
-  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+  for (unsigned gp=0; gp<NUMGPT_SOH8; ++gp)
   {
     //invJ_[gp].Shape(NUMDIM_SOH8,NUMDIM_SOH8);
     invJ_[gp].Multiply(derivs[gp],xrefe);
@@ -1658,7 +1658,7 @@ void DRT::ELEMENTS::So_hex8::InitJacobianMapping(std::vector<double>& dispmat)
   detJ_.clear();
   invJ_.resize(NUMGPT_SOH8);
   detJ_.resize(NUMGPT_SOH8);
-  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+  for (unsigned gp=0; gp<NUMGPT_SOH8; ++gp)
   {
     //invJ_[gp].Shape(NUMDIM_SOH8,NUMDIM_SOH8);
     invJ_[gp].Multiply(derivs[gp],xmat);
@@ -1982,7 +1982,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
   // build deformation gradient wrt to material configuration
   // in case of prestressing, build defgrd wrt to last stored configuration
   LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(true);
-  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+  for (unsigned gp=0; gp<NUMGPT_SOH8; ++gp)
   {
 
     /* get the inverse of the Jacobian matrix which looks like:
@@ -2779,7 +2779,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(
   // build deformation gradient wrt to material configuration
   LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(false);
   LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrdo(false);
-  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+  for (unsigned gp=0; gp<NUMGPT_SOH8; ++gp)
   {
     /* get the inverse of the Jacobian matrix which looks like:
     **            [ x_,r  y_,r  z_,r ]^-1
@@ -3121,7 +3121,6 @@ const std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > DRT::ELEMENTS::So_he
 {
   std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs(NUMGPT_SOH8);
 
-  // fill up df w.r.t. rst directions (NUMDIM) at each gp
   for ( unsigned gp=0; gp<NUMGPT_SOH8; ++gp )
   {
     const LINALG::Matrix<NUMDIM_SOH8,1> rst_gp( gp_rule_.Point(gp), true );
@@ -3263,7 +3262,7 @@ void DRT::ELEMENTS::So_hex8::DefGradient(const std::vector<double>& disp,
     xdisp(i,2) = disp[i*NODDOF_SOH8+2];
   }
 
-  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+  for (unsigned gp=0; gp<NUMGPT_SOH8; ++gp)
   {
     // get Jacobian mapping wrt to the stored deformed configuration
     LINALG::Matrix<3,3> invJdef;
@@ -3311,7 +3310,7 @@ void DRT::ELEMENTS::So_hex8::UpdateJacobianMapping(
   LINALG::Matrix<3,3> defgrd(true);
   LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> N_xyz;
   LINALG::Matrix<3,3> invJnew;
-  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+  for (unsigned gp=0; gp<NUMGPT_SOH8; ++gp)
   {
     // get the invJ old state
     prestress.StoragetoMatrix(gp,invJhist,prestress.JHistory());
@@ -3384,8 +3383,8 @@ void DRT::ELEMENTS::So_hex8::Update_element(std::vector<double>& disp,
 
     // build deformation gradient wrt to material configuration
     LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(false);
-    params.set<int>("numgp",NUMGPT_SOH8);
-    for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+    params.set<int>("numgp",static_cast<int>(NUMGPT_SOH8));
+    for (unsigned gp=0; gp<NUMGPT_SOH8; ++gp)
     {
       /* get the inverse of the Jacobian matrix which looks like:
        **            [ x_,r  y_,r  z_,r ]^-1

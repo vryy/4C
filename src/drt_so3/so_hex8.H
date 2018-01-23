@@ -17,7 +17,9 @@
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_mat/material.H"
-#include "../drt_fem_general/drt_utils_gausspoints.H"
+
+#include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_lib/drt_element_integration_select.H"
 
 
 #include "so_base.H"
@@ -29,8 +31,13 @@ const int NUMNOD_SOH8 = 8;      ///< number of nodes
 const int NODDOF_SOH8 = 3;      ///< number of dofs per node
 const int NUMDOF_SOH8 = 24;     ///< total dofs per element
 const int NUMDIM_SOH8 = 3;      ///< number of dimensions
-const int NUMGPT_PER_DIM_SOH8 = 2; ///< number of gauss points per dimension
-const int NUMGPT_SOH8 = std::pow<int>( NUMGPT_PER_DIM_SOH8, NUMDIM_SOH8 );  ///< total gauss points per element
+
+/// Gauss integration rule
+struct GP_RULE_SOH8 {
+  static const enum DRT::UTILS::GaussRule3D rule =
+      DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::hex8>::rule; };
+/// total gauss points per element
+const unsigned NUMGPT_SOH8 = DRT::UTILS::GaussRule3DToNumGaussPoints<GP_RULE_SOH8::rule>::value;
 
 namespace DRT
 {
@@ -730,17 +737,8 @@ private:
    *  \author hiermeier \date 12/17 */
   void soh8_recover_from_eas_backup_state();
 
-  /** \brief convert the number of Gauss points per dimension to corresponding
-   *  maximal exactly integrable polynomial degree
-   *
-   *  \author hiermeier \date 12/17 */
-  static int soh8_convertNumGpPerDimToDegree()
-  {
-    return 2*NUMGPT_PER_DIM_SOH8 - 1;
-  }
-
 private:
-  static const DRT::UTILS::GaussIntegration gp_rule_;
+  static const DRT::UTILS::IntPointsAndWeights<NUMDIM_SOH8> gp_rule_;
 }; // class So_hex8
 
 

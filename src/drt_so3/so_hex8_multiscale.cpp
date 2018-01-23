@@ -34,7 +34,7 @@ void DRT::ELEMENTS::So_hex8::soh8_homog(Teuchos::ParameterList&  params)
     double homogdens = 0.;
     const static std::vector<double> weights = soh8_weights();
 
-    for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+    for (unsigned gp=0; gp<NUMGPT_SOH8; ++gp)
     {
       const double density = Material()->Density(gp);
       homogdens += detJ_[gp] * weights[gp] * density;
@@ -122,7 +122,7 @@ void DRT::ELEMENTS::So_hex8::soh8_read_restart_multi()
     bool eleowner = false;
     if (DRT::Problem::Instance()->GetDis("structure")->Comm().MyPID()==Owner()) eleowner = true;
 
-    for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+    for (unsigned gp=0; gp<NUMGPT_SOH8; ++gp)
       micro->ReadRestart(gp, eleID, eleowner);
   }
 

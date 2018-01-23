@@ -181,7 +181,7 @@ public:
 
     const static std::vector<double> gpweights = soh8_weights();
 
-    for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+    for (unsigned gp=0; gp<NUMGPT_SOH8; ++gp)
     {
       K_pt_ -= detJ_[gp] * gpweights[gp];
     }

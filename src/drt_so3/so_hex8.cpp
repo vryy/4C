@@ -106,8 +106,9 @@ void DRT::ELEMENTS::So_hex8Type::SetupElementDefinition( std::map<std::string,st
 }
 
 // initialization of static gauss point rule for the so_hex8 element
-const DRT::UTILS::GaussIntegration DRT::ELEMENTS::So_hex8::gp_rule_(
-    DRT::UTILS::GaussIntegration( DRT::Element::hex8, soh8_convertNumGpPerDimToDegree() ) );
+const DRT::UTILS::IntPointsAndWeights<NUMDIM_SOH8> DRT::ELEMENTS::So_hex8::gp_rule_(
+    DRT::UTILS::IntPointsAndWeights<NUMDIM_SOH8>( GP_RULE_SOH8::rule ) );
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 04/07|

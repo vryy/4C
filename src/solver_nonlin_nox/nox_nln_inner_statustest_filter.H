@@ -320,7 +320,7 @@ namespace StatusTest {
       SOCBase() = delete;
 
       /// use default destructor
-      virtual ~SOCBase() = default;
+      virtual ~SOCBase() {};
 
       /// The base class does not perform a SOC step
       virtual StatusType execute(
@@ -344,7 +344,7 @@ namespace StatusTest {
       { /* empty */ };
 
       SecondOrderCorrection() = delete;
-      virtual ~SecondOrderCorrection() = default;
+      virtual ~SecondOrderCorrection() {};
 
       virtual StatusType execute(
           const NOX::NLN::LineSearch::Generic& linesearch,

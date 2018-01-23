@@ -192,7 +192,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
       const double* t = soh8_get_coordinate_of_gausspoints( 2 );
 
       // fill up M at each gp
-      for (int i=0; i<NUMGPT_SOH8; ++i) {
+      for (unsigned i=0; i<NUMGPT_SOH8; ++i) {
         M_mild[i].Shape(MAT::NUM_STRESS_3D,neas_);
         M_mild[i](0,0) = r[i];
         M_mild[i](1,1) = s[i];
@@ -225,7 +225,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
       const double* t = soh8_get_coordinate_of_gausspoints( 2 );
 
       // fill up M at each gp
-      for (int i=0; i<NUMGPT_SOH8; ++i) {
+      for (unsigned i=0; i<NUMGPT_SOH8; ++i) {
         M_full[i].Shape(MAT::NUM_STRESS_3D,neas_);
         M_full[i](0,0) = r[i];        M_full[i](0,15) = r[i]*s[i]; M_full[i](0,16) = r[i]*t[i];
         M_full[i](1,1) = s[i];        M_full[i](1,17) = r[i]*s[i]; M_full[i](1,18) = s[i]*t[i];
@@ -258,7 +258,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
         const double* t = soh8_get_coordinate_of_gausspoints( 2 );
 
         // fill up M at each gp
-        for (int i=0; i<NUMGPT_SOH8; ++i) {
+        for (unsigned i=0; i<NUMGPT_SOH8; ++i) {
           M_sosh8[i].Shape(MAT::NUM_STRESS_3D,neas_);
           M_sosh8[i](0,0) = r[i];
           M_sosh8[i](1,1) = s[i];
@@ -287,7 +287,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
         const double* t = soh8_get_coordinate_of_gausspoints( 2 );
 
         // fill up M at each gp
-        for (int i=0; i<NUMGPT_SOH8; ++i) {
+        for (unsigned i=0; i<NUMGPT_SOH8; ++i) {
           M_sosh8[i].Shape(MAT::NUM_STRESS_3D,neas_);
           int e = 0;
           M_sosh8[i](2,e++) = t[i]*t[i]*t[i];

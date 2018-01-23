@@ -16,6 +16,7 @@
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -337,7 +338,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
           {
             double& s = (*((*poststress)(i)))[lid]; // resolve pointer for faster access
             s = 0.;
-            for (int j = 0; j < NUMGPT_SOH8; ++j)
+            for (unsigned j = 0; j < NUMGPT_SOH8; ++j)
             {
               s += gpstress(j,i);
             }
@@ -618,7 +619,7 @@ double DRT::ELEMENTS::So_sh8::sosh8_calc_energy(
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
-  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+  for (unsigned gp=0; gp<NUMGPT_SOH8; ++gp)
   {
     LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> jac;
     double detJ = 0.0;
@@ -857,9 +858,6 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
   sosh8_anssetup(xrefe,xcurr,&deriv_sp,jac_sps,jac_cur_sps,B_ans_loc);
   // (r,s) gp-locations of fully integrated linear 8-node Hex
   // necessary for ANS interpolation
-//  const double gploc    = 1.0/sqrt(3.0);    // gp sampling point value for linear fct
-//  const double r[NUMGPT_SOH8] = {-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc,-gploc};
-//  const double s[NUMGPT_SOH8] = {-gploc,-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc};
   const double* r = soh8_get_coordinate_of_gausspoints( 0 );
   const double* s = soh8_get_coordinate_of_gausspoints( 1 );
   // -------- END ANS-SETUP ---------------------------------------------------
@@ -873,7 +871,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
-  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+  for (unsigned gp=0; gp<NUMGPT_SOH8; ++gp)
   {
     LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> jac;
     double detJ = 0.0;

@@ -281,7 +281,7 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
           {
             double& s = (*((*poststress)(i)))[lid]; // resolve pointer for faster access
             s = 0.;
-            for (int j = 0; j < NUMGPT_SOH8; ++j)
+            for (unsigned j = 0; j < NUMGPT_SOH8; ++j)
             {
               s += gpstress(j,i);
             }
@@ -334,7 +334,7 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
         time_ = 0.0;
         LINALG::Matrix<3,3> Id(true);
         Id(0,0) = Id(1,1) = Id(2,2) = 1.0;
-        for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+        for (unsigned gp=0; gp<NUMGPT_SOH8; ++gp)
         {
           prestress_->MatrixtoStorage(gp,Id,prestress_->FHistory());
           prestress_->MatrixtoStorage(gp,invJ_[gp],prestress_->JHistory());
@@ -382,7 +382,7 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
       LINALG::Matrix<3,3> deltaF;
       LINALG::Matrix<3,3> Fhist;
       LINALG::Matrix<3,3> Fnew;
-      for (int gp=0; gp<NUMGPT_SOH8+1; ++gp)
+      for (unsigned gp=0; gp<NUMGPT_SOH8+1; ++gp)
       {
         prestress_->StoragetoMatrix(gp,deltaF,gpdefgrd);
         prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
@@ -535,7 +535,7 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
 
 
       // loop over all Gauss points
-      for (int gp=0; gp<NUMGPT_SOH8; gp++)
+      for (unsigned gp=0; gp<NUMGPT_SOH8; gp++)
       {
         // Gauss weights and Jacobian determinant
         double fac = detJ_[gp] * weights[gp];
@@ -669,7 +669,7 @@ void DRT::ELEMENTS::So_hex8fbar::InitJacobianMapping()
   }
   invJ_.resize(NUMGPT_SOH8);
   detJ_.resize(NUMGPT_SOH8);
-  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+  for (unsigned gp=0; gp<NUMGPT_SOH8; ++gp)
   {
     //invJ_[gp].Shape(NUMDIM_SOH8,NUMDIM_SOH8);
     invJ_[gp].Multiply(derivs[gp],xrefe);
@@ -763,7 +763,7 @@ int DRT::ELEMENTS::So_hex8fbar::EvaluateNeumann(Teuchos::ParameterList& params,
     xrefe(i,2) = x[2];
   }
   /* ================================================= Loop over Gauss Points */
-  for (int gp=0; gp<NUMGPT_SOH8; ++gp) {
+  for (unsigned gp=0; gp<NUMGPT_SOH8; ++gp) {
 
     // compute the Jacobian matrix
     LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> jac;
@@ -919,7 +919,7 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(
   // build deformation gradient wrt to material configuration
   // in case of prestressing, build defgrd wrt to last stored configuration
   LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(false);
-  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+  for (unsigned gp=0; gp<NUMGPT_SOH8; ++gp)
   {
     /* get the inverse of the Jacobian matrix which looks like:
     **            [ x_,r  y_,r  z_,r ]^-1
@@ -1551,7 +1551,7 @@ void DRT::ELEMENTS::So_hex8fbar::DefGradient(const std::vector<double>& disp,
     xdisp(i,2) = disp[i*NODDOF_SOH8+2];
   }
 
-  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+  for (unsigned gp=0; gp<NUMGPT_SOH8; ++gp)
   {
     // get Jacobian mapping wrt to the stored deformed configuration
     LINALG::Matrix<3,3> invJdef;
@@ -1619,7 +1619,7 @@ void DRT::ELEMENTS::So_hex8fbar::UpdateJacobianMapping(
   LINALG::Matrix<3,3> defgrd;
   LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> N_xyz;
   LINALG::Matrix<3,3> invJnew;
-  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+  for (unsigned gp=0; gp<NUMGPT_SOH8; ++gp)
   {
     // get the invJ old state
     prestress.StoragetoMatrix(gp,invJhist,prestress.JHistory());
@@ -1636,7 +1636,7 @@ void DRT::ELEMENTS::So_hex8fbar::UpdateJacobianMapping(
     invJnew.MultiplyTN(defgrd,invJhist);
     // store new reference configuration
     prestress.MatrixtoStorage(gp,invJnew,prestress.JHistory());
-  } // for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+  } // for (unsigned gp=0; gp<NUMGPT_SOH8; ++gp)
 
   {
     // get the invJ old state
@@ -1768,7 +1768,7 @@ void DRT::ELEMENTS::So_hex8fbar::Update_element(std::vector<double>& disp,
     LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> N_XYZ;
     // build deformation gradient wrt to material configuration
     LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(false);
-    for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+    for (unsigned gp=0; gp<NUMGPT_SOH8; ++gp)
     {
       /* get the inverse of the Jacobian matrix which looks like:
        **            [ x_,r  y_,r  z_,r ]^-1
