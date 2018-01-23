@@ -27,6 +27,8 @@
 #include "../drt_lib/drt_matchingoctree.H"
 #include "../drt_lib/drt_condition.H"
 
+#include <Epetra_IntVector.h>
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::RedistributeWithNewNodalDistribution(
@@ -860,3 +862,60 @@ void DRT::UTILS::MatchNodalRowColDistribution(
   col_id_vec_to_fill.assign(tempcolset.begin(), tempcolset.end());
 return;
 } // DRT::UTILS::MatchNodalRowColDistribution
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Map> DRT::UTILS::RedistributeInAccordanceWithReference(
+    const Epetra_Map& ref_red_map,
+    const Epetra_Map& unred_map )
+{
+  Teuchos::RCP<Epetra_Map> red_map = Teuchos::null;
+  RedistributeInAccordanceWithReference( ref_red_map, unred_map, red_map );
+  return red_map;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void DRT::UTILS::RedistributeInAccordanceWithReference(
+    const Epetra_Map& ref_red_map,
+    const Epetra_Map& unred_map,
+    Teuchos::RCP<Epetra_Map>& red_map )
+{
+  const Epetra_Comm& comm = unred_map.Comm();
+
+  Epetra_IntVector source( unred_map );
+  {
+    const int num_myentries = unred_map.NumMyElements();
+    const int* mygids = unred_map.MyGlobalElements();
+    int* vals = source.Values();
+    std::copy( mygids, mygids+num_myentries, vals );
+  }
+
+  Epetra_Import importer( ref_red_map, unred_map );
+
+  Epetra_IntVector target( ref_red_map );
+  target.PutValue( -1 );
+
+  const int err = target.Import( source, importer, Insert );
+  if (err)
+    dserror("Import failed with error %d!",err);
+
+  std::vector<int> my_red_gids;
+  {
+    const int num_myentries = ref_red_map.NumMyElements();
+    const int* my_received_gids = target.Values();
+    my_red_gids.reserve( num_myentries );
+
+    for ( int i=0; i<num_myentries; ++i )
+    {
+      if ( my_received_gids[i] != -1 )
+        my_red_gids.push_back( my_received_gids[i] );
+    }
+  }
+
+  // create new map
+  red_map = Teuchos::rcp( new Epetra_Map( -1, my_red_gids.size(),
+      my_red_gids.data(), 0, comm ) );
+
+  //  red_map->Print( std::cout );
+}

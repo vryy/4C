@@ -247,6 +247,11 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
                   var_complete,
                   var_incomplete ), &augcontact);
 
+  setStringToIntegralParameter<int>("ADD_INACTIVE_FORCE_CONTRIBUTIONS","No",
+      "Add the contribution from the inactive Lagrange multipliers to the"
+      "force balance.",
+      yesnotuple,yesnovalue,&augcontact);
+
   setStringToIntegralParameter<int>("ASSEMBLE_STRATEGY","node_based",
       "Type of employed assemble strategy",
         tuple<std::string>("node_based"),
@@ -254,12 +259,35 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
                 assemble_node_based),
         &augcontact);
 
+  setStringToIntegralParameter<FDCheck>("FD_CHECK","off","Plot mode.",
+      tuple<std::string>("off",
+                         "global",
+                         "gauss_point" ),
+      tuple<FDCheck>(
+          FDCheck::off,
+          FDCheck::global,
+          FDCheck::gauss_point),
+     &augcontact);
+
   // --------------------------------------------------------------------------
   // sub-sub-list "Augmented/SteepestAscent"
   Teuchos::ParameterList& sacontact=augcontact.sublist("STEEPESTASCENT");
 
   DoubleParameter("CN_UPPER_BOUND", std::numeric_limits<double>::max(),
       "Upper bound for the cn value. Used during the dynamic cn update.",&sacontact);
+
+  setStringToIntegralParameter<PenaltyUpdate>("PENALTY_UPDATE","Vague","Which kind of "
+      "penalty update should be used?",
+        tuple<std::string>("Vague",
+                           "LMGapRatio",
+                           "Complementarity",
+                           "None" ),
+        tuple<PenaltyUpdate>(
+            PenaltyUpdate::vague,
+            PenaltyUpdate::lm_gap_ratio,
+            PenaltyUpdate::complementarity,
+            PenaltyUpdate::none ),
+        &sacontact);
 
   // --------------------------------------------------------------------------
   // sub-sub-list "Augmented/Combo"
@@ -303,6 +331,169 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
 
   IntParameter( "LINEAR_SOLVER", -1, "Linear Solver number for the "
       "least squares problem.", &lm_funct );
+
+  // --------------------------------------------------------------------------
+  // sub-sub-list "Augmented/Plot"
+  Teuchos::ParameterList& plot_contact = augcontact.sublist("PLOT");
+
+  IntParameter("RESOLUTION_X",10,"Plot resolution in x/displacement direction",&plot_contact);
+  IntParameter("RESOLUTION_Y",10,"Plot resolution in y/Lagrange multiplier direction",&plot_contact);
+
+  IntParameter("STEP",-1,"Plot this step.",&plot_contact);
+  IntParameter("ITER",-1,"Plot this iteration of the specified step.", &plot_contact );
+
+  setStringToIntegralParameter<PlotSupportType>("X_TYPE","vague","Support type "
+      "for the x-direction.",
+          tuple<std::string>("vague",
+                             "step_length",
+                             "characteristic_element_length",
+                             "position_angle" ),
+          tuple<PlotSupportType>(
+              PlotSupportType::vague,
+              PlotSupportType::step_length,
+              PlotSupportType::characteristic_element_length,
+              PlotSupportType::position_angle ),
+          &plot_contact);
+
+  DoubleParameter("MIN_X",1.0,"",&plot_contact);
+  DoubleParameter("MAX_X",1.0,"",&plot_contact);
+
+  setNumericStringParameter("FIRST_REF_POINT","0.0 0.0 0.0",
+      "coordinates of the first reference point",
+      &plot_contact);
+
+  setNumericStringParameter("SECOND_REF_POINT","0.0 0.0 0.0",
+      "coordinates of the second reference point",
+      &plot_contact);
+
+  setStringToIntegralParameter<PlotSupportType>("Y_TYPE","vague","Support type"
+      " for the y-direction. Only relevant for multi-dimensional plots.",
+            tuple<std::string>("vague",
+                               "step_length",
+                               "characteristic_element_length",
+                               "position_angle" ),
+            tuple<PlotSupportType>(
+                PlotSupportType::vague,
+                PlotSupportType::step_length,
+                PlotSupportType::characteristic_element_length,
+                PlotSupportType::position_angle ),
+            &plot_contact);
+
+  DoubleParameter("MIN_Y",1.0,"",&plot_contact);
+  DoubleParameter("MAX_Y",1.0,"",&plot_contact);
+
+  setStringToIntegralParameter<PlotFuncName>("FUNC_NAME","vague","Plot type.",
+        tuple<std::string>("vague",
+                           "Lagrangian",
+                           "Infeasibility",
+                           "Energy",
+                           "Energy_Gradient",
+                           "Weighted_Gap",
+                           "Weighted_Gap_Gradient",
+                           "Weighted_Gap_Modified_Gradient",
+                           "Weighted_Gap_Gradient_Error",
+                           "Weighted_Gap_Gradient_Nodal_Jacobian_Error",
+                           "Weighted_Gap_Gradient_Nodal_Ma_Proj_Error"),
+        tuple<PlotFuncName>(
+            PlotFuncName::vague,
+            PlotFuncName::lagrangian,
+            PlotFuncName::infeasibility,
+            PlotFuncName::energy,
+            PlotFuncName::energy_gradient,
+            PlotFuncName::weighted_gap,
+            PlotFuncName::weighted_gap_gradient,
+            PlotFuncName::weighted_gap_mod_gradient,
+            PlotFuncName::weighted_gap_gradient_error,
+            PlotFuncName::weighted_gap_gradient_nodal_jacobian_error,
+            PlotFuncName::weighted_gap_gradient_nodal_ma_proj_error ),
+        &plot_contact);
+
+  setStringToIntegralParameter<PlotFileFormat>("FILE_FORMAT","matlab",
+      "Format of the written text file.",
+      tuple<std::string>("matlab",
+                         "pgfplot" ),
+      tuple<PlotFileFormat>(
+          PlotFileFormat::matlab,
+          PlotFileFormat::pgfplot ),
+      &plot_contact);
+
+  setStringToIntegralParameter<std::ios_base::openmode>("FILE_OPEN_MODE","truncate",
+      "File opening mode.",
+      tuple<std::string>("truncate",
+                         "append"),
+      tuple<std::ios_base::openmode>(
+          std::ios_base::out|std::ios_base::trunc,
+          std::ios_base::out|std::ios_base::app),
+      &plot_contact);
+
+  IntParameter( "WGAP_NODE_GID", -1, "Weighted gap of the slave node with "
+      "this global ID will be considered, if FUNC_NAME == \"Weighted_GAP\".",
+      &plot_contact );
+
+  setStringToIntegralParameter<PlotMode>("MODE","off","Plot mode.",
+      tuple<std::string>("off",
+                         "write_single_iteration_of_step",
+                         "write_each_iteration_of_step",
+                         "write_last_iteration_of_step" ),
+      tuple<PlotMode>(
+          PlotMode::off,
+          PlotMode::write_single_iteration_of_step,
+          PlotMode::write_each_iteration_of_step,
+          PlotMode::write_last_iteration_of_step ),
+      &plot_contact);
+
+  setStringToIntegralParameter<PlotType>("TYPE","line","Plot type.",
+        tuple<std::string>("vague",
+                           "scalar",
+                           "line",
+                           "surface",
+                           "vector_field_2d" ),
+        tuple<PlotType>(
+            PlotType::vague,
+            PlotType::scalar,
+            PlotType::line,
+            PlotType::surface,
+            PlotType::vector_field_2d ),
+        &plot_contact);
+
+  setStringToIntegralParameter<PlotDirection>("DIRECTION","vague",
+      "Choose the direction for the plot.",
+        tuple<std::string>("vague",
+                           "current",
+                           "read_from_file",
+                           "zero"),
+        tuple<PlotDirection>(
+            PlotDirection::vague,
+            PlotDirection::current_search_direction,
+            PlotDirection::read_from_file,
+            PlotDirection::zero),
+        &plot_contact);
+
+  DRT::INPUT::StringParameter("DIRECTION_FILE", "none", "Filename of the "
+      "text file containing the plot direction.", &plot_contact);
+
+  setStringToIntegralParameter<PlotDirectionSplit>("DIRECTION_SPLIT","vague",
+      "Choose how to split the search direction for a multi-dimensional plot,"
+      " e.g. a surface plot.",
+        tuple<std::string>("vague",
+                           "displ_lm",
+                           "slave_master_displ"),
+        tuple<PlotDirectionSplit>(
+            PlotDirectionSplit::vague,
+            PlotDirectionSplit::displacement_lagrange_multiplier,
+            PlotDirectionSplit::slave_master_displacements),
+        &plot_contact);
+
+  setStringToIntegralParameter<PlotReferenceType>("REFERENCE_TYPE","vague",
+        "Reference state for the plot.",
+          tuple<std::string>("vague",
+                             "current_solution",
+                             "previous_solution"),
+          tuple<PlotReferenceType>(
+              PlotReferenceType::vague,
+              PlotReferenceType::current_solution,
+              PlotReferenceType::previous_solution),
+          &plot_contact);
 
   // --------------------------------------------------------------------------
   // sub-list "eXtended contact formulation"

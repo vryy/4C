@@ -50,11 +50,12 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::ConditionComponent::PushBack(std::st
 /*----------------------------------------------------------------------*
  | StringConditionComponent::Constructor()                              |
  *----------------------------------------------------------------------*/
-DRT::INPUT::StringConditionComponent::StringConditionComponent(std::string name,
-                                                               std::string defaultvalue,
-                                                               const Teuchos::Array<std::string>& datfilevalues,
-                                                               const Teuchos::Array<std::string>& stringcondvalues,
-                                                               bool optional)
+DRT::INPUT::StringConditionComponent::StringConditionComponent(
+    std::string name,
+    std::string defaultvalue,
+    const Teuchos::Array<std::string>& datfilevalues,
+    const Teuchos::Array<std::string>& stringcondvalues,
+    bool optional)
   : ConditionComponent(name),
     defaultvalue_(defaultvalue),
     datfilevalues_(datfilevalues),
@@ -76,11 +77,12 @@ DRT::INPUT::StringConditionComponent::StringConditionComponent(std::string name,
 /*----------------------------------------------------------------------*
 | StringConditionComponent::Constructor()                     ehrl 09/12|
 *----------------------------------------------------------------------*/
-DRT::INPUT::StringConditionComponent::StringConditionComponent(std::string name,
-                                                              std::string defaultvalue,
-                                                              const Teuchos::Array<std::string>& datfilevalues,
-                                                              const Teuchos::Array<int>& intcondvalues,
-                                                              bool optional)
+DRT::INPUT::StringConditionComponent::StringConditionComponent(
+    std::string name,
+    std::string defaultvalue,
+    const Teuchos::Array<std::string>& datfilevalues,
+    const Teuchos::Array<int>& intcondvalues,
+    bool optional)
  : ConditionComponent(name),
    defaultvalue_(defaultvalue),
    datfilevalues_(datfilevalues),
@@ -177,12 +179,15 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::SeparatorConditionComponent::Read(DR
 {
   std::string sep;
   (*condline) >> sep;
+
   if (sep!=separator_)
   {
     if (sep=="" && optional_)
     {
       // not given, fall back to default line
       condline = PushBack(separator_,condline);
+      // recursive call -- fix from 01/18 by hiermeier
+      Read( def, condline, condition );
     }
     else
     {

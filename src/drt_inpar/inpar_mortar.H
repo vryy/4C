@@ -131,6 +131,12 @@ namespace INPAR
       consistent_all,                   ///< use triangulation GPs for all elements
     };
 
+    enum class DBCHandling : int
+    {
+      do_nothing,
+      remove_dbc_nodes_from_slave_side
+    };
+
     /// set the mortar parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 

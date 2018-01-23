@@ -47,28 +47,20 @@ namespace UTILS {
     {
       case block_displ_displ:
         return "block_displ_displ";
-        break;
       case block_displ_lm:
         return "block_displ_lm";
-        break;
       case block_lm_displ:
         return "block_lm_displ";
-        break;
       case block_lm_lm:
         return "block_lm_lm";
-        break;
       case block_temp_temp:
         return "block_temp_temp";
-        break;
       case block_temp_displ:
         return "block_temp_displ";
-        break;
       case block_displ_temp:
         return "block_displ_temp";
-        break;
       default:
         return "unknown matrix block type";
-        break;
     }
     return "";
   }

@@ -83,7 +83,7 @@ namespace INPAR
         case solution_nitsche:
           return "solution_nitsche";
         default:
-          return "UNSUPPORTED SolvingStrategy";
+          return "INVALID SolvingStrategy";
       }
 
     }
@@ -187,7 +187,7 @@ namespace INPAR
         case assemble_node_based:
           return "assemble_node_based";
         default:
-          return "UNSUPPORTED assemble strategy";
+          return "INVALID assemble strategy";
       }
     }
 
@@ -211,7 +211,177 @@ namespace INPAR
         case var_incomplete:
           return "var_incomplete";
         default:
-          return "UNSUPPORTED variational approach";
+          return "INVALID variational approach";
+      }
+    }
+
+    enum class FDCheck : char
+    {
+      off,
+      global,
+      gauss_point
+    };
+
+    /// Penalty update types
+    enum class PenaltyUpdate : char
+    {
+      vague,                    ///< no update strategy defined (default)
+      lm_gap_ratio,             ///< use the ratio between Lagrange multiplier and weighted gap
+      complementarity,          ///< enforce the complementarity condition
+      sufficient_lin_reduction, ///< enforce sufficient reduction of the linear infeasibility model
+      none                      ///< perform no penalty parameter update
+    };
+
+    /// Penalty update type to string
+    inline std::string PenaltyUpdate2String( const enum PenaltyUpdate putype )
+    {
+      switch ( putype )
+      {
+        case PenaltyUpdate::vague:
+          return "PenaltyUpdate::vague";
+        case PenaltyUpdate::lm_gap_ratio:
+          return "PenaltyUpdate::lm_gap_ratio";
+        case PenaltyUpdate::complementarity:
+          return "PenaltyUpdate::complementarity";
+        case PenaltyUpdate::sufficient_lin_reduction:
+          return "PenaltyUpdate::sufficient_lin_reduction";
+        case PenaltyUpdate::none:
+          return "PenaltyUpdate::none";
+        default:
+          return "INVALID penalty update type";
+      }
+    }
+
+    enum class PlotMode : int
+    {
+      off,
+      write_single_iteration_of_step,
+      write_each_iteration_of_step,
+      write_last_iteration_of_step
+    };
+
+    enum class PlotType : int
+    {
+      vague = -2,
+      scalar = -1,
+      line  = 0,
+      surface = 1,
+      vector_field_2d = 2
+    };
+
+    inline std::string PlotType2String( const enum PlotType ptype )
+    {
+      switch ( ptype )
+      {
+        case PlotType::vague:
+          return "vague";
+        case PlotType::scalar:
+          return "scalar";
+        case PlotType::line:
+          return "line";
+        case PlotType::surface:
+          return "surface";
+        case PlotType::vector_field_2d:
+          return "vectorfield2d";
+        default:
+          return "invalid";
+      }
+    }
+
+    enum class PlotFuncName : char
+    {
+      vague,
+      lagrangian,
+      infeasibility,
+      energy,
+      energy_gradient,
+      weighted_gap,
+      weighted_gap_gradient,
+      weighted_gap_mod_gradient,
+      weighted_gap_gradient_error,
+      weighted_gap_gradient_nodal_jacobian_error,
+      weighted_gap_gradient_nodal_ma_proj_error
+    };
+
+    inline std::string PlotFuncName2String( const enum PlotFuncName pfunc )
+    {
+      switch ( pfunc )
+      {
+        case PlotFuncName::vague:
+          return "func_vague";
+        case PlotFuncName::lagrangian:
+          return "func_lagrangian";
+        case PlotFuncName::infeasibility:
+          return "func_infeasibility";
+        case PlotFuncName::energy:
+          return "func_energy";
+        case PlotFuncName::energy_gradient:
+          return "func_energy_gradient";
+        case PlotFuncName::weighted_gap:
+          return "func_wgap";
+        case PlotFuncName::weighted_gap_gradient:
+          return "func_wgap_grad";
+        case PlotFuncName::weighted_gap_mod_gradient:
+          return "func_wgap_mod_grad";
+        case PlotFuncName::weighted_gap_gradient_error:
+          return "weighted_gap_gradient_error";
+        case PlotFuncName::weighted_gap_gradient_nodal_jacobian_error:
+          return "weighted_gap_gradient_nodal_jacobian_error";
+        case PlotFuncName::weighted_gap_gradient_nodal_ma_proj_error:
+          return "weighted_gap_gradient_nodal_ma_proj_error";
+        default:
+          return "INVALID plot func name";
+      }
+    }
+
+    enum class PlotReferenceType : char
+    {
+      vague,
+      current_solution,
+      previous_solution
+    };
+
+    enum class PlotSupportType : char
+    {
+      vague,
+      step_length,
+      characteristic_element_length,
+      position_angle
+    };
+
+    enum class PlotDirection : char
+    {
+      vague,
+      current_search_direction,
+      read_from_file,
+      zero
+    };
+
+    /// direction split for the surface PlotType
+    enum class PlotDirectionSplit : char
+    {
+      vague,                              ///< undefined split
+      displacement_lagrange_multiplier,   ///< split into LM and displ. values
+      slave_master_displacements          ///< split into slave/master displ.
+    };
+
+    enum class PlotFileFormat : char
+    {
+      vague,
+      matlab,
+      pgfplot
+    };
+
+    inline std::string PlotFileFormat2String( const enum PlotFileFormat pformat )
+    {
+      switch ( pformat )
+      {
+        case PlotFileFormat::matlab:
+          return "mtl";
+        case PlotFileFormat::pgfplot:
+          return "pgf";
+        default:
+          return "invalid";
       }
     }
 

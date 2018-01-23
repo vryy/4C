@@ -17,6 +17,7 @@
 #include "drt_validparameters.H"
 #include "inpar_solver_nonlin.H"
 
+#include "../solver_nonlin_nox/nox_nln_enum_lists.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -310,7 +311,8 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   SetPrintEqualSign(statusTest,true);
 
   {
-    StringParameter("XML File", "none", "Filename of XML file with configuration of nox status test", &statusTest);
+    StringParameter("XML File", "none", "Filename of XML file with configuration"
+        " of nox status test", &statusTest);
   }
 
   // sub-list "Solver Options"
@@ -320,10 +322,14 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   {
     Teuchos::Array<std::string> meritFct = Teuchos::tuple<std::string>(
         "Sum of Squares",
-        "Lagrangian");
+        "Lagrangian",
+        "Lagrangian Active");
     Teuchos::setStringToIntegralParameter<int>(
         "Merit Function","Sum of Squares","",
-        meritFct,Teuchos::tuple<int>( 0, 1),
+        meritFct,Teuchos::tuple<int>(
+            NOX::NLN::MeritFunction::mrtfct_sum_of_squares,
+            NOX::NLN::MeritFunction::mrtfct_lagrangian,
+            NOX::NLN::MeritFunction::mrtfct_lagrangian_active ),
         &solverOptions);
 
     Teuchos::Array<std::string> scTestType = Teuchos::tuple<std::string>(

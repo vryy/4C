@@ -208,6 +208,16 @@ void INPAR::MORTAR::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Cond
         Teuchos::tuple<std::string>("Solidcontact","Beamtosolidcontact","Beamtosolidmeshtying"),
         Teuchos::tuple<std::string>("Solidcontact","Beamtosolidcontact","Beamtosolidmeshtying"),true)));
 
+  // optional DBC handling
+  contactcomponents.push_back(
+      Teuchos::rcp( new StringConditionComponent(
+          "dbc_handling","DoNothing",
+          Teuchos::tuple<std::string>("DoNothing","RemoveDBCSlaveNodes"),
+          Teuchos::tuple<int>(
+              static_cast<int>(DBCHandling::do_nothing),
+              static_cast<int>(DBCHandling::remove_dbc_nodes_from_slave_side) ),
+          true ) ) );
+
   Teuchos::RCP<ConditionDefinition> linecontact =
     Teuchos::rcp(new ConditionDefinition("DESIGN LINE MORTAR CONTACT CONDITIONS 2D",
                                          "Contact",

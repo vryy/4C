@@ -283,7 +283,9 @@ public:
     ScatraRelError,
     CellFocalAdhesion,
     ScatraHeteroReactionCondMaster,
-    ScatraHeteroReactionCondSlave
+    ScatraHeteroReactionCondSlave,
+    ElementTag,
+    NodeTag
   };
 
   /*!

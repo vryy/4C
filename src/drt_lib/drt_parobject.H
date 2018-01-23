@@ -580,6 +580,8 @@ public:
     return f;
   }
 
+
+
   /*!
    \brief Extract stuff from a char vector data and increment position
 

@@ -260,6 +260,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--CONTACT DYNAMIC/AUGMENTED/COMBO", *list);
   reader.ReadGidSection("--CONTACT DYNAMIC/AUGMENTED/STEEPESTASCENT", *list);
   reader.ReadGidSection("--CONTACT DYNAMIC/AUGMENTED/LAGRANGE_MULTIPLIER_FUNCTION", *list);
+  reader.ReadGidSection("--CONTACT DYNAMIC/AUGMENTED/PLOT", *list);
   reader.ReadGidSection("--CONTACT DYNAMIC/XCONTACT", *list);
   reader.ReadGidSection("--XCONTACT DYNAMIC", *list);
   reader.ReadGidSection("--CARDIOVASCULAR 0D-STRUCTURE COUPLING", *list);

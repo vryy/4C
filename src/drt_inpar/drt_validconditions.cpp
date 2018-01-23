@@ -395,6 +395,17 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
             dirichletrealsepveccomponents,
             dirichletrealveccomponents)));
 
+  // optional
+  dirichletbundcomponents.push_back(
+      Teuchos::rcp(new SeparatorConditionComponent("TAG",true)));
+  dirichletbundcomponents.push_back(
+    Teuchos::rcp(
+      new StringConditionComponent(
+        "tag","none",
+        Teuchos::tuple<std::string>("none","monitor_reaction"),
+        Teuchos::tuple<std::string>("none","monitor_reaction"),
+        true) ) );
+
   Teuchos::RCP<ConditionDefinition> pointdirichlet =
     Teuchos::rcp(new ConditionDefinition("DESIGN POINT DIRICH CONDITIONS",
                                          "Dirichlet",

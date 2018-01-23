@@ -1,3 +1,12 @@
+/*----------------------------------------------------------------------------*/
+/** \file inpar_parameterlist_utils.H
+ *  \brief Utility routines for the Teuchos::ParameterList
+ *
+ *  \level 1
+ *  \maintainer Martin Kronbichler
+ */
+/*----------------------------------------------------------------------------*/
+
 #ifndef INPAR_PARAMETERLIST_UTILS_H
 #define INPAR_PARAMETERLIST_UTILS_H
 
@@ -8,7 +17,6 @@ namespace DRT
 {
   namespace INPUT
   {
-    
     /// cast internal integer to enum type
     template <class T>
     T IntegralValue( const Teuchos::ParameterList & params, const std::string & name )

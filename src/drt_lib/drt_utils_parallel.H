@@ -157,6 +157,33 @@ namespace UTILS
       std::vector<int>& row_id_vec_to_fill,
       std::vector<int>& col_id_vec_to_fill);
 
+  /// \brief redistribute a map in accordance with a already redistributed reference map
+  /** \note This function is supposed to work for row as well as for column maps.
+   *
+   *  \param(in) ref_red_map : already redistributed reference map. This map
+   *                           can be larger than the non-redistributed map but has to
+   *                           contain the non-redistributed map as a subset.
+   *  \param(in) unred_map   : original non-redistributed map
+   *  \param(in) red_map     : redistributed map, following the same parallel
+   *                           distribution as the reference map
+   *
+   *  \author hiermeier \date 01/18 */
+  void RedistributeInAccordanceWithReference(
+      const Epetra_Map& ref_red_map,
+      const Epetra_Map& unred_map,
+      Teuchos::RCP<Epetra_Map>& red_map );
+
+  /// \brief redistribute a map in accordance with a already redistributed reference map
+  /** This is a short function wrapper which first generates a new Epetra_Map
+   *  RCP before the magic is happening. See the called function for more info.
+   *
+   *  \return the redistributed version of the non-redistributed map in accordance
+   *  with the already redistributed reference map.
+   *
+   *  \author hiermeier \date 01/18 */
+  Teuchos::RCP<Epetra_Map> RedistributeInAccordanceWithReference(
+      const Epetra_Map& ref_red_map,
+      const Epetra_Map& unred_map );
 
 } // namespace UTILS
 } // namespace DRT
