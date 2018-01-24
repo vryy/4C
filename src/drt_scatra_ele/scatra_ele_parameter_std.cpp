@@ -80,6 +80,7 @@ DRT::ELEMENTS::ScaTraEleParameterStd::ScaTraEleParameterStd(
     const std::string& disname   //!< name of discretization
     ) :
     is_ale_(false),
+    is_lagrange_(false),
     is_conservative_(false),
     sphericalcoords_(false),
     calcflux_domain_(INPAR::SCATRA::flux_none),
@@ -118,6 +119,9 @@ void DRT::ELEMENTS::ScaTraEleParameterStd::SetParameters(
 {
   // set ale case
   is_ale_ = parameters.get<bool>("isale",false);
+
+  // set total Lagrange case
+  is_lagrange_ = parameters.get<bool>("islagrange",false);
 
   // set flag for conservative form
   const INPAR::SCATRA::ConvForm convform =

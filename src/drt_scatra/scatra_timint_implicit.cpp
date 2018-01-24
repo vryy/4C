@@ -119,6 +119,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   strategy_(Teuchos::null),
   additional_model_evaluator_(NULL),
   isale_(extraparams->get<bool>("isale")),
+  islagrange_(DRT::INPUT::IntegralValue<bool>(*params,"TOTAL_LAGRANGE")),
   solvtype_(DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params,"SOLVERTYPE")),
   incremental_(true),
   fssgd_(DRT::INPUT::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params,"FSSUGRDIFF")),
@@ -163,6 +164,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   phinp_(Teuchos::null),
   phinp_inc_(Teuchos::null),
   phinp_inc_old_(Teuchos::null),
+  phinp_lagrange_(Teuchos::null),
   omega_(0,0.),
   phidtn_(Teuchos::null),
   phidtnp_(Teuchos::null),
@@ -371,6 +373,8 @@ void SCATRA::ScaTraTimIntImpl::Setup()
         omega_.resize(NumDofPerNode(),1.);
     }
   }
+  if(islagrange_)
+    phinp_lagrange_ = LINALG::CreateVector(*dofrowmap,true);
 
   // temporal solution derivative at time n+1
   phidtnp_ = LINALG::CreateVector(*dofrowmap,true);
@@ -873,6 +877,8 @@ void SCATRA::ScaTraTimIntImpl::SetElementGeneralParameters(bool calcinitialtimed
 
   eleparams.set<bool>("isale",isale_);
 
+  eleparams.set<bool>("islagrange",islagrange_);
+
   // set flag for writing the flux vector fields
   eleparams.set<int>("calcflux_domain",calcflux_domain_);
 
@@ -1002,6 +1008,10 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   if (step_ == 0)
     PrepareFirstTimeStep();
 
+  else if(islagrange_)
+    // undo L2 projection of state variables
+    phinp_->Update(1.,*phinp_lagrange_,0.);
+
   // -------------------------------------------------------------------
   //              set time dependent parameters
   // -------------------------------------------------------------------
@@ -1071,6 +1081,49 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
 
   return;
 } // ScaTraTimIntImpl::PrepareTimeStep
+
+
+/*------------------------------------------------------------------------------*
+ | prepare output                                                    fang 01/18 |
+ *------------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::PrepareOutput()
+{
+  // step number and time (only after that data output is possible)
+  output_->NewStep(step_,time_);
+
+  // L2 projection of state variables from material to spatial configuration
+  if(islagrange_)
+  {
+    // zero out global system matrix
+    sysmat_->Zero();
+
+    // create and fill parameter list for elements
+    Teuchos::ParameterList eleparams;
+    eleparams.set<int>("action",SCATRA::project_field);
+    eleparams.set<int>("ndsvel",nds_vel_);
+    eleparams.set<int>("ndsdisp",nds_disp_);
+    AddProblemSpecificParametersAndVectors(eleparams);
+
+    // add state vectors according to time integration scheme
+    discret_->ClearState();
+    AddTimeIntegrationSpecificVectors();
+
+    // build global system of equations for L2 projection
+    discret_->Evaluate(eleparams,sysmat_,residual_);
+    discret_->ClearState();
+
+    // finalize assembly of global mass matrix
+    sysmat_->Complete();
+
+    // backup current state vector in totally Lagrangian description
+    phinp_lagrange_->Update(1.,*phinp_,0.);
+
+    // solve global system of equations for new state vector in totally spatial description
+    solver_->Solve(sysmat_->EpetraOperator(),phinp_,residual_,true);
+  }
+
+  return;
+}
 
 
 /*------------------------------------------------------------------------------*
@@ -1583,8 +1636,8 @@ void SCATRA::ScaTraTimIntImpl::Output(const int num)
   // solution output and potentially restart data and/or flux data
   if (DoOutput())
   {
-    // step number and time (only after that data output is possible)
-    output_->NewStep(step_,time_);
+    // prepare output
+    PrepareOutput();
 
     // write domain decomposition for visualization (only once at the first time step!)
     if (step_==0) output_->WriteElementData(true);

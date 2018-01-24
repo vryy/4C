@@ -403,6 +403,16 @@ namespace ELEMENTS
       Epetra_SerialDenseVector&             erhs      //!< element rhs to calculate
     );
 
+    //! project state variables from material to spatial configuration
+    void ProjectStateFromMaterialToSpatial(
+        DRT::Element*                  ele,              //!< current element
+        Epetra_SerialDenseMatrix&      emat,             //!< element matrix
+        Epetra_SerialDenseVector&      erhs,             //!< element residual
+        Teuchos::ParameterList&        params,           //!< parameter list
+        DRT::Discretization&           discretization,   //!< discretization
+        DRT::Element::LocationArray&   la                //!< location array
+        );
+
 
     /*========================================================================*/
     //! @name material and related functions

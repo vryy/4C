@@ -896,6 +896,9 @@ protected:
       const std::string&                 fluxtype   //!< flux type ("domain" or "boundary")
   );
 
+  //! prepare output
+  void PrepareOutput();
+
   /*========================================================================*/
   //! @name Time, time-step and related methods
   /*========================================================================*/
@@ -1020,6 +1023,9 @@ protected:
 
   //! flag for Eulerian or ALE formulation of equation(s)
   bool isale_;
+
+  //! flag for totally Lagrangian formulation of equation(s)
+  const bool islagrange_;
 
   //! solvertype and flags for nonlinear (always incremental) and (linear) incremental solver
   INPAR::SCATRA::SolverType solvtype_;
@@ -1156,6 +1162,8 @@ protected:
   Teuchos::RCP<Epetra_Vector> phinp_inc_;
   //! increment of phi at time n+1 from previous outer iteration step for partitioned simulations
   Teuchos::RCP<Epetra_Vector> phinp_inc_old_;
+  //! phi at time n+1 in totally Lagrangian description
+  Teuchos::RCP<Epetra_Vector> phinp_lagrange_;
   //! relaxation parameters
   std::vector<double> omega_;
 
