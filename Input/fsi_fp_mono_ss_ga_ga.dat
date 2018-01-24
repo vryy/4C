@@ -55,7 +55,7 @@ TOL_DIS_RES_INF                 1e-09
 TOL_DIS_RES_L2                  1e-09
 TOL_FSI_INC_INF                 1e-09
 TOL_FSI_INC_L2                  1e-09
-TOL_FSI_RES_INF                 5e-07
+TOL_FSI_RES_INF                 6e-07
 TOL_FSI_RES_L2                  5e-07
 TOL_PRE_INC_INF                 1e-09
 TOL_PRE_INC_L2                  1e-09

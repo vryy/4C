@@ -92,7 +92,7 @@ VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 0.18 0.9001 DESCRIPTION
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 0.18 0.9001 DESCRIPTION 0.1+0.5*(0.1-0.1)*(1.0-cos(pi*(t)/0.18)) (0.1-0.1)*exp(-(t-0.18)/0.18)+0.1
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 226 QUANTITY dispz VALUE 8.00900223107175080e+00 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 226 QUANTITY dispz VALUE 8.00901026463622223e+00 TOLERANCE 1e-6
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0

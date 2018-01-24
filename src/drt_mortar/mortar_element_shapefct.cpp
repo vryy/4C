@@ -4556,8 +4556,8 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
           dynamic_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
     LINALG::SerialDenseVector auxval(NumNode());
-    LINALG::SerialDenseVector auxderiv(NumNode());
-    LINALG::SerialDenseVector auxderiv2(NumNode());
+    LINALG::SerialDenseMatrix auxderiv(1,NumNode());
+    LINALG::SerialDenseMatrix auxderiv2(1,NumNode());
 
     DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv_deriv2(auxval, auxderiv,
         auxderiv2, xi[0], Knots()[0], weights, nurbs2);
@@ -4581,15 +4581,15 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
           dynamic_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
     LINALG::SerialDenseVector auxval(3);
-    LINALG::SerialDenseVector auxderiv(3);
-    LINALG::SerialDenseVector auxderiv2(3);
+    LINALG::SerialDenseMatrix auxderiv(1,3);
+    LINALG::SerialDenseMatrix auxderiv2(1,3);
 
     DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv_deriv2(auxval, auxderiv,
         auxderiv2, xi[0], Knots()[0], weights, nurbs3);
 
     // copy entries for to be conform with the mortar code!
     for (int i = 0; i < NumNode(); ++i)
-      secderiv(i, 0) = auxderiv2(i);
+      secderiv(i, 0) = auxderiv2(0,i);
 
     break;
   }

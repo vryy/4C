@@ -83,7 +83,7 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
   case intrule_hex_8point:
   {
     nquad = 8;
-    const double xi2 = 0.5773502691896;
+    static const double xi2 = 1.0/std::sqrt(3.0);
     qxg[0][0] = -xi2; qxg[0][1] = -xi2; qxg[0][2] = -xi2;
     qxg[1][0] =  xi2; qxg[1][1] = -xi2; qxg[1][2] = -xi2;
     qxg[2][0] =  xi2; qxg[2][1] =  xi2; qxg[2][2] = -xi2;
@@ -92,14 +92,9 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
     qxg[5][0] =  xi2; qxg[5][1] = -xi2; qxg[5][2] =  xi2;
     qxg[6][0] =  xi2; qxg[6][1] =  xi2; qxg[6][2] =  xi2;
     qxg[7][0] = -xi2; qxg[7][1] =  xi2; qxg[7][2] =  xi2;
-    qwgt[0] = 1.0;
-    qwgt[1] = 1.0;
-    qwgt[2] = 1.0;
-    qwgt[3] = 1.0;
-    qwgt[4] = 1.0;
-    qwgt[5] = 1.0;
-    qwgt[6] = 1.0;
-    qwgt[7] = 1.0;
+
+    std::fill( qwgt, qwgt+8, 1.0 );
+
     break;
   }
   case intrule_hex_18point:
