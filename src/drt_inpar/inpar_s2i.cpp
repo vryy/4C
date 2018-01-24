@@ -154,6 +154,9 @@ void INPAR::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   // maximum number of local Newton-Raphson iterations for scatra-scatra interface coupling involving interface layer growth
   IntParameter("INTLAYERGROWTH_ITEMAX",5,"maximum number of local Newton-Raphson iterations for scatra-scatra interface coupling involving interface layer growth",&s2icoupling);
+
+  // ID of linear solver for monolithic scatra-scatra interface coupling involving interface layer growth
+  IntParameter("INTLAYERGROWTH_LINEAR_SOLVER",-1,"ID of linear solver for monolithic scatra-scatra interface coupling involving interface layer growth",&s2icoupling);
 }
 
 

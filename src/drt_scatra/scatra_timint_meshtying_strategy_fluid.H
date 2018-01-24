@@ -82,6 +82,9 @@ class MeshtyingStrategyFluid : public MeshtyingStrategyBase
         const Teuchos::RCP<LINALG::KrylovProjector>&   projector       //!< Krylov projector
         ) const;
 
+    //! return linear solver for global system of linear equations
+    const LINALG::Solver& Solver() const;
+
   protected:
 
     //! instantiate strategy for Newton-Raphson convergence check

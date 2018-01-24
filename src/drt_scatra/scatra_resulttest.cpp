@@ -376,9 +376,9 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
   else if(quantity == "numiterlastsolve")
   {
     // safety check
-    if(scatratimint_->Solver()->Params().get("solver","none") != "aztec")
+    if(scatratimint_->Strategy()->Solver().Params().get("solver","none") != "aztec")
       dserror("Must have Aztec solver for result test involving number of solver iterations during last Newton-Raphson iteration!");
-    result = (double) scatratimint_->Solver()->getNumIters();
+    result = (double) scatratimint_->Strategy()->Solver().getNumIters();
   }
 
   // test parallel distribution of scatra-scatra coupling interface

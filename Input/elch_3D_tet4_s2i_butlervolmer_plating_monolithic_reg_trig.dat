@@ -48,6 +48,7 @@ EQUPOT                          divi
 ---------------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
 INTLAYERGROWTH_EVALUATION       monolithic
+INTLAYERGROWTH_LINEAR_SOLVER    1
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS

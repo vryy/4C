@@ -93,6 +93,17 @@ void SCATRA::MeshtyingStrategyStd::Solve(
 } // SCATRA::MeshtyingStrategyStd::Solve
 
 
+/*-------------------------------------------------------------------------*
+ | return linear solver for global system of linear equations   fang 01/18 |
+ *-------------------------------------------------------------------------*/
+const LINALG::Solver& SCATRA::MeshtyingStrategyStd::Solver() const
+{
+  if(scatratimint_->Solver() == Teuchos::null)
+    dserror("Invalid linear solver!");
+  return *scatratimint_->Solver();
+} // SCATRA::MeshtyingStrategyStd::Solver()
+
+
 /*------------------------------------------------------------------------*
  | instantiate strategy for Newton-Raphson convergence check   fang 02/16 |
  *------------------------------------------------------------------------*/

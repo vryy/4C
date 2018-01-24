@@ -221,6 +221,9 @@ class MeshtyingStrategyBase
         const Teuchos::RCP<LINALG::KrylovProjector>&   projector       //!< Krylov projector
         ) const = 0;
 
+    //! return linear solver for global system of linear equations
+    virtual const LINALG::Solver& Solver() const = 0;
+
     //! update solution after convergence of the nonlinear Newton-Raphson iteration
     virtual void Update() const {return;};
 

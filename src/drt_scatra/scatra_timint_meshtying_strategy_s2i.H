@@ -235,6 +235,9 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
         const Teuchos::RCP<LINALG::KrylovProjector>&   projector       //!< Krylov projector
         ) const;
 
+    //! return linear solver for global system of linear equations
+    const LINALG::Solver& Solver() const;
+
     //! update solution after convergence of the nonlinear Newton-Raphson iteration
     virtual void Update() const;
 
@@ -363,6 +366,18 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     //! maximum number of local Newton-Raphson iterations for scatra-scatra interface coupling involving interface layer growth
     const unsigned intlayergrowth_itemax_;
 
+    //! map extractor associated with all degrees of freedom for scatra-scatra interface layer growth
+    Teuchos::RCP<const LINALG::MultiMapExtractor> blockmapgrowth_;
+
+    //! extended map extractor associated with blocks of global system matrix for scatra-scatra interface coupling involving interface layer growth
+    Teuchos::RCP<const LINALG::MultiMapExtractor> extendedblockmaps_;
+
+    //! extended system matrix including rows and columns associated with scatra-scatra interface layer thickness variables
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> extendedsystemmatrix_;
+
+    //! linear solver for monolithic scatra-scatra interface coupling involving interface layer growth
+    Teuchos::RCP<LINALG::Solver> extendedsolver_;
+
     //! state vector of discrete scatra-scatra interface layer thicknesses at time n
     Teuchos::RCP<Epetra_Vector> growthn_;
 
@@ -385,10 +400,10 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     Teuchos::RCP<Epetra_Vector> growthincrement_;
 
     //! scatra-growth block of extended global system matrix (derivatives of discrete scatra residuals w.r.t. discrete scatra-scatra interface layer thicknesses)
-    Teuchos::RCP<LINALG::SparseMatrix> scatragrowthblock_;
+    Teuchos::RCP<LINALG::SparseOperator> scatragrowthblock_;
 
     //! growth-scatra block of extended global system matrix (derivatives of discrete scatra-scatra interface layer growth residuals w.r.t. discrete scatra degrees of freedom)
-    Teuchos::RCP<LINALG::SparseMatrix> growthscatrablock_;
+    Teuchos::RCP<LINALG::SparseOperator> growthscatrablock_;
 
     //! growth-growth block of extended global system matrix (derivatives of discrete scatra-scatra interface layer growth residuals w.r.t. discrete scatra-scatra interface layer thicknesses)
     Teuchos::RCP<LINALG::SparseMatrix> growthgrowthblock_;
@@ -404,7 +419,8 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     //! equilibrate global system of equations if necessary
     void EquilibrateSystem(
         const Teuchos::RCP<LINALG::SparseOperator>&   systemmatrix,   //!< system matrix
-        const Teuchos::RCP<Epetra_Vector>&            residual        //!< residual vector
+        const Teuchos::RCP<Epetra_Vector>&            residual,       //!< residual vector
+        const LINALG::MultiMapExtractor&              blockmaps       //!< map extractor associated with blocks of global system matrix
         ) const;
 
     //! evaluate single mortar integration cell
