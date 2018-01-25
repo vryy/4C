@@ -499,7 +499,7 @@ namespace TIMINT {
     /// @{
     /// Access output object
     virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter()
-    { dserror("Not yet implemented!"); return Teuchos::null;}
+    { return DataIO().GetMutableOutputPtr();}
 
     /// Calculate all output quantities depending on the constitutive model
     /// (and, hence, on a potential material history)
