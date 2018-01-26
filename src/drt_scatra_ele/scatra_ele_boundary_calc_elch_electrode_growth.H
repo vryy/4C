@@ -116,27 +116,30 @@ namespace DRT
 
       //! compute Butler-Volmer current density via Newton-Raphson iteration
       double GetButlerVolmerCurrentDensity(
-          const double&   i0,           //!< exchange current density
-          const double&   alphaa,       //!< anodic transfer coefficient
-          const double&   alphac,       //!< cathodic transfer coefficient
-          const double&   frt,          //!< factor F/RT
-          const double&   pot_ed,       //!< electrode-side electric potential
-          const double&   pot_el,       //!< electrolyte-side electric potential
-          const double&   epd,          //!< half-cell open-circuit potential
-          const double&   resistance,   //!< scatra-scatra interface layer resistance
-          const double&   regfac        //!< regularization factor
+          const double&                         i0,           //!< exchange current density
+          const double&                         alphaa,       //!< anodic transfer coefficient
+          const double&                         alphac,       //!< cathodic transfer coefficient
+          const double&                         frt,          //!< factor F/RT
+          const double&                         pot_ed,       //!< electrode-side electric potential
+          const double&                         pot_el,       //!< electrolyte-side electric potential
+          const double&                         epd,          //!< half-cell open-circuit potential
+          const double&                         resistance,   //!< scatra-scatra interface layer resistance
+          const double&                         thickness,    //!< scatra-scatra interface layer thickness
+          const Teuchos::RCP<DRT::Condition>&   condition     //!< scatra-scatra interface coupling condition
           ) const;
 
       //! compute regularization factor for lithium stripping
       double GetRegularizationFactor(
           const double&                         thickness,   //!< scatra-scatra interface layer thickness
-          const Teuchos::RCP<DRT::Condition>&   condition    //!< scatra-scatra interface coupling condition
+          const Teuchos::RCP<DRT::Condition>&   condition,   //!< scatra-scatra interface coupling condition
+          const double                          eta          //!< electrode-electrolyte overpotential at integration point
           ) const;
 
       //! compute derivative of regularization factor for lithium stripping w.r.t. thickness of plated lithium
       double GetRegularizationFactorDerivative(
           const double&                         thickness,   //!< scatra-scatra interface layer thickness
-          const Teuchos::RCP<DRT::Condition>&   condition    //!< scatra-scatra interface coupling condition
+          const Teuchos::RCP<DRT::Condition>&   condition,   //!< scatra-scatra interface coupling condition
+          const double                          eta          //!< electrode-electrolyte overpotential at integration point
           ) const;
 
       //! nodal growth variables

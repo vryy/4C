@@ -199,63 +199,71 @@ double MAT::Electrode::ComputeOpenCircuitPotential(
     std::cout << "X: " << X << " lower bound is: " << params_->xmin_ << "  upper bound is: " << params_->xmax_ << std::endl << std::endl;
   }
 
-  switch(params_->ocpmodel_)
+  // physically reasonable intercalation fraction
+  if(X > 0. and X < 1.)
   {
-    // half cell open circuit potential according to Redlich-Kister expansion
-    case MAT::PAR::ocp_redlichkister:
+    switch(params_->ocpmodel_)
     {
-      // cf. Colclasure and Kee, Electrochimica Acta 55 (2010) 8960:
-      // ocppara_[0]         = DeltaG
-      // ocppara_[1,2,3,...] = Redlich-Kister coefficients
-
-      // terms not associated with any Redlich-Kister coefficient
-      ocp = params_->ocppara_[0] + faraday/frt*log((1.-X)/X);
-
-      // terms associated with first and second Redlich-Kister coefficients
-      // these two terms are separated from the remaining sum and simplified thereafter to remove singularities in the expansion in case X == 0.5
-      ocp += params_->ocppara_[1]*(2.*X-1.)+params_->ocppara_[2]*(6.*X*X-6.*X+1.);
-
-      // terms associated with remaining Redlich-Kister coefficients
-      for(int i=2; i<params_->ocpparanum_-1; ++i)
-        ocp += params_->ocppara_[i+1]*(pow(2.*X-1.,i+1)-2.*i*X*(1.-X)*pow(2.*X-1.,i-1));
-
-      // final scaling
-      ocp /= faraday;
-
-      break;
-    }
-
-    case MAT::PAR::ocp_taralov:
-    {
-      // cf. Taralov, Taralova, Popov, Iliev, Latz, and Zausch (2012)
-      ocp = params_->ocppara_[0]+params_->ocppara_[1]*tanh(params_->ocppara_[2]*X+params_->ocppara_[3])
-            +params_->ocppara_[4]*exp(params_->ocppara_[5]*pow(X,8.0))
-            +params_->ocppara_[6]*(1/(pow((params_->ocppara_[7]-X),params_->ocppara_[8]))+params_->ocppara_[9])
-            +params_->ocppara_[10]*exp(params_->ocppara_[11]*(X+params_->ocppara_[12]));
-
-      break;
-    }
-
-    // polynomial ocp
-    case MAT::PAR::ocp_polynomial:
-    {
-      // add constant
-      ocp = params_->ocppara_[0];
-      // add higher polynomial order terms
-      for(int i=1; i<params_->ocpparanum_; ++i)
+      // half cell open circuit potential according to Redlich-Kister expansion
+      case MAT::PAR::ocp_redlichkister:
       {
-        ocp += params_->ocppara_[i]*pow(X,i);
+        // cf. Colclasure and Kee, Electrochimica Acta 55 (2010) 8960:
+        // ocppara_[0]         = DeltaG
+        // ocppara_[1,2,3,...] = Redlich-Kister coefficients
+
+        // terms not associated with any Redlich-Kister coefficient
+        ocp = params_->ocppara_[0] + faraday/frt*log((1.-X)/X);
+
+        // terms associated with first and second Redlich-Kister coefficients
+        // these two terms are separated from the remaining sum and simplified thereafter to remove singularities in the expansion in case X == 0.5
+        ocp += params_->ocppara_[1]*(2.*X-1.)+params_->ocppara_[2]*(6.*X*X-6.*X+1.);
+
+        // terms associated with remaining Redlich-Kister coefficients
+        for(int i=2; i<params_->ocpparanum_-1; ++i)
+          ocp += params_->ocppara_[i+1]*(pow(2.*X-1.,i+1)-2.*i*X*(1.-X)*pow(2.*X-1.,i-1));
+
+        // final scaling
+        ocp /= faraday;
+
+        break;
       }
 
-      break;
-    }
+      case MAT::PAR::ocp_taralov:
+      {
+        // cf. Taralov, Taralova, Popov, Iliev, Latz, and Zausch (2012)
+        ocp = params_->ocppara_[0]+params_->ocppara_[1]*tanh(params_->ocppara_[2]*X+params_->ocppara_[3])
+              +params_->ocppara_[4]*exp(params_->ocppara_[5]*pow(X,8.0))
+              +params_->ocppara_[6]*(1/(pow((params_->ocppara_[7]-X),params_->ocppara_[8]))+params_->ocppara_[9])
+              +params_->ocppara_[10]*exp(params_->ocppara_[11]*(X+params_->ocppara_[12]));
 
-    default:
-    {
-      dserror("Model for half cell open circuit potential not recognized!");
-      break;
+        break;
+      }
+
+      // polynomial ocp
+      case MAT::PAR::ocp_polynomial:
+      {
+        // add constant
+        ocp = params_->ocppara_[0];
+        // add higher polynomial order terms
+        for(int i=1; i<params_->ocpparanum_; ++i)
+        {
+          ocp += params_->ocppara_[i]*pow(X,i);
+        }
+
+        break;
+      }
+
+      default:
+      {
+        dserror("Model for half cell open circuit potential not recognized!");
+        break;
+      }
     }
   }
+
+  // non-physical intercalation fraction
+  else
+    ocp = std::numeric_limits<double>::infinity();
 
   return ocp;
 } // MAT::Electrode::ComputeOpenCircuitPotential
@@ -275,62 +283,70 @@ double MAT::Electrode::ComputeFirstDerivOpenCircuitPotential(
   // intercalation fraction
   const double X = concentration/params_->cmax_;
 
-  switch(params_->ocpmodel_)
+  // physically reasonable intercalation fraction
+  if(X > 0. and X < 1.)
   {
-    // derivative of half cell open circuit potential w.r.t. concentration according to Redlich-Kister expansion
-    case MAT::PAR::ocp_redlichkister:
+    switch(params_->ocpmodel_)
     {
-      // cf. Colclasure and Kee, Electrochimica Acta 55 (2010) 8960:
-      // ocppara_[0]         = DeltaG
-      // ocppara_[1,2,3,...] = Redlich-Kister coefficients
-
-      // term not associated with any Redlich-Kister coefficient
-      ocpderiv = faraday/(2.*frt*X*(X-1.));
-
-      // terms associated with first, second, and third Redlich-Kister coefficients
-      // these three terms are separated from the remaining sum and simplified thereafter to remove singularities in the derivative of the expansion in case X == 0.5
-      ocpderiv += params_->ocppara_[1]+params_->ocppara_[2]*(6.*X-3.)+params_->ocppara_[3]*(24.*X*X-24.*X+5.);
-
-      // terms associated with remaining Redlich-Kister coefficients
-      for(int i=3; i<params_->ocpparanum_-1; ++i)
-        ocpderiv += params_->ocppara_[i+1]*((2.*i+1.)*pow(2.*X-1.,i)+2.*X*i*(X-1.)*(i-1.)*pow(2.*X-1.,i-2));
-
-      // final scaling
-      ocpderiv *= 2./(faraday*params_->cmax_);
-
-      break;
-    }
-
-    // derivative of half cell open circuit potential w.r.t. concentration according to Taralov, Taralova, Popov, Iliev, Latz, and Zausch (2012)
-    case MAT::PAR::ocp_taralov:
-    {
-      ocpderiv = params_->ocppara_[1]*params_->ocppara_[2]/pow(cosh(params_->ocppara_[2]*X+params_->ocppara_[3]),2)
-                 +8.*params_->ocppara_[4]*params_->ocppara_[5]*exp(params_->ocppara_[5]*pow(X,8))*pow(X,7)
-                 +params_->ocppara_[6]*params_->ocppara_[8]/pow(params_->ocppara_[7]-X,params_->ocppara_[8]+1.)
-                 +params_->ocppara_[10]*params_->ocppara_[11]*exp(params_->ocppara_[11]*(X+params_->ocppara_[12]));
-      ocpderiv /= params_->cmax_;
-
-      break;
-    }
-
-    // derivative polynomial ocp
-    case MAT::PAR::ocp_polynomial:
-    {
-      for(int i=1; i<params_->ocpparanum_; ++i)
+      // derivative of half cell open circuit potential w.r.t. concentration according to Redlich-Kister expansion
+      case MAT::PAR::ocp_redlichkister:
       {
-        ocpderiv += params_->ocppara_[i]*pow(X,i-1);
+        // cf. Colclasure and Kee, Electrochimica Acta 55 (2010) 8960:
+        // ocppara_[0]         = DeltaG
+        // ocppara_[1,2,3,...] = Redlich-Kister coefficients
+
+        // term not associated with any Redlich-Kister coefficient
+        ocpderiv = faraday/(2.*frt*X*(X-1.));
+
+        // terms associated with first, second, and third Redlich-Kister coefficients
+        // these three terms are separated from the remaining sum and simplified thereafter to remove singularities in the derivative of the expansion in case X == 0.5
+        ocpderiv += params_->ocppara_[1]+params_->ocppara_[2]*(6.*X-3.)+params_->ocppara_[3]*(24.*X*X-24.*X+5.);
+
+        // terms associated with remaining Redlich-Kister coefficients
+        for(int i=3; i<params_->ocpparanum_-1; ++i)
+          ocpderiv += params_->ocppara_[i+1]*((2.*i+1.)*pow(2.*X-1.,i)+2.*X*i*(X-1.)*(i-1.)*pow(2.*X-1.,i-2));
+
+        // final scaling
+        ocpderiv *= 2./(faraday*params_->cmax_);
+
+        break;
       }
-      ocpderiv /= params_->cmax_;
 
-      break;
-    }
+      // derivative of half cell open circuit potential w.r.t. concentration according to Taralov, Taralova, Popov, Iliev, Latz, and Zausch (2012)
+      case MAT::PAR::ocp_taralov:
+      {
+        ocpderiv = params_->ocppara_[1]*params_->ocppara_[2]/pow(cosh(params_->ocppara_[2]*X+params_->ocppara_[3]),2)
+                   +8.*params_->ocppara_[4]*params_->ocppara_[5]*exp(params_->ocppara_[5]*pow(X,8))*pow(X,7)
+                   +params_->ocppara_[6]*params_->ocppara_[8]/pow(params_->ocppara_[7]-X,params_->ocppara_[8]+1.)
+                   +params_->ocppara_[10]*params_->ocppara_[11]*exp(params_->ocppara_[11]*(X+params_->ocppara_[12]));
+        ocpderiv /= params_->cmax_;
 
-    default:
-    {
-      dserror("Model for half cell open circuit potential not recognized!");
-      break;
+        break;
+      }
+
+      // derivative polynomial ocp
+      case MAT::PAR::ocp_polynomial:
+      {
+        for(int i=1; i<params_->ocpparanum_; ++i)
+        {
+          ocpderiv += params_->ocppara_[i]*pow(X,i-1);
+        }
+        ocpderiv /= params_->cmax_;
+
+        break;
+      }
+
+      default:
+      {
+        dserror("Model for half cell open circuit potential not recognized!");
+        break;
+      }
     }
   }
+
+  // non-physical intercalation fraction
+  else
+    ocpderiv = std::numeric_limits<double>::infinity();
 
   return ocpderiv;
 } // MAT::Electrode::ComputeFirstDerivOpenCircuitPotential
@@ -350,52 +366,60 @@ double MAT::Electrode::ComputeSecondDerivOpenCircuitPotential(
   // intercalation fraction
   const double X = concentration/params_->cmax_;
 
-  switch(params_->ocpmodel_)
+  // physically reasonable intercalation fraction
+  if(X > 0. and X < 1.)
   {
-    // second derivative of half cell open circuit potential w.r.t. concentration according to Redlich-Kister expansion
-    case MAT::PAR::ocp_redlichkister:
+    switch(params_->ocpmodel_)
     {
-      // cf. Colclasure and Kee, Electrochimica Acta 55 (2010) 8960:
-      // ocppara_[0]         = DeltaG
-      // ocppara_[1,2,3,...] = Redlich-Kister coefficients
+      // second derivative of half cell open circuit potential w.r.t. concentration according to Redlich-Kister expansion
+      case MAT::PAR::ocp_redlichkister:
+      {
+        // cf. Colclasure and Kee, Electrochimica Acta 55 (2010) 8960:
+        // ocppara_[0]         = DeltaG
+        // ocppara_[1,2,3,...] = Redlich-Kister coefficients
 
-      // term not associated with any Redlich-Kister coefficient
-      ocpderiv2 = -faraday*(2.*X-1.)/(4.*frt*X*X*(X-1.)*(X-1.));
+        // term not associated with any Redlich-Kister coefficient
+        ocpderiv2 = -faraday*(2.*X-1.)/(4.*frt*X*X*(X-1.)*(X-1.));
 
-      // term associated with first Redlich-Kister coefficient vanishes
+        // term associated with first Redlich-Kister coefficient vanishes
 
-      // terms associated with second, third, and fourth Redlich-Kister coefficients
-      // these three terms are separated from the remaining sum and simplified thereafter to remove singularities in the second derivative of the expansion in case X == 0.5
-      ocpderiv2 += 3.*params_->ocppara_[2]+params_->ocppara_[3]*(24.*X-12.)+params_->ocppara_[4]*(120.*X*X-120.*X+27.);
+        // terms associated with second, third, and fourth Redlich-Kister coefficients
+        // these three terms are separated from the remaining sum and simplified thereafter to remove singularities in the second derivative of the expansion in case X == 0.5
+        ocpderiv2 += 3.*params_->ocppara_[2]+params_->ocppara_[3]*(24.*X-12.)+params_->ocppara_[4]*(120.*X*X-120.*X+27.);
 
-      // terms associated with remaining Redlich-Kister coefficients
-      for(int i=4; i<params_->ocpparanum_-1; ++i)
-        ocpderiv2 += params_->ocppara_[i+1]*(3.*i*i*pow(2.*X-1.,i-1)+2.*i*(i-1.)*(i-2.)*X*(X-1.)*pow(2.*X-1.,i-3));
+        // terms associated with remaining Redlich-Kister coefficients
+        for(int i=4; i<params_->ocpparanum_-1; ++i)
+          ocpderiv2 += params_->ocppara_[i+1]*(3.*i*i*pow(2.*X-1.,i-1)+2.*i*(i-1.)*(i-2.)*X*(X-1.)*pow(2.*X-1.,i-3));
 
-      // final scaling
-      ocpderiv2 *= 4./(faraday*pow(params_->cmax_,2));
+        // final scaling
+        ocpderiv2 *= 4./(faraday*pow(params_->cmax_,2));
 
-      break;
-    }
+        break;
+      }
 
-    // second derivative of half cell open circuit potential w.r.t. concentration according to Taralov, Taralova, Popov, Iliev, Latz, and Zausch (2012)
-    case MAT::PAR::ocp_taralov:
-    {
-      ocpderiv2 = -2.*params_->ocppara_[1]*pow(params_->ocppara_[2],2)/pow(cosh(params_->ocppara_[2]*X+params_->ocppara_[3]),2)*tanh(params_->ocppara_[2]*X+params_->ocppara_[3])
-                  +8.*params_->ocppara_[4]*params_->ocppara_[5]*pow(X,6)*exp(params_->ocppara_[5]*pow(X,8))*(7.+8.*params_->ocppara_[5]*pow(X,8))
-                  +params_->ocppara_[6]*params_->ocppara_[8]*(params_->ocppara_[8]+1.)/pow(params_->ocppara_[7]-X,params_->ocppara_[8]+2.)
-                  +params_->ocppara_[10]*pow(params_->ocppara_[11],2)*exp(params_->ocppara_[11]*(X+params_->ocppara_[12]));
-      ocpderiv2 /= pow(params_->cmax_,2);
+      // second derivative of half cell open circuit potential w.r.t. concentration according to Taralov, Taralova, Popov, Iliev, Latz, and Zausch (2012)
+      case MAT::PAR::ocp_taralov:
+      {
+        ocpderiv2 = -2.*params_->ocppara_[1]*pow(params_->ocppara_[2],2)/pow(cosh(params_->ocppara_[2]*X+params_->ocppara_[3]),2)*tanh(params_->ocppara_[2]*X+params_->ocppara_[3])
+                    +8.*params_->ocppara_[4]*params_->ocppara_[5]*pow(X,6)*exp(params_->ocppara_[5]*pow(X,8))*(7.+8.*params_->ocppara_[5]*pow(X,8))
+                    +params_->ocppara_[6]*params_->ocppara_[8]*(params_->ocppara_[8]+1.)/pow(params_->ocppara_[7]-X,params_->ocppara_[8]+2.)
+                    +params_->ocppara_[10]*pow(params_->ocppara_[11],2)*exp(params_->ocppara_[11]*(X+params_->ocppara_[12]));
+        ocpderiv2 /= pow(params_->cmax_,2);
 
-      break;
-    }
+        break;
+      }
 
-    default:
-    {
-      dserror("Model for half cell open circuit potential not recognized!");
-      break;
+      default:
+      {
+        dserror("Model for half cell open circuit potential not recognized!");
+        break;
+      }
     }
   }
+
+  // non-physical intercalation fraction
+  else
+    ocpderiv2 = std::numeric_limits<double>::infinity();
 
   return ocpderiv2;
 } // MAT::Electrode::ComputeSecondDerivOpenCircuitPotential

@@ -198,26 +198,24 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
 
     // compute exchange current density
     double i0 = kr*faraday*pow(emasterphiint,alphaa);
-    if(s2iconditiontype == DRT::Condition::S2ICoupling)
+    if(s2iconditiontype == DRT::Condition::S2ICoupling and not std::isinf(epd))
       i0 *= pow(cmax-eslavephiint,alphaa)*pow(eslavephiint,alphac);
 
-    // compute regularization factor
-    const double regfac = GetRegularizationFactor(eslavegrowthint,s2icondition);
-
     // compute Butler-Volmer current density via Newton-Raphson iteration
-    const double i = GetButlerVolmerCurrentDensity(i0,alphaa,alphac,frt,eslavepotint,emasterpotint,epd,eslaveresistanceint,regfac);
+    const double i = GetButlerVolmerCurrentDensity(i0,alphaa,alphac,frt,eslavepotint,emasterpotint,epd,eslaveresistanceint,eslavegrowthint,s2icondition);
 
     // continue with evaluation of linearizations and residual contributions only in case of non-zero Butler-Volmer current density
     // to avoid unnecessary effort and to consistently enforce the lithium plating condition
     if(std::abs(i) > 1.e-16)
     {
-      // electrode-electrolyte overpotential at integration point
+      // calculate electrode-electrolyte overpotential at integration point and regularization factor
       const double eta = eslavepotint-emasterpotint-epd-i*eslaveresistanceint;
+      const double regfac = GetRegularizationFactor(eslavegrowthint,s2icondition,eta);
 
       // exponential Butler-Volmer terms
-      const double expterm1 = regfac*exp(alphaa*frt*eta);
+      const double expterm1 = exp(alphaa*frt*eta);
       const double expterm2 = exp(-alphac*frt*eta);
-      const double expterm = expterm1-expterm2;
+      const double expterm = regfac*(expterm1-expterm2);
 
       // safety check
       if(abs(expterm)>1.e5)
@@ -226,9 +224,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
       // compute linearizations of Butler-Volmer current density via implicit differentiation, where F = i0*expterm - i = 0
       const double dF_dc_slave = s2iconditiontype == DRT::Condition::S2ICoupling ? kr*faraday*pow(emasterphiint,alphaa)*pow(cmax-eslavephiint,alphaa-1.)*pow(eslavephiint,alphac-1.)*(-alphaa*eslavephiint+alphac*(cmax-eslavephiint))*expterm - i0*(alphaa*frt*epdderiv*expterm1 + alphac*frt*epdderiv*expterm2) : 0.;
       const double dF_dc_master = i0*alphaa/emasterphiint*expterm;
-      const double dF_dpot_slave = i0*frt*(alphaa*expterm1+alphac*expterm2);
+      const double dF_dpot_slave = i0*frt*regfac*(alphaa*expterm1+alphac*expterm2);
       const double dF_dpot_master = -dF_dpot_slave;
-      const double dF_di_inverse = -1./(i0*frt*eslaveresistanceint*(alphaa*expterm1+alphac*expterm2)+1.);
+      const double dF_di_inverse = -1./(i0*frt*eslaveresistanceint*regfac*(alphaa*expterm1+alphac*expterm2)+1.);
       const double di_dc_slave = -dF_dc_slave*dF_di_inverse;
       const double di_dc_master = -dF_dc_master*dF_di_inverse;
       const double di_dpot_slave = -dF_dpot_slave*dF_di_inverse;
@@ -453,27 +451,25 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
 
     // compute exchange current density
     double i0 = kr*faraday*pow(emasterphiint,alphaa);
-    if(s2iconditiontype == DRT::Condition::S2ICoupling)
+    if(s2iconditiontype == DRT::Condition::S2ICoupling and not std::isinf(epd))
       i0 *= pow(cmax-eslavephiint,alphaa)*pow(eslavephiint,alphac);
 
-    // compute regularization factor and its derivative w.r.t. scatra-scatra interface layer thickness
-    const double regfac = GetRegularizationFactor(eslavegrowthint,s2icondition);
-    const double regfacderiv = GetRegularizationFactorDerivative(eslavegrowthint,s2icondition);
-
     // compute Butler-Volmer current density via Newton-Raphson iteration
-    const double i = GetButlerVolmerCurrentDensity(i0,alphaa,alphac,frt,eslavepotint,emasterpotint,epd,eslaveresistanceint,regfac);
+    const double i = GetButlerVolmerCurrentDensity(i0,alphaa,alphac,frt,eslavepotint,emasterpotint,epd,eslaveresistanceint,eslavegrowthint,s2icondition);
 
     // continue with evaluation of linearizations only in case of non-zero Butler-Volmer current density
     // to avoid unnecessary effort and to consistently enforce the lithium plating condition
     if(std::abs(i) > 1.e-16)
     {
-      // electrode-electrolyte overpotential at integration point
+      // calculate electrode-electrolyte overpotential at integration point, regularization factor and derivative of regularization factor
       const double eta = eslavepotint-emasterpotint-epd-i*eslaveresistanceint;
+      const double regfac = GetRegularizationFactor(eslavegrowthint,s2icondition,eta);
+      const double regfacderiv = GetRegularizationFactorDerivative(eslavegrowthint,s2icondition,eta);
 
       // exponential Butler-Volmer terms
-      const double expterm1 = regfac*exp(alphaa*frt*eta);
+      const double expterm1 = exp(alphaa*frt*eta);
       const double expterm2 = exp(-alphac*frt*eta);
-      const double expterm = expterm1-expterm2;
+      const double expterm = regfac*(expterm1-expterm2);
 
       // safety check
       if(abs(expterm)>1.e5)
@@ -481,8 +477,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
 
       // compute linearization of Butler-Volmer current density w.r.t. scatra-scatra interface layer thickness
       // via implicit differentiation, where F = i0*expterm - i = 0
-      const double dF_dgrowth = (-i0*i*frt*(alphaa*expterm1+alphac*expterm2)+regfacderiv*i0*exp(alphaa*frt*eta))*conductivity_inverse;
-      const double dF_di_inverse = -1./(i0*frt*eslaveresistanceint*(alphaa*expterm1+alphac*expterm2)+1.);
+      const double dF_dgrowth = -i0*i*frt*regfac*conductivity_inverse*(alphaa*expterm1+alphac*expterm2)+regfacderiv*i0*(expterm1+expterm2);
+      const double dF_di_inverse = -1./(i0*frt*eslaveresistanceint*regfac*(alphaa*expterm1+alphac*expterm2)+1.);
       const double di_dgrowth = -dF_dgrowth*dF_di_inverse;
 
       // compute linearizations associated with equations for lithium transport
@@ -594,23 +590,21 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
     // compute exchange current density
     const double i0 = kr*faraday*pow(emasterphiint,alphaa);
 
-    // compute regularization factor
-    const double regfac = GetRegularizationFactor(eslavegrowthint,s2icondition);
-
     // compute Butler-Volmer current density via Newton-Raphson iteration
-    const double i = GetButlerVolmerCurrentDensity(i0,alphaa,alphac,frt,eslavepotint,emasterpotint,0.,eslaveresistanceint,regfac);
+    const double i = GetButlerVolmerCurrentDensity(i0,alphaa,alphac,frt,eslavepotint,emasterpotint,0.,eslaveresistanceint,eslavegrowthint,s2icondition);
 
     // continue with evaluation of linearizations only in case of non-zero Butler-Volmer current density
     // to avoid unnecessary effort and to consistently enforce the lithium plating condition
     if(std::abs(i) > 1.e-16)
     {
-      // electrode-electrolyte overpotential at integration point
+      // calculate electrode-electrolyte overpotential at integration point and regularization factor
       const double eta = eslavepotint-emasterpotint-i*eslaveresistanceint;
+      const double regfac = GetRegularizationFactor(eslavegrowthint,s2icondition,eta);
 
       // exponential Butler-Volmer terms
-      const double expterm1 = regfac*exp(alphaa*frt*eta);
+      const double expterm1 = exp(alphaa*frt*eta);
       const double expterm2 = exp(-alphac*frt*eta);
-      const double expterm = expterm1-expterm2;
+      const double expterm = regfac*(expterm1-expterm2);
 
       // safety check
       if(abs(expterm)>1.e5)
@@ -618,9 +612,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
 
       // compute linearizations of Butler-Volmer current density via implicit differentiation, where F = i0*expterm - i = 0
       const double dF_dc_master = i0*alphaa/emasterphiint*expterm;
-      const double dF_dpot_slave = i0*frt*(alphaa*expterm1+alphac*expterm2);
+      const double dF_dpot_slave = i0*frt*regfac*(alphaa*expterm1+alphac*expterm2);
       const double dF_dpot_master = -dF_dpot_slave;
-      const double dF_di_inverse = -1./(i0*frt*eslaveresistanceint*(alphaa*expterm1+alphac*expterm2)+1.);
+      const double dF_di_inverse = -1./(i0*frt*eslaveresistanceint*regfac*(alphaa*expterm1+alphac*expterm2)+1.);
       const double di_dc_master = -dF_dc_master*dF_di_inverse;
       const double di_dpot_slave = -dF_dpot_slave*dF_di_inverse;
       const double di_dpot_master = -dF_dpot_master*dF_di_inverse;
@@ -738,24 +732,22 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
     // compute exchange current density
     const double i0 = kr*faraday*pow(emasterphiint,alphaa);
 
-    // compute regularization factor and its derivative w.r.t. scatra-scatra interface layer thickness
-    const double regfac = GetRegularizationFactor(eslavegrowthint,s2icondition);
-    const double regfacderiv = GetRegularizationFactorDerivative(eslavegrowthint,s2icondition);
-
     // compute Butler-Volmer current density via Newton-Raphson iteration
-    const double i = GetButlerVolmerCurrentDensity(i0,alphaa,alphac,frt,eslavepotint,emasterpotint,0.,eslaveresistanceint,regfac);
+    const double i = GetButlerVolmerCurrentDensity(i0,alphaa,alphac,frt,eslavepotint,emasterpotint,0.,eslaveresistanceint,eslavegrowthint,s2icondition);
 
     // continue with evaluation of linearizations and residual contributions only in case of non-zero Butler-Volmer current density
     // to avoid unnecessary effort and to consistently enforce the lithium plating condition
     if(std::abs(i) > 1.e-16)
     {
-      // electrode-electrolyte overpotential at integration point
+      // calculate electrode-electrolyte overpotential at integration point, regularization factor and derivative of regularization factor
       const double eta = eslavepotint-emasterpotint-i*eslaveresistanceint;
+      const double regfac = GetRegularizationFactor(eslavegrowthint,s2icondition,eta);
+      const double regfacderiv = GetRegularizationFactorDerivative(eslavegrowthint,s2icondition,eta);
 
       // exponential Butler-Volmer terms
-      const double expterm1 = regfac*exp(alphaa*frt*eta);
+      const double expterm1 = exp(alphaa*frt*eta);
       const double expterm2 = exp(-alphac*frt*eta);
-      const double expterm = expterm1-expterm2;
+      const double expterm = regfac*(expterm1-expterm2);
 
       // safety check
       if (abs(expterm)>1.e5)
@@ -763,8 +755,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
 
       // compute linearization of Butler-Volmer current density w.r.t. scatra-scatra interface layer thickness
       // via implicit differentiation, where F = i0*expterm - i = 0
-      const double dF_dgrowth = (-i0*i*frt*(alphaa*expterm1+alphac*expterm2)+regfacderiv*i0*exp(alphaa*frt*eta))*conductivity_inverse;
-      const double dF_di_inverse = -1./(i0*frt*eslaveresistanceint*(alphaa*expterm1+alphac*expterm2)+1.);
+      const double dF_dgrowth = -i0*i*frt*regfac*conductivity_inverse*(alphaa*expterm1+alphac*expterm2)+regfacderiv*i0*(expterm1+expterm2);
+      const double dF_di_inverse = -1./(i0*frt*eslaveresistanceint*regfac*(alphaa*expterm1+alphac*expterm2)+1.);
       const double di_dgrowth = -dF_dgrowth*dF_di_inverse;
 
       // compute linearizations and residual contributions associated with equation for scatra-scatra interface layer growth
@@ -809,52 +801,62 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::ExtractNo
  *---------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::GetButlerVolmerCurrentDensity(
-    const double&   i0,           //!< exchange current density
-    const double&   alphaa,       //!< anodic transfer coefficient
-    const double&   alphac,       //!< cathodic transfer coefficient
-    const double&   frt,          //!< factor F/RT
-    const double&   pot_ed,       //!< electrode-side electric potential
-    const double&   pot_el,       //!< electrolyte-side electric potential
-    const double&   epd,          //!< half-cell open-circuit potential
-    const double&   resistance,   //!< scatra-scatra interface layer resistance
-    const double&   regfac        //!< regularization factor
+    const double&                         i0,           //!< exchange current density
+    const double&                         alphaa,       //!< anodic transfer coefficient
+    const double&                         alphac,       //!< cathodic transfer coefficient
+    const double&                         frt,          //!< factor F/RT
+    const double&                         pot_ed,       //!< electrode-side electric potential
+    const double&                         pot_el,       //!< electrolyte-side electric potential
+    const double&                         epd,          //!< half-cell open-circuit potential
+    const double&                         resistance,   //!< scatra-scatra interface layer resistance
+    const double&                         thickness,    //!< scatra-scatra interface layer thickness
+    const Teuchos::RCP<DRT::Condition>&   condition     //!< scatra-scatra interface coupling condition
     ) const
 {
-  // compute initial guess of Butler-Volmer current density, neglecting overpotential due to scatra-scatra interface layer resistance
-  double eta = pot_ed-pot_el-epd;
-  double i = i0*(regfac*exp(alphaa*frt*eta)-exp(-alphac*frt*eta));
+  // initialize Butler-Volmer current density
+  double i(0.);
 
-  // initialize Newton-Raphson iteration counter
-  unsigned iternum(0);
-
-  // apply Newton-Raphson method to compute Butler-Volmer current density, involving overpotential due to scatra-scatra interface layer resistance
-  while(true)
+  // compute Butler-Volmer current density in case of physically reasonable half-cell open-circuit potential
+  if(not std::isinf(epd))
   {
-    // increment counter
-    ++iternum;
+    // compute initial guess of Butler-Volmer current density, neglecting overpotential due to scatra-scatra interface layer resistance
+    double eta = pot_ed-pot_el-epd;
+    double regfac = GetRegularizationFactor(thickness,condition,eta);
+    i = i0*regfac*(exp(alphaa*frt*eta)-exp(-alphac*frt*eta));
 
-    // compute current Newton-Raphson residual
-    eta = pot_ed-pot_el-epd-resistance*i;
-    const double expterm1 = regfac*exp(alphaa*frt*eta);
-    const double expterm2 = exp(-alphac*frt*eta);
-    const double residual = i0*(expterm1-expterm2)-i;
+    // initialize Newton-Raphson iteration counter
+    unsigned iternum(0);
 
-    // convergence check
-    if(std::abs(residual) < my::scatraparams_->IntLayerGrowthConvTol())
-      break;
-    else if(iternum == my::scatraparams_->IntLayerGrowthIteMax())
-      dserror("Local Newton-Raphson iteration for Butler-Volmer current density did not converge!");
+    // apply Newton-Raphson method to compute Butler-Volmer current density, involving overpotential due to scatra-scatra interface layer resistance
+    while(true)
+    {
+      // increment counter
+      ++iternum;
 
-    // compute linearization of current Newton-Raphson residual w.r.t. Butler-Volmer current density
-    const double linearization = -i0*resistance*frt*(alphaa*expterm1+alphac*expterm2)-1.;
+      // compute current Newton-Raphson residual
+      eta = pot_ed-pot_el-epd-resistance*i;
+      regfac = GetRegularizationFactor(thickness,condition,eta);
+      const double expterm1 = exp(alphaa*frt*eta);
+      const double expterm2 = exp(-alphac*frt*eta);
+      const double residual = i0*regfac*(expterm1-expterm2)-i;
 
-    // update Butler-Volmer current density
-    i -= residual/linearization;
+      // convergence check
+      if(std::abs(residual) < my::scatraparams_->IntLayerGrowthConvTol())
+        break;
+      else if(iternum == my::scatraparams_->IntLayerGrowthIteMax())
+        dserror("Local Newton-Raphson iteration for Butler-Volmer current density did not converge!");
+
+      // compute linearization of current Newton-Raphson residual w.r.t. Butler-Volmer current density
+      const double linearization = -i0*resistance*frt*regfac*(alphaa*expterm1+alphac*expterm2)-1.;
+
+      // update Butler-Volmer current density
+      i -= residual/linearization;
+    }
+
+    // enforce plating condition, i.e., consider initial lithium plating only in case of negative overpotential
+    if(std::abs(regfac) < 1.e-16 and eta >= 0.)
+      i = 0.;
   }
-
-  // enforce plating condition, i.e., consider initial lithium plating only in case of negative overpotential
-  if(std::abs(regfac) < 1.e-16 and eta >= 0.)
-    i = 0.;
 
   return i;
 }
@@ -866,14 +868,15 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::GetButl
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::GetRegularizationFactor(
     const double&                         thickness,   //!< scatra-scatra interface layer thickness
-    const Teuchos::RCP<DRT::Condition>&   condition    //!< scatra-scatra interface coupling condition
+    const Teuchos::RCP<DRT::Condition>&   condition,   //!< scatra-scatra interface coupling condition
+    const double                          eta          //!< electrode-electrolyte overpotential at integration point
     ) const
 {
   // initialize regularization factor
   double regfac(1.);
 
   // actually compute regularization factor if lithium stripping is relevant
-  if(condition->Type() == DRT::Condition::S2ICouplingGrowth)
+  if(condition->Type() == DRT::Condition::S2ICouplingGrowth and eta > 0.)
   {
     // extract regularization type from scatra-scatra interface coupling condition
     const std::string* regtype = condition->Get<std::string>("regularization type");
@@ -930,14 +933,15 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::GetRegu
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::GetRegularizationFactorDerivative(
     const double&                         thickness,   //!< scatra-scatra interface layer thickness
-    const Teuchos::RCP<DRT::Condition>&   condition    //!< scatra-scatra interface coupling condition
+    const Teuchos::RCP<DRT::Condition>&   condition,   //!< scatra-scatra interface coupling condition
+    const double                          eta          //!< electrode-electrolyte overpotential at integration point
     ) const
 {
   // initialize derivative of regularization factor
   double regfacderiv(0.);
 
   // actually compute derivative of regularization factor if lithium stripping is relevant
-  if (condition->Type() == DRT::Condition::S2ICouplingGrowth and thickness > 0.)
+  if (condition->Type() == DRT::Condition::S2ICouplingGrowth and thickness > 0. and eta > 0.)
   {
     // extract regularization type from scatra-scatra interface coupling condition
     const std::string* regtype = condition->Get<std::string>("regularization type");

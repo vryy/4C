@@ -77,26 +77,26 @@ COMPONENT 1 FUNCTION -0.0332652803
 COMPONENT 0 FUNCTION 12.89178
 COMPONENT 1 FUNCTION 4.1850999
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 40 QUANTITY phi1 VALUE 1.01118669977618421e+01 TOLERANCE 1.e-08                // local lithium concentration at anode-electrolyte interface (anode side)
-SCATRA DIS scatra NODE 40 QUANTITY phi2 VALUE 8.74809529250677490e-09 TOLERANCE 1.e-16                // local electric potential at anode-electrolyte interface (anode side)
-SCATRA DIS scatra NODE 277 QUANTITY phi1 VALUE 1.19815741613676474e+00 TOLERANCE 1.e-09               // local lithium concentration at anode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 277 QUANTITY phi2 VALUE 2.03531061608731821e-02 TOLERANCE 1.e-11               // local electric potential at anode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 391 QUANTITY phi1 VALUE 1.20073699834094660e+00 TOLERANCE 1.e-09               // local lithium concentration at cathode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 391 QUANTITY phi2 VALUE 2.04411745425354570e-02 TOLERANCE 1.e-11               // local electric potential at cathode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 452 QUANTITY phi1 VALUE 1.18038903694311266e+01 TOLERANCE 1.e-08               // local lithium concentration at cathode-electrolyte interface (cathode side)
-SCATRA DIS scatra NODE 452 QUANTITY phi2 VALUE 4.25041353243548237e+00 TOLERANCE 1.e-09               // local electric potential at cathode-electrolyte interface (cathode side)
-SCATRA DIS scatra SPECIAL QUANTITY soc1 VALUE 7.96603336433848841e-01 TOLERANCE 1.e-10                // anode state of charge
-SCATRA DIS scatra SPECIAL QUANTITY soc2 VALUE 7.97222222220785870e-01 TOLERANCE 1.e-10                // cathode state of charge
-SCATRA DIS scatra SPECIAL QUANTITY cellvoltage VALUE 4.25041384146449364e+00 TOLERANCE 1.e-09         // cell voltage
+SCATRA DIS scatra NODE 40 QUANTITY phi1 VALUE 1.01163933224651466e+01 TOLERANCE 1.e-08                // local lithium concentration at anode-electrolyte interface (anode side)
+SCATRA DIS scatra NODE 40 QUANTITY phi2 VALUE 8.81124394062337948e-09 TOLERANCE 1.e-16                // local electric potential at anode-electrolyte interface (anode side)
+SCATRA DIS scatra NODE 277 QUANTITY phi1 VALUE 1.19815736351364377e+00 TOLERANCE 1.e-09               // local lithium concentration at anode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 277 QUANTITY phi2 VALUE 2.08831115766553270e-02 TOLERANCE 1.e-11               // local electric potential at anode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 391 QUANTITY phi1 VALUE 1.20073700986855481e+00 TOLERANCE 1.e-09               // local lithium concentration at cathode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 391 QUANTITY phi2 VALUE 2.09711821675824944e-02 TOLERANCE 1.e-11               // local electric potential at cathode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 452 QUANTITY phi1 VALUE 1.18038903694302864e+01 TOLERANCE 1.e-08               // local lithium concentration at cathode-electrolyte interface (cathode side)
+SCATRA DIS scatra NODE 452 QUANTITY phi2 VALUE 4.25094353985490514e+00 TOLERANCE 1.e-09               // local electric potential at cathode-electrolyte interface (cathode side)
+SCATRA DIS scatra SPECIAL QUANTITY soc1 VALUE 7.96982013313994320e-01 TOLERANCE 1.e-10                // anode state of charge
+SCATRA DIS scatra SPECIAL QUANTITY soc2 VALUE 7.97222222220919541e-01 TOLERANCE 1.e-10                // cathode state of charge
+SCATRA DIS scatra SPECIAL QUANTITY cellvoltage VALUE 4.25094384888391641e+00 TOLERANCE 1.e-09         // cell voltage
 SCATRA DIS scatra SPECIAL QUANTITY numiterlastnewton VALUE 4.0 TOLERANCE 1.e-20                       // number of Newton-Raphson iterations during last time step
-SCATRA DIS scatra SPECIAL QUANTITY numiterlastsolve VALUE 18.0 TOLERANCE 1.e-20                        // number of linear solver iterations during last Newton-Raphson iteration step
-SCATRA DIS scatra NODE 108 QUANTITY s2ilayerthickness VALUE 3.12942382048471149e-08 TOLERANCE 1.e-16       // local plating film thickness at anode-electrolyte interface (near separator)
-SCATRA DIS scatra NODE 22 QUANTITY s2ilayerthickness VALUE 3.12500953431124724e-08 TOLERANCE 1.e-16        // local plating film thickness at anode-electrolyte interface (medium distance from separator)
-SCATRA DIS scatra NODE 106 QUANTITY s2ilayerthickness VALUE 3.12221269059317145e-08 TOLERANCE 1.e-16       // local plating film thickness at anode-electrolyte interface (large distance from separator)
-SCATRA DIS scatra SPECIAL QUANTITY meanphi1 VALUE 5.50648385473879376e+00 TOLERANCE 1e-09             // mean lithium concentration averaged over total domain
-SCATRA DIS scatra SPECIAL QUANTITY meanphi1_0 VALUE 1.00619029760269179e+01 TOLERANCE 1e-08           // mean lithium concentration averaged over anode domain
-SCATRA DIS scatra SPECIAL QUANTITY meanphi1_1 VALUE 1.19999999999999085e+00 TOLERANCE 1e-09           // mean lithium concentration averaged over electrolyte domain
-SCATRA DIS scatra SPECIAL QUANTITY meanphi1_2 VALUE 1.18248050000157647e+01 TOLERANCE 1e-08           // mean lithium concentration averaged over cathode domain
+SCATRA DIS scatra SPECIAL QUANTITY numiterlastsolve VALUE 17.0 TOLERANCE 1.e-20                       // number of linear solver iterations during last Newton-Raphson iteration step
+SCATRA DIS scatra NODE 108 QUANTITY s2ilayerthickness VALUE 1.21791923197385820e-08 TOLERANCE 1.e-16       // local plating film thickness at anode-electrolyte interface (near separator)
+SCATRA DIS scatra NODE 22 QUANTITY s2ilayerthickness VALUE 1.21255597051492150e-08 TOLERANCE 1.e-16        // local plating film thickness at anode-electrolyte interface (medium distance from separator)
+SCATRA DIS scatra NODE 106 QUANTITY s2ilayerthickness VALUE 1.20915745882806789e-08 TOLERANCE 1.e-16       // local plating film thickness at anode-electrolyte interface (large distance from separator)
+SCATRA DIS scatra SPECIAL QUANTITY meanphi1 VALUE 5.50740227580694430e+00 TOLERANCE 1e-09             // mean lithium concentration averaged over total domain
+SCATRA DIS scatra SPECIAL QUANTITY meanphi1_0 VALUE 1.00660588033157623e+01 TOLERANCE 1e-08           // mean lithium concentration averaged over anode domain
+SCATRA DIS scatra SPECIAL QUANTITY meanphi1_1 VALUE 1.20000000000347429e+00 TOLERANCE 1e-09           // mean lithium concentration averaged over electrolyte domain
+SCATRA DIS scatra SPECIAL QUANTITY meanphi1_2 VALUE 1.18248050000142975e+01 TOLERANCE 1e-08           // mean lithium concentration averaged over cathode domain
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDSURF                          14
 NDVOL                           5
