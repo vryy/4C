@@ -1139,21 +1139,6 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
     break;
   }
 
-  case SCATRA::project_field:
-  {
-    // project state variables from material to spatial configuration
-    ProjectStateFromMaterialToSpatial(
-        ele,
-        elemat1_epetra,
-        elevec1_epetra,
-        params,
-        discretization,
-        la
-        );
-
-    break;
-  }
-
   default:
   {
     dserror("Not acting on this action. Forgot implementation?");
@@ -1207,8 +1192,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateService(
     DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_,nen_> >(*dispnp,edispnp_,lmdisp);
 
     // add nodal displacements to point coordinates
-    if(not scatrapara_->IsLagrange())
-      UpdateNodeCoordinates();
+    UpdateNodeCoordinates();
   }
   else edispnp_.Clear();
 
@@ -2752,56 +2736,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcHeteroReacMatAndRHS(
 }
 
 
-/*-----------------------------------------------------------------------------*
- | project state variables from material to spatial configuration   fang 01/18 |
- *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype,int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ProjectStateFromMaterialToSpatial(
-    DRT::Element*                  ele,              //!< current element
-    Epetra_SerialDenseMatrix&      emat,             //!< element matrix
-    Epetra_SerialDenseVector&      erhs,             //!< element residual
-    Teuchos::ParameterList&        params,           //!< parameter list
-    DRT::Discretization&           discretization,   //!< discretization
-    DRT::Element::LocationArray&   la                //!< location array
-    )
-{
-  // extract relevant quantities from discretization and parameter list
-  ExtractElementAndNodeValues(ele,params,discretization,la);
-
-  // compute spatial coordinates of displaced nodes
-  LINALG::Matrix<nsd_,nen_> xyze_disp(xyze_);
-  xyze_disp += edispnp_;
-
-  // initialize deformation gradient
-  LINALG::Matrix<nsd_,nsd_> F(true);
-
-  // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
-
-  // loop over all integration points
-  for(int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
-  {
-    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
-
-    // compute inverse determinant of deformation gradient at current integration point
-    F.MultiplyNT(xyze_disp,derxy_);
-    const double detF_inv = 1./F.Determinant();
-
-    // loop over all scalars
-    for(int k=0; k<numdofpernode_; ++k)
-    {
-      // compute mass matrix
-      CalcMatMass(emat,k,fac,1.);
-
-      // interpolate material scalar to integration point and compute spatial scalar at integration point
-      for(unsigned vi=0; vi<nen_; ++vi)
-        erhs[vi*numdofpernode_+k] += funct_(vi)*funct_.Dot(ephinp_[k])*detF_inv*fac;
-    } // loop over all scalars
-  } // loop over all integration points
-
-  return;
-}
-
-
 // template classes
+
 #include "scatra_ele_calc_fwd.hpp"

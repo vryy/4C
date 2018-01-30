@@ -665,9 +665,6 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   // flag for point-based null space calculation
   BoolParameter("NULLSPACE_POINTBASED","No","flag for point-based null space calculation",&cellscatradyn);
 
-  // flag for totally Lagrangian description of motion
-  BoolParameter("TOTAL_LAGRANGE","No","flag for totally Lagrangian description of motion",&cellscatradyn);
-
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& cellscatra_nonlin = cellscatradyn.sublist(
       "NONLINEAR",

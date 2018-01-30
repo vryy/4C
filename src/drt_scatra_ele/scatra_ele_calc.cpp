@@ -87,13 +87,11 @@ DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ScaTraEleCalc(const int numdofper
 {
   dsassert(nsd_ >= nsd_ele_,"problem dimension has to be equal or larger than the element dimension!");
 
-  // safety checks
+  // safety checks related with turbulence
   if(scatrapara_->ASSGD() and turbparams_->FSSGD())
     dserror("No combination of all-scale and fine-scale subgrid-diffusivity approach currently possible!");
   if(turbparams_->BD_Gp() and not scatrapara_->MatGP())
     dserror("Evaluation of B and D at Gauss point should always be combined with material evaluation at Gauss point!");
-  if(scatrapara_->IsLagrange() and use2ndderiv_)
-    dserror("Totally Lagrangian description of motion only implemented for linear finite elements!");
 
   return;
 }
@@ -230,6 +228,17 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ExtractElementAndNodeValues(
   // get additional state vector for ALE case: grid displacement
   if (scatrapara_->IsAle())
   {
+    // get velocity at nodes
+    Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(ndsvel, "velocity field");
+    if(vel == Teuchos::null)
+      dserror("Cannot get state vector velocity");
+
+    // extract local values of velocity field from global state vector
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_,nen_> >(*vel,evelnp_,lmvel);
+
+    // rotate the vector field in the case of rotationally symmetric boundary conditions
+    rotsymmpbc_->RotateMyValuesIfNecessary(evelnp_);
+
     // get number of dofset associated with displacement related dofs
     const int ndsdisp = params.get<int>("ndsdisp");
 
@@ -249,22 +258,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ExtractElementAndNodeValues(
     // extract local values of displacement field from global state vector
     DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_,nen_> >(*dispnp,edispnp_,lmdisp);
 
-    if(not scatrapara_->IsLagrange())
-    {
-      // get velocity at nodes
-      Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(ndsvel, "velocity field");
-      if(vel == Teuchos::null)
-        dserror("Cannot get state vector velocity");
-
-      // extract local values of velocity field from global state vector
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_,nen_> >(*vel,evelnp_,lmvel);
-
-      // rotate the vector field in the case of rotationally symmetric boundary conditions
-      rotsymmpbc_->RotateMyValuesIfNecessary(evelnp_);
-
-      // add nodal displacements to point coordinates
-      UpdateNodeCoordinates();
-    }
+    // add nodal displacements to point coordinates
+    UpdateNodeCoordinates();
   }
   else
   {

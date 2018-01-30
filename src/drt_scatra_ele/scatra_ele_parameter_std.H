@@ -58,7 +58,6 @@ namespace DRT
         //! @name return general parameters
         //! @{
         bool IsAle() const {return is_ale_;};
-        bool IsLagrange() const {return is_lagrange_;};
         bool IsConservative() const {return is_conservative_;};
         bool SphericalCoords() const {return sphericalcoords_;};
         INPAR::SCATRA::FluxType CalcFluxDomain() const {return calcflux_domain_;};
@@ -101,9 +100,6 @@ namespace DRT
         //! @{
         //! flag for ALE
         bool is_ale_;
-
-        //! flag for totally Lagrangian description of motion
-        bool is_lagrange_;
 
         //! flag for conservative form
         bool is_conservative_;
