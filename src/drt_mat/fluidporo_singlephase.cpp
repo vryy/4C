@@ -29,7 +29,6 @@
 MAT::PAR::FluidPoroSinglePhase::FluidPoroSinglePhase(Teuchos::RCP<MAT::PAR::Material> matdata) :
   Parameter(matdata),
   density_(matdata->GetDouble("DENSITY")),
-  bulkmodulus_(matdata->GetDouble("BULKMODULUS")),
   isinit_(false)
 {
   // retrieve problem instance to read from

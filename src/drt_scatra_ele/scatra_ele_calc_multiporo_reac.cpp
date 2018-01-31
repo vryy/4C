@@ -385,7 +385,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoro(
   double d_eff = 0.0;
   if(fabs(VarManager()->Saturation(k)) > VarManager()->GetMinSat(k))
   {
-    porosity = VarManager()->FluidPhaseManager()->Porosity()*VarManager()->Saturation(k)*actmat->Density();
+    porosity = VarManager()->FluidPhaseManager()->Porosity()*VarManager()->Saturation(k)*VarManager()->Density(k);
     d_eff = std::pow(VarManager()->FluidPhaseManager()->Porosity()*VarManager()->Saturation(k),actmat->Delta());
   }
 
@@ -750,7 +750,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcConvODMesh(
 
         // TODO: anisotropic difftensor and
         //       non-constant viscosity (because of pressure gradient, probably not really necessary)
-        const double vrhs = rhsfac*1.0/J*difftensor(0,0)*(-1.0);
+        const double vrhs = rhsfac*1.0/J*difftensor(0,0)*(-1.0)*VarManager()->Density(k);
 
         for (unsigned ui = 0; ui < my::nen_; ++ui)
         {
@@ -806,7 +806,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcConvODMesh(
 
         // TODO: anisotropic difftensor and
         //       non-constant viscosity (because of pressure gradient, probably not really necessary)
-        const double vrhs = rhsfac*1.0/J*difftensor(0,0)*(-1.0);
+        const double vrhs = rhsfac*1.0/J*difftensor(0,0)*(-1.0)*VarManager()->Density(k);
 
         for (unsigned ui = 0; ui < my::nen_; ++ui)
         {
@@ -1170,7 +1170,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConvODFluid(
     for (unsigned vi=0; vi<my::nen_; ++vi)
     {
       const int fvi = vi*my::numdofpernode_+k;
-      const double v =  rhsfac*my::funct_(vi)*(-1.0);
+      const double v =  rhsfac*my::funct_(vi)*(-1.0)*VarManager()->Density(k);
 
       for (unsigned ui=0; ui<my::nen_; ++ui)
       {
@@ -1202,7 +1202,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConvODFluid(
       for (unsigned vi=0; vi<my::nen_; ++vi)
       {
         const int fvi = vi*my::numdofpernode_+k;
-        const double v =  rhsfac*my::funct_(vi)*(-1.0);
+        const double v =  rhsfac*my::funct_(vi)*(-1.0)*VarManager()->Density(k);
 
 
         for (unsigned ui=0; ui<my::nen_; ++ui)

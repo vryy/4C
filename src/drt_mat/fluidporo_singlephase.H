@@ -24,6 +24,7 @@
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "fluidporo_relpermeability_law.H"
 #include "fluidporo_viscosity_law.H"
+#include "poro_density_law.H"
 
 
 /*---------------------------------------------------------------------*
@@ -35,7 +36,6 @@ namespace MAT
 
   //forward declaration
   class FluidPoroPhaseDof;
-  class PoroDensityLaw;
 
     /*----------------------------------------------------------------------*/
     /// material parameters for a single phase of porous multiphase fluid
@@ -66,8 +66,6 @@ namespace MAT
 
         /// density
         const double density_;
-        /// bulk modulus
-        const double bulkmodulus_;
         /// type of degree of freedom
         FluidPoroPhaseDof* phasedof_;
         /// density law
@@ -314,7 +312,7 @@ namespace MAT
       /// return inverse bulk modulus (compressibility)
       double InvBulkmodulus() const
       {
-        return 1.0/params_->bulkmodulus_;
+        return params_->densitylaw_->InvBulkmodulus();
       }
 
       /// return type of degree of freedom

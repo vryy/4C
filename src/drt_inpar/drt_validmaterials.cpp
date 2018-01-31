@@ -344,7 +344,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             INPAR::MAT::m_scatra_multiporo));
 
     AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
-    AddNamedReal(m,"DENSITY","density");
     AddNamedInt(m,"PHASEID","ID of fluid phase the scalar is associated with");
     AddNamedReal(m,"REACOEFF","reaction coefficient",0.0,true);
     AddNamedReal(m,"SCNUM","schmidt number",0.0,true);
@@ -2698,7 +2697,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AddNamedInt(m,"DENSITYLAWID","ID of density law");
     AddNamedReal(m,"DENSITY","reference/initial density");
-    AddNamedReal(m,"BULKMODULUS","bulk modulus of phase");
     AddNamedInt(m,"RELPERMEABILITYLAWID","ID of relative permeability law");
     AddNamedInt(m,"VISCOSITYLAWID","ID of viscosity law");
     AddNamedInt(m,"DOFTYPEID","ID of dof definition");

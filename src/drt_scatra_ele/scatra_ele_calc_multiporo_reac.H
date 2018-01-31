@@ -375,6 +375,7 @@ public:
     multiconv_(0),
     pressure_(0),
     saturation_(0),
+    density_(0),
     solidpressure_(0.0),
     scalartophaseID_(numscal,-1),
     delta_(numscal,0.0),
@@ -428,6 +429,7 @@ public:
      multiconv_.resize(numfluidphases);
      pressure_.resize(numfluidphases);
      saturation_.resize(numfluidphases);
+     density_.resize(numfluidphases);
      pressuregrad_.resize(numfluidphases);
      abspressuregrad_.resize(numfluidphases);
      volfrac_.resize(totalnummultiphasedofpernode-numfluidphases);
@@ -457,12 +459,16 @@ public:
        difftensor.Scale(phasemanager_->RelPermeability(k)/phasemanager_->DynViscosity(k, abspressuregrad_[k],ndsscatra_porofluid_));
 
        // Insert Darcy's law: porosity*S^\pi*(v^\pi - v_s) = - k/\mu * grad p
-       multiconvelint_[k].Multiply(-1.0,difftensor,pressuregrad_[k]);
+       // additional scaling with density since
+       // \rho*porosity*S^\pi*(v^\pi - v_s) = - rho*k/\mu * grad p
+       multiconvelint_[k].Multiply(-phasemanager_->Density(k),difftensor,pressuregrad_[k]);
 
        // phase pressure
        pressure_[k] = phasemanager_->Pressure(k);
        // phase saturation
        saturation_[k] = phasemanager_->Saturation(k);
+       // phase density
+       density_[k] = phasemanager_->Density(k);
        // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
        multiconv_[k].MultiplyTN(derxy,multiconvelint_[k]);
      }
@@ -478,6 +484,7 @@ public:
      }
 
      // overwrite convective term
+     // - rho * k/\mu*grad p * grad phi
      for (int k = 0; k < my::numscal_; ++k)
      {
        my::conv_phi_[k] = multiconvelint_[scalartophaseID_[k]].Dot(my::gradphi_[k]);
@@ -503,7 +510,7 @@ public:
       for (int k = 0; k < numfluidphases; ++k)
       {
         // convective velocity
-        multiconvelint_[k].Multiply(econvelnp[k],funct);
+        multiconvelint_[k].Multiply(phasemanager_->Density(k),econvelnp[k],funct);
         // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
         multiconv_[k].MultiplyTN(derxy,multiconvelint_[k]);
       }
@@ -579,6 +586,18 @@ public:
   const std::vector<double>& Saturation() const
   {
     return saturation_;
+  };
+
+  //! return density associated with scalar k
+  double Density(const int k) const
+  {
+    return density_[scalartophaseID_[k]];
+  };
+
+  //! return density associated with scalar k
+  const std::vector<double>& Density() const
+  {
+    return density_;
   };
 
   //! return volfrac vector
@@ -745,6 +764,8 @@ private:
   std::vector<double> pressure_;
   //! phase saturation
   std::vector<double> saturation_;
+  //! phase density
+  std::vector<double> density_;
   //! solid pressure
   double solidpressure_;
   //! pressure gradient
