@@ -89,7 +89,7 @@ SCATRA DIS scatra SPECIAL QUANTITY soc1 VALUE 7.96982013313994320e-01 TOLERANCE 
 SCATRA DIS scatra SPECIAL QUANTITY soc2 VALUE 7.97222222220919541e-01 TOLERANCE 1.e-10                // cathode state of charge
 SCATRA DIS scatra SPECIAL QUANTITY cellvoltage VALUE 4.25094384888391641e+00 TOLERANCE 1.e-09         // cell voltage
 SCATRA DIS scatra SPECIAL QUANTITY numiterlastnewton VALUE 4.0 TOLERANCE 1.e-20                       // number of Newton-Raphson iterations during last time step
-SCATRA DIS scatra SPECIAL QUANTITY numiterlastsolve VALUE 17.0 TOLERANCE 1.e-20                       // number of linear solver iterations during last Newton-Raphson iteration step
+SCATRA DIS scatra SPECIAL QUANTITY numiterlastsolve VALUE 21.0 TOLERANCE 1.e-20                       // number of linear solver iterations during last Newton-Raphson iteration step
 SCATRA DIS scatra NODE 108 QUANTITY s2ilayerthickness VALUE 1.21791923197385820e-08 TOLERANCE 1.e-16       // local plating film thickness at anode-electrolyte interface (near separator)
 SCATRA DIS scatra NODE 22 QUANTITY s2ilayerthickness VALUE 1.21255597051492150e-08 TOLERANCE 1.e-16        // local plating film thickness at anode-electrolyte interface (medium distance from separator)
 SCATRA DIS scatra NODE 106 QUANTITY s2ilayerthickness VALUE 1.20915745882806789e-08 TOLERANCE 1.e-16       // local plating film thickness at anode-electrolyte interface (large distance from separator)

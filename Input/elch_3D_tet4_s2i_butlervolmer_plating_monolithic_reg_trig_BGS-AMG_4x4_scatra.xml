@@ -5,16 +5,16 @@
   <ParameterList name="BlockSmoother(X)">
     <Parameter name="type" type="string" value="BlockSmoother(X)"/>
     <ParameterList name="parameters">
-      <Parameter name="smoother"  type="string" value="BGS"/>
+      <Parameter name="smoother"  type="string" value="BGS_List"/>
       <Parameter name="verbosity" type="string" value="off"/>
     </ParameterList>
   </ParameterList>
 
   <!-- global smoother -->
-  <ParameterList name="BGS">
+  <ParameterList name="BGS_List">
     <Parameter name="type" type="string" value="BGS"/>
     <ParameterList name="parameters">
-      <Parameter name="blocks"       type="string" value="(0),(1),(2)"/>
+      <Parameter name="blocks"       type="string" value="(1),(0),(2)"/>
       <Parameter name="smoothers"    type="string" value="MueLu,MueLu,MueLu"/>
       <Parameter name="local sweeps" type="string" value="1,1,1"/>
     </ParameterList>
@@ -30,7 +30,7 @@
         <Parameter name="verbosity"        type="string" value="None"/>
         <ParameterList name="All">
           <Parameter name="startLevel"   type="int"    value="0"/>
-          <Parameter name="Smoother"     type="string" value="ILU_List"/>
+          <Parameter name="Smoother"     type="string" value="ForwardGaussSeidel_List"/>
           <Parameter name="CoarseSolver" type="string" value="DirectSolver_List"/>
           <Parameter name="Aggregates"   type="string" value="UncoupledAggregationFactory_List"/>
           <Parameter name="Graph"        type="string" value="CoalesceDropFactory_List"/>
@@ -61,8 +61,9 @@
         </ParameterList>
 
         <ParameterList name="ProlongatorFactory_List">
-          <Parameter name="factory" type="string" value="PgPFactory"/>
-          <Parameter name="P"       type="string" value="TentativePFactory_List"/>
+          <Parameter name="factory"        type="string" value="SaPFactory"/>
+          <Parameter name="P"              type="string" value="TentativePFactory_List"/>
+          <Parameter name="Damping factor" type="double" value="1.333"/>
         </ParameterList>
 
         <ParameterList name="RestrictorFactory_List">
@@ -77,14 +78,17 @@
         </ParameterList>
 
         <!-- level smoothers -->
-        <ParameterList name="ILU_List">
+        <ParameterList name="ForwardGaussSeidel_List">
           <Parameter name="factory" type="string" value="TrilinosSmoother"/>
-          <Parameter name="type"    type="string" value="ILU"/>
+          <Parameter name="type"    type="string" value="RELAXATION"/>
           <ParameterList name="ParameterList">
-            <Parameter name="fact: level-of-fill" type="int" value="0"/>
+            <Parameter name="relaxation: type"              type="string"   value="Gauss-Seidel"/>
+            <Parameter name="relaxation: backward mode"     type="bool"     value="false"/>
+            <Parameter name="relaxation: sweeps"            type="int"      value="3"/>
+            <Parameter name="relaxation: damping factor"    type="double"   value="1.0"/>
           </ParameterList>
         </ParameterList>
-
+        
         <ParameterList name="DirectSolver_List">
           <Parameter name="factory" type="string" value="DirectSolver"/>
           <Parameter name="type"    type="string" value="Klu"/>
