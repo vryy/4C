@@ -491,6 +491,41 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetAdvancedReactionTerm
 }
 
 /*-------------------------------------------------------------------------------*
+ |  Get right hand side including reaction bodyforce term       kremheller 02/18 |
+ *-------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::GetRhsInt(
+    double&      rhsint,  //!< rhs containing bodyforce at Gauss point
+    const double densnp,  //!< density at t_(n+1)
+    const int    k        //!< index of current scalar
+    )
+{
+  // only difference is that there is no scaling with density
+  advreac::GetRhsInt(rhsint,1.0,k);
+
+}
+
+/*------------------------------------------------------------------------------ *
+ | calculation of reactive element matrix for coupled reactions kremheller 02/18 |
+ *-------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatReact(
+  Epetra_SerialDenseMatrix&          emat,
+  const int                          k,
+  const double                       timefacfac,
+  const double                       timetaufac,
+  const double                       taufac,
+  const double                       densnp,
+  const LINALG::Matrix<my::nen_,1>&      sgconv,
+  const LINALG::Matrix<my::nen_,1>&      diff
+  )
+{
+  // only difference is that there is no scaling with density
+  advreac::CalcMatReact(emat,k,timefacfac,timetaufac,taufac,1.0,sgconv,diff);
+
+}
+
+/*-------------------------------------------------------------------------------*
  |  fill the coupling vector and add variables to reactions          vuong 08/16 |
  *-------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
@@ -535,6 +570,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::FillCouplingVectorAndAd
 
     // initialize and add the variables to the reaction manager --> has to be done only once
     remanager->InitializeReaBodyForceDerivVectorAddVariables(my::numdofpernode_, couplingvalues_.size());
+    // error will be thrown if reaction != by-reaction coupling is chosen
     for (int j = 0; j < my::numdofpernode_; j++)
       matreaclist->AddAdditionalVariables(j,couplingvalues_);
   }
@@ -916,15 +952,19 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcHistAndSourceODMesh
     //const int curphase = VarManager()->GetPhaseID(k);
     const int numfluidphases = VarManager()->FluidPhaseManager()->NumFluidPhases();
 
-    // call base class
+    // 1) linearization of mesh motion:
+    //    call base class with rhsint
     my::CalcHistAndSourceODMesh(emat,k,ndofpernodemesh,fac,rhsint,J,dJ_dmesh,densnp);
 
-    double vrhs = -1.0*fac*rhsint;
-
+    // 2) linearization of history:
+    //    prefactor is densnp = porosity * rho * S
+    //    --> porosity has to be linearized
+    double vrhs = -1.0*fac*my::scatravarmanager_->Hist(k)*densnp;
     // linearization of porosity only if porosity is 'structure'-dependent
     if(VarManager()->FluidPhaseManager()->PorosityDependsOnStruct())
       PorosityLinearizationStruct(emat, k, vrhs);
 
+    // 3) linearization of advanced reaction terms
     const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = advreac::ReaManager();
     if(remanager->Active() && VarManager()->FluidPhaseManager()->PorosityDependsOnStruct())
     {
@@ -943,7 +983,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcHistAndSourceODMesh
       {
         const int fvi = vi*my::numdofpernode_+k;
         //TODO: gen-alpha
-        const double v = my::funct_(vi)*poroderiv*my::scatraparatimint_->TimeFac()*fac*(-1.0)*densnp;
+        const double v = my::funct_(vi)*poroderiv*my::scatraparatimint_->TimeFac()*fac*(-1.0);
 
         for (unsigned ui=0; ui<my::nen_; ++ui)
         {
@@ -1347,15 +1387,19 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcHistAndSourceODFlui
     const int numfluidphases = VarManager()->FluidPhaseManager()->NumFluidPhases();
     const int totalnummultiphasedofpernode = VarManager()->MultiphaseMat()->NumMat();
 
-    double vrhs = - fac*rhsint;
+    // 1) linearization of history:
+    //    prefactor is densnp = porosity * rho * S
+    //    --> porosity and saturation have to be linearized
+    double vrhs = -1.0*fac*my::scatravarmanager_->Hist(k)*densnp;
 
-    // linearization of saturation
+    // 1a) linearization of saturation
     SaturationLinearization(emat, k, curphase, numfluidphases, totalnummultiphasedofpernode, vrhs);
 
-    // linearization of porosity only if porosity is pressure-dependent
+    // 1b) linearization of porosity only if porosity is pressure-dependent
     if(VarManager()->FluidPhaseManager()->PorosityDependsOnFluid())
       PorosityLinearizationFluid(emat, k, curphase, numfluidphases, totalnummultiphasedofpernode, vrhs);
 
+    // 2) linearization of advanced reaction terms
     const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = advreac::ReaManager();
     if(remanager->Active() )
     {
@@ -1388,7 +1432,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcHistAndSourceODFlui
       {
         const int fvi = vi*my::numdofpernode_+k;
         //TODO: gen-alpha?
-        const double v = my::funct_(vi)*my::scatraparatimint_->TimeFac()*fac*(-1.0)*densnp;
+        const double v = my::funct_(vi)*my::scatraparatimint_->TimeFac()*fac*(-1.0);
 
         for (unsigned ui=0; ui<my::nen_; ++ui)
         {

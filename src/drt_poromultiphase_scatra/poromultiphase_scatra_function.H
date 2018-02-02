@@ -285,8 +285,8 @@ namespace POROMULTIPHASESCATRA
   // standard necrosis law for tumor growth model:
   // +-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
   // | NECROSIS_LAW_HEAVISIDE                                                                                                                                                        |
-  // | (-gamma_t_necr*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside(-(phi1-w_nl_crit)/(w_nl_env-w_nl_crit))+ delta_a_t*heaviside(p2-p_t_crit) )*(1-phi2)                           |
-  // | with phi1: mass fraction of oxygen, phi2: mass fraction of necrotic tumor cells                                                                                               |
+  // | (1-phi2)*porosity*S2*(-gamma_t_necr*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside(-(phi1-w_nl_crit)/(w_nl_env-w_nl_crit))+ delta_a_t*heaviside(p2-p_t_crit) )               |
+  // | with phi1: mass fraction of oxygen, phi2: mass fraction of necrotic tumor cells, S2: volume fraction of tumor cells                                                           |
   // | Furthermore, we assume that phase 1: healthy cells, phase2: tumor cells, phase3: IF                                                                                           |
   // |                                                                                                                                                                               |
   // | (possible) INPUT DEFINITION with exactly 5 function parameters:                                                                                                               |
@@ -353,15 +353,15 @@ namespace POROMULTIPHASESCATRA
   };
 
   // standard oxygen consumption law for tumor growth model:
-  // +--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-  // | OXYGEN_CONSUMPTION_LAW_HEAVISIDE                                                                                                                                                     |
-  // | (gamma_nl_growth*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside((phi1-w_nl_crit)/(w_nl_env-w_nl_crit))*heaviside(p_t_crit-p2)+ amma_0_nl*sin(pi/2.0*phi1/w_nl_env) )*(1-phi2)*S2/S3 |
-  // | with phi1: mass fraction of oxygen, phi2: mass fraction of necrotic tumor cells                                                                                                      |
-  // | Furthermore, we assume that phase 1: healthy cells, phase2: tumor cells, phase3: IF                                                                                                  |
-  // |                                                                                                                                                                                      |
-  // | (possible) INPUT DEFINITION with exactly 5 function parameters:                                                                                                                      |
-  // | POROMULTIPHASESCATRA_FUNCTION OXYGEN_CONSUMPTION_LAW_HEAVISIDE NUMPARAMS 5 PARAMS gamma_nl_growth 2.4e-7 gamma_0_nl 6e-7 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 p_t_crit 1.0e9             |
-  // +--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+  // +--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+  // | OXYGEN_CONSUMPTION_LAW_HEAVISIDE                                                                                                                                                           |
+  // | porosity*(1-phi2)*S2*(gamma_nl_growth*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside((phi1-w_nl_crit)/(w_nl_env-w_nl_crit))*heaviside(p_t_crit-p2)+ gamma_0_nl*sin(pi/2.0*phi1/w_nl_env)) |
+  // | with phi1: mass fraction of oxygen, phi2: mass fraction of necrotic tumor cells, S2: volume fraction of tumor cells                                                                        |
+  // | Furthermore, we assume that phase 1: healthy cells, phase2: tumor cells, phase3: IF                                                                                                        |
+  // |                                                                                                                                                                                            |
+  // | (possible) INPUT DEFINITION with exactly 5 function parameters:                                                                                                                            |
+  // | POROMULTIPHASESCATRA_FUNCTION OXYGEN_CONSUMPTION_LAW_HEAVISIDE NUMPARAMS 5 PARAMS gamma_nl_growth 2.4e-7 gamma_0_nl 6e-7 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 p_t_crit 1.0e9                   |
+  // +--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
   class OxygenConsumptionLawHeaviside : public PoroMultiPhaseScaTraFunction
   {
@@ -425,7 +425,7 @@ namespace POROMULTIPHASESCATRA
   // standard growth law for tumor cells <--> IF (with lysis) and pressure dependency as introduced into balance of mass of oxygen:
   // +-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
   // | TUMOR_GROWTH_LAW_HEAVISIDE_OXY                                                                                                                                                |
-  // | (( gamma_T_growth*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside((phi1-w_nl_crit)/(w_nl_env-w_nl_crit))*heaviside(p_t_crit-p2))*(1-phi2)- lambda*phi2)*phi1*S2/S3            |
+  // | phi1*S2*porosity*(( gamma_T_growth*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside((phi1-w_nl_crit)/(w_nl_env-w_nl_crit))*heaviside(p_t_crit-p2))*(1-phi2)- lambda*phi2)      |
   // | with phi1: mass fraction of oxygen, phi2: mass fraction of necrotic tumor cells, S2: volume fraction of tumor cells                                                           |
   // | Furthermore, we assume that phase 1: healthy cells, phase2: tumor cells, phase3: IF                                                                                           |
   // |                                                                                                                                                                               |
@@ -493,15 +493,15 @@ namespace POROMULTIPHASESCATRA
   };
 
   // standard growth law for tumor cells <--> IF (with lysis) and pressure dependency as introduced into balance of mass of necrotic cells:
-  // +-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-  // | TUMOR_GROWTH_LAW_HEAVISIDE_NECRO                                                                                                                                              |
-  // | (( gamma_T_growth*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside((phi1-w_nl_crit)/(w_nl_env-w_nl_crit))*heaviside(p_t_crit-p2))*(1-phi2) - lambda*phi2)*phi2 + lambda*phi2   |
-  // | with phi1: mass fraction of oxygen, phi2: mass fraction of necrotic tumor cells                                                                                               |
-  // | Furthermore, we assume that phase 1: healthy cells, phase2: tumor cells, phase3: IF                                                                                           |
-  // |                                                                                                                                                                               |
-  // | (possible) INPUT DEFINITION:                                                                                                                                                  |
-  // | POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE_NECRO NUMPARAMS 5 PARAMS gamma_T_growth 9.6e-6 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9            |
-  // +-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+  // +---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+  // | TUMOR_GROWTH_LAW_HEAVISIDE_NECRO                                                                                                                                                            |
+  // | porosity*S2*((( gamma_T_growth*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside((phi1-w_nl_crit)/(w_nl_env-w_nl_crit))*heaviside(p_t_crit-p2))*(1-phi2) - lambda*phi2)*phi2 + lambda*phi2)   |
+  // | with phi1: mass fraction of oxygen, phi2: mass fraction of necrotic tumor cells                                                                                                             |
+  // | Furthermore, we assume that phase 1: healthy cells, phase2: tumor cells, phase3: IF                                                                                                         |
+  // |                                                                                                                                                                                             |
+  // | (possible) INPUT DEFINITION:                                                                                                                                                                |
+  // | POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE_NECRO NUMPARAMS 5 PARAMS gamma_T_growth 9.6e-6 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9                          |
+  // +---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
   class TumorGrowthLawHeavisideNecro : public PoroMultiPhaseScaTraFunction
   {

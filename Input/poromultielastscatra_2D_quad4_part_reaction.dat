@@ -136,10 +136,11 @@ MAT 2 MAT_StructPoro MATID 20 POROLAWID 21 INITPOROSITY 0.4
 MAT 20 MAT_Struct_StVenantKirchhoff YOUNG 10 NUE 0.35 DENS 0.1
 MAT 21 MAT_PoroLawConstant
 
-MAT 5 MAT_matlist_reactions LOCAL No NUMMAT 2 MATIDS 301 302 NUMREAC 1 REACIDS 401 END
+MAT 5 MAT_matlist_reactions LOCAL No NUMMAT 2 MATIDS 301 302 NUMREAC 2 REACIDS 401 402 END
 MAT 301 MAT_scatra_multiporo PHASEID 2 DIFFUSIVITY 0.1
 MAT 302 MAT_scatra_multiporo PHASEID 3 DIFFUSIVITY 0.1
-MAT 401 MAT_scatra_reaction NUMSCAL 2 STOICH -1 1 REACCOEFF 1.0 COUPLING simple_multiplicative ROLE 1 0
+MAT 401 MAT_scatra_reaction NUMSCAL 2 STOICH -1 0 REACCOEFF 1.0 COUPLING by_function ROLE 5 0
+MAT 402 MAT_scatra_reaction NUMSCAL 2 STOICH  0 1 REACCOEFF 1.0 COUPLING by_function ROLE 0 6
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD porofluid TAR_MAT 1
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 5
@@ -157,6 +158,10 @@ VARFUNCTION phi2*p2*S2
 ----------------------------------------------------------------------FUNCT4
 COMPONENT 0 FUNCTION v
 VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 1000.0 DESCRIPTION 1000.0*0.5*(1-cos(t*pi/1.0)) 1000.0
+----------------------------------------------------------------------FUNCT5
+VARFUNCTION porosity*S3*phi1
+----------------------------------------------------------------------FUNCT6
+VARFUNCTION porosity*S4*phi1
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 89 QUANTITY dispx VALUE 9.89310142549411214e-02 TOLERANCE 1e-09
 STRUCTURE DIS structure NODE 341 QUANTITY dispx VALUE 2.33875817732452945e-01 TOLERANCE 1e-09

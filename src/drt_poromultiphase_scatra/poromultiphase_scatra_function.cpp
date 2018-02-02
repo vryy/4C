@@ -177,7 +177,7 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeaviside::EvaluateDeriv
 // standard necrosis law for tumor growth model:
 // +-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 // | NECROSIS_LAW_HEAVISIDE                                                                                                                                                        |
-// | (-gamma_t_necr*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside(-(phi1-w_nl_crit)/(w_nl_env-w_nl_crit))+ delta_a_t*heaviside(p2-p_t_crit) )*(1-phi2)                           |
+// | (1-phi2)*porosity*S2*(-gamma_t_necr*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside(-(phi1-w_nl_crit)/(w_nl_env-w_nl_crit))+ delta_a_t*heaviside(p2-p_t_crit) )               |
 // | with phi1: mass fraction of oxygen, phi2: mass fraction of necrotic tumor cells, S2: volume fraction of tumor cells                                                           |
 // | Furthermore, we assume that phase 1: healthy cells, phase2: tumor cells, phase3: IF                                                                                           |
 // |                                                                                                                                                                               |
@@ -263,6 +263,8 @@ double POROMULTIPHASESCATRA::NecrosisLawHeaviside::Evaluate(
 
   // read variables and constants (order is crucial)
   const double p2 = constants[1].second;
+  const double S2 = constants[4].second;
+  const double porosity = constants[6].second;
   const double oxy_mass_frac = variables[0].second;
   const double necr_frac = variables[1].second;
 
@@ -272,7 +274,7 @@ double POROMULTIPHASESCATRA::NecrosisLawHeaviside::Evaluate(
   const double heaviside_pres((p2-p_t_crit) > 0. ? 1. : 0.);
 
   // evaluate the function
-  const double functval = (macaulay + delta_a_t*heaviside_pres)*(1.0-necr_frac);
+  const double functval = (1.0-necr_frac)*S2*porosity*(macaulay + delta_a_t*heaviside_pres);
 
   return functval;
 }
@@ -298,6 +300,8 @@ std::vector<double> POROMULTIPHASESCATRA::NecrosisLawHeaviside::EvaluateDerivati
   {
     // read variables and constants (order is crucial)
     const double p2 = constants[1].second;
+    const double S2 = constants[4].second;
+    const double porosity = constants[6].second;
     const double oxy_mass_frac = variables[0].second;
     const double necr_frac = variables[1].second;
 
@@ -307,16 +311,36 @@ std::vector<double> POROMULTIPHASESCATRA::NecrosisLawHeaviside::EvaluateDerivati
     const double heaviside_pres((p2-p_t_crit) > 0. ? 1. : 0.);
 
     // derivative w.r.t. oxygen mass fraction
-    const double oxy_deriv = (- gamma_t_necr*heaviside_oxy*1.0/(w_nl_env-w_nl_crit))*(1.0-necr_frac);
+    const double oxy_deriv = (1.0-necr_frac)*porosity*S2*(- gamma_t_necr*heaviside_oxy*1.0/(w_nl_env-w_nl_crit));
     deriv[0] = oxy_deriv;
 
     // derivative w.r.t. necrotic cell mass fraction
-    const double necro_deriv = (macaulay + delta_a_t*heaviside_pres)*(-1.0);
+    const double necro_deriv = porosity*S2*(macaulay + delta_a_t*heaviside_pres)*(-1.0);
     deriv[1] = necro_deriv;
   }
   else if(variables[0].first == "p1") // OD-derivative
   {
-    // do nothing, only coupling is with heaviside --> derivative zero
+    // read variables and constants (order is crucial)
+    const double S2 = variables[4].second;
+    const double porosity = variables[6].second;
+    const double p2 = variables[1].second;
+    const double oxy_mass_frac = constants[0].second;
+    const double necr_frac = constants[1].second;
+
+    // evaluate heaviside
+    const double heaviside_oxy((-(oxy_mass_frac-w_nl_crit)) > 0. ? 1. : 0.);
+    const double macaulay = - gamma_t_necr*(oxy_mass_frac-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside_oxy;
+    const double heaviside_pres((p2-p_t_crit) > 0. ? 1. : 0.);
+
+    // derivative w.r.t. tumor cell saturation S2
+    const double tc_deriv = (1.0-necr_frac)*porosity*(macaulay + delta_a_t*heaviside_pres);
+    deriv[4] = tc_deriv;
+
+    // derivative w.r.t. porosity
+    const double poro_deriv = (1.0-necr_frac)*S2*(macaulay + delta_a_t*heaviside_pres);
+    deriv[6] = poro_deriv;
+
+    // Note: no pressure derivative, only coupling is with heaviside --> derivative zero
   }
   else
     dserror("Something went wrong in derivative evaluation of NECROSIS_LAW_HEAVISIDE");
@@ -325,15 +349,15 @@ std::vector<double> POROMULTIPHASESCATRA::NecrosisLawHeaviside::EvaluateDerivati
 }
 
 // standard oxygen consumption law for tumor growth model:
-// +--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-// | OXYGEN_CONSUMPTION_LAW_HEAVISIDE                                                                                                                                                     |
-// | (gamma_nl_growth*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside((phi1-w_nl_crit)/(w_nl_env-w_nl_crit))*heaviside(p_t_crit-p2)+ amma_0_nl*sin(pi/2.0*phi1/w_nl_env) )*(1-phi2)*S2/S3 |
-// | with phi1: mass fraction of oxygen, phi2: mass fraction of necrotic tumor cells, S2: volume fraction of tumor cells                                                                  |
-// | Furthermore, we assume that phase 1: healthy cells, phase2: tumor cells, phase3: IF                                                                                                  |
-// |                                                                                                                                                                                      |
-// | (possible) INPUT DEFINITION with exactly 5 function parameters:                                                                                                                      |
-// | POROMULTIPHASESCATRA_FUNCTION OXYGEN_CONSUMPTION_LAW_HEAVISIDE NUMPARAMS 5 PARAMS gamma_nl_growth 2.4e-7 gamma_0_nl 6e-7 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 p_t_crit 1.0e9             |
-// +--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+// +--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+// | OXYGEN_CONSUMPTION_LAW_HEAVISIDE                                                                                                                                                           |
+// | porosity*(1-phi2)*S2*(gamma_nl_growth*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside((phi1-w_nl_crit)/(w_nl_env-w_nl_crit))*heaviside(p_t_crit-p2)+ gamma_0_nl*sin(pi/2.0*phi1/w_nl_env)) |
+// | with phi1: mass fraction of oxygen, phi2: mass fraction of necrotic tumor cells, S2: volume fraction of tumor cells                                                                        |
+// | Furthermore, we assume that phase 1: healthy cells, phase2: tumor cells, phase3: IF                                                                                                        |
+// |                                                                                                                                                                                            |
+// | (possible) INPUT DEFINITION with exactly 5 function parameters:                                                                                                                            |
+// | POROMULTIPHASESCATRA_FUNCTION OXYGEN_CONSUMPTION_LAW_HEAVISIDE NUMPARAMS 5 PARAMS gamma_nl_growth 2.4e-7 gamma_0_nl 6e-7 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 p_t_crit 1.0e9                   |
+// +--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside::OxygenConsumptionLawHeaviside(
     std::vector<std::pair<std::string,double> > funct_params):
@@ -413,7 +437,7 @@ double POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside::Evaluate(
 
   // read variables and constants (order is crucial)
   const double S2 = constants[4].second;
-  const double S3 = constants[5].second;
+  const double porosity = constants[6].second;
   const double p2 = constants[1].second;
   const double oxy_mass_frac = variables[0].second;
   const double necr_frac = variables[1].second;
@@ -424,7 +448,7 @@ double POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside::Evaluate(
   const double heaviside_pres((p_t_crit-p2) > 0. ? 1. : 0.);
 
   // evaluate the function
-  const double functval = (macaulay*heaviside_pres + gamma_0_nl*sin(M_PI/2.0*oxy_mass_frac/w_nl_env))*(1.0-necr_frac)*S2/S3;
+  const double functval = (1.0-necr_frac)*S2*porosity*(macaulay*heaviside_pres + gamma_0_nl*sin(M_PI/2.0*oxy_mass_frac/w_nl_env));
 
   return functval;
 }
@@ -450,7 +474,7 @@ std::vector<double> POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside::Evaluat
   {
     // read variables and constants (order is crucial)
     const double S2 = constants[4].second;
-    const double S3 = constants[5].second;
+    const double porosity = constants[6].second;
     const double p2 = constants[1].second;
     const double oxy_mass_frac = variables[0].second;
     const double necr_frac = variables[1].second;
@@ -461,19 +485,19 @@ std::vector<double> POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside::Evaluat
     const double heaviside_pres((p_t_crit-p2) > 0. ? 1. : 0.);
 
     // derivative w.r.t. oxygen mass fraction
-    const double oxy_deriv = ( gamma_nl_growth*heaviside_oxy*heaviside_pres*1.0/(w_nl_env-w_nl_crit)
-                              +gamma_0_nl*M_PI/2.0/w_nl_env*cos(M_PI/2.0*oxy_mass_frac/w_nl_env))*(1.0-necr_frac)*S2/S3;
+    const double oxy_deriv = (1.0-necr_frac)*S2*porosity*( gamma_nl_growth*heaviside_oxy*heaviside_pres*1.0/(w_nl_env-w_nl_crit)
+                                                          +gamma_0_nl*M_PI/2.0/w_nl_env*cos(M_PI/2.0*oxy_mass_frac/w_nl_env));
     deriv[0] = oxy_deriv;
 
     // derivative w.r.t. necrotic cell mass fraction
-    const double necro_deriv = (macaulay*heaviside_pres + gamma_0_nl*sin(M_PI/2.0*oxy_mass_frac/w_nl_env))*S2/S3*(-1.0);
+    const double necro_deriv = S2*porosity*(-1.0)*(macaulay*heaviside_pres + gamma_0_nl*sin(M_PI/2.0*oxy_mass_frac/w_nl_env));
     deriv[1] = necro_deriv;
   }
   else if(variables[0].first == "p1") // OD-derivative
   {
     // read variables and constants (order is crucial)
     const double S2 = variables[4].second;
-    const double S3 = variables[5].second;
+    const double porosity = variables[6].second;
     const double p2 = variables[1].second;
     const double oxy_mass_frac = constants[0].second;
     const double necr_frac = constants[1].second;
@@ -484,12 +508,12 @@ std::vector<double> POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside::Evaluat
     const double heaviside_pres((p_t_crit-p2) > 0. ? 1. : 0.);
 
     // derivative w.r.t. tumor cell saturation S2
-    const double tc_deriv = (macaulay*heaviside_pres + gamma_0_nl*sin(M_PI/2.0*oxy_mass_frac/w_nl_env))*(1.0-necr_frac)/S3;
+    const double tc_deriv = (1.0-necr_frac)*porosity*(macaulay*heaviside_pres + gamma_0_nl*sin(M_PI/2.0*oxy_mass_frac/w_nl_env));
     deriv[4] = tc_deriv;
 
-    // derivative w.r.t. IF saturation S3
-    const double if_deriv = -1.0*(macaulay*heaviside_pres + gamma_0_nl*sin(M_PI/2.0*oxy_mass_frac/w_nl_env))*(1.0-necr_frac)*S2/S3/S3;
-    deriv[5] = if_deriv;
+    // derivative w.r.t. porosity
+    const double poro_deriv = (1.0-necr_frac)*S2*(macaulay*heaviside_pres + gamma_0_nl*sin(M_PI/2.0*oxy_mass_frac/w_nl_env));
+    deriv[6] = poro_deriv;
   }
   else
     dserror("Something went wrong in derivative evaluation of OXYGEN_CONSUMPTION_LAW_HEAVISIDE");
@@ -500,7 +524,7 @@ std::vector<double> POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside::Evaluat
 // standard growth law for tumor cells <--> IF (with lysis) and pressure dependency as introduced into balance of mass of oxygen:
 // +-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 // | TUMOR_GROWTH_LAW_HEAVISIDE_OXY                                                                                                                                                |
-// | (( gamma_T_growth*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside((phi1-w_nl_crit)/(w_nl_env-w_nl_crit))*heaviside(p_t_crit-p2))*(1-phi2)- lambda*phi2)*phi1*S2/S3            |
+// | phi1*S2*porosity*(( gamma_T_growth*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside((phi1-w_nl_crit)/(w_nl_env-w_nl_crit))*heaviside(p_t_crit-p2))*(1-phi2)- lambda*phi2)      |
 // | with phi1: mass fraction of oxygen, phi2: mass fraction of necrotic tumor cells, S2: volume fraction of tumor cells                                                           |
 // | Furthermore, we assume that phase 1: healthy cells, phase2: tumor cells, phase3: IF                                                                                           |
 // |                                                                                                                                                                               |
@@ -555,8 +579,8 @@ void POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy::CheckOrder(
     dserror("wrong order in variable vector, p2 not at position 2");
   if(constants[4].first != "S2")
     dserror("wrong order in variable vector, S2 not at position 5");
-  if(constants[5].first != "S3")
-    dserror("wrong order in variable vector, S3 not at position 6");
+  if(constants[6].first != "porosity")
+    dserror("wrong order in variable vector, porosity not at position 7");
   if(variables[0].first != "phi1")
     dserror("wrong order in variable vector, phi1 (oxygen mass fraction) not at position 1");
   if(variables[1].first != "phi2")
@@ -587,7 +611,7 @@ double POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy::Evaluate(
   // read variables and constants (order is crucial)
   const double p2 = constants[1].second;
   const double S2 = constants[4].second;
-  const double S3 = constants[5].second;
+  const double porosity = constants[6].second;
   const double oxy_mass_frac = variables[0].second;
   const double necr_frac = variables[1].second;
 
@@ -597,7 +621,7 @@ double POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy::Evaluate(
   const double macaulay = gamma_T_growth*(oxy_mass_frac-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside_oxy;
 
   // evaluate function
-  const double functval = ((macaulay*heaviside_pres)*(1-necr_frac)-lambda*necr_frac)*oxy_mass_frac*S2/S3;
+  const double functval = oxy_mass_frac*S2*porosity*((macaulay*heaviside_pres)*(1-necr_frac)-lambda*necr_frac);
 
   return functval;
 }
@@ -623,7 +647,7 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy::EvaluateDe
   {
     // read variables and constants (order is crucial)
     const double S2 = constants[4].second;
-    const double S3 = constants[5].second;
+    const double porosity = constants[6].second;
     const double p2 = constants[1].second;
     const double oxy_mass_frac = variables[0].second;
     const double necr_frac = variables[1].second;
@@ -634,12 +658,12 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy::EvaluateDe
     const double macaulay = gamma_T_growth*(oxy_mass_frac-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside_oxy;
 
     // derivative w.r.t. oxygen mass fraction
-    const double oxy_deriv = (gamma_T_growth*heaviside_oxy*heaviside_pres*1.0/(w_nl_env-w_nl_crit)*(1-necr_frac))*oxy_mass_frac*S2/S3
-                           + ((macaulay*heaviside_pres)*(1-necr_frac)-lambda*necr_frac)*S2/S3;
+    const double oxy_deriv = (gamma_T_growth*heaviside_oxy*heaviside_pres*1.0/(w_nl_env-w_nl_crit)*(1-necr_frac))*oxy_mass_frac*S2*porosity
+                           + ((macaulay*heaviside_pres)*(1-necr_frac)-lambda*necr_frac)*S2*porosity;
     deriv[0] = oxy_deriv;
 
     // derivative w.r.t. necrotic cell mass fraction
-    const double necro_deriv = ((macaulay*heaviside_pres)*(-1.0)-lambda)*oxy_mass_frac*S2/S3;
+    const double necro_deriv = ((macaulay*heaviside_pres)*(-1.0)-lambda)*oxy_mass_frac*S2*porosity;
     deriv[1] = necro_deriv;
 
   }
@@ -647,7 +671,7 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy::EvaluateDe
   {
     // read variables and constants (order is crucial)
     const double S2 = variables[4].second;
-    const double S3 = variables[5].second;
+    const double porosity = variables[6].second;
     const double p2 = variables[1].second;
     const double oxy_mass_frac = constants[0].second;
     const double necr_frac = constants[1].second;
@@ -658,12 +682,12 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy::EvaluateDe
     const double macaulay = gamma_T_growth*(oxy_mass_frac-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside_oxy;
 
     // derivative w.r.t. tumor cell saturation S2
-    const double tc_deriv = ((macaulay*heaviside_pres)*(1.0-necr_frac)-lambda*necr_frac)*oxy_mass_frac/S3;
+    const double tc_deriv = ((macaulay*heaviside_pres)*(1.0-necr_frac)-lambda*necr_frac)*oxy_mass_frac*porosity;
     deriv[4] = tc_deriv;
 
-    // derivative w.r.t. IF saturation S3
-    const double if_deriv = -1.0*(macaulay*heaviside_pres*(1.0-necr_frac)-lambda*necr_frac)*oxy_mass_frac*S2/S3/S3;
-    deriv[5] = if_deriv;
+    // derivative w.r.t. porosity
+    const double poro_deriv = (macaulay*heaviside_pres*(1.0-necr_frac)-lambda*necr_frac)*oxy_mass_frac*S2;
+    deriv[6] = poro_deriv;
   }
   else
     dserror("Something went wrong in derivative evaluation of TUMOR_GROWTH_LAW_HEAVISIDE_OXY");
@@ -672,15 +696,15 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy::EvaluateDe
 }
 
 // standard growth law for tumor cells <--> IF (with lysis) and pressure dependency as introduced into balance of mass of necrotic cells:
-// +-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-// | TUMOR_GROWTH_LAW_HEAVISIDE_NECRO                                                                                                                                              |
-// | (( gamma_T_growth*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside((phi1-w_nl_crit)/(w_nl_env-w_nl_crit))*heaviside(p_t_crit-p2))*(1-phi2) - lambda*phi2)*phi2 + lambda*phi2   |
-// | with phi1: mass fraction of oxygen, phi2: mass fraction of necrotic tumor cells                                                                                               |
-// | Furthermore, we assume that phase 1: healthy cells, phase2: tumor cells, phase3: IF                                                                                           |
-// |                                                                                                                                                                               |
-// | (possible) INPUT DEFINITION:                                                                                                                                                  |
-// | POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE_NECRO NUMPARAMS 5 PARAMS gamma_T_growth 9.6e-6 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9            |
-// +-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+// +---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+// | TUMOR_GROWTH_LAW_HEAVISIDE_NECRO                                                                                                                                                            |
+// | porosity*S2*((( gamma_T_growth*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside((phi1-w_nl_crit)/(w_nl_env-w_nl_crit))*heaviside(p_t_crit-p2))*(1-phi2) - lambda*phi2)*phi2 + lambda*phi2)   |
+// | with phi1: mass fraction of oxygen, phi2: mass fraction of necrotic tumor cells                                                                                                             |
+// | Furthermore, we assume that phase 1: healthy cells, phase2: tumor cells, phase3: IF                                                                                                         |
+// |                                                                                                                                                                                             |
+// | (possible) INPUT DEFINITION:                                                                                                                                                                |
+// | POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE_NECRO NUMPARAMS 5 PARAMS gamma_T_growth 9.6e-6 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9                          |
+// +---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro::TumorGrowthLawHeavisideNecro(
     std::vector<std::pair<std::string,double> > funct_params):
@@ -727,6 +751,10 @@ void POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro::CheckOrder(
   // might be different if we do not use exactly three fluid phases
   if(constants[1].first != "p2")
     dserror("wrong order in variable vector, p2 not at position 2");
+  if(constants[4].first != "S2")
+    dserror("wrong order in variable vector, S2 not at position 5");
+  if(constants[6].first != "porosity")
+    dserror("wrong order in variable vector, porosity not at position 7");
   if(variables[0].first != "phi1")
     dserror("wrong order in variable vector, phi1 (oxygen mass fraction) not at position 1");
   if(variables[1].first != "phi2")
@@ -756,6 +784,8 @@ double POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro::Evaluate(
 
   // read variables and constants (order is crucial)
   const double p2 = constants[1].second;
+  const double S2 = constants[4].second;
+  const double porosity = constants[6].second;
   const double oxy_mass_frac = variables[0].second;
   const double necr_frac = variables[1].second;
 
@@ -765,7 +795,7 @@ double POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro::Evaluate(
   const double macaulay = gamma_T_growth*(oxy_mass_frac-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside_oxy;
 
   // evaluate function
-  const double functval = ((macaulay*heaviside_pres)*(1-necr_frac)-lambda*necr_frac)*necr_frac+lambda*necr_frac;
+  const double functval = porosity*S2*(((macaulay*heaviside_pres)*(1-necr_frac)-lambda*necr_frac)*necr_frac+lambda*necr_frac);
 
   return functval;
 }
@@ -791,6 +821,8 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro::Evaluate
   {
     // read variables and constants (order is crucial)
     const double p2 = constants[1].second;
+    const double S2 = constants[4].second;
+    const double porosity = constants[6].second;
     const double oxy_mass_frac = variables[0].second;
     const double necr_frac = variables[1].second;
 
@@ -800,17 +832,37 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro::Evaluate
     const double macaulay = gamma_T_growth*(oxy_mass_frac-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside_oxy;
 
     // derivative w.r.t. oxygen mass fraction
-    const double oxy_deriv = (gamma_T_growth*heaviside_oxy*heaviside_pres*1.0/(w_nl_env-w_nl_crit))*(1-necr_frac)*necr_frac;
+    const double oxy_deriv = (gamma_T_growth*heaviside_oxy*heaviside_pres*1.0/(w_nl_env-w_nl_crit))*(1-necr_frac)*necr_frac*porosity*S2;
     deriv[0] = oxy_deriv;
 
     // derivative w.r.t. necrotic cell mass fraction
-    const double necro_deriv = (macaulay*heaviside_pres)*(1-2.0*necr_frac)-2.0*lambda*necr_frac+lambda;
+    const double necro_deriv = ((macaulay*heaviside_pres)*(1-2.0*necr_frac)-2.0*lambda*necr_frac+lambda)*porosity*S2;
     deriv[1] = necro_deriv;
 
   }
   else if(variables[0].first == "p1") // OD-derivative
   {
-    // do nothing, only coupling is with heaviside --> derivative zero
+    // read variables and constants (order is crucial)
+    const double S2 = variables[4].second;
+    const double porosity = variables[6].second;
+    const double p2 = variables[1].second;
+    const double oxy_mass_frac = constants[0].second;
+    const double necr_frac = constants[1].second;
+
+    // evaluate heaviside
+    const double heaviside_oxy((oxy_mass_frac-w_nl_crit) > 0. ? 1. : 0.);
+    const double heaviside_pres((p_t_crit-p2) > 0. ? 1. : 0.);
+    const double macaulay = gamma_T_growth*(oxy_mass_frac-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside_oxy;
+
+    // derivative w.r.t. tumor cell saturation S2
+    const double tc_deriv = porosity*(((macaulay*heaviside_pres)*(1-necr_frac)-lambda*necr_frac)*necr_frac+lambda*necr_frac);
+    deriv[4] = tc_deriv;
+
+    // derivative w.r.t. porosity
+    const double poro_deriv = S2*(((macaulay*heaviside_pres)*(1-necr_frac)-lambda*necr_frac)*necr_frac+lambda*necr_frac);
+    deriv[6] = poro_deriv;
+
+    // Note: no pressure derivative, only coupling is with heaviside --> derivative zero
   }
   else
     dserror("Something went wrong in derivative evaluation of TUMOR_GROWTH_LAW_HEAVISIDE_NECRO");

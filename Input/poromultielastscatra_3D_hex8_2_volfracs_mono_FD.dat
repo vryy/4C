@@ -132,7 +132,7 @@ VARFUNCTION phi1*phi2*porosity
 COMPONENT 0 FUNCTION v
 VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 1000.0 DESCRIPTION 1000.0*0.5*(1-cos(t*pi/1.0)) 1000.0
 ----------------------------------------------------------------------FUNCT5
-VARFUNCTION porosity*VF2
+VARFUNCTION porosity*porosity*S3*VF2
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 0.0 TOLERANCE 1e-14  // DIRICH VALUE
 STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE 0.0 TOLERANCE 1e-14  // DIRICH VALUE

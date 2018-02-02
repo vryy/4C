@@ -130,11 +130,14 @@ MAT 301 MAT_PoroLawConstant
 MAT 5 MAT_matlist_reactions LOCAL No NUMMAT 2 MATIDS 501 502 NUMREAC 4 REACIDS 503 504 505 506 END
 MAT 501 MAT_scatra_multiporo PHASEID 2 DIFFUSIVITY 3.2e-3 DELTA 2.0 // oxygen --> belongs to IF
 MAT 502 MAT_scatra_multiporo PHASEID 1 DIFFUSIVITY 0.0 DELTA 0.0 // necrotic tumor cells --> belong to tumor cells
-MAT 503 MAT_scatra_reaction NUMSCAL 2 STOICH 0 1 REACCOEFF 1.0 COUPLING by_function ROLE 0 5
+MAT 503 MAT_scatra_reaction NUMSCAL 2 STOICH 0 1 REACCOEFF 1.0 COUPLING by_function ROLE 0 11
+//equivalent with: MAT 503 MAT_scatra_reaction NUMSCAL 2 STOICH 0 1 REACCOEFF 1.0 COUPLING by_function ROLE 0 5
 MAT 504 MAT_scatra_reaction NUMSCAL 2 STOICH -1 0 REACCOEFF 1.0 COUPLING by_function ROLE 12 0
 //equivalent with: MAT 504 MAT_scatra_reaction NUMSCAL 2 STOICH -1 0 REACCOEFF 1.0 COUPLING by_function ROLE 6 0
-MAT 505 MAT_scatra_reaction NUMSCAL 2 STOICH 1 0 REACCOEFF 1.0 COUPLING by_function ROLE 9 0
-MAT 506 MAT_scatra_reaction NUMSCAL 2 STOICH 0 -1 REACCOEFF 1.0 COUPLING by_function ROLE 0 7
+MAT 505 MAT_scatra_reaction NUMSCAL 2 STOICH 1 0 REACCOEFF 1.0 COUPLING by_function ROLE 13 0
+//equivalent with: MAT 505 MAT_scatra_reaction NUMSCAL 2 STOICH 1 0 REACCOEFF 1.0 COUPLING by_function ROLE 9 0
+MAT 506 MAT_scatra_reaction NUMSCAL 2 STOICH 0 -1 REACCOEFF 1.0 COUPLING by_function ROLE 0 14
+//equivalent with: MAT 506 MAT_scatra_reaction NUMSCAL 2 STOICH 0 -1 REACCOEFF 1.0 COUPLING by_function ROLE 0 7
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 4 TAR_FIELD porofluid TAR_MAT 2
 SRC_FIELD structure SRC_MAT 4 TAR_FIELD scatra TAR_MAT 5
@@ -149,28 +152,28 @@ COMPONENT 1 FUNCTION 0.0
 COMPONENT 0 FUNCTION 4.2e-6
 COMPONENT 1 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT4
-VARFUNCTION (9.6e-3*(phi1-2.0e-6)/(4.2e-6-2.0e-6)*heaviside((phi1-2.0e-6)/(4.2e-6-2.0e-6))*heaviside(1.3e6-p2))*(1-phi2)*porosity*S2
+VARFUNCTION (1-phi2)*porosity*S2*(9.6e-3*(phi1-2.0e-6)/(4.2e-6-2.0e-6)*heaviside((phi1-2.0e-6)/(4.2e-6-2.0e-6))*heaviside(1.3e6-p2))
 ----------------------------------------------------------------------FUNCT5
-VARFUNCTION (-9.6e-6*(phi1-2.0e-6)/(4.2e-6-2.0e-6)*heaviside(-(phi1-2.0e-6)/(4.2e-6-2.0e-6))+0.5e-3*heaviside(p2-1.3e6))*(1-phi2) NUMCONSTANTS 3 CONSTANTS p2 0.0 porosity 0.0 S2 0.0
+VARFUNCTION porosity*S2*(1-phi2)*(-9.6e-3*(phi1-2.0e-6)/(4.2e-6-2.0e-6)*heaviside(-(phi1-2.0e-6)/(4.2e-6-2.0e-6))+0.5e-3*heaviside(p2-1.3e6)) NUMCONSTANTS 3 CONSTANTS p2 0.0 porosity 0.0 S2 0.0
 ----------------------------------------------------------------------FUNCT6
-VARFUNCTION (2.4e-7*(phi1-2.0e-6)/(4.2e-6-2.0e-6)*heaviside((phi1-2.0e-6)/(4.2e-6-2.0e-6))*heaviside(1.3e6-p2)+6e-7*sin(0.5*pi*phi1/4.2e-6))*(1-phi2)*S2/S3 NUMCONSTANTS 3 CONSTANTS p2 0.0 S2 0.0 S3 0.0
+VARFUNCTION porosity*S2*(1-phi2)*(2.4e-4*(phi1-2.0e-6)/(4.2e-6-2.0e-6)*heaviside((phi1-2.0e-6)/(4.2e-6-2.0e-6))*heaviside(1.3e6-p2)+6e-4*sin(0.5*pi*phi1/4.2e-6)) NUMCONSTANTS 3 CONSTANTS p2 0.0 S2 0.0 S3 0.0
 ----------------------------------------------------------------------FUNCT7
-VARFUNCTION ((9.6e-6*(phi1-2.0e-6)/(4.2e-6-2.0e-6)*heaviside((phi1-2.0e-6)/(4.2e-6-2.0e-6))*heaviside(1.3e6-p2))*(1-phi2))*phi2 NUMCONSTANTS 3 CONSTANTS p2 0.0 porosity 0.0 S2 0.0
+VARFUNCTION porosity*S2*phi2*((9.6e-3*(phi1-2.0e-6)/(4.2e-6-2.0e-6)*heaviside((phi1-2.0e-6)/(4.2e-6-2.0e-6))*heaviside(1.3e6-p2))*(1-phi2)) NUMCONSTANTS 3 CONSTANTS p2 0.0 porosity 0.0 S2 0.0
 ----------------------------------------------------------------------FUNCT8
 COMPONENT 0 FUNCTION 4.2e-6
 COMPONENT 1 FUNCTION 2.0e-6
 ----------------------------------------------------------------------FUNCT9
-VARFUNCTION ((9.6e-6*(phi1-2.0e-6)/(4.2e-6-2.0e-6)*heaviside((phi1-2.0e-6)/(4.2e-6-2.0e-6))*heaviside(1.3e6-p2))*(1-phi2)*S2/S3)*phi1 NUMCONSTANTS 3 CONSTANTS p2 0.0 S2 0.0 S3 0.0
+VARFUNCTION phi1*porosity*((9.6e-3*(phi1-2.0e-6)/(4.2e-6-2.0e-6)*heaviside((phi1-2.0e-6)/(4.2e-6-2.0e-6))*heaviside(1.3e6-p2))*(1-phi2)*S2) NUMCONSTANTS 3 CONSTANTS p2 0.0 S2 0.0 S3 0.0
 ----------------------------------------------------------------------FUNCT10
 POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE NUMPARAMS 5 PARAMS gamma_T_growth 9.6e-3 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9
 ----------------------------------------------------------------------FUNCT11
-POROMULTIPHASESCATRA_FUNCTION NECROSIS_LAW_HEAVISIDE NUMPARAMS 5 PARAMS gamma_t_necr 9.6e-6 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 delta_a_t 0.0 p_t_crit 1.0e9
+POROMULTIPHASESCATRA_FUNCTION NECROSIS_LAW_HEAVISIDE NUMPARAMS 5 PARAMS gamma_t_necr 9.6e-3 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 delta_a_t 0.0 p_t_crit 1.0e9
 ----------------------------------------------------------------------FUNCT12
-POROMULTIPHASESCATRA_FUNCTION OXYGEN_CONSUMPTION_LAW_HEAVISIDE NUMPARAMS 5 PARAMS gamma_nl_growth 2.4e-7 gamma_0_nl 6e-7 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 p_t_crit 1.0e9
+POROMULTIPHASESCATRA_FUNCTION OXYGEN_CONSUMPTION_LAW_HEAVISIDE NUMPARAMS 5 PARAMS gamma_nl_growth 2.4e-4 gamma_0_nl 6e-4 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 p_t_crit 1.0e9
 ----------------------------------------------------------------------FUNCT13
-POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE_OXY NUMPARAMS 5 PARAMS gamma_T_growth 9.6e-6 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9
+POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE_OXY NUMPARAMS 5 PARAMS gamma_T_growth 9.6e-3 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9
 ----------------------------------------------------------------------FUNCT14
-POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE_NECRO NUMPARAMS 5 PARAMS gamma_T_growth 9.6e-6 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9
+POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE_NECRO NUMPARAMS 5 PARAMS gamma_T_growth 9.6e-3 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 0.0 TOLERANCE 1e-14  // DIRICH VALUE
 STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE 0.0 TOLERANCE 1e-14  // DIRICH VALUE

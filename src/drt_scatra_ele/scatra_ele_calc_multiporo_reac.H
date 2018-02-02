@@ -344,6 +344,25 @@ public:
       const Teuchos::RCP<MAT::MatListReactions> matreaclist,
       const Teuchos::RCP<ScaTraEleReaManagerAdvReac>  remanager);
 
+  //! Get right hand side including reaction bodyforce term
+  virtual void GetRhsInt(
+    double&      rhsint,  //!< rhs containing bodyforce at Gauss point
+    const double densnp,  //!< density at t_(n+1)
+    const int    k        //!< index of current scalar
+  );
+
+  //! calculation of reactive element matrix
+  virtual void CalcMatReact(
+    Epetra_SerialDenseMatrix&          emat,        //!< element matrix to be filled
+    const int                          k,           //!< index of current scalar
+    const double                       timefacfac,  //!< domain-integration factor times time-integration factor
+    const double                       timetaufac,  //!< domain-integration factor times time-integration factor times tau
+    const double                       taufac,      //!< domain-integration factor times tau
+    const double                       densnp,      //!< density at time_(n+1)
+    const LINALG::Matrix<my::nen_,1>&      sgconv,  //!< subgrid-scale convective operator
+    const LINALG::Matrix<my::nen_,1>&      diff     //!< laplace term
+  );
+
   protected:
 
   //! nodal flux values at t_(n+1)

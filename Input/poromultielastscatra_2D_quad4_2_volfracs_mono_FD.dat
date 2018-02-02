@@ -119,11 +119,12 @@ MAT 20 MAT_Struct_StVenantKirchhoff YOUNG 10 NUE 0.35 DENS 0.1
 MAT 21 MAT_PoroLawDensityDependent DENSITYLAWID 22
 MAT 22 MAT_PoroDensityLawExp BULKMODULUS 1e15
 
-MAT 5 MAT_matlist_reactions LOCAL No NUMMAT 2 MATIDS 301 302 NUMREAC 2 REACIDS 401 402 END
+MAT 5 MAT_matlist_reactions LOCAL No NUMMAT 2 MATIDS 301 302 NUMREAC 3 REACIDS 401 402 403 END
 MAT 301 MAT_scatra_multiporo PHASEID 2 DIFFUSIVITY 0.1
 MAT 302 MAT_scatra_multiporo PHASEID 3 DIFFUSIVITY 0.1 DELTA 1.0
-MAT 401 MAT_scatra_reaction NUMSCAL 2 STOICH -1 1 REACCOEFF 1.0 COUPLING by_function ROLE 5 5
+MAT 401 MAT_scatra_reaction NUMSCAL 2 STOICH -1 0 REACCOEFF 1.0 COUPLING by_function ROLE 5 0
 MAT 402 MAT_scatra_reaction NUMSCAL 2 STOICH 1 0 REACCOEFF 1.0 COUPLING by_function ROLE 6 0
+MAT 403 MAT_scatra_reaction NUMSCAL 2 STOICH 0 1 REACCOEFF 1.0 COUPLING by_function ROLE 0 7
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD porofluid TAR_MAT 1
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 5
@@ -143,9 +144,11 @@ VARFUNCTION phi1*phi2*porosity
 COMPONENT 0 FUNCTION v
 VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 1000.0 DESCRIPTION 1000.0*0.5*(1-cos(t*pi/1.0)) 1000.0
 ----------------------------------------------------------------------FUNCT5
-VARFUNCTION S1*S2*p3
+VARFUNCTION S1*S2*p3*porosity*S3
 ----------------------------------------------------------------------FUNCT6
-VARFUNCTION phi1*S4*S4*VF1
+VARFUNCTION phi1*S4*S4*VF1*porosity*S3
+----------------------------------------------------------------------FUNCT7
+VARFUNCTION S1*S2*p3*porosity*S4
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE 0.0 TOLERANCE 1e-14  // DIRICH VALUE
 STRUCTURE DIS structure NODE 6 QUANTITY dispy VALUE 0.0 TOLERANCE 1e-14  // DIRICH VALUE
