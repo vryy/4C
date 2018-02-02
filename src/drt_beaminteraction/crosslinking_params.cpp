@@ -33,7 +33,7 @@ BEAMINTERACTION::CrosslinkingParams::CrosslinkingParams()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::CrosslinkingParams::Init( STR::TIMINT::BaseDataGlobalState const& gstate)
+void BEAMINTERACTION::CrosslinkingParams::Init( STR::TIMINT::BaseDataGlobalState const& gstate )
 {
   issetup_ = false;
 

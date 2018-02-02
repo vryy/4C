@@ -43,10 +43,30 @@ DRT::ParObject* BEAMINTERACTION::BeamLinkTrussType::Create( const std::vector<ch
  *----------------------------------------------------------------------------*/
 BEAMINTERACTION::BeamLinkTruss::BeamLinkTruss() :
     BeamLinkPinJointed(),
-    linkele_( Teuchos::null )
+    linkele_( Teuchos::null ),
+    bspotforces_( 2, LINALG::SerialDenseVector(true) )
 {
-  // empty constructor
-  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+BEAMINTERACTION::BeamLinkTruss::BeamLinkTruss( const BEAMINTERACTION::BeamLinkTruss & old ) :
+    BEAMINTERACTION::BeamLinkPinJointed(old),
+    bspotforces_( 2, LINALG::SerialDenseVector(true) )
+{
+  if ( linkele_ != Teuchos::null )
+    linkele_ = Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::Truss3>( Teuchos::rcp( old.linkele_->Clone(), true ) );
+  else
+    linkele_ = Teuchos::null;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<BEAMINTERACTION::BeamLink> BEAMINTERACTION::BeamLinkTruss::Clone() const
+{
+  Teuchos::RCP<BEAMINTERACTION::BeamLinkTruss> newlinker =
+      Teuchos::rcp( new BEAMINTERACTION::BeamLinkTruss( *this ) );
+  return newlinker;
 }
 
 /*----------------------------------------------------------------------------*
@@ -55,11 +75,12 @@ void BEAMINTERACTION::BeamLinkTruss::Init(
     int id,
     const std::vector<std::pair<int, int> >& eleids,
     const std::vector<LINALG::Matrix<3,1> >& initpos,
-    const std::vector<LINALG::Matrix<3,3> >& inittriad)
+    const std::vector<LINALG::Matrix<3,3> >& inittriad,
+    double timelinkwasset)
 {
   issetup_ = false;
 
-  BeamLinkPinJointed::Init( id, eleids, initpos, inittriad );
+  BeamLinkPinJointed::Init( id, eleids, initpos, inittriad, timelinkwasset );
 
 }
 
@@ -188,6 +209,9 @@ bool BEAMINTERACTION::BeamLinkTruss::EvaluateForce(
   std::copy( &force(0), &force(0) + 3, &forcevec1(0) );
   std::copy( &force(0) + 3, &force(0) + 6, &forcevec2(0) );
 
+  bspotforces_[0] = forcevec1;
+  bspotforces_[1] = forcevec2;
+
   return true;
 }
 
@@ -292,7 +316,28 @@ void BEAMINTERACTION::BeamLinkTruss::FillStateVariablesForElementEvaluation(
   for ( unsigned int i = 0; i < 3; ++i )
   {
     absolute_nodal_positions(i) = GetBindSpotPos1()(i);
-    absolute_nodal_positions(3+i) = GetBindSpotPos2()(i);
+    absolute_nodal_positions( 3 + i ) = GetBindSpotPos2()(i);
   }
-
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void BEAMINTERACTION::BeamLinkTruss::ScaleLinkerReferenceLength( double scalefac )
+{
+  linkele_->ScaleReferenceLength( scalefac );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void BEAMINTERACTION::BeamLinkTruss::GetBindingSpotForce( int bspotid, LINALG::SerialDenseVector & bspotforce ) const
+{
+  bspotforce = bspotforces_[bspotid];
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double BEAMINTERACTION::BeamLinkTruss::GetCurrentLinkerLength() const
+{
+  return linkele_->Lcurr();
+}
+

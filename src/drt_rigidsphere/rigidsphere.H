@@ -26,12 +26,17 @@
 
 #include "../drt_beaminteraction/beaminteraction_calc_utils.H"
 
+#include <unordered_map>
+
 // forward declaration ...
+namespace BEAMINTERACTION {
+class BeamLinkPinJointed;
+}
 namespace STR {
 namespace ELEMENTS {
   class ParamsInterface;
-} // namespace ELEMENTS
-} // namespace STR
+}
+}
 
 namespace DRT
 {
@@ -337,40 +342,75 @@ public:
     stiffmat.Zero();
   }
 
+  /*!
+  \brief set radius of sphere
+  */
+  void SetRadius( double radius ) { radius_ = radius;};
+
+  /*!
+  \brief set radius of sphere
+  */
+  void ScaleRadius( double scalefac ) { radius_ *= scalefac;};
+
   /// return binding spot xi function dummy
   double GetBindingSpotXi(int dummy ) const
   {
     return 0.0;
   }
 
-  /** \brief add bond
-   *
-   *  \author eichinger
-   *  \date 06/17 */
-  void AddBond( std::pair< int, int > newbondpartner ) { bondstatus_.insert( newbondpartner ); };
-
    /** \brief get number of bonds
    *
    *  \author eichinger
    *  \date 06/17 */
-  int GetNumberOfBonds( int elepartnergid ) const { return static_cast<int>( bondstatus_.size() ); }
-
-  /** \brief get bond status of sphere element
-   *
-   *  \author eichinger
-   *  \date 06/17 */
-  std::set< std::pair< int, int > , BEAMINTERACTION::UTILS::StdPairComparatorOrderCounts > const &
-      GetBondStatus() const { return bondstatus_;}
+  int GetNumberOfBonds( ) const { return static_cast<int>( mybondstobeams_.size() ); }
 
   /** \brief check if bond exists
    *
    *  \author eichinger
    *  \date 06/17 */
-  bool DoesBondExist( std::pair< int, int > bondpartner ) const
+  bool DoesBondExist( int bond ) const
   {
-    return ( bondstatus_.find(bondpartner) != bondstatus_.end() ) ? true : false;
+    return ( mybondstobeams_.find(bond) != mybondstobeams_.end() ) ? true : false;
   }
 
+  /** \brief check bond with certain bond gid
+   *
+   *  \author eichinger
+   *  \date 06/17 */
+  Teuchos::RCP< BEAMINTERACTION::BeamLinkPinJointed> GetBond( int bond_id )
+  {
+    return mybondstobeams_[bond_id];
+  }
+
+  /** \brief check bond with certain bond gid
+   *
+   *  \author eichinger
+   *  \date 06/17 */
+  std::unordered_map< int, Teuchos::RCP< BEAMINTERACTION::BeamLinkPinJointed > > const & GetBondMap() const
+  {
+    return mybondstobeams_;
+  }
+
+  /** \brief add bond
+   *
+   *  \author eichinger
+   *  \date 06/17 */
+  void AddBond( int id, Teuchos::RCP< BEAMINTERACTION::BeamLinkPinJointed> newbondpartner ) {
+    mybondstobeams_[id] = newbondpartner; };
+
+  /** \brief disolve bond
+   *
+   *  \author eichinger
+   *  \date 06/17 */
+  void DissolveBond( int id ) {
+
+#ifdef DEBUG
+    if ( mybondstobeams_.find(id) == mybondstobeams_.end() )
+      dserror(" You want to dissolve not existing bond. Something went wrong.");
+#endif
+
+    mybondstobeams_.erase(id);
+  };
 
   //@}
 
@@ -398,8 +438,8 @@ private:
 
   //! @name variables for biopolymer network simulations
 
-  /// holds gids of (beam) elements to which sphere is bonded to (size equals number of bonds)
-  std::set< std::pair< int, int > , BEAMINTERACTION::UTILS::StdPairComparatorOrderCounts > bondstatus_;
+  /// holds unique id of beam element binding spot to which sphere is bonded to (size equals number of bonds)
+  std::unordered_map< int, Teuchos::RCP< BEAMINTERACTION::BeamLinkPinJointed > > mybondstobeams_;
 
   //@}
 
@@ -445,10 +485,6 @@ private:
   //! computes damping coefficient
   double MyDampingConstant();
 
-  //! Compute artificial damping contribution for PTC
-  void EvaluatePTC(Teuchos::ParameterList& params,
-                     Epetra_SerialDenseMatrix& elemat1);
-
   // don't want = operator
   Rigidsphere& operator = (const Rigidsphere& old);
 
@@ -457,7 +493,7 @@ private:
 // << operator
 std::ostream& operator << (std::ostream& os, const DRT::Element& ele);
 
-} // namespace Elements
-} // namespace DRT
+}
+}
 
-#endif  // #ifndef RIGIDSPHERE_H
+#endif

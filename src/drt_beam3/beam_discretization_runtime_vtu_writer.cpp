@@ -473,12 +473,14 @@ BeamDiscretizationRuntimeVtuWriter::AppendElementOwningProcessor()
   {
     const DRT::Element* ele = discretization_->lRowElement( local_row_indices_beam_elements_[ibeamele] );
 
+#ifdef DEBUG
     // cast to beam element
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
     // Todo safety check for now, may be removed when better tested
     if ( beamele == NULL )
       dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+#endif
 
     for( int i = 0; i < num_cells_per_element_[ibeamele]; ++i )
       owner.push_back( ele->Owner() );
@@ -487,6 +489,80 @@ BeamDiscretizationRuntimeVtuWriter::AppendElementOwningProcessor()
   // append the solution vector to the visualization data of the vtu writer object
   runtime_vtuwriter_->AppendVisualizationCellDataVector(
       owner, 1, "element_owner" );
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+void
+BeamDiscretizationRuntimeVtuWriter::AppendElementInternalEnergy()
+{
+  // determine number of row BEAM elements for each processor
+  // output is completely independent of the number of processors involved
+  unsigned int num_beam_row_elements = local_row_indices_beam_elements_.size();
+
+  // processor owning the element
+  std::vector<double> e_int;
+  e_int.reserve( num_beam_row_elements );
+
+  // loop over my elements and collect the data about triads/base vectors
+  for ( unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele )
+  {
+    const DRT::Element* ele = discretization_->lRowElement( local_row_indices_beam_elements_[ibeamele] );
+
+
+    // cast to beam element
+    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+
+#ifdef DEBUG
+    // Todo safety check for now, may be removed when better tested
+    if ( beamele == NULL )
+      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+#endif
+
+    for( int i = 0; i < num_cells_per_element_[ibeamele]; ++i )
+      e_int.push_back( beamele->GetInternalEnergy() );
+  }
+
+  // append the solution vector to the visualization data of the vtu writer object
+  runtime_vtuwriter_->AppendVisualizationCellDataVector(
+      e_int, 1, "element_internal_energy" );
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+void
+BeamDiscretizationRuntimeVtuWriter::AppendElementKineticEnergy()
+{
+  // determine number of row BEAM elements for each processor
+  // output is completely independent of the number of processors involved
+  unsigned int num_beam_row_elements = local_row_indices_beam_elements_.size();
+
+  // processor owning the element
+  std::vector<double> e_kin;
+  e_kin.reserve( num_beam_row_elements );
+
+  // loop over my elements and collect the data about triads/base vectors
+  for ( unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele )
+  {
+    const DRT::Element* ele = discretization_->lRowElement( local_row_indices_beam_elements_[ibeamele] );
+
+
+    // cast to beam element
+    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+
+#ifdef DEBUG
+    // Todo safety check for now, may be removed when better tested
+    if ( beamele == NULL )
+      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+#endif
+
+    for( int i = 0; i < num_cells_per_element_[ibeamele]; ++i )
+      e_kin.push_back( beamele->GetKineticEnergy() );
+  }
+
+  // append the solution vector to the visualization data of the vtu writer object
+  runtime_vtuwriter_->AppendVisualizationCellDataVector(
+      e_kin, 1, "element_kinetic_energy" );
 }
 
 /*-----------------------------------------------------------------------------------------------*

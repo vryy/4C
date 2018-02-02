@@ -249,6 +249,16 @@ public:
     dserror("method not implemented because element is deprecated");
   }
 
+  //! get internal (elastic) energy of element
+  double GetInternalEnergy() const {
+    dserror("not yet implemented");
+    return -1.0; };
+
+  //! get kinetic energy of element
+  double GetKineticEnergy() const {
+    dserror("not yet implemented");
+    return -1.0; };
+
   /** \brief get access to the reference length
    *
    *  \author grill

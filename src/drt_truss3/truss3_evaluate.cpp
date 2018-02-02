@@ -799,49 +799,47 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_engstr(const LINALG::Matrix<1,6>&   
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss3::CalcInternalForceStiffTotLag(
-    const LINALG::Matrix<6,1>& nodal_positions_totlag,
-    Epetra_SerialDenseVector& forcevec,
-    Epetra_SerialDenseMatrix& stiffmat)
+    const LINALG::Matrix< 6, 1 > & nodal_positions_totlag,
+    Epetra_SerialDenseVector & forcevec,
+    Epetra_SerialDenseMatrix & stiffmat)
 {
 
-  //Green-Lagrange strain
-  double epsilon;
-
-  //auxiliary vector for both internal force and stiffness matrix: N^T_(,xi)*N_(,xi)*xcurr
-  LINALG::Matrix<6,1> aux;
-
-  /*current nodal displacement (first entries 0 .. 2 for first node, 3 ..5 for second node) compared
+  /* current nodal displacement (first entries 0 .. 2 for first node, 3 ..5 for second node) compared
    * to reference configuration; note: in general this is not equal to the values in disp since the
    * latter one refers to a nodal displacement compared to a reference configuration before the first
    * time step whereas the following variable refers to the displacement with respect to a reference
    * configuration which may have been set up at any point of time during the simulation (usually this
-   * is only important if an element has been added to the discretization after the start of the simulation)*/
-  LINALG::Matrix<6,1> ucurr;
+   * is only important if an element changes its reference position during simulation)*/
 
   //current displacement = current position - reference position
-  ucurr  = nodal_positions_totlag;
+  LINALG::Matrix< 6, 1 > ucurr(nodal_positions_totlag);
   ucurr -= X_;
 
+  //auxiliary vector for both internal force and stiffness matrix: N^T_(,xi)*N_(,xi)*xcurr
+  LINALG::Matrix< 6, 1 > aux;
+
   //computing auxiliary vector aux = N^T_{,xi} * N_{,xi} * nodal_positions_totlag
-  aux(0) = (nodal_positions_totlag(0) - nodal_positions_totlag(3));
-  aux(1) = (nodal_positions_totlag(1) - nodal_positions_totlag(4));
-  aux(2) = (nodal_positions_totlag(2) - nodal_positions_totlag(5));
-  aux(3) = (nodal_positions_totlag(3) - nodal_positions_totlag(0));
-  aux(4) = (nodal_positions_totlag(4) - nodal_positions_totlag(1));
-  aux(5) = (nodal_positions_totlag(5) - nodal_positions_totlag(2));
+  aux(0) = nodal_positions_totlag(0) - nodal_positions_totlag(3);
+  aux(1) = nodal_positions_totlag(1) - nodal_positions_totlag(4);
+  aux(2) = nodal_positions_totlag(2) - nodal_positions_totlag(5);
+  aux(3) = nodal_positions_totlag(3) - nodal_positions_totlag(0);
+  aux(4) = nodal_positions_totlag(4) - nodal_positions_totlag(1);
+  aux(5) = nodal_positions_totlag(5) - nodal_positions_totlag(2);
 
-  lcurr_ = sqrt(pow(aux(0),2)+pow(aux(1),2)+pow(aux(2),2));
+  // current length
+  lcurr_ = sqrt( aux(0) * aux(0) + aux(1) * aux(1) + aux(2) * aux(2) );
 
-  //calculating strain epsilon from node position by scalar product:
-  //epsilon = (xrefe + 0.5*ucurr)^T * N_{,s}^T * N_{,s} * d
-  epsilon = 0;
-  epsilon += (X_(0) + 0.5*ucurr(0)) * (ucurr(0) - ucurr(3));
-  epsilon += (X_(1) + 0.5*ucurr(1)) * (ucurr(1) - ucurr(4));
-  epsilon += (X_(2) + 0.5*ucurr(2)) * (ucurr(2) - ucurr(5));
-  epsilon += (X_(3) + 0.5*ucurr(3)) * (ucurr(3) - ucurr(0));
-  epsilon += (X_(4) + 0.5*ucurr(4)) * (ucurr(4) - ucurr(1));
-  epsilon += (X_(5) + 0.5*ucurr(5)) * (ucurr(5) - ucurr(2));
-  epsilon /= lrefe_*lrefe_;
+  // calculating strain epsilon from node position by scalar product:
+  // epsilon = (xrefe + 0.5*ucurr)^T * N_{,s}^T * N_{,s} * d
+  // Green-Lagrange strain ( 1D truss: epsilon = 0.5 (l² - L²)/L² =( 2 L Δl + Δl² )/L² = Δl/L + 0.5(Δl/L)² )
+  double epsilon = 0;
+  epsilon += ( X_(0) + 0.5 * ucurr(0) ) * ( ucurr(0) - ucurr(3) );
+  epsilon += ( X_(3) + 0.5 * ucurr(3) ) * ( ucurr(3) - ucurr(0) );
+  epsilon += ( X_(1) + 0.5 * ucurr(1) ) * ( ucurr(1) - ucurr(4) );
+  epsilon += ( X_(4) + 0.5 * ucurr(4) ) * ( ucurr(4) - ucurr(1) );
+  epsilon += ( X_(2) + 0.5 * ucurr(2) ) * ( ucurr(2) - ucurr(5) );
+  epsilon += ( X_(5) + 0.5 * ucurr(5) ) * ( ucurr(5) - ucurr(2) );
+  epsilon /= lrefe_ * lrefe_;
 
   // get the material law
   Teuchos::RCP<const MAT::Material> currmat = Material();
@@ -864,24 +862,26 @@ void DRT::ELEMENTS::Truss3::CalcInternalForceStiffTotLag(
     }
   }
 
+  double lrefeinv = 1.0 / lrefe_;
   //computing global internal forces
-  for (unsigned int i=0; i<6; ++i)
-    forcevec(i) = (ym*crosssec_*epsilon/lrefe_) * aux(i);
+  for ( unsigned int i = 0; i < 6; ++i )
+    forcevec(i) = ym * crosssec_ * epsilon * lrefeinv * aux(i);
 
   //computing linear stiffness matrix
-  for (unsigned int i=0; i<3; ++i)
+  for ( unsigned int i = 0; i < 3; ++i )
   {
     //stiffness entries for first node
-    stiffmat(i,i)     =  (ym*crosssec_*epsilon/lrefe_);
-    stiffmat(i,3+i)   = -(ym*crosssec_*epsilon/lrefe_);
+    stiffmat( i, i )         =  ym * crosssec_ * epsilon * lrefeinv;
+    stiffmat( i, 3 + i )     = -1.0 * ym * crosssec_ * epsilon * lrefeinv;
     //stiffness entries for second node
-    stiffmat(i+3,i+3) =  (ym*crosssec_*epsilon/lrefe_);
-    stiffmat(i+3,i )  = -(ym*crosssec_*epsilon/lrefe_);
+    stiffmat( i + 3, i + 3 ) =  ym * crosssec_ * epsilon * lrefeinv;
+    stiffmat( i + 3, i )     = -1.0 * ym * crosssec_ * epsilon * lrefeinv;
   }
 
-  for (int i=0; i<6; ++i)
-    for (int j=0; j<6; ++j)
-      stiffmat(i,j) += (ym*crosssec_/pow(lrefe_,3))*aux(i)*aux(j);
+  double lrefepow3inv = lrefeinv * lrefeinv * lrefeinv;
+  for ( unsigned int i = 0; i < 6; ++i )
+    for ( unsigned int j = 0; j < 6; ++j )
+      stiffmat(i,j) += ym * crosssec_ * lrefepow3inv * aux(i) * aux(j);
 
 }
 

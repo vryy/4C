@@ -780,6 +780,14 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkBeams(
   beam_vtu_writer_ptr_->AppendElementCircularCrossSectionRadius();
 
   // append displacement if desired
+  if ( beam_vtu_output_params.IsWriteInternalEnergyElement() )
+    beam_vtu_writer_ptr_->AppendElementInternalEnergy();
+
+  // append displacement if desired
+  if ( beam_vtu_output_params.IsWriteKineticEnergyElement() )
+    beam_vtu_writer_ptr_->AppendElementKineticEnergy();
+
+  // append displacement if desired
   if ( beam_vtu_output_params.OutputDisplacementState() )
     beam_vtu_writer_ptr_->AppendDisplacementField( displacement_state_vector );
 

@@ -4,30 +4,29 @@
 ==================================================================
 General Data File CCARAT
 ==================================================================
--------------------------------------------------------------TITLE
-------------------------------------------------------PROBLEM SIZE
-DIM                    3
--------------------------------------------------------PROBLEM TYP
-PROBLEMTYP             Polymer_Network
-RANDSEED               1
-RESTART                0
-----------------------------------------------------DISCRETISATION
-NUMFLUIDDIS            0
-NUMSTRUCDIS            1
-NUMALEDIS              0
-NUMTHERMDIS            0
-----------------------------------------------------------------IO
-OUTPUT_BIN             Yes
-STRUCT_DISP            Yes
-FILESTEPS              1000000
-STDOUTEVRY             100
-VERBOSITY              Standard
+----------------------------------------------------------PROBLEM SIZE
+DIM                             3
+----------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Polymer_Network
+RANDSEED                        1
+RESTART                         0
+----------------------------------------------------------DISCRETISATION
+NUMFLUIDDIS                     0
+NUMSTRUCDIS                     1
+NUMALEDIS                       0
+NUMTHERMDIS                     0
+----------------------------------------------------------IO
+OUTPUT_BIN                      Yes
+STRUCT_DISP                     Yes
+FILESTEPS                       1000000
+STDOUTEVRY                      100
+VERBOSITY                       Standard
 ----------------------------------------------------------IO/RUNTIME VTP OUTPUT STRUCTURE
 OUTPUT_DATA_FORMAT              binary
 INTERVAL_STEPS                  1
 EVERY_ITERATION                 No
 OWNER                           Yes
-ORIENTATION                     Yes
+ORIENTATIONANDLENGTH            Yes
 NUMBEROFBONDS                   Yes
 //DISPLACEMENT                    Yes
 ----------------------------------------------------------IO/RUNTIME VTK OUTPUT
@@ -44,74 +43,74 @@ USE_ABSOLUTE_POSITIONS          Yes
 TRIAD_VISUALIZATIONPOINT        Yes
 STRAINS_GAUSSPOINT              Yes
 MATERIAL_FORCES_GAUSSPOINT      Yes
-------------------------------------------------STRUCTURAL DYNAMIC
-LINEAR_SOLVER          1
-INT_STRATEGY           Standard
-DYNAMICTYP             OneStepTheta
-RESULTSEVRY            1
-RESTARTEVRY            10
-NLNSOL                 fullnewton
-DIVERCONT              stop
-TIMESTEP               0.0001
-NUMSTEP                100
-MAXTIME                10000
-PREDICT                ConstDis
-TOLDISP                1.0E-6
-TOLRES                 1.0E-08
-MAXITER                25
-NEGLECTINERTIA         yes
-MASSLIN                rotations
------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
-THETA                  1
-----------------------------------------------------------MESHFREE
-TYPE                   Particle
-DEFINEBINSPER          cutoff
-CUTOFF_RADIUS          2
-PERIODICONOFF          1 1 1
-DEFINEXAABBPER         input
-BOUNDINGBOX            -10 0 0 10 6 6
-----------------------------------------------BROWNIAN DYNAMICS
-BROWNDYNPROB           yes
-VISCOSITY              0.001
-KT                     0.0
-TIMESTEP               0.0001
----------------------------------------------------------BEAM INTERACTION/CONTRACTILE CELLS
-CONTRACTILECELLS       Yes
+----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   1
+INT_STRATEGY                    Standard
+DYNAMICTYP                      OneStepTheta
+RESULTSEVRY                     1
+RESTARTEVRY                     10
+NLNSOL                          fullnewton
+DIVERCONT                       stop
+TIMESTEP                        0.0001
+NUMSTEP                         100
+MAXTIME                         10000
+PREDICT                         ConstDis
+TOLDISP                         1.0E-6
+TOLRES                          1.0E-08
+MAXITER                         25
+NEGLECTINERTIA                  yes
+MASSLIN                         rotations
+---------------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+THETA                           1
+---------------------------------------------------------BINNING STRATEGY
+DEFINEBINSPER                   cutoff
+CUTOFF_RADIUS                   2
+PERIODICONOFF                   1 1 1
+DEFINEXAABBPER                  input
+BOUNDINGBOX                     -10 0 0 10 6 6
+---------------------------------------------------------BROWNIAN DYNAMICS
+BROWNDYNPROB                    yes
+VISCOSITY                       0.001
+KT                              0.0
+TIMESTEP                        0.0001
+---------------------------------------------------------BEAM INTERACTION/SPHERE BEAM LINK
+INTEGRINS                       yes
 ---------------------------------------------------------BEAM INTERACTION/CROSSLINKING
-CROSSLINKER            yes
-NUMCROSSLINKERPERTYPE  0
-MATCROSSLINKERPERTYPE  2
-FILAMENTBSPOTINTERVAL  1.0
-VISCOSITY              0.001
-KT                     0.0
-TIMESTEP               0.0001
------------------------------------------------------SOLVER 1
+CROSSLINKER                     yes
+NUMCROSSLINKERPERTYPE           0
+MATCROSSLINKERPERTYPE           2
+MAXNUMINITCROSSLINKERPERTYPE    0
+FILAMENTBSPOTINTERVAL           1.0
+VISCOSITY                       0.001
+KT                              0.0
+TIMESTEP                        0.0001
+---------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
-------------------------------------------------STRUCT NOX/Printing
+---------------------------------------------------------STRUCT NOX/Printing
 Outer Iteration                 = Yes
 Inner Iteration                 = No
 Outer Iteration StatusTest      = No
-------------------------------------------------DESIGN DESCRIPTION
+---------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 3
 NDLINE  2
 NDSURF  0
 NDVOL   0
-------------------------------------DESIGN POINT DIRICH CONDITIONS
+---------------------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 1
 E 1 - NUMDOF 9 ONOFF 0 1 0 0 0 0 0 0 0 VAL 0.0 2.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 1 0 0 0 0 0 0 0
------------------------------------DESIGN POINT NEUMANN CONDITIONS
+---------------------------------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 1
-E 2 - NUMDOF 9 ONOFF 1 0 0 0 0 0 0 0 0 VAL -30.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0 0 0 0 Live Mid
------------------------------------------------DNODE-NODE TOPOLOGY
+E 2 - NUMDOF 9 ONOFF 1 0 1 0 0 0 0 0 0 VAL -30.0 0.0 -30.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 1 0 0 0 0 0 0 Live Mid
+---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE      10 DNODE 1
 NODE      1  DNODE 2
 // NODE      8  DNODE 2
---------------------------------------------------DESIGN LINE BEAM FILAMENT CONDITIONS
+---------------------------------------------------------DESIGN LINE BEAM FILAMENT CONDITIONS
 DLINE 2
 E 1 - ID 0 TYPE Actin
 E 2 - ID 1 TYPE Actin
------------------------------------------------DLINE-NODE TOPOLOGY
+---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE       1 DLINE 1
 NODE       2 DLINE 1
 NODE       3 DLINE 1
@@ -126,7 +125,7 @@ NODE      11 DLINE 2
 NODE      12 DLINE 2
 NODE      13 DLINE 2
 NODE      14 DLINE 2
--------------------------------------------------------NODE COORDS
+---------------------------------------------------------NODE COORDS
 NODE  1      COORD 2.000000000000000e+00     2.000000000000000e+00     2.500000000000000e+00
 NODE  2      COORD 3.000000000000000e+00     2.000000000000000e+00     2.500000000000000e+00
 NODE  3      COORD 4.000000000000000e+00     2.000000000000000e+00     2.500000000000000e+00
@@ -145,7 +144,7 @@ NODE  15     COORD 2.000000000000000e+00     2.50000000000000e+00     2.50000000
 NODE  16     COORD 4.000000000000000e+00     2.50000000000000e+00     2.500000000000000e+00
 NODE  17     COORD 6.000000000000000e+00     2.50000000000000e+00     2.500000000000000e+00
 NODE  18     COORD 5.000000000000000e+00     2.50000000000000e+00     2.500000000000000e+00
-------------------------------------------------STRUCTURE ELEMENTS
+---------------------------------------------------------STRUCTURE ELEMENTS
 1  BEAM3R HERM2LIN3   1   3   2   MAT 1 TRIADS 0.0 0.0 0.0  0.0 0.0 0.0  0.0 0.0 0.0
 2  BEAM3R HERM2LIN3   3   5   4   MAT 1 TRIADS 0.0 0.0 0.0  0.0 0.0 0.0  0.0 0.0 0.0
 3  BEAM3R HERM2LIN3   5   7   6   MAT 1 TRIADS 0.0 0.0 0.0  0.0 0.0 0.0  0.0 0.0 0.0
@@ -158,15 +157,14 @@ NODE  18     COORD 5.000000000000000e+00     2.50000000000000e+00     2.50000000
 10 RIGIDSPHERE POINT1 18 RADIUS 0.5 DENSITY 1.0
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_BeamReissnerElastHyper YOUNG 1.3e+09 POISSONRATIO 0.3 DENS 1.384e-09 CROSSAREA 1.9e-07 SHEARCORR 1.0 MOMINPOL 5.7e-11 MOMIN2 2.85e-11 MOMIN3 2.85e-11
-MAT 2 MAT_Crosslinker MATNUM 3 JOINTTYPE beam3rlin2rigid LINKINGLENGTH 0.5 LINKINGLENGTHTOL 0.2 LINKINGANGLE 0.0 LINKINGANGLETOL 0.392699081698724 K_ON 1e+07 K_OFF 0.0 TYPE Actin
-MAT 3 MAT_BeamReissnerElastHyper YOUNG 1.3e+09 POISSONRATIO 0.3 DENS 1.384e-09 CROSSAREA 4.751658e-06 SHEARCORR 1.0 MOMINPOL 8.9836e-11 MOMIN2 4.4918e-11 MOMIN3 4.4918e-11
-MAT 4 MAT_BeamReissnerElastHyper YOUNG 1.3e+09 POISSONRATIO 0.3 DENS 1.384e-09 CROSSAREA 4.751658e-06 SHEARCORR 1.0e-08 MOMINPOL 8.9836e-11 MOMIN2 4.4918e-11 MOMIN3 4.4918e-11
-//MAT 4 MAT_BeamReissnerElastHyper_ByModes EA 1.0e3 GA2 5.5e-06 GA3 5.5e-06 GI_T 8.333333333333335e+01 EI2 8.333333333333335e+01 EI3 8.333333333333335e+01 RhoA 0.0 MASSMOMINPOL 8.333333333333335e-06 MASSMOMIN2 8.333333333333335e-06 MASSMOMIN3 8.333333333333335e-06
-----------------------------------------------------------------------FUNCT1
+MAT 2 MAT_Crosslinker MATNUM 3 JOINTTYPE truss LINKINGLENGTH 1.0 LINKINGLENGTHTOL 0.05 LINKINGANGLE 0.0 LINKINGANGLETOL 6 K_ON 0.0 K_OFF 0.0 TYPE Actin
+MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.3 DENS 0.0 THEXPANS 0.0
+MAT 4 MAT_Struct_StVenantKirchhoff YOUNG 1000.0 NUE 0.3 DENS 0.0 THEXPANS 0.0
+---------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 0.0001 0.01 1.0 VALUES 0.0 0.0 1.0 1.0
 ---------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -2.34596432452338854e+00 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 3 QUANTITY dispy VALUE  1.22123576288297486e+00 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 3 QUANTITY dispz VALUE  0.00000000000000000e+00 TOLERANCE 1e-10
----------------------------------------------------------------END
+STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -1.51771956825273446e+00 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispy VALUE  2.14415149622648249e+00 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispz VALUE -1.42914115476628734e+00 TOLERANCE 1e-10
+---------------------------------------------------------END

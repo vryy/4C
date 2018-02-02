@@ -821,6 +821,12 @@ private:
       const double&                                              xi,
       const std::vector<double>&                                 disp) const;
 
+  //! get internal (elastic) energy of element
+  double GetInternalEnergy() const { return Eint_; };
+
+  //! get kinetic energy of element
+  double GetKineticEnergy() const { return Ekin_; };
+
   //! compute material curvature at certain Gauss point according to Crisfield 1999, eq. (4.9)
   template <typename T>
   void computeK(const LINALG::TMatrix<T,3,1>&           Psi_l,

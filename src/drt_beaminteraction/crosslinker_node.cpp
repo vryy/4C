@@ -39,7 +39,7 @@ DRT::ParObject* CROSSLINKING::CrosslinkerNodeType::Create(
  |  ctor (public)                                              eichinger 10/16|
  *----------------------------------------------------------------------------*/
 CROSSLINKING::CrosslinkerNodeDataContainer::CrosslinkerNodeDataContainer():
-numbond_(0)
+    numbond_(0)
 {
   clbspots_.clear();
   std::pair<int, int> pair;
@@ -90,7 +90,6 @@ CROSSLINKING::CrosslinkerNode::CrosslinkerNode(
   const int owner
 ) :
 DRT::Node(id,coords,owner),
-cldata_(Teuchos::null),
 mat_(Teuchos::null)
 {
   return;
@@ -100,8 +99,7 @@ mat_(Teuchos::null)
  |  copy-ctor (public)                                         eichinger 10/16|
  *----------------------------------------------------------------------------*/
 CROSSLINKING::CrosslinkerNode::CrosslinkerNode(const CROSSLINKING::CrosslinkerNode& old) :
-DRT::Node(old),
-cldata_(old.cldata_)
+DRT::Node(old)
 {
 
   dserror("Copy constructor of CrosslinkerNodeDataContainer needs to "
@@ -158,10 +156,10 @@ void CROSSLINKING::CrosslinkerNode::Pack(DRT::PackBuffer& data) const
   DRT::Node::Pack(data);
 
   // add data_
-  bool hasdata = (cldata_!=Teuchos::null);
-  AddtoPack(data,hasdata);
-  if (hasdata)
-    cldata_->Pack(data);
+//  bool hasdata = (cldata_!=Teuchos::null);
+//  AddtoPack(data,hasdata);
+//  if (hasdata)
+//    cldata_->Pack(data);
 
   // add material
   bool hasmat = (mat_!=Teuchos::null);
@@ -188,17 +186,17 @@ void CROSSLINKING::CrosslinkerNode::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,basedata);
   DRT::Node::Unpack(basedata);
 
-  // data_
-  bool hasdata = ExtractInt(position,data);
-  if (hasdata)
-  {
-    cldata_ = Teuchos::rcp(new CROSSLINKING::CrosslinkerNodeDataContainer());
-    cldata_->Unpack(position,data);
-  }
-  else
-  {
-    cldata_ = Teuchos::null;
-  }
+//  // data_
+//  bool hasdata = ExtractInt(position,data);
+//  if (hasdata)
+//  {
+//    cldata_ = Teuchos::rcp(new CROSSLINKING::CrosslinkerNodeDataContainer());
+//    cldata_->Unpack(position,data);
+//  }
+//  else
+//  {
+//    cldata_ = Teuchos::null;
+//  }
 
   // mat
   bool hasmat = ExtractInt(position,data);
@@ -223,17 +221,17 @@ void CROSSLINKING::CrosslinkerNode::Unpack(const std::vector<char>& data)
   return;
 }
 
-/*----------------------------------------------------------------------------*
- |  Initialize data container                                  eichinger 10/16|
- *----------------------------------------------------------------------------*/
-void CROSSLINKING::CrosslinkerNode::InitializeDataContainer()
-{
-  // only initialize if not yet done
-  if (cldata_ ==Teuchos::null)
-    cldata_ = Teuchos::rcp(new CROSSLINKING::CrosslinkerNodeDataContainer());
-
-  return;
-}
+///*----------------------------------------------------------------------------*
+// |  Initialize data container                                  eichinger 10/16|
+// *----------------------------------------------------------------------------*/
+//void CROSSLINKING::CrosslinkerNode::InitializeDataContainer()
+//{
+//  // only initialize if not yet done
+//  if (cldata_ ==Teuchos::null)
+//    cldata_ = Teuchos::rcp(new CROSSLINKING::CrosslinkerNodeDataContainer());
+//
+//  return;
+//}
 
 /*----------------------------------------------------------------------------*
  |  create material class (public)                             eichinger 10/16|
@@ -259,13 +257,13 @@ void CROSSLINKING::CrosslinkerNode::SetMaterial( Teuchos::RCP<MAT::Material> mat
   mat_ = mat;
 }
 
-/*----------------------------------------------------------------------------*
- |  Reset data container                                       eichinger 10/16|
- *----------------------------------------------------------------------------*/
-void CROSSLINKING::CrosslinkerNode::ResetDataContainer()
-{
-  // reset to Teuchos::null
-  cldata_  = Teuchos::null;
-
-  return;
-}
+///*----------------------------------------------------------------------------*
+// |  Reset data container                                       eichinger 10/16|
+// *----------------------------------------------------------------------------*/
+//void CROSSLINKING::CrosslinkerNode::ResetDataContainer()
+//{
+//  // reset to Teuchos::null
+//  cldata_  = Teuchos::null;
+//
+//  return;
+//}

@@ -2,7 +2,7 @@
 /*!
 \file beaminteraction_calc_utils.H
 
-\brief utils for biopolymer network business
+\brief calc utils for beam interaction framework
 
 \maintainer Jonas Eichinger, Maximilian Grill
 
@@ -28,6 +28,7 @@ namespace LINALG {
   class SparseMatrix;
 }
 namespace DRT {
+  class Node;
   class Element;
   class Discretization;
 }
@@ -38,13 +39,10 @@ namespace MESHFREE
   class BoundingBox;
 }
 }
-namespace BEAMINTERACTION {
-class CrosslinkingParams;
-class BeamLink;
-}
-
 namespace BEAMINTERACTION
 {
+class CrosslinkingParams;
+class BeamLink;
 namespace UTILS
 {
 
@@ -99,6 +97,18 @@ public:
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+bool IsBeamElement( DRT::Element const & element );
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool IsBeamNode( DRT::Node const & node );
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool IsBeamCenterlineNode( DRT::Node const & node );
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void PeriodicBoundaryConsistentDisVector(
     Teuchos::RCP<Epetra_Vector>                           dis,
     Teuchos::RCP<const GEO::MESHFREE::BoundingBox> const& pbb,
@@ -136,11 +146,11 @@ void GetCurrentElementDis(
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void GetCurrentUnshiftedElementDis(
-    DRT::Discretization const&          discret,
-    DRT::Element const*                 ele,
+    DRT::Discretization const&                discret,
+    DRT::Element const*                       ele,
     Teuchos::RCP<const Epetra_Vector> const & ia_discolnp,
-    GEO::MESHFREE::BoundingBox const &  pbb,
-    std::vector<double>&                eledisp);
+    GEO::MESHFREE::BoundingBox const &        pbb,
+    std::vector<double>&                      eledisp);
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
@@ -220,7 +230,7 @@ void ApplyBindingSpotForceToParentElements(
     DRT::Discretization const&                             discret,
     Teuchos::RCP<GEO::MESHFREE::BoundingBox> const&        pbb,
     const Teuchos::RCP<Epetra_Vector>                      disp_np_col,
-    const Teuchos::RCP<BEAMINTERACTION::BeamLink> elepairptr,
+    const Teuchos::RCP<BEAMINTERACTION::BeamLink>          elepairptr,
     std::vector< LINALG::SerialDenseVector > const&        bspotforce,
     std::vector< LINALG::SerialDenseVector >&              eleforce);
 
@@ -231,7 +241,7 @@ void ApplyBindingSpotStiffToParentElements(
     DRT::Discretization const&                                     discret,
     Teuchos::RCP<GEO::MESHFREE::BoundingBox> const&                pbb,
     const Teuchos::RCP<Epetra_Vector>                              disp_np_col,
-    const Teuchos::RCP<BEAMINTERACTION::BeamLink>         elepairptr,
+    const Teuchos::RCP<BEAMINTERACTION::BeamLink>                  elepairptr,
     std::vector< std::vector< LINALG::SerialDenseMatrix > > const& bspotstiff,
     std::vector< std::vector< LINALG::SerialDenseMatrix > >&       elestiff);
 
@@ -242,7 +252,7 @@ void ApplyBindingSpotForceStiffToParentElements(
     DRT::Discretization const&                                     discret,
     Teuchos::RCP<GEO::MESHFREE::BoundingBox> const&                pbb,
     const Teuchos::RCP<Epetra_Vector>                              disp_np_col,
-    const Teuchos::RCP<BEAMINTERACTION::BeamLink>         elepairptr,
+    const Teuchos::RCP<BEAMINTERACTION::BeamLink>                  elepairptr,
     std::vector< LINALG::SerialDenseVector > const&                bspotforce,
     std::vector< std::vector< LINALG::SerialDenseMatrix > > const& bspotstiff,
     std::vector< LINALG::SerialDenseVector >&                      eleforce,
@@ -256,7 +266,14 @@ void SetupEleTypeMapExtractor(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int CantorPairing( std::pair< int, int > const & pair, bool safe = true );
+void UpdateDofMapOfVector(
+    Teuchos::RCP<DRT::Discretization> discret,
+    Teuchos::RCP<Epetra_Vector>&      dofmapvec,
+    Teuchos::RCP<Epetra_Vector>       old = Teuchos::null);
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int CantorPairing( std::pair< int, int > const & pair );
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

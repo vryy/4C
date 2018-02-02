@@ -91,17 +91,31 @@ namespace MODELEVALUATOR {
     ///@{
 
     /// get extended bin to ele map
-    std::map<int, std::set<int> > const& GetBinToRowEleMap() const
+    std::map< int, std::set< int > > const & GetBinToRowEleMap() const
     {
       CheckInitSetup();
       return bintorowelemap_;
     };
 
     /// get mutable extended bin to ele map
-    std::map<int, std::set<int> >& GetMutableBinToRowEleMap()
+    std::map< int, std::set< int > >& GetMutableBinToRowEleMap()
     {
       CheckInitSetup();
       return bintorowelemap_;
+    };
+
+    /// get extended bin to ele map
+    std::map< int, std::set< int > > const & GetExtendedBinToRowEleMap() const
+    {
+      CheckInitSetup();
+      return exbintorowelemap_;
+    };
+
+    /// get mutable extended bin to ele map
+    std::map< int, std::set< int > > & GetMutableExtendedBinToRowEleMap()
+    {
+      CheckInitSetup();
+      return exbintorowelemap_;
     };
 
     /// get extended ele to bin map
@@ -260,8 +274,12 @@ namespace MODELEVALUATOR {
 
     /// @name search/interaction related stuff
     ///@{
+
+    //! bin to ele map
+    std::map< int, std::set< int > > bintorowelemap_;
+
     //! extended bin to ele map
-    std::map<int, std::set<int> > bintorowelemap_;
+    std::map< int, std::set< int > > exbintorowelemap_;
 
     //! extended ele to bin map
     std::map<int, std::set<int> > roweletobinmap_;

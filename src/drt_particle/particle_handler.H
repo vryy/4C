@@ -75,7 +75,12 @@ namespace PARTICLE
     /// particles are checked whether they have moved out of their current bin
     /// and transferred if necessary
     virtual Teuchos::RCP<std::list<int> > TransferParticles(
-        Teuchos::RCP<Epetra_Vector> disnp = Teuchos::null,
+        bool const fill_using_ghosting = true);
+
+    /// particles are checked whether they have moved out of their current bin
+    /// and transferred if necessary
+    virtual Teuchos::RCP<std::list<int> > TransferParticles(
+        Teuchos::RCP<Epetra_Vector> disnp,
         bool const ghosting = true);
 
     /// node is placed into the correct row bin or put into the list of homeless particles

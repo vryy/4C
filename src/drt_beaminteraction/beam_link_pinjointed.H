@@ -64,6 +64,14 @@ public:
   //! Constructor
   BeamLinkPinJointed();
 
+  /*!
+  \brief Copy Constructor
+
+  Makes a deep copy of a Element
+
+  */
+  BeamLinkPinJointed( const BeamLinkPinJointed & old );
+
   //! Destructor
   virtual ~BeamLinkPinJointed() {}
 
@@ -72,7 +80,8 @@ public:
       int id,
       const std::vector<std::pair<int, int> >& eleids,
       const std::vector<LINALG::Matrix<3,1> >& initpos,
-      const std::vector<LINALG::Matrix<3,3> >& inittriad);
+      const std::vector<LINALG::Matrix<3,3> >& inittriad,
+      double timelinkwasset);
 
   //! Setup
   virtual void Setup( const int matnum);
@@ -105,9 +114,14 @@ public:
 
   //! @name Access methods
 
-  /*!
-  \brief Return global id
-  */
+  //! get force in first or second binding spot
+  virtual void GetBindingSpotForce( int bspotid, LINALG::SerialDenseVector & bspotforce ) const
+  {
+    dserror(" needs to be implemented in derived classes.");
+  }
+
+  // get current length of linker
+  virtual double GetCurrentLinkerLength() const = 0;
 
   //@}
 

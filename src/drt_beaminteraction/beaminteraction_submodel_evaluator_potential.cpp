@@ -444,15 +444,18 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::UpdateStepState(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::PreUpdateStepElement()
+bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::PreUpdateStepElement(
+    bool beam_redist )
 {
   CheckInitSetup();
-
+  // not repartition of binning discretization necessary
+  return false;
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::UpdateStepElement()
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::UpdateStepElement(
+    bool repartition_was_done )
 {
   CheckInitSetup();
 
@@ -512,8 +515,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::ResetStepState()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteRestart(
-    IO::DiscretizationWriter& iowriter,
-    const bool& forced_writerestart) const
+    IO::DiscretizationWriter & ia_writer,
+    IO::DiscretizationWriter & bin_writer) const
 {
   // empty
 }
@@ -521,7 +524,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteRestart(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::ReadRestart(
-    IO::DiscretizationReader& ioreader)
+    IO::DiscretizationReader & ia_reader,
+    IO::DiscretizationReader & bin_reader)
 {
   // empty
 }
@@ -564,6 +568,19 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
 {
   CheckInitSetup();
   // nothing to do
+}
+
+/*-------------------------------------------------------------------------------*
+ *-------------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
+    GetHalfInteractionDistance( double & half_interaction_distance )
+{
+  CheckInitSetup();
+
+  // todo:
+  dserror("Adaptive Repartitioning not yet implemented for potential interactions. Add Calculation\n"
+      "of half interaction distance and you are good to go.");
+
 }
 
 /*-----------------------------------------------------------------------------------------------*

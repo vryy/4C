@@ -69,10 +69,10 @@ namespace SUBMODELEVALUATOR {
     virtual void UpdateStepState(const double& timefac_n);
 
     //! derived
-    virtual void PreUpdateStepElement();
+    virtual bool PreUpdateStepElement( bool beam_redist );
 
     //! derived
-    virtual void UpdateStepElement();
+    virtual void UpdateStepElement( bool repartition_was_done );
 
     //! derived
     virtual void PostUpdateStepElement();
@@ -88,11 +88,13 @@ namespace SUBMODELEVALUATOR {
 
     //! derived
     virtual void WriteRestart(
-        IO::DiscretizationWriter& iowriter,
-        const bool& forced_writerestart) const;
+        IO::DiscretizationWriter & ia_writer,
+        IO::DiscretizationWriter & bin_writer) const;
 
     //! derived
-    virtual void ReadRestart( IO::DiscretizationReader& ioreader );
+    virtual void ReadRestart(
+        IO::DiscretizationReader & ia_reader,
+        IO::DiscretizationReader & bin_reader);
 
     //! derived
     virtual void PostReadRestart();
@@ -108,6 +110,9 @@ namespace SUBMODELEVALUATOR {
 
     //! derived
     virtual void AddBinsWithRelevantContentForIaDiscretColMap( std::set< int >& colbins) const;
+
+    //! derived
+    virtual void GetHalfInteractionDistance( double & half_interaction_distance );
 
     //! @}
 

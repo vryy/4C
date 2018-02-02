@@ -39,17 +39,26 @@ BEAMINTERACTION::BeamLinkPinJointed::BeamLinkPinJointed() :
 {
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+BEAMINTERACTION::BeamLinkPinJointed::BeamLinkPinJointed( const BEAMINTERACTION::BeamLinkPinJointed & old) :
+    BEAMINTERACTION::BeamLink(old)
+{
+  return;
+}
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamLinkPinJointed::Init(
     int id,
     const std::vector<std::pair<int, int> >& eleids,
     const std::vector<LINALG::Matrix<3,1> >& initpos,
-    const std::vector<LINALG::Matrix<3,3> >& inittriad)
+    const std::vector<LINALG::Matrix<3,3> >& inittriad,
+    double timelinkwasset)
 {
   issetup_ = false;
 
-  BeamLink::Init( id, eleids, initpos, inittriad );
+  BeamLink::Init( id, eleids, initpos, inittriad, timelinkwasset );
 
   issetup_ = true;
 }

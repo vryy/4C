@@ -28,7 +28,7 @@ VERBOSITY                       Standard
 // INTERVAL_STEPS                  1
 // EVERY_ITERATION                 No
 // OWNER                           Yes
-// ORIENTATION                     Yes
+// ORIENTATIONANDLENGTH            Yes
 // NUMBEROFBONDS                   Yes
 // //DISPLACEMENT                    Yes
 // ----------------------------------------------------------IO/RUNTIME VTK OUTPUT
@@ -64,7 +64,7 @@ NEGLECTINERTIA                  yes
 MASSLIN                         rotations
 -----------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1
---------------------------------------------------------------------BINNING STRATEGY
+-----------------------------------------------------BINNING STRATEGY
 DEFINEBINSPER                   cutoff
 CUTOFF_RADIUS                   2
 PERIODICONOFF                   1 1 1
@@ -74,6 +74,8 @@ BOUNDINGBOX                     0 0 0 10 6 6
 BROWNDYNPROB                    yes
 VISCOSITY                       0.001
 KT                              0.0
+---------------------------------------------------------BEAM INTERACTION
+REPARTITIONSTRATEGY             Everydt
 -----------------------------------------------------BEAM INTERACTION/CROSSLINKING
 CROSSLINKER                     yes
 MAXNUMINITCROSSLINKERPERTYPE    20

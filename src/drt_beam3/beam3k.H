@@ -380,6 +380,12 @@ public:
     bending_moment_3_GPs = bending_moment_3_GP_;
   }
 
+  //! get internal (elastic) energy of element
+  double GetInternalEnergy() const { return Eint_; };
+
+  //! get kinetic energy of element
+  double GetKineticEnergy() const { return Ekin_; };
+
   /** \brief get number of nodes used for centerline interpolation
    *
    *  \author grill

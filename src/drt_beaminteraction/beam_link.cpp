@@ -32,9 +32,27 @@ BEAMINTERACTION::BeamLink::BeamLink() :
     issetup_(false),
     id_(-1),
     bspotpos1_(true),
-    bspotpos2_(true)
+    bspotpos2_(true),
+    timelinkwasset_(-1.0),
+    reflength_(-1.0)
 {
   bspotIds_.clear();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+BEAMINTERACTION::BeamLink::BeamLink( const BEAMINTERACTION::BeamLink & old) :
+    ParObject(old),
+    isinit_(old.isinit_),
+    issetup_(old.issetup_),
+    id_(old.id_),
+    bspotIds_(old.bspotIds_),
+    bspotpos1_(old.bspotpos1_),
+    bspotpos2_(old.bspotpos2_),
+    timelinkwasset_(old.timelinkwasset_),
+    reflength_(old.reflength_)
+{
+  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -42,8 +60,9 @@ BEAMINTERACTION::BeamLink::BeamLink() :
 void BEAMINTERACTION::BeamLink::Init(
     const int id,
     const std::vector<std::pair<int, int> >& eleids,
-    const std::vector<LINALG::Matrix<3,1> >& initpos,
-    const std::vector<LINALG::Matrix<3,3> >& inittriad)
+    const std::vector<LINALG::Matrix< 3, 1 > >& initpos,
+    const std::vector<LINALG::Matrix< 3, 3 > >& inittriad,
+    double timelinkwasset )
 {
   issetup_ = false;
 
@@ -52,6 +71,13 @@ void BEAMINTERACTION::BeamLink::Init(
 
   bspotpos1_ = initpos[0];
   bspotpos2_ = initpos[1];
+
+  timelinkwasset_ = timelinkwasset;
+
+  reflength_ = 0.0;
+  for ( unsigned int i = 0; i < 3; ++i )
+    reflength_ += ( initpos[1](i) - initpos[0](i) ) * ( initpos[1](i) - initpos[0](i) );
+  reflength_ = sqrt(reflength_);
 
   isinit_ = true;
 }
@@ -88,6 +114,8 @@ void BEAMINTERACTION::BeamLink::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,bspotpos1_);
   // bspotpos2_
   AddtoPack(data,bspotpos2_);
+  // timelinkwasset
+  AddtoPack(data,timelinkwasset_);
 
   return;
 }
@@ -111,13 +139,15 @@ void BEAMINTERACTION::BeamLink::Unpack(const std::vector<char>& data)
 
   // eleids_
   ExtractfromPack(position,data,bspotIds_);
-  // bspotpos1_
+  // bspotpos1
   ExtractfromPack(position,data,bspotpos1_);
-  // bspotpos2_
+  // bspotpos2
   ExtractfromPack(position,data,bspotpos2_);
+  // timelinkwasset
+  ExtractfromPack(position,data,timelinkwasset_);
 
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+  if ( position != data.size() )
+    dserror("Mismatch in size of data %d <-> %d",(int)data.size(), position );
 
   return;
 }

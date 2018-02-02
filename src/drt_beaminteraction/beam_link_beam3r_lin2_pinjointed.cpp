@@ -45,10 +45,32 @@ DRT::ParObject* BEAMINTERACTION::BeamLinkBeam3rLin2PinJointedType::Create( const
 BEAMINTERACTION::BeamLinkBeam3rLin2PinJointed::BeamLinkBeam3rLin2PinJointed() :
     BeamLinkPinJointed(),
     triad_( true ),
-    linkele_( Teuchos::null )
+    linkele_( Teuchos::null ),
+    bspotforces_( 2, LINALG::SerialDenseVector(true) )
 {
-  // empty constructor
-  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+BEAMINTERACTION::BeamLinkBeam3rLin2PinJointed::BeamLinkBeam3rLin2PinJointed(
+    const BEAMINTERACTION::BeamLinkBeam3rLin2PinJointed & old) :
+    BEAMINTERACTION::BeamLinkPinJointed(old),
+    triad_( old.triad_ ),
+    bspotforces_( 2, LINALG::SerialDenseVector(true) )
+{
+  if ( linkele_ != Teuchos::null )
+    linkele_ =  Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::Beam3r>( Teuchos::rcp( old.linkele_->Clone(), true ) );
+  else
+    linkele_ = Teuchos::null;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<BEAMINTERACTION::BeamLink> BEAMINTERACTION::BeamLinkBeam3rLin2PinJointed::Clone() const
+{
+  Teuchos::RCP<BEAMINTERACTION::BeamLinkBeam3rLin2PinJointed> newlinker =
+      Teuchos::rcp( new BEAMINTERACTION::BeamLinkBeam3rLin2PinJointed( *this ) );
+  return newlinker;
 }
 
 /*----------------------------------------------------------------------------*
@@ -57,11 +79,12 @@ void BEAMINTERACTION::BeamLinkBeam3rLin2PinJointed::Init(
     int id,
     const std::vector<std::pair<int, int> >& eleids,
     const std::vector<LINALG::Matrix<3,1> >& initpos,
-    const std::vector<LINALG::Matrix<3,3> >& inittriad)
+    const std::vector<LINALG::Matrix<3,3> >& inittriad,
+    double timelinkwasset)
 {
   issetup_ = false;
 
-  BeamLinkPinJointed::Init( id, eleids, initpos, inittriad );
+  BeamLinkPinJointed::Init( id, eleids, initpos, inittriad, timelinkwasset);
 
   // *** initialization of the two triads of the connecting element ***
   /* they are determined such that:
@@ -311,6 +334,9 @@ bool BEAMINTERACTION::BeamLinkBeam3rLin2PinJointed::EvaluateForce(
   //      two separate force vectors ?
   std::copy( &force(0), &force(0) + 3, &forcevec1(0) );
   std::copy( &force(0) + 6, &force(0) + 9, &forcevec2(0) );
+
+  bspotforces_[0] = forcevec1;
+  bspotforces_[1] = forcevec2;
 
   return true;
 }
@@ -577,4 +603,13 @@ void BEAMINTERACTION::BeamLinkBeam3rLin2PinJointed::FillStateVariablesForElement
 
   Qnode.push_back( triad_ );
   Qnode.push_back( triad_ );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void BEAMINTERACTION::BeamLinkBeam3rLin2PinJointed::GetBindingSpotForce(
+    int bspotid,
+    LINALG::SerialDenseVector & bspotforce ) const
+{
+  bspotforce = bspotforces_[bspotid];
 }

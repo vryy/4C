@@ -2,7 +2,7 @@
 /*!
 \file beaminteraction_calc_utils.cpp
 
-\brief utils for biopolymer network business
+\brief calc utils for beam interaction framework
 
 \maintainer Jonas Eichinger, Maximilian Grill
 
@@ -18,7 +18,6 @@
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
 
-#include "../drt_beaminteraction/beam3contact_utils.H"
 #include "../drt_beaminteraction/periodic_boundingbox.H"
 
 #include "../drt_beam3/beam3_base.H"
@@ -34,6 +33,53 @@ namespace BEAMINTERACTION
 {
 namespace UTILS
 {
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool IsBeamElement( DRT::Element const & element )
+{
+  return ( dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(&element) != NULL ) ? true : false;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool IsBeamNode( DRT::Node const & node )
+{
+  bool beameles = false;
+  bool othereles = false;
+
+  //TODO: actually we would have to check all elements of all processors!!! Gather?
+  for ( int i = 0; i < static_cast<int>(node.NumElement()); ++i )
+  {
+    if( IsBeamElement(*(node.Elements())[i]) )
+      beameles = true;
+    else
+      othereles = true;
+  }
+
+  if (beameles and othereles)
+    dserror("Beam elements and other (solid, rigid sphere) elements sharing the same node is currently not allowed in BACI!");
+
+  return beameles;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool IsBeamCenterlineNode( DRT::Node const & node )
+{
+  bool beamclnode = false;
+
+  //TODO: actually we would have to check all elements of all processors!!! Gather?
+  for ( int i = 0; i < static_cast<int>(node.NumElement()); ++i )
+  {
+    const DRT::ELEMENTS::Beam3Base* beamele =
+        dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(node.Elements()[i]);
+
+    if ( beamele != NULL and beamele->IsCenterlineNode(node) )
+        beamclnode = true;
+  }
+  return beamclnode;
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -57,7 +103,7 @@ void PeriodicBoundaryConsistentDisVector(
     /* Hermite Interpolation: Check whether node is a beam node which is NOT
      * used for centerline interpolation if so, we simply skip it because
      * it does not have position DoFs */
-    if ( BEAMCONTACT::BeamNode(*node) and not BEAMCONTACT::BeamCenterlineNode(*node) )
+    if ( IsBeamNode(*node) and not IsBeamCenterlineNode(*node) )
       continue;
 
     //get GIDs of this node's degrees of freedom
@@ -137,7 +183,7 @@ std::vector<int> Permutation( int const number )
   for (int i=0; i<(int)randorder.size(); i++)
     randorder[i] = i;
 
-  for (int i=0; i<number; ++i)
+  for ( int i = 0; i < number; ++i )
   {
     //generate random number between 0 and i
     j = (int)floor((i + 1.0)*DRT::Problem::Instance()->Random()->Uni());
@@ -801,12 +847,32 @@ void SetupEleTypeMapExtractor(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int CantorPairing( std::pair< int, int > const & pair, bool safe )
+void UpdateDofMapOfVector(
+    Teuchos::RCP<DRT::Discretization> discret,
+    Teuchos::RCP<Epetra_Vector>&      dofmapvec,
+    Teuchos::RCP<Epetra_Vector>       old)
+{
+  if ( dofmapvec != Teuchos::null )
+  {
+    if( old == Teuchos::null )
+      old = dofmapvec;
+    dofmapvec = LINALG::CreateVector( *discret->DofRowMap(),true );
+    LINALG::Export( *old, *dofmapvec );
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int CantorPairing( std::pair< int, int > const & pair )
 {
   int z =  0.5 * ( pair.first + pair.second ) * ( pair.first + pair.second + 1 ) + pair.second;
 
-  if ( safe and pair != CantorDePairing( z ) )
+#ifdef DEBUG
+  if ( z > std::numeric_limits<int>::max() )
+    dserror(" Your cantor paired value exceeds limit of data type int.");
+  if ( pair != CantorDePairing( z ) )
       dserror(" %i and %i cannot be paired using Cantor pairing function", pair.first, pair.second);
+#endif
 
   return z;
 }
@@ -821,9 +887,6 @@ std::pair< int, int > CantorDePairing( int z )
   std::pair< int, int > pair;
   pair.second = z - t;
   pair.first = w - pair.second;
-
-  if ( z != CantorPairing( pair, false) )
-    dserror(" Something went wrong during depairing.");
 
   return pair;
 

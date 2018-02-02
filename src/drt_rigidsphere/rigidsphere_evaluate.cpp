@@ -44,37 +44,10 @@ int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
   SetParamsInterfacePtr(params);
 
   // start with "none"
-  ELEMENTS::ActionType act = ELEMENTS::none;
-
-  if (IsParamsInterface())
-  {
-    act = ParamsInterface().GetActionType();
-  }
-  else
-  {
-    // get the action required
-    std::string action = params.get<std::string>("action","calc_none");
-    if      (action == "calc_none")               dserror("No action supplied");
-    else if (action=="calc_struct_linstiff")      act = ELEMENTS::struct_calc_linstiff;
-    else if (action=="calc_struct_nlnstiff")      act = ELEMENTS::struct_calc_nlnstiff;
-    else if (action=="calc_struct_internalforce") act = ELEMENTS::struct_calc_internalforce;
-    else if (action=="calc_struct_linstiffmass")  act = ELEMENTS::struct_calc_linstiffmass;
-    else if (action=="calc_struct_nlnstiffmass")  act = ELEMENTS::struct_calc_nlnstiffmass;
-    else if (action=="calc_struct_nlnstifflmass") act = ELEMENTS::struct_calc_nlnstifflmass; //with lumped mass matrix
-    else if (action=="calc_struct_stress")        act = ELEMENTS::struct_calc_stress;
-    else if (action=="calc_struct_update_istep")  act = ELEMENTS::struct_calc_update_istep;
-    else if (action=="calc_struct_reset_istep")   act = ELEMENTS::struct_calc_reset_istep;
-    else if (action=="calc_struct_ptcstiff")      act = ELEMENTS::struct_calc_ptcstiff;
-    else     dserror("Unknown type of action for Rigidsphere");
-  }
+  ELEMENTS::ActionType act = ParamsInterface().GetActionType();
 
   switch(act)
   {
-    case ELEMENTS::struct_calc_ptcstiff:
-    {
-      EvaluatePTC(params,elemat1);
-      break;
-    }
     case ELEMENTS::struct_calc_linstiff:
     case ELEMENTS::struct_calc_nlnstiff:
     case ELEMENTS::struct_calc_internalforce:
@@ -97,11 +70,8 @@ int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
       myvel.clear();
 
       // get element acceleration
-
       std::vector<double> myacc( lm.size() );
-
-        myacc.clear();
-
+      myacc.clear();
 
       if (act == ELEMENTS::struct_calc_nlnstiffmass or act == ELEMENTS::struct_calc_nlnstifflmass or act == ELEMENTS::struct_calc_linstiffmass)
       {
@@ -148,26 +118,41 @@ int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
     }
 
     case ELEMENTS::struct_calc_stress:
+    {
       dserror("No stress output implemented for beam3 elements");
-    break;
+      break;
+    }
     case ELEMENTS::struct_calc_update_istep:
     case ELEMENTS::struct_calc_reset_istep:
     case ELEMENTS::struct_calc_recover:
+    {
       //not necessary since no class variables are modified in predicting steps
-    break;
+      break;
+    }
 
     case ELEMENTS::struct_calc_predict:
+    {
       // do nothing here
       break;
+    }
+
+    // element based PTC scaling
+    case ELEMENTS::struct_calc_addjacPTC:
+    {
+      // nothing to do here
+      break;
+    }
 
     default:
+    {
       dserror("Unknown type of action for Rigidsphere %d", act);
-     break;
-  }//switch(act)
+      break;
+    }
+  }
 
   return (0);
 
-}  //DRT::ELEMENTS::Rigidsphere::Evaluate
+}
 
 /*------------------------------------------------------------------------------------------------------------*
  | nonlinear stiffness and mass matrix (private)                                                   meier 05/12|
@@ -199,8 +184,9 @@ void DRT::ELEMENTS::Rigidsphere::nlnstiffmass(Teuchos::ParameterList& params,
   //assemble massmatrix if requested
   if (massmatrix != NULL)
   {
+    double m = rho_ * 4.0 / 3.0 * PI * radius_ * radius_ * radius_;
     for (int i=0; i<3; ++i)
-      (*massmatrix)(i,i) = rho_ * 4.0 / 3.0 * PI * radius_ * radius_ * radius_;
+      (*massmatrix)(i,i) = m;
   }
 
 //    //assemble inertia force vector if requested
@@ -388,37 +374,15 @@ void DRT::ELEMENTS::Rigidsphere::CalcStochasticForce(Teuchos::ParameterList& par
    * and standard deviation (2*kT / dt)^0.5*/
   Teuchos::RCP<Epetra_MultiVector> randomnumbers = ParamsInterface().GetBrownianDynParamInterface()->GetRandomForces();
 
-  if(force != NULL)
-    for(int k=0; k<3; k++)
+  if( force != NULL )
+  {
+    for( unsigned int k = 0; k < 3; ++k )
     {
       (*force)(k) -= sqrt(gamma) * (*randomnumbers)[k][LID()];
-
     }
-
-
+  }
 
   // no contribution to stiffmatrix
-
-  return;
-}
-
-/*-----------------------------------------------------------------------------------------------------------*
- | Evaluate PTC damping (private)                                                                 grill 03/14|
- *----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Rigidsphere::EvaluatePTC(Teuchos::ParameterList& params,
-                                      Epetra_SerialDenseMatrix& elemat1)
-{
-  dserror("Rigidsphere::EvaluatePTC is deprecated; if needed adapt parameter handling according to parameter interface pointer first!");
-
-  // damping constant
-  double gamma = MyDampingConstant();
-
-  // get time step size
-  double dt =  ParamsInterface().GetDeltaTime();;
-
-  //isotropic artificial stiffness for translational degrees of freedom
-  for(int k=0; k<3; k++)
-    elemat1(k,k) += params.get<double>("csphereptc",0.0) * gamma/dt;
 
   return;
 }

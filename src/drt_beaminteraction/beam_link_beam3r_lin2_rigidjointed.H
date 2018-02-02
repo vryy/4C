@@ -14,11 +14,11 @@
 
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "beam_link_rigidjointed.H"
+#include "../linalg/linalg_serialdensevector.H"
 
 // forward declarations
 namespace LINALG
 {
-  class SerialDenseVector;
   class SerialDenseMatrix;
 }
 
@@ -64,6 +64,14 @@ public:
   BeamLinkBeam3rLin2RigidJointed();
 
   /*!
+  \brief Copy Constructor
+
+  Makes a deep copy of a Element
+
+  */
+  BeamLinkBeam3rLin2RigidJointed(const BeamLinkBeam3rLin2RigidJointed & old);
+
+  /*!
   \brief Destructor
   */
   virtual ~BeamLinkBeam3rLin2RigidJointed() {};
@@ -95,10 +103,23 @@ public:
   */
   virtual void Unpack(const std::vector<char>& data);
 
+  /// return copy of this linking object
+  virtual Teuchos::RCP<BeamLink> Clone() const;
+
   //@}
 
 
   //! @name Access methods
+
+  //! scale linker element reference length
+  virtual void ScaleLinkerReferenceLength( double scalefac )  {
+    dserror(" not yet implemented for beam3r element."); }
+
+  //! get force in first or second binding spot
+  virtual void GetBindingSpotForce( int bspotid, LINALG::SerialDenseVector & bspotforce ) const
+  {
+    bspotforce = bspotforces_[bspotid];
+  }
 
   //@}
 
@@ -152,10 +173,14 @@ private:
   //! new connecting element
   Teuchos::RCP<DRT::ELEMENTS::Beam3r> linkele_;
 
+
+  //! the following variables are for output purposes only (no need to pack or unpack)
+  std::vector< LINALG::SerialDenseVector > bspotforces_;
+
   //@}
 
 };
 
-} // namespace BEAMINTERACTION
+}
 
 #endif

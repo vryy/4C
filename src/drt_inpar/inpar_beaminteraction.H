@@ -33,13 +33,19 @@ namespace INPAR
   namespace BEAMINTERACTION
   {
 
+  enum RepartitionStrategy
+  {
+    repstr_adaptive,        ///< only do repartitioning in case physically necessary
+    repstr_everydt          ///< do repartitioning every time step
+  };
+
   /// type of the used submodel for beaminteraction
   enum SubModelType
   {
     submodel_crosslinking,         ///< evaluate the structural model
     submodel_beamcontact,          ///< evaluate the contact model
     submodel_potential,            ///< evaluate the model for potential-based interactions
-    submodel_contractilecells,     ///< evaluate model for cell filament interactions
+    submodel_spherebeamlink,     ///< evaluate model for cell filament interactions
     submodel_vague                 ///< undefined model type
   };
 

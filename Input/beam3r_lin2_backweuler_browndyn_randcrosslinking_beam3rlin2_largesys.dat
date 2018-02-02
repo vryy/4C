@@ -54,6 +54,8 @@ BOUNDINGBOX                     0 0 0 5 5 5
 BROWNDYNPROB                    yes
 VISCOSITY                       0.001
 KT                              0.00404531
+---------------------------------------------------------BEAM INTERACTION
+REPARTITIONSTRATEGY             Everydt
 ---------------------------------------------------------BEAM INTERACTION/CROSSLINKING
 CROSSLINKER                     yes
 NUMCROSSLINKERPERTYPE           3000
@@ -64,18 +66,18 @@ KT                              0.00404531
 ---------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
-------------------------------------------------STRUCT NOX/Printing
+---------------------------------------------------------STRUCT NOX/Printing
 Outer Iteration                 = Yes
 Inner Iteration                 = No
 Outer Iteration StatusTest      = No
 Linear Solver Details           = No
 Test Details                    = No
 Debug                           = No
-------------------------------------------------DESIGN DESCRIPTION
+---------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  104
 NDSURF  0
---------------------------------------------------DESIGN LINE BEAM FILAMENT CONDITIONS
+---------------------------------------------------------DESIGN LINE BEAM FILAMENT CONDITIONS
 DLINE 104
 E 1 - ID 0 TYPE arbitrary
 E 2 - ID 1 TYPE arbitrary

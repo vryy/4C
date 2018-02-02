@@ -67,6 +67,20 @@ namespace ELEMENTS {
     };
 
     /// whether to write material cross-section strains at the Gauss points
+    bool IsWriteInternalEnergyElement() const
+    {
+      CheckInitSetup();
+      return write_internal_energy_element_;
+    };
+
+        /// whether to write material cross-section strains at the Gauss points
+    bool IsWriteKineticEnergyElement() const
+    {
+      CheckInitSetup();
+      return write_kinetic_energy_element_;
+    };
+
+    /// whether to write material cross-section strains at the Gauss points
     bool IsWriteMaterialStrainsGaussPoints() const
     {
       CheckInitSetup();
@@ -130,6 +144,12 @@ namespace ELEMENTS {
     /// whether to use abolute positions or initial positions for the vtu geometry definition
     /// (i.e. for the visualization point coordinates)
     bool use_absolute_positions_visualizationpoint_coordinates_;
+
+    /// whether to write internal (elastic) energy for each element
+    bool write_internal_energy_element_;
+
+    /// whether to write kinetic energy for each element
+    bool write_kinetic_energy_element_;
 
     /// whether to write triads at the visualization points
     bool write_triads_visualizationpoints_;

@@ -524,7 +524,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   // check for beam interaction
   // ---------------------------------------------------------------------------
   if ( DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->BeamInteractionParams().sublist("CROSSLINKING"), "CROSSLINKER")           or
-       DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->BeamInteractionParams().sublist("CONTRACTILE CELLS"), "CONTRACTILECELLS") or
+       DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->BeamInteractionParams().sublist("SPHERE BEAM LINK"), "INTEGRINS") or
        DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
        DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO BEAM CONTACT"), "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none   or
        DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(

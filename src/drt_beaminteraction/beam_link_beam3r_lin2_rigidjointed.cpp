@@ -10,19 +10,20 @@
 */
 /*----------------------------------------------------------------------*/
 
+#include "beam_link.H"
+#include "beam_link_beam3r_lin2_rigidjointed.H"
+
 #include "../drt_beam3/beam3r.H"
 
 #include "../drt_fem_general/largerotations.H"
 
 #include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
 
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_utils_factory.H"
 
 #include <Teuchos_RCP.hpp>
-#include "beam_link.H"
-#include "beam_link_beam3r_lin2_rigidjointed.H"
+
 
 
 BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointedType BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointedType::instance_;
@@ -32,7 +33,8 @@ BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointedType BEAMINTERACTION::BeamLinkBea
  *----------------------------------------------------------------------------*/
 DRT::ParObject* BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointedType::Create( const std::vector<char> & data )
 {
-  BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed * my_beam3rlin2 = new BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed();
+  BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed * my_beam3rlin2 =
+      new BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed();
   my_beam3rlin2->Unpack(data);
   return my_beam3rlin2;
 }
@@ -42,10 +44,32 @@ DRT::ParObject* BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointedType::Create( con
  *----------------------------------------------------------------------------*/
 BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::BeamLinkBeam3rLin2RigidJointed() :
     BeamLinkRigidJointed(),
-    linkele_(Teuchos::null)
+    linkele_(Teuchos::null),
+    bspotforces_( 2, LINALG::SerialDenseVector(true) )
 {
-  // empty constructor
-  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::BeamLinkBeam3rLin2RigidJointed(
+    const BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed & old ) :
+    BEAMINTERACTION::BeamLinkRigidJointed(old),
+    bspotforces_( 2, LINALG::SerialDenseVector(true) )
+{
+  if ( linkele_ != Teuchos::null )
+    linkele_ = Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::Beam3r>( Teuchos::rcp( old.linkele_->Clone(), true ) );
+  else
+    linkele_ = Teuchos::null;
+
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<BEAMINTERACTION::BeamLink> BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::Clone() const
+{
+  Teuchos::RCP<BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed> newlinker =
+      Teuchos::rcp( new BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed( *this ) );
+  return newlinker;
 }
 
 /*----------------------------------------------------------------------------*
@@ -188,6 +212,9 @@ bool BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::EvaluateForce(
   //      two separate force vectors ?
   std::copy( &force(0), &force(0) + 6, &forcevec1(0) );
   std::copy( &force(0) + 6, &force(0) + 12, &forcevec2(0) );
+
+  bspotforces_[0] = forcevec1;
+  bspotforces_[1] = forcevec2;
 
   return true;
 }

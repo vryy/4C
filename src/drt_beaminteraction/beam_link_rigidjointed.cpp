@@ -39,17 +39,30 @@ BEAMINTERACTION::BeamLinkRigidJointed::BeamLinkRigidJointed() :
 {
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+BEAMINTERACTION::BeamLinkRigidJointed::BeamLinkRigidJointed( const BEAMINTERACTION::BeamLinkRigidJointed & old) :
+    BeamLink(old),
+    bspottriad1_(old.bspottriad1_),
+    bspottriad2_(old.bspottriad2_),
+    Lambdarel1_(old.Lambdarel1_),
+    Lambdarel2_(old.Lambdarel2_)
+{
+  return;
+}
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamLinkRigidJointed::Init(
     const int id,
     const std::vector<std::pair<int, int> >& eleids,
     const std::vector<LINALG::Matrix<3,1> >& initpos,
-    const std::vector<LINALG::Matrix<3,3> >& inittriad)
+    const std::vector<LINALG::Matrix<3,3> >& inittriad,
+    double timelinkwasset )
 {
   issetup_ = false;
 
-  BeamLink::Init( id, eleids, initpos, inittriad );
+  BeamLink::Init( id, eleids, initpos, inittriad, timelinkwasset );
 
   // *** initialization of the two triads of the connecting element ***
 

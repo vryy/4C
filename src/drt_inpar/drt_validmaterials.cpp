@@ -3134,7 +3134,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal( matdef, "K_ON", "chemical association-rate" );
     AddNamedReal( matdef, "K_OFF", "chemical dissociation-rate" );
 
-    // opitional parameter
+    // optional parameter
     AddNamedReal( matdef, "DELTABELLEQ","deltaD in Bell's equation for force dependent off rate", 0.0, true );
     AddNamedString( matdef, "TYPE","type of crosslinker", "Arbitrary", true );
 

@@ -27,6 +27,7 @@
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 DiscretizationRuntimeVtpWriter::DiscretizationRuntimeVtpWriter() :
+    discretization_( Teuchos::null ),
     runtime_vtpwriter_( Teuchos::rcp( new RuntimeVtpWriter() ) )
 {
   // empty constructor
@@ -37,6 +38,7 @@ DiscretizationRuntimeVtpWriter::DiscretizationRuntimeVtpWriter() :
 void
 DiscretizationRuntimeVtpWriter::Initialize(
     Teuchos::RCP<const DRT::Discretization> discretization,
+    const std::string& geometry_name,
     unsigned int max_number_timesteps_to_be_written,
     double time,
     bool write_binary_output )
@@ -61,7 +63,7 @@ DiscretizationRuntimeVtpWriter::Initialize(
       max_number_timesteps_to_be_written,
       output_directory_path,
       DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix(),
-      discretization_->Name(),
+      geometry_name,
       DRT::Problem::Instance()->OutputControlFile()->RestartName(),
       time,
       write_binary_output
@@ -188,9 +190,9 @@ DiscretizationRuntimeVtpWriter::WriteFiles()
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void
-DiscretizationRuntimeVtpWriter::WriteCollectionFileOfAllWrittenFiles()
+DiscretizationRuntimeVtpWriter::WriteCollectionFileOfAllWrittenFiles( const std::string & geometry_name )
 {
   runtime_vtpwriter_->WriteCollectionFileOfAllWrittenFiles(
       DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix() +
-      "-" + discretization_->Name() );
+      "-" + geometry_name );
 }

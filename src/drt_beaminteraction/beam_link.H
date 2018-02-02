@@ -62,6 +62,14 @@ public:
   //! Constructor
   BeamLink();
 
+  /*!
+  \brief Copy Constructor
+
+  Makes a deep copy of a Element
+
+  */
+  BeamLink( const BeamLink & old );
+
   //! Destructor
   virtual ~BeamLink() {}
 
@@ -70,7 +78,8 @@ public:
       const int id,
       const std::vector<std::pair<int, int> >& eleids,
       const std::vector<LINALG::Matrix<3,1> >& initpos,
-      const std::vector<LINALG::Matrix<3,3> >& inittriad);
+      const std::vector<LINALG::Matrix<3,3> >& inittriad,
+      double timelinkwasset );
 
   //! Setup
   virtual void Setup( const int matnum);
@@ -82,6 +91,9 @@ public:
   top of drt_parobject.H
   */
   virtual int UniqueParObjectId() const = 0;
+
+  //! return copy of this linking object object
+  virtual Teuchos::RCP<BeamLink> Clone() const = 0;
 
   /*!
   \brief Pack this class so it can be communicated
@@ -128,6 +140,20 @@ public:
   //! return position of second connection site
   inline const LINALG::TMatrix<double,3,1>& GetBindSpotPos2() const
     { return bspotpos2_; }
+
+  //! return time at which linker was set
+  inline double GetTimeLinkWasSet() const
+    { return timelinkwasset_; }
+
+  //! return time at which linker was set
+  inline double GetReferenceLength() const
+    { return reflength_; }
+
+  //! get force in first or second binding spot
+  virtual void GetBindingSpotForce( int bspotid, LINALG::SerialDenseVector & bspotforce ) const = 0;
+
+  //! scale linker element reference length
+  virtual void ScaleLinkerReferenceLength( double scalefac ) = 0;
 
   //@}
 
@@ -216,8 +242,15 @@ private:
   std::vector<std::pair<int, int> > bspotIds_;
 
   //! current position of the two connection sites (a.k.a. binding spots)
-  LINALG::Matrix<3,1> bspotpos1_;
-  LINALG::Matrix<3,1> bspotpos2_;
+  LINALG::Matrix< 3, 1 > bspotpos1_;
+  LINALG::Matrix< 3, 1 > bspotpos2_;
+
+  //! stores the the time the link was set (can e.g. be used to calculate
+  //  lifetime of a link or check if link is new in certain time step)
+  double timelinkwasset_;
+
+  //! linker reference length
+  double reflength_;
 
   //@}
 };

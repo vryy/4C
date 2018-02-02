@@ -65,6 +65,14 @@ public:
   BeamLinkTruss();
 
   /*!
+  \brief Copy Constructor
+
+  Makes a deep copy of a Element
+
+  */
+  BeamLinkTruss( const BeamLinkTruss & old );
+
+  /*!
   \brief Destructor
   */
   virtual ~BeamLinkTruss() {};
@@ -74,7 +82,8 @@ public:
       int id,
       const std::vector<std::pair<int, int> >& eleids,
       const std::vector<LINALG::Matrix<3,1> >& initpos,
-      const std::vector<LINALG::Matrix<3,3> >& inittriad);
+      const std::vector<LINALG::Matrix<3,3> >& inittriad,
+      double timelinkwasset );
 
   //! Setup [derived]
   virtual void Setup( const int matnum );
@@ -103,10 +112,21 @@ public:
   */
   virtual void Unpack(const std::vector<char>& data);
 
+  /// return copy of this linking object
+  virtual Teuchos::RCP<BeamLink> Clone() const;
+
   //@}
 
 
   //! @name Access methods
+
+  //! scale linker element reference length
+  virtual void ScaleLinkerReferenceLength( double scalefac );
+
+  //! get force in first or second binding spot
+  virtual void GetBindingSpotForce( int bspotid, LINALG::SerialDenseVector & bspotforce ) const;
+
+  virtual double GetCurrentLinkerLength() const;
 
   //@}
 
@@ -146,6 +166,7 @@ public:
       std::vector<LINALG::Matrix<3,1> >& bspotpos,
       std::vector<LINALG::Matrix<3,3> >& bspottriad);
 
+
   //@}
 
 private:
@@ -165,10 +186,13 @@ private:
   //! new connecting element
   Teuchos::RCP<DRT::ELEMENTS::Truss3> linkele_;
 
+  //! the following variables are for output purposes only (no need to pack or unpack)
+  std::vector< LINALG::SerialDenseVector > bspotforces_;
+
   //@}
 
 };
 
-} // namespace BEAMINTERACTION
+}
 
 #endif

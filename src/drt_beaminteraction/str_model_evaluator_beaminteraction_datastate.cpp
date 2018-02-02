@@ -52,18 +52,18 @@ void STR::MODELEVALUATOR::BeamInteractionDataState::Init()
 
   // clear stl stuff
   bintorowelemap_.clear();
+  exbintorowelemap_.clear();
   roweletobinmap_.clear();
 
   // end of initialization
   isinit_ = true;
 
-  return;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteractionDataState::Setup(
-    Teuchos::RCP<const DRT::Discretization> const& ia_discret)
+    Teuchos::RCP<const DRT::Discretization> const & ia_discret)
 {
   // safety check
   CheckInit();
@@ -84,6 +84,4 @@ void STR::MODELEVALUATOR::BeamInteractionDataState::Setup(
 
   issetup_ = true;
 
-  // Good bye
-  return;
 }

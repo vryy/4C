@@ -72,13 +72,18 @@ namespace IO_RUNTIME_VTP_STRUCTURE
         yesnotuple, yesnovalue, &sublist_IO_VTP_structure);
 
     // write orientation at every visualization point
-    setStringToIntegralParameter<int>("ORIENTATION","No",
+    setStringToIntegralParameter<int>("ORIENTATIONANDLENGTH","No",
         "write orientation at every point",
         yesnotuple, yesnovalue, &sublist_IO_VTP_structure);
 
     // write number of bonds at every visualization point
     setStringToIntegralParameter<int>("NUMBEROFBONDS","No",
         "write number of bonds of every point",
+        yesnotuple, yesnovalue, &sublist_IO_VTP_structure);
+
+    // write force actin in linker
+    setStringToIntegralParameter<int>("LINKINGFORCE","No",
+        "write force acting in linker",
         yesnotuple, yesnovalue, &sublist_IO_VTP_structure);
 
   }

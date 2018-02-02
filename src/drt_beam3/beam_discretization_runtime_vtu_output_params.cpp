@@ -23,11 +23,14 @@ DRT::ELEMENTS::BeamRuntimeVtuOutputParams::BeamRuntimeVtuOutputParams()
       issetup_(false),
       output_displacement_state_(false),
       use_absolute_positions_visualizationpoint_coordinates_(true),
+      write_internal_energy_element_(false),
+      write_kinetic_energy_element_(false),
       write_triads_visualizationpoints_(false),
       write_material_crosssection_strains_gausspoints_(false),
       write_material_crosssection_stresses_gausspoints_(false),
       write_spatial_crosssection_stresses_gausspoints_(false),
-      write_filament_condition_(false)
+      write_filament_condition_(false),
+      write_orientation_parameter_(false)
 {
   // empty constructor
 }
@@ -49,6 +52,14 @@ void DRT::ELEMENTS::BeamRuntimeVtuOutputParams::Init(
   use_absolute_positions_visualizationpoint_coordinates_ =
       (bool) DRT::INPUT::IntegralValue<int>(
           IO_vtk_structure_beams_paramslist, "USE_ABSOLUTE_POSITIONS");
+
+  write_internal_energy_element_ =
+      (bool) DRT::INPUT::IntegralValue<int>(
+          IO_vtk_structure_beams_paramslist, "INTERNAL_ENERGY_ELEMENT");
+
+  write_kinetic_energy_element_ =
+      (bool) DRT::INPUT::IntegralValue<int>(
+          IO_vtk_structure_beams_paramslist, "KINETIC_ENERGY_ELEMENT");
 
   write_triads_visualizationpoints_ =
       (bool) DRT::INPUT::IntegralValue<int>(

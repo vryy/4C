@@ -375,6 +375,12 @@ public:
   */
   double GetAxialForce(double& xi, const LINALG::Matrix<12,1>& disp_totlag) const;
 
+  //! get internal (elastic) energy of element
+  double GetInternalEnergy() const { return Eint_; };
+
+  //! get kinetic energy of element
+  double GetKineticEnergy() const { return Ekin_; };
+
   /*!
   \brief Get vector of Teuchos::RCPs to the lines of this element
   */

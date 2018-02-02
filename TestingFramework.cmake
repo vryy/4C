@@ -1934,7 +1934,7 @@ baci_test(beam3r_herm2lin3_backweuler_browndyn_randcrosslinking_beam3rlin2_twobo
 baci_test(beam3r_herm2lin3_backweuler_browndyn_crosslinking_beam3rlin2_twobonds 3 30)
 baci_test(beam3r_herm2lin3_backweuler_browndyn_singlefil 3 "")
 baci_test(beam3r_lin2_backweuler_browndyn_crosslinking_beam3rlin2 2 70)
-baci_test(beam3r_lin2_backweuler_browndyn_crosslinking_beam3rlin2_largesys 3 "")
+baci_test(beam3r_lin2_backweuler_browndyn_randcrosslinking_beam3rlin2_largesys 3 "")
 baci_test(beam3r_lin2_backweuler_browndyn_largesys 3 "")
 baci_test(beam3r_lin3_backweuler_browndyn_singlefil 3 "")
 baci_test(beam3wk_lin3tan_backweuler_browndyn_crosslinking_beam3rlin2 2 70)

@@ -43,6 +43,8 @@ namespace PARTICLE
   class ParticleHandler;
 }
 namespace BEAMINTERACTION {
+ class BeamInteractionParams;
+
 namespace SUBMODELEVALUATOR{
   class Generic;
 }
@@ -67,6 +69,8 @@ namespace MODELEVALUATOR{
     virtual ~BeamInteraction(){};
 
     virtual void Setup();
+
+    virtual void PostSetup();
 
     /// print welcome to biopolymer network simulation
     virtual void Logo() const;
@@ -142,7 +146,6 @@ namespace MODELEVALUATOR{
 
     //! derived
     virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const;
-    virtual void OutputStepState() const;
 
     //! derived
     virtual void RuntimeOutputStepState() const;
@@ -211,20 +214,13 @@ namespace MODELEVALUATOR{
     /// update states based on bindis after its redistribution
     virtual void UpdateMaps();
 
-    /// update map of vector (based on dof map) after redistribution
-    virtual void UpdateDofMapOfVector(
-        Teuchos::RCP<DRT::Discretization> discret,
-        Teuchos::RCP<Epetra_Vector>&      dofmapvec,
-        Teuchos::RCP<Epetra_Vector> old = Teuchos::null
-    );
-
     //! @}
 
     //!@name routines that manage binning strategy
     //! @{
 
     /// change parallel distribution of bindis and ia_discret and assign (beam) eles to bins
-    virtual void ExtendGhosting( std::map< int, std::set< int > >& extbintoelemap );
+    virtual void ExtendGhosting();
 
     /// build ele to bin map
     virtual void BuildRowEleToBinMap();
@@ -241,8 +237,12 @@ namespace MODELEVALUATOR{
     //! @}
 
   private:
+
     //! pointer to the problem discretization (cast of base class member)
     Teuchos::RCP<DRT::Discretization> discret_ptr_;
+
+    //! data container holding all beaminteraction related parameters
+     Teuchos::RCP<BEAMINTERACTION::BeamInteractionParams> beaminteraction_params_ptr_;
 
     //!@name data for submodel management
     //! @{
@@ -299,6 +299,13 @@ namespace MODELEVALUATOR{
 
     //! elerowmap of bindis
     Teuchos::RCP<Epetra_Map> rowbins_;
+
+    //! displacement of nodes since last redistribution
+    Teuchos::RCP<Epetra_Vector> dis_at_last_redistr_;
+
+    //! depending on which submodels are active this variable has different values
+    //! and determines how often a redistribution needs to be done
+    double half_interaction_distance_;
 
     //! @}
 

@@ -63,6 +63,14 @@ public:
   //! Constructor
   BeamLinkRigidJointed();
 
+  /*!
+  \brief Copy Constructor
+
+  Makes a deep copy of a Element
+
+  */
+  BeamLinkRigidJointed( const BeamLinkRigidJointed & old );
+
   //! Destructor
   virtual ~BeamLinkRigidJointed() {}
 
@@ -71,7 +79,8 @@ public:
       const int id,
       const std::vector<std::pair<int, int> >& eleids,
       const std::vector<LINALG::Matrix<3,1> >& initpos,
-      const std::vector<LINALG::Matrix<3,3> >& inittriad);
+      const std::vector<LINALG::Matrix<3,3> >& inittriad,
+      double timelinkwasset );
 
   //! Setup
   virtual void Setup( const int matnum );
@@ -111,6 +120,13 @@ public:
   //! return orientation of first connection site as quaternion
   inline const LINALG::TMatrix<double,4,1>& GetBindSpotQuaternion2() const
     { return bspottriad2_; }
+
+  //! get force in first or second binding spot
+  virtual void GetBindingSpotForce( int bspotid, LINALG::SerialDenseVector & bspotforce ) const
+  {
+    dserror(" needs to be implemented in derived classes.");
+  }
+
 
   //@}
 

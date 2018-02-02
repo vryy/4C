@@ -27,8 +27,9 @@ STR::TIMINT::ParamsRuntimeVtpOutput::ParamsRuntimeVtpOutput()
       output_interval_steps_(-1),
       output_every_iteration_(false),
       output_owner_(false),
-      output_orientation_(false),
-      output_numberofbonds_(false)
+      output_orientationandlength_(false),
+      output_numberofbonds_(false),
+      output_linkingforce_(false)
 {
   // empty constructor
 }
@@ -60,11 +61,14 @@ void STR::TIMINT::ParamsRuntimeVtpOutput::Init(
   output_owner_ =
       (bool) DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "OWNER");
 
-  output_orientation_ =
-      (bool) DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "ORIENTATION");
+  output_orientationandlength_ =
+      (bool) DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "ORIENTATIONANDLENGTH");
 
   output_numberofbonds_ =
       (bool) DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "NUMBEROFBONDS");
+
+  output_linkingforce_ =
+      (bool) DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "LINKINGFORCE");
 
 
   isinit_ = true;

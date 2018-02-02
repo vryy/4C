@@ -21,9 +21,9 @@
 
 // problem types
 #include "../drt_lib/drt_globalproblem.H"
-#include "beaminteraction_submodel_evaluator_contractilecells.H"
 #include "beaminteraction_submodel_evaluator_crosslinking.H"
 #include "beaminteraction_submodel_evaluator_potential.H"
+#include "beaminteraction_submodel_evaluator_spherebeamlinking.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -54,8 +54,8 @@ Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> BEAMINTERACTION::SUBMODE
       case INPAR::BEAMINTERACTION::submodel_crosslinking:
         (*model_map)[*mt_iter] = Teuchos::rcp( new BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking() );
         break;
-      case INPAR::BEAMINTERACTION::submodel_contractilecells:
-        (*model_map)[*mt_iter] = Teuchos::rcp( new BEAMINTERACTION::SUBMODELEVALUATOR::ContractileCells() );
+      case INPAR::BEAMINTERACTION::submodel_spherebeamlink:
+        (*model_map)[*mt_iter] = Teuchos::rcp( new BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking() );
         break;
       case INPAR::BEAMINTERACTION::submodel_potential:
         (*model_map)[*mt_iter] = Teuchos::rcp( new BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential() );

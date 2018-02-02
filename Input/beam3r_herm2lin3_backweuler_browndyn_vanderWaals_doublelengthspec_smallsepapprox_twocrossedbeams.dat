@@ -67,6 +67,8 @@ BOUNDINGBOX                     -2 -2 -1 2 2 1
 BROWNDYNPROB                    yes
 VISCOSITY                       0.001
 KT                              0.0
+--------------------------------------------------------------BEAM INTERACTION
+REPARTITIONSTRATEGY             Everydt
 --------------------------------------------------------------BEAM POTENTIAL
 POT_LAW_PREFACTOR               -3e-5
 POT_LAW_EXPONENT                6.0

@@ -269,7 +269,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--FLUCTUATING HYDRODYNAMICS", *list);
   reader.ReadGidSection("--BROWNIAN DYNAMICS", *list);
   reader.ReadGidSection("--BEAM INTERACTION", *list);
-  reader.ReadGidSection("--BEAM INTERACTION/CONTRACTILE CELLS", *list);
+  reader.ReadGidSection("--BEAM INTERACTION/SPHERE BEAM LINK", *list);
   reader.ReadGidSection("--BEAM INTERACTION/BEAM TO BEAM CONTACT", *list);
   reader.ReadGidSection("--BEAM INTERACTION/BEAM TO SPHERE CONTACT", *list);
   reader.ReadGidSection("--BEAM INTERACTION/BEAM TO SOLID CONTACT", *list);

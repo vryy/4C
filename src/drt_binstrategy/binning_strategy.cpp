@@ -619,8 +619,8 @@ void BINSTRATEGY::BinningStrategy::BuildAxisAlignedijkRangeForRigidSphere(
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void BINSTRATEGY::BinningStrategy::AssignElesToBins(
-    Teuchos::RCP<DRT::Discretization> discret,
-    std::map<int, std::set<int> >     extendedfieldghosting
+    Teuchos::RCP<DRT::Discretization>     discret,
+    std::map<int, std::set<int> > const & extendedfieldghosting
   ) const
 {
   // loop over bins
@@ -2630,6 +2630,7 @@ void BINSTRATEGY::BinningStrategy::GetCurrentNodePos(
   const DRT::ELEMENTS::Beam3Base* beamelement =
       dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element);
 
+  // fixme: should be do get position at xi with xi = 0.0?
   // if the node does not have position DoFs, we return the position of the first
   // node of the corresponding element
   if ( beamelement != NULL and not beamelement->IsCenterlineNode(*node) )
@@ -2975,3 +2976,22 @@ void BINSTRATEGY::BinningStrategy::CommunicateDistributionOfTransferredElementsT
   discret->Comm().Barrier();
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void BINSTRATEGY::BinningStrategy::BinSizeSafetyCheck(
+    double half_interaction_distance,
+    Teuchos::RCP< const Epetra_Vector > dis_increment ) const
+{
+  // rough safety check whether bin size is large enough for proper
+
+  // get maximal velocity over all procs
+  double extrema[2] = { 0.0, 0.0 };
+  dis_increment->MinValue( &extrema[0] );
+  dis_increment->MaxValue( &extrema[1] );
+  const double maxdis = std::max( -extrema[0], extrema[1] );
+
+  if ( ( half_interaction_distance + maxdis ) > 0.5 * cutoff_radius_ )
+  {
+    return;
+  }
+}

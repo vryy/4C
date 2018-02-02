@@ -26,7 +26,13 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
   Teuchos::Array<std::string> yesnotuple = tuple<std::string>("Yes","No","yes","no","YES","NO");
   Teuchos::Array<int> yesnovalue = tuple<int>(true,false,true,false,true,false);
 
-  Teuchos::ParameterList& beaminteraction = list->sublist("BEAM INTERACTION",false,"");
+  Teuchos::ParameterList & beaminteraction = list->sublist("BEAM INTERACTION",false,"");
+
+  setStringToIntegralParameter<int>( "REPARTITIONSTRATEGY","Adaptive","Type of employed repartitioning strategy",
+        tuple<std::string>("Adaptive","adaptive",
+                           "Everydt", "everydt"),
+        tuple<int>( repstr_adaptive, repstr_adaptive,
+                    repstr_everydt, repstr_everydt), &beaminteraction );
 
 
   /*----------------------------------------------------------------------*/
@@ -58,16 +64,22 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
 
 
   /*----------------------------------------------------------------------*/
-  /* parameters for contractile cell submodel */
+  /* parameters for sphere beam link submodel */
 
-  Teuchos::ParameterList& contraccells = beaminteraction.sublist("CONTRACTILE CELLS",false,"");
+  Teuchos::ParameterList& spherebeamlink = beaminteraction.sublist("SPHERE BEAM LINK",false,"");
 
-  setStringToIntegralParameter<int>( "CONTRACTILECELLS", "No",
-                                 "Contractile cells in problem",
-                                 yesnotuple, yesnovalue, &contraccells );
+  setStringToIntegralParameter<int>( "INTEGRINS", "No",
+                                 "Integrins in problem",
+                                 yesnotuple, yesnovalue, &spherebeamlink );
 
-  //number of overall crosslink molecules in the boundary volume
-  IntParameter( "NUMCELLS", 0, "number of contracting cells in simulation volume", &contraccells );
+  // number of linker per cell
+  IntParameter( "MAXNUMINTEGRINSPERCELL", 0, "number of integrins per cell", &spherebeamlink );
+  // material id for integrins
+  IntParameter( "MATINTEGRINS", -1, "crosslinker material id for sphere beam linker", &spherebeamlink );
+  // Reading double parameter for contraction rate for active linker
+  DoubleParameter("CONTRACTIONRATE", 0.0 ,"contraction rate of cell (integrin linker) in [μm/s]", &spherebeamlink );
+  // time step for stochastic events concerning sphere beam linking
+  DoubleParameter( "TIMESTEP", -1.0, "time step for stochastic events concerning sphere beam linking (e.g. catch-slip-bond behavior) ", &spherebeamlink);
 
 
   /*----------------------------------------------------------------------*/

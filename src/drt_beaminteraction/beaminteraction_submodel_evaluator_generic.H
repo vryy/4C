@@ -121,10 +121,10 @@ namespace SUBMODELEVALUATOR {
     virtual void UpdateStepState(const double& timefac_n) = 0;
 
     //! pre update step element
-    virtual void PreUpdateStepElement() = 0;
+    virtual bool PreUpdateStepElement( bool beam_redist ) = 0;
 
     //! update step element
-    virtual void UpdateStepElement() = 0;
+    virtual void UpdateStepElement( bool repartition_was_done ) = 0;
 
     //! post update step element
     virtual void PostUpdateStepElement() = 0;
@@ -138,18 +138,17 @@ namespace SUBMODELEVALUATOR {
     //! reset routine for model evlaluator
     virtual void ResetStepState() = 0;
 
-    /*! \brief write model specific restart
-     *
-     *  \param iowriter            (in) : output writer
-     *  \param forced_writerestart (in) : special treatment is necessary, if the restart is forced */
+    //! \brief write model specific restart
     virtual void WriteRestart(
-        IO::DiscretizationWriter& iowriter,
-        const bool& forced_writerestart) const = 0;
+        IO::DiscretizationWriter & ia_writer,
+        IO::DiscretizationWriter & bin_writer) const = 0;
 
     /*! \brief read model specific restart information
      *
      *  \param ioreader (in) : input reader*/
-    virtual void ReadRestart( IO::DiscretizationReader& ioreader ) = 0;
+    virtual void ReadRestart(
+        IO::DiscretizationReader & ia_writer,
+        IO::DiscretizationReader & bin_writer) = 0;
 
     //! \brief do stuff post read of model specific restart information
     virtual void PostReadRestart() = 0;
@@ -169,6 +168,9 @@ namespace SUBMODELEVALUATOR {
 
     //! \brief add subproblem specific contributions to bin col map
     virtual void AddBinsWithRelevantContentForIaDiscretColMap( std::set< int >& colbins) const = 0;
+
+    //! \brief add subproblem specific contributions to bin col map
+    virtual void GetHalfInteractionDistance( double & half_interaction_distance ) = 0;
 
     //! \brief do submodel specific stuff after partitioning
     virtual bool PostPartitionProblem() {return false;};

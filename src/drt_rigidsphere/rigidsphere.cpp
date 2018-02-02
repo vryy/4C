@@ -18,10 +18,12 @@
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_fem_general/largerotations.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_lib/drt_utils_factory.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_inpar/inpar_browniandyn.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "../drt_beaminteraction/beam_link_pinjointed.H"
 
 
 DRT::ELEMENTS::RigidsphereType DRT::ELEMENTS::RigidsphereType::instance_;
@@ -119,7 +121,7 @@ DRT::ELEMENTS::Rigidsphere::Rigidsphere(int id, int owner) :
     radius_(0.0),
     rho_(0.0)
 {
-  return;
+  mybondstobeams_.clear();
 }
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       meier 05/12|
@@ -127,9 +129,20 @@ DRT::ELEMENTS::Rigidsphere::Rigidsphere(int id, int owner) :
 DRT::ELEMENTS::Rigidsphere::Rigidsphere(const DRT::ELEMENTS::Rigidsphere& old) :
     DRT::Element(old),
     radius_(old.radius_),
-    rho_(old.rho_),
-    bondstatus_(old.bondstatus_)
+    rho_(old.rho_)
 {
+  mybondstobeams_.clear();
+  if( old.mybondstobeams_.size() )
+  {
+    for ( auto const & iter : old.mybondstobeams_ )
+    {
+      if ( iter.second != Teuchos::null )
+        mybondstobeams_[iter.first] =
+            Teuchos::rcp_dynamic_cast< BEAMINTERACTION::BeamLinkPinJointed >( iter.second->Clone() );
+      else
+        dserror("something went wrong, I am sorry. Please go debugging.");
+    }
+  }
   return;
 }
 
@@ -182,14 +195,17 @@ void DRT::ELEMENTS::Rigidsphere::Pack(DRT::PackBuffer& data) const
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data,type);
+  AddtoPack( data, type );
   // add base class Element
   Element::Pack(data);
 
   //add all class variables
-  AddtoPack(data,radius_);
-  AddtoPack(data,rho_);
-  AddtoPack(data,bondstatus_);
+  AddtoPack( data, radius_ );
+  AddtoPack( data, rho_ );
+
+  AddtoPack( data, static_cast<int>( mybondstobeams_.size() ) );
+  for ( auto const & iter : mybondstobeams_ )
+    iter.second->Pack(data);
 
   return;
 }
@@ -203,21 +219,33 @@ void DRT::ELEMENTS::Rigidsphere::Unpack(const std::vector<char>& data)
   std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  ExtractfromPack( position, data, type );
+  if ( type != UniqueParObjectId() ) dserror("wrong instance type data");
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  Element::Unpack(basedata);
+  ExtractfromPack( position, data, basedata );
+  Element::Unpack( basedata );
 
 
   //extract all class variables
-  ExtractfromPack(position,data,radius_);
-  ExtractfromPack(position,data,rho_);
-  ExtractfromPack(position,data,bondstatus_);
+  ExtractfromPack( position, data, radius_ );
+  ExtractfromPack( position, data, rho_ );
 
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+  int unsigned numbonds = ExtractInt(position,data);
+  for ( int unsigned i = 0; i < numbonds; ++i )
+  {
+    std::vector<char> tmp;
+    ExtractfromPack( position, data, tmp );
+    Teuchos::RCP<DRT::ParObject> object = Teuchos::rcp( DRT::UTILS::Factory(tmp), true );
+    Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> link =
+        Teuchos::rcp_dynamic_cast< BEAMINTERACTION::BeamLinkPinJointed >(object);
+    if ( link == Teuchos::null )
+      dserror("Received object is not a beam to beam linkage");
+    mybondstobeams_[link->Id()] = link;
+  }
+
+  if ( position != data.size() )
+    dserror("Mismatch in size of data %d <-> %d", static_cast<int>( data.size() ), position );
   return;
 }
 

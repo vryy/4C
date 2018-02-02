@@ -79,10 +79,10 @@ namespace TIMINT {
     };
 
     /// whether to write orientation at visualization point
-    bool OutputOrientation() const
+    bool OutputOrientationAndLength() const
     {
       CheckInitSetup();
-      return output_orientation_;
+      return output_orientationandlength_;
     };
 
     /// whether to write number of bonds at visualization point
@@ -92,6 +92,12 @@ namespace TIMINT {
       return output_numberofbonds_;
     };
 
+    /// whether to write number of bonds at visualization point
+    bool OutputLinkingForce() const
+    {
+      CheckInitSetup();
+      return output_linkingforce_;
+    };
 /*    /// whether to write displacements
     bool OutputDisplacementState() const
     {
@@ -143,10 +149,13 @@ namespace TIMINT {
     bool output_owner_;
 
     /// whether to write orientation at visualization point
-    bool output_orientation_;
+    bool output_orientationandlength_;
 
     /// whether to write number of bonds at visualization point
     bool output_numberofbonds_;
+
+    /// whether to write force acting on linker
+    bool output_linkingforce_;
 
 /*    /// whether to write displacement output
     bool output_displacement_state_;*/

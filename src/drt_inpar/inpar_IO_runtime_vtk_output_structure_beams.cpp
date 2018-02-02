@@ -60,6 +60,16 @@ namespace BEAMS
         "use absolute positions or initial positions for vtu geometry (i.e. point coordinates)",
         yesnotuple, yesnovalue, &sublist_IO_VTK_beams);
 
+    // write internal (elastic) energy of element
+    setStringToIntegralParameter<int>("INTERNAL_ENERGY_ELEMENT","No",
+        "write internal (elastic) energy for each element",
+        yesnotuple, yesnovalue, &sublist_IO_VTK_beams);
+
+    // write kinetic energy of element
+    setStringToIntegralParameter<int>("KINETIC_ENERGY_ELEMENT","No",
+        "write kinetic energy for each element",
+        yesnotuple, yesnovalue, &sublist_IO_VTK_beams);
+
     // write triads as three orthonormal base vectors at every visualization point
     setStringToIntegralParameter<int>("TRIAD_VISUALIZATIONPOINT","No",
         "write triads at every visualization point",

@@ -12,30 +12,36 @@
 /*-----------------------------------------------------------*/
 
 #include "../drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact.H"
+#include "../drt_beaminteraction/beam_contact_pair.H"
+#include "../drt_beaminteraction/beam_contact_params.H"
+#include "../drt_beaminteraction/beam_contact_runtime_vtk_output_params.H"
+#include "../drt_beaminteraction/beaminteraction_calc_utils.H"
+#include "../drt_beaminteraction/str_model_evaluator_beaminteraction_datastate.H"
 
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
+
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
 #include "../drt_io/runtime_vtp_writer.H"
-#include <Teuchos_TimeMonitor.hpp>
 
 #include "../drt_structure_new/str_timint_basedataglobalstate.H"
 #include "../drt_structure_new/str_timint_basedataio.H"
-#include "../drt_particle/particle_handler.H"
+
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 
 #include "../drt_inpar/inpar_beamcontact.H"
+
+#include "../drt_binstrategy/binning_strategy.H"
+
 #include "../drt_beam3/beam3_base.H"
-#include "beam_contact_pair.H"
-#include "beam_contact_params.H"
-#include "beam_contact_runtime_vtk_output_params.H"
-#include "beaminteraction_calc_utils.H"
-#include "str_model_evaluator_beaminteraction_datastate.H"
+#include "../drt_rigidsphere/rigidsphere.H"
+
+#include <Teuchos_TimeMonitor.hpp>
 
 #include <NOX_Solver_Generic.H>
 
@@ -369,15 +375,18 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::UpdateStepState(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::PreUpdateStepElement()
+bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::PreUpdateStepElement(
+    bool beam_redist )
 {
   CheckInitSetup();
-
+  // not repartition of binning discretization necessary
+  return false;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::UpdateStepElement()
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::UpdateStepElement(
+    bool repartition_was_done )
 {
   CheckInitSetup();
 
@@ -632,8 +641,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::ResetStepState()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::WriteRestart(
-    IO::DiscretizationWriter& iowriter,
-    const bool& forced_writerestart) const
+    IO::DiscretizationWriter & ia_writer,
+    IO::DiscretizationWriter & bin_writer) const
 {
   // empty
 }
@@ -641,7 +650,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::WriteRestart(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::ReadRestart(
-    IO::DiscretizationReader& ioreader)
+    IO::DiscretizationReader & ia_reader,
+    IO::DiscretizationReader & bin_reader)
 {
   // empty
 }
@@ -684,6 +694,93 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
 {
   CheckInitSetup();
   // nothing to do
+}
+
+/*-------------------------------------------------------------------------------*
+ *-------------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
+    GetHalfInteractionDistance( double & half_interaction_distance )
+{
+  CheckInitSetup();
+
+  // todo: choose meaningful safety factor
+  double safe_fac = 1.5;
+
+  // loop over all beams to get largest interaction radius
+  double locmax_ia_distance = 0.0;
+  double curr_ia_distance = 0.0;
+  int const numroweles = EleTypeMapExtractorPtr()->BeamMap()->NumMyElements();
+  for( int rowele_i = 0; rowele_i < numroweles; ++rowele_i )
+  {
+    int const elegid = EleTypeMapExtractorPtr()->BeamMap()->GID(rowele_i);
+    DRT::ELEMENTS::Beam3Base * currele =
+        dynamic_cast< DRT::ELEMENTS::Beam3Base *>( DiscretPtr()->gElement(elegid) );
+
+    curr_ia_distance = currele->GetCircularCrossSectionRadiusForInteractions();
+
+    if ( curr_ia_distance > locmax_ia_distance )
+      locmax_ia_distance = curr_ia_distance;
+  }
+
+  // get global maximum
+  double globalmax_beam_ia_distance = 0.0;
+  // build sum over all procs
+  MPI_Allreduce( & locmax_ia_distance, & globalmax_beam_ia_distance, 1,
+      MPI_DOUBLE, MPI_MAX, dynamic_cast<const Epetra_MpiComm*>( &(Discret().Comm() ) )->Comm() );
+
+  // i) beam to beam contact
+  if ( HaveContactType(BINSTRATEGY::UTILS::Beam) )
+  {
+    // safety factor
+    globalmax_beam_ia_distance *= safe_fac;
+
+    half_interaction_distance = ( globalmax_beam_ia_distance > half_interaction_distance ) ?
+        globalmax_beam_ia_distance : half_interaction_distance;
+  }
+
+  // ii) beam to sphere contact
+  if ( HaveContactType(BINSTRATEGY::UTILS::RigidSphere) )
+  {
+    // loop over all spheres
+    double curr_ia_dist = 0.0;
+    double loc_max_ia_dist = 0.0;
+    int unsigned const numrowsphereeles = EleTypeMapExtractor().SphereMap()->NumMyElements();
+    for( unsigned int rowele_i = 0; rowele_i < numrowsphereeles; ++rowele_i )
+    {
+      int const elegid = EleTypeMapExtractor().SphereMap()->GID(rowele_i);
+      DRT::ELEMENTS::Rigidsphere * sphere =
+          dynamic_cast< DRT::ELEMENTS::Rigidsphere * >( Discret().gElement(elegid) );
+
+      curr_ia_dist = sphere->Radius() + globalmax_beam_ia_distance;
+
+      // update distance
+      loc_max_ia_dist = ( curr_ia_dist > loc_max_ia_dist ) ? curr_ia_dist : loc_max_ia_dist;
+    }
+
+    // get global maximum
+    double spherebeamlinking_half_interaction_distance_global = 0.0;
+    // build sum over all procs
+    MPI_Allreduce( &loc_max_ia_dist, &spherebeamlinking_half_interaction_distance_global, 1,
+        MPI_DOUBLE, MPI_MAX, dynamic_cast<const Epetra_MpiComm*>( &(Discret().Comm() ) )->Comm() );
+
+    half_interaction_distance = ( spherebeamlinking_half_interaction_distance_global > half_interaction_distance ) ?
+        spherebeamlinking_half_interaction_distance_global : half_interaction_distance;
+  }
+
+  // iii) beam to solid contact
+  if ( HaveContactType(BINSTRATEGY::UTILS::Solid) )
+  {
+    dserror("Not yet implemented for beam to solid contact");
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::HaveContactType(
+    BINSTRATEGY::UTILS::BinContentType const & contacttype) const
+{
+  CheckInit();
+  return ( std::find(contactelementtypes_.begin(), contactelementtypes_.end(), contacttype) != contactelementtypes_.end() );
 }
 
 /*----------------------------------------------------------------------------*

@@ -253,19 +253,6 @@ public:
    */
   virtual void Print(std::ostream& os) const;
 
-  /*!
-   \brief Return of data container of this node
-
-   This method returns the data container of this crosslinker node where additional
-   binding status specific quantities/information are stored.
-
-   */
-  inline Teuchos::RCP<CROSSLINKING::CrosslinkerNodeDataContainer> ClData() const
-  {
-    if (cldata_ == Teuchos::null)
-      dserror("No crosslinker data attached.");
-    return cldata_;
-  }
 
   /*!
   \brief Return material of this node
@@ -280,14 +267,14 @@ public:
     return mat_;
   }
 
-  /*!
-   \brief Initializes the data container of the node
-
-   With this function, the container with crosslinker binding specific quantities/information
-   is initialized.
-
-   */
-  virtual void InitializeDataContainer();
+//  /*!
+//   \brief Initializes the data container of the node
+//
+//   With this function, the container with crosslinker binding specific quantities/information
+//   is initialized.
+//
+//   */
+//  virtual void InitializeDataContainer();
 
   /*!
    \brief Set material for crosslinker node
@@ -303,23 +290,23 @@ public:
    */
   virtual void SetMaterial( Teuchos::RCP<MAT::Material> material );
 
-  /*!
-   \brief Resets the data container of the node
-
-   With this function, the container with crosslinker binding specific quantities/information
-   is deleted / reset to Teuchos::null pointer
-
-   */
-  virtual void ResetDataContainer();
+//  /*!
+//   \brief Resets the data container of the node
+//
+//   With this function, the container with crosslinker binding specific quantities/information
+//   is deleted / reset to Teuchos::null pointer
+//
+//   */
+//  virtual void ResetDataContainer();
 
   //@}
 
 
 protected:
 
-  /// information of crosslinker binding status, this is different for each crosslinker
-  //  and may change each time step
-  Teuchos::RCP<CROSSLINKING::CrosslinkerNodeDataContainer> cldata_;
+//  /// information of crosslinker binding status, this is different for each crosslinker
+//  //  and may change each time step
+//  Teuchos::RCP<CROSSLINKING::CrosslinkerNodeDataContainer> cldata_;
 
   /// this contains information that does not change during the simulation time and is
   //  the same for a subset of crosslinker, we only need one object for each subset

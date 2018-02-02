@@ -921,10 +921,11 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact.cpp
   src/drt_beaminteraction/beaminteraction_submodel_evaluator_potential.cpp
   src/drt_beaminteraction/beaminteraction_calc_utils.cpp
+  src/drt_beaminteraction/beaminteraction_data.cpp
   src/drt_beaminteraction/crosslinking_params.cpp
   src/drt_beaminteraction/beaminteraction_submodel_evaluator_crosslinking.cpp
-  src/drt_beaminteraction/contractilecells_params.cpp
-  src/drt_beaminteraction/beaminteraction_submodel_evaluator_contractilecells.cpp
+  src/drt_beaminteraction/spherebeamlinking_params.cpp
+  src/drt_beaminteraction/beaminteraction_submodel_evaluator_spherebeamlinking.cpp
   src/drt_beaminteraction/beaminteraction_geometry_utils.cpp
 )
 set(OBJS_DRT_STRU_MULTI

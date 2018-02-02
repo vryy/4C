@@ -120,6 +120,18 @@ public:
    *  \date 03/17 */
   void AppendElementOwningProcessor();
 
+  /** \brief append internal (elastic) energy of element
+   *
+   *  \author eichinger
+   *  \date 01/18 */
+  void AppendElementInternalEnergy();
+
+  /** \brief append kinetic energy of element
+   *
+   *  \author eichinger
+   *  \date 01/18 */
+  void AppendElementKineticEnergy();
+
   /** \brief append information about to which filament an element belonging
    *
    *  \author eichinger

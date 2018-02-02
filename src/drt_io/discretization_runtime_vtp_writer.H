@@ -59,6 +59,7 @@ public:
    *  \date 04/17 */
   void Initialize(
       Teuchos::RCP<const DRT::Discretization> discretization,
+      const std::string& geometry_name,
       unsigned int max_number_timesteps_to_be_written,
       double time,
       bool write_binary_output );
@@ -95,11 +96,11 @@ public:
    *  \date 04/17 */
   void WriteFiles();
 
-  /** \brief write a VTK collection file summarizing all written files of this object to filesystem
+  /** \brief write a VTP collection file summarizing all written files of this object to filesystem
    *
    *  \author grill
    *  \date 04/17 */
-  void WriteCollectionFileOfAllWrittenFiles();
+  void WriteCollectionFileOfAllWrittenFiles( const std::string & geometry_name );
 
 
   /** \brief determine and set geometry data from nodes based on reference configuration

@@ -56,9 +56,11 @@ NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         15
 PREDICT                         TangDis
---------------------------------------------------------------------SOLVER 1
+----------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
+----------------------------------------------------------------BEAM INTERACTION
+REPARTITIONSTRATEGY             Everydt
 ----------------------------------------------------------------BEAM INTERACTION/BEAM TO SPHERE CONTACT
 STRATEGY                        penalty
 ----------------------------------------------------------------BEAM CONTACT

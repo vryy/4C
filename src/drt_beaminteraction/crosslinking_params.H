@@ -159,7 +159,7 @@ namespace BEAMINTERACTION {
     double viscosity_;
     /// thermal energy
     double kt_;
-    /// time step for stochastic events concering crosslinking
+    /// time step for stochastic events concerning crosslinking
     double deltatime_;
     /// distance between two binding spots on a filament
     double filamentbspotinterval_;

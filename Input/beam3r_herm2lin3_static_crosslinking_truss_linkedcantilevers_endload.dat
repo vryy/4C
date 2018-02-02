@@ -27,7 +27,7 @@ VERBOSITY              Standard
 //INTERVAL_STEPS                  1
 //EVERY_ITERATION                 No
 //OWNER                           Yes
-//ORIENTATION                     Yes
+//ORIENTATIONANDLENGTH            Yes
 //NUMBEROFBONDS                   Yes
 //----------------------------------------------------------IO/RUNTIME VTK OUTPUT
 //OUTPUT_DATA_FORMAT              binary

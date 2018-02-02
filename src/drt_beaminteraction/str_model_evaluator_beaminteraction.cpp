@@ -40,12 +40,16 @@
 #include "../drt_beaminteraction/crosslinker_node.H"
 #include "../drt_beaminteraction/periodic_boundingbox.H"
 #include "../drt_beaminteraction/str_model_evaluator_beaminteraction_datastate.H"
-#include "beaminteraction_calc_utils.H"
+#include "../drt_beaminteraction/beaminteraction_calc_utils.H"
+#include "../drt_beaminteraction/beaminteraction_data.H"
+
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::MODELEVALUATOR::BeamInteraction::BeamInteraction() :
     discret_ptr_ ( Teuchos::null ),
+    beaminteraction_params_ptr_ ( Teuchos::null ),
     submodeltypes_ ( Teuchos::null ),
     me_map_ptr_ ( Teuchos::null ),
     me_vec_ptr_ ( Teuchos::null ),
@@ -61,7 +65,9 @@ STR::MODELEVALUATOR::BeamInteraction::BeamInteraction() :
     particlehandler_ ( Teuchos::null ),
     binstrategy_ ( Teuchos::null ),
     bindis_ ( Teuchos::null ),
-    rowbins_ ( Teuchos::null )
+    rowbins_ ( Teuchos::null ),
+    dis_at_last_redistr_ ( Teuchos::null ),
+    half_interaction_distance_ ( -1.0 )
 {
   // empty
 }
@@ -80,10 +86,15 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   // stiff
   stiff_beaminteraction_ = Teuchos::rcp( new
       LINALG::SparseMatrix( *GState().DofRowMapView(), 81, true, true ) );
-  // force
+  // force and displacement at last redistribution
   force_beaminteraction_ = Teuchos::rcp( new Epetra_Vector( *GState().DofRowMap(),true ) );
+  dis_at_last_redistr_ = Teuchos::rcp( new Epetra_Vector( *GState().DofRowMap(), true ) );
   // get myrank
   myrank_ = DiscretPtr()->Comm().MyPID();
+
+  beaminteraction_params_ptr_ = Teuchos::rcp( new BEAMINTERACTION::BeamInteractionParams() );
+  beaminteraction_params_ptr_->Init();
+  beaminteraction_params_ptr_->Setup();
 
   // print logo
   Logo();
@@ -160,18 +171,42 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
 
   // distribute problem according to bin distribution to procs ( in case of restart
   // partitioning is done during ReadRestart() )
-  if( not DRT::Problem::Instance()->Restart() )
+  if ( not DRT::Problem::Instance()->Restart() )
     PartitionProblem();
 
   // some actions need a partitioned system followed by a renewal of the partition
   if ( not DRT::Problem::Instance()->Restart() and PostPartitionProblem() )
     PartitionProblem();
 
+  PostSetup();
+
+  issetup_ = true;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::BeamInteraction::PostSetup()
+{
+  CheckInit();
+
   // post setup submodel loop
+  Vector::iterator sme_iter;
   for ( Vector::iterator sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter )
     (*sme_iter)->PostSetup();
 
-  issetup_ = true;
+  if ( beaminteraction_params_ptr_->GetRepartitionStrategy() == INPAR::BEAMINTERACTION::repstr_adaptive )
+  {
+    // submodel loop to determine half interaction radius
+    for ( sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter )
+      (*sme_iter)->GetHalfInteractionDistance( half_interaction_distance_ );
+
+    // safety checks
+    if ( half_interaction_distance_ > ( 0.5 * binstrategy_->CutoffRadius() ) )
+      dserror( "Your half interaction distance %f is larger than half your cuttoff %f. You will not be\n"
+          "able to track all interactions like this. Increase cutoff?", half_interaction_distance_, 0.5 * binstrategy_->CutoffRadius() );
+    if ( half_interaction_distance_ < 0 )
+      dserror("At least one model needs to define half interaction radius");
+  }
 }
 
 /*----------------------------------------------------------------------------*
@@ -186,8 +221,8 @@ void STR::MODELEVALUATOR::BeamInteraction::SetSubModelTypes()
   // check for crosslinking in biopolymer networks
   // ---------------------------------------------------------------------------
   if ( DRT::INPUT::IntegralValue<int>( DRT::Problem::Instance()->BeamInteractionParams().sublist(
-      "CONTRACTILE CELLS"), "CONTRACTILECELLS") )
-    submodeltypes_->insert(INPAR::BEAMINTERACTION::submodel_contractilecells);
+      "SPHERE BEAM LINK"), "INTEGRINS") )
+    submodeltypes_->insert(INPAR::BEAMINTERACTION::submodel_spherebeamlink);
 
   // ---------------------------------------------------------------------------
   // check for crosslinking in biopolymer networks
@@ -260,7 +295,7 @@ Teuchos::RCP< STR::MODELEVALUATOR::BeamInteraction::Vector >
   STR::MODELEVALUATOR::BeamInteraction::Map::iterator miter;
 
   // if there is a contractile cell submodel, put in first place
-  miter = submodel_map.find( INPAR::BEAMINTERACTION::submodel_contractilecells  );
+  miter = submodel_map.find( INPAR::BEAMINTERACTION::submodel_spherebeamlink  );
   if ( miter != submodel_map.end() )
   {
     // put it in first place
@@ -348,12 +383,11 @@ void STR::MODELEVALUATOR::BeamInteraction::PartitionProblem()
   BuildRowEleToBinMap();
 
   // extend ghosting
-  std::map< int, std::set< int > > extbintoelemap;
-  ExtendGhosting(extbintoelemap);
+  ExtendGhosting();
 
   // assign Elements to bins
   binstrategy_->RemoveAllElesFromBins();
-  binstrategy_->AssignElesToBins( ia_discret_, extbintoelemap );
+  binstrategy_->AssignElesToBins( ia_discret_, ia_state_ptr_->GetExtendedBinToRowEleMap() );
 
   // update maps of state vectors and matrices
   UpdateMaps();
@@ -373,17 +407,18 @@ bool STR::MODELEVALUATOR::BeamInteraction::PostPartitionProblem()
 
   Vector::iterator sme_iter;
   for ( sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter )
-    if ( (*sme_iter)->PostPartitionProblem() ) repartition = true;
+    repartition = (*sme_iter)->PostPartitionProblem() ? true : repartition;
 
   return repartition;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::ExtendGhosting(
-    std::map< int, std::set< int > >& extbintoelemap)
+void STR::MODELEVALUATOR::BeamInteraction::ExtendGhosting()
 {
   TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::BeamInteraction::ExtendGhosting");
+
+  ia_state_ptr_->GetMutableExtendedBinToRowEleMap().clear();
 
   CheckInit();
 
@@ -399,7 +434,7 @@ void STR::MODELEVALUATOR::BeamInteraction::ExtendGhosting(
   std::vector<int> binvec(27);
   for( it = ia_state_ptr_->GetBinToRowEleMap().begin(); it != ia_state_ptr_->GetBinToRowEleMap().end() ; ++it )
   {
-    // not the following if is only valid if you ensure that the largest element
+    // not doing the following if is only valid if you ensure that the largest element
     // in the discretization (in deformed state) is smaller than the cutoff
     // which is not necessarily needed e.g. for beam contact
 //    if( boundcolbins.find( it->first ) != boundcolbins.end() )
@@ -431,7 +466,7 @@ void STR::MODELEVALUATOR::BeamInteraction::ExtendGhosting(
 
   Teuchos::RCP<Epetra_Map> ia_elecolmap =
   binstrategy_->ExtendGhosting( ia_state_ptr_->GetMutableBinToRowEleMap(),
-      extbintoelemap, auxmap );
+      ia_state_ptr_->GetMutableExtendedBinToRowEleMap(), auxmap );
 
   // 2) extend ghosting of discretization
   BINSTRATEGY::UTILS::ExtendDiscretizationGhosting( ia_discret_, ia_elecolmap , true , false, true );
@@ -439,7 +474,7 @@ void STR::MODELEVALUATOR::BeamInteraction::ExtendGhosting(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::Reset(const Epetra_Vector& x)
+void STR::MODELEVALUATOR::BeamInteraction::Reset( const Epetra_Vector & x )
 {
   CheckInitSetup();
 
@@ -447,7 +482,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Reset(const Epetra_Vector& x)
   TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox()->ApplyDirichlet( GState().GetTimeN() );
 
   // get current displacement state and export to interaction discretization dofmap
-  UpdateDofMapOfVector( ia_discret_, ia_state_ptr_->GetMutableDisNp(), GState().GetMutableDisNp() );
+  BEAMINTERACTION::UTILS::UpdateDofMapOfVector( ia_discret_, ia_state_ptr_->GetMutableDisNp(), GState().GetMutableDisNp() );
   BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(
       ia_state_ptr_->GetMutableDisNp(),
       TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox(),
@@ -475,6 +510,11 @@ void STR::MODELEVALUATOR::BeamInteraction::Reset(const Epetra_Vector& x)
   //       system stiffness matrix (because we only assemble non-zero values).
   //       Therefore, the graph of the matrix changes and also the required gidmap
   //       (even in computation with one processor)
+  // note: this is only necessary if active sets change in consecutive iteration steps
+  // ( as crosslinker for example are only updated each time step, we only need to do this
+  // every time step)
+  if ( HaveSubModelType( INPAR::BEAMINTERACTION::submodel_potential ) ||
+       HaveSubModelType( INPAR::BEAMINTERACTION::submodel_beamcontact ) )
   UpdateCouplingAdapterAndMatrixTransformation();
 }
 
@@ -592,13 +632,30 @@ void STR::MODELEVALUATOR::BeamInteraction::WriteRestart(
 {
   CheckInitSetup();
 
-  // write (restart) output
-  OutputStepState();
+  int const stepn = GState().GetStepN();
+  double const timen = GState().GetTimeN();
+  Teuchos::RCP< IO::DiscretizationWriter > ia_writer = ia_discret_->Writer();
+  Teuchos::RCP< IO::DiscretizationWriter > bin_writer = bindis_->Writer();
+
+  // write restart of ia_discret
+  ia_writer->WriteMesh( stepn, timen );
+  ia_writer->NewStep( stepn, timen );
+
+  // mesh is not written to disc, only maximum node id is important for output
+  //fixme: can we just write mesh
+  bin_writer->ParticleOutput( stepn, timen, true );
+  bin_writer->NewStep( stepn, timen );
+
+  // as we know that our maps have changed every time we write output, we can empty
+  // the map cache as we can't get any advantage saving the maps anyway
+  ia_writer->ClearMapCache();
+  bin_writer->ClearMapCache();
 
   // sub model loop
   Vector::iterator sme_iter;
   for ( sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter )
-    (*sme_iter)->WriteRestart( iowriter, forced_writerestart );
+    (*sme_iter)->WriteRestart( *ia_writer, *bin_writer );
+
 }
 
 /*----------------------------------------------------------------------------*
@@ -608,18 +665,31 @@ void STR::MODELEVALUATOR::BeamInteraction::ReadRestart(
 {
   CheckInitSetup();
 
+  int const stepn = GState().GetStepN();
+
   // read interaction discretization
-  IO::DiscretizationReader reader( ia_discret_, GState().GetStepN() );
-  reader.ReadHistoryData( GState().GetStepN() );
+  IO::DiscretizationReader ia_reader( ia_discret_, stepn );
+  // includes FillComplete()
+  ia_reader.ReadHistoryData( stepn );
+
+  // rebuild bin discret correctly in case crosslinker were present
+  // Fixme: do just read history data like with ia discret
+  // read correct nodes
+  IO::DiscretizationReader bin_reader( bindis_, stepn );
+  bin_reader.ReadNodesOnly( stepn );
+  bindis_->FillComplete( false, false, false );
+
+  // need to read step next (as it was written next, do safety check)
+  if ( stepn != ia_reader.ReadInt("step") or stepn != bin_reader.ReadInt("step") )
+    dserror("Restart step not consistent with read restart step. ");
+
+  // rebuild binning
   PartitionProblem();
 
   // sub model loop
   Vector::iterator sme_iter;
   for ( sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter )
-    (*sme_iter)->ReadRestart( ioreader );
-
-  // rebuild binning, redistribute problem, build ghosting, assign elements
-  PartitionProblem();
+    (*sme_iter)->ReadRestart( ia_reader, bin_reader );
 
   // sub model loop
   for ( sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter )
@@ -660,6 +730,11 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepState(
   Teuchos::RCP<Epetra_Vector>& fstructold_ptr = GState().GetMutableFstructureOld();
 
   fstructold_ptr->Update(timefac_n, *force_beaminteraction_, 1.0 );
+
+  // submodel loop
+  Vector::iterator sme_iter;
+  for ( sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter )
+    (*sme_iter)->UpdateStepState( timefac_n );
 }
 
 /*----------------------------------------------------------------------------*
@@ -668,30 +743,123 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepElement()
 {
   CheckInitSetup();
 
-  // submodel loop
   Vector::iterator sme_iter;
+
+  // repartition every time
+  bool beam_redist = true;
+
+  /* the idea is the following: redistribution of elements is only necessary if
+   * one node on any proc has moved "too far" compared to the time step of the
+   * last redistribution. Therefore we only do the expensive redistribution,
+   * change of ghosting and assigning of elements if necessary.
+   * This holds for both the beam discretization as well as the particle/linker/binning
+   * discretization. Note that a transfer of particles is possible (usually way cheaper)
+   * without the need to also redistribute the beam discretization. Reciprocally,
+   * if the beam discretization needs to be redistributed, also the binning discretization
+   * needs to be changed.*/
+  // store bin col map that may be needed in the following, if so, it gets deleted before though
+  Teuchos::RCP<Epetra_Map> bincolmap =
+      Teuchos::rcp( new Epetra_Map( *bindis_->ElementColMap() ) );
+
+  if ( beaminteraction_params_ptr_->GetRepartitionStrategy() == INPAR::BEAMINTERACTION::repstr_adaptive )
+  {
+    Teuchos::RCP<Epetra_Vector> dis_increment =
+        Teuchos::rcp( new Epetra_Vector( *GState().DofRowMap(), true ) );
+    int doflid[3];
+    for ( int i = 0; i < discret_ptr_->NumMyRowNodes(); ++i )
+    {
+      //get a pointer at i-th row node
+      DRT::Node* node = discret_ptr_->lRowNode(i);
+
+      /* Hermite Interpolation: Check whether node is a beam node which is NOT
+       * used for centerline interpolation if so, we simply skip it because
+       * it does not have position DoFs */
+      if ( BEAMINTERACTION::UTILS::IsBeamNode(*node) and not BEAMINTERACTION::UTILS::IsBeamCenterlineNode(*node) )
+        continue;
+
+      //get GIDs of this node's degrees of freedom
+      std::vector<int> dofnode = discret_ptr_->Dof(node);
+
+      for ( int dim = 0; dim < 3; ++dim )
+      {
+        // note: we are using the displacement vector of the problem discretization
+        // ( this one also does not get shifted, therefore we do not need to worry
+        // about a periodic boundary shift of a node between dis_at_last_redistr_ and the current disp)
+        doflid[dim] = dis_at_last_redistr_->Map().LID( dofnode[dim] );
+        (*dis_increment)[doflid[dim]] = (*GState().GetDisNp())[doflid[dim]] - (*dis_at_last_redistr_)[doflid[dim]];
+      }
+    }
+
+    // get maximal displacement increment since last redistribution over all procs
+    double extrema[2] = { 0.0, 0.0 };
+    dis_increment->MinValue( &extrema[0] );
+    dis_increment->MaxValue( &extrema[1] );
+    const double gmaxdisincr = std::max( -extrema[0], extrema[1] );
+
+    beam_redist = ( ( half_interaction_distance_ + gmaxdisincr ) > ( 0.5 * binstrategy_->CutoffRadius() ) );
+
+    if ( GState().GetMyRank() == 0 )
+    {
+      std::cout << " half interaction distance " << half_interaction_distance_ << std::endl;
+      std::cout << " gmaxdisincr " << gmaxdisincr << std::endl;
+      std::cout << " half cutoff " << 0.5 * binstrategy_->CutoffRadius() << std::endl;
+    }
+  }
+
+  // submodel loop
+  bool binning_redist = false;
   for ( sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter )
-    (*sme_iter)->PreUpdateStepElement();
+    binning_redist = (*sme_iter)->PreUpdateStepElement( beam_redist ) ? true : binning_redist;
 
-  binstrategy_->TransferNodesAndElements( ia_discret_, ia_state_ptr_->GetMutableDisColNp(),
-      ia_state_ptr_->GetMutableBinToRowEleMap() );
+  if ( beam_redist )
+  {
+    binstrategy_->TransferNodesAndElements( ia_discret_, ia_state_ptr_->GetMutableDisColNp(),
+        ia_state_ptr_->GetMutableBinToRowEleMap() );
 
-  BuildRowEleToBinMap();
+    BuildRowEleToBinMap();
 
-  // extend ghosting
-  std::map< int, std::set< int > > extbintoelemap;
-  ExtendGhosting(extbintoelemap);
+    // extend ghosting
+    ExtendGhosting();
 
-  // assign Elements to bins
-  binstrategy_->RemoveAllElesFromBins();
-  binstrategy_->AssignElesToBins( ia_discret_, extbintoelemap );
+    // assign Elements to bins
+    binstrategy_->RemoveAllElesFromBins();
+    binstrategy_->AssignElesToBins( ia_discret_, ia_state_ptr_->GetExtendedBinToRowEleMap() );
 
-  // update maps of state vectors and matrices
-  UpdateMaps();
+    // update maps of state vectors and matrices
+    UpdateMaps();
+
+    // current displacement state gets new reference state
+    dis_at_last_redistr_ = Teuchos::rcp( new Epetra_Vector( *GState().GetDisN() ) );
+
+    if ( GState().GetMyRank() == 0 )
+    {
+      IO::cout(IO::standard) << "\n************************************************\n" <<IO::endl;
+      IO::cout(IO::standard) << "Complete redistribution was done " <<  IO::endl;
+      IO::cout(IO::standard) << "\n************************************************\n" <<IO::endl;
+    }
+  }
+  else if ( binning_redist )
+  {
+    bindis_->CheckFilledGlobally();
+    bindis_->ExtendedGhosting( *bincolmap, true, false, true );
+    binstrategy_->RemoveAllElesFromBins();
+    binstrategy_->AssignElesToBins( ia_discret_, ia_state_ptr_->GetExtendedBinToRowEleMap() );
+
+    if ( GState().GetMyRank() == 0 )
+    {
+      IO::cout(IO::standard) << "\n************************************************\n" <<IO::endl;
+      IO::cout(IO::standard) << " binning redistribution was done " <<IO::endl;
+      IO::cout(IO::standard) << "\n************************************************\n" <<IO::endl;
+    }
+  }
+
+  // update coupling adapter, this should be done every time step as
+  // interacting elements and therefore system matrix can change every time step
+  UpdateCouplingAdapterAndMatrixTransformation();
 
   // submodel loop update
   for ( sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter )
-    (*sme_iter)->UpdateStepElement();
+    (*sme_iter)->UpdateStepElement( binning_redist || beam_redist );
 
   // submodel post update
   for ( sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter )
@@ -723,29 +891,6 @@ void STR::MODELEVALUATOR::BeamInteraction::OutputStepState(
   Vector::iterator sme_iter;
   for ( sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter )
     (*sme_iter)->OutputStepState(iowriter);
-
-  OutputStepState();
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::OutputStepState() const
-{
-  CheckInitSetup();
-
-  int const stepn = GState().GetStepN();
-  double const timen = GState().GetTimeN();
-
-  // write output of ia_discret
-  Teuchos::RCP< IO::DiscretizationWriter > ia_writer = ia_discret_->Writer();
-  ia_writer->WriteMesh( stepn, timen );
-  ia_writer->NewStep( stepn, timen );
-  ia_writer->WriteVector( "displacement", ia_state_ptr_->GetMutableDisNp() );
-//  ia_writer->WriteElementData( true );
-
-  // as we know that our maps have changed every time we write output, we can empty
-  // the map cache as we can't get any advantage saving the maps anyway
-  ia_writer->ClearMapCache();
 
   // visualize bins according to specification in input file ( MESHFREE -> WRITEBINS "" )
   binstrategy_->WriteBinOutput( GState().GetStepN(), GState().GetTimeN() );
@@ -812,6 +957,8 @@ void STR::MODELEVALUATOR::BeamInteraction::ResetStepState()
 void STR::MODELEVALUATOR::BeamInteraction::UpdateCouplingAdapterAndMatrixTransformation()
 {
   CheckInit();
+
+  TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::BeamInteraction::UpdateCouplingAdapterAndMatrixTransformation");
 
   // reset transformation member variables (eg. exporter) by rebuilding
   // and provide new maps for coupling adapter
@@ -884,16 +1031,16 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateMaps()
   //todo: check if update is necessary (->SameAs())
 
   // beam displacement
-  UpdateDofMapOfVector( ia_discret_, ia_state_ptr_->GetMutableDisNp() );
+  BEAMINTERACTION::UTILS::UpdateDofMapOfVector( ia_discret_, ia_state_ptr_->GetMutableDisNp() );
 
   // get current displacement state and export to interaction discretization dofmap
-  UpdateDofMapOfVector( ia_discret_, ia_state_ptr_->GetMutableDisNp(), GState().GetMutableDisNp() );
+  BEAMINTERACTION::UTILS::UpdateDofMapOfVector( ia_discret_, ia_state_ptr_->GetMutableDisNp(), GState().GetMutableDisNp() );
   BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(
       ia_state_ptr_->GetMutableDisNp(),
       TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox(),
       ia_discret_);
 
-  // update colume vector
+  // update column vector
   ia_state_ptr_->GetMutableDisColNp() = Teuchos::rcp( new Epetra_Vector( *ia_discret_->DofColMap() ) );
   LINALG::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetMutableDisColNp());
 
@@ -906,28 +1053,7 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateMaps()
       *ia_discret_->DofRowMap(), 81, true, true, LINALG::SparseMatrix::FE_MATRIX ) );
 
   BEAMINTERACTION::UTILS::SetupEleTypeMapExtractor( ia_discret_, eletypeextractor_ );
-}
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::UpdateDofMapOfVector(
-    Teuchos::RCP<DRT::Discretization> discret,
-    Teuchos::RCP<Epetra_Vector>&      dofmapvec,
-    Teuchos::RCP<Epetra_Vector>       old)
-{
-  CheckInit();
-
-  // todo: performance improvement by using the same exporter object every time
-  // and not doing the safety checks in Linalg::Export. See in particle_timint
-  // how this can be done.
-
-  if ( dofmapvec != Teuchos::null )
-  {
-    if( old == Teuchos::null )
-      old = dofmapvec;
-    dofmapvec = LINALG::CreateVector( *discret->DofRowMap(),true );
-    LINALG::Export( *old, *dofmapvec );
-  }
 }
 
 /*-----------------------------------------------------------------------------*

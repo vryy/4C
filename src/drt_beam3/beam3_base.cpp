@@ -42,7 +42,6 @@ DRT::ELEMENTS::Beam3Base::Beam3Base(int id, int owner) :
 DRT::ELEMENTS::Beam3Base::Beam3Base(const DRT::ELEMENTS::Beam3Base& old) :
    DRT::Element(old),
    bspotposxi_(old.bspotposxi_),
-   bspotstatus_(old.bspotstatus_),
    filamenttype_(old.filamenttype_)
 {
   //empty
@@ -63,12 +62,8 @@ void DRT::ELEMENTS::Beam3Base::Pack(DRT::PackBuffer& data) const
 
   // bspotposxi_
   AddtoPack(data,bspotposxi_);
-  // bspotstatus_
-  AddtoPack(data,bspotstatus_);
   // filamenttype_
   AddtoPack(data,filamenttype_);
-
-
 
   return;
 }
@@ -90,8 +85,6 @@ void DRT::ELEMENTS::Beam3Base::Unpack(const std::vector<char>& data)
 
   // bspotposxi_
   ExtractfromPack(position,data,bspotposxi_);
-  // bspotstatus_
-  ExtractfromPack(position,data,bspotstatus_);
   // filamenttype_
   filamenttype_ = static_cast<INPAR::BEAMINTERACTION::FilamentType>( ExtractInt(position,data) );
 
@@ -278,7 +271,8 @@ void DRT::ELEMENTS::Beam3Base::GetDampingCoefficients( LINALG::Matrix<3,1>& gamm
       gamma(0) = 2.0 * PI * BrownianDynParamsInterface().GetViscosity();
       gamma(1) = 4.0 * PI * BrownianDynParamsInterface().GetViscosity();
       gamma(2) = 4.0 * PI * BrownianDynParamsInterface().GetViscosity()
-                 * std::pow( GetCircularCrossSectionRadiusForInteractions(), 2.0);
+                 * GetCircularCrossSectionRadiusForInteractions()
+                 * GetCircularCrossSectionRadiusForInteractions();
 
       // huge improvement in convergence of non-linear solver in case of artificial factor 4000
 //      gamma(2) *= 4000.0;

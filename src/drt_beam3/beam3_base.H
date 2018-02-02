@@ -344,6 +344,12 @@ public:
     dserror("not implemented");
   }
 
+  //! get internal (elastic) energy of element
+  virtual double GetInternalEnergy() const = 0;
+
+  //! get kinetic energy of element
+  virtual double GetKineticEnergy() const = 0;
+
   //! shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions
   virtual void UnShiftNodePosition(
       std::vector<double>&       disp, //!<element disp vector
@@ -480,27 +486,20 @@ public:
       std::vector<double>&                            disp,
       const int&                                      bspotlocn) const;
 
-  const std::map< int, std::set<int> >& GetBindingSpotStatus()
-  {
-    // safety check
-    if( bspotstatus_.size() != bspotposxi_.size() )
-      dserror("size miss match regarding binding spots on this element");
-
-    return bspotstatus_;
-  }
+//  const std::map< int, std::set<int> >& GetBindingSpotStatus()
+//  {
+//    // safety check
+//    if( bspotstatus_.size() != bspotposxi_.size() )
+//      dserror("size miss match regarding binding spots on this element");
+//
+//    return bspotstatus_;
+//  }
 
   /** \brief get number of binding spots on this element
    *
    *  \author eichinger
    *  \date 06/17 */
-  unsigned int GetNumberOfBindingSpots() const
-  {
-    // safety check
-    if ( bspotstatus_.size() != bspotposxi_.size() )
-      dserror("size miss match regarding binding spots on this element");
-
-    return bspotposxi_.size();
-  }
+  unsigned int GetNumberOfBindingSpots() const { return bspotposxi_.size(); }
 
   /** \brief get binding spot positions xi
    *
@@ -518,25 +517,22 @@ public:
    *
    *  \author eichinger
    *  \date 03/17 */
-  void SetBindingSpotPositionsAndStatus(
-      std::vector<double> const& bspotposxi,
-      std::map<int, std::set<int> > const&  bspotstatus)
+  void SetPositionsOfBindingSpot( std::vector<double> const & bspotposxi)
   {
     bspotposxi_.clear();
-    bspotstatus_.clear();
     bspotposxi_ = bspotposxi;
-    bspotstatus_ = bspotstatus;
   }
+
   /** \brief set status (bonded or unbonded) of binding spot
    *
    *  \author eichinger
    *  \date 03/17 */
-  void SetBindingSpotStatus( std::map< int, std::set<int> > bspotstatus )
-  { bspotstatus_ = bspotstatus; }
-  void EraseBondFromBindingSpot( int locbspotid, int clgid )
-  { bspotstatus_[locbspotid].erase( clgid ); }
-  void AddBondToBindingSpot( int locbspotid, int clgid )
-  { bspotstatus_[locbspotid].insert( clgid ); }
+//  void SetBindingSpotStatus( std::map< int, std::set<int> > bspotstatus )
+//  { bspotstatus_ = bspotstatus; }
+//  void EraseBondFromBindingSpot( int locbspotid, int clgid )
+//  { bspotstatus_[locbspotid].erase( clgid ); }
+//  void AddBondToBindingSpot( int locbspotid, int clgid )
+//  { bspotstatus_[locbspotid].insert( clgid ); }
 
   /** \brief set/get type of filament the element is part of
    *
@@ -544,7 +540,7 @@ public:
    *  \date 03/17 */
   void SetFilamentType( INPAR::BEAMINTERACTION::FilamentType filamenttype ) { filamenttype_ = filamenttype; }
 
-  INPAR::BEAMINTERACTION::FilamentType GetFilamentType( ) { return filamenttype_; }
+  INPAR::BEAMINTERACTION::FilamentType GetFilamentType( ) const { return filamenttype_; }
 
 
 private:
@@ -552,9 +548,6 @@ private:
   //! position of binding spots on beam element in local coordinate system
   //! size of vector equals number of binding spots on this element
   std::vector<double> bspotposxi_;
-
-  //! key is locn of bspot, holds gid of crosslinker if binded, if free = -1
-  std::map< int, std::set<int> > bspotstatus_;
 
   //! type of filament element belongs to
   INPAR::BEAMINTERACTION::FilamentType filamenttype_;

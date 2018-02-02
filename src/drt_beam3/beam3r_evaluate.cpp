@@ -2240,11 +2240,11 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(
   const unsigned int dofpercombinode = dofperclnode + dofpertriadnode;
 
   // get time step size
-  double dt = 1000;
+  double dt_inv = 0.0001;
   if (IsParamsInterface())
-    dt = ParamsInterface().GetDeltaTime();
+    dt_inv = 1.0 / ParamsInterface().GetDeltaTime();
   else
-    dt = params.get<double>("delta time",1000);
+    dt_inv = 1.0 / params.get<double>("delta time",1000);
 
   // get damping coefficients for translational and rotational degrees of freedom
   LINALG::Matrix<3,1> gamma(true);
@@ -2332,7 +2332,7 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(
 
     // angular velocity at this Gauss point according to backward Euler scheme
     LINALG::Matrix<3,1> omega(true);
-    omega.Update(1.0/dt, deltatheta);
+    omega.Update( dt_inv, deltatheta);
 
     // compute matrix Lambda*[gamma(2) 0 0 \\ 0 0 0 \\ 0 0 0]*Lambda^t = gamma(2) * g_1 \otimes g_1
     // where g_1 is first base vector, i.e. first column of Lambda
@@ -2400,7 +2400,7 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(
       LINALG::Matrix<3,3> auxmatrix(true);
 
       sum += g1g1oldgammaTmat;
-      sum.Scale(1/dt);
+      sum.Scale(dt_inv);
       sum += g1g1gammaSofomega;
       sum -= Sofg1g1gammaomega;
 
@@ -2483,11 +2483,11 @@ void DRT::ELEMENTS::Beam3r::EvaluateTranslationalDamping(
   const unsigned int dofpernode = 3*vpernode+3;
 
   // get time step size
-  double dt = 1000;
+  double dt_inv = 0.0001;
   if (IsParamsInterface())
-    dt = ParamsInterface().GetDeltaTime();
+    dt_inv = 1.0 / ParamsInterface().GetDeltaTime();
   else
-    dt = params.get<double>("delta time",1000);
+    dt_inv = 1.0 / params.get<double>("delta time",1000);
 
   // velocity and gradient of background velocity field
   LINALG::Matrix<ndim,1> velbackground;
@@ -2578,24 +2578,24 @@ void DRT::ELEMENTS::Beam3r::EvaluateTranslationalDamping(
           for (unsigned int idim=0; idim<ndim; idim++)
             for (unsigned int jdim=0; jdim<ndim; jdim++)
             {
-              (*stiffmatrix)(inode*dofpernode+idim,jnode*dofpernode+jdim) += gausspoints.qwgt[gp]*H_i[gp](vpernode*inode)*H_i[gp](vpernode*jnode)*jacobiGPdampstoch_[gp]* damp_mat(idim,jdim) / dt;
+              (*stiffmatrix)(inode*dofpernode+idim,jnode*dofpernode+jdim) += gausspoints.qwgt[gp]*H_i[gp](vpernode*inode)*H_i[gp](vpernode*jnode)*jacobiGPdampstoch_[gp]* damp_mat(idim,jdim) * dt_inv;
               (*stiffmatrix)(inode*dofpernode+idim,jnode*dofpernode+jdim) -= gausspoints.qwgt[gp]*H_i[gp](vpernode*inode)*H_i[gp](vpernode*jnode)*jacobiGPdampstoch_[gp]* dampmatvelbackgroundgrad(idim,jdim);
               (*stiffmatrix)(inode*dofpernode+idim,jnode*dofpernode+idim) += gausspoints.qwgt[gp]*H_i[gp](vpernode*inode)*H_i_xi[gp](vpernode*jnode)* (gamma(0) - gamma(1))*r_s(jdim) * vel_rel(jdim);
               (*stiffmatrix)(inode*dofpernode+idim,jnode*dofpernode+jdim) += gausspoints.qwgt[gp]*H_i[gp](vpernode*inode)*H_i_xi[gp](vpernode*jnode)* (gamma(0) - gamma(1))*r_s(idim) * vel_rel(jdim);
 
               if (centerline_hermite_)
               {
-                (*stiffmatrix)(inode*dofpernode+6+idim,jnode*dofpernode+jdim) += gausspoints.qwgt[gp]*H_i[gp](vpernode*inode+1)*H_i[gp](vpernode*jnode)*jacobiGPdampstoch_[gp]* damp_mat(idim,jdim) / dt;
+                (*stiffmatrix)(inode*dofpernode+6+idim,jnode*dofpernode+jdim) += gausspoints.qwgt[gp]*H_i[gp](vpernode*inode+1)*H_i[gp](vpernode*jnode)*jacobiGPdampstoch_[gp]* damp_mat(idim,jdim) * dt_inv;
                 (*stiffmatrix)(inode*dofpernode+6+idim,jnode*dofpernode+jdim) -= gausspoints.qwgt[gp]*H_i[gp](vpernode*inode+1)*H_i[gp](vpernode*jnode)*jacobiGPdampstoch_[gp]* dampmatvelbackgroundgrad(idim,jdim);
                 (*stiffmatrix)(inode*dofpernode+6+idim,jnode*dofpernode+idim) += gausspoints.qwgt[gp]*H_i[gp](vpernode*inode+1)*H_i_xi[gp](vpernode*jnode)* (gamma(0) - gamma(1))*r_s(jdim) * vel_rel(jdim);
                 (*stiffmatrix)(inode*dofpernode+6+idim,jnode*dofpernode+jdim) += gausspoints.qwgt[gp]*H_i[gp](vpernode*inode+1)*H_i_xi[gp](vpernode*jnode)* (gamma(0) - gamma(1))*r_s(idim) * vel_rel(jdim);
 
-                (*stiffmatrix)(inode*dofpernode+idim,jnode*dofpernode+6+jdim) += gausspoints.qwgt[gp]*H_i[gp](vpernode*inode)*H_i[gp](vpernode*jnode+1)*jacobiGPdampstoch_[gp]* damp_mat(idim,jdim) / dt;
+                (*stiffmatrix)(inode*dofpernode+idim,jnode*dofpernode+6+jdim) += gausspoints.qwgt[gp]*H_i[gp](vpernode*inode)*H_i[gp](vpernode*jnode+1)*jacobiGPdampstoch_[gp]* damp_mat(idim,jdim) * dt_inv;
                 (*stiffmatrix)(inode*dofpernode+idim,jnode*dofpernode+6+jdim) -= gausspoints.qwgt[gp]*H_i[gp](vpernode*inode)*H_i[gp](vpernode*jnode+1)*jacobiGPdampstoch_[gp]* dampmatvelbackgroundgrad(idim,jdim);
                 (*stiffmatrix)(inode*dofpernode+idim,jnode*dofpernode+6+idim) += gausspoints.qwgt[gp]*H_i[gp](vpernode*inode)*H_i_xi[gp](vpernode*jnode+1)* (gamma(0) - gamma(1))*r_s(jdim) * vel_rel(jdim);
                 (*stiffmatrix)(inode*dofpernode+idim,jnode*dofpernode+6+jdim) += gausspoints.qwgt[gp]*H_i[gp](vpernode*inode)*H_i_xi[gp](vpernode*jnode+1)* (gamma(0) - gamma(1))*r_s(idim) * vel_rel(jdim);
 
-                (*stiffmatrix)(inode*dofpernode+6+idim,jnode*dofpernode+6+jdim) += gausspoints.qwgt[gp]*H_i[gp](vpernode*inode+1)*H_i[gp](vpernode*jnode+1)*jacobiGPdampstoch_[gp]* damp_mat(idim,jdim) / dt;
+                (*stiffmatrix)(inode*dofpernode+6+idim,jnode*dofpernode+6+jdim) += gausspoints.qwgt[gp]*H_i[gp](vpernode*inode+1)*H_i[gp](vpernode*jnode+1)*jacobiGPdampstoch_[gp]* damp_mat(idim,jdim) * dt_inv;
                 (*stiffmatrix)(inode*dofpernode+6+idim,jnode*dofpernode+6+jdim) -= gausspoints.qwgt[gp]*H_i[gp](vpernode*inode+1)*H_i[gp](vpernode*jnode+1)*jacobiGPdampstoch_[gp]* dampmatvelbackgroundgrad(idim,jdim);
                 (*stiffmatrix)(inode*dofpernode+6+idim,jnode*dofpernode+6+idim) += gausspoints.qwgt[gp]*H_i[gp](vpernode*inode+1)*H_i_xi[gp](vpernode*jnode+1)* (gamma(0) - gamma(1))*r_s(jdim) * vel_rel(jdim);
                 (*stiffmatrix)(inode*dofpernode+6+idim,jnode*dofpernode+6+jdim) += gausspoints.qwgt[gp]*H_i[gp](vpernode*inode+1)*H_i_xi[gp](vpernode*jnode+1)* (gamma(0) - gamma(1))*r_s(idim) * vel_rel(jdim);

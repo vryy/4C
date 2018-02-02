@@ -65,6 +65,14 @@ public:
   BeamLinkBeam3rLin2PinJointed();
 
   /*!
+  \brief Copy Constructor
+
+  Makes a deep copy of a Element
+
+  */
+  BeamLinkBeam3rLin2PinJointed( const BeamLinkBeam3rLin2PinJointed & old );
+
+  /*!
   \brief Destructor
   */
   virtual ~BeamLinkBeam3rLin2PinJointed() {};
@@ -74,7 +82,8 @@ public:
       int id,
       const std::vector<std::pair<int, int> >& eleids,
       const std::vector<LINALG::Matrix<3,1> >& initpos,
-      const std::vector<LINALG::Matrix<3,3> >& inittriad);
+      const std::vector<LINALG::Matrix<3,3> >& inittriad,
+      double timelinkwasset);
 
   //! Setup [derived]
   virtual void Setup( const int matnum );
@@ -103,10 +112,25 @@ public:
   */
   virtual void Unpack(const std::vector<char>& data);
 
+  /// return copy of this linking object
+  virtual Teuchos::RCP<BeamLink> Clone() const;
+
   //@}
 
-
   //! @name Access methods
+
+  //! scale linker element reference length
+  virtual void ScaleLinkerReferenceLength( double scalefac )  {
+    dserror(" not yet implemented for beam3r element."); }
+
+  //! get force in first or second binding spot
+  virtual void GetBindingSpotForce( int bspotid, LINALG::SerialDenseVector & bspotforce ) const;
+
+  virtual double GetCurrentLinkerLength() const
+  {
+    dserror("not yet implemented");
+    return 0.0;
+  }
 
   //@}
 
@@ -168,6 +192,9 @@ private:
 
   //! new connecting element
   Teuchos::RCP<DRT::ELEMENTS::Beam3r> linkele_;
+
+  //! the following variables are for output purposes only (no need to pack or unpack)
+  std::vector< LINALG::SerialDenseVector > bspotforces_;
 
   //@}
 

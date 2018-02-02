@@ -25,6 +25,8 @@
 #include <Isorropia_EpetraPartitioner.hpp>
 #include <Isorropia_EpetraCostDescriber.hpp>
 
+#include <unordered_set>
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -695,6 +697,116 @@ void PARTICLE::ParticleHandler::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap
 
   return;
 }
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+Teuchos::RCP<std::list<int> > PARTICLE::ParticleHandler::TransferParticles(
+    bool const fill_using_ghosting)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::TransferParticles");
+
+  // set of homeless particles
+  std::list< Teuchos::RCP<DRT::Node > > homelessparticles;
+
+  std::vector<int> examinedbins( binstrategy_->BinDiscret()->NumMyRowElements(), 0 );
+  // first run over particles and then process whole bin in which particle is located
+  // until all particles have been checked
+  const int numrownodes = binstrategy_->BinDiscret()->NumMyRowNodes();
+  for( int i = 0; i < numrownodes; ++i )
+  {
+    DRT::Node *currparticle = binstrategy_->BinDiscret()->lRowNode(i);
+
+#ifdef DEBUG
+    if( currparticle->NumElement() != 1)
+      dserror("ERROR: A particle is assigned to more than one bin!");
+#endif
+
+    DRT::MESHFREE::MeshfreeMultiBin* currbin =
+        dynamic_cast< DRT::MESHFREE::MeshfreeMultiBin* >( currparticle->Elements()[0] );
+    // as checked above, there is only one element in currele array
+    const int binId = currbin->Id();
+    const int rlid = binstrategy_->BinDiscret()->ElementRowMap()->LID(binId);
+
+    // if a bin has already been examined --> continue with next crosslinker
+    if ( examinedbins[rlid] )
+      continue;
+    //else: bin is examined for the first time --> new entry in examinedbins_
+    else
+      examinedbins[rlid] = 1;
+
+    DRT::Node** particles = currbin->Nodes();
+    std::vector<int> tobemoved(0);
+    for( int iparticle = 0; iparticle < currbin->NumNode(); ++iparticle )
+    {
+      // get current node
+      DRT::Node* currnode = particles[iparticle];
+
+      // transform to array
+      std::vector<double> pos( 3, 0.0 );
+      for( int dim = 0; dim < 3; ++dim )
+        pos[dim] = currnode->X()[dim];
+
+      const int gidofbin = binstrategy_->ConvertPosToGid( &pos[0] );
+      // particle has left current bin
+      if ( gidofbin != binId )
+      {
+        // (looping over nodes and deleting at the same time is detrimental)
+        tobemoved.push_back( currnode->Id() );
+        // find new bin for particle
+        PlaceNodeCorrectly( Teuchos::rcp( currnode, false ), &pos[0] , homelessparticles );
+      }
+    }
+
+    // finally remove nodes from their old bin
+    for( size_t iter = 0; iter < tobemoved.size(); ++iter )
+      currbin->DeleteNode( tobemoved[iter] );
+  }
+
+#ifdef DEBUG
+  if(homelessparticles.size())
+    std::cout << "There are " << homelessparticles.size() << " homeless particles on proc" << myrank_ << std::endl;
+#endif
+
+  // store particles that have left the computational domain
+  Teuchos::RCP<std::list<int> > deletedparticles = Teuchos::rcp( new std::list<int>(0) );
+
+  //---------------------------------------------------------------------------
+  // numproc == 1
+  //---------------------------------------------------------------------------
+  if( binstrategy_->BinDiscret()->Comm().NumProc() == 1)
+  {
+    if(homelessparticles.size())
+    {
+      std::cout << " There are " << homelessparticles.size() << " particles which have left the"
+                   " computational domain on rank " << myrank_ << std::endl;
+      std::list<Teuchos::RCP<DRT::Node> >::const_iterator hlp;
+      for(hlp = homelessparticles.begin(); hlp != homelessparticles.end(); ++hlp)
+      {
+        const int removeid = (*hlp)->Id();
+        deletedparticles->push_back(removeid);
+        binstrategy_->BinDiscret()->DeleteNode(removeid);
+      }
+      homelessparticles.clear();
+    }
+    return deletedparticles;
+  }
+
+   //---------------------------------------------------------------------------
+   // numproc > 1
+   //---------------------------------------------------------------------------
+   // homeless particles are sent to their new processors where they are inserted into their correct bin
+  if (fill_using_ghosting)
+  {
+    deletedparticles = FillParticlesIntoBinsUsingGhosting(homelessparticles);
+  }
+  else
+  {
+    deletedparticles = FillParticlesIntoBinsRemoteIdList(homelessparticles);
+  }
+
+  return deletedparticles;
+}
+
 
 /*-----------------------------------------------------------------------------*
  | particles are checked and transferred if necessary              ghamm 10/12 |

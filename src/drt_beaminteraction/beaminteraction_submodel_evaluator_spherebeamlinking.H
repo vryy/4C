@@ -1,8 +1,8 @@
 /*-----------------------------------------------------------*/
 /*!
-\file beaminteraction_submodel_evaluator_contractilecells.H
+\file beaminteraction_submodel_evaluator_spherebeamlinking.H
 
-\brief class for managing contractile cell to network interaction
+\brief class for managing rigid sphere to beam crosslinking
 
 \maintainer Jonas Eichinger
 
@@ -12,8 +12,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef BEAMINTERACTION_SUBMODEL_EVALUATOR_CONTRACTILECELLS_H_
-#define BEAMINTERACTION_SUBMODEL_EVALUATOR_CONTRACTILECELLS_H_
+#ifndef BEAMINTERACTION_SUBMODEL_EVALUATOR_INTEGRINS_H_
+#define BEAMINTERACTION_SUBMODEL_EVALUATOR_INTEGRINS_H_
 
 #include "../drt_inpar/inpar_beaminteraction.H"
 #include "../linalg/linalg_fixedsizematrix.H"
@@ -24,25 +24,27 @@
 #include <unordered_set>
 
 // forward declaration
+class RuntimeVtpWriter;
+
 namespace DRT {
   class Element;
   class Node;
 }
 namespace BEAMINTERACTION {
-class ContractileCellsParams;
+class SphereBeamLinkingParams;
 class BeamLinkPinJointed;
 
 namespace SUBMODELEVALUATOR {
 
-  class ContractileCells : public Generic
+  class SphereBeamLinking : public Generic
   {
   public:
 
     //! constructor
-    ContractileCells();
+    SphereBeamLinking();
 
     //! destructor
-    virtual ~ContractileCells() {};
+    virtual ~SphereBeamLinking() {};
 
     //! setup class variables
     virtual void Setup();
@@ -52,7 +54,7 @@ namespace SUBMODELEVALUATOR {
 
     //! Returns the type of the current model evaluator
     INPAR::BEAMINTERACTION::SubModelType Type() const
-    { return INPAR::BEAMINTERACTION::submodel_contractilecells; }
+    { return INPAR::BEAMINTERACTION::submodel_spherebeamlink; }
 
     //! derived
     virtual void Reset();
@@ -70,10 +72,10 @@ namespace SUBMODELEVALUATOR {
     virtual void UpdateStepState(const double& timefac_n);
 
     //! derived
-    virtual void PreUpdateStepElement();
+    virtual bool PreUpdateStepElement( bool beam_redist );
 
     //! derived
-    virtual void UpdateStepElement();
+    virtual void UpdateStepElement( bool repartition_was_done );
 
     //! derived
     virtual void PostUpdateStepElement();
@@ -89,11 +91,13 @@ namespace SUBMODELEVALUATOR {
 
     //! derived
     virtual void WriteRestart(
-        IO::DiscretizationWriter& iowriter,
-        const bool& forced_writerestart) const;
+        IO::DiscretizationWriter & ia_writer,
+        IO::DiscretizationWriter & bin_writer) const;
 
     //! derived
-    virtual void ReadRestart( IO::DiscretizationReader& ioreader );
+    virtual void ReadRestart(
+        IO::DiscretizationReader & ia_reader,
+        IO::DiscretizationReader & bin_reader);
 
     //! derived
     virtual void PostReadRestart();
@@ -111,6 +115,9 @@ namespace SUBMODELEVALUATOR {
     //! derived
     virtual void AddBinsWithRelevantContentForIaDiscretColMap( std::set< int >& colbins) const;
 
+    //! derived
+    virtual void GetHalfInteractionDistance( double & half_interaction_distance );
+
     //! @}
 
 private:
@@ -118,8 +125,11 @@ private:
     //! @name submodel specific, not derived member functions
     //! @{
 
-    /// find, check feasibility and add new element pairs
-    virtual void AddNewElementPairsAfterFeasibilityCheck();
+    //! init output in VTP format
+    void InitOutputRuntimeVtp();
+
+    //! writes output for discretization structure in VTP format
+    void WriteOutputRuntimeVtp() const;
 
     /// get neighboring eles in discret
     virtual void FindAndStoreNeighboringElements(
@@ -136,6 +146,17 @@ private:
     virtual void CreateBeamToSphereJoint(
         std::map< int, std::vector< std::pair< int, int > > > const & newlinks );
 
+    /// update linker length to mimic contractive cells
+    virtual void UpdateLinkerLength();
+
+    /// check if bond needs to be dissolved
+    virtual void UnbindSphereBeamBonds();
+
+    /// compute force dependent off rate for a catch-slip bond
+    virtual void CalcForceDependentCatchSlipBondUnbindProbability(
+        Teuchos::RCP< BEAMINTERACTION::BeamLinkPinJointed> linkelepairptr,
+        double & p_unbind) const;
+
     //! @}
 
   private:
@@ -144,10 +165,10 @@ private:
     Teuchos::RCP< BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking > sm_crosslinkink_ptr;
 
     //! data container holding all beam contact related parameters
-    Teuchos::RCP< BEAMINTERACTION::ContractileCellsParams > contractilecells_params_ptr_;
+    Teuchos::RCP< BEAMINTERACTION::SphereBeamLinkingParams > spherebeamlinking_params_ptr_;
 
-    //! interacting pairs of sphere and beam elements that might exert forces on each other (key is rigid sphere gid)
-    std::map< int, Teuchos::RCP< BEAMINTERACTION::BeamLinkPinJointed > > cell_beam_element_pairs_;
+    //! runtime output for cell beam crosslinks (integrins)
+    Teuchos::RCP<RuntimeVtpWriter> vtp_writer_ptr_;
 
   };
 

@@ -172,12 +172,6 @@ namespace BINSTRATEGY
         Teuchos::RCP<DRT::Discretization> & discret,
         std::map< int, std::vector<DRT::Element*> > const& toranktosendeles) const;
 
-    /// communicate distribution of transferred elements to bins
-    virtual void CommunicateDistributionOfTransferredElementsToBins(
-        Teuchos::RCP<DRT::Discretization> & discret,
-        std::map< int, std::vector<std::pair< int, std::vector<int> > > > const& toranktosendbinids,
-        std::map<int, std::set<int> >& bintorowelemap) const;
-
     /// number of bins in ijk range
     virtual int GetNumberOfBinsInijkRange( int const ijk_range[6] ) const;
 
@@ -212,8 +206,8 @@ namespace BINSTRATEGY
 
     /// elements from the underlying discretization are assigned to bins
     virtual void AssignElesToBins(
-      Teuchos::RCP<DRT::Discretization> fielddis,
-      std::map<int, std::set<int> > extendedfieldghosting
+        Teuchos::RCP<DRT::Discretization>     discret,
+        std::map<int, std::set<int> > const & extendedfieldghosting
       ) const;
 
     /// get elements of type bincontent in given bins
@@ -458,8 +452,12 @@ namespace BINSTRATEGY
 
     /// create linear map with bin ids
     Teuchos::RCP<Epetra_Map> CreateLinearMapForNumbin(
-      const Epetra_Comm& comm
-      ) const;
+      const Epetra_Comm& comm ) const;
+
+    ///
+    void BinSizeSafetyCheck(
+        double half_interaction_distance,
+        Teuchos::RCP< const Epetra_Vector > dis_increment ) const;
 
   private:
 
@@ -469,6 +467,12 @@ namespace BINSTRATEGY
         DRT::Node const * node,
         Teuchos::RCP<const Epetra_Vector>const  disnp,
         double* currpos ) const;
+
+    /// communicate distribution of transferred elements to bins
+    void CommunicateDistributionOfTransferredElementsToBins(
+        Teuchos::RCP<DRT::Discretization> & discret,
+        std::map< int, std::vector<std::pair< int, std::vector<int> > > > const& toranktosendbinids,
+        std::map<int, std::set<int> >& bintorowelemap) const;
 
   private:
 
