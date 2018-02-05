@@ -1874,6 +1874,10 @@ void SSI::SSI_Mono::Solve()
     double mydtsolve = timer_->WallTime()-time;
     Comm().MaxAll(&mydtsolve,&dtsolve_,1);
 
+    // output performance statistics associated with linear solver into text file if applicable
+    if(DRT::INPUT::IntegralValue<bool>(*scatra_->ScaTraField()->ScatraParameterList(),"OUTPUTSOLVERSTATS"))
+      scatra_->ScaTraField()->OutputSolverStats(*solver_,dtsolve_,Step(),iter_,residual_->Map().NumGlobalElements());
+
     // update scalar transport field
     scatra_->ScaTraField()->UpdateIter(maps_->ExtractVector(increment_,0));
     scatra_->ScaTraField()->ComputeIntermediateValues();

@@ -56,11 +56,13 @@ SOLVER                          Aztec_MSR
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
 AMGNXN_XML_FILE                 elch_3D_tet4_s2i_butlervolmer_plating_monolithic_reg_trig_BGS-AMG_4x4.xml
+AZSUB                           1000
 --------------------------------------------------------------------SOLVER 2
 SOLVER                          Aztec_MSR
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
 AMGNXN_XML_FILE                 elch_3D_tet4_s2i_butlervolmer_plating_monolithic_reg_trig_BGS-AMG_4x4_scatra.xml
+AZSUB                           1000
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_electrode DIFFCOEF -1 COND -1 DIFF_PARA_NUM 1 DIFF_PARA 4.3e-8 COND_PARA_NUM 1 COND_PARA 1.e6 C_MAX 26.39 OCP_MODEL Taralov X_MIN -1.0 X_MAX -1.0 OCP_PARA_NUM 13 OCP_PARA -0.132 0 0 0 0 0 0 0 0 0 1.41 -3.52 0 END
 MAT 2 MAT_elchmat NUMDOF 2 NUMSCAL 1 NUMPHASE 1 PHASEIDS 4 END
