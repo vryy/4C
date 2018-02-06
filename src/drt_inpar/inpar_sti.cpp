@@ -109,9 +109,6 @@ void INPAR::STI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   // flag for double condensation of linear equations associated with temperature field
   BoolParameter("THERMO_CONDENSATION","No","flag for double condensation of linear equations associated with temperature field",&stidyn);
 
-  // flag for output of performance statistics associated with nonlinear solver into *.csv file
-  BoolParameter("OUTPUTNONLINSOLVERSTATS","No","flag for output of performance statistics associated with nonlinear solver into *.csv file",&stidyn);
-
   /*----------------------------------------------------------------------*/
   // valid parameters for monolithic scatra-thermo interaction
   Teuchos::ParameterList& stidyn_monolithic = stidyn.sublist(

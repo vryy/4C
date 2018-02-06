@@ -118,17 +118,11 @@ namespace STI
       //! output solution to screen and files
       void Output();
 
-      //! output performance statistics associated with nonlinear solver into *.csv file
-      void OutputNonlinSolverStats();
-
       //! evaluate time step using Newton-Raphson iteration (monolithic algorithm) or outer coupling iteration (partitioned algorithm)
       virtual void Solve() = 0;
 
       //! update scatra and thermo fields after time step evaluation
       void Update();
-
-      //! time spent by nonlinear solver
-      double dtnonlinsolve_;
   }; // class Algorithm : public ADAPTER::AlgorithmBase
 } // namespace STI
 #endif

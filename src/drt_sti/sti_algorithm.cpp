@@ -54,9 +54,7 @@ STI::Algorithm::Algorithm(
     stiparameters_(Teuchos::rcp(new Teuchos::ParameterList(stidyn))),
 
     // initialize timer for Newton-Raphson iteration
-    timer_(Teuchos::rcp(new Epetra_Time(comm))),
-
-    dtnonlinsolve_(0.)
+    timer_(Teuchos::rcp(new Epetra_Time(comm)))
 {
   // check input parameters for scatra and thermo fields
   if(DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(*fieldparameters_,"VELOCITYFIELD") != INPAR::SCATRA::velocity_zero)
@@ -206,38 +204,6 @@ void STI::Algorithm::Output()
 }
 
 
-/*---------------------------------------------------------------------------------------------*
- | output performance statistics associated with nonlinear solver into *.csv file   fang 04/15 |
- *---------------------------------------------------------------------------------------------*/
-void STI::Algorithm::OutputNonlinSolverStats()
-{
-  // write performance statistics to file
-  if(Comm().MyPID() == 0)
-  {
-    // set file name
-    std::string filename(DRT::Problem::Instance()->OutputControlFile()->FileName()+".nonlin_solver_stats.csv");
-
-    // open file in appropriate mode and write header at beginning
-    std::ofstream file;
-    if(Step() == 1)
-    {
-      file.open(filename.c_str(),std::fstream::trunc);
-      file << "Step,NonlinSolverIterations,NonlinSolverTime" << std::endl;
-    }
-    else
-      file.open(filename.c_str(),std::fstream::app);
-
-    // write results
-    file << Step() << "," << iter_ << "," << std::setprecision(16) << std::scientific << dtnonlinsolve_ << std::endl;
-
-    // close file
-    file.close();
-  }
-
-  return;
-} // STI::Algorithm::OutputNonlinSolverStats()
-
-
 /*----------------------------------------------------------------------*
  | prepare time step                                         fang 04/15 |
  *----------------------------------------------------------------------*/
@@ -308,12 +274,12 @@ void STI::Algorithm::TimeLoop()
     Solve();
 
     // determine time spent by nonlinear solver and take maximum over all processors via communication
-    double mydtnonlinsolve = timer_->WallTime()-time;
-    Comm().MaxAll(&mydtnonlinsolve,&dtnonlinsolve_,1);
+    double mydtnonlinsolve(timer_->WallTime()-time), dtnonlinsolve(0.);
+    Comm().MaxAll(&mydtnonlinsolve,&dtnonlinsolve,1);
 
     // output performance statistics associated with nonlinear solver into *.csv file if applicable
-    if(DRT::INPUT::IntegralValue<int>(*stiparameters_,"OUTPUTNONLINSOLVERSTATS"))
-      OutputNonlinSolverStats();
+    if(DRT::INPUT::IntegralValue<int>(*fieldparameters_,"OUTPUTNONLINSOLVERSTATS"))
+      scatra_->OutputNonlinSolverStats(iter_,dtnonlinsolve,Step(),Comm());
 
     // update scatra and thermo fields
     Update();

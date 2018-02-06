@@ -47,6 +47,9 @@ class MeshtyingStrategyStd : public MeshtyingStrategyBase
     //! destructor
     virtual ~MeshtyingStrategyStd(){return;};
 
+    //! return global map of degrees of freedom
+    const Epetra_Map& DofRowMap() const;
+
     /*!
     \brief Evaluate a given condition
 

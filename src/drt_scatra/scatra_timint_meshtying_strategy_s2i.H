@@ -129,6 +129,9 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     //! return flag for meshtying method
     const INPAR::S2I::CouplingType& CouplingType() const { return couplingtype_;}
 
+    //! return global map of degrees of freedom
+    const Epetra_Map& DofRowMap() const;
+
     //! return flag for equilibration of global system of equations
     const INPAR::S2I::EquilibrationMethods& Equilibration() const {return equilibration_;};
 

@@ -33,6 +33,7 @@ VELOCITYFIELD                   zero
 INITIALFIELD                    field_by_condition
 SKIPINITDER                     no
 LINEAR_SOLVER                   1
+OUTPUTNONLINSOLVERSTATS         Yes
 -----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero
@@ -50,7 +51,6 @@ THERMO_INITIALFIELD             field_by_function
 THERMO_INITFUNCNO               4
 THERMO_LINEAR_SOLVER            1
 COUPLINGTYPE                    TwoWay_ScatraToThermo
-OUTPUTNONLINSOLVERSTATS         Yes
 --------------------------------------------STI DYNAMIC/PARTITIONED
 OMEGA                           0.95
 -----------------------------------------------------------SOLVER 1

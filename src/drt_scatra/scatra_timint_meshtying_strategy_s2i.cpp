@@ -272,6 +272,15 @@ void SCATRA::MeshtyingStrategyS2I::CondenseMatAndRHS(
 
 
 /*-----------------------------------------------------------------------*
+ | return global map of degrees of freedom                    fang 02/18 |
+ *-----------------------------------------------------------------------*/
+const Epetra_Map& SCATRA::MeshtyingStrategyS2I::DofRowMap() const
+{
+  return extendedmaps_ != Teuchos::null ? *extendedmaps_->FullMap() : *scatratimint_->DofRowMap();
+}
+
+
+/*-----------------------------------------------------------------------*
  | evaluate scatra-scatra interface coupling conditions       fang 10/14 |
  *-----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()

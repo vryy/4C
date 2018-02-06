@@ -35,6 +35,15 @@ MeshtyingStrategyBase(scatratimint)
 } // SCATRA::MeshtyingStrategyStd::MeshtyingStrategyStd
 
 
+/*-----------------------------------------------------------------------*
+ | return global map of degrees of freedom                    fang 02/18 |
+ *-----------------------------------------------------------------------*/
+const Epetra_Map& SCATRA::MeshtyingStrategyStd::DofRowMap() const
+{
+  return *scatratimint_->DofRowMap();
+}
+
+
 /*----------------------------------------------------------------------*
  | dummy meshtying evaluate for standard scalar transport    fang 12/14 |
  *----------------------------------------------------------------------*/

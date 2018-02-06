@@ -437,13 +437,21 @@ public:
   //! return relative errors of scalar fields in L2 and H1 norms
   const Teuchos::RCP<std::vector<double> >& RelErrors() const {return relerrors_;};
 
-  //! output performance statistics associated with linear solver into text file
-  static void OutputSolverStats(
+  //! output performance statistics associated with linear solver into *.csv file
+  static void OutputLinSolverStats(
       const LINALG::Solver&   solver,      //!< linear solver
       const double&           time,        //!< solver time maximized over all processors
       const int&              step,        //!< time step
       const int&              iteration,   //!< Newton-Raphson iteration number
       const int&              size         //!< size of linear system
+      );
+
+  //! output performance statistics associated with nonlinear solver into *.csv file
+  static void OutputNonlinSolverStats(
+      const int&           iterations,   //!< iteration count of nonlinear solver
+      const double&        time,         //!< solver time maximized over all processors
+      const int&           step,         //!< time step
+      const Epetra_Comm&   comm          //!< communicator
       );
 
   /*========================================================================*/

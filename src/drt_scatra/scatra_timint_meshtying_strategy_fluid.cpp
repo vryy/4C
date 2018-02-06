@@ -37,6 +37,15 @@ type_(INPAR::FLUID::no_meshtying)
 } // SCATRA::MeshtyingStrategyFluid::MeshtyingStrategyFluid
 
 
+/*-----------------------------------------------------------------------*
+ | return global map of degrees of freedom                    fang 02/18 |
+ *-----------------------------------------------------------------------*/
+const Epetra_Map& SCATRA::MeshtyingStrategyFluid::DofRowMap() const
+{
+  return *scatratimint_->DofRowMap();
+}
+
+
 /*----------------------------------------------------------------------*
  | evaluate fluid-fluid meshtying                            fang 12/14 |
  *----------------------------------------------------------------------*/

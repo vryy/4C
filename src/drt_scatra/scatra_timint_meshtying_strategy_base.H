@@ -108,6 +108,9 @@ class MeshtyingStrategyBase
         const bool                                    calcinittimederiv = false  //!< flag for calculation of initial time derivative
         ) const {return;};
 
+    //! return global map of degrees of freedom
+    virtual const Epetra_Map& DofRowMap() const = 0;
+
     /*!
     \brief Evaluate a given condition
 

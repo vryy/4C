@@ -1875,8 +1875,8 @@ void SSI::SSI_Mono::Solve()
     Comm().MaxAll(&mydtsolve,&dtsolve_,1);
 
     // output performance statistics associated with linear solver into text file if applicable
-    if(DRT::INPUT::IntegralValue<bool>(*scatra_->ScaTraField()->ScatraParameterList(),"OUTPUTSOLVERSTATS"))
-      scatra_->ScaTraField()->OutputSolverStats(*solver_,dtsolve_,Step(),iter_,residual_->Map().NumGlobalElements());
+    if(DRT::INPUT::IntegralValue<bool>(*scatra_->ScaTraField()->ScatraParameterList(),"OUTPUTLINSOLVERSTATS"))
+      scatra_->ScaTraField()->OutputLinSolverStats(*solver_,dtsolve_,Step(),iter_,residual_->Map().NumGlobalElements());
 
     // update scalar transport field
     scatra_->ScaTraField()->UpdateIter(maps_->ExtractVector(increment_,0));
@@ -1907,8 +1907,19 @@ void SSI::SSI_Mono::Timeloop()
     // prepare time step
     PrepareTimeStep();
 
+    // store time before calling nonlinear solver
+    const double time = timer_->WallTime();
+
     // evaluate time step
     Solve();
+
+    // determine time spent by nonlinear solver and take maximum over all processors via communication
+    double mydtnonlinsolve(timer_->WallTime()-time), dtnonlinsolve(0.);
+    Comm().MaxAll(&mydtnonlinsolve,&dtnonlinsolve,1);
+
+    // output performance statistics associated with nonlinear solver into *.csv file if applicable
+    if(DRT::INPUT::IntegralValue<int>(*scatra_->ScaTraField()->ScatraParameterList(),"OUTPUTNONLINSOLVERSTATS"))
+      scatra_->ScaTraField()->OutputNonlinSolverStats(iter_,dtnonlinsolve,Step(),Comm());
 
     // update scalar transport and structure fields
     Update();

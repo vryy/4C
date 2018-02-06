@@ -329,8 +329,11 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   IntParameter("PADAPTDEGREEMAX",4,"The max. degree of the shape functions",&scatradyn);
   BoolParameter("SEMIIMPLICIT", "no","Flag to (de)activate semi-implicit calculation of the reaction term",&scatradyn);
 
-  // flag for output of performance statistics associated with linear solver into text file
-  BoolParameter("OUTPUTSOLVERSTATS","No","flag for output of performance statistics associated with linear solver into text file",&scatradyn);
+  // flag for output of performance statistics associated with linear solver into *.csv file
+  BoolParameter("OUTPUTLINSOLVERSTATS","No","flag for output of performance statistics associated with linear solver into *.csv file",&scatradyn);
+
+  // flag for output of performance statistics associated with nonlinear solver into *.csv file
+  BoolParameter("OUTPUTNONLINSOLVERSTATS","No","flag for output of performance statistics associated with nonlinear solver into *.csv file",&scatradyn);
 
   // flag for point-based null space calculation
   BoolParameter("NULLSPACE_POINTBASED","No","flag for point-based null space calculation",&scatradyn);

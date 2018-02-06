@@ -1474,7 +1474,20 @@ void SCATRA::ScaTraTimIntImpl::Solve()
 
     case INPAR::SCATRA::solvertype_nonlinear:
     {
+      // store time before calling nonlinear solver
+      double time = Teuchos::Time::wallTime();
+
+      // call nonlinear solver
       NonlinearSolve();
+
+      // determine time spent by nonlinear solver and take maximum over all processors via communication
+      double mydtnonlinsolve(Teuchos::Time::wallTime()-time), dtnonlinsolve(0.);
+      discret_->Comm().MaxAll(&mydtnonlinsolve,&dtnonlinsolve,1);
+
+      // output performance statistics associated with nonlinear solver into *.csv file if applicable
+      if(DRT::INPUT::IntegralValue<int>(*params_,"OUTPUTNONLINSOLVERSTATS"))
+        OutputNonlinSolverStats(iternum_,dtnonlinsolve,Step(),discret_->Comm());
+
       break;
     }
 
@@ -2917,8 +2930,8 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       discret_->Comm().MaxAll(&mydtsolve,&dtsolve_,1);
 
       // output performance statistics associated with linear solver into text file if applicable
-      if(DRT::INPUT::IntegralValue<int>(*params_,"OUTPUTSOLVERSTATS"))
-        OutputSolverStats(*solver_,dtsolve_,Step(),iternum_,residual_->Map().NumGlobalElements());
+      if(DRT::INPUT::IntegralValue<int>(*params_,"OUTPUTLINSOLVERSTATS"))
+        OutputLinSolverStats(strategy_->Solver(),dtsolve_,Step(),iternum_,strategy_->DofRowMap().NumGlobalElements());
     }
 
     //------------------------------------------------ update solution vector

@@ -56,6 +56,9 @@ class MeshtyingStrategyFluid : public MeshtyingStrategyBase
     //! destructor
     virtual ~MeshtyingStrategyFluid(){return;};
 
+    //! return global map of degrees of freedom
+    const Epetra_Map& DofRowMap() const;
+
     //! compute meshtying residual terms and their linearizations
     void EvaluateMeshtying();
 

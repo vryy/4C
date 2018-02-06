@@ -1155,10 +1155,10 @@ void SCATRA::ScaTraTimIntImpl::EvaluateConvectiveHeatTransfer(
 } // SCATRA::ScaTraTimIntImpl::EvaluateConvectiveHeatTransfer
 
 
-/*-----------------------------------------------------------------------------------------*
- | output performance statistics associated with linear solver into text file   fang 02/17 |
- *-----------------------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::OutputSolverStats(
+/*------------------------------------------------------------------------------------------*
+ | output performance statistics associated with linear solver into *.csv file   fang 02/17 |
+ *------------------------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::OutputLinSolverStats(
     const LINALG::Solver&   solver,      //!< linear solver
     const double&           time,        //!< solver time maximized over all processors
     const int&              step,        //!< time step
@@ -1177,7 +1177,7 @@ void SCATRA::ScaTraTimIntImpl::OutputSolverStats(
   if(comm.MyPID() == 0)
   {
     // set file name
-    std::string filename(DRT::Problem::Instance()->OutputControlFile()->FileName()+".solver_stats.txt");
+    std::string filename(DRT::Problem::Instance()->OutputControlFile()->FileName()+".lin_solver_stats.csv");
 
     // open file in appropriate mode and write header at beginning
     std::ofstream file;
@@ -1197,7 +1197,44 @@ void SCATRA::ScaTraTimIntImpl::OutputSolverStats(
   }
 
   return;
-} // SCATRA::ScaTraTimIntImpl::OutputSolverStats
+} // SCATRA::ScaTraTimIntImpl::OutputLinSolverStats
+
+
+/*---------------------------------------------------------------------------------------------*
+ | output performance statistics associated with nonlinear solver into *.csv file   fang 04/15 |
+ *---------------------------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::OutputNonlinSolverStats(
+    const int&           iterations,   //!< iteration count of nonlinear solver
+    const double&        time,         //!< solver time maximized over all processors
+    const int&           step,         //!< time step
+    const Epetra_Comm&   comm          //!< communicator
+    )
+{
+  // write performance statistics to file
+  if(comm.MyPID() == 0)
+  {
+    // set file name
+    std::string filename(DRT::Problem::Instance()->OutputControlFile()->FileName()+".nonlin_solver_stats.csv");
+
+    // open file in appropriate mode and write header at beginning
+    std::ofstream file;
+    if(step == 1)
+    {
+      file.open(filename.c_str(),std::fstream::trunc);
+      file << "Step,NonlinSolverIterations,NonlinSolverTime" << std::endl;
+    }
+    else
+      file.open(filename.c_str(),std::fstream::app);
+
+    // write results
+    file << step << "," << iterations << "," << std::setprecision(16) << std::scientific << time << std::endl;
+
+    // close file
+    file.close();
+  }
+
+  return;
+} // SCATRA::ScaTraTimIntImpl::OutputNonlinSolverStats
 
 
 /*----------------------------------------------------------------------*

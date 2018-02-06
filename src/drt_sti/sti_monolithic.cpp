@@ -2434,7 +2434,7 @@ bool STI::Monolithic::ExitNewtonRaphson()
         exit = true;
 
       // print warning to screen if maximum number of Newton-Raphson iterations is reached without convergence
-      if(iter_ == itermax_)
+      if(iter_ == itermax_ and !exit)
       {
         if(Comm().MyPID() == 0)
         {
@@ -2541,8 +2541,8 @@ void STI::Monolithic::Solve()
     Comm().MaxAll(&mydtsolve,&dtsolve_,1);
 
     // output performance statistics associated with linear solver into text file if applicable
-    if(DRT::INPUT::IntegralValue<int>(*fieldparameters_,"OUTPUTSOLVERSTATS"))
-      scatra_->OutputSolverStats(*solver_,dtsolve_,Step(),iter_,residual_->Map().NumGlobalElements());
+    if(DRT::INPUT::IntegralValue<int>(*fieldparameters_,"OUTPUTLINSOLVERSTATS"))
+      scatra_->OutputLinSolverStats(*solver_,dtsolve_,Step(),iter_,residual_->Map().NumGlobalElements());
 
     // update scatra field
     scatra_->UpdateIter(maps_->ExtractVector(increment_,0));
