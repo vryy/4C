@@ -2736,6 +2736,10 @@ void SCATRA::ScaTraTimIntElch::ApplyNeumannBC(
         // set action for elements
         params.set<int>("action",SCATRA::bd_calc_Neumann);
 
+        // number of dofset associated with displacement-related dofs
+        if(isale_)
+          params.set<int>("ndsdisp",nds_disp_);
+
         // loop over all conditioned elements
         std::map<int,Teuchos::RCP<DRT::Element> >& geometry = condition.Geometry();
         std::map<int,Teuchos::RCP<DRT::Element> >::iterator iterator;

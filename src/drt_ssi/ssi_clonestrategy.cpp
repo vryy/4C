@@ -58,6 +58,9 @@ std::map<std::string,std::string> SSI::ScatraStructureCloneStrategy::ConditionsT
   conditions_to_copy.insert(std::pair<std::string,std::string>("CellVoltage","CellVoltage"));
   // calculate total and mean scalar
   conditions_to_copy.insert(std::pair<std::string,std::string>("TotalAndMeanScalar","TotalAndMeanScalar"));
+  // cell cycling conditions
+  conditions_to_copy.insert(std::pair<std::string,std::string>("CCCVCycling","CCCVCycling"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("CCCVHalfCycle","CCCVHalfCycle"));
 
   return conditions_to_copy;
 }
