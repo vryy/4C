@@ -256,9 +256,6 @@ void ADAPTER::CouplingNonLinMortar::ReadMortarCondition(
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"LM_SHAPEFCN") != INPAR::MORTAR::shape_petrovgalerkin)
     if(myrank_== 0)
       dserror("Mortar coupling adapter only works for dual shape functions");
-  if (DRT::INPUT::IntegralValue<int>(input,"LM_NODAL_SCALE")==true)
-    if(myrank_== 0)
-      dserror("Mortar coupling adapter does not work with LM_NODAL_SCALE");
 
   return;
 }

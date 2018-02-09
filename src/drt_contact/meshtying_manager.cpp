@@ -520,15 +520,6 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
        (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"LM_SHAPEFCN") == INPAR::MORTAR::shape_dual ||
         DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"LM_SHAPEFCN") == INPAR::MORTAR::shape_petrovgalerkin   ))
 
-  if(DRT::INPUT::IntegralValue<int>(mortar,"LM_NODAL_SCALE")==true &&
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying,"STRATEGY") != INPAR::CONTACT::solution_lagmult)
-    dserror("ERROR: Nodal scaling of Lagrange multipliers only for Lagrange multiplier strategy.");
-
-  if(DRT::INPUT::IntegralValue<int>(mortar,"LM_NODAL_SCALE")==true &&
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_elements)
-    dserror("ERROR: Nodal scaling of Lagrange multipliers not for purely element-based integration.");
-
-
   // *********************************************************************
   // not (yet) implemented combinations
   // *********************************************************************
@@ -645,10 +636,6 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
     dserror("POROCONTACT: Use Lagrangean Strategy for poro meshtying!");
 
   if ((problemtype==prb_poroelast || problemtype==prb_fpsi || problemtype==prb_fpsi_xfem) &&
-      DRT::INPUT::IntegralValue<int>(mortar,"LM_NODAL_SCALE")==true)
-    dserror("POROCONTACT: Nodal scaling not yet implemented for poro meshtying problems");
-
-  if ((problemtype==prb_poroelast || problemtype==prb_fpsi || problemtype==prb_fpsi_xfem) &&
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(meshtying,"SYSTEM") != INPAR::CONTACT::system_condensed_lagmult)
     dserror("POROCONTACT: Just lagrange multiplier should be condensed for poro meshtying!");
 
@@ -702,9 +689,8 @@ void CONTACT::MtManager::PostprocessQuantities(IO::DiscretizationWriter& output)
   // evaluate interface tractions
   Teuchos::RCP<Epetra_Map> problem = GetStrategy().ProblemDofs();
   Teuchos::RCP<Epetra_Vector> traction = Teuchos::rcp(new Epetra_Vector(*(GetStrategy().LagrMultOld())));
-  Teuchos::RCP<Epetra_Vector> tractionRescaled = Teuchos::rcp(new Epetra_Vector(*(GetStrategy().LagrMultOldRescaled())));
   Teuchos::RCP<Epetra_Vector> tractionexp = Teuchos::rcp(new Epetra_Vector(*problem));
-  LINALG::Export(*tractionRescaled, *tractionexp);
+  LINALG::Export(*traction, *tractionexp);
 
   // evaluate slave and master forces
   Teuchos::RCP<Epetra_Vector> fcslave = Teuchos::rcp(new Epetra_Vector(GetStrategy().DMatrix()->RowMap()));

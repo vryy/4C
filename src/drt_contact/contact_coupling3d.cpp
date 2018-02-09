@@ -1387,10 +1387,6 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling(
 void CONTACT::CoCoupling3dQuadManager::IntegrateCoupling(
     const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
-  // check
-  if (DRT::INPUT::IntegralValue<int>(MORTAR::Coupling3dQuadManager::imortar_, "LM_NODAL_SCALE"))
-    dserror("no nodal scaling for quad elements.");
-
   // get algorithm type
   INPAR::MORTAR::AlgorithmType algo = DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(MORTAR::Coupling3dQuadManager::imortar_, "ALGORITHM");
 

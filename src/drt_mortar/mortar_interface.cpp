@@ -60,7 +60,6 @@ MORTAR::IDataContainer::IDataContainer()
       imortar_( Teuchos::ParameterList() ),
       shapefcn_( INPAR::MORTAR::shape_undefined ),
       quadslave_( false ),
-      lmnodalscale_( false ),
       redundant_( INPAR::MORTAR::redundant_none ),
       oldnodecolmap_( Teuchos::null ),
       oldelecolmap_( Teuchos::null ),
@@ -112,7 +111,6 @@ MORTAR::MortarInterface::MortarInterface(
       imortar_( idata_.IMortar() ),
       shapefcn_( idata_.ShapeFcn() ),
       quadslave_( idata_.IsQuadSlave() ),
-      lmnodalscale_( idata_.IsLmNodalScale() ),
       redundant_( idata_.RedundantStorage() ),
       oldnodecolmap_( idata_.OldNodeColMap() ),
       oldelecolmap_( idata_.OldEleColMap() ),
@@ -187,7 +185,6 @@ MORTAR::MortarInterface::MortarInterface(
     imortar_( idata_.IMortar() ),
     shapefcn_( idata_.ShapeFcn() ),
     quadslave_( idata_.IsQuadSlave() ),
-    lmnodalscale_( idata_.IsLmNodalScale() ),
     redundant_( idata_.RedundantStorage() ),
     oldnodecolmap_( idata_.OldNodeColMap() ),
     oldelecolmap_( idata_.OldEleColMap() ),
@@ -226,7 +223,6 @@ MORTAR::MortarInterface::MortarInterface(
   dim_ = dim;
   imortar_.setParameters( imortar );
   quadslave_ = false;
-  lmnodalscale_ = DRT::INPUT::IntegralValue<int>(imortar, "LM_NODAL_SCALE");
   redundant_ = redundant;
   searchalgo_ = DRT::INPUT::IntegralValue<INPAR::MORTAR::SearchAlgorithm>(imortar, "SEARCH_ALGORITHM");
   searchparam_ = imortar.get<double>("SEARCH_PARAM");
@@ -2054,8 +2050,6 @@ void MORTAR::MortarInterface::Initialize()
     monode->MoData().GetD().clear();
     monode->MoData().GetM().clear();
     monode->MoData().GetMmod().clear();
-
-    monode->MoData().GetScale() = 0.;
   }
 
   // loop over all elements to reset candidates / search lists
@@ -3791,9 +3785,6 @@ void MORTAR::MortarInterface::AssembleD(
       {
         double val = colcurr->second;
 
-        if (LMNodalScale() == true && mrtrnode->MoData().GetScale() != 0.0)
-          val /= mrtrnode->MoData().GetScale();
-
         DRT::Node* knode = Discret().gNode(colcurr->first);
         if (!knode) dserror("node not found");
         MortarNode*  kcnode = dynamic_cast<MortarNode*>(knode);
@@ -3881,9 +3872,6 @@ void MORTAR::MortarInterface::AssembleM(
         if (!kcnode) dserror("node not found");
 
         double val = colcurr->second;
-
-        if (LMNodalScale() == true && mrtrnode->MoData().GetScale() != 0.0)
-          val /= mrtrnode->MoData().GetScale();
 
         for (int j = 0; j < rowsize; ++j)
         {

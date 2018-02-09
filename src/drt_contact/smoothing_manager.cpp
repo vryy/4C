@@ -1057,14 +1057,6 @@ bool CONTACT::SmoothingManager::ReadAndCheckInput(Teuchos::ParameterList& cparam
         && (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") == INPAR::MORTAR::shape_dual))
       dserror( "ERROR: Consistent dual shape functions in boundary elements not for purely element-based integration.");
 
-    if (DRT::INPUT::IntegralValue<int>(mortar, "LM_NODAL_SCALE") == true
-        && DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_lagmult)
-      dserror("ERROR: Nodal scaling of Lagrange multipliers only for Lagrange multiplier strategy.");
-
-    if (DRT::INPUT::IntegralValue<int>(mortar, "LM_NODAL_SCALE") == true
-        && DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE") == INPAR::MORTAR::inttype_elements)
-      dserror("ERROR: Nodal scaling of Lagrange multipliers not for purely element-based integration.");
-
     if ((DRT::INPUT::IntegralValue<int>(contact, "MESH_ADAPTIVE_CN") == true
         || DRT::INPUT::IntegralValue<int>(contact, "MESH_ADAPTIVE_CT") == true)
         && DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_lagmult)
@@ -1144,11 +1136,6 @@ bool CONTACT::SmoothingManager::ReadAndCheckInput(Teuchos::ParameterList& cparam
         && DRT::INPUT::IntegralValue<int>(tsic, "THERMOLAGMULT") == true)
       dserror("ERROR: Thermal contact with Lagrange Multipliers only for dual shape functions");
 
-    // no nodal scaling in for thermal-structure-interaction
-    if (problemtype == prb_tsi
-        && DRT::INPUT::IntegralValue<int>(mortar, "LM_NODAL_SCALE") == true)
-      dserror("ERROR: Nodal scaling not yet implemented for TSI problems");
-
     // *********************************************************************
     // contact with wear
     // *********************************************************************
@@ -1168,10 +1155,6 @@ bool CONTACT::SmoothingManager::ReadAndCheckInput(Teuchos::ParameterList& cparam
     if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") != INPAR::WEAR::wear_none &&
         wearlist.get<double>("WEARCOEFF") <= 0.0)
       dserror("ERROR: No valid wear coefficient provided, must be equal or greater 0.0");
-
-    if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") != INPAR::WEAR::wear_none
-        && DRT::INPUT::IntegralValue<int>(mortar, "LM_NODAL_SCALE") == true)
-      dserror("ERROR: Combination of LM_NODAL_SCALE and WEAR not (yet) implemented.");
 
     if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_lagmult
         && DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW")     != INPAR::WEAR::wear_none)
@@ -1231,10 +1214,6 @@ bool CONTACT::SmoothingManager::ReadAndCheckInput(Teuchos::ParameterList& cparam
     if ((problemtype==prb_poroelast || problemtype==prb_fpsi) &&
         DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") != INPAR::CONTACT::friction_none)
       dserror("POROCONTACT: Friction for poro contact not implemented!");
-
-    if ((problemtype==prb_poroelast || problemtype==prb_fpsi) &&
-        DRT::INPUT::IntegralValue<int>(mortar,"LM_NODAL_SCALE")==true)
-      dserror("POROCONTACT: Nodal scaling not yet implemented for poro contact problems");
 
     if ((problemtype==prb_poroelast || problemtype==prb_fpsi) &&
         DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(contact,"SYSTEM") != INPAR::CONTACT::system_condensed)

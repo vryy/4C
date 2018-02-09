@@ -967,14 +967,6 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
         && (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") == INPAR::MORTAR::shape_dual))
       dserror( "ERROR: Consistent dual shape functions in boundary elements not for purely element-based integration.");
 
-    if (DRT::INPUT::IntegralValue<int>(mortar, "LM_NODAL_SCALE") == true
-        && DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_lagmult)
-      dserror("ERROR: Nodal scaling of Lagrange multipliers only for Lagrange multiplier strategy.");
-
-    if (DRT::INPUT::IntegralValue<int>(mortar, "LM_NODAL_SCALE") == true
-        && DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE") == INPAR::MORTAR::inttype_elements)
-      dserror("ERROR: Nodal scaling of Lagrange multipliers not for purely element-based integration.");
-
     if ((DRT::INPUT::IntegralValue<int>(contact, "MESH_ADAPTIVE_CN") == true
         || DRT::INPUT::IntegralValue<int>(contact, "MESH_ADAPTIVE_CT") == true)
         && DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_lagmult)
@@ -984,10 +976,6 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
         || DRT::INPUT::IntegralValue<int>(contact, "MESH_ADAPTIVE_CT") == true)
         && DRT::INPUT::IntegralValue<int>(contact, "SEMI_SMOOTH_NEWTON") != 1)
       dserror("ERROR: Mesh adaptive cn and ct only for semi-smooth Newton strategy");
-
-    if (problemtype == prb_tsi
-        && DRT::INPUT::IntegralValue<int>(mortar, "LM_NODAL_SCALE") == true)
-      dserror("ERROR: Nodal scaling not yet implemented for TSI problems");
 
     if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") == INPAR::CONTACT::solution_nitsche
         &&
@@ -1093,10 +1081,6 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
         wearlist.get<double>("WEARCOEFF") <= 0.0)
       dserror("ERROR: No valid wear coefficient provided, must be equal or greater 0.0");
 
-    if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") != INPAR::WEAR::wear_none
-        && DRT::INPUT::IntegralValue<int>(mortar, "LM_NODAL_SCALE") == true)
-      dserror("ERROR: Combination of LM_NODAL_SCALE and WEAR not (yet) implemented.");
-
 //    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_lagmult
 //        && DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW")     != INPAR::WEAR::wear_none)
 //      dserror("ERROR: Wear model only applicable in combination with Lagrange multiplier strategy.");
@@ -1155,10 +1139,6 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
       if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") != INPAR::CONTACT::friction_none &&
           DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") == INPAR::CONTACT::solution_lagmult)
         dserror("POROCONTACT: Friction for poro contact not implemented!");
-
-      if (DRT::INPUT::IntegralValue<int>(mortar,"LM_NODAL_SCALE")==true &&
-          DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") == INPAR::CONTACT::solution_lagmult)
-        dserror("POROCONTACT: Nodal scaling not yet implemented for poro contact problems");
 
       if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(contact,"SYSTEM") != INPAR::CONTACT::system_condensed &&
           DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") == INPAR::CONTACT::solution_lagmult)

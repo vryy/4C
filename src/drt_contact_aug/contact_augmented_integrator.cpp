@@ -72,10 +72,6 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivCell3DAuxPlane(
     dserror("ERROR: IntegrateDerivCell3DAuxPlane supports no Dual shape functions for the "
         "augmented Lagrange solving strategy!");
 
-  if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE"))
-    dserror("ERROR: IntegrateDerivCell3DAuxPlane supports currently no LM nodal scaling for the "
-        "augmented Lagrange solving strategy!");
-
   integrator_ = IntegratorGeneric::Create( Dim(), sele.Shape(), mele.Shape(), *cparams_ptr, this );
   integrator_->IntegrateDerivCell3DAuxPlane( sele, mele, *cell, auxn );
 

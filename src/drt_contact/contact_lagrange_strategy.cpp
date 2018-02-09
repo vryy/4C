@@ -5354,9 +5354,6 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
   bool adaptive_cn = DRT::INPUT::IntegralValue<int>(Params(),"MESH_ADAPTIVE_CN");
   bool adaptive_ct = DRT::INPUT::IntegralValue<int>(Params(),"MESH_ADAPTIVE_CT");
 
-  // do we apply a nodal scaling for better matrix condition
-  bool scale = DRT::INPUT::IntegralValue<int>(scontact_,"LM_NODAL_SCALE");
-
   // assume that active set has converged and check for opposite
   activesetconv_=true;
 
@@ -5378,13 +5375,8 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
       if(friction_)
         ct = interface_[i]->GetCtRef()[interface_[i]->GetCtRef().Map().LID(cnode->Id())];
 
-      // get scaling factor
-      double scalefac=1.;
-      if (scale==true && cnode->MoData().GetScale() != 0.)
-        scalefac = cnode->MoData().GetScale();
-
       // compute weighted gap
-      double wgap = cnode->CoData().Getg()/scalefac;
+      double wgap = cnode->CoData().Getg();
 
       // compute normal part of Lagrange multiplier
       double nz = 0.0;

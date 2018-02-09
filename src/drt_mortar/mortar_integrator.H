@@ -1,8 +1,9 @@
 /*!----------------------------------------------------------------------
 \file mortar_integrator.H
-
+\brief integrate mortar terms
+\level 1
 <pre>
-Maintainer: Alexander Popp
+\maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
@@ -276,31 +277,11 @@ private:
        double& jac,
        double& wgt, int& nrow,int& nintrow, int& ncol,
        int& ndof, bool& bound);
-
-  /*!
-  \brief evaluate scaling at GP
-
-  */
-  virtual void GP_2D_Scaling(
-       MORTAR::MortarElement& sele,
-       LINALG::Matrix<ns_,1>& sval,
-       double& dsxideta, double& wgt);
-
-  /*!
-  \brief evaluate scaling at GP
-
-  */
-  virtual void GP_3D_Scaling(
-       MORTAR::MortarElement& sele,
-       LINALG::Matrix<ns_,1>& sval,
-       double& jac, double& wgt,
-       double* sxi);
   //@}
 
   Teuchos::ParameterList&       imortar_;     // merged parameter list
   INPAR::MORTAR::ShapeFcn       shapefcn_;    // lm shape function type
   INPAR::MORTAR::LagMultQuad    lmquadtype_;  // type of quadratic lm interpolation
-  int                           scale_;       // scaling
   int                           ngp_;         // number of Gauss points
   Epetra_SerialDenseMatrix      coords_;      // Gauss point coordinates
   std::vector<double>           weights_;     // Gauss point weights

@@ -309,15 +309,6 @@ virtual double* Getjumpltl() { return jumpltl_; }
    */
   virtual std::vector<std::map<int, double> >& GetDerivZ() { return derivz_; }
 
-  /*!
-   \brief Return the 'Derivscalefac_' map of this node
-
-   This map contains the directional derivatives of the node's
-   scaling factor witch is needed for better conditioning
-
-   */
-  virtual std::map<int, double>& GetDerivScale() { return derivscalefac_; }
-
   virtual GEN::pairedvector<int, double>& GetAlpha() {return alpha_;};
   virtual double& GetAlphaN() {return nalpha_;};
 
@@ -366,7 +357,6 @@ protected:
   std::map<int, double> derivgw_;                          //< directional derivative of nodal weighted gap value
   std::map<int, double> derivw_;                           //< directional derivative of nodal weighted wear value
   std::map<int, double> derivw_lm_;                        //< directional derivative of nodal weighted wear value
-  std::map<int, double> derivscalefac_;                    //< directional derivative of nodal scale factor value
 
   GEN::pairedvector<int, double> alpha_;    //< lin. of scaling factor for hybrid formulation
 

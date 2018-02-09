@@ -44,7 +44,6 @@ drows_ltl_(0)
     lm()[i]=0.0;
     lmold()[i]=0.0;
     lmuzawa()[i]=0.0;
-    GetScale()=1.0;
     GetDscale()=0.0;
   }
 
@@ -455,22 +454,6 @@ void MORTAR::MortarNode::AddMmodValue(const int& colnode,const double& val)
   // add the pair (col,val) to the given row
   MoData().GetMmod()[colnode] += val;
 
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Add a value to the scale factor                          seitz 08/18|
- *----------------------------------------------------------------------*/
-void MORTAR::MortarNode::AddScValue(double& val)
-{
-  // check if this is a master node or slave boundary node
-  if (IsSlave()==false)
-    dserror("ERROR: AddScValue: function called for master node %i", Id());
-  if (IsOnBound()==true)
-    dserror("ERROR: AddScValue: function called for boundary node %i", Id());
-
-  // add given value to scalefac
-  MoData().GetScale() += val;
   return;
 }
 

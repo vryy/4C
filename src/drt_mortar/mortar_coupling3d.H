@@ -701,15 +701,6 @@ public:
   ;
 
   /*!
-   \brief Get flag indicating nodal scaling of lm
-
-   */
-  virtual bool LMNodalScale()
-  {
-    return lmnodalscale_;
-  }
-
-  /*!
    \brief Get flag indicating dual consistent lm
 
    */
@@ -763,7 +754,6 @@ protected:
   int dim_;                                             // problem dimension (here: 3D)
   INPAR::MORTAR::IntType integrationtype_;              // integration type
   INPAR::MORTAR::ShapeFcn shapefcn_;                    // lm shape function type
-  bool lmnodalscale_;                                   // flag indicating scaling of lm
   INPAR::MORTAR::ConsistentDualType lmdualconsistent_;  // flag indicating dual consistent lm
   bool quad_;                                           // flag indicating coupling type (true = quadratic)
   Teuchos::ParameterList& imortar_;                     // containing contact input parameters

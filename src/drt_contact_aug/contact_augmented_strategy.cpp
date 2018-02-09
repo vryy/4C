@@ -1410,22 +1410,14 @@ void CONTACT::AUG::Strategy::OutputStresses()
       for (int dof=0;dof<dim;++dof)
       {
         locindex[dof] = (Data().StressNormalPtr()->Map()).LID(cnode->Dofs()[dof]);
-        if (DRT::INPUT::IntegralValue<int>(Params(),"LM_NODAL_SCALE")==false
-            || cnode->MoData().GetScale()==0.)
-          (*Data().StressNormalPtr())[locindex[dof]] = -lmn*nn[dof];
-        else
-          (*Data().StressNormalPtr())[locindex[dof]] = -lmn*nn[dof]/cnode->MoData().GetScale();
+        (*Data().StressNormalPtr())[locindex[dof]] = -lmn*nn[dof];
       }
 
       // tangential stress components
       for (int dof=0;dof<dim;++dof)
       {
         locindex[dof] = (Data().StressTangentialPtr()->Map()).LID(cnode->Dofs()[dof]);
-        if (DRT::INPUT::IntegralValue<int>(Params(),"LM_NODAL_SCALE")==false
-            || cnode->MoData().GetScale()==0.)
-          (*Data().StressTangentialPtr())[locindex[dof]] = -lmt1*nt1[dof]-lmt2*nt2[dof];
-        else
-          (*Data().StressTangentialPtr())[locindex[dof]] = -lmt1*nt1[dof]-lmt2*nt2[dof]/cnode->MoData().GetScale();
+        (*Data().StressTangentialPtr())[locindex[dof]] = -lmt1*nt1[dof]-lmt2*nt2[dof];
       }
     }
   }

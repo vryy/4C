@@ -260,14 +260,6 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(
         && (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") == INPAR::MORTAR::shape_dual))
       dserror( "ERROR: Consistent dual shape functions in boundary elements not for purely element-based integration.");
 
-    if (DRT::INPUT::IntegralValue<int>(mortar, "LM_NODAL_SCALE") == true
-        && DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_lagmult)
-      dserror("ERROR: Nodal scaling of Lagrange multipliers only for Lagrange multiplier strategy.");
-
-    if (DRT::INPUT::IntegralValue<int>(mortar, "LM_NODAL_SCALE") == true
-        && DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE") == INPAR::MORTAR::inttype_elements)
-      dserror("ERROR: Nodal scaling of Lagrange multipliers not for purely element-based integration.");
-
     if ((DRT::INPUT::IntegralValue<int>(contact, "MESH_ADAPTIVE_CN") == true
         || DRT::INPUT::IntegralValue<int>(contact, "MESH_ADAPTIVE_CT") == true)
         && DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_lagmult)
@@ -281,10 +273,6 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(
     if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") == INPAR::CONTACT::solution_augmented &&
         DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"LM_SHAPEFCN") == INPAR::MORTAR::shape_dual)
       dserror("ERROR: The augmented Lagrange formulation does not support dual shape functions.");
-
-    if (problemtype == prb_tsi
-        && DRT::INPUT::IntegralValue<int>(mortar, "LM_NODAL_SCALE") == true)
-      dserror("ERROR: Nodal scaling not yet implemented for TSI problems");
 
     // ---------------------------------------------------------------------
     // not (yet) implemented combinations
@@ -395,10 +383,6 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(
         wearlist.get<double>("WEARCOEFF") <= 0.0)
       dserror("ERROR: No valid wear coefficient provided, must be equal or greater 0.0");
 
-    if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") != INPAR::WEAR::wear_none
-        && DRT::INPUT::IntegralValue<int>(mortar, "LM_NODAL_SCALE") == true)
-      dserror("ERROR: Combination of LM_NODAL_SCALE and WEAR not (yet) implemented.");
-
     if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_lagmult
         && DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW")     != INPAR::WEAR::wear_none)
       dserror("ERROR: Wear model only applicable in combination with Lagrange multiplier strategy.");
@@ -454,10 +438,6 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(
     if ((problemtype==prb_poroelast || problemtype==prb_fpsi || problemtype==prb_fpsi_xfem) &&
         DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") != INPAR::CONTACT::friction_none)
       dserror("POROCONTACT: Friction for poro contact not implemented!");
-
-    if ((problemtype==prb_poroelast || problemtype==prb_fpsi || problemtype==prb_fpsi_xfem) &&
-        DRT::INPUT::IntegralValue<int>(mortar,"LM_NODAL_SCALE")==true)
-      dserror("POROCONTACT: Nodal scaling not yet implemented for poro contact problems");
 
     if ((problemtype==prb_poroelast || problemtype==prb_fpsi || problemtype==prb_fpsi_xfem) &&
         DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(contact,"SYSTEM") != INPAR::CONTACT::system_condensed)

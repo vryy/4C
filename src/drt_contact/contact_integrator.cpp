@@ -43,7 +43,6 @@ Comm_(comm),
 dim_(imortar_.get<int>("DIMENSION")),
 shapefcn_(DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_,"LM_SHAPEFCN")),
 lagmultquad_(DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_,"LM_QUAD")),
-nodalscale_(DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE")),
 gpslip_(DRT::INPUT::IntegralValue<int>(imortar_,"GP_SLIP_INCR")),
 algo_(DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_,"ALGORITHM")),
 stype_(DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(imortar_,"STRATEGY")),
@@ -597,10 +596,6 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
   // Petrov-Galerkin approach for LM not yet implemented for quadratic FE
   if (sele.Shape()==MORTAR::MortarElement::line3 && ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
     dserror("ERROR: Petrov-Galerkin approach not yet implemented for quadratic FE interpolation");
-
-  // check: no nodal lm scaling with quadratic finite elements
-  if (sele.Shape()==MORTAR::MortarElement::line3 && nodalscale_)
-    dserror("LM_NODAL_SCALE only for linear ansatz functions.");
 
   //check for problem dimension
   if (Dim()!=2) dserror("ERROR: 2D integration method called for non-2D problem");
@@ -5578,26 +5573,6 @@ void CONTACT::CoIntegrator::IntegrateGP_3D(
           jac,derivsxi,derivmxi,derivjac,dualmap);
     }
 
-
-
-    // compute segment scaling factor
-    if (nodalscale_)
-    {
-      double jacsele=sele.Jacobian(sxi);
-      double derivjacselexi[2] = {0.0, 0.0};
-      GEN::pairedvector<int,double> derivjacsele(sele.NumNode()*Dim());
-
-      sele.DerivJacobian(sxi,derivjacsele);
-      LINALG::SerialDenseMatrix ssecderiv(sele.NumNode(),3);
-      sele.Evaluate2ndDerivShape(sxi,ssecderiv,sele.NumNode());
-      dynamic_cast<CoElement&> (sele).DJacDXi(derivjacselexi,sxi,ssecderiv);
-
-      GP_Scaling(sele,sval,jac,wgt,jacsele);
-      for (int iter=0;iter<sele.NumNode();++iter)
-        GP_Scaling_Lin(iter,sele,sval,sderiv,jac,wgt,jacsele,derivjacsele,derivjac,
-            derivsxi,derivjacselexi);
-    }
-
     // Creating the WEIGHTED tangential relative slip increment (non-objective)
     if (gpslip_)
     {
@@ -5819,26 +5794,6 @@ void CONTACT::CoIntegrator::IntegrateGP_2D(
         GP_2D_DM_Lin(j,bound,linlm,sele,mele,sval,mval,lmval,sderiv,mderiv,lmderiv,jac,
             wgt,derivsxi,derivmxi,derivjac,dualmap);
       }
-    }
-
-
-
-    // compute segment scaling factor
-    if (nodalscale_)
-    {
-      double jacsele=sele.Jacobian(sxi);
-      double derivjacselexi[2] = {0.0, 0.0};
-      GEN::pairedvector<int,double> derivjacsele(sele.NumNode()*Dim());
-
-      sele.DerivJacobian(sxi,derivjacsele);
-      LINALG::SerialDenseMatrix ssecderiv(sele.NumNode(),3);
-      sele.Evaluate2ndDerivShape(sxi,ssecderiv,sele.NumNode());
-      dynamic_cast<CoElement&> (sele).DJacDXi(derivjacselexi,sxi,ssecderiv);
-
-      GP_Scaling(sele,sval,jac,wgt,jacsele);
-      for (int iter=0;iter<sele.NumNode();++iter)
-        GP_Scaling_Lin(iter,sele,sval,sderiv,jac,wgt,jacsele,derivjacsele,derivjac,
-            derivsxi,derivjacselexi);
     }
 
     // Creating the tangential relative slip increment (non-objective)
@@ -10441,102 +10396,6 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear(
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- |  Compute entries for scaling at GP                        farah 12/13|
- *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_Scaling(
-     MORTAR::MortarElement& sele,
-     LINALG::SerialDenseVector& sval,
-     double& jac, double& wgt,
-     double& jacsele)
-{
-  double nrow = sele.NumNode();
-
-  DRT::Node** snodes = sele.Nodes();
-
-  for (int j=0;j<nrow;++j)
-  {
-    MORTAR::MortarNode* snode = dynamic_cast<MORTAR::MortarNode*> (snodes[j]);
-
-    double prod = (wgt * sval[j] * jac / jacsele)/(sele.Nodes()[j]->NumElement());
-    if (sele.Shape() == DRT::Element::tri3 )
-      prod *= 6.0;
-
-    snode->AddScValue(prod);
-  }
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Lin scaling entries at GP                                farah 09/13|
- *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_Scaling_Lin(
-     int& iter,
-     MORTAR::MortarElement& sele,
-     LINALG::SerialDenseVector& sval,
-     LINALG::SerialDenseMatrix& sderiv,
-     double& jac, double& wgt,
-     double& jacsele,
-     const GEN::pairedvector<int,double>& derivjacsele,
-     const GEN::pairedvector<int,double>& jacintcellmap,
-     const std::vector<GEN::pairedvector<int,double> >& dsxigp,
-     double* derivjacselexi)
-{
-  DRT::Node** snodes = sele.Nodes();
-
-  // map iterator
-  typedef GEN::pairedvector<int,double>::const_iterator _CI;
-
-  CONTACT::CoNode* myconode = dynamic_cast<CONTACT::CoNode*>(snodes[iter]);
-  if (!myconode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
-
-  // get the corresponding map as a reference
-  std::map<int,double>& dscmap = myconode->CoData().GetDerivScale();
-
-  double fac = 0.0;
-
-  // (1) Lin slave GP coordiantes
-  for (int d=0;d<Dim()-1;++d)
-  {
-    fac = wgt * sderiv(iter,d) * jac / jacsele;
-    fac /= sele.Nodes()[iter]->NumElement();
-    if (sele.Shape() == DRT::Element::tri3 )
-      fac *= 6.0;
-    for (_CI p=dsxigp[d].begin() ; p!=dsxigp[d].end(); ++p)
-      dscmap[p->first] += fac * (p->second);
-  }
-
-  // (2) Lin integration cell jacobian
-  fac = wgt * sval[iter] / jacsele;
-  fac /= sele.Nodes()[iter]->NumElement();
-  if (sele.Shape() == DRT::Element::tri3 )
-    fac *= 6.0;
-  for (_CI p=jacintcellmap.begin(); p!=jacintcellmap.end();++p)
-    dscmap[p->first] += fac * (p->second);
-
-  // (3) Lin element jacobian
-  fac = wgt * sval[iter] * jac;
-  fac /= sele.Nodes()[iter]->NumElement();
-  if (sele.Shape() == DRT::Element::tri3 )
-    fac *= 6.0;
-  for (_CI p=derivjacsele.begin(); p!=derivjacsele.end(); ++p)
-    dscmap[p->first] += fac * (-1.0)/(jacsele*jacsele)*(p->second);
-
-  for (int d=0;d<Dim()-1;++d)
-  {
-    fac = wgt * sval[iter] * jac;
-    fac /= sele.Nodes()[iter]->NumElement();
-    if (sele.Shape() == DRT::Element::tri3 )
-      fac *= 6.0;
-    for (_CI p=dsxigp[d].begin(); p!=dsxigp[d].end(); ++p)
-      dscmap[p->first] += fac * (-1.0)/(jacsele*jacsele) * (derivjacselexi[d] * (p->second)); //
-  }
-
-  return;
-}
 
 /*----------------------------------------------------------------------*
  |  Compute entries for E and T matrix at GP (Slave)         farah 09/13|

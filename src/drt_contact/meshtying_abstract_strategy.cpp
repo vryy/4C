@@ -1334,47 +1334,6 @@ void CONTACT::MtAbstractStrategy::CollectMapsForPreconditioner(Teuchos::RCP<Epet
 }
 
 /*----------------------------------------------------------------------*
- | return rescaled Lagrange multipliers                      seitz 08/13|
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> CONTACT::MtAbstractStrategy::LagrMultOldRescaled()
-{
-  // return if no rescaling of LM chosen
-  if (!(DRT::INPUT::IntegralValue<int>(Params(),"LM_NODAL_SCALE")))
-    return zold_;
-
-  Teuchos::RCP<Epetra_Vector> zoldrescaled = Teuchos::rcp(new Epetra_Vector(*zold_));
-
-  // loop over all interfaces
-  for (int i=0; i<(int)interface_.size(); ++i)
-  {
-    // currently this only works safely for 1 interface
-    //if (i>0) dserror("ERROR: OutputStresses: Double active node check needed for n interfaces!");
-    // loop over all slave row nodes on the current interface
-    for (int j=0; j<interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
-    {
-      int gid = interface_[i]->SlaveRowNodes()->GID(j);
-      DRT::Node* node = interface_[i]->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      MORTAR::MortarNode* mtnode = dynamic_cast<MORTAR::MortarNode*>(node);
-
-      // be aware of problem dimension
-      int dim = Dim();
-      int numdof = mtnode->NumDof();
-      if (dim!=numdof) dserror("ERROR: Inconsisteny Dim <-> NumDof");
-
-      // rescale tractions
-      for (int dof=0;dof<dim;++dof)
-      {
-        int lid = zoldrescaled->Map().LID(mtnode->Dofs()[dof]);
-        if (mtnode->MoData().GetScale()!=0.0)
-          (*zoldrescaled)[lid] /= mtnode->MoData().GetScale();
-      }
-    }
-  }
-  return zoldrescaled;
-}
-
-/*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool CONTACT::MtAbstractStrategy::IsSaddlePointSystem() const
 {

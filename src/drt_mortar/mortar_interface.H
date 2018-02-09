@@ -257,16 +257,6 @@ public:
     return quadslave_;
   }
 
-  inline bool& IsLmNodalScale()
-  {
-    return lmnodalscale_;
-  }
-
-  inline bool IsLmNodalScale() const
-  {
-    return lmnodalscale_;
-  }
-
   inline enum INPAR::MORTAR::RedundantStorage& RedundantStorage()
   {
     return redundant_;
@@ -606,7 +596,6 @@ private:
   Teuchos::ParameterList             imortar_;       ///< containing contact input parameters of interface
   INPAR::MORTAR::ShapeFcn            shapefcn_;      ///< employed type of shape function set
   bool                               quadslave_;     ///< flag indicating quadratic 2d/3d slave elements
-  bool                               lmnodalscale_;  ///< flag indicating scaling of lm
   INPAR::MORTAR::RedundantStorage    redundant_;     ///< employed type of redundancy in storage of interface
 
   Teuchos::RCP<Epetra_Map>           oldnodecolmap_; ///< column map of all interface nodes (overlap=1)
@@ -766,13 +755,6 @@ public:
   Returns TRUE if at least one higher-order 2d/3d slave element in interface.
   */
   virtual const bool& Quadslave() { return quadslave_; };
-
-  /*!
-  \brief Get flag indicating nodal scaling for lm
-
-  If chosen a nodal scaling factor is calculated for each LM
-  */
-  virtual bool LMNodalScale() { return lmnodalscale_; } ;
 
   /*!
   \brief Get flag indicating nurbs shape functions
@@ -1537,7 +1519,6 @@ protected:
   Teuchos::ParameterList&             imortar_;       ///< ref. to containing contact input parameters of interface
   INPAR::MORTAR::ShapeFcn&            shapefcn_;      ///< ref. to employed type of shape function set
   bool&                               quadslave_;     ///< ref. to flag indicating quadratic 2d/3d slave elements
-  bool&                               lmnodalscale_;  ///< ref. to flag indicating scaling of lm
   INPAR::MORTAR::RedundantStorage&    redundant_;     ///< ref. to employed type of redundancy in storage of interface
 
   Teuchos::RCP<Epetra_Map>&           oldnodecolmap_; ///< ref. to column map of all interface nodes (overlap=1)

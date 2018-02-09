@@ -1511,10 +1511,6 @@ void CONTACT::CoInterface::Initialize()
     cnode->MoData().GetDltl().clear();
     cnode->MoData().GetMltl().clear();
 
-    // reset nodal scaling factor
-    cnode->MoData().GetScale()=0.0;
-    cnode->CoData().GetDerivScale().clear();
-
     // reset derivative maps of normal vector
     for (int j=0;j<(int)((cnode->CoData().GetDerivN()).size());++j)
       (cnode->CoData().GetDerivN())[j].clear();
@@ -10157,9 +10153,6 @@ void CONTACT::CoInterface::AssembleS(LINALG::SparseMatrix& sglobal)
   // use adaptive cn-parameter
   bool adaptive_cn =  DRT::INPUT::IntegralValue<int>(imortar_,"MESH_ADAPTIVE_CN");
 
-  // use nodal scaling for better matrix condition
-  bool scale = DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE");
-
   // loop over all active slave nodes of the interface
   for (int i=0;i<activenodes_->NumMyElements();++i)
   {
@@ -10208,9 +10201,6 @@ void CONTACT::CoInterface::AssembleS(LINALG::SparseMatrix& sglobal)
     {
       int col = colcurr->first;
       double val = colcurr->second;
-      if (scale)
-        if (cnode->MoData().GetScale() != 0.0)
-          val /= cnode->MoData().GetScale();
       if (adaptive_cn)
         if (mesh_h != 0.0)
           val /= mesh_h;
@@ -10226,34 +10216,6 @@ void CONTACT::CoInterface::AssembleS(LINALG::SparseMatrix& sglobal)
         if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
     }
 
-    // nodal scaling linearization
-    if (scale)
-    {
-      if (cnode->MoData().GetScale() != 0.0)
-      {
-        std::map<int,double>& dscalemap = cnode->CoData().GetDerivScale();
-        double scalefac = cnode->MoData().GetScale();
-        for (colcurr=dscalemap.begin(); colcurr!=dscalemap.end(); ++colcurr)
-        {
-          int col = colcurr->first;
-          double val = -cnode->CoData().Getg()*(colcurr->second) / (scalefac*scalefac);
-          if (adaptive_cn)
-            if (mesh_h != 0.0)
-              val /= mesh_h;
-
-          // do not assemble zeros into s matrix
-          if (constr_direction_==INPAR::CONTACT::constr_xyz)
-          {
-            for (int j=0; j<cnode->NumDof(); j++)
-              if (abs(val*cnode->MoData().n()[j])>1.0e-12)
-                sglobal.Assemble(val*cnode->MoData().n()[j],cnode->Dofs()[j],col);
-          }
-          else
-            if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
-        }
-      }
-    }
-
     // complementarity parameter scaling linearization
     if (adaptive_cn)
     {
@@ -10263,9 +10225,6 @@ void CONTACT::CoInterface::AssembleS(LINALG::SparseMatrix& sglobal)
         {
           int col = colcurr->first;
           double val = -cnode->CoData().Getg()*(colcurr->second) / (mesh_h*mesh_h);
-          if (scale)
-            if(cnode->MoData().GetScale() != 0.0)
-              val /= cnode->MoData().GetScale();
 
           // do not assemble zeros into s matrix
           if (constr_direction_==INPAR::CONTACT::constr_xyz)
@@ -10459,9 +10418,6 @@ void CONTACT::CoInterface::AssembleLinD(LINALG::SparseMatrix& lindglobal,
   // we compute (LinD)_kc = D_jk,c * z_j
   /**********************************************************************/
 
-  const bool scale =
-      DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE");
-
   // loop over all LM slave nodes (row map)
   for (int j=0;j<snoderowmap_->NumMyElements();++j)
   {
@@ -10511,9 +10467,6 @@ void CONTACT::CoInterface::AssembleLinD(LINALG::SparseMatrix& lindglobal,
         {
           int col = scolcurr->first;
           double val = lm[prodj] * (scolcurr->second);
-          if (scale)
-            if(cnode->MoData().GetScale() != 0.0)
-              val /= cnode->MoData().GetScale();
           ++scolcurr;
 
           // owner of LM slave node can do the assembly, although it actually
@@ -10526,39 +10479,6 @@ void CONTACT::CoInterface::AssembleLinD(LINALG::SparseMatrix& lindglobal,
         // check for completeness of DerivD-Derivatives-iteration
         if (scolcurr!=thisdderiv.end())
           dserror("ERROR: AssembleLinDM: Not all derivative entries of DerivD considered!");
-      }
-
-      // loop over all directional derivative entries of scaling factor
-      if (scale)
-      {
-        if(cnode->MoData().GetScale() != 0.0)
-        {
-          double scalefac = cnode->MoData().GetScale();
-
-          std::map<int,double>& thisscalederiv = cnode->CoData().GetDerivScale();
-          mapsize=thisscalederiv.size();
-
-          // inner product D_{jk} * scalefac_,c / scalefac^2 * z_j for index j
-          for (int prodj=0;prodj<dim;++prodj)
-          {
-            int row = csnode->Dofs()[prodj];
-            std::map<int,double>::iterator scolcurr = thisscalederiv.begin();
-            double d_jk=cnode->MoData().GetD()[csnode->Id()];
-
-            // loop over all directional derivative entries of scale factor
-            for (int c=0;c<mapsize;++c)
-            {
-              int col = scolcurr->first;
-              double val = -lm[prodj] * d_jk * (scolcurr->second)/(scalefac*scalefac);
-              ++scolcurr;
-
-              if (abs(val)>1.0e-12) lindglobal.FEAssemble(val,row,col);
-            }
-            // check for completeness of DerivScale-Derivatives-iteration
-            if (scolcurr!=thisscalederiv.end())
-              dserror("ERROR: AssembleLinDM: Not all derivative entries of DerivScale considered!");
-          }
-        }
       }
     }
 
@@ -10590,9 +10510,6 @@ void CONTACT::CoInterface::AssembleLinM(LINALG::SparseMatrix& linmglobal,
   //                 with c = Displacement slave or master dof
   // we compute (LinM)_lc = M_jl,c * z_j
   /**********************************************************************/
-
-  const bool scale =
-      DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE");
 
   // loop over all LM slave nodes (row map)
   for (int j=0;j<snoderowmap_->NumMyElements();++j)
@@ -10643,9 +10560,6 @@ void CONTACT::CoInterface::AssembleLinM(LINALG::SparseMatrix& linmglobal,
         {
           int col = mcolcurr->first;
           double val = lm[prodj] * (mcolcurr->second);
-          if (scale)
-            if(cnode->MoData().GetScale() != 0.0)
-              val /= cnode->MoData().GetScale();
           ++mcolcurr;
 
           // owner of LM slave node can do the assembly, although it actually
@@ -10658,39 +10572,6 @@ void CONTACT::CoInterface::AssembleLinM(LINALG::SparseMatrix& linmglobal,
         // check for completeness of DerivM-Derivatives-iteration
         if (mcolcurr!=thismderiv.end())
           dserror("ERROR: AssembleLinDM: Not all derivative entries of DerivM considered!");
-      }
-
-      // loop over all directional derivative entries of scaling factor
-      if (scale==true)
-      {
-        if(cnode->MoData().GetScale() != 0.0)
-        {
-          double scalefac = cnode->MoData().GetScale();
-
-          std::map<int,double>& thisscalederiv = cnode->CoData().GetDerivScale();
-          mapsize=thisscalederiv.size();
-
-          // inner product D_{jk} * scalefac_,c / scalefac^2 * z_j for index j
-          for (int prodj=0;prodj<dim;++prodj)
-          {
-            int row = cmnode->Dofs()[prodj];
-            std::map<int,double>::iterator mcolcurr = thisscalederiv.begin();
-            double m_jk=cnode->MoData().GetM()[cmnode->Id()];
-
-            // loop over all directional derivative entries of scale factor
-            for (int c=0;c<mapsize;++c)
-            {
-              int col = mcolcurr->first;
-              double val = -lm[prodj] * m_jk * (mcolcurr->second)/(scalefac*scalefac);
-              ++mcolcurr;
-
-              if (abs(val)>1.0e-12) linmglobal.FEAssemble(-val,row,col);
-            }
-            // check for completeness of DerivScale-Derivatives-iteration
-            if (mcolcurr!=thisscalederiv.end())
-              dserror("ERROR: AssembleLinDM: Not all derivative entries of DerivScale considered!");
-          }
-        }
       }
     }
 
@@ -10734,9 +10615,6 @@ void CONTACT::CoInterface::AssembleG(Epetra_Vector& gglobal)
   // we introduce the (scaled) complementarity parameter here.
   const bool adaptive_cn = DRT::INPUT::IntegralValue<int>(imortar_,"MESH_ADAPTIVE_CN");
 
-  // scaling?
-  const bool scale = DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE");
-
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
   for (int i=0;i<snoderowmap_->NumMyElements();++i)
@@ -10753,8 +10631,6 @@ void CONTACT::CoInterface::AssembleG(Epetra_Vector& gglobal)
     if (cnode->CoData().Getg()!=0.0)
     {
       double gap = cnode->CoData().Getg();
-      if (scale==true && cnode->MoData().GetScale() != 0.0)
-        gap /= cnode->MoData().GetScale();
 
       // std::cout << "Node ID: " << cnode->Id() << " HasProj: " << cnode->HasProj()
       //      << " IsActive: " << cnode->Active() << " Gap: " << gap << std::endl;
@@ -11028,7 +10904,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
   double frcoeff_in = IParams().get<double>("FRCOEFF"); // the friction coefficient from the input
   bool adaptive_cn  = DRT::INPUT::IntegralValue<int>(IParams(),"MESH_ADAPTIVE_CN");
   bool adaptive_ct  = DRT::INPUT::IntegralValue<int>(IParams(),"MESH_ADAPTIVE_CT");
-  bool scale        = DRT::INPUT::IntegralValue<int>(IParams(),"LM_NODAL_SCALE");
   bool gp_slip      = DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR");
   bool frilessfirst = DRT::INPUT::IntegralValue<int>(IParams(),"FRLESS_FIRST");
 
@@ -11071,9 +10946,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
     double znor = 0.0;
     double ztxi = 0.0;
     double zteta = 0.0;
-    double scalefac=1.0;
-    if (scale && cnode->MoData().GetScale()!=0.)
-      scalefac = cnode->MoData().GetScale();
 
     for (int j=0;j<Dim();j++)
     {
@@ -11087,7 +10959,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
     std::vector<GEN::pairedvector<int,double> > dtximap = cnode->CoData().GetDerivTxi();
     std::vector<GEN::pairedvector<int,double> > dtetamap = cnode->CoData().GetDerivTeta();
     std::map<int,double> dscmap;
-    if (scale && scalefac!=0.) dscmap = cnode->CoData().GetDerivScale();
 
     // iterator for maps
     std::map<int,double>::iterator colcurr;
@@ -11147,13 +11018,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 
         double valteta = 0.0;
         if (Dim()==3) valteta = teta[dim];
-
-        if (scale && scalefac!=0.)
-        {
-          valtxi /= scalefac;
-          if (Dim()==3)
-            valteta /= scalefac;
-        }
 
         if (constr_direction_==INPAR::CONTACT::constr_xyz)
         {
@@ -11357,13 +11221,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
           valteta = -frcoeff * ct * jumpteta * n[dim];
         }
 
-        if (scale && scalefac!=0.)
-        {
-          valtxi /= scalefac;
-          if (Dim()==3)
-            valteta/= scalefac;
-        }
-
         // do not assemble zeros into matrix
         if (constr_direction_==INPAR::CONTACT::constr_xyz)
         {
@@ -11398,9 +11255,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
           rhsnode(j) += frcoeff*(znor-cn*wgap)*ct*jumptxi*txi[j];
           if (Dim()==3)
             rhsnode(j) += frcoeff*(znor-cn*wgap)*ct*jumpteta*teta[j];
-
-          if (scale && scalefac!=0.)
-            rhsnode(j) /= scalefac;
         }
         LINALG::Assemble(linstickRHSglobal,rhsnode,lm,lmowner);
       }
@@ -11419,11 +11273,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
           lm[1] = cnode->Dofs()[2];
           lmowner[1] = cnode->Owner();
         }
-        if (scale && scalefac!=0.)
-        {
-          rhsnode(0) /= scalefac;
-          rhsnode(1) /= scalefac;
-        }
         LINALG::Assemble(linstickRHSglobal,rhsnode,lm,lmowner);
       }
 
@@ -11441,9 +11290,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
           int col = colcurr->first;
           double valtxi = - frcoeff * (znor - cn * wgap) * ct * (colcurr->second);
 
-          if (scale && scalefac!=0.)
-            valtxi /= scalefac;
-
           if (constr_direction_==INPAR::CONTACT::constr_xyz)
           {
             for (int j=0; j<Dim(); j++)
@@ -11458,9 +11304,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
         {
           int col = colcurr->first;
           double valteta = - frcoeff * (znor - cn * wgap) * ct * (colcurr->second);
-
-          if (scale && scalefac!=0.)
-            valteta /= scalefac;
 
           if (constr_direction_==INPAR::CONTACT::constr_xyz)
           {
@@ -11487,9 +11330,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
             double valtxi=0.0;
             valtxi = - frcoeff * z[dim] * _colcurr->second * ct * jumptxi;
 
-            if (scale && scalefac!=0.)
-              valtxi /= scalefac;
-
             // do not assemble zeros into matrix
             if (constr_direction_==INPAR::CONTACT::constr_xyz)
             {
@@ -11504,9 +11344,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
             {
               double valteta=0.0;
               valteta = - frcoeff * z[dim] * _colcurr->second * ct * jumpteta;
-
-              if (scale && scalefac!=0.)
-                valteta /= scalefac;
 
               // do not assemble zeros into matrix
               if (constr_direction_==INPAR::CONTACT::constr_xyz)
@@ -11538,9 +11375,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
             double valtxi=0.0;
             valtxi = - frcoeff * (znor - cn * wgap) * ct * txi[dim] * (colcurr->second);
 
-            if (scale && scalefac!=0.)
-              valtxi /= scalefac;
-
             // do not assemble zeros into matrix
             if (constr_direction_==INPAR::CONTACT::constr_xyz)
             {
@@ -11555,9 +11389,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
             {
               double valteta=0.0;
               valteta = - frcoeff * (znor - cn * wgap) * ct * teta[dim] * (colcurr->second);
-
-              if (scale && scalefac!=0.)
-                valteta /= scalefac;
 
               // do not assemble zeros into matrix
               if (constr_direction_==INPAR::CONTACT::constr_xyz)
@@ -11579,9 +11410,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
             double valtxi=0.0;
             valtxi = - frcoeff*(znor-cn*wgap) * ct * jump[dim] * _colcurr->second;
 
-            if (scale && scalefac!=0.)
-              valtxi /= scalefac;
-
             // do not assemble zeros into matrix
             if (constr_direction_==INPAR::CONTACT::constr_xyz)
             {
@@ -11601,9 +11429,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
               int col = _colcurr->first;
               double valteta=0.0;
               valteta = - frcoeff * (znor-cn*wgap) * ct * jump[dim] * _colcurr->second;
-
-              if (scale && scalefac!=0.)
-                valteta /= scalefac;
 
               // do not assemble zeros into matrix
               if (constr_direction_==INPAR::CONTACT::constr_xyz)
@@ -11625,9 +11450,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
             double valtxi=0.0;
             valtxi = - frcoeff * z[dim] * _colcurr->second * ct * jumptxi;
 
-            if (scale && scalefac!=0.)
-              valtxi /= scalefac;
-
             // do not assemble zeros into matrix
             if (constr_direction_==INPAR::CONTACT::constr_xyz)
             {
@@ -11642,9 +11464,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
             {
               double valteta=0.0;
               valteta = - frcoeff * z[dim] * _colcurr->second * ct * jumpteta;
-
-              if (scale && scalefac!=0.)
-                valteta /= scalefac;
 
               // do not assemble zeros into matrix
               if (constr_direction_==INPAR::CONTACT::constr_xyz)
@@ -11668,9 +11487,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
           double valtxi=0.0;
           valtxi = frcoeff * colcurr->second * ct * cn * jumptxi;
 
-          if (scale && scalefac!=0.)
-            valtxi /= scalefac;
-
           // do not assemble zeros into matrix
           if (constr_direction_==INPAR::CONTACT::constr_xyz)
           {
@@ -11686,9 +11502,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
             double valteta=0.0;
             valteta = frcoeff * colcurr->second * ct * cn * jumpteta;
 
-            if (scale && scalefac!=0.)
-              valteta /= scalefac;
-
             // do not assemble zeros into matrix
             if (constr_direction_==INPAR::CONTACT::constr_xyz)
             {
@@ -11700,39 +11513,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
               if (abs(valteta)>1.0e-12) linstickDISglobal.Assemble(valteta,row[1],col);
           }
         }
-
-        // linearization of scaling factor ***************************************
-        if (scale && scalefac!=0.)
-          for (colcurr=dscmap.begin(); colcurr!=dscmap.end(); ++colcurr)
-          {
-            int col = colcurr->first;
-            double valtxi = -frcoeff*(znor-cn*wgap)*ct*jumptxi/(scalefac*scalefac)*(colcurr->second);
-
-            // do not assemble zeros into matrix
-            if (constr_direction_==INPAR::CONTACT::constr_xyz)
-            {
-              for (int j=0; j<Dim(); j++)
-                if (abs(valtxi*txi[j])>1.e-12)
-                  linstickDISglobal.Assemble(valtxi*txi[j],cnode->Dofs()[j],col);
-            }
-            else
-              if (abs(valtxi)>1.0e-12) linstickDISglobal.Assemble(valtxi,row[0],col);
-
-            if (Dim()==3)
-            {
-              double valteta = -frcoeff*(znor-cn*wgap)*ct*jumpteta/(scalefac*scalefac)*(colcurr->second);
-
-              // do not assemble zeros into matrix
-              if (constr_direction_==INPAR::CONTACT::constr_xyz)
-              {
-                for (int j=0; j<Dim(); j++)
-                  if (abs(valteta*teta[j])>1.e-12)
-                    linstickDISglobal.Assemble(valteta*teta[j],cnode->Dofs()[j],col);
-              }
-              else
-                if (abs(valteta)>1.0e-12) linstickDISglobal.Assemble(valteta,row[1],col);
-            }
-          }
 
         // linearization of mesh size dependent, adaptive cn
         if (adaptive_cn && mesh_h !=0.)
@@ -11915,9 +11695,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
             int col = colcurr->first;
             double valtxi = colcurr->second;
 
-            if (scale && scalefac!=0.)
-              valtxi /= scalefac;
-
             if (constr_direction_==INPAR::CONTACT::constr_xyz)
             {
               for (int j=0; j<Dim(); j++)
@@ -11935,9 +11712,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
               int col = colcurr->first;
               double valteta = colcurr->second;
 
-              if (scale && scalefac!=0.)
-                valteta /= scalefac;
-
               if (constr_direction_==INPAR::CONTACT::constr_xyz)
               {
                 for (int j=0; j<Dim(); j++)
@@ -11946,38 +11720,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
               }
               else
                 if (abs(valteta)>1.0e-12) linstickDISglobal.Assemble(valteta,row[1],col);
-            }
-          }
-
-          if (scale && scalefac!=0.)
-          {
-            for (colcurr=dscmap.begin(); colcurr!=dscmap.end(); colcurr++)
-            {
-              int col = colcurr->first;
-              double valtxi=-jumptxi/(scalefac*scalefac)*(colcurr->second);
-
-              if (constr_direction_==INPAR::CONTACT::constr_xyz)
-              {
-                for (int j=0; j<Dim(); j++)
-                  if (abs(valtxi*txi[j])>1.e-12)
-                    linstickDISglobal.Assemble(valtxi*txi[j],cnode->Dofs()[j],col);
-              }
-              else
-                if (abs(valtxi)>1.0e-12) linstickDISglobal.Assemble(valtxi,row[0],col);
-
-              if (Dim()==3)
-              {
-                double valteta = -jumpteta/(scalefac*scalefac)*(colcurr->second);
-
-                if (constr_direction_==INPAR::CONTACT::constr_xyz)
-                {
-                  for (int j=0; j<Dim(); j++)
-                    if (abs(valteta*teta[j])>1.e-12)
-                      linstickDISglobal.Assemble(valteta*teta[j],cnode->Dofs()[j],col);
-                }
-                else
-                  if (abs(valteta)>1.0e-12) linstickDISglobal.Assemble(valteta,row[1],col);
-              }
             }
           }
         }
@@ -11998,9 +11740,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
               int col = colcurr->first;
               double valtxi = txi[dim]*colcurr->second;
 
-              if (scale && scalefac!=0.)
-                valtxi /= scalefac;
-
               // do not assemble zeros into matrix
               if (constr_direction_==INPAR::CONTACT::constr_xyz)
               {
@@ -12014,9 +11753,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
               if(Dim()==3)
               {
                 double valteta = teta[dim]*colcurr->second;
-
-                if (scale && scalefac!=0.)
-                  valteta /= scalefac;
 
                 if (constr_direction_==INPAR::CONTACT::constr_xyz)
                 {
@@ -12040,10 +11776,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
               int col = _colcurr->first;
               double val = jump[j]*_colcurr->second;
 
-              if (scale && scalefac!=0.)
-                val /= scalefac;
-
-
               // do not assemble zeros into s matrix
               if (constr_direction_==INPAR::CONTACT::constr_xyz)
               {
@@ -12063,10 +11795,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
                 int col = _colcurr->first;
                 double val = jump[j]*_colcurr->second;
 
-                if (scale && scalefac!=0.)
-                  val /= scalefac;
-
-
                 // do not assemble zeros into matrix
                 if (constr_direction_==INPAR::CONTACT::constr_xyz)
                 {
@@ -12079,37 +11807,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
               }
             }
           }
-
-          if (scale && scalefac!=0.)
-            for (colcurr=dscmap.begin(); colcurr!=dscmap.end(); colcurr++)
-            {
-              int col = colcurr->first;
-              double valtxi = -jumptxi/(scalefac*scalefac)*(colcurr->second);
-
-              // do not assemble zeros into matrix
-              if (constr_direction_==INPAR::CONTACT::constr_xyz)
-              {
-                for (int j=0; j<Dim(); j++)
-                  if (abs(valtxi*txi[j])>1.e-12)
-                    linstickDISglobal.Assemble(valtxi*txi[j],cnode->Dofs()[j],col);
-              }
-              else
-                if (abs(valtxi)>1.0e-12) linstickDISglobal.Assemble(valtxi,row[0],col);
-
-              if (Dim()==3)
-              {
-                double valteta = -jumpteta/(scalefac*scalefac)*(colcurr->second);
-
-                if (constr_direction_==INPAR::CONTACT::constr_xyz)
-                {
-                  for (int j=0; j<Dim(); j++)
-                    if (abs(valteta*teta[j])>1.e-12)
-                      linstickDISglobal.Assemble(valteta*teta[j],cnode->Dofs()[j],col);
-                }
-                else
-                  if (abs(valteta)>1.0e-12) linstickDISglobal.Assemble(valteta,row[1],col);
-              }
-            }
         }
     }
   }
@@ -12138,7 +11835,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
   double frcoeff_in = IParams().get<double>("FRCOEFF"); // the friction coefficient from the input
   bool adaptive_cn  = DRT::INPUT::IntegralValue<int>(IParams(),"MESH_ADAPTIVE_CN");
   bool adaptive_ct  = DRT::INPUT::IntegralValue<int>(IParams(),"MESH_ADAPTIVE_CT");
-  bool scale        = DRT::INPUT::IntegralValue<int>(IParams(),"LM_NODAL_SCALE");
   bool gp_slip      = DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR");
   bool frilessfirst = DRT::INPUT::IntegralValue<int>(IParams(),"FRLESS_FIRST");
 
@@ -12176,8 +11872,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       std::vector<GEN::pairedvector<int,double> > dnmap = cnode->CoData().GetDerivN();
       std::vector<GEN::pairedvector<int,double> > dtximap = cnode->CoData().GetDerivTxi();
       std::vector<GEN::pairedvector<int,double> > dtetamap = cnode->CoData().GetDerivTeta();
-      double scalefac=1.0;
-      std::map<int,double> dscmap = cnode->CoData().GetDerivScale();
 
       // mesh size scaling of complementarity parameters
       double mesh_h = 0.; // mesh size scaling parameter
@@ -12497,14 +12191,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             valteta = valteta0 + valteta1 + valteta2 + valteta3;
           }
 
-          // apply nodal scaling
-          if (scale && scalefac!=0.)
-          {
-            valtxi /= scalefac;
-            if (Dim()==3)
-              valteta /= scalefac;
-          }
-
           // do not assemble zeros into matrix
           if (constr_direction_==INPAR::CONTACT::constr_xyz)
           {
@@ -12539,10 +12225,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           double valuetxi1 = -(euclidean)*ztxi+(frcoeff*(znor-cn*wgap))*(ztxi+ct*jumptxi);
 #endif
 
-          // apply nodal scaling
-          if (scale && scalefac!=0.)
-            valuetxi1 /= scalefac;
-
           for (int j=0; j<Dim(); j++)
           {
             lm[j]=cnode->Dofs()[j];
@@ -12557,10 +12239,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 #else
             double valueteta1 = -(euclidean)*zteta+(frcoeff*(znor-cn*wgap))*(zteta+ct*jumpteta);
 #endif
-
-            // apply nodal scaling
-            if (scale && scalefac!=0.)
-              valueteta1 /= scalefac;
 
             for (int j=0; j<Dim(); j++)
               rhsnode(j) += valueteta1*teta[j];
@@ -12577,11 +12255,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 #else
           double valuetxi1 = -(euclidean)*ztxi+(frcoeff*(znor-cn*wgap))*(ztxi+ct*jumptxi);
 #endif
-
-          // apply nodal scaling
-          if (scale && scalefac!=0.)
-            valuetxi1 /= scalefac;
-
           rhsnode(0) = valuetxi1;
           lm[0] = cnode->Dofs()[1];
           lmowner[0] = cnode->Owner();
@@ -12593,10 +12266,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 #else
             double valueteta1 = -(euclidean)*zteta+(frcoeff*(znor-cn*wgap))*(zteta+ct*jumpteta);
 #endif
-
-            // apply nodal scaling
-            if (scale && scalefac!=0.)
-              valueteta1 /= scalefac;
             rhsnode(1) = valueteta1;
 
             lm[1] = cnode->Dofs()[2];
@@ -12622,14 +12291,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             double valtxi1 = (ztxi+ct*jumptxi)/euclidean*ct*_colcurr->second*ztxi;
             double valteta1 = (ztxi+ct*jumptxi)/euclidean*ct*_colcurr->second*zteta;
 
-            // apply nodal scaling
-            if (scale && scalefac!=0.)
-            {
-              valtxi1 /= scalefac;
-              if (Dim()==3)
-                valteta1 /= scalefac;
-            }
-
             if (constr_direction_==INPAR::CONTACT::constr_xyz)
             {
               for (int j=0; j<Dim(); j++)
@@ -12654,14 +12315,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
               int col = _colcurr->first;
               double valtxi2 = (zteta+ct*jumpteta)/euclidean*ct*_colcurr->second*ztxi;
               double valteta2 = (zteta+ct*jumpteta)/euclidean*ct*_colcurr->second*zteta;
-
-              // apply nodal scaling
-              if (scale && scalefac!=0.)
-              {
-                valtxi2 /= scalefac;
-                if (Dim()==3)
-                  valteta2 /= scalefac;
-              }
 
               if (constr_direction_==INPAR::CONTACT::constr_xyz)
               {
@@ -12705,18 +12358,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
               valtxi2   = valtxi2  / (znor - cn * wgap);
               valteta2  = valteta2 / (znor - cn * wgap);
   #endif
-
-              // apply nodal scaling
-              if (scale && scalefac!=0.)
-              {
-                valtxi1 /= scalefac;
-                valtxi2 /= scalefac;
-                if (Dim()==3)
-                {
-                  valteta1 /= scalefac;
-                  valteta2 /= scalefac;
-                }
-              }
 
               // do not assemble zeros into matrix
               if (constr_direction_==INPAR::CONTACT::constr_xyz)
@@ -12778,8 +12419,8 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         for (colcurr=dgmap.begin(); colcurr!=dgmap.end(); ++colcurr)
         {
           int col = colcurr->first;
-          double valtxi  = + euclidean * ztxi  / pow(znor - cn * wgap, 2.0) * cn * (colcurr->second)/scalefac;
-          double valteta = + euclidean * zteta / pow(znor - cn * wgap, 2.0) * cn * (colcurr->second)/scalefac;
+          double valtxi  = + euclidean * ztxi  / pow(znor - cn * wgap, 2.0) * cn * (colcurr->second);
+          double valteta = + euclidean * zteta / pow(znor - cn * wgap, 2.0) * cn * (colcurr->second);
 
           //do not assemble zeros into matrix
           if (constr_direction_==INPAR::CONTACT::constr_xyz)
@@ -12799,30 +12440,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             if (abs(valteta)>1.0e-12) linslipDISglobal.Assemble(valteta,row[1],col);
           }
         }
-        if (scderiv)
-          for (colcurr=dscmap.begin(); colcurr!=dscmap.end(); ++colcurr)
-          {
-            int col =colcurr->first;
-            double valtxi  = + euclidean * ztxi  / pow(znor - cn * wgap, 2.0) * cn * wgap/scalefac*colcurr->second;
-            double valteta = + euclidean * zteta / pow(znor - cn * wgap, 2.0) * cn * wgap/scalefac*colcurr->second;
-            //do not assemble zeros into matrix
-            if (constr_direction_==INPAR::CONTACT::constr_xyz)
-            {
-              for (int j=0; j<Dim(); j++)
-              {
-                if (abs(valtxi*txi[j])>1.e-12)
-                  linslipDISglobal.Assemble(valtxi*txi[j],cnode->Dofs()[j],col);
-                if (Dim()==3)
-                  if (abs(valteta*teta[j])>1.e-12)
-                    linslipDISglobal.Assemble(valteta*teta[j],cnode->Dofs()[j],col);
-              }
-            }
-            else
-            {
-              if (abs(valtxi)>1.0e-12) linslipDISglobal.Assemble(valtxi,row[0],col);
-              if (abs(valteta)>1.0e-12) linslipDISglobal.Assemble(valteta,row[1],col);
-            }
-          }
 #endif
 
 
@@ -12833,11 +12450,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           {
             int col = _colcurr->first;
             double valtxi = -frcoeff*(znor-cn*wgap)*ct*_colcurr->second;
-            // apply nodal scaling
-            if (scale && scalefac!=0.)
-            {
-              valtxi /= scalefac;
-            }
             if (constr_direction_==INPAR::CONTACT::constr_xyz)
             {
               for (int j=0; j<Dim(); j++)
@@ -12854,10 +12466,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             {
               int col = _colcurr->first;
               double valteta = -frcoeff*(znor-cn*wgap)*ct*_colcurr->second;
-
-              // apply nodal scaling
-              if (scale && scalefac!=0.)
-                valteta /= scalefac;
 
               if (constr_direction_==INPAR::CONTACT::constr_xyz)
               {
@@ -12888,14 +12496,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
               double valtxi = (-1)*(frcoeff*(znor-cn*wgap))*ct*txi[dim]*_colcurr->second;
               double valteta = (-1)*(frcoeff*(znor-cn*wgap))*ct*teta[dim]*_colcurr->second;
 #endif
-              // apply nodal scaling
-              if (scale && scalefac!=0.)
-              {
-                valtxi /= scalefac;
-                if (Dim()==3)
-                  valteta /= scalefac;
-              }
-
               // do not assemble zeros into matrix
               if (constr_direction_==INPAR::CONTACT::constr_xyz)
               {
@@ -12934,10 +12534,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             val = val / (znor - cn * wgap);
 #endif
 
-            // apply nodal scaling
-            if (scale && scalefac!=0.)
-              val /= scalefac;
-
             // do not assemble zeros into s matrix
             if (constr_direction_==INPAR::CONTACT::constr_xyz)
             {
@@ -12956,10 +12552,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             {
               int col = colcurr->first;
               double val = euclidean*(colcurr->second)*z[j];
-
-              // apply nodal scaling
-              if (scale && scalefac!=0.)
-                val /= scalefac;
 
 #ifdef CONSISTENTSLIP
               val = val / (znor - cn * wgap);
@@ -12993,14 +12585,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             valtxi  = valtxi / (znor - cn*wgap);
             valteta   = valteta / (znor - cn*wgap);
 #endif
-
-            // apply nodal scaling
-            if (scale && scalefac!=0.)
-            {
-              valtxi /= scalefac;
-              if (Dim()==3)
-                valteta /= scalefac;
-            }
 
             // do not assemble zeros into matrix
             if (constr_direction_==INPAR::CONTACT::constr_xyz)
@@ -13038,14 +12622,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
               valtxi  = valtxi / (znor - cn*wgap);
               valteta = valteta / (znor - cn*wgap);
 #endif
-
-              // apply nodal scaling
-              if (scale && scalefac!=0.)
-              {
-                valtxi /= scalefac;
-                if (Dim()==3)
-                  valteta /= scalefac;
-              }
 
               // do not assemble zeros into matrix
               if (constr_direction_==INPAR::CONTACT::constr_xyz)
@@ -13091,14 +12667,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
               valteta   = valteta / (znor - cn*wgap);
 #endif
 
-              // apply nodal scaling
-              if (scale && scalefac!=0.)
-              {
-                valtxi /= scalefac;
-                if (Dim()==3)
-                  valteta /= scalefac;
-              }
-
               // do not assemble zeros into s matrix
               if (constr_direction_==INPAR::CONTACT::constr_xyz)
               {
@@ -13129,14 +12697,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
                 valtxi  = valtxi / (znor - cn*wgap);
                 valteta   = valteta / (znor - cn*wgap);
 #endif
-
-                // apply nodal scaling
-                if (scale && scalefac!=0.)
-                {
-                  valtxi /= scalefac;
-                  if (Dim()==3)
-                    valteta /= scalefac;
-                }
 
                 // do not assemble zeros into matrix
                 if (constr_direction_==INPAR::CONTACT::constr_xyz)
@@ -13170,10 +12730,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 #else
             double val = (-1)*(frcoeff*(znor-cn*wgap))*(colcurr->second)*z[j];
 #endif
-            // apply nodal scaling
-            if (scale && scalefac!=0.)
-              val /= scalefac;
-
             // do not assemble zeros into matrix
             if (constr_direction_==INPAR::CONTACT::constr_xyz)
             {
@@ -13196,10 +12752,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 #else
               double val = (-1.0)*(frcoeff*(znor-cn*wgap))*(colcurr->second)*z[j];
 #endif
-              // apply nodal scaling
-              if (scale && scalefac!=0.)
-                val /= scalefac;
-
               // do not assemble zeros into matrix
               if (constr_direction_==INPAR::CONTACT::constr_xyz)
               {
@@ -13232,9 +12784,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 #else
               double val = (-1)*(frcoeff*(znor-cn*wgap))*ct*(colcurr->second)*jump[j];
 #endif
-              // apply nodal scaling
-              if (scale && scalefac!=0.)
-                val /= scalefac;
               // do not assemble zeros into matrix
               if (constr_direction_==INPAR::CONTACT::constr_xyz)
               {
@@ -13257,10 +12806,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 #else
                 double val = (-1)*(frcoeff*(znor-cn*wgap))*ct*(colcurr->second)*jump[j];
 #endif
-
-                // apply nodal scaling
-                if (scale && scalefac!=0.)
-                  val /= scalefac;
               // do not assemble zeros into s matrix
                 if (constr_direction_==INPAR::CONTACT::constr_xyz)
                 {
@@ -13286,14 +12831,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             int col = colcurr->first;
             double valtxi = (-1)*(ztxi+ct*jumptxi)*frcoeff*(colcurr->second)*z[j];
             double valteta = (-1)*(zteta+ct*jumpteta)*frcoeff*(colcurr->second)*z[j];
-
-            // apply nodal scaling
-            if (scale && scalefac!=0.)
-            {
-              valtxi /= scalefac;
-              if (Dim()==3)
-                valteta /= scalefac;
-            }
 
             // do not assemble zeros into s matrix
             if (constr_direction_==INPAR::CONTACT::constr_xyz)
@@ -13324,14 +12861,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           double valtxi = frcoeff*cn*(_colcurr->second)*(ztxi+ct*jumptxi);
           double valteta = frcoeff*cn*(_colcurr->second)*(zteta+ct*jumpteta);
 
-          // apply nodal scaling
-          if (scale && scalefac!=0.)
-          {
-            valtxi /= scalefac;
-            if (Dim()==3)
-              valteta /= scalefac;
-          }
-
           // do not assemble zeros into matrix
           if (constr_direction_==INPAR::CONTACT::constr_xyz)
           {
@@ -13349,33 +12878,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           }
         }
 
-        /*** 8 ***************** nodal scaling parameter ******************/
-        if(scale && scalefac!=0.)
-        {
-          for (_colcurr=dscmap.begin(); _colcurr!=dscmap.end(); ++_colcurr)
-          {
-            int col = colcurr->first;
-            double valtxi = - (euclidean*ztxi-frcoeff*(znor-cn*wgap)*(ztxi+ct*jumptxi)) / (scalefac*scalefac) * (_colcurr->second);
-            double valteta = - (euclidean*zteta-frcoeff*(znor-cn*wgap)*(zteta+ct*jumpteta)) / (scalefac*scalefac) * (_colcurr->second);
-
-            // do not assemble zeros into matrix
-            if (constr_direction_==INPAR::CONTACT::constr_xyz)
-            {
-              for (int j=0; j<Dim(); j++)
-                if (abs(valtxi*txi[j])>1.e-12)
-                  linslipDISglobal.Assemble(valtxi*txi[j],cnode->Dofs()[j],col);
-              for (int j=0; j<Dim(); j++)
-                if (abs(valteta*teta[j])>1.e-12)
-                  linslipDISglobal.Assemble(valteta*teta[j],cnode->Dofs()[j],col);
-            }
-            else
-            {
-              if (abs(valtxi)>1.0e-12) linslipDISglobal.Assemble(valtxi,row[0],col);
-              if (abs(valteta)>1.0e-12) linslipDISglobal.Assemble(valteta,row[1],col);
-            }
-          }
-        }
-
         /*** 9 ************ mesh adaptive cn complementarity parameter ***/
         if (adaptive_cn && mesh_h!=0.)
           for (_colcurr=deriv_mesh_h.begin(); _colcurr!=deriv_mesh_h.end(); ++_colcurr)
@@ -13383,14 +12885,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             int col = colcurr->first;
             double valtxi = -frcoeff*cn_input*wgap*(ztxi+ct*jumptxi)/(mesh_h*mesh_h)*(_colcurr->second);
             double valteta= -frcoeff*cn_input*wgap*(zteta+ct*jumpteta)/(mesh_h*mesh_h)*(_colcurr->second);
-
-            // apply nodal scaling
-            if (scale && scalefac!=0.)
-            {
-              valtxi /= scalefac;
-              if (Dim()==3)
-                valteta /= scalefac;
-            }
 
             // do not assemble zeros into matrix
             if (constr_direction_==INPAR::CONTACT::constr_xyz)
@@ -14531,9 +14025,6 @@ void CONTACT::CoInterface::AssembleNCoup(Epetra_Vector& gglobal)
     if (mrtnode->CoPoroData().GetnCoup()!=0.0)
     {
       double nCoup = mrtnode->CoPoroData().GetnCoup();
-      if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE")==true &&
-          mrtnode->MoData().GetScale() != 0.0)
-        nCoup /= mrtnode->MoData().GetScale();
 
       Epetra_SerialDenseVector gnode(1);
       std::vector<int> lm(1);
@@ -14643,10 +14134,6 @@ void CONTACT::CoInterface::AssembleCoupLinD(LINALG::SparseMatrix& CoupLin,
   //                 with c = Displacement slave or master dof
   // we compute (LinD)_kc = D_jk,c * x_j
 
-  bool scale = DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE");
-  if(scale)
-    dserror("ERROR: LM Nodal Scale is not supported with Sliding ALE");
-
   for (int j=0;j<snoderowmap_->NumMyElements();++j)
   {
 
@@ -14731,10 +14218,6 @@ void CONTACT::CoInterface::AssembleCoupLinM(LINALG::SparseMatrix& CoupLin,
   //                 with l = Displacement master dof
   //                 with c = Displacement slave or master dof
   // we compute (CoupLin)_lc = M_jl,c * x_j
-
-  bool scale = DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE");
-  if(scale)
-    dserror("ERROR: LM Nodal Scale is not supported with Sliding ALE");
 
   // loop over all slave nodes (row map)
   for (int j=0;j<snoderowmap_->NumMyElements();++j)

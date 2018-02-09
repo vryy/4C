@@ -1887,8 +1887,6 @@ void WEAR::WearInterface::AssembleLinSlip_W(LINALG::SparseMatrix& linslipWglobal
       std::vector<GEN::pairedvector<int,double> > dnmap = cnode->CoData().GetDerivN();
       std::vector<GEN::pairedvector<int,double> > dtximap = cnode->CoData().GetDerivTxi();
       std::vector<GEN::pairedvector<int,double> > dtetamap = cnode->CoData().GetDerivTeta();
-      double scalefac=1.;
-      std::map<int,double> dscmap = cnode->CoData().GetDerivScale();
 
       // check for Dimension of derivative maps
       for (int j=0;j<Dim()-1;++j)
@@ -1911,8 +1909,6 @@ void WEAR::WearInterface::AssembleLinSlip_W(LINALG::SparseMatrix& linslipWglobal
       double* txi = cnode->CoData().txi();
       double* teta = cnode->CoData().teta();
       double* z = cnode->MoData().lm();
-      double& wgap = cnode->CoData().Getg();
-      wgap /= scalefac;
 
       // iterator for maps
       std::map<int,double>::iterator colcurr;
@@ -2091,15 +2087,6 @@ void WEAR::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
       std::vector<GEN::pairedvector<int,double> > dnmap = cnode->CoData().GetDerivN();
       std::vector<GEN::pairedvector<int,double> > dtximap = cnode->CoData().GetDerivTxi();
       std::vector<GEN::pairedvector<int,double> > dtetamap = cnode->CoData().GetDerivTeta();
-      double scalefac=1.;
-      std::map<int,double> dscmap = cnode->CoData().GetDerivScale();
-      bool scderiv=false;
-      if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE")==true &&
-                cnode->MoData().GetScale() != 0.)
-      {
-        scderiv=true;
-        scalefac=cnode->MoData().GetScale();
-      }
 
       // check for Dimension of derivative maps
       for (int j=0;j<Dim()-1;++j)
@@ -2123,7 +2110,6 @@ void WEAR::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
       double* teta = cnode->CoData().teta();
       double* z = cnode->MoData().lm();
       double& wgap = cnode->CoData().Getg();
-      wgap /= scalefac;
 
       // iterator for maps
       std::map<int,double>::iterator           colcurr;
@@ -2474,23 +2460,13 @@ void WEAR::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
         for (colcurr=dgmap.begin(); colcurr!=dgmap.end(); ++colcurr)
         {
           int col = colcurr->first;
-          double valtxi  = + euclidean * ztxi  / pow(znor - cn * wgap, 2.0) * cn * (colcurr->second)/scalefac;
-          double valteta = + euclidean * zteta / pow(znor - cn * wgap, 2.0) * cn * (colcurr->second)/scalefac;
+          double valtxi  = + euclidean * ztxi  / pow(znor - cn * wgap, 2.0) * cn * (colcurr->second);
+          double valteta = + euclidean * zteta / pow(znor - cn * wgap, 2.0) * cn * (colcurr->second);
 
           //do not assemble zeros into matrix
           if (abs(valtxi)>1.0e-12) linslipDISglobal.Assemble(valtxi,row[0],col);
           if (abs(valteta)>1.0e-12) linslipDISglobal.Assemble(valteta,row[1],col);
         }
-        if (scderiv)
-          for (colcurr=dscmap.begin(); colcurr!=dscmap.end(); ++colcurr)
-          {
-            int col =colcurr->first;
-            double valtxi  = + euclidean * ztxi  / pow(znor - cn * wgap, 2.0) * cn * wgap/scalefac*colcurr->second;
-            double valteta = + euclidean * zteta / pow(znor - cn * wgap, 2.0) * cn * wgap/scalefac*colcurr->second;
-            //do not assemble zeros into matrix
-            if (abs(valtxi)>1.0e-12) linslipDISglobal.Assemble(valtxi,row[0],col);
-            if (abs(valteta)>1.0e-12) linslipDISglobal.Assemble(valteta,row[1],col);
-          }
 #endif
 
 
@@ -2781,20 +2757,6 @@ void WEAR::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
           if (abs(valtxi)>1.0e-12) linslipDISglobal.Assemble(valtxi,row[0],col);
           if (abs(valteta)>1.0e-12) linslipDISglobal.Assemble(valteta,row[1],col);
         }
-
-        /*** 8 ****************** scale factor ***/
-        // loop over all entries of the current derivative map
-        if (scderiv)
-          for (colcurr=dscmap.begin();colcurr!=dscmap.end();++colcurr)
-          {
-            int col = colcurr->first;
-            double valtxi = frcoeff*cn*wgap/scalefac*(ztxi+ct*jumptxi)*colcurr->second;
-            double valteta = frcoeff*cn*wgap/scalefac*(zteta+ct*jumpteta)*colcurr->second;
-
-            // do not assemble zeros into matrix
-            if (abs(valtxi)>1.0e-12) linslipDISglobal.Assemble(valtxi,row[0],col);
-            if (abs(valteta)>1.0e-12) linslipDISglobal.Assemble(valteta,row[1],col);
-          }
 #endif
 
         /*************************************************************************
@@ -4012,10 +3974,6 @@ void WEAR::WearInterface::Initialize()
     cnode->MoData().GetD().clear();
     cnode->MoData().GetM().clear();
     cnode->MoData().GetMmod().clear();
-
-    // reset nodal scaling factor
-    (cnode->MoData().GetScale())=0.0;
-    (cnode->CoData().GetDerivScale()).clear();
 
     // reset derivative maps of normal vector
     for (int j=0;j<(int)((cnode->CoData().GetDerivN()).size());++j)

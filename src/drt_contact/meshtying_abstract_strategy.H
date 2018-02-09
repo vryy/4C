@@ -91,12 +91,6 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     Teuchos::RCP<Epetra_Vector> LagrMultOld() { return zold_; }
 
     /*!
-    \brief Return old rescaled Lagrange multiplier vector (t_n)
-
-    */
-    Teuchos::RCP<Epetra_Vector> LagrMultOldRescaled() ;
-
-    /*!
     \brief Return Lagrange multiplier vector from last Uzawa step
 
     */

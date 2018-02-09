@@ -309,10 +309,6 @@ void ADAPTER::CouplingMortar::SetupInterface(
   input.set<std::string>("PARALLEL_REDIST","none");
   input.set<int>("DIMENSION", DRT::Problem::Instance()->NDim());
 
-  // check validity
-  if (DRT::INPUT::IntegralValue<int>(input,"LM_NODAL_SCALE")==true)
-    if(myrank== 0) dserror("Mortar coupling adapter does not work with LM_NODAL_SCALE");
-
   // create an empty mortar interface
   // (To be on the safe side we still store all interface nodes and elements
   // fully redundant here in the mortar ADAPTER. This makes applications such

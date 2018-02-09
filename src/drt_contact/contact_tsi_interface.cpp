@@ -85,10 +85,9 @@ void CONTACT::CoTSIInterface::AssembleLinStick(
   // some things that are not implemented
   bool adaptive_cn  = DRT::INPUT::IntegralValue<int>(IParams(),"MESH_ADAPTIVE_CN");
   bool adaptive_ct  = DRT::INPUT::IntegralValue<int>(IParams(),"MESH_ADAPTIVE_CT");
-  bool scale        = DRT::INPUT::IntegralValue<int>(IParams(),"LM_NODAL_SCALE");
   bool gp_slip      = DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR");
   bool frilessfirst = DRT::INPUT::IntegralValue<int>(IParams(),"FRLESS_FIRST");
-  if (adaptive_cn || adaptive_ct || scale || gp_slip || frilessfirst)
+  if (adaptive_cn || adaptive_ct || gp_slip || frilessfirst)
     dserror("this fancy option for the contact algorithm is not implemented for TSI");
 
   // consistent equation is:
@@ -215,10 +214,9 @@ void CONTACT::CoTSIInterface::AssembleLinSlip(
   // some things that are not implemented
   bool adaptive_cn  = DRT::INPUT::IntegralValue<int>(IParams(),"MESH_ADAPTIVE_CN");
   bool adaptive_ct  = DRT::INPUT::IntegralValue<int>(IParams(),"MESH_ADAPTIVE_CT");
-  bool scale        = DRT::INPUT::IntegralValue<int>(IParams(),"LM_NODAL_SCALE");
   bool gp_slip      = DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR");
   bool frilessfirst = DRT::INPUT::IntegralValue<int>(IParams(),"FRLESS_FIRST");
-  if (scale || gp_slip || frilessfirst)
+  if (gp_slip || frilessfirst)
     dserror("this fancy option for the contact algorithm is not implemented for TSI");
 
   // consistent equation is:

@@ -1280,7 +1280,6 @@ public:
   Teuchos::RCP<Epetra_Vector> MeshInitialization() {return Teuchos::null;};
 
   void MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis) {}
-  Teuchos::RCP<Epetra_Vector> LagrMultOldRescaled() {return Teuchos::null; }
   //! @}
 
 protected:

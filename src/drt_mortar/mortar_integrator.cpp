@@ -321,8 +321,7 @@ template<DRT::Element::DiscretizationType distypeS, DRT::Element::Discretization
 MORTAR::MortarIntegratorCalc<distypeS, distypeM>::MortarIntegratorCalc(
     Teuchos::ParameterList& params) :
     imortar_(params), shapefcn_(DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(params, "LM_SHAPEFCN")),
-    lmquadtype_(DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(params,"LM_QUAD")),
-    scale_(DRT::INPUT::IntegralValue<int>(imortar_, "LM_NODAL_SCALE"))
+    lmquadtype_(DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(params,"LM_QUAD"))
 {
   InitializeGP();
 }
@@ -760,10 +759,6 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased2D(
   if (ndim_ != 2)
     dserror("ERROR: 2D integration method called for non-2D problem");
 
-  bool scaling = false;
-  if (scale_)
-    scaling=true;
-
   // number of nodes (slave, master)
   int nrow = sele.NumNode();
   int ndof = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
@@ -855,9 +850,6 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased2D(
         double jac = dsxideta*dxdsxi;
         GP_DM(sele,*meles[nummaster],lmval,sval,mval,jac, wgt,nrow,nodemaster,ndof,bound,comm);
 
-        // compute nodal scaling factor **************************************
-        if(scaling)
-        GP_2D_Scaling(sele,sval,dsxideta,wgt);
       } // end - if Pojection on MasterElement
     } //loop-end over all involved master elements
 
@@ -1027,10 +1019,6 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
     double jac = dsxideta * dxdsxi;
     GP_DM(sele, mele, lmval, sval, mval, jac, wgt, nrow, ncol, ndof, bound,
         comm);
-
-    // compute nodal scaling factor **************************************
-    if (scale_)
-      GP_2D_Scaling(sele, sval, dsxideta, wgt);
   }
 
   return;
@@ -1391,54 +1379,6 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  Compute entries for scaling at GP                        farah 12/13|
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_2D_Scaling(
-    MORTAR::MortarElement& sele, LINALG::Matrix<ns_, 1>& sval,
-    double& dsxideta, double& wgt)
-{
-  DRT::Node** snodes = sele.Nodes();
-
-  for (int j = 0; j < ns_; ++j)
-  {
-    MORTAR::MortarNode* snode = dynamic_cast<MORTAR::MortarNode*>(snodes[j]);
-
-    double prod = wgt * sval(j) * dsxideta / sele.Nodes()[j]->NumElement();
-    snode->AddScValue(prod);
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Compute entries for scaling at GP                        farah 12/13|
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_Scaling(
-    MORTAR::MortarElement& sele, LINALG::Matrix<ns_, 1>& sval,
-    double& jac, double& wgt,
-    double* sxi)
-{
-  double jacsele = sele.Jacobian(sxi);
-
-  DRT::Node** snodes = sele.Nodes();
-
-  for (int j = 0; j < ns_; ++j)
-  {
-    MORTAR::MortarNode* snode = dynamic_cast<MORTAR::MortarNode*>(snodes[j]);
-
-    double prod = (wgt * sval(j) * jac / jacsele)
-        / (sele.Nodes()[j]->NumElement());
-    prod *= 6.0;
-
-    snode->AddScValue(prod);
-  }
-
-  return;
-}
-
 
 /*----------------------------------------------------------------------*
  |  Integrate Mmod on slave / master overlap (2D)             popp 01/08|
@@ -1593,10 +1533,6 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased3D(
   if (ndim_!=3)
     dserror("ERROR: 3D integration method called for non-3D problem");
 
-  bool scaling = false;
-  if (scale_)
-    scaling=true;
-
   // discretization type of master element
   DRT::Element::DiscretizationType dt = meles[0]->Shape();
 
@@ -1690,12 +1626,6 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased3D(
         // compute cell D/M matrix *******************************************
         bool bound =false;
         GP_DM(sele,*meles[nummaster],lmval,sval,mval,jacslave,wgt,nrow,nmnode,ndof,bound,comm);
-
-        // compute nodal scaling factor **************************************
-        if (scaling)
-          GP_3D_Scaling(sele,sval,jacslave,wgt,sxi);
-        // compute nodal scaling factor **************************************
-
       } //is_on_mele==true
     } //loop over meles
 
@@ -1739,10 +1669,6 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlane(
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called on a wrong type of MortarElement pair!");
   if (cell==Teuchos::null)
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called without integration cell");
-
-  bool scaling = false;
-  if (scale_)
-    scaling=true;
 
   // number of nodes (slave, master)
   int nrow = sele.NumNode();
@@ -1884,11 +1810,6 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlane(
 
     // compute cell D/M matrix *******************************************
     GP_DM(sele,mele,lmval,sval,mval,jac,wgt,nrow,ncol,ndof,bound,comm);
-
-    // compute nodal scaling factor **************************************
-    if (scaling)
-      GP_3D_Scaling(sele,sval,jac,wgt,sxi);
-    // compute nodal scaling factor **************************************
   }
 
   return;

@@ -671,28 +671,6 @@ protected:
       const std::vector<GEN::pairedvector<int, double> >& dsxigp);
 
   /*!
-   \brief evaluate scaling at GP
-
-   */
-  void inline GP_Scaling(
-      MORTAR::MortarElement& sele,
-      LINALG::SerialDenseVector& sval,
-      double& jac, double& wgt,
-      double& jacsele);
-
-  /*!
-   \brief evaluate and lin scaling at GP
-
-   */
-  void inline GP_Scaling_Lin(int& iter, MORTAR::MortarElement& sele,
-      LINALG::SerialDenseVector& sval, LINALG::SerialDenseMatrix& sderiv,
-      double& jac, double& wgt, double& jacsele,
-      const GEN::pairedvector<int, double>& derivjacsele,
-      const GEN::pairedvector<int, double>& jacintcellmap,
-      const std::vector<GEN::pairedvector<int, double> >& dsxigp,
-      double* derivjacselexi);
-
-  /*!
    \brief evaluate and lin slipincr at GP
 
    */
@@ -1076,7 +1054,6 @@ protected:
     // inputs from parameter list
     INPAR::MORTAR::ShapeFcn                          shapefcn_;    //< lm shape function type
     INPAR::MORTAR::LagMultQuad                       lagmultquad_; //< type of lm interpolation for quadr. FE
-    bool                                             nodalscale_;  //< flag for nodal scaling
     bool                                             gpslip_;      //< gp-wise evaluated slip increment
     INPAR::MORTAR::AlgorithmType                     algo_;        //< contact algorithm
     INPAR::CONTACT::SolvingStrategy                  stype_;       //< solution stratety

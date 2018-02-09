@@ -216,13 +216,6 @@ public:
   }
 
   /*!
-   \brief Return the scale factor of this node
-   */
-  double& GetScale()
-  {
-    return scalefac_;
-  }
-  /*!
    \brief Return the d matrix scale factor of this node
    */
   double& GetDscale()
@@ -259,8 +252,6 @@ protected:
   //! line-to-line (ltl) specific
   GEN::pairedvector<int, double> drows_ltl_; //< nodal rows of D matrix for lts
   std::map<int, double> mrows_ltl_;          //< nodal rows of M matrix for lts
-
-  double scalefac_; // nodal scaling factor for better conditioning
 
 };
 // class MortarNodeDataContainer
@@ -644,14 +635,6 @@ public:
 
    */
   void AddMmodValue(const int& colnode,const double& val);
-
-  /*!
-   \brief Add a value to the scale factor of this node
-
-   \param val : value to be added
-
-   */
-  void AddScValue(double& val);
 
   /*!
    \brief Build nodal normal

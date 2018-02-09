@@ -1728,25 +1728,15 @@ void CONTACT::CoAbstractStrategy::OutputStresses()
       for (int dof = 0; dof < dim; ++dof)
       {
         locindex[dof] = (stressnormal_->Map()).LID(cnode->Dofs()[dof]);
-        if (DRT::INPUT::IntegralValue<int>(Params(), "LM_NODAL_SCALE") == false
-            || cnode->MoData().GetScale() == 0.)
           (*stressnormal_)[locindex[dof]] = -lmn * nn[dof];
-        else
-          (*stressnormal_)[locindex[dof]] = -lmn * nn[dof]
-              / cnode->MoData().GetScale();
       }
 
       // tangential stress components
       for (int dof = 0; dof < dim; ++dof)
       {
         locindex[dof] = (stresstangential_->Map()).LID(cnode->Dofs()[dof]);
-        if (DRT::INPUT::IntegralValue<int>(Params(), "LM_NODAL_SCALE") == false
-            || cnode->MoData().GetScale() == 0.)
-          (*stresstangential_)[locindex[dof]] = -lmt1 * nt1[dof]
-              - lmt2 * nt2[dof];
-        else
-          (*stresstangential_)[locindex[dof]] = -lmt1 * nt1[dof]
-              - lmt2 * nt2[dof] / cnode->MoData().GetScale();
+        (*stresstangential_)[locindex[dof]] = -lmt1 * nt1[dof]
+                                              -lmt2 * nt2[dof];
       }
     }
   }
