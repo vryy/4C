@@ -234,106 +234,112 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
       if(cmax < 1.e-12)
         dserror("Saturation value c_max of intercalated lithium concentration is too small!");
 
-      // equilibrium electric potential difference and its derivative w.r.t. concentration at electrode surface
+      // equilibrium electric potential difference at electrode surface
       const double epd = matelectrode->ComputeOpenCircuitPotential(eslavephiint,faraday,frt);
-      const double epdderiv = matelectrode->ComputeFirstDerivOpenCircuitPotential(eslavephiint,faraday,frt);
 
-      // electrode-electrolyte overpotential at integration point
-      const double eta = eslavepotint-emasterpotint-epd;
-
-      // Butler-Volmer exchange mass flux density
-      const double j0(kinmodel == INPAR::S2I::kinetics_butlervolmerreduced ? kr : kr*pow(emasterphiint,alphaa)*pow(cmax-eslavephiint,alphaa)*pow(eslavephiint,alphac));
-
-      // exponential Butler-Volmer terms
-      const double expterm1 = exp(alphaa*frt*eta);
-      const double expterm2 = exp(-alphac*frt*eta);
-      const double expterm = expterm1-expterm2;
-
-      // safety check
-      if(abs(expterm)>1.e5)
-        dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",expterm);
-
-      // core residual term associated with Butler-Volmer mass flux density
-      const double j = j0*expterm*timefacrhsfac;
-
-      // core linearizations associated with Butler-Volmer mass flux density
-      const double dj_dc_slave(kinmodel == INPAR::S2I::kinetics_butlervolmerreduced ? 0.0 : timefacfac*(kr*pow(emasterphiint,alphaa)*pow(cmax-eslavephiint,alphaa-1.)*pow(eslavephiint,alphac-1.)*(-alphaa*eslavephiint+alphac*(cmax-eslavephiint))*expterm+j0*(-alphaa*frt*epdderiv*expterm1-alphac*frt*epdderiv*expterm2)));
-      const double dj_dc_master(kinmodel == INPAR::S2I::kinetics_butlervolmerreduced ? 0.0 : timefacfac*j0*alphaa/emasterphiint*expterm);
-      const double dj_dpot_slave = timefacfac*j0*(alphaa*frt*expterm1+alphac*frt*expterm2);
-      const double dj_dpot_master = -dj_dpot_slave;
-
-      if(k_ss.M() and k_sm.M() and r_s.Length())
+      // skip further computation in case equilibrium electric potential difference is outside physically meaningful range
+      if(not std::isinf(epd))
       {
-        for(int vi=0; vi<my::nen_; ++vi)
+        // derivative of equilibrium electric potential difference w.r.t. concentration at electrode surface
+        const double epdderiv = matelectrode->ComputeFirstDerivOpenCircuitPotential(eslavephiint,faraday,frt);
+
+        // electrode-electrolyte overpotential at integration point
+        const double eta = eslavepotint-emasterpotint-epd;
+
+        // Butler-Volmer exchange mass flux density
+        const double j0(kinmodel == INPAR::S2I::kinetics_butlervolmerreduced ? kr : kr*pow(emasterphiint,alphaa)*pow(cmax-eslavephiint,alphaa)*pow(eslavephiint,alphac));
+
+        // exponential Butler-Volmer terms
+        const double expterm1 = exp(alphaa*frt*eta);
+        const double expterm2 = exp(-alphac*frt*eta);
+        const double expterm = expterm1-expterm2;
+
+        // safety check
+        if(abs(expterm)>1.e5)
+          dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",expterm);
+
+        // core residual term associated with Butler-Volmer mass flux density
+        const double j = j0*expterm*timefacrhsfac;
+
+        // core linearizations associated with Butler-Volmer mass flux density
+        const double dj_dc_slave(kinmodel == INPAR::S2I::kinetics_butlervolmerreduced ? 0.0 : timefacfac*(kr*pow(emasterphiint,alphaa)*pow(cmax-eslavephiint,alphaa-1.)*pow(eslavephiint,alphac-1.)*(-alphaa*eslavephiint+alphac*(cmax-eslavephiint))*expterm+j0*(-alphaa*frt*epdderiv*expterm1-alphac*frt*epdderiv*expterm2)));
+        const double dj_dc_master(kinmodel == INPAR::S2I::kinetics_butlervolmerreduced ? 0.0 : timefacfac*j0*alphaa/emasterphiint*expterm);
+        const double dj_dpot_slave = timefacfac*j0*(alphaa*frt*expterm1+alphac*frt*expterm2);
+        const double dj_dpot_master = -dj_dpot_slave;
+
+        if(k_ss.M() and k_sm.M() and r_s.Length())
         {
-          const int row_conc = vi*2;
-          const int row_pot = row_conc+1;
-
-          for(int ui=0; ui<my::nen_; ++ui)
+          for(int vi=0; vi<my::nen_; ++vi)
           {
-            const int col_conc = ui*2;
-            const int col_pot = col_conc+1;
+            const int row_conc = vi*2;
+            const int row_pot = row_conc+1;
 
-            k_ss(row_conc,col_conc) += test_slave(vi)*dj_dc_slave*funct_slave(ui);
-            k_ss(row_conc,col_pot) += test_slave(vi)*dj_dpot_slave*funct_slave(ui);
-            k_ss(row_pot,col_conc) += nume*test_slave(vi)*dj_dc_slave*funct_slave(ui);
-            k_ss(row_pot,col_pot) += nume*test_slave(vi)*dj_dpot_slave*funct_slave(ui);
+            for(int ui=0; ui<my::nen_; ++ui)
+            {
+              const int col_conc = ui*2;
+              const int col_pot = col_conc+1;
+
+              k_ss(row_conc,col_conc) += test_slave(vi)*dj_dc_slave*funct_slave(ui);
+              k_ss(row_conc,col_pot) += test_slave(vi)*dj_dpot_slave*funct_slave(ui);
+              k_ss(row_pot,col_conc) += nume*test_slave(vi)*dj_dc_slave*funct_slave(ui);
+              k_ss(row_pot,col_pot) += nume*test_slave(vi)*dj_dpot_slave*funct_slave(ui);
+            }
+
+            for(int ui=0; ui<nen_master; ++ui)
+            {
+              const int col_conc = ui*2;
+              const int col_pot = col_conc+1;
+
+              k_sm(row_conc,col_conc) += test_slave(vi)*dj_dc_master*funct_master(ui);
+              k_sm(row_conc,col_pot) += test_slave(vi)*dj_dpot_master*funct_master(ui);
+              k_sm(row_pot,col_conc) += nume*test_slave(vi)*dj_dc_master*funct_master(ui);
+              k_sm(row_pot,col_pot) += nume*test_slave(vi)*dj_dpot_master*funct_master(ui);
+            }
+
+            r_s[row_conc] -= test_slave(vi)*j;
+            r_s[row_pot] -= nume*test_slave(vi)*j;
           }
-
-          for(int ui=0; ui<nen_master; ++ui)
-          {
-            const int col_conc = ui*2;
-            const int col_pot = col_conc+1;
-
-            k_sm(row_conc,col_conc) += test_slave(vi)*dj_dc_master*funct_master(ui);
-            k_sm(row_conc,col_pot) += test_slave(vi)*dj_dpot_master*funct_master(ui);
-            k_sm(row_pot,col_conc) += nume*test_slave(vi)*dj_dc_master*funct_master(ui);
-            k_sm(row_pot,col_pot) += nume*test_slave(vi)*dj_dpot_master*funct_master(ui);
-          }
-
-          r_s[row_conc] -= test_slave(vi)*j;
-          r_s[row_pot] -= nume*test_slave(vi)*j;
         }
-      }
-      else if(k_ss.M() or k_sm.M() or r_s.Length())
-        dserror("Must provide both slave-side matrices and slave-side vector or none of them!");
+        else if(k_ss.M() or k_sm.M() or r_s.Length())
+          dserror("Must provide both slave-side matrices and slave-side vector or none of them!");
 
 
-      if(k_ms.M() and k_mm.M() and r_m.Length())
-      {
-        for(int vi=0; vi<nen_master; ++vi)
+        if(k_ms.M() and k_mm.M() and r_m.Length())
         {
-          const int row_conc = vi*2;
-          const int row_pot = row_conc+1;
-
-          for(int ui=0; ui<my::nen_; ++ui)
+          for(int vi=0; vi<nen_master; ++vi)
           {
-            const int col_conc = ui*2;
-            const int col_pot = col_conc+1;
+            const int row_conc = vi*2;
+            const int row_pot = row_conc+1;
 
-            k_ms(row_conc,col_conc) -= test_master(vi)*dj_dc_slave*funct_slave(ui);
-            k_ms(row_conc,col_pot) -= test_master(vi)*dj_dpot_slave*funct_slave(ui);
-            k_ms(row_pot,col_conc) -= nume*test_master(vi)*dj_dc_slave*funct_slave(ui);
-            k_ms(row_pot,col_pot) -= nume*test_master(vi)*dj_dpot_slave*funct_slave(ui);
+            for(int ui=0; ui<my::nen_; ++ui)
+            {
+              const int col_conc = ui*2;
+              const int col_pot = col_conc+1;
+
+              k_ms(row_conc,col_conc) -= test_master(vi)*dj_dc_slave*funct_slave(ui);
+              k_ms(row_conc,col_pot) -= test_master(vi)*dj_dpot_slave*funct_slave(ui);
+              k_ms(row_pot,col_conc) -= nume*test_master(vi)*dj_dc_slave*funct_slave(ui);
+              k_ms(row_pot,col_pot) -= nume*test_master(vi)*dj_dpot_slave*funct_slave(ui);
+            }
+
+            for(int ui=0; ui<nen_master; ++ui)
+            {
+              const int col_conc = ui*2;
+              const int col_pot = col_conc+1;
+
+              k_mm(row_conc,col_conc) -= test_master(vi)*dj_dc_master*funct_master(ui);
+              k_mm(row_conc,col_pot) -= test_master(vi)*dj_dpot_master*funct_master(ui);
+              k_mm(row_pot,col_conc) -= nume*test_master(vi)*dj_dc_master*funct_master(ui);
+              k_mm(row_pot,col_pot) -= nume*test_master(vi)*dj_dpot_master*funct_master(ui);
+            }
+
+            r_m[row_conc] += test_master(vi)*j;
+            r_m[row_pot] += nume*test_master(vi)*j;
           }
-
-          for(int ui=0; ui<nen_master; ++ui)
-          {
-            const int col_conc = ui*2;
-            const int col_pot = col_conc+1;
-
-            k_mm(row_conc,col_conc) -= test_master(vi)*dj_dc_master*funct_master(ui);
-            k_mm(row_conc,col_pot) -= test_master(vi)*dj_dpot_master*funct_master(ui);
-            k_mm(row_pot,col_conc) -= nume*test_master(vi)*dj_dc_master*funct_master(ui);
-            k_mm(row_pot,col_pot) -= nume*test_master(vi)*dj_dpot_master*funct_master(ui);
-          }
-
-          r_m[row_conc] += test_master(vi)*j;
-          r_m[row_pot] += nume*test_master(vi)*j;
         }
+        else if(k_ms.M() or k_mm.M() or r_m.Length())
+          dserror("Must provide both master-side matrices and master-side vector or none of them!");
       }
-      else if(k_ms.M() or k_mm.M() or r_m.Length())
-        dserror("Must provide both master-side matrices and master-side vector or none of them!");
 
       break;
     }
@@ -437,42 +443,46 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
         // equilibrium electric potential difference at electrode surface
         const double epd = matelectrode->ComputeOpenCircuitPotential(eslavephiint,faraday,frt);
 
-        // electrode-electrolyte overpotential at integration point
-        const double eta = eslavepotint-emasterpotint-epd;
-
-        // Butler-Volmer exchange mass flux density
-        const double j0(kinmodel == INPAR::S2I::kinetics_butlervolmerreduced ? kr : kr*pow(emasterphiint,alphaa)*pow(cmax-eslavephiint,alphaa)*pow(eslavephiint,alphac));
-
-        // exponential Butler-Volmer terms
-        const double expterm1 = exp(alphaa*frt*eta);
-        const double expterm2 = exp(-alphac*frt*eta);
-        const double expterm = expterm1-expterm2;
-
-        // safety check
-        if(abs(expterm)>1.e5)
-          dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",expterm);
-
-        // core linearization associated with Butler-Volmer mass flux density
-        const double dj_dd_slave = timefacwgt*j0*expterm;
-
-        // loop over matrix columns
-        for(int ui=0; ui<my::nen_; ++ui)
+        // skip further computation in case equilibrium electric potential difference is outside physically meaningful range
+        if(not std::isinf(epd))
         {
-          const int fui = ui*3;
+          // electrode-electrolyte overpotential at integration point
+          const double eta = eslavepotint-emasterpotint-epd;
 
-          // loop over matrix rows
-          for(int vi=0; vi<my::nen_; ++vi)
+          // Butler-Volmer exchange mass flux density
+          const double j0(kinmodel == INPAR::S2I::kinetics_butlervolmerreduced ? kr : kr*pow(emasterphiint,alphaa)*pow(cmax-eslavephiint,alphaa)*pow(eslavephiint,alphac));
+
+          // exponential Butler-Volmer terms
+          const double expterm1 = exp(alphaa*frt*eta);
+          const double expterm2 = exp(-alphac*frt*eta);
+          const double expterm = expterm1-expterm2;
+
+          // safety check
+          if(abs(expterm)>1.e5)
+            dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",expterm);
+
+          // core linearization associated with Butler-Volmer mass flux density
+          const double dj_dd_slave = timefacwgt*j0*expterm;
+
+          // loop over matrix columns
+          for(int ui=0; ui<my::nen_; ++ui)
           {
-            const int row_conc = vi*2;
-            const int row_pot = row_conc+1;
-            const double vi_dj_dd_slave = my::funct_(vi)*dj_dd_slave;
+            const int fui = ui*3;
 
-            // loop over spatial dimensions
-            for(unsigned dim=0; dim<3; ++dim)
+            // loop over matrix rows
+            for(int vi=0; vi<my::nen_; ++vi)
             {
-              // compute linearizations w.r.t. slave-side structural displacements
-              eslavematrix(row_conc,fui+dim) += vi_dj_dd_slave*shapederivatives(dim,ui);
-              eslavematrix(row_pot,fui+dim) += nume*vi_dj_dd_slave*shapederivatives(dim,ui);
+              const int row_conc = vi*2;
+              const int row_pot = row_conc+1;
+              const double vi_dj_dd_slave = my::funct_(vi)*dj_dd_slave;
+
+              // loop over spatial dimensions
+              for(unsigned dim=0; dim<3; ++dim)
+              {
+                // compute linearizations w.r.t. slave-side structural displacements
+                eslavematrix(row_conc,fui+dim) += vi_dj_dd_slave*shapederivatives(dim,ui);
+                eslavematrix(row_pot,fui+dim) += nume*vi_dj_dd_slave*shapederivatives(dim,ui);
+              }
             }
           }
         }
