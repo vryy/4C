@@ -88,8 +88,8 @@ SCATRA DIS thermo NODE 41 QUANTITY phi VALUE 3.00389215513054012e+02 TOLERANCE 1
 SCATRA DIS scatra NODE 41 QUANTITY flux_boundary_1_x VALUE 2.06917087187705468e-06 TOLERANCE 1.e-15     // local lithium flux at anode-electrolyte interface (anode side)
 SCATRA DIS scatra NODE 41 QUANTITY flux_boundary_1_y VALUE -1.47380917162522113e-05 TOLERANCE 1.e-14
 SCATRA DIS scatra NODE 41 QUANTITY flux_boundary_1_z VALUE 4.04939250162309135e-06 TOLERANCE 1.e-15
-SCATRA DIS scatra NODE 244 QUANTITY flux_boundary_1_x VALUE -5.76437837556596649e-06 TOLERANCE 1.e-15   // local lithium flux at anode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 244 QUANTITY flux_boundary_1_y VALUE -6.09056714795545244e-06 TOLERANCE 1.e-15
+SCATRA DIS scatra NODE 244 QUANTITY flux_boundary_1_x VALUE -5.76437837442462178e-06 TOLERANCE 1.e-15   // local lithium flux at anode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 244 QUANTITY flux_boundary_1_y VALUE -6.09056714674952232e-06 TOLERANCE 1.e-15
 SCATRA DIS scatra NODE 244 QUANTITY flux_boundary_1_z VALUE 2.47437818902720029e-06 TOLERANCE 1.e-15
 SCATRA DIS scatra NODE 244 QUANTITY phi1 VALUE 1.20013116976407330e+00 TOLERANCE 1.e-09                 // local lithium concentration at anode-electrolyte interface (electrolyte side)
 SCATRA DIS scatra NODE 244 QUANTITY phi2 VALUE -9.99877591195924703e-02 TOLERANCE 1.e-11                // local electric potential at anode-electrolyte interface (electrolyte side)

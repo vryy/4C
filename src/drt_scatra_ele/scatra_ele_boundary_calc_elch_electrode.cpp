@@ -262,7 +262,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
         const double j = j0*expterm*timefacrhsfac;
 
         // core linearizations associated with Butler-Volmer mass flux density
-        const double dj_dc_slave(kinmodel == INPAR::S2I::kinetics_butlervolmerreduced ? 0.0 : timefacfac*(kr*pow(emasterphiint,alphaa)*pow(cmax-eslavephiint,alphaa-1.)*pow(eslavephiint,alphac-1.)*(-alphaa*eslavephiint+alphac*(cmax-eslavephiint))*expterm+j0*(-alphaa*frt*epdderiv*expterm1-alphac*frt*epdderiv*expterm2)));
+        const double dj_dc_slave(kinmodel == INPAR::S2I::kinetics_butlervolmerreduced ? timefacfac*j0*frt*epdderiv*(-alphaa*expterm1-alphac*expterm2) : timefacfac*(kr*pow(emasterphiint,alphaa)*pow(cmax-eslavephiint,alphaa-1.)*pow(eslavephiint,alphac-1.)*(-alphaa*eslavephiint+alphac*(cmax-eslavephiint))*expterm+j0*frt*epdderiv*(-alphaa*expterm1-alphac*expterm2)));
         const double dj_dc_master(kinmodel == INPAR::S2I::kinetics_butlervolmerreduced ? 0.0 : timefacfac*j0*alphaa/emasterphiint*expterm);
         const double dj_dpot_slave = timefacfac*j0*(alphaa*frt*expterm1+alphac*frt*expterm2);
         const double dj_dpot_master = -dj_dpot_slave;
