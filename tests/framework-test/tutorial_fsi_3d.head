@@ -459,10 +459,6 @@ CROSSPOINTS                     No
 //     none,boundary,all
 LM_DUAL_CONSISTENT              boundary
 //
-// If chosen a nodal scaling factor is calculated for each LM
-//     Yes,No,yes,no,YES,NO
-LM_NODAL_SCALE                  No
-//
 // If chosen hermite interface smoothing is activated for line2 elements
 //     Yes,No,yes,no,YES,NO
 HERMITE_SMOOTHING               No
