@@ -68,54 +68,6 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
     break;
   }
   // *********************************************************************
-  // 1D modified standard shape functions for hermit interpolation +
-  // interpolation of Lagrange mult. field near boundaries
-  // *********************************************************************
-  case MortarElement::hermite1D:
-  {
-    // shape function values and derivatives at gpeta for HERMITE interpolation
-    // H1
-    val[0]     = -0.0625*(xi[0]-1)*(xi[0]-1)*(xi[0]+1);
-    deriv(0,0) = -0.1875*xi[0]*xi[0] + 0.125*xi[0] + 0.0625;
-    // H2
-    val[1]     = 0.25*(xi[0]-1)*((xi[0]-1)*(2+xi[0])-0.25*(xi[0]+1)*(xi[0]+1));
-    deriv(1,0) = 0.5625*xi[0]*xi[0] - 0.125*xi[0] - 0.6875;
-    // H3
-    val[2]     = 0.25*(xi[0]+1)*((xi[0]+1)*(2-xi[0])+0.25*(xi[0]-1)*(xi[0]-1));
-    deriv(2,0) = -0.5625*xi[0]*xi[0] - 0.125*xi[0] + 0.6875;
-    // H4
-    val[3]     = 0.0625*(xi[0]+1)*(xi[0]+1)*(xi[0]-1);
-    deriv(3,0) = 0.1875*xi[0]*xi[0] + 0.125*xi[0] - 0.0625;
-    break;
-  }
-  case MortarElement::hermite1D_edge0:
-  {
-    // HBR1
-    val[0]     = 0.125*xi[0]*xi[0] - 0.5*xi[0] + 0.375;
-    deriv(0,0) = 0.25*xi[0] - 0.5;
-    // HBR2
-    val[1]     = -0.25*xi[0]*xi[0] + 0.5*xi[0] + 0.75;
-    deriv(1,0) = -0.5*xi[0] + 0.5;
-    // HBR3
-    val[2]     = 0.125*xi[0]*xi[0] - 0.125;
-    deriv(2,0) = 0.25*xi[0];
-    break;
-    }
-
-    case MortarElement::hermite1D_edge1:
-    {
-    // HBL1
-    val[0]     = 0.125*xi[0]*xi[0] - 0.125;
-    deriv(0,0) = 0.25*xi[0];
-    // HBL2
-    val[1]     = -0.25*xi[0]*xi[0] - 0.5*xi[0] + 0.75;
-    deriv(1,0) = -0.5*xi[0] - 0.5;
-    // HBL3
-    val[2]     = 0.125*xi[0]*xi[0] + 0.5*xi[0] + 0.375;
-    deriv(2,0) = 0.25*xi[0] + 0.5;
-    break;
-    }
-  // *********************************************************************
   // 2D standard linear shape functions (tri3)
   // (used for interpolation of displacement field)
   // *********************************************************************
@@ -1181,139 +1133,6 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
 
     break;
   }
-  // *********************************************************************
-  // dual hermit1D elements without boundary modification
-  // *********************************************************************
-  case MortarElement::hermite1Ddual:
-  {
-    // establish fundamental data
-    double detg = 0.0;
-    const int nnodes = 4;
-
-    LINALG::SerialDenseMatrix ae(nnodes, nnodes);
-
-    // empty shape function vals + derivs
-    LINALG::SerialDenseVector valquad(nnodes);
-    LINALG::SerialDenseMatrix derivquad(nnodes, 1);
-
-    if (MoData().DualShape() == Teuchos::null)
-    {
-      // compute entries to bi-ortho matrices me/de with Gauss quadrature
-      MORTAR::ElementIntegrator integrator(Shape());
-      LINALG::Matrix<nnodes, nnodes> me(true);
-      LINALG::Matrix<nnodes, nnodes> de(true);
-
-      for (int i = 0; i < integrator.nGP(); ++i)
-      {
-        double gpc[2] =
-        { integrator.Coordinate(i, 0), integrator.Coordinate(i, 1) };
-        EvaluateShape(gpc, valquad, derivquad, nnodes, true);
-        detg = Jacobian(gpc);
-
-        for (int j = 0; j < nnodes; ++j)
-        {
-          for (int k = 0; k < nnodes; ++k)
-          {
-            me(j, k) += integrator.Weight(i) * valquad[j] * valquad[k] * detg;
-            de(j, k) += (j == k) * integrator.Weight(i) * valquad[j] * detg;
-          }
-        }
-      }
-
-      // calcute coefficient matrix
-      LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
-
-      // store coefficient matrix
-      MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
-    }
-    else
-    {
-      ae = *(MoData().DualShape());
-    }
-
-    // evaluate dual shape functions at loc. coord. xi
-    EvaluateShape(xi, valquad, derivquad, nnodes, true);
-    val.Zero();
-    deriv.Zero();
-
-    for (int i = 0; i < nnodes; ++i)
-    {
-      for (int j = 0; j < nnodes; ++j)
-      {
-        val[i] += ae(i, j) * valquad[j];
-        deriv(i, 0) += ae(i, j) * derivquad(j, 0);
-      }
-    }
-
-    break;
-  }
-  // *********************************************************************
-  // dual hermit1D elements with boundary modification
-  // *********************************************************************
-  case MortarElement::hermite1Ddual_edge0:
-  case MortarElement::hermite1Ddual_edge1:
-  {
-    // establish fundamental data
-    double detg = 0.0;
-    const int nnodes = 3;
-
-    LINALG::SerialDenseMatrix ae(nnodes, nnodes);
-
-    // empty shape function vals + derivs
-    LINALG::SerialDenseVector valquad(nnodes);
-    LINALG::SerialDenseMatrix derivquad(nnodes, 1);
-
-    if (MoData().DualShape() == Teuchos::null)
-    {
-      // compute entries to bi-ortho matrices me/de with Gauss quadrature
-      MORTAR::ElementIntegrator integrator(Shape());
-      LINALG::Matrix<nnodes, nnodes> me(true);
-      LINALG::Matrix<nnodes, nnodes> de(true);
-
-      for (int i = 0; i < integrator.nGP(); ++i)
-      {
-        double gpc[2] =
-        { integrator.Coordinate(i, 0), integrator.Coordinate(i, 1) };
-        EvaluateShape(gpc, valquad, derivquad, nnodes, true);
-        detg = Jacobian(gpc);
-
-        for (int j = 0; j < nnodes; ++j)
-        {
-          for (int k = 0; k < nnodes; ++k)
-          {
-            me(j, k) += integrator.Weight(i) * valquad[j] * valquad[k] * detg;
-            de(j, k) += (j == k) * integrator.Weight(i) * valquad[j] * detg;
-          }
-        }
-      }
-
-      // calcute coefficient matrix
-      LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
-
-      // store coefficient matrix
-      MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
-    }
-    else
-    {
-      ae = *(MoData().DualShape());
-    }
-
-    // evaluate dual shape functions at loc. coord. xi
-    EvaluateShape(xi, valquad, derivquad, nnodes, true);
-    val.Zero();
-    deriv.Zero();
-
-    for (int i = 0; i < nnodes; ++i)
-    {
-      for (int j = 0; j < nnodes; ++j)
-      {
-        val[i] += ae(i, j) * valquad[j];
-        deriv(i, 0) += ae(i, j) * derivquad(j, 0);
-      }
-    }
-
-    break;
-  }
 
   // *********************************************************************
   // 2D dual serendipity shape functions (quad8)
@@ -1967,36 +1786,9 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi,
   // 2D linear case (2noded line element)
   case DRT::Element::line2:
   {
-    if (valdim == 2 and !IsHermite())
-      ShapeFunctions(MortarElement::lin1D, xi, val, deriv);
-    // hermite smoothing
-    else if((valdim == 3 or valdim == 4) and IsHermite())
-    {
-      // for hermit smoothing
-      int sfeatures[2] = {0,0};
-      AdjEleStatus(sfeatures);
-
-      switch(sfeatures[0])
-      {
-      case 1:
-      {
-        ShapeFunctions(MortarElement::hermite1D,xi,val,deriv);
-        break;
-      }
-      case 2:
-      {
-        ShapeFunctions(MortarElement::hermite1D_edge0,xi,val,deriv);
-        break;
-      }
-      case 3:
-      {
-        ShapeFunctions(MortarElement::hermite1D_edge1,xi,val,deriv);
-        break;
-      }
-      default:
-        dserror("ERROR: unknown case occured");
-      }
-    }
+    if (valdim != 2)
+      dserror("ERROR: Inconsistency in EvaluateShape");
+    ShapeFunctions(MortarElement::lin1D, xi, val, deriv);
     break;
   }
     // 2D quadratic case (3noded line element)
@@ -2216,53 +2008,13 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(
   // 2D linear case (2noded line element)
   case DRT::Element::line2:
   {
-    if(!IsHermite())
-    {
-      if (valdim != 2)
-        dserror("ERROR: Inconsistency in EvaluateShape");
+    if (valdim != 2)
+      dserror("ERROR: Inconsistency in EvaluateShape");
 
-      if (dual)
-        ShapeFunctions(MortarElement::lindual1D, xi, val, deriv);
-      else
-        ShapeFunctions(MortarElement::lin1D, xi, val, deriv);
-    }
-    // Hermite smoothing
+    if (dual)
+      ShapeFunctions(MortarElement::lindual1D, xi, val, deriv);
     else
-    {
-      // for hermit smoothing
-      int sfeatures[2] = {0,0};
-      AdjEleStatus(sfeatures);
-
-      switch(sfeatures[0])
-      {
-      case 1:
-      {
-        if (dual)
-          ShapeFunctions(MortarElement::hermite1Ddual,xi,val,deriv);
-        else
-          ShapeFunctions(MortarElement::hermite1D,xi,val,deriv);
-        break;
-      }
-      case 2:
-      {
-        if(dual)
-          ShapeFunctions(MortarElement::hermite1Ddual_edge0,xi,val,deriv);
-        else
-          ShapeFunctions(MortarElement::hermite1D_edge0,xi,val,deriv);
-        break;
-      }
-      case 3:
-      {
-        if (dual)
-          ShapeFunctions(MortarElement::hermite1Ddual_edge1,xi,val,deriv);
-        else
-          ShapeFunctions(MortarElement::hermite1D_edge1,xi,val,deriv);
-        break;
-      }
-      default:
-        dserror("ERROR: unknown case occured");
-      }
-    }
+      ShapeFunctions(MortarElement::lin1D, xi, val, deriv);
     break;
   }
 
@@ -2508,11 +2260,6 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(
     break;
   }
   }
-
-  // special case: hermite interpolation. trafo not valid for this case
-  // TODO: remove this if statement and include this into trafo framework!
-  if(IsHermite())
-    return true;
 
   // if no trafo is required return!
   if(!boundtrafo)
@@ -3152,238 +2899,6 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(
      #endif // #ifdef DEBUG
      */
 
-    break;
-  }
-  // *********************************************************************
-  // 1D dual hermit elements for smoothing without boundary mod.
-  // *********************************************************************
-  case MORTAR::MortarElement::hermite1Ddual:
-  {
-    if (MoData().DerivDualShape() != Teuchos::null)
-      derivdual = *(MoData().DerivDualShape());
-
-    else
-    {
-      // establish fundamental data
-      double detg = 0.0;
-      const int nnodes = 4;
-
-      MoData().DerivDualShape() =
-          Teuchos::rcp(new GEN::pairedvector<int,Epetra_SerialDenseMatrix>(nnodes*3,0,Epetra_SerialDenseMatrix(nnodes,nnodes)));
-      GEN::pairedvector<int,Epetra_SerialDenseMatrix>& derivae=*(MoData().DerivDualShape());
-
-      typedef GEN::pairedvector<int, double>::const_iterator CI;
-      LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
-
-      // prepare computation with Gauss quadrature
-      MORTAR::ElementIntegrator integrator(Shape());
-      LINALG::SerialDenseVector val(nnodes);
-      LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
-      LINALG::Matrix<nnodes, nnodes> me(true);
-      LINALG::Matrix<nnodes, nnodes> de(true);
-
-      // two-dim arrays of maps for linearization of me/de
-      std::vector<std::vector<GEN::pairedvector<int, double> > > derivme(nnodes,
-          std::vector<GEN::pairedvector<int, double> >(nnodes, 3 * nnodes));
-      std::vector<std::vector<GEN::pairedvector<int, double> > > derivde(nnodes,
-          std::vector<GEN::pairedvector<int, double> >(nnodes, 3 * nnodes));
-
-      // build me, de, derivme, derivde
-      for (int i = 0; i < integrator.nGP(); ++i)
-      {
-        double gpc[2] =
-        { integrator.Coordinate(i, 0), integrator.Coordinate(i, 1) };
-        EvaluateShape(gpc, val, deriv, nnodes,false);
-        detg = Jacobian(gpc);
-
-        // directional derivative of Jacobian
-        GEN::pairedvector<int, double> testmap(nnodes * 3);
-        DerivJacobian(gpc, testmap);
-
-        // loop over all entries of me/de
-        for (int j = 0; j < nnodes; ++j)
-        {
-          for (int k = 0; k < nnodes; ++k)
-          {
-            double facme = integrator.Weight(i) * val[j] * val[k];
-            double facde = (j == k) * integrator.Weight(i) * val[j];
-
-            me(j, k) += facme * detg;
-            de(j, k) += facde * detg;
-
-            // loop over all directional derivatives
-            for (CI p = testmap.begin(); p != testmap.end(); ++p)
-            {
-              derivme[j][k][p->first] += facme * (p->second);
-              derivde[j][k][p->first] += facde * (p->second);
-            }
-          }
-        }
-      }
-
-      // invert me
-      LINALG::SymmetricPositiveDefiniteInverse<nnodes>(me);
-
-      // get solution matrix ae with dual parameters
-      if (MoData().DualShape() == Teuchos::null)
-      {
-        // matrix marix multiplication
-        for (int j = 0; j < nnodes; ++j)
-          for (int k = 0; k < nnodes; ++k)
-            for (int u = 0; u < nnodes; ++u)
-              ae(j, k) += de(j, u) * me(u, k);
-
-        MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
-      }
-      else
-        ae = *(MoData().DualShape());
-
-      // build linearization of ae and store in derivdual
-      // (this is done according to a quite complex formula, which
-      // we get from the linearization of the biorthogonality condition:
-      // Lin (Me * Ae = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
-
-      // loop over all entries of ae (index i,j)
-      for (int i = 0; i < nnodes; ++i)
-      {
-        for (int j = 0; j < nnodes; ++j)
-        {
-          // compute Lin(Ae) according to formula above
-          for (int l = 0; l < nnodes; ++l) // loop over sum l
-          {
-            // part1: Lin(De)*Inv(Me)
-            for (CI p = derivde[i][l].begin(); p != derivde[i][l].end(); ++p)
-              derivae[p->first](i,j) += me(l, j) * (p->second);
-
-            // part2: Ae*Lin(Me)*Inv(Me)
-            for (int k = 0; k < nnodes; ++k) // loop over sum k
-            {
-              for (CI p = derivme[k][l].begin(); p != derivme[k][l].end(); ++p)
-                derivae[p->first](i,j) -= ae(i, k) * me(l, j) * (p->second);
-            }
-          }
-        }
-      }
-    derivdual = *(MoData().DerivDualShape());
-    }
-
-    break;
-  }
-
-  // *********************************************************************
-  // 1D dual hermit elements for smoothing with boundary mod.
-  // *********************************************************************
-  case MORTAR::MortarElement::hermite1Ddual_edge0:
-  case MORTAR::MortarElement::hermite1Ddual_edge1:
-  {
-    if (MoData().DerivDualShape() != Teuchos::null)
-      derivdual = *(MoData().DerivDualShape());
-
-    else
-    {
-      // establish fundamental data
-      double detg = 0.0;
-      const int nnodes = 3;
-
-      MoData().DerivDualShape() =
-          Teuchos::rcp(new GEN::pairedvector<int,Epetra_SerialDenseMatrix>(nnodes*3,0,Epetra_SerialDenseMatrix(nnodes,nnodes)));
-      GEN::pairedvector<int,Epetra_SerialDenseMatrix>& derivae=*(MoData().DerivDualShape());
-
-      typedef GEN::pairedvector<int, double>::const_iterator CI;
-      LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
-
-      // prepare computation with Gauss quadrature
-      MORTAR::ElementIntegrator integrator(Shape());
-      LINALG::SerialDenseVector val(nnodes);
-      LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
-      LINALG::Matrix<nnodes, nnodes> me(true);
-      LINALG::Matrix<nnodes, nnodes> de(true);
-
-      // two-dim arrays of maps for linearization of me/de
-      std::vector<std::vector<GEN::pairedvector<int, double> > > derivme(nnodes,
-          std::vector<GEN::pairedvector<int, double> >(nnodes, 3 * nnodes));
-      std::vector<std::vector<GEN::pairedvector<int, double> > > derivde(nnodes,
-          std::vector<GEN::pairedvector<int, double> >(nnodes, 3 * nnodes));
-
-      // build me, de, derivme, derivde
-      for (int i = 0; i < integrator.nGP(); ++i)
-      {
-        double gpc[2] =
-        { integrator.Coordinate(i, 0), integrator.Coordinate(i, 1) };
-        EvaluateShape(gpc, val, deriv, nnodes,false);
-        detg = Jacobian(gpc);
-
-        // directional derivative of Jacobian
-        GEN::pairedvector<int, double> testmap(nnodes * 3);
-        DerivJacobian(gpc, testmap);
-
-        // loop over all entries of me/de
-        for (int j = 0; j < nnodes; ++j)
-        {
-          for (int k = 0; k < nnodes; ++k)
-          {
-            double facme = integrator.Weight(i) * val[j] * val[k];
-            double facde = (j == k) * integrator.Weight(i) * val[j];
-
-            me(j, k) += facme * detg;
-            de(j, k) += facde * detg;
-
-            // loop over all directional derivatives
-            for (CI p = testmap.begin(); p != testmap.end(); ++p)
-            {
-              derivme[j][k][p->first] += facme * (p->second);
-              derivde[j][k][p->first] += facde * (p->second);
-            }
-          }
-        }
-      }
-
-      // invert me
-      LINALG::SymmetricPositiveDefiniteInverse<nnodes>(me);
-
-      // get solution matrix ae with dual parameters
-      if (MoData().DualShape() == Teuchos::null)
-      {
-        // matrix marix multiplication
-        for (int j = 0; j < nnodes; ++j)
-          for (int k = 0; k < nnodes; ++k)
-            for (int u = 0; u < nnodes; ++u)
-              ae(j, k) += de(j, u) * me(u, k);
-
-        MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
-      }
-      else
-        ae = *(MoData().DualShape());
-
-      // build linearization of ae and store in derivdual
-      // (this is done according to a quite complex formula, which
-      // we get from the linearization of the biorthogonality condition:
-      // Lin (Me * Ae = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
-
-      // loop over all entries of ae (index i,j)
-      for (int i = 0; i < nnodes; ++i)
-      {
-        for (int j = 0; j < nnodes; ++j)
-        {
-          // compute Lin(Ae) according to formula above
-          for (int l = 0; l < nnodes; ++l) // loop over sum l
-          {
-            // part1: Lin(De)*Inv(Me)
-            for (CI p = derivde[i][l].begin(); p != derivde[i][l].end(); ++p)
-              derivae[p->first](i,j) += me(l, j) * (p->second);
-
-            // part2: Ae*Lin(Me)*Inv(Me)
-            for (int k = 0; k < nnodes; ++k) // loop over sum k
-            {
-              for (CI p = derivme[k][l].begin(); p != derivme[k][l].end(); ++p)
-                derivae[p->first](i,j) -= ae(i, k) * me(l, j) * (p->second);
-            }
-          }
-        }
-      }
-    }
-
-    derivdual = *(MoData().DerivDualShape());
     break;
   }
   // *********************************************************************
@@ -4709,40 +4224,10 @@ bool MORTAR::MortarElement::DerivShapeDual(
   // 2D linear case (2noded line element)
   case DRT::Element::line2:
   {
-    if(IsHermite())
-    {
-      // for hermit smoothing
-      int sfeatures[2] = {0,0};
-      AdjEleStatus(sfeatures);
-
-      switch(sfeatures[0])
-      {
-      case 1:
-      {
-        ShapeFunctionLinearizations(MORTAR::MortarElement::hermite1Ddual, derivdual);
-        break;
-      }
-      case 2:
-      {
-        ShapeFunctionLinearizations(MORTAR::MortarElement::hermite1Ddual_edge0, derivdual);
-        break;
-      }
-      case 3:
-      {
-        ShapeFunctionLinearizations(MORTAR::MortarElement::hermite1Ddual_edge1, derivdual);
-        break;
-      }
-      default:
-        dserror("ERROR: unknown case occured");
-      }
-    }
+    if (MoData().DerivDualShape() != Teuchos::null)
+      derivdual = *(MoData().DerivDualShape());
     else
-    {
-      if (MoData().DerivDualShape() != Teuchos::null)
-        derivdual = *(MoData().DerivDualShape());
-      else
-        derivdual.resize(0);
-    }
+      derivdual.resize(0);
 
     break;
   }
@@ -4806,11 +4291,6 @@ bool MORTAR::MortarElement::DerivShapeDual(
     break;
   }
   }
-
-  // special case: hermite interpolation. trafo not valid for this case
-  // TODO: remove this if statement and include this into trafo framework!
-  if(IsHermite())
-    return true;
 
   // check if we need trafo
   const int nnodes = NumNode();

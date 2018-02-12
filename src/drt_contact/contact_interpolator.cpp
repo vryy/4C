@@ -1318,27 +1318,8 @@ void NTS::CoInterpolator::DerivXiGP2D(MORTAR::MortarElement& sele,
   int nummnode = mele.NumNode();
 
   int ndof     = 2;
-  if(sele.IsHermite())
-  {
-    int sfeatures[2] = {0,0};
-    sele.AdjEleStatus(sfeatures);
-    numsnode = sfeatures[1];
-    sele.HermitEleNodes(hsnodes, sfeatures[0]);
-    snodes=hsnodes;
-  }
-  else
-    snodes = sele.Nodes();
-
-  if(mele.IsHermite())
-  {
-    int mfeatures[2] = {0,0};
-    mele.AdjEleStatus(mfeatures);
-    nummnode = mfeatures[1];
-    mele.HermitEleNodes(hmnodes, mfeatures[0]);
-    mnodes=hmnodes;
-  }
-  else
-    mnodes=mele.Nodes();
+  snodes = sele.Nodes();
+  mnodes=mele.Nodes();
 
   std::vector<MORTAR::MortarNode*> smrtrnodes(numsnode);
   std::vector<MORTAR::MortarNode*> mmrtrnodes(nummnode);

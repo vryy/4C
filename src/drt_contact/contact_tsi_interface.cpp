@@ -83,11 +83,9 @@ void CONTACT::CoTSIInterface::AssembleLinStick(
   double cn         = IParams().get<double>("SEMI_SMOOTH_CN");
 
   // some things that are not implemented
-  bool adaptive_cn  = DRT::INPUT::IntegralValue<int>(IParams(),"MESH_ADAPTIVE_CN");
-  bool adaptive_ct  = DRT::INPUT::IntegralValue<int>(IParams(),"MESH_ADAPTIVE_CT");
   bool gp_slip      = DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR");
   bool frilessfirst = DRT::INPUT::IntegralValue<int>(IParams(),"FRLESS_FIRST");
-  if (adaptive_cn || adaptive_ct || gp_slip || frilessfirst)
+  if (gp_slip || frilessfirst)
     dserror("this fancy option for the contact algorithm is not implemented for TSI");
 
   // consistent equation is:
@@ -212,8 +210,6 @@ void CONTACT::CoTSIInterface::AssembleLinSlip(
   double cn_input   = IParams().get<double>("SEMI_SMOOTH_CN");
 
   // some things that are not implemented
-  bool adaptive_cn  = DRT::INPUT::IntegralValue<int>(IParams(),"MESH_ADAPTIVE_CN");
-  bool adaptive_ct  = DRT::INPUT::IntegralValue<int>(IParams(),"MESH_ADAPTIVE_CT");
   bool gp_slip      = DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR");
   bool frilessfirst = DRT::INPUT::IntegralValue<int>(IParams(),"FRLESS_FIRST");
   if (gp_slip || frilessfirst)
@@ -261,36 +257,8 @@ void CONTACT::CoTSIInterface::AssembleLinSlip(
     std::map<int,double> dfrdT,dfrdD;
     cnode->derivFrCoeffTemp(frcoeff_in,dfrdT,dfrdD);
 
-    double mesh_h = 0.; // mesh size scaling parameter
-    std::map<int,double> deriv_mesh_h; // derivative of row sum of D matrix entries
     double cn = cn_input;
     double ct = ct_input;
-    if(adaptive_cn || adaptive_ct)
-      if (cnode->MoData().GetD().size()!=0) // only do that if there is a D matrix
-      {
-        double sumd = 0.;
-        std::map<int,double>::const_iterator p;
-        GEN::pairedvector<int,double>::const_iterator pv;
-        std::map<int,std::map<int,double> >::const_iterator q;
-        // calculate row sum
-        for (pv=cnode->MoData().GetD().begin(); pv!=cnode->MoData().GetD().end(); pv++)
-          sumd += pv->second;
-        mesh_h = pow(sumd,1./((double)Dim()-1.));
-
-        double fac = 1./((double)Dim()-1.)*pow(sumd,(1./((double)Dim()-1.))-1.);
-        // only scale for nodes that have an actual contact integration area
-        std::map<int,std::map<int,double> >& ddmap  = cnode->CoData().GetDerivD();
-        for (q=ddmap.begin(); q!=ddmap.end(); q++)
-        {
-          std::map<int,double> ddkmap = ddmap[q->first];
-          for (p=ddkmap.begin(); p!=ddkmap.end(); p++)
-            deriv_mesh_h[p->first] += fac*p->second;
-        }
-        if (mesh_h!=0. && adaptive_cn)
-          cn /= mesh_h;
-        if (mesh_h!=0. && adaptive_ct)
-          ct /= mesh_h;
-      }
 
     double fac = lm_n-cn*wgap;
     for (_CI p= dfrdT.begin();p!=dfrdT.end();++p)

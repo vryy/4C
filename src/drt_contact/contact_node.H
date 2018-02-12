@@ -1195,8 +1195,6 @@ private:
   void DerivAveragedNormal(Epetra_SerialDenseMatrix& elens, double length,
       double ltxi);
 
-  void DerivAveragedNormalHermit(double length, double ltxi);
-
 protected:
 
   bool active_;      //< true if cnode is in contact (active set strategy)

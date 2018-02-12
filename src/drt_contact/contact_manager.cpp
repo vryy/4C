@@ -625,8 +625,6 @@ CONTACT::CoManager::CoManager(
               dim);
         }
 
-        cele->IsHermite() = DRT::INPUT::IntegralValue<int>(cparams,"HERMITE_SMOOTHING");
-
         interface->AddCoElement(cele);
       } // for (fool=ele1.start(); fool != ele1.end(); ++fool)
 
@@ -967,16 +965,6 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
         && (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") == INPAR::MORTAR::shape_dual))
       dserror( "ERROR: Consistent dual shape functions in boundary elements not for purely element-based integration.");
 
-    if ((DRT::INPUT::IntegralValue<int>(contact, "MESH_ADAPTIVE_CN") == true
-        || DRT::INPUT::IntegralValue<int>(contact, "MESH_ADAPTIVE_CT") == true)
-        && DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_lagmult)
-      dserror("ERROR: Mesh adaptive cn and ct only for LM contact");
-
-    if ((DRT::INPUT::IntegralValue<int>(contact, "MESH_ADAPTIVE_CN") == true
-        || DRT::INPUT::IntegralValue<int>(contact, "MESH_ADAPTIVE_CT") == true)
-        && DRT::INPUT::IntegralValue<int>(contact, "SEMI_SMOOTH_NEWTON") != 1)
-      dserror("ERROR: Mesh adaptive cn and ct only for semi-smooth Newton strategy");
-
     if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") == INPAR::CONTACT::solution_nitsche
         &&
         DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(mortar,"ALGORITHM") != INPAR::MORTAR::algorithm_gpts)
@@ -1019,22 +1007,6 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") != INPAR::WEAR::wear_none
         && DRT::INPUT::IntegralValue<int>(contact, "FRLESS_FIRST") == true)
       dserror("ERROR: Frictionless first contact step with wear not yet implemented");
-
-    if ((DRT::INPUT::IntegralValue<int>(contact, "MESH_ADAPTIVE_CN") == true
-        || DRT::INPUT::IntegralValue<int>(contact, "MESH_ADAPTIVE_CT") == true)
-        && DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LM_QUAD") != INPAR::MORTAR::lagmult_undefined
-        && distype!="Nurbs")
-      dserror("ERROR: Mesh adaptive cn and ct only for first order elements or NURBS.");
-
-    if ((DRT::INPUT::IntegralValue<int>(contact, "MESH_ADAPTIVE_CN") == true
-        || DRT::INPUT::IntegralValue<int>(contact, "MESH_ADAPTIVE_CT") == true)
-        && DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") == INPAR::CONTACT::friction_tresca)
-      dserror("ERROR: Mesh adaptive cn and ct only for frictionless contact and Coulomb friction");
-
-    if ((DRT::INPUT::IntegralValue<int>(contact, "MESH_ADAPTIVE_CN") == true
-        || DRT::INPUT::IntegralValue<int>(contact, "MESH_ADAPTIVE_CT") == true)
-        && DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW")!= INPAR::WEAR::wear_none)
-      dserror("ERROR: Mesh adaptive cn and ct not yet implemented for wear");
 
     // *********************************************************************
     // Augmented Lagrangian strategy
@@ -1096,26 +1068,6 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
       || DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LM_QUAD") == INPAR::MORTAR::lagmult_lin)
       && DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") == INPAR::MORTAR::shape_dual)
       dserror("ERROR: Only quadratic approach (for LM) implemented for quadratic contact with DUAL shape fct.");
-
-    // *********************************************************************
-    // Smooth contact
-    // *********************************************************************
-    if (DRT::INPUT::IntegralValue<int>(mortar,"HERMITE_SMOOTHING") == true and Comm().NumProc()!=1)
-      dserror("ERROR: Hermit smoothing only for serial problems. It requires general overlap of 2!");
-
-    if (DRT::INPUT::IntegralValue<int>(mortar,"HERMITE_SMOOTHING") == true and dim==3)
-      dserror("ERROR: Hermit smoothing only for 2D cases!");
-
-    if (DRT::INPUT::IntegralValue<int>(mortar,"HERMITE_SMOOTHING") == true and
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE")!= INPAR::MORTAR::inttype_elements)
-      dserror("ERROR: Hermit smoothing only for element-based integration!");
-
-    if (DRT::INPUT::IntegralValue<int>(mortar,"HERMITE_SMOOTHING") == true and
-        DRT::INPUT::IntegralValue<int>(contact, "MESH_ADAPTIVE_CN") == false)
-      dserror("ERROR: Use hermit smoothing with MESH_ADAPTIVE_CN!!!");
-
-    if (DRT::INPUT::IntegralValue<int>(mortar,"HERMITE_SMOOTHING") == true)
-      std::cout <<"\n \n Warning: Hermite smoothing still experimental!" << std::endl;
 
     // *********************************************************************
     // poroelastic contact
@@ -1180,9 +1132,6 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
   else if(DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(mortar,"ALGORITHM") == INPAR::MORTAR::algorithm_nts)
   {
-    if(DRT::INPUT::IntegralValue<int>(mortar,"HERMITE_SMOOTHING") == true)
-      dserror("ERROR: Hermite smoothing only for mortar contact!");
-
     if(problemtype==prb_poroelast or problemtype==prb_fpsi or problemtype == prb_tsi)
       dserror("ERROR: NTS only for problem type: structure");
   } // END NTS CHECKS

@@ -10150,9 +10150,6 @@ void CONTACT::CoInterface::AssembleS(LINALG::SparseMatrix& sglobal)
   if (activenodes_==Teuchos::null)
     return;
 
-  // use adaptive cn-parameter
-  bool adaptive_cn =  DRT::INPUT::IntegralValue<int>(imortar_,"MESH_ADAPTIVE_CN");
-
   // loop over all active slave nodes of the interface
   for (int i=0;i<activenodes_->NumMyElements();++i)
   {
@@ -10169,41 +10166,10 @@ void CONTACT::CoInterface::AssembleS(LINALG::SparseMatrix& sglobal)
     std::map<int,double>::iterator colcurr;
     int row = activen_->GID(i);
 
-    double mesh_h = 1.0; // mesh size scaling parameter
-    std::map<int,double> deriv_mesh_h; // derivative of row sum of D matrix entries
-    if (adaptive_cn)
-    {
-      if (cnode->MoData().GetD().size()!=0) // only do that if there is a D matrix
-      {
-        double sumd = 0.; // row sum of D matrix entries for cn-scaling
-        std::map<int,double>::const_iterator p;
-        GEN::pairedvector<int,double>::const_iterator pv;
-        std::map<int,std::map<int,double> >::const_iterator q;
-        // calculate row sum
-        for (pv=cnode->MoData().GetD().begin(); pv!=cnode->MoData().GetD().end(); pv++)
-          sumd += pv->second;
-        mesh_h = pow(sumd,1./((double)Dim()-1.));
-
-        // only scale for nodes that have an actual contact integration area
-        std::map<int,std::map<int,double> >& ddmap  = cnode->CoData().GetDerivD();
-
-        double fac = 1./((double)Dim()-1.)*pow(sumd,(1./((double)Dim()-1.))-1.);
-        for (q=ddmap.begin(); q!=ddmap.end(); q++)
-        {
-          std::map<int,double> ddkmap = ddmap[q->first];
-          for (p=ddkmap.begin(); p!=ddkmap.end(); p++)
-            deriv_mesh_h[p->first] += fac*p->second;
-        }
-      }
-    }
-
     for (colcurr=dgmap.begin();colcurr!=dgmap.end();++colcurr)
     {
       int col = colcurr->first;
       double val = colcurr->second;
-      if (adaptive_cn)
-        if (mesh_h != 0.0)
-          val /= mesh_h;
 
       // do not assemble zeros into s matrix
       if (constr_direction_==INPAR::CONTACT::constr_xyz)
@@ -10214,29 +10180,6 @@ void CONTACT::CoInterface::AssembleS(LINALG::SparseMatrix& sglobal)
       }
       else
         if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
-    }
-
-    // complementarity parameter scaling linearization
-    if (adaptive_cn)
-    {
-      if (mesh_h != 0.0)
-      {
-        for (colcurr=deriv_mesh_h.begin(); colcurr!=deriv_mesh_h.end(); ++colcurr)
-        {
-          int col = colcurr->first;
-          double val = -cnode->CoData().Getg()*(colcurr->second) / (mesh_h*mesh_h);
-
-          // do not assemble zeros into s matrix
-          if (constr_direction_==INPAR::CONTACT::constr_xyz)
-          {
-            for (int j=0; j<cnode->NumDof(); j++)
-              if (abs(val*cnode->MoData().n()[j])>1.0e-12)
-                sglobal.Assemble(val*cnode->MoData().n()[j],cnode->Dofs()[j],col);
-          }
-          else
-            if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
-        }
-      }
     }
   } //for (int i=0;i<activenodes_->NumMyElements();++i)
 
@@ -10608,13 +10551,6 @@ void CONTACT::CoInterface::AssembleG(Epetra_Vector& gglobal)
   // get out of here if not participating in interface
   if (!lComm()) return;
 
-  // use adaptive cn-parameter:
-  // the constraint is no longer g(d)= 0 for active nodes but cn(d)/cn_input *g(d)=0
-  // since this routine technically assembles the right hand side for active
-  // nodes (when using Lagrange multipler contact),
-  // we introduce the (scaled) complementarity parameter here.
-  const bool adaptive_cn = DRT::INPUT::IntegralValue<int>(imortar_,"MESH_ADAPTIVE_CN");
-
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
   for (int i=0;i<snoderowmap_->NumMyElements();++i)
@@ -10667,26 +10603,6 @@ void CONTACT::CoInterface::AssembleG(Epetra_Vector& gglobal)
         {
           gap = 1.0e12;
           cnode->CoData().Getg()=gap;
-        }
-      }
-
-      // apply scaling of cn
-      // we eliminate the constant cn-factor from the input
-      if(adaptive_cn)
-      {
-        if (cnode->MoData().GetD().size()!=0) // only do that if there is a D matrix
-        {
-          if (gap!=1.0e12)
-          {
-            double sumd = 0.;
-            GEN::pairedvector<int,double>::const_iterator p;
-            for (p=cnode->MoData().GetD().begin(); p!=cnode->MoData().GetD().end(); p++)
-              sumd += p->second;
-
-            // scale with row sum of D-matrix
-            if (sumd!=0.)
-              gap /= pow(sumd,1./((double)Dim()-1.));
-          }
         }
       }
 
@@ -10902,8 +10818,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
   INPAR::CONTACT::FrictionType ftype
   = DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(),"FRICTION");
   double frcoeff_in = IParams().get<double>("FRCOEFF"); // the friction coefficient from the input
-  bool adaptive_cn  = DRT::INPUT::IntegralValue<int>(IParams(),"MESH_ADAPTIVE_CN");
-  bool adaptive_ct  = DRT::INPUT::IntegralValue<int>(IParams(),"MESH_ADAPTIVE_CT");
   bool gp_slip      = DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR");
   bool frilessfirst = DRT::INPUT::IntegralValue<int>(IParams(),"FRLESS_FIRST");
 
@@ -11140,36 +11054,8 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
             dserror("ERROR: AssembleLinStick: Column dim. of nodal DerivTeta-map is inconsistent!");
       }
 
-      double mesh_h = 0.; // mesh size scaling parameter
-      std::map<int,double> deriv_mesh_h; // derivative of row sum of D matrix entries
       double cn = cn_input;
       double ct = ct_input;
-      if(adaptive_cn || adaptive_ct)
-        if (cnode->MoData().GetD().size()!=0) // only do that if there is a D matrix
-        {
-          double sumd = 0.;
-          std::map<int,double>::const_iterator p;
-          GEN::pairedvector<int,double>::const_iterator pv;
-          std::map<int,std::map<int,double> >::const_iterator q;
-          // calculate row sum
-          for (pv=cnode->MoData().GetD().begin(); pv!=cnode->MoData().GetD().end(); pv++)
-            sumd += pv->second;
-          mesh_h = pow(sumd,1./((double)Dim()-1.));
-
-          double fac = 1./((double)Dim()-1.)*pow(sumd,(1./((double)Dim()-1.))-1.);
-          // only scale for nodes that have an actual contact integration area
-          std::map<int,std::map<int,double> >& ddmap  = cnode->CoData().GetDerivD();
-          for (q=ddmap.begin(); q!=ddmap.end(); q++)
-          {
-            std::map<int,double> ddkmap = ddmap[q->first];
-            for (p=ddkmap.begin(); p!=ddkmap.end(); p++)
-              deriv_mesh_h[p->first] += fac*p->second;
-          }
-          if (mesh_h!=0. && adaptive_cn)
-            cn /= mesh_h;
-          if (mesh_h!=0. && adaptive_ct)
-            ct /= mesh_h;
-        }
 
       double& wgap = cnode->CoData().Getg();
 
@@ -11513,78 +11399,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
               if (abs(valteta)>1.0e-12) linstickDISglobal.Assemble(valteta,row[1],col);
           }
         }
-
-        // linearization of mesh size dependent, adaptive cn
-        if (adaptive_cn && mesh_h !=0.)
-        {
-          for (colcurr=deriv_mesh_h.begin(); colcurr!=deriv_mesh_h.end(); ++colcurr)
-          {
-            int col = colcurr->first;
-            double valtxi = frcoeff*cn_input*wgap*ct*jumptxi/(mesh_h*mesh_h)*(colcurr->second);
-
-            // do not assemble zeros into matrix
-            if (constr_direction_==INPAR::CONTACT::constr_xyz)
-            {
-              for (int j=0; j<Dim(); j++)
-                if (abs(valtxi*txi[j])>1.e-12)
-                  linstickDISglobal.Assemble(valtxi*txi[j],cnode->Dofs()[j],col);
-            }
-            else
-              if (abs(valtxi)>1.0e-12) linstickDISglobal.Assemble(valtxi,row[0],col);
-
-            if (Dim()==3)
-            {
-              double valteta = frcoeff*cn_input*wgap*ct*jumpteta/(mesh_h*mesh_h)*(colcurr->second);
-
-              // do not assemble zeros into matrix
-              if (constr_direction_==INPAR::CONTACT::constr_xyz)
-              {
-                for (int j=0; j<Dim(); j++)
-                  if (abs(valteta*teta[j])>1.e-12)
-                    linstickDISglobal.Assemble(valteta*teta[j],cnode->Dofs()[j],col);
-              }
-              else
-                if (abs(valteta)>1.0e-12) linstickDISglobal.Assemble(valteta,row[1],col);
-            }
-          }
-        }
-
-        // linearization of mesh size dependent, adaptive ct
-        if (adaptive_ct && mesh_h !=0.)
-        {
-          for (colcurr=deriv_mesh_h.begin(); colcurr!=deriv_mesh_h.end(); ++colcurr)
-          {
-            int col = colcurr->first;
-            double valtxi = -frcoeff*(znor-cn*wgap)*ct_input*jumptxi/(mesh_h*mesh_h)*(colcurr->second);
-
-            // do not assemble zeros into matrix
-            if (constr_direction_==INPAR::CONTACT::constr_xyz)
-            {
-              for (int j=0; j<Dim(); j++)
-                if (abs(valtxi*txi[j])>1.e-12)
-                  linstickDISglobal.Assemble(valtxi*txi[j],cnode->Dofs()[j],col);
-            }
-            else
-              if (abs(valtxi)>1.0e-12) linstickDISglobal.Assemble(valtxi,row[0],col);
-
-            if (Dim()==3)
-            {
-              double valteta = -frcoeff*(znor-cn*wgap)*ct_input*jumpteta/(mesh_h*mesh_h)*(colcurr->second);
-
-              // do not assemble zeros into matrix
-              if (constr_direction_==INPAR::CONTACT::constr_xyz)
-              {
-                for (int j=0; j<Dim(); j++)
-                  if (abs(valteta*teta[j])>1.e-12)
-                    linstickDISglobal.Assemble(valteta*teta[j],cnode->Dofs()[j],col);
-              }
-              else
-                if (abs(valteta)>1.0e-12) linstickDISglobal.Assemble(valteta,row[1],col);
-            }
-          }
-        }
-
-
       }
       else // not consistent stick
       {
@@ -11833,8 +11647,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(),"FRICTION");
   double frbound    = IParams().get<double>("FRBOUND");
   double frcoeff_in = IParams().get<double>("FRCOEFF"); // the friction coefficient from the input
-  bool adaptive_cn  = DRT::INPUT::IntegralValue<int>(IParams(),"MESH_ADAPTIVE_CN");
-  bool adaptive_ct  = DRT::INPUT::IntegralValue<int>(IParams(),"MESH_ADAPTIVE_CT");
   bool gp_slip      = DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR");
   bool frilessfirst = DRT::INPUT::IntegralValue<int>(IParams(),"FRLESS_FIRST");
 
@@ -11873,37 +11685,8 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       std::vector<GEN::pairedvector<int,double> > dtximap = cnode->CoData().GetDerivTxi();
       std::vector<GEN::pairedvector<int,double> > dtetamap = cnode->CoData().GetDerivTeta();
 
-      // mesh size scaling of complementarity parameters
-      double mesh_h = 0.; // mesh size scaling parameter
-      std::map<int,double> deriv_mesh_h; // derivative of row sum of D matrix entries
       double cn = cn_input;
       double ct = ct_input;
-      if(adaptive_cn || adaptive_ct)
-        if (cnode->MoData().GetD().size()!=0) // only do that if there is a D matrix
-        {
-          double sumd = 0.;
-          std::map<int,double>::const_iterator p;
-          GEN::pairedvector<int,double>::const_iterator pv;
-          std::map<int,std::map<int,double> >::const_iterator q;
-          // calculate row sum
-          for (pv=cnode->MoData().GetD().begin(); pv!=cnode->MoData().GetD().end(); pv++)
-            sumd += pv->second;
-          mesh_h = pow(sumd,1./((double)Dim()-1.));
-
-          double fac = 1./((double)Dim()-1.)*pow(sumd,(1./((double)Dim()-1.))-1.);
-          // only scale for nodes that have an actual contact integration area
-          std::map<int,std::map<int,double> >& ddmap  = cnode->CoData().GetDerivD();
-          for (q=ddmap.begin(); q!=ddmap.end(); q++)
-          {
-            std::map<int,double> ddkmap = ddmap[q->first];
-            for (p=ddkmap.begin(); p!=ddkmap.end(); p++)
-              deriv_mesh_h[p->first] += fac*p->second;
-          }
-          if (mesh_h!=0. && adaptive_cn)
-            cn /= mesh_h;
-          if (mesh_h!=0. && adaptive_ct)
-            ct /= mesh_h;
-        }
 
       // check for Dimension of derivative maps
       for (int j=0;j<Dim()-1;++j)
@@ -12877,59 +12660,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             if (abs(valteta)>1.0e-12) linslipDISglobal.Assemble(valteta,row[1],col);
           }
         }
-
-        /*** 9 ************ mesh adaptive cn complementarity parameter ***/
-        if (adaptive_cn && mesh_h!=0.)
-          for (_colcurr=deriv_mesh_h.begin(); _colcurr!=deriv_mesh_h.end(); ++_colcurr)
-          {
-            int col = colcurr->first;
-            double valtxi = -frcoeff*cn_input*wgap*(ztxi+ct*jumptxi)/(mesh_h*mesh_h)*(_colcurr->second);
-            double valteta= -frcoeff*cn_input*wgap*(zteta+ct*jumpteta)/(mesh_h*mesh_h)*(_colcurr->second);
-
-            // do not assemble zeros into matrix
-            if (constr_direction_==INPAR::CONTACT::constr_xyz)
-            {
-              for (int j=0; j<Dim(); j++)
-                if (abs(valtxi*txi[j])>1.e-12)
-                  linslipDISglobal.Assemble(valtxi*txi[j],cnode->Dofs()[j],col);
-              for (int j=0; j<Dim(); j++)
-                if (abs(valteta*teta[j])>1.e-12)
-                  linslipDISglobal.Assemble(valteta*teta[j],cnode->Dofs()[j],col);
-            }
-            else
-            {
-              if (abs(valtxi)>1.0e-12) linslipDISglobal.Assemble(valtxi,row[0],col);
-              if (abs(valteta)>1.0e-12) linslipDISglobal.Assemble(valteta,row[1],col);
-            }
-          }
-
-        /** 10 ************ mesh adaptive ct complementarity parameter ***/
-        if (adaptive_ct && mesh_h!=0.)
-          for (_colcurr=deriv_mesh_h.begin(); _colcurr!=deriv_mesh_h.end(); ++_colcurr)
-          {
-            int col = _colcurr->first;
-            double tmp = (ztxi+ct*jumptxi)*jumptxi + (zteta+ct*jumpteta)*jumpteta;
-            double valtxi = - (1./euclidean*tmp*ztxi - frcoeff*(znor-cn*wgap)*jumptxi)
-                                  *ct_input/(mesh_h*mesh_h)*(_colcurr->second);
-            double valteta= - (1./euclidean*tmp*zteta - frcoeff*(znor-cn*wgap)*jumpteta)
-                                  *ct_input/(mesh_h*mesh_h)*(_colcurr->second);
-
-            // do not assemble zeros into matrix
-            if (constr_direction_==INPAR::CONTACT::constr_xyz)
-            {
-              for (int j=0; j<Dim(); j++)
-                if (abs(valtxi*txi[j])>1.e-12)
-                  linslipDISglobal.Assemble(valtxi*txi[j],cnode->Dofs()[j],col);
-              for (int j=0; j<Dim(); j++)
-                if (abs(valteta*teta[j])>1.e-12)
-                  linslipDISglobal.Assemble(valteta*teta[j],cnode->Dofs()[j],col);
-            }
-            else
-            {
-              if (abs(valtxi)>1.0e-12) linslipDISglobal.Assemble(valtxi,row[0],col);
-              if (abs(valteta)>1.0e-12) linslipDISglobal.Assemble(valteta,row[1],col);
-            }
-          }
 #endif
       } // if (frcoeff==0.0)
     } // loop over all slip nodes of the interface

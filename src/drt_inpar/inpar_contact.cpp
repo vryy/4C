@@ -185,14 +185,6 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
                   "tolerance in the LM norm for the newton iteration (saddlepoint formulation only)",
                   &scontact);
 
-  setStringToIntegralParameter<int>("MESH_ADAPTIVE_CN","no",
-                                     "use a scaling of cn with the local mesh size",
-                                     yesnotuple,yesnovalue,&scontact);
-
-  setStringToIntegralParameter<int>("MESH_ADAPTIVE_CT","no",
-                                     "use a scaling of ct with the local mesh size",
-                                     yesnotuple,yesnovalue,&scontact);
-
   setStringToIntegralParameter<int>("CONSTRAINT_DIRECTIONS","ntt",
       "formulation of constraints in normal/tangential or xyz-direction",
       tuple<std::string>(

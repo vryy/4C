@@ -3954,20 +3954,8 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
 
   DRT::Node** mynodes = NULL;
   DRT::Node* hnodes[4] = {0,0,0,0};
-  // for hermit smoothing
-  if (sele.IsHermite())
-  {
-    sele.AdjEleStatus(sfeatures);
-    sstatus = sfeatures[0];
-    nrow    = sfeatures[1];
-    sele.HermitEleNodes(hnodes, sfeatures[0]);
-    mynodes=hnodes;
-  }
-  else
-  {
-    nrow    = sele.NumNode();
-    mynodes = sele.Nodes();
-  }
+  nrow    = sele.NumNode();
+  mynodes = sele.Nodes();
 
   // get slave element nodes themselves
   if(!mynodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
@@ -3980,10 +3968,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
 
   // get slave nodal coords for Jacobian / GP evaluation
   LINALG::SerialDenseMatrix scoord(3,nrow);
-  if(sele.IsHermite())
-    sele.AdjNodeCoords(scoord, sstatus);
-  else
-    sele.GetNodalCoords(scoord);
+  sele.GetNodalCoords(scoord);
 
   // nodal coords from previous time step and lagrange mulitplier
   Teuchos::RCP<LINALG::SerialDenseMatrix> scoordold;
@@ -3998,7 +3983,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
   GEN::pairedvector<int,Epetra_SerialDenseMatrix> dualmap(nrow*ndof,0,Epetra_SerialDenseMatrix(nrow,nrow));
   if ((ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() ==INPAR::MORTAR::shape_petrovgalerkin)
       && (sele.Shape()==MORTAR::MortarElement::line3 || sele.MoData().DerivDualShape()!=Teuchos::null ||
-          sele.Shape()==MORTAR::MortarElement::nurbs3 || sele.IsHermite()))
+          sele.Shape()==MORTAR::MortarElement::nurbs3))
     sele.DerivShapeDual(dualmap);
 
   // decide whether boundary modification has to be considered or not
@@ -4061,10 +4046,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
       {
         // project Gauss point onto master element
         double mxi[2] = {0.0, 0.0};
-        if(sele.IsHermite())
-          MORTAR::MortarProjector::Impl(sele,*meles[nummaster])->ProjectGaussPointHermit(sele,sxi,*meles[nummaster],mxi);
-        else
-          MORTAR::MortarProjector::Impl(sele,*meles[nummaster])->ProjectGaussPoint2D(sele,sxi,*meles[nummaster],mxi);
+        MORTAR::MortarProjector::Impl(sele,*meles[nummaster])->ProjectGaussPoint2D(sele,sxi,*meles[nummaster],mxi);
 
         // gp on mele?
         if ((mxi[0]>=-1.0) && (mxi[0]<=1.0) && (kink_projection==false))
@@ -4075,25 +4057,14 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
           int mstatus = -1;
           int mfeatures[2] = {0,0};
 
-          // for hermit smoothing
-          if (meles[nummaster]->IsHermite())
-          {
-            meles[nummaster]->AdjEleStatus(mfeatures);
-            mstatus = mfeatures[0];
-            ncol = mfeatures[1];
-          }
-          else
-            ncol = meles[nummaster]->NumNode();;
+          ncol = meles[nummaster]->NumNode();;
 
           LINALG::SerialDenseVector mval(ncol);
           LINALG::SerialDenseMatrix mderiv(ncol,1);
 
           // get master nodal coords for Jacobian / GP evaluation
           LINALG::SerialDenseMatrix mcoord(3,ncol);
-          if(meles[nummaster]->IsHermite())
-            meles[nummaster]->AdjNodeCoords(mcoord, mstatus);
-          else
-            meles[nummaster]->GetNodalCoords(mcoord);
+          meles[nummaster]->GetNodalCoords(mcoord);
 
           // evaluate trace space shape functions
           meles[nummaster]->EvaluateShape(mxi,mval,mderiv,ncol,false);
@@ -4169,19 +4140,8 @@ void CONTACT::CoIntegrator::IntegrateD(MORTAR::MortarElement& sele,
 
   DRT::Node** mynodes = NULL;
   DRT::Node* hnodes[4] = {0,0,0,0};
-  // for hermit smoothing
-  if (sele.IsHermite())
-  {
-    sele.AdjEleStatus(sfeatures);
-    nrow    = sfeatures[1];
-    sele.HermitEleNodes(hnodes, sfeatures[0]);
-    mynodes=hnodes;
-  }
-  else
-  {
-    nrow    = sele.NumNode();
-    mynodes = sele.Nodes();
-  }
+  nrow    = sele.NumNode();
+  mynodes = sele.Nodes();
 
   // get slave element nodes themselves
   if(!mynodes)
@@ -4600,27 +4560,8 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
 
   int ndof = Dim();
 
-  if(sele.IsHermite())
-  {
-    int sfeatures[2] = {0,0};
-    sele.AdjEleStatus(sfeatures);
-    numsnode = sfeatures[1];
-    sele.HermitEleNodes(hsnodes, sfeatures[0]);
-    snodes=hsnodes;
-  }
-  else
-    snodes = sele.Nodes();
-
-  if(mele.IsHermite())
-  {
-    int mfeatures[2] = {0,0};
-    mele.AdjEleStatus(mfeatures);
-    nummnode = mfeatures[1];
-    mele.HermitEleNodes(hmnodes, mfeatures[0]);
-    mnodes=hmnodes;
-  }
-  else
-    mnodes=mele.Nodes();
+  snodes = sele.Nodes();
+  mnodes=mele.Nodes();
 
   std::vector<MORTAR::MortarNode*> smrtrnodes(numsnode);
   std::vector<MORTAR::MortarNode*> mmrtrnodes(nummnode);
@@ -5001,27 +4942,8 @@ void CONTACT::CoIntegrator::DerivXiGP2D(MORTAR::MortarElement& sele,
 
   int ndof     = Dim();
 
-  if(sele.IsHermite())
-  {
-    int sfeatures[2] = {0,0};
-    sele.AdjEleStatus(sfeatures);
-    numsnode = sfeatures[1];
-    sele.HermitEleNodes(hsnodes, sfeatures[0]);
-    snodes=hsnodes;
-  }
-  else
-    snodes = sele.Nodes();
-
-  if(mele.IsHermite())
-  {
-    int mfeatures[2] = {0,0};
-    mele.AdjEleStatus(mfeatures);
-    nummnode = mfeatures[1];
-    mele.HermitEleNodes(hmnodes, mfeatures[0]);
-    mnodes=hmnodes;
-  }
-  else
-    mnodes=mele.Nodes();
+  snodes = sele.Nodes();
+  mnodes=mele.Nodes();
 
   std::vector<MORTAR::MortarNode*> smrtrnodes(numsnode);
   std::vector<MORTAR::MortarNode*> mmrtrnodes(nummnode);
@@ -5949,33 +5871,10 @@ void CONTACT::CoIntegrator::GP_DM(
   DRT::Node** mnodes = NULL;
   DRT::Node* hsnodes[4] = {0,0,0,0};
   DRT::Node* hmnodes[4] = {0,0,0,0};
-  if(sele.IsHermite())
-  {
-    int sfeatures[2] = {0,0};
-    sele.AdjEleStatus(sfeatures);
-    sele.HermitEleNodes(hsnodes, sfeatures[0]);
-    snodes=hsnodes;
-    nrow =sfeatures[1];
-  }
-  else
-  {
-    nrow=sele.NumNode();
-    snodes = sele.Nodes();
-  }
-
-  if(mele.IsHermite())
-  {
-    int mfeatures[2] = {0,0};
-    mele.AdjEleStatus(mfeatures);
-    mele.HermitEleNodes(hmnodes, mfeatures[0]);
-    mnodes=hmnodes;
-    ncol=mfeatures[1];
-  }
-  else
-  {
-    ncol=mele.NumNode();
-    mnodes=mele.Nodes();
-  }
+  nrow=sele.NumNode();
+  snodes = sele.Nodes();
+  ncol=mele.NumNode();
+  mnodes=mele.Nodes();
 
   // BOUNDARY NODE MODIFICATION **********************************
   // We have modified their neighbors' dual shape functions, so we
@@ -6294,19 +6193,9 @@ void inline CONTACT::CoIntegrator::GP_2D_wGap(
   DRT::Node* hnodes[4] = {0,0,0,0};
   int nrow = 0 ;
   int sfeatures[2] = {0,0};
-  // for hermit smoothing
-  if (sele.IsHermite())
-  {
-    sele.AdjEleStatus(sfeatures);
-    nrow    = sfeatures[1];
-    sele.HermitEleNodes(hnodes, sfeatures[0]);
-    mynodes=hnodes;
-  }
-  else
-  {
-    nrow    = sele.NumNode();
-    mynodes = sele.Nodes();
-  }
+  nrow    = sele.NumNode();
+  mynodes = sele.Nodes();
+
   // **************************
   // add to node
   // **************************
@@ -6801,45 +6690,16 @@ void CONTACT::CoIntegrator::Gap_2D(
 
   int ndof     = Dim();
 
-  int sstatus=-1;
-  if(sele.IsHermite())
-  {
-    int sfeatures[2] = {0,0};
-    sele.AdjEleStatus(sfeatures);
-    sstatus = sfeatures[0];
-    nrow = sfeatures[1];
-    sele.HermitEleNodes(hsnodes, sfeatures[0]);
-    snodes=hsnodes;
-  }
-  else
-    snodes = sele.Nodes();
-
-  int mstatus=-1;
-  if(mele.IsHermite())
-  {
-    int mfeatures[2] = {0,0};
-    mele.AdjEleStatus(mfeatures);
-    mstatus = mfeatures[0];
-    ncol = mfeatures[1];
-    mele.HermitEleNodes(hmnodes, mfeatures[0]);
-    mnodes=hmnodes;
-  }
-  else
-    mnodes=mele.Nodes();
+  snodes = sele.Nodes();
+  mnodes=mele.Nodes();
 
   // get slave nodal coords for GP evaluation
   LINALG::SerialDenseMatrix scoord(3,nrow);
-  if(sele.IsHermite())
-    sele.AdjNodeCoords(scoord, sstatus);
-  else
-    sele.GetNodalCoords(scoord);
+  sele.GetNodalCoords(scoord);
 
   // get master nodal coords for GP evaluation
   LINALG::SerialDenseMatrix mcoord(3,ncol);
-  if(mele.IsHermite())
-    mele.AdjNodeCoords(mcoord, mstatus);
-  else
-    mele.GetNodalCoords(mcoord);
+  mele.GetNodalCoords(mcoord);
 
   double sgpx[2] = {0.0, 0.0};
   double mgpx[2] = {0.0, 0.0};
@@ -7362,17 +7222,7 @@ void inline CONTACT::CoIntegrator::GP_2D_G_Lin(
   DRT::Node** snodes = NULL;
   DRT::Node* hsnodes[4] = {0,0,0,0};
   int nrow = sele.NumNode();
-
-  if(sele.IsHermite())
-  {
-    int sfeatures[2] = {0,0};
-    sele.AdjEleStatus(sfeatures);
-    nrow = sfeatures[1];
-    sele.HermitEleNodes(hsnodes, sfeatures[0]);
-    snodes=hsnodes;
-  }
-  else
-    snodes = sele.Nodes();
+  snodes = sele.Nodes();
 
   MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
   if (!mymrtrnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
@@ -8500,27 +8350,8 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Ele_Lin(
   int nrow = sele.NumNode();
   int ncol = mele.NumNode();
 
-  if(sele.IsHermite())
-  {
-    int sfeatures[2] = {0,0};
-    sele.AdjEleStatus(sfeatures);
-    nrow = sfeatures[1];
-    sele.HermitEleNodes(hsnodes, sfeatures[0]);
-    snodes=hsnodes;
-  }
-  else
-    snodes = sele.Nodes();
-
-  if(mele.IsHermite())
-  {
-    int mfeatures[2] = {0,0};
-    mele.AdjEleStatus(mfeatures);
-    ncol = mfeatures[1];
-    mele.HermitEleNodes(hmnodes, mfeatures[0]);
-    mnodes=hmnodes;
-  }
-  else
-    mnodes = mele.Nodes();
+  snodes = sele.Nodes();
+  mnodes = mele.Nodes();
 
   // map iterator
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
@@ -8674,28 +8505,8 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(
 
   int nrow = sele.NumNode();
   int ncol = mele.NumNode();
-
-  if(sele.IsHermite())
-  {
-    int sfeatures[2] = {0,0};
-    sele.AdjEleStatus(sfeatures);
-    nrow = sfeatures[1];
-    sele.HermitEleNodes(hsnodes, sfeatures[0]);
-    snodes=hsnodes;
-  }
-  else
-    snodes = sele.Nodes();
-
-  if(mele.IsHermite())
-  {
-    int mfeatures[2] = {0,0};
-    mele.AdjEleStatus(mfeatures);
-    ncol = mfeatures[1];
-    mele.HermitEleNodes(hmnodes, mfeatures[0]);
-    mnodes=hmnodes;
-  }
-  else
-    mnodes = mele.Nodes();
+  snodes = sele.Nodes();
+  mnodes = mele.Nodes();
 
   // map iterator
   typedef GEN::pairedvector<int,double>::const_iterator _CI;

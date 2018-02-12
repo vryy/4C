@@ -74,7 +74,6 @@ FRICTION                        None
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  1.0e2
 SEMI_SMOOTH_CT                  1.0e2
-MESH_ADAPTIVE_CN                No
 -----------------------------------------CONTACT DYNAMIC/AUGMENTED
 PRINT_LINEAR_CONSERVATION       Yes
 PRINT_ANGULAR_CONSERVATION      Yes

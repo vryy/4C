@@ -5350,10 +5350,6 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
   double cn = 0.;
   double ct = 0.;
 
-  // do we use a mesh-size scaling for cn and ct?
-  bool adaptive_cn = DRT::INPUT::IntegralValue<int>(Params(),"MESH_ADAPTIVE_CN");
-  bool adaptive_ct = DRT::INPUT::IntegralValue<int>(Params(),"MESH_ADAPTIVE_CT");
-
   // assume that active set has converged and check for opposite
   activesetconv_=true;
 
@@ -5385,25 +5381,6 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
       {
         nz += cnode->MoData().n()[k] * cnode->MoData().lm()[k];
         nzold += cnode->MoData().n()[k] * cnode->MoData().lmold()[k];
-      }
-
-      // calculate mesh-size scaled version of cn
-
-      if (adaptive_cn || adaptive_ct)
-      {
-        if (cnode->MoData().GetD().size()!=0) // only do that if there is a D matrix
-        {
-          // row sum of D matrix
-          double sumd = 0.;
-          GEN::pairedvector<int,double>::const_iterator p;
-          for (p=cnode->MoData().GetD().begin(); p!=cnode->MoData().GetD().end(); p++)
-            sumd += p->second;
-          double mesh_h = pow(sumd,1./((double)Dim()-1.));
-          if (adaptive_cn && mesh_h != 0.)
-            cn /= mesh_h;
-          if (adaptive_ct && mesh_h != 0.)
-            ct /= mesh_h;
-        }
       }
 
       // friction

@@ -459,10 +459,6 @@ CROSSPOINTS                     No
 //     none,boundary,all
 LM_DUAL_CONSISTENT              boundary
 //
-// If chosen hermite interface smoothing is activated for line2 elements
-//     Yes,No,yes,no,YES,NO
-HERMITE_SMOOTHING               No
-//
 // Type of mesh relocation
 //     Initial,initial,Every_Timestep,every_timestep,No,no
 MESH_RELOCATION                 Initial

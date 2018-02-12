@@ -602,9 +602,6 @@ void WEAR::Algorithm::CreateMaterialInterface()
           cele->NormalFac() = normalfac;
         }
 
-        cele->IsHermite() = DRT::INPUT::IntegralValue<int>(cparams,"HERMITE_SMOOTHING");
-
-
         interface->AddCoElement(cele);
       } // for (fool=ele1.start(); fool != ele1.end(); ++fool)
 

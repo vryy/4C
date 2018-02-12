@@ -828,11 +828,6 @@ void CONTACT::CoNode::InitializeDataContainer()
     }
   }
 
-  // this is a hack for hermit elements
-  if (NumElement())
-    if (dynamic_cast<MORTAR::MortarElement*>(Elements()[0])->IsHermite())
-      dentries_ = 4*dentries_;
-
   // only initialize if not yet done
   if (modata_==Teuchos::null && codata_==Teuchos::null)
   {
@@ -1175,96 +1170,35 @@ void CONTACT::CoNode::BuildAveragedNormal()
   double tangent[3] = {0.0, 0.0, 0.0};
   Epetra_SerialDenseMatrix elens(6,nseg);
 
-  //********************************
-  // Hermit smoothing normal
-  if (dynamic_cast<MORTAR::MortarElement*>(Elements()[0])->IsHermite())
+  // we need to store some stuff here
+  //**********************************************************************
+  // elens(0,i): x-coord of element normal
+  // elens(1,i): y-coord of element normal
+  // elens(2,i): z-coord of element normal
+  // elens(3,i): id of adjacent element i
+  // elens(4,i): length of element normal
+  // elens(5,i): length/area of element itself
+  //**********************************************************************
+
+  // loop over all adjacent elements
+  for (int i=0;i<nseg;++i)
   {
-    int status = 0;
-    int numnode = 0;
-    int features[2] = {0,0};
-    CoElement* adjcele = 0;
+    CoElement* adjcele = dynamic_cast<CoElement*> (adjeles[i]);
 
-    double nodexi[2] = {-1.0, 0.0};
-    int lid = 7;
-    int gid = Id();
-    if (nseg == 1)
-    {
-      adjcele = dynamic_cast<CoElement*> (adjeles[0]);
-      lid = adjcele->GetLocalNodeId(gid);
-      if (lid == 1) nodexi[0] = 1.0;
-    }
-    else if (nseg ==2)
-    {
-      adjcele = dynamic_cast<CoElement*> (adjeles[0]);
-      lid = adjcele->GetLocalNodeId(gid);
-      if (lid == 1) nodexi[0] = 1.0;
-    }
-    else
-    {
-      dserror("ERROR: more then 2 adjacent elements are not possible in the 2D case");
-    }
+    // build element normal at current node
+    // (we have to pass in the index i to be able to store the
+    // normal and other information at the right place in elens)
+    adjcele->BuildNormalAtNode(Id(),i,elens);
 
-    adjcele->AdjEleStatus(features);
-    status  = features[0];
-    numnode = features[1];
-    LINALG::SerialDenseMatrix coord(3,numnode);
-    adjcele->AdjNodeCoords(coord,status);
-
-    DRT::Node* nodes[4] = {0,0,0,0};
-    adjcele->HermitEleNodes(nodes,status);
-
-    LINALG::SerialDenseVector val(numnode);
-    LINALG::SerialDenseMatrix deriv(numnode,1);
-
-    adjcele->EvaluateShape(nodexi,val,deriv,numnode,false);
-
-    double uvz[3] = {0.0, 0.0, 1.0};
-
-    for (int j=0; j<numnode; ++j)
-    {
-      tangent[0] += deriv(j,0)*coord(0,j);
-      tangent[1] += deriv(j,0)*coord(1,j);
-      tangent[2] += deriv(j,0)*coord(2,j);
-    }
-
-    n_tmp[0] = (tangent[1]*uvz[2] - tangent[2]*uvz[1]);
-    n_tmp[1] = (tangent[2]*uvz[0] - tangent[0]*uvz[2]);
-    n_tmp[2] = (tangent[0]*uvz[1] - tangent[1]*uvz[0]);
+    // add (weighted) element normal to nodal normal n
+    for (int j=0;j<3;++j)
+      n_tmp[j]+=elens(j,i)/elens(4,i);
   }
-  //********************************
-  // std. normal
-  else
-  {
-    // we need to store some stuff here
-    //**********************************************************************
-    // elens(0,i): x-coord of element normal
-    // elens(1,i): y-coord of element normal
-    // elens(2,i): z-coord of element normal
-    // elens(3,i): id of adjacent element i
-    // elens(4,i): length of element normal
-    // elens(5,i): length/area of element itself
-    //**********************************************************************
 
-    // loop over all adjacent elements
-    for (int i=0;i<nseg;++i)
-    {
-      CoElement* adjcele = dynamic_cast<CoElement*> (adjeles[i]);
-
-      // build element normal at current node
-      // (we have to pass in the index i to be able to store the
-      // normal and other information at the right place in elens)
-      adjcele->BuildNormalAtNode(Id(),i,elens);
-
-      // add (weighted) element normal to nodal normal n
-      for (int j=0;j<3;++j)
-        n_tmp[j]+=elens(j,i)/elens(4,i);
-    }
-
-    // modify normal in case of symmetry condition
-    for (int i=0; i<3; i++)
-      if (DbcDofs()[i])
-        n_tmp[i]=0.;
-  }
+  // modify normal in case of symmetry condition
+  for (int i=0; i<3; i++)
+    if (DbcDofs()[i])
+      n_tmp[i]=0.;
 
   // create unit normal vector
   double length = sqrt(n_tmp[0]*n_tmp[0]+n_tmp[1]*n_tmp[1]+n_tmp[2]*n_tmp[2]);
@@ -1287,28 +1221,10 @@ void CONTACT::CoNode::BuildAveragedNormal()
 
   if (NumDof()==2)
   {
-    if (dynamic_cast<MORTAR::MortarElement*>(Elements()[0])->IsHermite())
-    {
-      CoData().txi()[0] = tangent[0];
-      CoData().txi()[1] = tangent[1];
-      CoData().txi()[2] = tangent[2];
-      double tlength = sqrt(tangent[0]*tangent[0]+tangent[1]*tangent[1]+tangent[2]*tangent[2]);
-      if (tlength<1e-12)
-      {
-        std::cout << "tangent zero: node slave= " << IsSlave() << "  length= " << tlength << std::endl;
-        dserror("ERROR: Nodal tangent length 0, node ID %i",Id());
-      }
-      else
-        for (int j=0;j<3;++j)
-          CoData().txi()[j]=tangent[j]/tlength;
-    }
-    else
-    {
-      // simple definition for txi
-      CoData().txi()[0] = -MoData().n()[1];
-      CoData().txi()[1] =  MoData().n()[0];
-      CoData().txi()[2] =  0.0;
-    }
+    // simple definition for txi
+    CoData().txi()[0] = -MoData().n()[1];
+    CoData().txi()[1] =  MoData().n()[0];
+    CoData().txi()[2] =  0.0;
 
     // teta is z-axis
     CoData().teta()[0] = 0.0;
@@ -1369,164 +1285,8 @@ void CONTACT::CoNode::BuildAveragedNormal()
     dserror("ERROR: Contact problems must be either 2D or 3D");
 
   // build linearization of averaged nodal normal and tangents
-  if (dynamic_cast<MORTAR::MortarElement*>(Elements()[0])->IsHermite())
-    DerivAveragedNormalHermit(length,ltxi);
-  else
-    DerivAveragedNormal(elens,length,ltxi);
+  DerivAveragedNormal(elens,length,ltxi);
 
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Build directional deriv. of nodal normal + tangents      farah 09/14|
- *----------------------------------------------------------------------*/
-void CONTACT::CoNode::DerivAveragedNormalHermit(double length, double ltxi)
-{
-  // prepare nodal storage maps for derivative
-  if ((int)CoData().GetDerivN().size()==0) CoData().GetDerivN().resize(3,2*linsize_);
-  if ((int)CoData().GetDerivTxi().size()==0) CoData().GetDerivTxi().resize(3,2*linsize_);
-  if ((int)CoData().GetDerivTeta().size()==0) CoData().GetDerivTeta().resize(3,2*linsize_);
-
-  int nseg = NumElement();
-  DRT::Element** adjeles = Elements();
-
-  int status = 0;
-  int numnode = 0;
-  int features[2] = {0,0};
-  CoElement* adjcele = dynamic_cast<CoElement*> (adjeles[0]);
-  double nodexi[2] = {-1.0, 0.0};
-  int lid = 7;
-  int gid = Id();
-  if (nseg == 1)
-  {
-    adjcele = dynamic_cast<CoElement*> (adjeles[0]);
-    lid = adjcele->GetLocalNodeId(gid);
-    if (lid == 1) nodexi[0] = 1.0;
-  }
-  else if (nseg ==2)
-  {
-    adjcele = dynamic_cast<CoElement*> (adjeles[0]);
-    lid = adjcele->GetLocalNodeId(gid);
-    if (lid == 1) nodexi[0] = 1.0;
-  }
-  else
-  {
-    dserror("ERROR: more then 2 adjacent elements are not possible in the 2D case");
-  }
-
-  adjcele->AdjEleStatus(features);
-  status = features[0];
-  numnode = features[1];
-  LINALG::SerialDenseMatrix coord(3,numnode);
-
-  DRT::Node* nodes[4] = {0,0,0,0};
-  adjcele->AdjNodeCoords(coord, status);
-  adjcele->HermitEleNodes(nodes,status);
-
-  LINALG::SerialDenseVector val(numnode);
-  LINALG::SerialDenseMatrix deriv(numnode,1);
-
-  adjcele->EvaluateShape(nodexi,val,deriv,numnode,false);
-
-  GEN::pairedvector<int,double> tangent0(linsize_);
-  GEN::pairedvector<int,double> tangent1(linsize_);
-
-  for (int i=0;i<numnode;++i)
-  {
-    tangent0[dynamic_cast<CoNode*>(nodes[i])->Dofs()[0]] += deriv(i,0);
-    tangent1[dynamic_cast<CoNode*>(nodes[i])->Dofs()[1]] += deriv(i,0);
-  }
-
-  typedef GEN::pairedvector<int,double>::const_iterator CI;
-  for (CI p=tangent0.begin();p!=tangent0.end();++p)
-    CoData().GetDerivN()[1][p->first] -= p->second;
-  for (CI p=tangent1.begin();p!=tangent1.end();++p)
-    CoData().GetDerivN()[0][p->first] += p->second;
-
-  // normalize directional derivative
-  // (length differs for weighted/unweighted case bot not the procedure!)
-  // (be careful with reference / copy of derivative maps!)
-  GEN::pairedvector<int,double>& derivnx = CoData().GetDerivN()[0];
-  GEN::pairedvector<int,double>& derivny = CoData().GetDerivN()[1];
-  GEN::pairedvector<int,double>& derivnz = CoData().GetDerivN()[2];
-  GEN::pairedvector<int,double> cderivnx = CoData().GetDerivN()[0];
-  GEN::pairedvector<int,double> cderivny = CoData().GetDerivN()[1];
-  GEN::pairedvector<int,double> cderivnz = CoData().GetDerivN()[2];
-  const double nxnx = MoData().n()[0] * MoData().n()[0];
-  const double nxny = MoData().n()[0] * MoData().n()[1];
-  const double nxnz = MoData().n()[0] * MoData().n()[2];
-  const double nyny = MoData().n()[1] * MoData().n()[1];
-  const double nynz = MoData().n()[1] * MoData().n()[2];
-  const double nznz = MoData().n()[2] * MoData().n()[2];
-
-  // build a vector with all keys from x,y,z maps
-  // (we need this in order not to miss any entry!)
-  std::vector<int> allkeysn;
-  for (CI p=derivnx.begin();p!=derivnx.end();++p)
-  {
-    bool found = false;
-    for (int j=0;j<(int)allkeysn.size();++j)
-      if ((p->first)==allkeysn[j]) found = true;
-    if (!found) allkeysn.push_back(p->first);
-
-  }
-  for (CI p=derivny.begin();p!=derivny.end();++p)
-  {
-    bool found = false;
-    for (int j=0;j<(int)allkeysn.size();++j)
-      if ((p->first)==allkeysn[j]) found = true;
-    if (!found) allkeysn.push_back(p->first);
-
-  }
-  for (CI p=derivnz.begin();p!=derivnz.end();++p)
-  {
-    bool found = false;
-    for (int j=0;j<(int)allkeysn.size();++j)
-      if ((p->first)==allkeysn[j]) found = true;
-    if (!found) allkeysn.push_back(p->first);
-  }
-
-  // normalize x-components
-  for (int j=0;j<(int)allkeysn.size();++j)
-  {
-    double val = cderivnx[allkeysn[j]];
-    derivnx[allkeysn[j]] = (val-nxnx*val-nxny*cderivny[allkeysn[j]]-nxnz*cderivnz[allkeysn[j]])/length;
-  }
-
-  // normalize y-components
-  for (int j=0;j<(int)allkeysn.size();++j)
-  {
-    double val = cderivny[allkeysn[j]];
-    derivny[allkeysn[j]] = (val-nxny*cderivnx[allkeysn[j]]-nyny*val-nynz*cderivnz[allkeysn[j]])/length;
-  }
-
-  // normalize z-components
-  for (int j=0;j<(int)allkeysn.size();++j)
-  {
-    double val = cderivnz[allkeysn[j]];
-    derivnz[allkeysn[j]] = (val-nxnz*cderivnx[allkeysn[j]]-nynz*cderivny[allkeysn[j]]-nznz*val)/length;
-  }
-
-  //**********************************************************************
-  // tangent derivatives 2D
-  //**********************************************************************
-  if (NumDof()==2)
-  {
-    // get directional derivative of nodal tangent txi "for free"
-    // (we just have to use the orthogonality of n and t)
-    // the directional derivative of nodal tangent teta is 0
-    GEN::pairedvector<int,double>& derivtxix = CoData().GetDerivTxi()[0];
-    GEN::pairedvector<int,double>& derivtxiy = CoData().GetDerivTxi()[1];
-
-    for (CI p=derivny.begin();p!=derivny.end();++p)
-      derivtxix[p->first] = -(p->second);
-    for (CI p=derivnx.begin();p!=derivnx.end();++p)
-      derivtxiy[p->first] = (p->second);
-  }
-  else
-  {
-    dserror("ERROR: DerivAveragedNormalSmooth: smoothing only implemented for 2D case");
-  }
   return;
 }
 

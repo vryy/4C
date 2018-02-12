@@ -79,9 +79,6 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
                  consistent_all),
       &mortar);
 
-  setStringToIntegralParameter<int>("HERMITE_SMOOTHING","No","If chosen, hermite interface smoothing is activated for line2 elements",
-                               yesnotuple,yesnovalue,&mortar);
-
   setStringToIntegralParameter<int>("MESH_RELOCATION","Initial","Type of mesh relocation",
       tuple<std::string>("Initial","initial",
                          "Every_Timestep", "every_timestep",

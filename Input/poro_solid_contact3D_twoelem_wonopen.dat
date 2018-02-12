@@ -116,8 +116,6 @@ NORMCOMBI_RESFCONTCONSTR        And
 NORMCOMBI_DISPLAGR              And
 TOLCONTCONSTR                   1e-06
 TOLLAGR                         1e-06
-MESH_ADAPTIVE_CN                no
-MESH_ADAPTIVE_CT                no
 ------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66
 ---------------------------------------------POROELASTICITY DYNAMIC
