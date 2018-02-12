@@ -57,7 +57,8 @@ PARTICLE::Algorithm::Algorithm(
   particlewalldis_(Teuchos::null),
   particlewallelecolmap_standardghosting_(Teuchos::null),
   moving_walls_((bool)DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"MOVING_WALLS")),
-  transfer_every_(DRT::Problem::Instance()->ParticleParams().get<int>("TRANSFER_EVERY")),
+  rep_strategy_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::RepartitionStrategy>(DRT::Problem::Instance()->ParticleParams(),"REPARTITIONSTRATEGY")),
+  dis_at_last_redistr_(Teuchos::null),
   particleInteractionType_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleInteractions>(DRT::Problem::Instance()->ParticleParams(),"PARTICLE_INTERACTION")),
   extendedGhosting_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ExtendedGhosting>(DRT::Problem::Instance()->ParticleParams(),"EXTENDED_GHOSTING")),
   particleMat_(0),
@@ -255,7 +256,10 @@ void PARTICLE::Algorithm::Init(bool restarted)
     // in case random noise is added to the particle position, particle transfer is necessary
     double amplitude = particledyn.get<double>("RANDOM_AMPLITUDE");
     if(amplitude)
+    {
+      SetParticleNodePos();
       TransferParticles(true, true);
+    }
 
     // determine consistent initial acceleration for the particles
     particles_->UpdateExtActions();
@@ -267,6 +271,10 @@ void PARTICLE::Algorithm::Init(bool restarted)
     // reconstruct element -> bin pointers for fixed particle wall elements and fluid elements
     BuildElementToBinPointers(not moving_walls_);
   }
+
+  // store current displacement state as displacements of last redistribution
+  if ( rep_strategy_ == INPAR::PARTICLE::repstr_adaptive )
+    dis_at_last_redistr_ = Teuchos::rcp( new Epetra_Vector( *particles_->Dispn() ) );
 
   // some output
   if (MyRank() == 0)
@@ -385,9 +393,6 @@ void PARTICLE::Algorithm::PrepareTimeStep(bool print_header)
   // apply dirichlet boundary conditions
   particles_->PrepareTimeStep();
 
-  // do rough safety check if bin size is appropriate
-  BinSizeSafetyCheck(particles_->Dt());
-
   return;
 }
 
@@ -396,13 +401,18 @@ void PARTICLE::Algorithm::PrepareTimeStep(bool print_header)
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::Integrate()
 {
-  particles_->UpdateExtActions();
-
-  SetUpWallDiscret();
-
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::Integrate");
 
+  particles_->UpdateExtActions();
+
+  // set states of wall discretization
+  SetUpWallDiscret();
+
+  // particle time integration
   particles_->IntegrateStep();
+
+  // check bin size for current time step
+  BinSizeSafetyCheck();
 
   return;
 }
@@ -501,7 +511,7 @@ void PARTICLE::Algorithm::DynamicLoadBalancing()
         particles.insert(particleids[iparticle]);
     }
 
-    // copy particlegids to a vector and create particlerowmap
+    // copy particle gids to a vector and create particle row map
     std::vector<int> rowparticles(particles.begin(),particles.end());
     Teuchos::RCP<Epetra_Map> particlerowmap = Teuchos::rcp(new Epetra_Map(-1,(int)rowparticles.size(),&rowparticles[0],0,Comm()));
 
@@ -530,77 +540,302 @@ void PARTICLE::Algorithm::DynamicLoadBalancing()
   // update of state vectors to the new maps
   particles_->UpdateStatesAfterParticleTransfer();
 
+  if ( rep_strategy_ == INPAR::PARTICLE::repstr_adaptive )
+  {
+    // update vector according to the new distribution of particles
+    Teuchos::RCP<Epetra_Vector> temp = dis_at_last_redistr_;
+    dis_at_last_redistr_ = LINALG::CreateVector(*BinStrategy()->BinDiscret()->DofRowMap(), true);
+    LINALG::Export(*temp, *dis_at_last_redistr_);
+  }
+
   DRT::UTILS::PrintParallelDistribution(*BinStrategy()->BinDiscret());
 
   return;
 }
 
 /*----------------------------------------------------------------------*
- | rough safety check for proper bin size                  ghamm 12/15  |
+ | safety check for proper bin size                        sfuchs 02/18 |
  *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::BinSizeSafetyCheck(const double dt)
+void PARTICLE::Algorithm::BinSizeSafetyCheck()
 {
-  // rough safety check whether bin size is large enough for proper contact detection
-  if(particleInteractionType_ != INPAR::PARTICLE::None)
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::BinSizeSafetyCheck");
+
+  if ( particleInteractionType_ == INPAR::PARTICLE::None )
+    return;
+
+  // note: checking two important criteria concerning bin size to maintain proper particle interaction
+  // 1) the particle interaction distance may not be larger than one bin size
+  // 2) the maximum particle movement in one time step may not be larger than one bin size
+
+  // particle interaction distance
+  double interaction_distance = ParticleInteractionDistance();
+
+  if ( interaction_distance > BinStrategy()->CutoffRadius() )
+    dserror("The particle interaction distance is larger than one bin size (%f > %f)!",
+        interaction_distance, BinStrategy()->CutoffRadius());
+
+  // displacement increment in this time step
+  Teuchos::RCP<Epetra_Vector> dis_incr = LINALG::CreateVector( *BinStrategy()->BinDiscret()->DofRowMap(), true );
+
+  LINALG::Matrix<3,1> lastpos;
+  LINALG::Matrix<3,1> currpos;
+
+  for ( int i = 0; i < BinStrategy()->BinDiscret()->NumMyRowNodes(); ++i )
   {
-    double extrema[2] = {0.0, 0.0};
-    particles_->Veln()->MinValue(&extrema[0]);
-    particles_->Veln()->MaxValue(&extrema[1]);
-    const double maxvel = std::max(-extrema[0], extrema[1]);
-    double maxrad = 0.0;
+    lastpos.Clear();
+    currpos.Clear();
 
-    switch (particleInteractionType_)
-    {
-    case INPAR::PARTICLE::SPH :
-    {
-      particles_->Radiusnp()->MaxValue(&maxrad);
-      break;
-    }
-    default :
-    {
-      particles_->Radiusn()->MaxValue(&maxrad);
-      break;
-    }
-    }
+    // get a pointer at i-th row node
+    DRT::Node* node = BinStrategy()->BinDiscret()->lRowNode(i);
 
-    //Determine effective interaction distance (maximal particle distance at which interaction forces are active) for different particle applications
-    //TODO: Differentiate the case of particle contact in combination with adhesive forces (active for distances > 2*radius)
-    double half_interaction_distance=0.0;
-    if(particleInteractionType_==INPAR::PARTICLE::SPH)
-      half_interaction_distance=maxrad/2.0;
-    else
-      half_interaction_distance=maxrad;
+    // get GIDs of this node's degrees of freedom
+    std::vector<int> dofnode = BinStrategy()->BinDiscret()->Dof(node);
 
-    //Here we changed the factor transfer_every_ applied in the previous revision (r23144) to (transfer_every_-1), since
-    //the call of the method UpdateConnectivity() has been shifted to the location directly between displacement update and evaluation of
-    //contact/interaction forces. Thus, in case UpdateConnectivity() is called in every time step (transfer_every_=1), the bin edge length
-    //has at least to be as large as the interaction distance!
-    if(half_interaction_distance + (transfer_every_-1)*maxvel*dt > 0.5*BinStrategy()->CutoffRadius())
+    for ( int dim = 0; dim < 3; ++dim )
     {
-      int lid = -1;
-      // find entry with max velocity
-      for(int i=0; i<particles_->Veln()->MyLength(); ++i)
+      int doflid = (*particles_->Dispn()).Map().LID( dofnode[dim] );
+      lastpos(dim) = (*particles_->Dispn())[doflid];
+      currpos(dim) = (*particles_->Dispnp())[doflid];
+
+      // consider periodic boundary conditions in current spatial direction
+      if( BinStrategy()->HavePBC(dim) )
       {
-        if((*particles_->Veln())[i] < extrema[0]+1.0e-12 || (*particles_->Veln())[i] > extrema[1]-1.0e-12)
-        {
-          lid = i;
-          break;
-        }
+        // periodic length in current spatial direction
+        double pbc_length = BinStrategy()->PBCDelta(dim);
+
+        // shift position back if necessary
+        if ( lastpos(dim)-currpos(dim) > 0.5*pbc_length )
+          currpos(dim) += pbc_length;
+        else if ( lastpos(dim)-currpos(dim) < -0.5*pbc_length )
+          currpos(dim) -= pbc_length;
       }
 
-#ifdef DEBUG
-      particles_->Veln()->Print(std::cout);
-#endif
-      if(lid != -1)
-      {
-        const int gid = particles_->Veln()->Map().GID(lid);
-        dserror("Particle %i (gid) travels more than one bin per time step (%f > %f). Increase bin size or reduce step size."
-            "Max radius is: %f", (int)gid/3, 2.0*(half_interaction_distance + maxvel*dt), BinStrategy()->CutoffRadius(), half_interaction_distance);
-        std::cout << "Particle %i (gid) travels more than one bin per time step!!!!!!!" << std::endl;
-      }
+      (*dis_incr)[doflid] = currpos(dim)-lastpos(dim);
     }
   }
+
+  // get maximum displacement increment over all procs
+  double extrema[2] = { 0.0, 0.0 };
+  dis_incr->MinValue( &extrema[0] );
+  dis_incr->MaxValue( &extrema[1] );
+  const double gmaxdisincr = std::max( -extrema[0], extrema[1] );
+
+#ifdef DEBUG
+  if ( MyRank() == 0 )
+    std::cout << "maximum particle movement in this time step " << gmaxdisincr << std::endl;
+#endif
+
+  if ( gmaxdisincr > BinStrategy()->CutoffRadius() )
+  {
+    // find entry with maximum particle movement
+    int doflid = -1;
+    for(int i=0; i<dis_incr->MyLength(); ++i)
+    {
+      if((*dis_incr)[i] < extrema[0]+1.0e-12 || (*dis_incr)[i] > extrema[1]-1.0e-12)
+      {
+        doflid = i;
+        break;
+      }
+    }
+
+    const int gid = dis_incr->Map().GID(doflid);
+
+    dserror("Particle %i (gid) travels more than one bin per time step (%f > %f)!",
+        (int)gid/3, gmaxdisincr, BinStrategy()->CutoffRadius());
+  }
+
   return;
+}
+
+/*----------------------------------------------------------------------*
+ | update connectivity                                     sfuchs 08/17 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::UpdateConnectivity()
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::UpdateConnectivity");
+
+  // relate wall gids to bins ids
+  if ( moving_walls_ )
+    RelateWallGidsToBinIds();
+
+  // set current position to particle nodes
+  SetParticleNodePos();
+
+  // transfer particles into their correct bins adaptively
+  if ( rep_strategy_ == INPAR::PARTICLE::repstr_adaptive )
+  {
+    // check if repartitioning is necessary
+    if ( CheckAdaptiveRepartition() )
+    {
+      // transfer particles into their correct bins
+      TransferParticles(true);
+
+      // update displacement state of particles after redistribution
+      dis_at_last_redistr_ = Teuchos::rcp( new Epetra_Vector( *particles_->Dispn() ) );
+    }
+  }
+  // transfer particles into their correct bins every time step
+  else if (rep_strategy_ == INPAR::PARTICLE::repstr_everydt )
+  {
+    // transfer particles into their correct bins
+    TransferParticles(true);
+  }
+  // default
+  else
+    dserror("Unknown particle repartitioning strategy!");
+
+  // assign wall elements and gids to bins (after repartitioning of binning discretization)
+  if ( moving_walls_ )
+    AssignWallElesAndGidsToBins();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | set position of particle nodes                          sfuchs 02/18 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::SetParticleNodePos()
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::SetParticleNodePos");
+
+  // Get current displacements
+  Teuchos::RCP<Epetra_Vector> disnp = particles_->WriteAccessDispnp();
+  if( disnp == Teuchos::null )
+    dserror("Attention: disnp is not set!");
+
+  std::vector<int> examinedbins( BinStrategy()->BinDiscret()->NumMyRowElements(), 0 );
+  // first run over particles and then process whole bin in which particle is located
+  // until all particles have been checked
+  for ( int i = 0; i < BinStrategy()->BinDiscret()->NumMyRowNodes(); ++i )
+  {
+    DRT::Node *currparticle = BinStrategy()->BinDiscret()->lRowNode(i);
+
+#ifdef DEBUG
+    if( currparticle->NumElement() != 1)
+      dserror("ERROR: A particle is assigned to more than one bin!");
+#endif
+
+    DRT::MESHFREE::MeshfreeMultiBin* currbin =
+        dynamic_cast< DRT::MESHFREE::MeshfreeMultiBin* >( currparticle->Elements()[0] );
+    // as checked above, there is only one element in currele array
+    const int binId = currbin->Id();
+    const int rlid = BinStrategy()->BinDiscret()->ElementRowMap()->LID(binId);
+
+    // if a bin has already been examined --> continue with next particle
+    if ( examinedbins[rlid] )
+      continue;
+    // else: bin is examined for the first time --> new entry in examinedbins
+    else
+      examinedbins[rlid] = 1;
+
+    DRT::Node** particles = currbin->Nodes();
+    for( int iparticle = 0; iparticle < currbin->NumNode(); ++iparticle )
+    {
+      // get current node
+      DRT::Node* currnode = particles[iparticle];
+
+      // get the first gid of a node and convert it into a lid
+      const int gid = BinStrategy()->BinDiscret()->Dof(currnode, 0);
+      const int lid = disnp->Map().LID(gid);
+      if( lid < 0 )
+        dserror("displacement for node %d not stored on this proc: %d", gid, MyRank());
+
+      // get current position
+      LINALG::Matrix< 3, 1 > pos_mat(true);
+      for( int dim = 0; dim < 3; ++dim )
+        pos_mat(dim) = (*disnp)[ lid + dim ];
+
+      // shift in case of periodic boundary conditions
+      BinStrategy()->PeriodicBoundaryShift3D( pos_mat );
+
+      for( int dim = 0; dim < 3; ++dim )
+        (*disnp)[ lid + dim ] = pos_mat(dim);
+
+      // transform to array
+      std::vector<double> pos( 3, 0.0 );
+      for( int dim = 0; dim < 3; ++dim )
+        pos[dim] = pos_mat(dim);
+
+      // change X() of current particle
+      currnode->SetPos(pos);
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | check movement of particles since last redistribution   sfuchs 02/18 |
+ *----------------------------------------------------------------------*/
+bool PARTICLE::Algorithm::CheckAdaptiveRepartition()
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::CheckAdaptiveRepartition");
+
+#ifdef DEBUG
+  // safety check
+  if ( not dis_at_last_redistr_->Map().SameAs(*BinStrategy()->BinDiscret()->DofRowMap() ) )
+    dserror("Current particle dof row map and map of disp vector after last redistribution are not the same!");
+#endif
+
+  // displacement increment from particle position at last redistribution to current position
+  Teuchos::RCP<Epetra_Vector> dis_incr = LINALG::CreateVector( *BinStrategy()->BinDiscret()->DofRowMap(), true );
+
+  LINALG::Matrix<3,1> lastpos;
+  LINALG::Matrix<3,1> currpos;
+
+  for ( int i = 0; i < BinStrategy()->BinDiscret()->NumMyRowNodes(); ++i )
+  {
+    lastpos.Clear();
+    currpos.Clear();
+
+    // get a pointer at i-th row node
+    DRT::Node* node = BinStrategy()->BinDiscret()->lRowNode(i);
+
+    // get GIDs of this node's degrees of freedom
+    std::vector<int> dofnode = BinStrategy()->BinDiscret()->Dof(node);
+
+    for ( int dim = 0; dim < 3; ++dim )
+    {
+      int doflid = dis_at_last_redistr_->Map().LID( dofnode[dim] );
+      lastpos(dim) = (*dis_at_last_redistr_)[doflid];
+      currpos(dim) = (*particles_->Dispn())[doflid];
+
+      // consider periodic boundary conditions in current spatial direction
+      if( BinStrategy()->HavePBC(dim) )
+      {
+        // periodic length in current spatial direction
+        double pbc_length = BinStrategy()->PBCDelta(dim);
+
+        // shift position back if necessary
+        if ( lastpos(dim)-currpos(dim) > 0.5*pbc_length )
+          currpos(dim) += pbc_length;
+        else if ( lastpos(dim)-currpos(dim) < -0.5*pbc_length )
+          currpos(dim) -= pbc_length;
+      }
+
+      (*dis_incr)[doflid] = currpos(dim)-lastpos(dim);
+    }
+  }
+
+  // get maximum displacement increment since last redistribution over all procs
+  double extrema[2] = { 0.0, 0.0 };
+  dis_incr->MinValue( &extrema[0] );
+  dis_incr->MaxValue( &extrema[1] );
+  const double gmaxdisincr = std::max( -extrema[0], extrema[1] );
+
+#ifdef DEBUG
+  if ( MyRank() == 0 )
+    std::cout << "maximum particle movement since last redistribution " << gmaxdisincr << std::endl;
+#endif
+
+  // particle interaction distance
+  double interaction_distance = ParticleInteractionDistance();
+
+  // repartition of particles necessary
+  // note: it is assumed that (in a worst case scenario) two particles approach each other with maximum displacement
+  bool repartition = ( ( interaction_distance + 2.0*gmaxdisincr ) > ( BinStrategy()->CutoffRadius() ) );
+
+  return repartition;
 }
 
 /*----------------------------------------------------------------------*
@@ -615,12 +850,8 @@ Teuchos::RCP<std::list<int> > PARTICLE::Algorithm::TransferParticles(const bool 
   if(particles_->Radiusn()->GlobalLength() == 0)
     return Teuchos::rcp(new std::list<int>(0));
 
-  // Get current displacements
-  Teuchos::RCP<Epetra_Vector> disnp = particles_->WriteAccessDispnp();
-
   // transfer particles to new bins
-  Teuchos::RCP<std::list<int> > deletedparticles =
-      PARTICLE::ParticleHandler::TransferParticles( disnp, ghosting);
+  Teuchos::RCP<std::list<int> > deletedparticles = PARTICLE::ParticleHandler::TransferParticles(ghosting);
 
   // check whether all procs have a filled bindis_,
   // oldmap in ExportColumnElements must be Reset() on every proc or nowhere
@@ -1276,26 +1507,6 @@ void PARTICLE::Algorithm::Output(bool forced_writerestart /*= false*/)
 }
 
 /*----------------------------------------------------------------------*
- | update connectivity                                    sfuchs 08/17  |
- *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::UpdateConnectivity()
-{
-  // relate wall gids to bins ids
-  if ( moving_walls_ )
-    RelateWallGidsToBinIds();
-
-  // transfer particles into their correct bins
-  if ( Step()%transfer_every_ == 0 )
-    TransferParticles(true);
-
-  // assign wall elements and gids to bins (after ghosting)
-  if ( moving_walls_ )
-    AssignWallElesAndGidsToBins();
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  | get neighbouring particles and walls                    ghamm 09/13  |
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::GetNeighbouringItems(
@@ -1379,6 +1590,28 @@ void PARTICLE::Algorithm::GetBinContent(
     }
   }
   return;
+}
+
+/*----------------------------------------------------------------------*
+ | determine particle interaction distance                 sfuchs 02/17 |
+ *----------------------------------------------------------------------*/
+double PARTICLE::Algorithm::ParticleInteractionDistance()
+{
+  // determine maximum particle interaction distance for different particle interaction types
+  // TODO: differentiate the case of particle contact in combination with adhesive forces (active for distances > 2*radius)
+
+  double maxrad = 0.0;
+
+  if(particleInteractionType_==INPAR::PARTICLE::SPH)
+  {
+    particles_->Radiusnp()->MaxValue(&maxrad);
+    return maxrad;
+  }
+  else
+  {
+    particles_->Radiusn()->MaxValue(&maxrad);
+    return 2.0*maxrad;
+  }
 }
 
 /*------------------------------------------------------------------------*

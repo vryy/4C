@@ -169,6 +169,7 @@ BIN_PER_DIR                     32 128 1
 ------------------------------------------------------------PARTICLE DYNAMIC
 DIMENSION                       2Dz
 DYNAMICTYP                      RK2
+REPARTITIONSTRATEGY             Everydt
 -----------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK

@@ -36,6 +36,7 @@ VERBOSITY                       Standard
 CUTOFF_RADIUS                   5.0
 ----------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      CentrDiff
+REPARTITIONSTRATEGY             Everydt
 GRAVITY_ACCELERATION            0.0 0.0 -980.0
 PARTICLE_INTERACTION            NormalContact_DEM
 NORMAL_CONTACT_LAW              LinearSpringDamp

@@ -56,7 +56,6 @@ RADIUS_DISTRIBUTION             None
 RADIUS_DISTRIBUTION_SIGMA       -1.0
 MOVING_WALLS                    No
 RANDOM_AMPLITUDE                0.00
-TRANSFER_EVERY                  1
 ------------------------------------------------NODE COORDS
 PARTICLE 1 COORD -0.0099 0.0  0.0
 PARTICLE 2 COORD  0.0099 0.0  0.0

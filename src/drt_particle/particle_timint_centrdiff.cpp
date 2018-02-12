@@ -87,7 +87,7 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
   ApplyDirichletBC(timen_, disn_, Teuchos::null, accn_, false);
   ApplyDirichletBC(timen_-dthalf, Teuchos::null, veln_, Teuchos::null, false);
 
-  //Transfer particles and heat sources into their correct bins
+  //Transfer particles into their correct bins
   particle_algorithm_->UpdateConnectivity();
 
   // define vector for contact force and moment

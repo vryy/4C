@@ -31,6 +31,7 @@ NUMSTEP                         3000
 GRAVITY_ACCELERATION            0.0 0.0 -9.81
 PARTICLE_INTERACTION            NormalContact_DEM
 NORMAL_CONTACT_LAW              LinearSpringDamp
+REPARTITIONSTRATEGY             Everydt
 MIN_RADIUS                      0.005
 MAX_RADIUS                      0.015
 REL_PENETRATION                 0.05

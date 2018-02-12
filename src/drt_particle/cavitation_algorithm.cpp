@@ -246,8 +246,8 @@ CAVITATION::Algorithm::Algorithm(
   if(moving_walls_)
     dserror("moving walls do not (yet) work for cavitation problems");
 
-  if(transfer_every_ != 1)
-    dserror("TRANSFER_EVERY is not used, set it to one");
+  if(rep_strategy_ != INPAR::PARTICLE::repstr_everydt)
+    dserror("REPARTITIONSTRATEGY must be set to Everydt");
 
   return;
 }
@@ -297,6 +297,7 @@ void CAVITATION::Algorithm::TimeloopSequStaggered()
     if(particles_->Time() > Time()-Dt()+0.1*count_*Dt() || BinStrategy()->HavePBC() == true)
     {
       ++count_;
+      SetParticleNodePos();
       TransferParticles(true);
     }
 
@@ -362,6 +363,7 @@ void CAVITATION::Algorithm::TimeloopIterStaggered()
       if(particles_->Time() > Time()-Dt()+0.1*count_*Dt() || BinStrategy()->HavePBC() == true)
       {
         ++count_;
+        SetParticleNodePos();
         Teuchos::RCP<std::list<int> > deletedparticles = TransferParticles(true);
         deletedparticlesduringsubcycling_.insert(deletedparticlesduringsubcycling_.end(), deletedparticles->begin(), deletedparticles->end());
       }
@@ -657,6 +659,7 @@ void CAVITATION::Algorithm::SaveParticleData()
 {
   // transfer particles to correct processor to ensure that assigning works well in case of
   // resetting everything when particles have left during subcycling
+  SetParticleNodePos();
   TransferParticles(true);
 
   storecount_ = count_;
@@ -707,6 +710,7 @@ void CAVITATION::Algorithm::ResetParticleData()
   if(storedis_->GlobalLength() == particles_->Dispnp()->GlobalLength())
   {
     LINALG::Export(*storedis_, *particles_->WriteAccessDispnp());
+    SetParticleNodePos();
     TransferParticles(true);
   }
   else // recover old layout in case particles have left the domain
@@ -886,7 +890,10 @@ void CAVITATION::Algorithm::InitCavitation()
   // in case random noise is added to the particle position, particle transfer is necessary
   double amplitude = DRT::Problem::Instance()->ParticleParams().get<double>("RANDOM_AMPLITUDE");
   if(amplitude)
+  {
+    SetParticleNodePos();
     TransferParticles(true, true);
+  }
 
   // fill pressure into vector for convergence check
   pressnp_ = Teuchos::rcp(new Epetra_Vector(*fluid_->ExtractPressurePart(fluid_->Veln())));
@@ -1096,13 +1103,6 @@ void CAVITATION::Algorithm::PrepareTimeStep()
   // apply dirichlet boundary conditions
   particles_->PrepareTimeStep();
 
-  // do rough safety check if bin size is appropriate --> see also Timeloop()
-  if(particles_->Time() > Time()-Dt()+0.1*count_*Dt())
-  {
-    const double relevant_dt = Dt() * std::max(0.1, 1.0/timestepsizeratio_);
-    BinSizeSafetyCheck(relevant_dt);
-  }
-
   return;
 }
 
@@ -1234,7 +1234,10 @@ void CAVITATION::Algorithm::Integrate(bool& particlereset)
       // make sure particles reside in their correct bin in order to
       // distribute the void fraction properly to the underlying fluid elements
       if(timestepsizeratio_ > 10)
+      {
+        SetParticleNodePos();
         TransferParticles(true);
+      }
       CalculateFluidFraction(particles_->Radiusn());
       SetFluidFraction();
       break;

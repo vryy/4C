@@ -21,8 +21,8 @@ RESULTSEVRY                     100
 RESTARTEVRY                     100
 TIMESTEP                        1e-4
 NUMSTEP                         500
-MAXTIME                         1000000
-GRAVITY_ACCELERATION            0.0 -2 0.0
+MAXTIME                         0.05
+GRAVITY_ACCELERATION            0.0 -2.0 0.0
 GRAVITY_RAMP_TIME               0.4
 SURFTENSION_RAMP_TIME           0.1
 PARTICLE_INTERACTION            SPH

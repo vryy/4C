@@ -28,8 +28,8 @@ PERIODICONOFF                   0 0 0
 BOUNDINGBOX                     -0.1 -0.1 -0.1 0.3 0.1 0.1
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      CentrDiff
-RESULTSEVRY                     100
-RESTARTEVRY                     100
+RESULTSEVRY                     1000
+RESTARTEVRY                     1000
 TIMESTEP                        0.0004
 NUMSTEP                         10000
 MAXTIME                         4
@@ -53,7 +53,6 @@ RADIUS_DISTRIBUTION             None
 RADIUS_DISTRIBUTION_SIGMA       -1.0
 MOVING_WALLS                    No
 RANDOM_AMPLITUDE                0.00
-TRANSFER_EVERY                  1
 NORMAL_ADHESION_LAW             vanderWaalsDMT
 ADHESION_NORMAL_EPS             4e-16
 ADHESION_SURFACE_ENERGY         8e-8

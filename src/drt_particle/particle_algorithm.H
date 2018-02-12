@@ -104,9 +104,9 @@ namespace PARTICLE
   public:
 
     Algorithm(
-      const Epetra_Comm& lcomm,  ///< local epetra communicator
-      const Teuchos::ParameterList& params   ///< problem parameters
-      );
+        const Epetra_Comm& lcomm,              ///< local epetra communicator
+        const Teuchos::ParameterList& params   ///< problem parameters
+    );
 
     virtual ~Algorithm(){};
 
@@ -118,8 +118,8 @@ namespace PARTICLE
 
     /// read restart
     virtual void ReadRestart(
-      int restart  ///< time step from which to restart
-      );
+        int restart  ///< time step from which to restart
+    );
 
     /// setup of the system
     virtual void SetupSystem();
@@ -129,8 +129,8 @@ namespace PARTICLE
 
     /// test results (if necessary)
     virtual void TestResults(
-      const Epetra_Comm& comm  ///< local epetra communicator
-      );
+        const Epetra_Comm& comm  ///< local epetra communicator
+    );
 
     /// get wall discretization
     virtual Teuchos::RCP<DRT::Discretization> WallDiscret() const { return particlewalldis_; }
@@ -143,7 +143,7 @@ namespace PARTICLE
         Teuchos::RCP<const Epetra_Vector> walldispn,   ///< wall displacements at \f$t_{n}\f$
         Teuchos::RCP<const Epetra_Vector> walldispnp,  ///< wall displacements at \f$t_{n+1}\f$
         Teuchos::RCP<const Epetra_Vector> wallvelnp    ///< wall velocities at \f$t_{n+1}\f$
-        );
+    );
 
     /// set up walls
     virtual void SetUpWallDiscret();
@@ -151,24 +151,41 @@ namespace PARTICLE
     /// return gravity acceleration
     virtual LINALG::Matrix<3,1> GetGravityAcc(const double time=-1.0);
 
+    /// bins are redistributed according to the current fill level with particles
+    virtual void DynamicLoadBalancing();
+
+    /// update connectivity: mask to sort various connectivity updates
+    virtual void UpdateConnectivity();
+
+    /// set position of particle nodes
+    virtual void SetParticleNodePos();
+
+    /// movement of particles since last redistribution is checked
+    /// in order to determine if a new redistribution of particles is needed
+    virtual bool CheckAdaptiveRepartition();
+
     /// particles are checked whether they have moved out of their current bin
     /// and transferred if necessary, update states and do ghosting if needed
-    virtual Teuchos::RCP<std::list<int> > TransferParticles(const bool updatestates,
-                                   const bool ghosting = true);
+    virtual Teuchos::RCP<std::list<int> > TransferParticles(
+        const bool updatestates,
+        const bool ghosting = true
+    );
 
     /// get bins in range and call FindNeighbors
     virtual void GetNeighbouringItems(
-                    DRT::Node* particle,
-                    std::list<DRT::Node*>& neighboursLinf_p,
-                    boost::unordered_map<int, DRT::Element*>& neighboursLinf_w) const;
+        DRT::Node* particle,
+        std::list<DRT::Node*>& neighboursLinf_p,
+        boost::unordered_map<int, DRT::Element*>& neighboursLinf_w
+    ) const;
 
     /// get bins in range and call FindNeighbors (bin version)
     virtual void GetNeighbouringItems(
-                    const int binId,
-                    std::list<DRT::Node*>& neighboursLinf_p,
-                    boost::unordered_map<int, DRT::Element*>* neighboursLinf_w = NULL) const;
+        const int binId,
+        std::list<DRT::Node*>& neighboursLinf_p,
+        boost::unordered_map<int, DRT::Element*>* neighboursLinf_w = NULL
+    ) const;
 
-    /// link to timInt
+    /// link to time integration
     virtual const Teuchos::RCP<ADAPTER::Particle> AdapterParticle() const { return particles_; }
 
     /// get particle interaction type
@@ -184,12 +201,6 @@ namespace PARTICLE
     virtual void SetRendering(Teuchos::RCP<Rendering> rendering) { rendering_ = rendering; }
 
     inline virtual void CalculateAndApplyForcesToParticles(bool init) { ; };
-
-    /// bins are redistributed according to the current fill level with particles
-    virtual void DynamicLoadBalancing();
-
-    /// update connectivity: mask to sort various connectivity updates
-    virtual void UpdateConnectivity();
 
     /// prepare time step
     virtual void PrepareTimeStep(bool print_header = true);
@@ -217,95 +228,110 @@ namespace PARTICLE
     /// ghosting of an additional second bin layer
     virtual void AddLayerGhosting(
         std::set<int>& colbins
-        );
+    );
 
     /// ghosting of bins in proximity of ghosted boundary particles
     virtual void BdryParticleGhosting(
         std::set<int>& colbins
-        );
+    );
 
     /// ghosting of bins in proximity of ghosted wall elements
     virtual void WallElementGhosting(
         std::set<int>& colbins
-        );
+    );
 
     /// build connectivity from particle wall elements to bins
     virtual void BuildElementToBinPointers(
-      bool wallpointer   ///< bool whether wall element pointer need rebuild
-      );
+        bool wallpointer   ///< bool whether wall element pointer need rebuild
+    );
 
     /// assign wall elements and gids to bins
     virtual void AssignWallElesAndGidsToBins();
 
-    /// rough safety check for proper bin size
-    virtual void BinSizeSafetyCheck(const double dt);
+    /// safety check for proper bin size
+    virtual void BinSizeSafetyCheck();
 
     /// access structure and setup particle wall
     virtual void AccessStructure();
 
     /// particle walls are set up and assigned to bins
     virtual void SetupParticleWalls(
-      Teuchos::RCP<DRT::Discretization> basediscret,
-      const std::string elename
-      );
+        Teuchos::RCP<DRT::Discretization> basediscret,
+        const std::string elename
+    );
 
     /// relate wall gids to bin ids
     virtual void RelateWallGidsToBinIds();
 
     /// get particles and wall elements in given bins
     void GetBinContent(
-      std::list<DRT::Node*>& bin_p,
-      boost::unordered_map<int, DRT::Element*>* bin_w,
-      std::vector<int>& binIds) const;
+        std::list<DRT::Node*>& bin_p,
+        boost::unordered_map<int, DRT::Element*>* bin_w,
+        std::vector<int>& binIds
+    ) const;
+
+    /// determine particle interaction distance
+    virtual double ParticleInteractionDistance();
 
     //! @name particle related stuff
     //@{
 
-    Teuchos::RCP<ADAPTER::Particle> particles_;     ///< particle time integration
+    /// particle time integration
+    Teuchos::RCP<ADAPTER::Particle> particles_;
 
-    LINALG::Matrix<3,1> gravity_acc_;   ///< acceleration due to gravity
+    /// acceleration due to gravity
+    LINALG::Matrix<3,1> gravity_acc_;
 
-    int writeresultsevery_;   ///< output interval
+    /// output interval
+    int writeresultsevery_;
 
-    Teuchos::RCP<DRT::Discretization> particlewalldis_;     ///< fully redundant particle wall discretization
+    /// fully redundant particle wall discretization
+    Teuchos::RCP<DRT::Discretization> particlewalldis_;
 
-    Teuchos::RCP<Epetra_Map> particlewallelecolmap_standardghosting_;     ///< wall ele col map containing standard ghosting
+    /// wall ele col map containing standard ghosting
+    Teuchos::RCP<Epetra_Map> particlewallelecolmap_standardghosting_;
 
-    Teuchos::RCP<LINALG::MapExtractor> wallextractor_;   ///< map extractor for particle wall
+    /// map extractor for particle wall
+    Teuchos::RCP<LINALG::MapExtractor> wallextractor_;
 
-    Teuchos::RCP<const Epetra_Vector> walldispn_; ///< wall displacements at \f$t_{n}\f$
+    /// wall displacements at \f$t_{n}\f$
+    Teuchos::RCP<const Epetra_Vector> walldispn_;
 
-    Teuchos::RCP<const Epetra_Vector> walldispnp_; ///< wall displacements at \f$t_{n+1}\f$
+    /// wall displacements at \f$t_{n+1}\f$
+    Teuchos::RCP<const Epetra_Vector> walldispnp_;
 
-    Teuchos::RCP<const Epetra_Vector> wallvelnp_; ///< wall velocities at \f$t_{n+1}\f$
+    /// wall velocities at \f$t_{n+1}\f$
+    Teuchos::RCP<const Epetra_Vector> wallvelnp_;
 
-    const bool moving_walls_;   ///< flag whether walls are moving
+    /// flag whether walls are moving
+    const bool moving_walls_;
 
-    const int transfer_every_;   ///< interval to call particle transfer
+    /// type of repartitioning strategy
+    const INPAR::PARTICLE::RepartitionStrategy rep_strategy_;
 
+    /// displacement state of particles since last redistribution
+    Teuchos::RCP<Epetra_Vector> dis_at_last_redistr_;
+
+    /// type of particle interaction
     const INPAR::PARTICLE::ParticleInteractions particleInteractionType_;
 
+    /// extended ghosting strategy
     const INPAR::PARTICLE::ExtendedGhosting extendedGhosting_;
 
-    std::vector<const MAT::PAR::ParticleMat*> particleMat_;  ///< vector of pointers to particle material parameters
+    /// vector of pointers to particle material parameters
+    std::vector<const MAT::PAR::ParticleMat*> particleMat_;
 
     BINSTRATEGY::UTILS::BinContentType bin_wallcontent_;
 
-    Teuchos::RCP<Rendering> rendering_; ///< handler of the rendering discretization (used for SPH dynamics)
+    /// handler of the rendering discretization (used for SPH dynamics)
+    Teuchos::RCP<Rendering> rendering_;
 
-    std::map<int, std::set<int> > relwallgidtobinids_; ///< map relating wall gids to bin ids
+    /// map relating wall gids to bin ids
+    std::map<int, std::set<int> > relwallgidtobinids_;
 
     //@}
 
   }; // Algorithm
-
-  struct homelessParticleTemp
-  {
-  public:
-  int lidNode_old;
-  int lidDof_old;
-  std::vector<double> pos;
-  };
 
 } // namespace PARTICLE
 

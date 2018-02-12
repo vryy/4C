@@ -111,7 +111,7 @@ int PARTICLE::TimIntKickDrift::IntegrateStep()
   if (DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"TRANSPORT_VELOCITY")==true)
     ApplyDirichletBC(timen_-dthalf, Teuchos::null, velmodn_, Teuchos::null, false);
 
-  //Transfer particles and heat sources into their correct bins
+  //Transfer particles into their correct bins
   particle_algorithm_->UpdateConnectivity();
 
   Teuchos::RCP<Epetra_Vector> acc_A = Teuchos::rcp(new Epetra_Vector(*veln_));

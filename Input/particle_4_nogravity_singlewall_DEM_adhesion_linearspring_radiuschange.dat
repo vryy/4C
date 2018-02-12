@@ -36,6 +36,7 @@ CONTACTFORCESEVRY               1000
 TIMESTEP                        0.001
 NUMSTEP                         1000
 PARTICLE_INTERACTION            NormalContact_DEM
+REPARTITIONSTRATEGY             Everydt
 NORMAL_CONTACT_LAW              LinearSpring
 NORMAL_ADHESION_LAW             LinearSpring
 ADHESION_NORMAL_STIFF           3.e3

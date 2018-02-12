@@ -21,9 +21,11 @@ BOUNDINGBOX                    -0.1 -0.1 -0.01 0.1 0.1 0.01
 LINEAR_SOLVER                   1
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      KickDrift
+RESULTSEVRY                     100
+RESTARTEVRY                     1000
 TIMESTEP                        0.01
-NUMSTEP                         10000000
-MAXTIME                         5
+NUMSTEP                         500
+MAXTIME                         5.0
 GRAVITY_ACCELERATION            0.1 0.0 0.0 //Apply gravity force?
 PARTICLE_INTERACTION            SPH  //None (default),Normal_DEM,Normal_MD,NormalAndTang_DEM,SPH
 WEIGHT_FUNCTION                 QuinticBspline // CubicBspline (default), SqrtHyperbola, HyperbolaNoRsz

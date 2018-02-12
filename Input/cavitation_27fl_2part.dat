@@ -34,6 +34,7 @@ CUTOFF_RADIUS                   0.2
 BOUNDINGBOX                     -1.000001 -1.000001 -1.100001 1.100001 1.100001 1.00012999
 ----------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      CentrDiff
+REPARTITIONSTRATEGY             Everydt
 GRAVITY_ACCELERATION            0.0 0.0 -9.81
 ----------------------------------------------------------CAVITATION DYNAMIC
 COUPALGO                        cavitation_oneway

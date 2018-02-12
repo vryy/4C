@@ -28,7 +28,7 @@ RESULTSEVRY                     100
 RESTARTEVRY                     100
 TIMESTEP                        0.0005
 NUMSTEP                         200
-MAXTIME                         0.5
+MAXTIME                         0.1
 GRAVITY_ACCELERATION            0.0 -1 0.0 //Apply gravity force?
 GRAVITY_RAMP_TIME               1
 PARTICLE_INTERACTION            SPH  //None (default),Normal_DEM,Normal_MD,NormalAndTang_DEM,SPH

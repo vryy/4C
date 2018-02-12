@@ -47,6 +47,18 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                 ),
                                 &particledyn);
 
+   setStringToIntegralParameter<int>("REPARTITIONSTRATEGY","Adaptive",
+                               "type of employed repartitioning strategy",
+                               tuple<std::string>(
+                                 "Everydt",
+                                 "Adaptive"
+                                 ),
+                               tuple<int>(
+                                 repstr_everydt,
+                                 repstr_adaptive
+                                 ),
+                               &particledyn );
+
    // Output type
    IntParameter("RESULTSEVRY",1,"save displacements and contact forces every RESULTSEVRY steps",&particledyn);
    IntParameter("RESEVRYERGY",0,"write system energies every requested step",&particledyn);
@@ -257,7 +269,6 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    BoolParameter("TENSION_CUTOFF","no","switch on/off tension cutoff",&particledyn);
    BoolParameter("MOVING_WALLS","no","switch on/off moving walls",&particledyn);
    DoubleParameter("ROLLING_RESISTANCE",-1.0,"Scaling factor for rolling resistance (-1.0: rolling resistance off)",&particledyn);
-   IntParameter("TRANSFER_EVERY",1,"transfer particles every TRANSFER_EVERY steps",&particledyn);
    DoubleParameter("RANDOM_AMPLITUDE",0.0,"random value for initial position",&particledyn);
 
    setStringToIntegralParameter<int>(

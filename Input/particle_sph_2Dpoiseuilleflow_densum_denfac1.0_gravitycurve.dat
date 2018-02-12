@@ -21,8 +21,10 @@ BOUNDINGBOX                    -0.1 -0.1 -0.01 0.1 0.1 0.01
 LINEAR_SOLVER                   1
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      KickDrift
+RESULTSEVRY                     10
+RESTARTEVRY                     40
 TIMESTEP                        0.01
-NUMSTEP                         10000000
+NUMSTEP                         50
 MAXTIME                         0.5
 GRAVITY_ACCELERATION            0.1 0.0 0.0 //Apply gravity force?
 GRAVITY_RAMP_TIME               0.25 //Increase gravity force smoothly in the initial time interval t \in [0,GRAVITY_RAMP_TIME]

@@ -65,8 +65,8 @@ PARTICLE::ScatraParticleCoupling::ScatraParticleCoupling(
   fast_(DRT::INPUT::IntegralValue<bool>(params->sublist("PARTICLE"),"FAST_CHECK")),
   delete_more_(params->sublist("PARTICLE").get<double>("DELETE_CRITICAL_PARTICLES"))
 {
-  if(transfer_every_ != 1)
-    dserror("TRANSFER_EVERY is not used, set it to one");
+  if(rep_strategy_ != INPAR::PARTICLE::repstr_everydt)
+    dserror("REPARTITIONSTRATEGY must be set to Everydt");
 
   Init(false);
 
@@ -2658,8 +2658,12 @@ void PARTICLE::ScatraParticleCoupling::Attraction(
     // x_P^new = x_P + lambda*(phi_target-current_phi_particle) * n_p
     disnp->Update(1.0,*inc_dis,1.0);
 
+    // set current position to particle nodes
+    SetParticleNodePos();
+
     // transfer particles to bins
     TransferParticles(true, false);
+
     // update present vectors according to the new distribution of particles
     old = lambda;
     lambda = LINALG::CreateVector(*BinStrategy()->BinDiscret()->NodeRowMap(),true);
@@ -2796,6 +2800,7 @@ void PARTICLE::ScatraParticleCoupling::Attraction(
 
     // possibly position have been reverted and particles changed the bin or even the processor
     // therefore, we have to recall the following steps
+    SetParticleNodePos();
     TransferParticles(true,false);
     // likewise update present vectors according to the new distribution of particles
     Teuchos::RCP<Epetra_Vector> old;

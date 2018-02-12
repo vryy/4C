@@ -38,6 +38,7 @@ BOUNDINGBOX                     -4.0 4.0 0.0 0.0 0.0 0.0
 ------------------------------------------------------------PARTICLE DYNAMIC
 DIMENSION                       2Dz
 DYNAMICTYP                      RK2
+REPARTITIONSTRATEGY             Everydt
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      nonlinear
 INITFUNCNO                      2

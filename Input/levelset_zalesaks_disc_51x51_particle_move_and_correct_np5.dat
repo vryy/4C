@@ -36,6 +36,7 @@ BIN_PER_DIR                     51 51 1
 ------------------------------------------------------------PARTICLE DYNAMIC
 DIMENSION                       2Dz
 DYNAMICTYP                      RK2
+REPARTITIONSTRATEGY             Everydt
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      linear_full //nonlinear
 INITFUNCNO                      3

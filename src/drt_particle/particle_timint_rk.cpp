@@ -97,6 +97,9 @@ void PARTICLE::TimIntRK::Integrate_RK_Second()
     // compute position at time n+1/2
     disn_->Update(dthalf, *vel, 1.0);
 
+    // set current position to particle nodes
+    particle_algorithm_->SetParticleNodePos();
+
     // transfer particles to their correct bin, if required
     particle_algorithm_->TransferParticles(false, false);
 
@@ -119,6 +122,9 @@ void PARTICLE::TimIntRK::Integrate_RK_Second()
     vel = Teuchos::rcp_dynamic_cast<PARTICLE::ScatraParticleCoupling>(particle_algorithm_)->GetVelocity(0.5);
 
     disn_->Update(1.0, *dis, dt, *vel, 0.0);
+
+    // set current position to particle nodes
+    particle_algorithm_->SetParticleNodePos();
 
     // transfer particles to their correct bin, if required
     particle_algorithm_->TransferParticles(true, false);

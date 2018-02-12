@@ -32,6 +32,7 @@ LIMIT_OUTP_TO_PROC              -1
 CUTOFF_RADIUS                   1.0
 ----------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      CentrDiff
+REPARTITIONSTRATEGY             Everydt
 ----------------------------------------------------------CAVITATION DYNAMIC
 COUPALGO                        cavitation_twowayfull_weak
 INFLUENCE_SCALING               1.666666666666

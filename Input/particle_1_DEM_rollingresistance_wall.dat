@@ -28,8 +28,8 @@ PERIODICONOFF                   0 0 0
 BOUNDINGBOX                     -0.1 -0.1 -0.1 0.3 0.1 0.1
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      CentrDiff
-RESULTSEVRY                     100
-RESTARTEVRY                     100
+RESULTSEVRY                     10000
+RESTARTEVRY                     19000
 TIMESTEP                        0.0004
 NUMSTEP                         20000
 MAXTIME                         8
@@ -53,7 +53,6 @@ RADIUS_DISTRIBUTION             None
 RADIUS_DISTRIBUTION_SIGMA       -1.0
 MOVING_WALLS                    No
 RANDOM_AMPLITUDE                0.00
-TRANSFER_EVERY                  1
 ------------------------------------------------NODE COORDS
 PARTICLE 1 COORD 0.0 0.0 0.0
 NODE 1 COORD -0.1 -0.1 -0.01

@@ -35,6 +35,7 @@ CUTOFF_RADIUS                   0.01
 BOUNDINGBOX                     3.98 3.98 11.98 4.02 4.02 12.02
 ----------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      CentrDiff
+REPARTITIONSTRATEGY             Everydt
 PARTICLE_INTERACTION            NormalContact_DEM
 NORMAL_CONTACT_LAW              LinearSpringDamp
 MIN_RADIUS                      7.0e-5

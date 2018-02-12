@@ -31,6 +31,7 @@ VERBOSITY                       Standard
 CUTOFF_RADIUS                   0.5
 ----------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      CentrDiff
+REPARTITIONSTRATEGY             Everydt
 GRAVITY_ACCELERATION            -9.81 0.0 0.0
 ----------------------------------------------------------CAVITATION DYNAMIC
 COUPALGO                        cavitation_voidfrac_only

@@ -80,7 +80,6 @@ YOUNG_WALL                      210.0e9
 NUE_WALL                        0.3
 MOVING_WALLS                    No
 RANDOM_AMPLITUDE                0.00 //0.01
-TRANSFER_EVERY                  2
 --------------------------------------------------------------------SOLVER 1
 NAME                            Dummy_Structure_Solver
 SOLVER                          UMFPACK

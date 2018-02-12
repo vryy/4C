@@ -30,6 +30,7 @@ BOUNDINGBOX                     -0.05 -0.05 -0.0625 +0.05 +0.05 +0.0625
 CUTOFF_RADIUS                   5.0e-3
 ----------------------------------------------------------PARTICLE DYNAMIC
 DIMENSION                       2Dz
+REPARTITIONSTRATEGY             Everydt
 DYNAMICTYP                      CentrDiff
 RANDOM_AMPLITUDE                0.0
 ----------------------------------------------------------CAVITATION DYNAMIC
