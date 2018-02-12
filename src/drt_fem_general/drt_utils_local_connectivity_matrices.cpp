@@ -1893,6 +1893,12 @@ void DRT::UTILS::getCornerNodeIndices(
 {
   switch(distype)
   {
+    case DRT::Element::line3:
+    {
+      if      (hoindex==2) { index1 = 0; index2 = 1; }
+      else dserror("no valid line3 edge found");
+      break;
+    }
     case DRT::Element::tri6:
     {
       if      (hoindex==3) { index1 = 0; index2 = 1; }
