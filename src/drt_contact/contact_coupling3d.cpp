@@ -161,12 +161,6 @@ bool CONTACT::CoCoupling3d::IntegrateCells(
                  lmtype==INPAR::MORTAR::lagmult_const))
              or algo == INPAR::MORTAR::algorithm_gpts)
     {
-      // check for dual shape functions and linear LM interpolation
-      if ((ShapeFcn() == INPAR::MORTAR::shape_dual
-          || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
-          && lmtype == INPAR::MORTAR::lagmult_lin)
-        dserror("ERROR: Linear LM interpolation not yet implemented for DUAL 3D quadratic contact");
-
       // check for standard shape functions and quadratic LM interpolation
       if (ShapeFcn() == INPAR::MORTAR::shape_standard
           && lmtype == INPAR::MORTAR::lagmult_quad
@@ -1583,20 +1577,17 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
     return;
 
   // For standard shape functions no modification is necessary
-  // A switch earlier in the process improves computational efficiency
-  if (ShapeFcn() != INPAR::MORTAR::shape_dual && ShapeFcn() != INPAR::MORTAR::shape_petrovgalerkin)
-    return;
-
+  // A switch erlier in the process improves computational efficiency
   INPAR::MORTAR::ConsistentDualType consistent=DRT::INPUT::IntegralValue<INPAR::MORTAR::ConsistentDualType>(imortar_,"LM_DUAL_CONSISTENT");
-  if (consistent==INPAR::MORTAR::consistent_none)
+  if (ShapeFcn() == INPAR::MORTAR::shape_standard || consistent==INPAR::MORTAR::consistent_none)
     return;
 
-  // Consistent modification only for linear LM interpolation
-  if (Quad()==true && consistent!=INPAR::MORTAR::consistent_none && !SlaveElement().IsNurbs())
-    dserror("Consistent dual shape functions in boundary elements only for linear LM interpolation or NURBS");
+  // Consistent modification not yet checked for constant LM interpolation
+  if (Quad() == true && LagMultQuad() == INPAR::MORTAR::lagmult_const && consistent != INPAR::MORTAR::consistent_none)
+    dserror("ERROR: Consistent dual shape functions not yet checked for constant LM interpolation!");
 
   if (consistent==INPAR::MORTAR::consistent_all && IntType()!=INPAR::MORTAR::inttype_segments)
-    dserror("consistent dual shape functions on all elements only for segment-based integration");
+    dserror("ERROR: Consistent dual shape functions on all elements only for segment-based integration");
 
   // do nothing if there are no coupling pairs
   if (Coupling().size()==0)
@@ -1628,14 +1619,18 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
     DRT::Node** mynodes_test = SlaveElement().Nodes();
     if (!mynodes_test) dserror("ERROR: HasProjStatus: Null pointer!");
 
-    if (dt_s==DRT::Element::quad4 || dt_s==DRT::Element::nurbs9)
+    if (dt_s==DRT::Element::quad4 || dt_s==DRT::Element::quad8 || dt_s==DRT::Element::nurbs9)
     {
-      for (int s_test=0;s_test<4;++s_test)
+      for (int s_test = 0;s_test < SlaveElement().NumNode();++s_test)
       {
         if (s_test==0)      { sxi_test[0]=-1.0;sxi_test[1]=-1.0;}
         else if (s_test==1) { sxi_test[0]=-1.0;sxi_test[1]= 1.0;}
         else if (s_test==2) { sxi_test[0]= 1.0;sxi_test[1]=-1.0;}
         else if (s_test==3) { sxi_test[0]= 1.0;sxi_test[1]= 1.0;}
+        else if (s_test==4) { sxi_test[0]= 1.0;sxi_test[1]= 0.0;}
+        else if (s_test==5) { sxi_test[0]= 0.0;sxi_test[1]= 1.0;}
+        else if (s_test==6) { sxi_test[0]=-1.0;sxi_test[1]= 0.0;}
+        else if (s_test==7) { sxi_test[0]= 0.0;sxi_test[1]=-1.0;}
 
         proj_test=false;
         for (int bs_test=0;bs_test<(int)Coupling().size();++bs_test)
@@ -1665,13 +1660,16 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
       }
     }
 
-    else if(dt_s==DRT::Element::tri3)
+    else if(dt_s==DRT::Element::tri3 || dt_s==DRT::Element::tri6)
     {
-      for (int s_test=0;s_test<3;++s_test)
+      for (int s_test = 0; s_test < SlaveElement().NumNode();++s_test)
       {
         if      (s_test==0) { sxi_test[0]=0.0;sxi_test[1]=0.0;}
         else if (s_test==1) { sxi_test[0]=1.0;sxi_test[1]=0.0;}
         else if (s_test==2) { sxi_test[0]=0.0;sxi_test[1]=1.0;}
+        else if (s_test==3) { sxi_test[0]=0.5;sxi_test[1]=0.0;}
+        else if (s_test==4) { sxi_test[0]=0.5;sxi_test[1]=0.5;}
+        else if (s_test==5) { sxi_test[0]=0.0;sxi_test[1]=0.5;}
 
         proj_test=false;
         for (int bs_test=0;bs_test<(int)Coupling().size();++bs_test)
@@ -1701,8 +1699,7 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
     }
 
     else
-      dserror("Calculation of consistent dual shape functions called for non-valid slave element shape.\n"
-          "Currently this is only supported for linear FE, i.e. quad4 and tri3. Sorry.");
+      dserror("Calculation of consistent dual shape functions called for non-valid slave element shape!");
 
     if (boundary_ele==false)
       return;
@@ -1722,7 +1719,6 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
     mnodes += MasterElements()[m]->NumNode();
 
   // Dual shape functions coefficient matrix and linearization
-  LINALG::SerialDenseMatrix ae(nnodes,nnodes,true);
   SlaveElement().MoData().DerivDualShape() =
       Teuchos::rcp(new GEN::pairedvector<int,Epetra_SerialDenseMatrix>((nnodes+mnodes)*ndof,0,Epetra_SerialDenseMatrix(nnodes,nnodes)));
   GEN::pairedvector<int,Epetra_SerialDenseMatrix>& derivae=*(SlaveElement().MoData().DerivDualShape());
@@ -1816,7 +1812,8 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
         LINALG::SerialDenseMatrix sderiv(nnodes,2,true);
 
         // evaluate trace space shape functions at Gauss point
-        SlaveElement().EvaluateShape(psxi, sval, sderiv, nnodes);
+        if (LagMultQuad() == INPAR::MORTAR::lagmult_lin) SlaveElement().EvaluateShapeLagMultLin(INPAR::MORTAR::shape_standard,psxi,sval,sderiv,nnodes);
+        else SlaveElement().EvaluateShape(psxi,sval,sderiv,nnodes);
 
         // additional data for contact calculation (i.e. incl. derivative of dual shape functions coefficient matrix)
         // GP slave coordinate derivatives
@@ -1905,8 +1902,53 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
   // This doesn't matter, as there is no associated integration domain anyway
   if (A_tot<1.e-12) return;
 
-  // invert bi-ortho matrix me
-  LINALG::SerialDenseMatrix meinv = LINALG::InvertAndMultiplyByCholesky(me,de,ae);
+  // declare dual shape functions coefficient matrix and
+  // inverse of matrix M_e
+  LINALG::SerialDenseMatrix ae(nnodes,nnodes,true);
+  LINALG::SerialDenseMatrix meinv(nnodes,nnodes,true);
+
+  // compute matrix A_e and inverse of matrix M_e for
+  // linear interpolation of quadratic element
+  if (LagMultQuad() == INPAR::MORTAR::lagmult_lin)
+  {
+    // declare and initialize to zero inverse of Matrix M_e
+    LINALG::SerialDenseMatrix meinv(nnodes,nnodes,true);
+
+    if (SlaveElement().Shape() == DRT::Element::tri6)
+    {
+      // reduce me to non-zero nodes before inverting
+      LINALG::Matrix<3,3> melin;
+      for (int j=0;j<3;++j)
+        for (int k=0;k<3;++k) melin(j,k) = me(j,k);
+
+      // invert bi-ortho matrix melin
+      LINALG::Inverse3x3(melin);
+
+      // re-inflate inverse of melin to full size
+      for (int j=0;j<3;++j)
+        for (int k=0;k<3;++k) meinv(j,k) = melin(j,k);
+    }
+    else if (SlaveElement().Shape() == DRT::Element::quad8 || SlaveElement().Shape() == DRT::Element::quad9)
+    {
+      // reduce me to non-zero nodes before inverting
+      LINALG::Matrix<4,4> melin;
+      for (int j=0;j<4;++j)
+        for (int k=0;k<4;++k) melin(j,k) = me(j,k);
+
+      // invert bi-ortho matrix melin
+      LINALG::Inverse4x4(melin);
+
+      // re-inflate inverse of melin to full size
+      for (int j=0;j<4;++j)
+        for (int k=0;k<4;++k) meinv(j,k) = melin(j,k);
+    }
+    else dserror("ERROR: incorrect element shape for linear interpolation of quadratic element!");
+
+    // get solution matrix with dual parameters
+    ae.Multiply('N','N',1.0,de,meinv,0.0);
+  }
+  // compute matrix A_e and inverse of matrix M_e for all other cases
+  else meinv = LINALG::InvertAndMultiplyByCholesky(me,de,ae);
 
   // build linearization of ae and store in derivdual
   // (this is done according to a quite complex formula, which

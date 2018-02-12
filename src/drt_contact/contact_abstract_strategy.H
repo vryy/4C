@@ -389,8 +389,8 @@ public:
   bool IsRegularized() const { return regularized_; };
 
   //! return flag indicating whether trafo should be applied
-  bool& IsDualQuadSlave3D() { return dualquadslave3d_; };
-  bool IsDualQuadSlave3D() const { return dualquadslave3d_; };
+  bool& IsDualQuadSlaveTrafo() { return dualquadslavetrafo_; };
+  bool IsDualQuadSlaveTrafo() const { return dualquadslavetrafo_; };
 
   //! return transformation matrix T for dual quad 3D case
   Teuchos::RCP<LINALG::SparseMatrix>& TrafoPtr() { return trafo_; };
@@ -607,7 +607,7 @@ private:
   bool regularized_;
 
   //! flag indicating whether trafo should be applied
-  bool dualquadslave3d_;
+  bool dualquadslavetrafo_;
 
   //! transformation matrix T for dual quad 3D case
   Teuchos::RCP<LINALG::SparseMatrix>  trafo_;
@@ -1003,7 +1003,7 @@ public:
 
    Returns TRUE if at least one higher-order 3d slave element with
    dual Lagrange mutliplier shape functions in any interface. */
-  virtual const bool& Dualquadslave3d() { return Data().IsDualQuadSlave3D(); }
+  virtual const bool& Dualquadslavetrafo() { return Data().IsDualQuadSlaveTrafo(); }
   ;
 
   //! Return parallel redistribution status (yes or no)
@@ -1619,7 +1619,7 @@ protected:
     bool& nonSmoothContact_;   //!< ref. to flag for nonsmooth contact algorithm
     bool& regularized_;        //!< ref. to flag for regularized contact
 
-    bool&                                dualquadslave3d_; //!< ref. to flag indicating whether trafo should be applied
+    bool&                                dualquadslavetrafo_; //!< ref. to flag indicating whether trafo should be applied
     Teuchos::RCP<LINALG::SparseMatrix>&  trafo_;           //!< ref. to transformation matrix T for dual quad 3D case
     Teuchos::RCP<LINALG::SparseMatrix>&  invtrafo_;        //!< ref. to inverse trafo matrix T^(-1) for dual quad 3D case
     Teuchos::RCP<LINALG::SparseMatrix>&  dmatrixmod_;      //!< ref. to modified global Mortar matrix D

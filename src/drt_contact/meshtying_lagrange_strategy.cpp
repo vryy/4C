@@ -105,7 +105,7 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(
   // These modifications are applied once right here, thus the
   // following code (EvaluateMeshtying, Recover) remains unchanged.
   //----------------------------------------------------------------------
-  if (Dualquadslave3d())
+  if (Dualquadslavetrafo())
   {
 #ifdef MORTARTRAFO
     // do nothing
@@ -243,12 +243,12 @@ Teuchos::RCP<Epetra_Vector> CONTACT::MtLagrangeStrategy::MeshInitialization()
   const double t_start = Teuchos::Time::wallTime();
 
   // not yet working for quadratic FE with linear dual LM
-  if (Dualquadslave3d())
+  /*if (Dualquadslavetrafo())
   {
 #ifdef MORTARTRAFO
     dserror("ERROR: MeshInitialization not yet implemented for this case");
 #endif // #ifdef MORTARTRAFO
-  }
+  }*/
 
   //**********************************************************************
   // (1) get master positions on global level
@@ -268,7 +268,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::MtLagrangeStrategy::MeshInitialization()
       INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
 
   // quadratic FE with dual LM
-  if (Dualquadslave3d())
+  if (Dualquadslavetrafo())
   {
 #ifdef MORTARTRAFO
     // split T^-1
@@ -429,7 +429,7 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(
     /* Apply basis transformation to K and f                              */
     /* (currently only needed for quadratic FE with linear dual LM)       */
     /**********************************************************************/
-    if (Dualquadslave3d())
+    if (Dualquadslavetrafo())
     {
 #ifdef MORTARTRAFO
       // basis transformation
@@ -717,7 +717,7 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(
     /* Apply basis transformation to K and f                              */
     /* (currently only needed for quadratic FE with linear dual LM)       */
     /**********************************************************************/
-    if (Dualquadslave3d())
+    if (Dualquadslavetrafo())
     {
 #ifdef MORTARTRAFO
       // basis transformation
@@ -955,7 +955,7 @@ void CONTACT::MtLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
     /* Undo basis transformation to solution                              */
     /* (currently only needed for quadratic FE with linear dual LM)       */
     /**********************************************************************/
-    if (Dualquadslave3d())
+    if (Dualquadslavetrafo())
     {
 #ifdef MORTARTRAFO
       // undo basis transformation to solution
@@ -1005,7 +1005,7 @@ void CONTACT::MtLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
     /* Undo basis transformation to solution                              */
     /* (currently only needed for quadratic FE with linear dual LM)       */
     /**********************************************************************/
-    if (Dualquadslave3d())
+    if (Dualquadslavetrafo())
     {
 #ifdef MORTARTRAFO
       // undo basis transformation to solution

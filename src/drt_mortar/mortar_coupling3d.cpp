@@ -4552,9 +4552,9 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
   if (ShapeFcn() == INPAR::MORTAR::shape_standard || lmdualconsistent_==INPAR::MORTAR::consistent_none)
     return;
 
-  // Consistent modification only for linear LM interpolation
-  if (Quad() == true && lmdualconsistent_!=INPAR::MORTAR::consistent_none)
-    dserror("ERROR: Consistent dual shape functions in boundary elements only for linear LM interpolation");
+  // Consistent modification not yet checked for constant LM interpolation
+  if (Quad() == true && LagMultQuad() == INPAR::MORTAR::lagmult_const && lmdualconsistent_ != INPAR::MORTAR::consistent_none)
+    dserror("ERROR: Consistent dual shape functions not yet checked for constant LM interpolation!");
 
   if (Coupling().size() == 0)
     return;
@@ -4632,11 +4632,10 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
       return;
   }
 
-  // initialize dual shape function coefficients
+  // get number of nodes of present slave element
   int nnodes = SlaveElement().NumNode();
-  LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
 
-  // various variables
+  // inítialize Jacobian determinant
   double detg = 0.0;
 
   // initialize matrices de and me
@@ -4677,7 +4676,9 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
         LINALG::SerialDenseMatrix sderiv(nnodes, 2, true);
 
         // evaluate trace space shape functions at Gauss point
-        SlaveElement().EvaluateShape(sxi, sval, sderiv, nnodes);
+        if (LagMultQuad() == INPAR::MORTAR::lagmult_lin) SlaveElement().EvaluateShapeLagMultLin(INPAR::MORTAR::shape_standard,sxi,sval,sderiv,nnodes);
+        else SlaveElement().EvaluateShape(sxi,sval,sderiv,nnodes);
+
         detg = currcell->Jacobian();
 
         // computing de, me
@@ -4706,9 +4707,50 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
   if (me.Det_long() == 0)
     return;
 
-  // build ae matrix
-  // invert bi-ortho matrix me
-  LINALG::InvertAndMultiplyByCholesky(me, de, ae);
+  // declare dual shape functions coefficient matrix
+  LINALG::SerialDenseMatrix ae(nnodes,nnodes,true);
+
+  // compute matrix A_e for linear interpolation of quadratic element
+  if (LagMultQuad() == INPAR::MORTAR::lagmult_lin)
+  {
+    // declare and initialize to zero inverse of Matrix M_e
+    LINALG::SerialDenseMatrix meinv(nnodes,nnodes,true);
+
+    if (SlaveElement().Shape() == DRT::Element::tri6)
+    {
+      // reduce me to non-zero nodes before inverting
+      LINALG::Matrix<3,3> melin;
+      for (int j=0;j<3;++j)
+        for (int k=0;k<3;++k) melin(j,k) = me(j,k);
+
+      // invert bi-ortho matrix melin
+      LINALG::Inverse3x3(melin);
+
+      // re-inflate inverse of melin to full size
+      for (int j=0;j<3;++j)
+        for (int k=0;k<3;++k) meinv(j,k) = melin(j,k);
+    }
+    else if (SlaveElement().Shape() == DRT::Element::quad8 || SlaveElement().Shape() == DRT::Element::quad9)
+    {
+      // reduce me to non-zero nodes before inverting
+      LINALG::Matrix<4,4> melin;
+      for (int j=0;j<4;++j)
+        for (int k=0;k<4;++k) melin(j,k) = me(j,k);
+
+      // invert bi-ortho matrix melin
+      LINALG::Inverse4x4(melin);
+
+      // re-inflate inverse of melin to full size
+      for (int j=0;j<4;++j)
+        for (int k=0;k<4;++k) meinv(j,k) = melin(j,k);
+    }
+    else dserror("ERROR: incorrect element shape for linear interpolation of quadratic element!");
+
+    // get solution matrix with dual parameters
+    ae.Multiply('N','N',1.0,de,meinv,0.0);
+  }
+  // compute matrix A_e for all other cases
+  else LINALG::InvertAndMultiplyByCholesky(me,de,ae);
 
   // store ae matrix in slave element data container
   SlaveElement().MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));

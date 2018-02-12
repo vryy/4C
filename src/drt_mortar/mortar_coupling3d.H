@@ -723,6 +723,16 @@ public:
       Teuchos::RCP<MORTAR::ParamsInterface> mparams_ptr);
 
   /*!
+   \brief Return the LM interpolation / testing type for quadratic FE
+
+   */
+  virtual INPAR::MORTAR::LagMultQuad LagMultQuad()
+  {
+    return lmquadtype_;
+  }
+  ;
+
+  /*!
    \brief Return the LM shape fcn type
 
    */
@@ -754,6 +764,7 @@ protected:
   int dim_;                                             // problem dimension (here: 3D)
   INPAR::MORTAR::IntType integrationtype_;              // integration type
   INPAR::MORTAR::ShapeFcn shapefcn_;                    // lm shape function type
+  INPAR::MORTAR::LagMultQuad lmquadtype_;               // type of quadratic lm interpolation
   INPAR::MORTAR::ConsistentDualType lmdualconsistent_;  // flag indicating dual consistent lm
   bool quad_;                                           // flag indicating coupling type (true = quadratic)
   Teuchos::ParameterList& imortar_;                     // containing contact input parameters

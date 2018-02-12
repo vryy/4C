@@ -4033,6 +4033,29 @@ void MORTAR::MortarInterface::AssembleTrafo(LINALG::SparseMatrix& trafo,
     // which discretization type
     switch (shape)
     {
+    // line3 contact elements (= tri6||quad8||quad9 discretizations)
+    case MORTAR::MortarElement::line3:
+    {
+      // modification factor
+      if( INPAR::MORTAR::LagMultQuad() == INPAR::MORTAR::lagmult_lin) theta = 1.0/2.0;
+      else                                                            theta = 1.0/5.0;
+
+      // corner nodes
+      if (mrtrnode->Id() == mrtrele->NodeIds()[0]
+          || mrtrnode->Id() == mrtrele->NodeIds()[1])
+      {
+        nt = corner;
+      }
+
+      // edge nodes
+      else if (mrtrnode->Id() == mrtrele->NodeIds()[2])
+      {
+        nt = edge;
+      }
+
+      break;
+    }
+
     // tri6 contact elements (= tet10 discretizations)
     case MORTAR::MortarElement::tri6:
     {
@@ -4130,7 +4153,7 @@ void MORTAR::MortarInterface::AssembleTrafo(LINALG::SparseMatrix& trafo,
       // other cases
     default:
     {
-      dserror("ERROR: Trafo matrix only for tri6/quad8/quad9 contact elements");
+      dserror("ERROR: Trafo matrix only for line3/tri6/quad8/quad9 contact elements");
       break;
     }
     } // switch(Shape)
@@ -4261,6 +4284,17 @@ void MORTAR::MortarInterface::AssembleTrafo(LINALG::SparseMatrix& trafo,
     {
       switch(shape)
       {
+        case MORTAR::MortarElement::line3:
+        {
+          // edge node
+          if (mrtrnode->Id() == mrtrele->NodeIds()[2])
+          {
+            nt = slaveedge;
+          }
+
+          break;
+        }
+
         // tri6 contact elements (= tet10 discretizations)
         case MORTAR::MortarElement::tri6:
         {
@@ -4314,7 +4348,7 @@ void MORTAR::MortarInterface::AssembleTrafo(LINALG::SparseMatrix& trafo,
         // other cases
         default:
         {
-          dserror("ERROR: Trafo matrix only for tri6/quad8/quad9 contact elements");
+          dserror("ERROR: Trafo matrix only for line3/tri6/quad8/quad9 contact elements");
           break;
         }
       } // switch(Shape)

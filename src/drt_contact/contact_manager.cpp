@@ -999,11 +999,6 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
         && contact.get<double>("INITCONTACTGAPVALUE") == 0.0)
       dserror("ERROR: For initialization of init contact with gap, the INITCONTACTGAPVALUE is needed.");
 
-    if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ConsistentDualType>(mortar, "LM_DUAL_CONSISTENT") != INPAR::MORTAR::consistent_none
-        && DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LM_QUAD") != INPAR::MORTAR::lagmult_undefined
-        && distype!="Nurbs")
-      dserror("ERROR: Consistent dual shape functions in boundary elements only for linear shape functions or NURBS.");
-
     if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") != INPAR::WEAR::wear_none
         && DRT::INPUT::IntegralValue<int>(contact, "FRLESS_FIRST") == true)
       dserror("ERROR: Frictionless first contact step with wear not yet implemented");
@@ -1064,10 +1059,9 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     // *********************************************************************
     // 3D quadratic mortar (choice of interpolation and testing fcts.)
     // *********************************************************************
-    if ((DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LM_QUAD") == INPAR::MORTAR::lagmult_pwlin
-      || DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LM_QUAD") == INPAR::MORTAR::lagmult_lin)
+    if (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LM_QUAD") == INPAR::MORTAR::lagmult_pwlin
       && DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") == INPAR::MORTAR::shape_dual)
-      dserror("ERROR: Only quadratic approach (for LM) implemented for quadratic contact with DUAL shape fct.");
+      dserror("ERROR: No piecewise linear approach (for LM) implemented for quadratic contact with DUAL shape fct.");
 
     // *********************************************************************
     // poroelastic contact
@@ -1104,9 +1098,6 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
       }
     }
 
-  #ifdef MORTARTRAFO
-    dserror("MORTARTRAFO not yet implemented for contact, only for meshtying");
-  #endif // #ifndef MORTARTRAFO
     // *********************************************************************
     // element-based vs. segment-based mortar integration
     // *********************************************************************

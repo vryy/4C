@@ -133,7 +133,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     dual Lagrange mutliplier shape functions in any interface.
 
     */
-    virtual const bool& Dualquadslave3d() { return dualquadslave3d_; };
+    virtual const bool& Dualquadslavetrafo() { return dualquadslavetrafo_; };
 
     /*!
     \brief Return parallel redistribution status (yes or no)
@@ -534,7 +534,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     Teuchos::RCP<Epetra_Vector> zincr_;             // Lagrange multiplier vector increment within SaddlePointSolve (this is NOT the increment of z_ between t_{n+1} and t_{n}!)
     Teuchos::RCP<Epetra_Vector> zuzawa_;            // vector of Lagrange multipliers from last Uzawa step
 
-    bool                      dualquadslave3d_;     // flag indicating whether trafo should be applied
+    bool dualquadslavetrafo_;                       // flag indicating whether trafo should be applied
     Teuchos::RCP<LINALG::SparseMatrix> trafo_;      // transformation matrix T for dual quad 3D case
     Teuchos::RCP<LINALG::SparseMatrix> invtrafo_;   // inverse trafo matrix T^(-1) for dual quad 3D case
     double inttime_;                                // Integration time

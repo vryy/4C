@@ -95,7 +95,7 @@ CONTACT::AbstractStratDataContainer::AbstractStratDataContainer()
       friction_(false),
       nonSmoothContact_(false),
       regularized_(false),
-      dualquadslave3d_(false),
+      dualquadslavetrafo_(false),
       trafo_(Teuchos::null),
       invtrafo_(Teuchos::null),
       dmatrixmod_(Teuchos::null),
@@ -180,7 +180,7 @@ CONTACT::CoAbstractStrategy::CoAbstractStrategy(
       friction_(data_ptr->IsFriction()),
       nonSmoothContact_(data_ptr->IsNonSmoothContact()),
       regularized_(data_ptr->IsRegularized()),
-      dualquadslave3d_(data_ptr->IsDualQuadSlave3D()),
+      dualquadslavetrafo_(data_ptr->IsDualQuadSlaveTrafo()),
       trafo_(data_ptr->TrafoPtr()),
       invtrafo_(data_ptr->InvTrafoPtr()),
       dmatrixmod_(data_ptr->ModifiedDMatrixPtr()),
@@ -667,27 +667,35 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
   //----------------------------------------------------------------------
   // These matrices need to be applied to the slave displacements
   // in the cases of dual LM interpolation for tet10/hex20 meshes
-  // in 3D. Here, the displacement basis functions have been modified
+  // in 3D or for locally linear Lagrange multipliers for line3 meshes
+  // in 2D. Here, the displacement basis functions have been modified
   // in order to assure positivity of the D matrix entries and at
   // the same time biorthogonality. Thus, to scale back the modified
   // discrete displacements \hat{d} to the nodal discrete displacements
   // {d}, we have to apply the transformation matrix T and vice versa
   // with the transformation matrix T^(-1).
   //----------------------------------------------------------------------
-  INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<
-      INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
-  if ((shapefcn == INPAR::MORTAR::shape_dual
-      || shapefcn == INPAR::MORTAR::shape_petrovgalerkin) && Dim() == 3)
+  INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"LM_SHAPEFCN");
+  INPAR::MORTAR::LagMultQuad lagmultquad = DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(),"LM_QUAD");
+  if ((shapefcn == INPAR::MORTAR::shape_dual || shapefcn == INPAR::MORTAR::shape_petrovgalerkin)
+   && (Dim()==3 || (Dim()==2 && lagmultquad == INPAR::MORTAR::lagmult_lin)))
     for (int i = 0; i < (int) Interfaces().size(); ++i)
-      dualquadslave3d_ += Interfaces()[i]->Quadslave();
+      dualquadslavetrafo_ += Interfaces()[i]->Quadslave();
 
   //----------------------------------------------------------------------
   // IF SO, COMPUTE TRAFO MATRIX AND ITS INVERSE
   //----------------------------------------------------------------------
-  if (Dualquadslave3d())
+  if (Dualquadslavetrafo())
   {
-    trafo_ = Teuchos::rcp(new LINALG::SparseMatrix(SlDoFRowMap(true), 10));
-    invtrafo_ = Teuchos::rcp(new LINALG::SparseMatrix(SlDoFRowMap(true), 10));
+    // for the MORTARTRAFO case consider both slave and master DOFs
+    // else, only consider slave DOFs
+#ifdef MORTARTRAFO
+    trafo_    = Teuchos::rcp(new LINALG::SparseMatrix(*gsmdofrowmap_,10));
+    invtrafo_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsmdofrowmap_,10));
+#else
+    trafo_    = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+    invtrafo_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+#endif // #ifdef MORTARTRAFO
 
     // set of already processed nodes
     // (in order to avoid double-assembly for N interfaces)
@@ -704,7 +712,7 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
 
   // transform modified old D-matrix in case of friction
   // (ony necessary after parallel redistribution)
-  if (redistributed && friction_ && Dualquadslave3d())
+  if (redistributed && friction_ && Dualquadslavetrafo())
   {
     if (doldmod_ == Teuchos::null)
     {
@@ -1286,7 +1294,7 @@ void CONTACT::CoAbstractStrategy::InitMortar()
     dserror("unknown contact constraint direction");
 
   // in the case of frictional dual quad 3D, also the modified D matrices are setup
-  if (friction_ && Dualquadslave3d())
+  if (friction_ && Dualquadslavetrafo())
   {
     // initialize Dold and Mold if not done already
     if (doldmod_ == Teuchos::null)
@@ -1419,7 +1427,7 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(Teuchos::RCP<const Epet
     StoreToOld(MORTAR::StrategyBase::n_old);
 
     // transform dold_ in the case of dual quadratic 3d
-    if (Dualquadslave3d())
+    if (Dualquadslavetrafo())
     {
       Teuchos::RCP<LINALG::SparseMatrix> tempold = LINALG::MLMultiply(*dold_,
         false, *invtrafo_, false, false, false, true);
@@ -1451,7 +1459,7 @@ void CONTACT::CoAbstractStrategy::EvaluateRelMov()
 
   // transformation of slave displacement dofs
   // Dmod       ---->   D * T^(-1)
-  if (Dualquadslave3d())
+  if (Dualquadslavetrafo())
   {
     Teuchos::RCP<LINALG::SparseMatrix> temp = LINALG::MLMultiply(*dmatrix_,
         false, *invtrafo_, false, false, false, true);
@@ -1475,7 +1483,7 @@ void CONTACT::CoAbstractStrategy::EvaluateRelMov()
   xsmod = xsmodfull;
 
   // in case of 3D dual quadratic case, slave coordinates xs are modified
-  if (Dualquadslave3d())
+  if (Dualquadslavetrafo())
     invtrafo_->Multiply(false, *xsmod, *xsmod);
 
   // evaluation of obj. invariant slip increment
@@ -1813,7 +1821,7 @@ void CONTACT::CoAbstractStrategy::StoreDM(const std::string& state)
   {
     dold_ = dmatrix_;
     mold_ = mmatrix_;
-    if (friction_ && Dualquadslave3d())
+    if (friction_ && Dualquadslavetrafo())
       doldmod_ = dmatrixmod_;
   }
 
@@ -2002,7 +2010,7 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(
   // Concretely, we apply the following transformations:
   // D         ---->   D * T^(-1)
   //----------------------------------------------------------------------
-  if (Dualquadslave3d())
+  if (Dualquadslavetrafo())
   {
     // modify dmatrix_
     Teuchos::RCP<LINALG::SparseMatrix> temp = LINALG::MLMultiply(*dmatrix_,

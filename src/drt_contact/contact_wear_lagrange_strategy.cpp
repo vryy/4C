@@ -379,7 +379,7 @@ void WEAR::WearLagrangeStrategy::InitMortar()
   /**********************************************************************/
   /* in the case of dual quad 3D, the modified D matrices are setup     */
   /**********************************************************************/
-  if (friction_ && Dualquadslave3d())
+  if (friction_ && Dualquadslavetrafo())
   {
     // initialize Dold and Mold if not done already
     if (doldmod_==Teuchos::null)
@@ -705,7 +705,7 @@ void WEAR::WearLagrangeStrategy::CondenseWearImplExpl(Teuchos::RCP<LINALG::Spars
   // D^(-1)    ---->   T * D^(-1)
   // \hat{M}   ---->   T * \hat{M}
   //--------------------------------------------------------------------
-  if (Dualquadslave3d())
+  if (Dualquadslavetrafo())
   {
     // modify dmatrix_, invd_ and mhatmatrix_
     Teuchos::RCP<LINALG::SparseMatrix> temp2 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
@@ -1651,7 +1651,7 @@ void WEAR::WearLagrangeStrategy::CondenseWearDiscr(Teuchos::RCP<LINALG::SparseOp
   // D^(-1)    ---->   T * D^(-1)
   // \hat{M}   ---->   T * \hat{M}
   //--------------------------------------------------------------------
-  if (Dualquadslave3d())
+  if (Dualquadslavetrafo())
   {
     // modify dmatrix_, invd_ and mhatmatrix_
     Teuchos::RCP<LINALG::SparseMatrix> temp2 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
@@ -2723,7 +2723,7 @@ void WEAR::WearLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOpe
   // Concretely, we apply the following transformations:
   // LinD      ---->   T^(-T) * LinD
   //----------------------------------------------------------------------
-  if (Dualquadslave3d())
+  if (Dualquadslavetrafo())
   {
     // modify lindmatrix_
     Teuchos::RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*invtrafo_,true,*lindmatrix_,false,false,false,true);
@@ -2955,7 +2955,7 @@ void WEAR::WearLagrangeStrategy::PrepareSaddlePointSystem(Teuchos::RCP<LINALG::S
   // Concretely, we apply the following transformations:
   // D         ---->   D * T^(-1)
   //----------------------------------------------------------------------
-  if (Dualquadslave3d())
+  if (Dualquadslavetrafo())
   {
     // modify dmatrix_
     Teuchos::RCP<LINALG::SparseMatrix> temp2 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
@@ -4580,7 +4580,7 @@ void WEAR::WearLagrangeStrategy::DoReadRestart(
   // Concretely, we apply the following transformations:
   // D         ---->   D * T^(-1)
   //----------------------------------------------------------------------
-  if (Dualquadslave3d())
+  if (Dualquadslavetrafo())
   {
     // modify dmatrix_
     Teuchos::RCP<LINALG::SparseMatrix> temp = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);

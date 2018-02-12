@@ -1172,16 +1172,15 @@ bool MORTAR::Coupling2dManager::EvaluateCoupling(
  *----------------------------------------------------------------------*/
 void MORTAR::Coupling2dManager::ConsistDualShape()
 {
-  INPAR::MORTAR::ConsistentDualType consistent=DRT::INPUT::IntegralValue<INPAR::MORTAR::ConsistentDualType>(imortar_,"LM_DUAL_CONSISTENT");
-
   // For standard shape functions no modification is necessary
   // A switch erlier in the process improves computational efficiency
+  INPAR::MORTAR::ConsistentDualType consistent=DRT::INPUT::IntegralValue<INPAR::MORTAR::ConsistentDualType>(imortar_,"LM_DUAL_CONSISTENT");
   if (ShapeFcn() == INPAR::MORTAR::shape_standard || consistent==INPAR::MORTAR::consistent_none)
     return;
 
-  // Consistent modification only for linear LM interpolation or NURBS
-  if (Quad()==true && consistent!=INPAR::MORTAR::consistent_none && !SlaveElement().IsNurbs())
-    dserror("Consistent dual shape functions in boundary elements only for linear LM interpolation");
+  // Consistent modification not yet checked for constant LM interpolation
+  if (Quad() == true && LagMultQuad() == INPAR::MORTAR::lagmult_const && consistent != INPAR::MORTAR::consistent_none)
+    dserror("ERROR: Consistent dual shape functions not yet checked for constant LM interpolation!");
 
   // not implemented for nurbs yet
   if (SlaveElement().Shape()==DRT::Element::nurbs3)
@@ -1225,9 +1224,8 @@ void MORTAR::Coupling2dManager::ConsistDualShape()
   // calculate consistent dual schape functions (see e.g. Cichosz et.al.:
   // Consistent treatment of boundaries with mortar contact formulations, CMAME 2010
 
-  // Dual shape functions coefficient matrix
+  // get number of nodes of present slave element
   int nnodes = SlaveElement().NumNode();
-  LINALG::SerialDenseMatrix ae(nnodes,nnodes,true);
 
   // compute entries to bi-ortho matrices me/de with Gauss quadrature
   MORTAR::ElementIntegrator integrator(SlaveElement().Shape());
@@ -1252,7 +1250,8 @@ void MORTAR::Coupling2dManager::ConsistDualShape()
     sxi[0] = 0.5*(1.0-eta[0])*ximin + 0.5*(1.0+eta[0])*ximax;
 
     // evaluate trace space shape functions
-    SlaveElement().EvaluateShape(sxi,sval,sderiv,nnodes);
+    if (LagMultQuad() == INPAR::MORTAR::lagmult_lin) SlaveElement().EvaluateShapeLagMultLin(INPAR::MORTAR::shape_standard,sxi,sval,sderiv,nnodes);
+    else SlaveElement().EvaluateShape(sxi,sval,sderiv,nnodes);
 
     // evaluate the two slave side Jacobians
     double dxdsxi = SlaveElement().Jacobian(sxi);
@@ -1272,9 +1271,33 @@ void MORTAR::Coupling2dManager::ConsistDualShape()
     }
   }
 
-  // build ae matrix
-  // invert bi-ortho matrix me
-  LINALG::InvertAndMultiplyByCholesky(me,de,ae);
+  // declare dual shape functions coefficient matrix
+  LINALG::SerialDenseMatrix ae(nnodes,nnodes,true);
+
+  // compute matrix A_e for linear interpolation of quadratic element
+  if (LagMultQuad() == INPAR::MORTAR::lagmult_lin)
+  {
+    // how many non-zero nodes
+    const int nnodeslin = 2;
+
+    // reduce me to non-zero nodes before inverting
+    LINALG::Matrix<nnodeslin,nnodeslin> melin;
+    for (int j=0;j<nnodeslin;++j)
+      for (int k=0;k<nnodeslin;++k) melin(j,k) = me(j,k);
+
+    // invert bi-ortho matrix melin
+    LINALG::Inverse2x2(melin);
+
+    // re-inflate inverse of melin to full size
+    LINALG::SerialDenseMatrix invme(nnodes,nnodes,true);
+    for (int j=0;j<nnodeslin;++j)
+      for (int k=0;k<nnodeslin;++k) invme(j,k) = melin(j,k);
+
+    // get solution matrix with dual parameters
+    ae.Multiply('N','N',1.0,de,invme,0.0);
+  }
+  // compute matrix A_e for all other cases
+  else LINALG::InvertAndMultiplyByCholesky(me,de,ae);
 
   // store ae matrix in slave element data container
   SlaveElement().MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));

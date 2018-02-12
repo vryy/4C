@@ -269,7 +269,7 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOper
   // LinD      ---->   T^(-T) * LinD
   // D         ---->   D * T^(-1)
   //----------------------------------------------------------------------
-  if (Dualquadslave3d())
+  if (Dualquadslavetrafo())
   {
     // modify lindmatrix_ and dmatrix_
     Teuchos::RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*invtrafo_,true,*lindmatrix_,false,false,false,true);

@@ -595,18 +595,18 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
 
   // Petrov-Galerkin approach for LM not yet implemented for quadratic FE
   if (sele.Shape()==MORTAR::MortarElement::line3 && ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
-    dserror("ERROR: Petrov-Galerkin approach not yet implemented for quadratic FE interpolation");
+    dserror("ERROR: Petrov-Galerkin approach not yet implemented for 2-D quadratic FE interpolation");
 
   //check for problem dimension
   if (Dim()!=2) dserror("ERROR: 2D integration method called for non-2D problem");
 
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
-    dserror("ERROR: IntegrateAndDerivSegment called on a wrong type of MortarElement pair!");
+    dserror("ERROR: IntegrateDerivSegment2D called on a wrong type of MortarElement pair!");
   if ((sxia<-1.0) || (sxib>1.0))
-    dserror("ERROR: IntegrateAndDerivSegment called with infeasible slave limits!");
+    dserror("ERROR: IntegrateDerivSegment2D called with infeasible slave limits!");
   if ((mxia<-1.0) || (mxib>1.0))
-    dserror("ERROR: IntegrateAndDerivSegment called with infeasible master limits!");
+    dserror("ERROR: IntegrateDerivSegment2D called with infeasible master limits!");
 
   // *********************************************************************
   // Prepare integration
@@ -631,11 +631,15 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
   }
 
   // decide whether linear LM are used for quadratic FE here
+  // and whether displacement shape fct. modification has to be considered or not
+  // this is the case for dual linear Lagrange multipliers on line3 elements
   bool linlm = false;
+  bool dualquad = false;
   if (LagMultQuad() == INPAR::MORTAR::lagmult_lin && sele.Shape() == DRT::Element::line3)
   {
     bound = false; // crosspoints and linear LM NOT at the same time!!!!
     linlm = true;
+    if (shapefcn_ == INPAR::MORTAR::shape_dual) dualquad = true;
   }
 
   // prepare directional derivative of dual shape functions
@@ -750,8 +754,8 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
       sele.EvaluateShapeLagMult(ShapeFcn(),sxi,lmval,lmderiv,nrow);
 
     // evaluate trace space shape functions (on both elements)
-    sele.EvaluateShape(sxi,sval,sderiv,nrow);
-    mele.EvaluateShape(mxi,mval,mderiv,ncol);
+    sele.EvaluateShape(sxi,sval,sderiv,nrow,dualquad);
+    mele.EvaluateShape(mxi,mval,mderiv,ncol,false);
 
     // evaluate the two slave side Jacobians
     double dxdsxi = sele.Jacobian(sxi);
@@ -805,8 +809,17 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
     //**********************************************************************
     // evaluate at GP and lin char. quantities
     //**********************************************************************
+    if (dualquad && linlm)
+    {
+      // declare and compute shape functions as well as derivatives for computation of gap
+      // -> standard quadratic functions instead of only linear functions
+      LINALG::SerialDenseVector svalgap(nrow);
+      LINALG::SerialDenseMatrix sderivgap(nrow,1);
+      sele.EvaluateShape(sxi,svalgap,sderivgap,nrow);
 
-    Gap_2D(sele,mele,sval,mval,sderiv,mderiv,gap,gpn,dsxigp,dmxigp,dgapgp,dnmap_unit);
+      Gap_2D(sele,mele,svalgap,mval,sderivgap,mderiv,gap,gpn,dsxigp,dmxigp,dgapgp,dnmap_unit);
+    }
+    else Gap_2D(sele,mele,sval,mval,sderiv,mderiv,gap,gpn,dsxigp,dmxigp,dgapgp,dnmap_unit);
 
     IntegrateGP_2D(sele,mele,sval,lmval,mval,sderiv,mderiv,lmderiv,dualmap,
         wgt,jac,derivjac,gpn,dnmap_unit,*gap,dgapgp,sxi,mxi,dsxigp,dmxigp);
@@ -1237,20 +1250,24 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(
 {
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
-    dserror("ERROR: IntegrateDerivCell3DAuxPlane called without specific shape function defined!");
+    dserror("ERROR: IntegrateDerivEle3D called without specific shape function defined!");
+
+  // Petrov-Galerkin approach for LM not yet implemented
+  if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin && sele.Shape()!=DRT::Element::nurbs9)
+    dserror("ERROR: Petrov-Galerkin approach not yet implemented for 3-D quadratic FE interpolation");
 
   //check for problem dimension
   if (Dim()!=3) dserror("ERROR: 3D integration method called for non-3D problem");
 
   // get slave element nodes themselves for normal evaluation
   DRT::Node** mynodes = sele.Nodes();
-  if(!mynodes) dserror("ERROR: IntegrateDerivCell3D: Null pointer!");
+  if(!mynodes) dserror("ERROR: IntegrateDerivEle3D: Null pointer!");
 
   // check input data
   for (int test=0;test<(int)meles.size();++test)
   {
     if ((!sele.IsSlave()) || (meles[test]->IsSlave()))
-      dserror("ERROR: IntegrateDerivCell3D called on a wrong type of MortarElement pair!");
+      dserror("ERROR: IntegrateDerivEle3D called on a wrong type of MortarElement pair!");
   }
 
   int msize   = meles.size();
@@ -1270,6 +1287,12 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(
       && (sele.Shape()!=MORTAR::MortarElement::tri3 || sele.MoData().DerivDualShape()!=Teuchos::null)
       && LagMultQuad()!=INPAR::MORTAR::lagmult_const)
     sele.DerivShapeDual(dualmap);
+
+  // check whether quadratic elements with linear interpolation are present
+  bool linlm = false;
+  if ( (ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
+       (LagMultQuad() == INPAR::MORTAR::lagmult_lin) &&
+       (sele.Shape() == DRT::Element::quad8 || sele.Shape() == DRT::Element::tri6)) linlm = true;
 
   //********************************************************************
   //  Boundary_segmentation test -- HasProj() check
@@ -1321,11 +1344,13 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(
       // evaluate Lagrange multiplier shape functions (on slave element)
       if (LagMultQuad() == INPAR::MORTAR::lagmult_const)
         sele.EvaluateShapeLagMultConst(ShapeFcn(),sxi,lmval,lmderiv,nrow);
+      else if (LagMultQuad() == INPAR::MORTAR::lagmult_lin)
+        sele.EvaluateShapeLagMultLin(ShapeFcn(),sxi,lmval,lmderiv,nrow);
       else
         sele.EvaluateShapeLagMult(ShapeFcn(),sxi,lmval,lmderiv,nrow);
 
       // evaluate trace space shape functions (on both elements)
-      sele.EvaluateShape(sxi,sval,sderiv,nrow);
+      sele.EvaluateShape(sxi,sval,sderiv,nrow,linlm);
 
       // evaluate the two Jacobians (int. cell and slave element)
       double jacslave = sele.Jacobian(sxi);
@@ -1394,8 +1419,17 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(
           //**********************************************************************
           // evaluate at GP and lin char. quantities
           //**********************************************************************
+          if (linlm)
+          {
+            // declare and compute shape functions as well as derivatives for computation of gap
+            // -> standard quadratic functions instead of only linear functions
+            LINALG::SerialDenseVector svalgap(nrow);
+            LINALG::SerialDenseMatrix sderivgap(nrow,2,true);
+            sele.EvaluateShape(sxi,svalgap,sderivgap,nrow);
 
-          Gap_3D(sele,*meles[nummaster],sval,mval,sderiv,mderiv,gap,gpn,dsxigp,dmxigp,dgapgp,dnmap_unit);
+            Gap_3D(sele,*meles[nummaster],svalgap,mval,sderivgap,mderiv,gap,gpn,dsxigp,dmxigp,dgapgp,dnmap_unit);
+          }
+          else Gap_3D(sele,*meles[nummaster],sval,mval,sderiv,mderiv,gap,gpn,dsxigp,dmxigp,dgapgp,dnmap_unit);
 
           if (algo_==INPAR::MORTAR::algorithm_mortar)
             dynamic_cast<CONTACT::CoElement&>(sele).PrepareMderiv(meles,nummaster);
@@ -3482,11 +3516,11 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
 
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
-    dserror("ERROR: IntegrateDerivCell3DAuxPlane called without specific shape function defined!");
+    dserror("ERROR: IntegrateDerivCell3DAuxPlaneQuad called without specific shape function defined!");
 
   // Petrov-Galerkin approach for LM not yet implemented
   if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin && sele.Shape()!=DRT::Element::nurbs9)
-    dserror("ERROR: Petrov-Galerkin approach not yet implemented for quadratic FE interpolation");
+    dserror("ERROR: Petrov-Galerkin approach not yet implemented for 3-D quadratic FE interpolation");
 
   //check for problem dimension
   if (Dim()!=3) dserror("ERROR: 3D integration method called for non-3D problem");
@@ -3501,9 +3535,9 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
 
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
-    dserror("ERROR: IntegrateDerivCell3DAuxPlane called on a wrong type of MortarElement pair!");
+    dserror("ERROR: IntegrateDerivCell3DAuxPlaneQuad called on a wrong type of MortarElement pair!");
   if (cell==Teuchos::null)
-    dserror("ERROR: IntegrateDerivCell3DAuxPlane called without integration cell");
+    dserror("ERROR: IntegrateDerivCell3DAuxPlaneQuad called without integration cell");
 
   // contact with wear
   bool wear = false;
@@ -3555,9 +3589,9 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
 
   // get slave element nodes themselves for normal evaluation
   DRT::Node** mynodes = sele.Nodes();
-  if(!mynodes) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+  if(!mynodes) dserror("ERROR: IntegrateDerivCell3DAuxPlaneQuad: Null pointer!");
   DRT::Node** myintnodes = sintele.Nodes();
-  if(!myintnodes) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+  if(!myintnodes) dserror("ERROR: IntegrateDerivCell3DAuxPlaneQuad: Null pointer!");
 
   // map iterator
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
@@ -3580,18 +3614,21 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
   for (int k=0;k<nrow;++k)
   {
     MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
-    if (!mymrtrnode) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
+    if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3DAuxPlaneQuad: Null pointer!");
     bound += mymrtrnode->IsOnBound();
   }
 
   // decide whether displacement shape fct. modification has to be considered or not
   // this is the case for dual quadratic Lagrange multipliers on quad8 and tri6 elements
+  // check whether quadratic element with linear interpolation is present
   bool dualquad3d = false;
+  bool linlm = false;
   if ( (ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
-       (lmtype == INPAR::MORTAR::lagmult_quad) &&
+       (lmtype == INPAR::MORTAR::lagmult_quad || lmtype == INPAR::MORTAR::lagmult_lin) &&
        (sele.Shape() == DRT::Element::quad8 || sele.Shape() == DRT::Element::tri6) )
   {
-    dualquad3d = true;
+    if (lmtype == INPAR::MORTAR::lagmult_quad) dualquad3d = true;
+    else linlm = true;
   }
 
   // get linearization size
@@ -3643,7 +3680,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     {
       if (sxi[0]<-1.0-tol || sxi[1]<-1.0-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol)
       {
-        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Slave Gauss point projection outside!";
+        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlaneQuad: Slave Gauss point projection outside!";
         std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
         std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
         std::cout << "Slave GP (IntElement) projection: " << sxi[0] << " " << sxi[1] << std::endl;
@@ -3653,7 +3690,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     {
       if (sxi[0]<-tol || sxi[1]<-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol || sxi[0]+sxi[1]>1.0+2*tol)
       {
-        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Slave Gauss point projection outside!";
+        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlaneQuad: Slave Gauss point projection outside!";
         std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
         std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
         std::cout << "Slave GP (IntElement) projection: " << sxi[0] << " " << sxi[1] << std::endl;
@@ -3665,7 +3702,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     {
       if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
       {
-        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Master Gauss point projection outside!";
+        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlaneQuad: Master Gauss point projection outside!";
         std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
         std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
         std::cout << "Master GP (IntElement) projection: " << mxi[0] << " " << mxi[1] << std::endl;
@@ -3675,7 +3712,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     {
       if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
       {
-        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Master Gauss point projection outside!";
+        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlaneQuad: Master Gauss point projection outside!";
         std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
         std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
         std::cout << "Master GP (IntElement) projection: " << mxi[0] << " " << mxi[1] << std::endl;
@@ -3702,7 +3739,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
       if (psxi[0] < -1.0 - tol || psxi[1] < -1.0 - tol || psxi[0] > 1.0 + tol
           || psxi[1] > 1.0 + tol)
       {
-        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Slave Gauss point projection outside!";
+        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlaneQuad: Slave Gauss point projection outside!";
         std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
         std::cout << "GP local: " << eta[0] << " " << eta[1]                  << std::endl;
         std::cout << "Slave GP projection: " << psxi[0] << " " << psxi[1]       << std::endl;
@@ -3713,7 +3750,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
       if (psxi[0] < -tol || psxi[1] < -tol || psxi[0] > 1.0 + tol
           || psxi[1] > 1.0 + tol || psxi[0] + psxi[1] > 1.0 + 2 * tol)
       {
-        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Slave Gauss point projection outside!";
+        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlaneQuad: Slave Gauss point projection outside!";
         std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
         std::cout << "GP local: " << eta[0] << " " << eta[1]                  << std::endl;
         std::cout << "Slave GP projection: " << psxi[0] << " " << psxi[1]       << std::endl;
@@ -3727,7 +3764,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
       if (pmxi[0] < -1.0 - tol || pmxi[1] < -1.0 - tol || pmxi[0] > 1.0 + tol
           || pmxi[1] > 1.0 + tol)
       {
-        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Master Gauss point projection outside!";
+        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlaneQuad: Master Gauss point projection outside!";
         std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
         std::cout << "GP local: " << eta[0] << " " << eta[1]                  << std::endl;
         std::cout << "Master GP projection: " << pmxi[0] << " " << pmxi[1]      << std::endl;
@@ -3738,7 +3775,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
       if (pmxi[0] < -tol || pmxi[1] < -tol || pmxi[0] > 1.0 + tol
           || pmxi[1] > 1.0 + tol || pmxi[0] + pmxi[1] > 1.0 + 2 * tol)
       {
-        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Master Gauss point projection outside!";
+        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlaneQuad: Master Gauss point projection outside!";
         std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
         std::cout << "GP local: " << eta[0] << " " << eta[1]                  << std::endl;
         std::cout << "Master GP projection: " << pmxi[0] << " " << pmxi[1]      << std::endl;
@@ -3749,7 +3786,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     if (LagMultQuad() == INPAR::MORTAR::lagmult_const)
       sele.EvaluateShapeLagMultConst(ShapeFcn(),sxi,lmval,lmderiv,nrow);
     else if (bound)
-      sele.EvaluateShapeLagMultLin(ShapeFcn(),psxi,lmval,lmderiv,nrow);
+      sele.EvaluateShapeLagMult(ShapeFcn(),psxi,lmval,lmderiv,nrow);
     else
     {
       sele.EvaluateShapeLagMult(ShapeFcn(),psxi,lmval,lmderiv,nrow);
@@ -3757,9 +3794,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     }
 
     // evaluate trace space shape functions (on both elements)
-    sele.EvaluateShape(psxi,sval,sderiv,nrow);
-    if (dualquad3d)
-      sele.EvaluateShape(psxi,svalmod,sderivmod,nrow,true);
+    sele.EvaluateShape(psxi,sval,sderiv,nrow,linlm);
+    if (dualquad3d) sele.EvaluateShape(psxi,svalmod,sderivmod,nrow,true);
     mele.EvaluateShape(pmxi,mval,mderiv,ncol);
 
     // evaluate 2nd deriv of trace space shape functions (on slave element)
@@ -3833,7 +3869,18 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
       }
       else
       {
-        Gap_3D(sele,mele,sval,mval,sderiv,mderiv,gap,gpn,dpsxigp,dpmxigp,dgapgp,dnmap_unit);
+        if (linlm)
+        {
+          // declare and compute shape functions as well as derivatives for computation of gap
+          // -> standard quadratic functions instead of only linear functions
+          LINALG::SerialDenseVector svalgap(nrow);
+          LINALG::SerialDenseMatrix sderivgap(nrow,2,true);
+          sele.EvaluateShape(psxi,svalgap,sderivgap,nrow);
+
+          Gap_3D(sele,mele,svalgap,mval,sderivgap,mderiv,gap,gpn,dpsxigp,dpmxigp,dgapgp,dnmap_unit);
+        }
+        else Gap_3D(sele,mele,sval,mval,sderiv,mderiv,gap,gpn,dpsxigp,dpmxigp,dgapgp,dnmap_unit);
+
         GP_3D_wGap(sele,sval,lmval,gap,jac,wgt,true);
       }
 
@@ -3926,7 +3973,11 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
 
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
-    dserror("ERROR: IntegrateDerivSegment2D called without specific shape function defined!");
+    dserror("ERROR: IntegrateDerivEle2D called without specific shape function defined!");
+
+  // Petrov-Galerkin approach for LM not yet implemented for quadratic FE
+  if (sele.Shape()==MORTAR::MortarElement::line3 && ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+    dserror("ERROR: Petrov-Galerkin approach not yet implemented for 2-D quadratic FE interpolation");
 
   //check for problem dimension
   if (Dim()!=2) dserror("ERROR: 2D integration method called for non-2D problem");
@@ -3935,7 +3986,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
   for (int i=0;i<(int)meles.size();++i)
   {
     if ((!sele.IsSlave()) || (meles[i]->IsSlave()))
-      dserror("ERROR: IntegrateAndDerivSegment called on a wrong type of MortarElement pair!");
+      dserror("ERROR: IntegrateDerivEle2D called on a wrong type of MortarElement pair!");
   }
 
   // *********************************************************************
@@ -3949,11 +4000,8 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
   // number of nodes (slave, master)
   int ndof = Dim();
   int nrow = 0 ;
-  int sstatus = -1;
-  int sfeatures[2] = {0,0};
 
   DRT::Node** mynodes = NULL;
-  DRT::Node* hnodes[4] = {0,0,0,0};
   nrow    = sele.NumNode();
   mynodes = sele.Nodes();
 
@@ -3996,6 +4044,18 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
     bound += mymrtrnode->IsOnBound();
   }
 
+  // decide whether linear LM are used for quadratic FE here
+  // and whether displacement shape fct. modification has to be considered or not
+  // this is the case for dual linear Lagrange multipliers on line3 elements
+  bool linlm = false;
+  bool dualquad = false;
+  if (LagMultQuad() == INPAR::MORTAR::lagmult_lin && sele.Shape() == DRT::Element::line3)
+  {
+    bound = false; // crosspoints and linear LM NOT at the same time!!!!
+    linlm = true;
+    if (ShapeFcn() == INPAR::MORTAR::shape_dual) dualquad = true;
+  }
+
   // get numerical integration type
   INPAR::MORTAR::IntType inttype =
     DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_,"INTTYPE");
@@ -4034,10 +4094,15 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
       double dxdsxi = sele.Jacobian(sxi);
 
       // evaluate Lagrange multiplier shape functions (on slave element)
-      sele.EvaluateShapeLagMult(ShapeFcn(),sxi,lmval,lmderiv,nrow);
+      if (LagMultQuad() == INPAR::MORTAR::lagmult_const)
+        sele.EvaluateShapeLagMultConst(ShapeFcn(),sxi,lmval,lmderiv,nrow);
+      else if (linlm)
+        sele.EvaluateShapeLagMultLin(ShapeFcn(),sxi,lmval,lmderiv,nrow);
+      else
+        sele.EvaluateShapeLagMult(ShapeFcn(),sxi,lmval,lmderiv,nrow);
 
       // evaluate trace space shape functions
-      sele.EvaluateShape(sxi,sval,sderiv,nrow,false);
+      sele.EvaluateShape(sxi,sval,sderiv,nrow,dualquad);
 
       //****************************************************************************************************************
       //                loop over all Master Elements
@@ -4054,8 +4119,6 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
           kink_projection=true;
 
           int ncol      =   0;
-          int mstatus = -1;
-          int mfeatures[2] = {0,0};
 
           ncol = meles[nummaster]->NumNode();;
 
@@ -4101,7 +4164,17 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
           //**********************************************************************
           // evaluate at GP and lin char. quantities
           //**********************************************************************
-          Gap_2D(sele,*meles[nummaster],sval,mval,sderiv,mderiv,gap,gpn,dsxigp,dmxigp,dgapgp,dnmap_unit);
+          if (dualquad && linlm)
+          {
+            // declare and compute shape functions as well as derivatives for computation of gap
+            // -> standard quadratic functions instead of only linear functions
+            LINALG::SerialDenseVector svalgap(nrow);
+            LINALG::SerialDenseMatrix sderivgap(nrow,1);
+            sele.EvaluateShape(sxi,svalgap,sderivgap,nrow);
+
+            Gap_2D(sele,*meles[nummaster],svalgap,mval,sderivgap,mderiv,gap,gpn,dsxigp,dmxigp,dgapgp,dnmap_unit);
+          }
+          else Gap_2D(sele,*meles[nummaster],sval,mval,sderiv,mderiv,gap,gpn,dsxigp,dmxigp,dgapgp,dnmap_unit);
 
           // integrate and lin gp gap
           IntegrateGP_2D(sele,*meles[nummaster],sval,lmval,mval,sderiv,
@@ -4136,10 +4209,8 @@ void CONTACT::CoIntegrator::IntegrateD(MORTAR::MortarElement& sele,
   // number of nodes (slave, master)
   int ndof = Dim();
   int nrow = 0 ;
-  int sfeatures[2] = {0,0};
 
   DRT::Node** mynodes = NULL;
-  DRT::Node* hnodes[4] = {0,0,0,0};
   nrow    = sele.NumNode();
   mynodes = sele.Nodes();
 
@@ -4555,8 +4626,6 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
   DRT::Node** mnodes = NULL;
   int numsnode = sele.NumNode();
   int nummnode = mele.NumNode();
-  DRT::Node* hsnodes[4] = {0,0,0,0};
-  DRT::Node* hmnodes[4] = {0,0,0,0};
 
   int ndof = Dim();
 
@@ -4935,8 +5004,6 @@ void CONTACT::CoIntegrator::DerivXiGP2D(MORTAR::MortarElement& sele,
   // we need the participating slave and master nodes
   DRT::Node** snodes = NULL;
   DRT::Node** mnodes = NULL;
-  DRT::Node* hsnodes[4] = {0,0,0,0};
-  DRT::Node* hmnodes[4] = {0,0,0,0};
   int numsnode = sele.NumNode();
   int nummnode = mele.NumNode();
 
@@ -5869,8 +5936,6 @@ void CONTACT::CoIntegrator::GP_DM(
   // get slave element nodes themselves
   DRT::Node** snodes = NULL;
   DRT::Node** mnodes = NULL;
-  DRT::Node* hsnodes[4] = {0,0,0,0};
-  DRT::Node* hmnodes[4] = {0,0,0,0};
   nrow=sele.NumNode();
   snodes = sele.Nodes();
   ncol=mele.NumNode();
@@ -5889,76 +5954,15 @@ void CONTACT::CoIntegrator::GP_DM(
   // *************************************************************
 
   // compute segment D/M matrix ****************************************
-  // standard shape functions
-  if (ShapeFcn() == INPAR::MORTAR::shape_standard)
-  {
-    for (int j=0; j<nrow; ++j)
-    {
-      CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(snodes[j]);
-      if (cnode->IsOnBoundorCE())
-        continue;
-
-      // integrate mseg
-      for (int k=0; k<ncol; ++k)
-      {
-        CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(mnodes[k]);
-
-        // multiply the two shape functions
-        double prod = lmval[j]*mval[k]*jac*wgt;
-
-        if(abs(prod)>MORTARINTTOL) cnode->AddMValue(mnode->Id(),prod);
-        if(abs(prod)>MORTARINTTOL) cnode->AddMNode(mnode->Id());  // only for friction!
-      }
-
-      // integrate dseg
-      for (int k=0; k<nrow; ++k)
-      {
-        CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(snodes[k]);
-
-        // multiply the two shape functions
-        double prod = lmval[j]*sval[k]*jac*wgt;
-
-        if (snode->IsOnBoundorCE())
-        {
-          if(nonsmooth_)
-          {
-            if(snode->IsOnBound() and !snode->IsOnCornerEdge())
-            {
-              if(abs(prod)>MORTARINTTOL) cnode->AddMValue(snode->Id(),-prod);
-              if(abs(prod)>MORTARINTTOL) cnode->AddMNode(snode->Id()); // only for friction!
-            }
-            else
-            {
-              if(abs(prod)>MORTARINTTOL) cnode->AddDValue(snode->Id(),prod);
-              if(abs(prod)>MORTARINTTOL) cnode->AddSNode(snode->Id()); // only for friction!
-            }
-          }
-          else
-          {
-            if(snode->IsOnBoundorCE())
-            {
-              if(abs(prod)>MORTARINTTOL) cnode->AddMValue(snode->Id(),-prod);
-              if(abs(prod)>MORTARINTTOL) cnode->AddMNode(snode->Id()); // only for friction!
-            }
-          }
-        }
-        else
-        {
-          if(abs(prod)>MORTARINTTOL) cnode->AddDValue(snode->Id(),prod);
-          if(abs(prod)>MORTARINTTOL) cnode->AddSNode(snode->Id()); // only for friction!
-        }
-      }
-    }
-  }
-  // dual shape functions
-  else if (ShapeFcn() == INPAR::MORTAR::shape_dual ||
-           ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+  // dual shape functions without locally linear Lagrange multipliers
+  if ((ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+      && LagMultQuad() != INPAR::MORTAR::lagmult_lin)
   {
     for (int j=0;j<nrow;++j)
     {
       CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(snodes[j]);
-      if(cnode->IsOnBoundorCE())
-        continue;
+
+      if(cnode->IsOnBoundorCE()) continue;
 
       // integrate mseg
       for (int k=0; k<ncol; ++k)
@@ -5967,15 +5971,16 @@ void CONTACT::CoIntegrator::GP_DM(
 
         // multiply the two shape functions
         double prod = lmval[j]*mval[k]*jac*wgt;
-
-        if (!bound and abs(prod)>MORTARINTTOL)
+        if (abs(prod) > MORTARINTTOL)
         {
-          if(abs(prod)>MORTARINTTOL) cnode->AddDValue(cnode->Id(),prod);
-          if(abs(prod)>MORTARINTTOL) cnode->AddSNode(cnode->Id()); // only for friction!
+          cnode->AddMValue(mnode->Id(),prod);
+          cnode->AddMNode(mnode->Id());  // only for friction!
+          if (!bound)
+          {
+            cnode->AddDValue(cnode->Id(),prod);
+            cnode->AddSNode(cnode->Id()); // only for friction!
+          }
         }
-
-        if(abs(prod)>MORTARINTTOL) cnode->AddMValue(mnode->Id(),prod);
-        if(abs(prod)>MORTARINTTOL) cnode->AddMNode(mnode->Id());  // only for friction!
       }
 
       // integrate dseg (boundary modification)
@@ -5986,6 +5991,7 @@ void CONTACT::CoIntegrator::GP_DM(
         for (int k=0;k<nrow;++k)
         {
           CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(snodes[k]);
+
 //          bool k_boundnode = mnode->IsOnBoundorCE();
 
           // do not assemble off-diagonal terms if j,k are both non-boundary nodes
@@ -5994,32 +6000,102 @@ void CONTACT::CoIntegrator::GP_DM(
 
           // multiply the two shape functions
           double prod = lmval[j]*sval[k]*jac*wgt;
-
-          // for the "bound" flag, the node on the slave side does not carry a LM value
-          // therefore, we assemble the negative value to the M-matrix (which contains
-          // all nodes, that do not have a LM).
-          if (mnode->IsOnBound())
+          if (abs(prod) > MORTARINTTOL)
           {
-            if(abs(prod)>MORTARINTTOL) cnode->AddMValue(mnode->Id(),-prod);
-            if(abs(prod)>MORTARINTTOL) cnode->AddMNode(mnode->Id()); // only for friction!
+            // for the "bound" flag, the node on the slave side does not carry a LM value
+            // therefore, we assemble the negative value to the M-matrix (which contains
+            // all nodes, that do not have a LM).
+            if (mnode->IsOnBound())
+            {
+              cnode->AddMValue(mnode->Id(),-prod);
+              cnode->AddMNode(mnode->Id()); // only for friction!
+            }
+            // in the non-smooth case, the nodes at corners/edges will have a LM value,
+            // however the corresponding integration is not performed here (here we only
+            // do the surface integration). Since the nodes will have a LM value, the corresponding
+            // integrals should be assembled in the D-matrix.
+            else if (mnode->IsOnBoundorCE())
+            {
+              // isolate the dseg entries to be filled
+              // (both the main diagonal and every other secondary diagonal)
+              // and add current Gauss point's contribution to dseg
+              // NONSMOOTH MODIFICATION
+              cnode->AddDValue(mnode->Id(),prod);
+              cnode->AddSNode(mnode->Id()); // only for friction!
+            }
+            else
+            {
+              cnode->AddDValue(cnode->Id(),prod);
+              cnode->AddSNode(cnode->Id()); // only for friction!
+            }
           }
-          // in the non-smooth case, the nodes at corners/edges will have a LM value,
-          // however the corresponding integration is not performed here (here we only
-          // do the surface integration). Since the nodes will have a LM value, the corresponding
-          // integrals should be assembled in the D-matrix.
-          else if (mnode->IsOnBoundorCE())
+        }
+      }
+    }
+  }
+  // standard shape functions or dual shape functions with locally linear Lagrange multipliers
+  else
+  {
+    for (int j=0; j<nrow; ++j)
+    {
+      CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(snodes[j]);
+
+      if ((shapefcn_ == INPAR::MORTAR::shape_standard && cnode->IsOnBoundorCE()) ||
+          ((shapefcn_ == INPAR::MORTAR::shape_dual || shapefcn_ == INPAR::MORTAR::shape_petrovgalerkin) && cnode->IsOnBound())) continue;
+
+      // integrate mseg
+      for (int k=0; k<ncol; ++k)
+      {
+        CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(mnodes[k]);
+
+        // multiply the two shape functions
+        double prod = lmval[j]*mval[k]*jac*wgt;
+        if (abs(prod) > MORTARINTTOL)
+        {
+          cnode->AddMValue(mnode->Id(), prod);
+          cnode->AddMNode(mnode->Id());  // only for friction!
+        }
+      }
+
+      // integrate dseg
+      for (int k=0; k<nrow; ++k)
+      {
+        CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(snodes[k]);
+
+        // multiply the two shape functions
+        double prod = lmval[j]*sval[k]*jac*wgt;
+        if (abs(prod) > MORTARINTTOL)
+        {
+          if ((ShapeFcn() == INPAR::MORTAR::shape_standard && snode->IsOnBoundorCE()) ||
+              ((ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) && snode->IsOnBound()))
           {
-          // isolate the dseg entries to be filled
-          // (both the main diagonal and every other secondary diagonal)
-          // and add current Gauss point's contribution to dseg
-            // NONSMOOTH MODIFICATION
-            if(abs(prod)>MORTARINTTOL) cnode->AddDValue(mnode->Id(),prod);
-            if(abs(prod)>MORTARINTTOL) cnode->AddSNode(mnode->Id()); // only for friction!
+            if(ShapeFcn() == INPAR::MORTAR::shape_standard && nonsmooth_)
+            {
+              if(snode->IsOnBound() and !snode->IsOnCornerEdge())
+              {
+                cnode->AddMValue(snode->Id(),-prod);
+                cnode->AddMNode(snode->Id()); // only for friction!
+              }
+              else
+              {
+                cnode->AddDValue(snode->Id(),prod);
+                cnode->AddSNode(snode->Id()); // only for friction!
+              }
+            }
+            // this still needs to be checked for dual shape functions with locally linear Lagrange multipliers
+            else if((ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+                    && LagMultQuad() == INPAR::MORTAR::lagmult_lin && nonsmooth_)
+              dserror("ERROR: dual shape functions with locally linear Lagrange multipliers in combination non-smooth approach still needs to be checked!");
+            else
+            {
+              cnode->AddMValue(snode->Id(),-prod);
+              cnode->AddMNode(snode->Id()); // only for friction!
+            }
           }
           else
           {
-            if(abs(prod)>MORTARINTTOL) cnode->AddDValue(cnode->Id(),prod);
-            if(abs(prod)>MORTARINTTOL) cnode->AddSNode(cnode->Id()); // only for friction!
+            cnode->AddDValue(snode->Id(),prod);
+            cnode->AddSNode(snode->Id()); // only for friction!
           }
         }
       }
@@ -6052,11 +6128,11 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(
   DRT::Node** sintnodes = sintele.Nodes();
   if (!sintnodes) dserror("ERROR: Null pointer for sintnodes!");
 
-  // CASE 1/2: Standard LM shape functions and quadratic or linear interpolation
-  if (ShapeFcn() == INPAR::MORTAR::shape_standard &&
-      (LagMultQuad() == INPAR::MORTAR::lagmult_quad
-      || LagMultQuad() == INPAR::MORTAR::lagmult_lin
-      || LagMultQuad() == INPAR::MORTAR::lagmult_const))
+  // CASE 1/2: Standard LM shape functions and quadratic, linear or constant interpolation
+  // CASE 5: dual LM shape functions and linear interpolation
+  if ((ShapeFcn() == INPAR::MORTAR::shape_standard &&
+      (LagMultQuad() == INPAR::MORTAR::lagmult_quad || LagMultQuad() == INPAR::MORTAR::lagmult_lin || LagMultQuad() == INPAR::MORTAR::lagmult_const))
+      || ((ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) && LagMultQuad() == INPAR::MORTAR::lagmult_lin))
   {
     // compute all mseg and dseg matrix entries
     // loop over Lagrange multiplier dofs j
@@ -6071,9 +6147,11 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(
 
         // multiply the two shape functions
         double prod = lmval[j]*mval[k]*jac*wgt;
-
-          if(abs(prod)>MORTARINTTOL) cnode->AddMValue(mnode->Id(),prod);
-          if(abs(prod)>MORTARINTTOL) cnode->AddMNode(mnode->Id());
+        if (abs(prod)>MORTARINTTOL)
+        {
+          cnode->AddMValue(mnode->Id(),prod);
+          cnode->AddMNode(mnode->Id());
+        }
       }
 
       // integrate dseg
@@ -6083,24 +6161,24 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(
 
         // multiply the two shape functions
         double prod = lmval[j]*sval[k]*jac*wgt;
-
-        if (snode->IsOnBound())
+        if (abs(prod) > MORTARINTTOL)
         {
-          if(abs(prod)>MORTARINTTOL) cnode->AddMValue(snode->Id(),-prod);
-          if(abs(prod)>MORTARINTTOL) cnode->AddMNode(snode->Id());
-        }
-        else
-        {
-          if(abs(prod)>MORTARINTTOL) cnode->AddDValue(snode->Id(),prod);
-          if(abs(prod)>MORTARINTTOL) cnode->AddSNode(snode->Id());
+          if (snode->IsOnBound())
+          {
+            cnode->AddMValue(snode->Id(),-prod);
+            cnode->AddMNode(snode->Id());
+          }
+          else
+          {
+            cnode->AddDValue(snode->Id(),prod);
+            cnode->AddSNode(snode->Id());
+          }
         }
       }
     }
   }
-
   // CASE 3: Standard LM shape functions and piecewise linear interpolation
-  else if (ShapeFcn() == INPAR::MORTAR::shape_standard &&
-      LagMultQuad() == INPAR::MORTAR::lagmult_pwlin)
+  else if (ShapeFcn() == INPAR::MORTAR::shape_standard && LagMultQuad() == INPAR::MORTAR::lagmult_pwlin)
   {
     // compute all mseg and dseg matrix entries
     // loop over Lagrange multiplier dofs j
@@ -6115,9 +6193,11 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(
 
         // multiply the two shape functions
         double prod = lmintval[j]*mval[k]*jac*wgt;
-
-        if(abs(prod)>MORTARINTTOL) cnode->AddMValue(mnode->Id(),prod);
-        if(abs(prod)>MORTARINTTOL) cnode->AddMNode(mnode->Id());
+        if(abs(prod)>MORTARINTTOL)
+        {
+          cnode->AddMValue(mnode->Id(),prod);
+          cnode->AddMNode(mnode->Id());
+        }
       }
 
       // integrate dseg
@@ -6127,24 +6207,26 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(
 
         // multiply the two shape functions
         double prod = lmintval[j]*sval[k]*jac*wgt;
-
-        if (snode->IsOnBound())
+        if (abs(prod) > MORTARINTTOL)
         {
-          if(abs(prod)>MORTARINTTOL) cnode->AddMValue(snode->Id(),-prod);
-          if(abs(prod)>MORTARINTTOL) cnode->AddMNode(snode->Id());
-        }
-        else
-        {
-          if(abs(prod)>MORTARINTTOL) cnode->AddDValue(snode->Id(),prod);
-          if(abs(prod)>MORTARINTTOL) cnode->AddSNode(snode->Id());
+          if (snode->IsOnBound())
+          {
+            cnode->AddMValue(snode->Id(),-prod);
+            cnode->AddMNode(snode->Id());
+          }
+          else
+          {
+            cnode->AddDValue(snode->Id(),prod);
+            cnode->AddSNode(snode->Id());
+          }
         }
       }
     }
   }
 
-  // CASE 4: Dual LM shape functions and quadratic interpolation
+  // CASE 4: Dual LM shape functions and quadratic or constant interpolation
   else if ((ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
-      (LagMultQuad() == INPAR::MORTAR::lagmult_quad || LagMultQuad() == INPAR::MORTAR::lagmult_const))
+           (LagMultQuad() == INPAR::MORTAR::lagmult_quad || LagMultQuad() == INPAR::MORTAR::lagmult_const))
   {
     // compute all mseg and dseg matrix entries
     // loop over Lagrange multiplier dofs j
@@ -6159,12 +6241,13 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(
 
         // multiply the two shape functions
         double prod = lmval[j]*mval[k]*jac*wgt;
-
-        if(abs(prod)>MORTARINTTOL) cnode->AddDValue(cnode->Id(),prod);
-        if(abs(prod)>MORTARINTTOL) cnode->AddSNode(cnode->Id());
-
-        if(abs(prod)>MORTARINTTOL) cnode->AddMValue(mnode->Id(),prod);
-        if(abs(prod)>MORTARINTTOL) cnode->AddMNode(mnode->Id());
+        if (abs(prod) > MORTARINTTOL)
+        {
+          cnode->AddDValue(cnode->Id(),prod);
+          cnode->AddSNode(cnode->Id());
+          cnode->AddMValue(mnode->Id(),prod);
+          cnode->AddMNode(mnode->Id());
+        }
       }
     }
   }
@@ -6190,9 +6273,7 @@ void inline CONTACT::CoIntegrator::GP_2D_wGap(
      double& wgt)
 {
   DRT::Node** mynodes = NULL;
-  DRT::Node* hnodes[4] = {0,0,0,0};
   int nrow = 0 ;
-  int sfeatures[2] = {0,0};
   nrow    = sele.NumNode();
   mynodes = sele.Nodes();
 
@@ -6316,9 +6397,9 @@ void CONTACT::CoIntegrator::GP_3D_wGap(
       }
     }
 
-    // CASE 4: Dual LM shape functions and quadratic interpolation
+    // CASE 4: Dual LM shape functions and quadratic, linear or constant interpolation
     else if ((ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
-        (LagMultQuad() == INPAR::MORTAR::lagmult_quad || LagMultQuad() == INPAR::MORTAR::lagmult_const))
+        (LagMultQuad() == INPAR::MORTAR::lagmult_quad || LagMultQuad() == INPAR::MORTAR::lagmult_lin || LagMultQuad() == INPAR::MORTAR::lagmult_const))
     {
       for (int j=0;j<nrow;++j)
       {
@@ -6677,8 +6758,6 @@ void CONTACT::CoIntegrator::Gap_2D(
   // get slave element nodes themselves
   DRT::Node** snodes = NULL;
   DRT::Node** mnodes = NULL;
-  DRT::Node* hsnodes[4] = {0,0,0,0};
-  DRT::Node* hmnodes[4] = {0,0,0,0};
   int nrow = sele.NumNode();
   int ncol = mele.NumNode();
 
@@ -7220,7 +7299,6 @@ void inline CONTACT::CoIntegrator::GP_2D_G_Lin(
 {
   // get slave element nodes themselves
   DRT::Node** snodes = NULL;
-  DRT::Node* hsnodes[4] = {0,0,0,0};
   int nrow = sele.NumNode();
   snodes = sele.Nodes();
 
@@ -7448,9 +7526,9 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_Lin(
       dgmap[p->first] += fac*(p->second);
   }
 
-  // CASE 4: Dual LM shape functions and quadratic interpolation
+  // CASE 4: Dual LM shape functions and quadratic or linear interpolation
   else if ((ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
-      LagMultQuad() == INPAR::MORTAR::lagmult_quad)
+           (LagMultQuad() == INPAR::MORTAR::lagmult_quad || LagMultQuad() == INPAR::MORTAR::lagmult_lin))
   {
     // get the corresponding map as a reference
     std::map<int,double>& dgmap = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
@@ -7459,6 +7537,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_Lin(
     {
       // (1) Lin(Phi) - dual shape functions
       if (duallin)
+      {
         for (int m=0;m<nrow;++m)
         {
           if (dualquad3d) fac = wgt*svalmod[m]*gap*jac;
@@ -7468,6 +7547,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_Lin(
               p!=dualmap.end();++p)
             dgmap[p->first] += fac*(p->second)(iter,m);
         }
+      }
 
       // (2) Lin(Phi) - slave GP coordinates
       fac = wgt*lmderiv(iter,0)*gap*jac;
@@ -8344,9 +8424,6 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Ele_Lin(
   DRT::Node** snodes = NULL;
   DRT::Node** mnodes = NULL;
 
-  DRT::Node* hsnodes[4] = {0,0,0,0};
-  DRT::Node* hmnodes[4] = {0,0,0,0};
-
   int nrow = sele.NumNode();
   int ncol = mele.NumNode();
 
@@ -8499,10 +8576,6 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(
 {
   DRT::Node** snodes = NULL;
   DRT::Node** mnodes = NULL;
-
-  DRT::Node* hsnodes[4] = {0,0,0,0};
-  DRT::Node* hmnodes[4] = {0,0,0,0};
-
   int nrow = sele.NumNode();
   int ncol = mele.NumNode();
   snodes = sele.Nodes();
@@ -8517,12 +8590,6 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(
   // check for linear LM interpolation in quadratic FE
   if (linlm)
   {
-    if (ShapeFcn() != INPAR::MORTAR::shape_standard)
-      dserror("ERROR: No linear dual LM interpolation for 2D quadratic FE");
-
-    if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
-      dserror("ERROR: Petrov-Galerkin and linear LM for 2D quadratic FE not compatible");
-
     MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
     if (!mymrtrnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
     bool jbound = mymrtrnode->IsOnBound();
@@ -8532,7 +8599,6 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(
     {
       // do nothing as respective D and M entries are zero anyway
     }
-
     // node j is NO boundary node
     else
     {
@@ -8629,7 +8695,6 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(
       } // loop over slave nodes
     }
   }
-
   // no linear LM interpolation for quadratic FE
   else
   {
@@ -8977,9 +9042,10 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(
   }
 
   // CASE 2: Standard LM shape functions and linear interpolation
+  // CASE 5: dual LM shape functions and linear interpolation
   // (this has to be treated seperately here for LinDM because of bound)
-  else if (ShapeFcn() == INPAR::MORTAR::shape_standard &&
-      LagMultQuad() == INPAR::MORTAR::lagmult_lin)
+  else if ((ShapeFcn() == INPAR::MORTAR::shape_standard || ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
+           LagMultQuad() == INPAR::MORTAR::lagmult_lin)
   {
     // integrate LinD
     for (int j=0; j<nrow;++j)
@@ -9007,7 +9073,17 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(
           std::map<int,double>& dmmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
 
           // (1) Lin(Phi) - dual shape functions
-          // this vanishes here since there are no deformation-dependent dual functions
+          if (duallin)
+          {
+            typedef GEN::pairedvector<int,Epetra_SerialDenseMatrix>::const_iterator _CIM;
+            for (_CIM p=dualmap.begin(); p!=dualmap.end(); ++p)
+            {
+              double lmderiv_d = 0.0;
+              for (int m=0; m<nrow;++m) lmderiv_d += (p->second)(j,m)*sval[m];
+              fac = wgt*lmderiv_d*mval[k]*jac;
+              dmmap_jk[p->first] += fac;
+            }
+          }
 
           // (2) Lin(NSlave) - slave GP coordinates
           fac = wgt*lmderiv(j, 0)*mval[k]*jac;
@@ -9050,7 +9126,21 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(
             std::map<int,double>& dmmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[sgid];
 
             // (1) Lin(Phi) - dual shape functions
-            // this vanishes here since there are no deformation-dependent dual functions
+            if (duallin)
+            {
+              typedef GEN::pairedvector<int,Epetra_SerialDenseMatrix>::const_iterator _CIM;
+              fac = wgt*sval[k]*jac;
+              for (_CIM p=dualmap.begin(); p!=dualmap.end(); ++p)
+                for (int m=0; m<nrow;++m) dmmap_jk[p->first] -= fac*(p->second)(j,m)*sval[m];
+
+              for (_CIM p=dualmap.begin(); p!=dualmap.end(); ++p)
+              {
+                double lmderiv_d = 0.0;
+                for (int m=0; m<nrow;++m) lmderiv_d += (p->second)(j,m)*sval[m];
+                fac = wgt*lmderiv_d*mval[k]*jac;
+                dmmap_jk[p->first] -= fac;
+              }
+            }
 
             // (2) Lin(NSlave) - slave GP coordinates
             fac = wgt*lmderiv(j, 0)*sval[k]*jac;
@@ -9083,7 +9173,21 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(
             std::map<int,double>& ddmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
 
             // (1) Lin(Phi) - dual shape functions
-            // this vanishes here since there are no deformation-dependent dual functions
+            if (duallin)
+            {
+              typedef GEN::pairedvector<int,Epetra_SerialDenseMatrix>::const_iterator _CIM;
+              fac = wgt*sval[k]*jac;
+              for (_CIM p=dualmap.begin(); p!=dualmap.end(); ++p)
+                for (int m=0; m<nrow;++m) ddmap_jk[p->first] += fac*(p->second)(j,m)*sval[m];
+
+              for (_CIM p=dualmap.begin(); p!=dualmap.end(); ++p)
+              {
+                double lmderiv_d = 0.0;
+                for (int m=0; m<nrow;++m) lmderiv_d += (p->second)(j,m)*sval[m];
+                fac = wgt*lmderiv_d*mval[k]*jac;
+                ddmap_jk[p->first] += fac;
+              }
+            }
 
             // (2) Lin(NSlave) - slave GP coordinates
             fac = wgt*lmderiv(j, 0)*sval[k]*jac;

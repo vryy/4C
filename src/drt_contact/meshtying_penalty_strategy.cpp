@@ -1,6 +1,10 @@
 /*!----------------------------------------------------------------------
 \file meshtying_penalty_strategy.cpp
 
+\brief strategy handling mesh tying problems with penalty formulation
+
+\level 1
+
 <pre>
 \maintainer Alexander Popp
             popp@lnm.mw.tum.de
@@ -70,7 +74,7 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const Teuchos::RCP<Epetra_Vector
   // These modifications are applied once right here, thus the
   // following code (EvaluateMeshtying) remains unchanged.
   //----------------------------------------------------------------------
-  if (Dualquadslave3d())
+  if (Dualquadslavetrafo())
   {
 #ifdef MORTARTRAFO
     dserror("MORTARTRAFO not yet implemented for meshtying with penalty strategy");

@@ -119,6 +119,30 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
     break;
   }
     // *********************************************************************
+    // 1D modified (hierarchical) quadratic shape functions (lin3)
+    // (used in combination with linear dual LM field in 2D quadratic mortar)
+    // *********************************************************************
+  case MortarElement::quad1D_hierarchical:
+  {
+    val[0] = 0.5*(1-xi[0]);
+    val[1] = 0.5*(1+xi[0]);
+    val[2] = (1-xi[0])*(1+xi[0]);
+
+    deriv(0, 0) = -0.5;
+    deriv(1, 0) = 0.5;
+    deriv(2, 0) = -2.0*xi[0];
+    break;
+  }
+    // *********************************************************************
+    // 1D modified quadratic shape functions (lin3)
+    // (used in combination with quadr dual LM field in 2D quadratic mortar)
+    // *********************************************************************
+  case MortarElement::quad1D_modified:
+  {
+    dserror("Quadratic LM for quadratic interpolation in 2D not available!");
+    break;
+  }
+    // *********************************************************************
     // 1D modified standard shape functions (linear replacing quad, line3)
     // (used for interpolation of Lagrange mult. field near boundaries)
     // *********************************************************************
@@ -1059,6 +1083,99 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
     break;
   }
     // *********************************************************************
+    // 1D linear part of dual quadratic shape functions (line3)
+    // (used for LINEAR interpolation of Lagrange mutliplier field)
+    // (including adaption process for distorted elements)
+    // *********************************************************************
+  case MortarElement::quaddual1D_only_lin: {
+    // establish fundamental data
+    double detg = 0.0;
+    const int nnodes = 3;
+
+#ifdef DEBUG
+    if(nnodes!=NumNode())
+    dserror("MortarElement shape function for LM incompatible with number of element nodes!");
+#endif
+
+    LINALG::SerialDenseMatrix ae(nnodes, nnodes);
+
+    // empty shape function vals + derivs
+    LINALG::SerialDenseVector valquad(nnodes);
+    LINALG::SerialDenseMatrix derivquad(nnodes, 2);
+
+    if (MoData().DualShape() == Teuchos::null) {
+      // compute entries to bi-ortho matrices me/de with Gauss quadrature
+      MORTAR::ElementIntegrator integrator(Shape());
+      LINALG::Matrix<nnodes, nnodes> me(true);
+      LINALG::SerialDenseMatrix de(nnodes, nnodes, true);
+
+      for (int i = 0; i < integrator.nGP(); ++i)
+      {
+        double gpc[2] = {integrator.Coordinate(i,0), integrator.Coordinate(i,1)};
+        ShapeFunctions(MortarElement::quad1D_only_lin, gpc, valquad, derivquad);
+        detg = Jacobian(gpc);
+
+        for (int j = 0; j < nnodes; ++j)
+        {
+          for (int k = 0; k < nnodes; ++k)
+          {
+            me(j, k) += integrator.Weight(i) * valquad[j] * valquad[k] * detg;
+            de(j, k) += (j == k) * integrator.Weight(i) * valquad[j] * detg;
+          }
+        }
+      }
+
+      // how many non-zero nodes
+      const int nnodeslin = 2;
+
+      // reduce me to non-zero nodes before inverting
+      LINALG::Matrix<nnodeslin, nnodeslin> melin;
+      for (int j = 0; j < nnodeslin; ++j)
+        for (int k = 0; k < nnodeslin; ++k)
+          melin(j, k) = me(j, k);
+
+      // invert bi-ortho matrix melin
+      LINALG::Inverse2x2(melin);
+
+      // re-inflate inverse of melin to full size
+      LINALG::SerialDenseMatrix invme(nnodes, nnodes, true);
+      for (int j = 0; j < nnodeslin; ++j)
+        for (int k = 0; k < nnodeslin; ++k)
+          invme(j, k) = melin(j, k);
+
+      // get solution matrix with dual parameters
+      ae.Multiply('N', 'N', 1.0, de, invme, 0.0);
+
+      // store coefficient matrix
+      MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+    }
+    else
+    {
+      ae = *(MoData().DualShape());
+    }
+
+    // evaluate dual shape functions at loc. coord. xi
+    ShapeFunctions(MortarElement::quad1D_only_lin, xi, valquad, derivquad);
+    val.Zero();
+    deriv.Zero();
+
+    // check whether this is a 1D or 2D mortar element
+    int dim = 1;
+
+    // evaluate dual shape functions
+    for (int i = 0; i < nnodes; ++i)
+    {
+      for (int j = 0; j < nnodes; ++j)
+      {
+        val[i] += ae(i, j) * valquad[j];
+        deriv(i, 0) += ae(i, j) * derivquad(j, 0);
+        if (dim == 2) deriv(i, 1) += ae(i, j) * derivquad(j, 1);
+      }
+    }
+
+    break;
+  }
+    // *********************************************************************
     // 2D dual quadratic shape functions (tri6)
     // (used for interpolation of Lagrange mutliplier field)
     // (including adaption process for distorted elements)
@@ -1761,7 +1878,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
  *----------------------------------------------------------------------*/
 bool MORTAR::MortarElement::EvaluateShape(const double* xi,
     LINALG::SerialDenseVector& val, LINALG::SerialDenseMatrix& deriv,
-    const int valdim, bool dualquad3d)
+    const int valdim, bool dualquad)
 {
   if (!xi)
     dserror("ERROR: EvaluateShape called with xi=NULL");
@@ -1794,9 +1911,11 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi,
     // 2D quadratic case (3noded line element)
   case DRT::Element::line3:
   {
-    if (valdim != 3)
-      dserror("ERROR: Inconsistency in EvaluateShape");
-    ShapeFunctions(MortarElement::quad1D, xi, val, deriv);
+    if (valdim != 3) dserror("ERROR: Inconsistency in EvaluateShape");
+
+    if (dualquad && !bound) dserror("There is no quadratic interpolation for dual shape functions for 2-D problems with quadratic elements available!");
+    else if (dualquad && bound) ShapeFunctions(MortarElement::quad1D_hierarchical, xi, val, deriv);
+    else ShapeFunctions(MortarElement::quad1D, xi, val, deriv);
     break;
   }
     // 3D linear case (3noded triangular element)
@@ -1820,9 +1939,9 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi,
   {
     if (valdim != 6)
       dserror("ERROR: Inconsistency in EvaluateShape");
-    if (dualquad3d && !bound)
+    if (dualquad && !bound)
       ShapeFunctions(MortarElement::quad2D_modified, xi, val, deriv);
-    else if (dualquad3d && bound)
+    else if (dualquad && bound)
       ShapeFunctions(MortarElement::quad2D_hierarchical, xi, val, deriv);
     else
       ShapeFunctions(MortarElement::quad2D, xi, val, deriv);
@@ -1833,9 +1952,9 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi,
   {
     if (valdim != 8)
       dserror("ERROR: Inconsistency in EvaluateShape");
-    if (dualquad3d && !bound)
+    if (dualquad && !bound)
       ShapeFunctions(MortarElement::serendipity2D_modified, xi, val, deriv);
-    else if (dualquad3d && bound)
+    else if (dualquad && bound)
       ShapeFunctions(MortarElement::serendipity2D_hierarchical, xi, val, deriv);
     else
       ShapeFunctions(MortarElement::serendipity2D, xi, val, deriv);
@@ -1846,9 +1965,9 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi,
   {
     if (valdim != 9)
       dserror("ERROR: Inconsistency in EvaluateShape");
-    if (dualquad3d && !bound)
+    if (dualquad && !bound)
       ShapeFunctions(MortarElement::biquad2D_modified, xi, val, deriv);
-    else if (dualquad3d && bound)
+    else if (dualquad && bound)
       ShapeFunctions(MortarElement::biquad2D_hierarchical, xi, val, deriv);
     else
       ShapeFunctions(MortarElement::biquad2D, xi, val, deriv);
@@ -2511,18 +2630,9 @@ bool MORTAR::MortarElement::EvaluateShapeLagMultLin(
   {
     // the middle node is defined as slave boundary (=master)
     // dual Lagrange multipliers
-    if (dual)
-    {
-      dserror(
-          "ERROR: Quad->Lin modification of dual LM shape functions not yet implemented");
-      ShapeFunctions(MortarElement::quaddual1D_only_lin, xi, val, deriv);
-    }
-
+    if (dual) ShapeFunctions(MortarElement::quaddual1D_only_lin, xi, val, deriv);
     // standard Lagrange multipliers
-    else
-    {
-      ShapeFunctions(MortarElement::quad1D_only_lin, xi, val, deriv);
-    }
+    else ShapeFunctions(MortarElement::quad1D_only_lin, xi, val, deriv);
 
     break;
   }
@@ -2898,6 +3008,145 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(
      // *******************************************************************
      #endif // #ifdef DEBUG
      */
+
+    break;
+  }
+  // *********************************************************************
+  // 1D dual quadratic shape functions (line3)
+  // (used for linear interpolation of Lagrange multiplier field)
+  // (linearization necessary due to adaption for distorted elements !!!)
+  // *********************************************************************
+  case MORTAR::MortarElement::quaddual1D_only_lin:
+  {
+    if (MoData().DerivDualShape() != Teuchos::null) derivdual = *(MoData().DerivDualShape());
+    else
+    {
+      // establish fundamental data
+      double detg = 0.0;
+      const int nnodes = 3;
+
+#ifdef DEBUG
+      if(nnodes!=NumNode())
+      dserror("MortarElement shape function for LM incompatible with number of element nodes!");
+#endif
+
+      typedef GEN::pairedvector<int, double>::const_iterator CI;
+      LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
+
+      MoData().DerivDualShape() = Teuchos::rcp(
+          new GEN::pairedvector<int, Epetra_SerialDenseMatrix>(nnodes * 2, 0,
+              Epetra_SerialDenseMatrix(nnodes, nnodes)));
+      GEN::pairedvector<int, Epetra_SerialDenseMatrix>& derivae = *(MoData().DerivDualShape());
+
+      // prepare computation with Gauss quadrature
+      MORTAR::ElementIntegrator integrator(Shape());
+      LINALG::SerialDenseVector val(nnodes);
+      LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
+      LINALG::Matrix<nnodes, nnodes> me(true);
+      LINALG::Matrix<nnodes, nnodes> de(true);
+
+      // two-dim arrays of maps for linearization of me/de
+      GEN::pairedvector<int, Epetra_SerialDenseMatrix> derivde_me(nnodes * 2, 0,
+          Epetra_SerialDenseMatrix(nnodes + 1, nnodes));
+
+      // build me, de, derivme, derivde
+      for (int i = 0; i < integrator.nGP(); ++i)
+      {
+        double gpc[2] = { integrator.Coordinate(i, 0), integrator.Coordinate(i,1) };
+        EvaluateShape(gpc, val, deriv, nnodes, true);
+        detg = Jacobian(gpc);
+
+        // directional derivative of Jacobian
+        GEN::pairedvector<int, double> testmap(nnodes * 2);
+        DerivJacobian(gpc, testmap);
+
+        // loop over all entries of me/de
+        for (int j = 0; j < nnodes; ++j)
+        {
+          for (int k = 0; k < nnodes; ++k)
+          {
+            double facme = integrator.Weight(i) * val(j) * val(k);
+            double facde = (j == k) * integrator.Weight(i) * val(j);
+            me(j, k) += facme * detg;
+            de(j, k) += facde * detg;
+          }
+        }
+
+        double fac = 0.0;
+        // loop over all directional derivatives
+        for (CI p = testmap.begin(); p != testmap.end(); ++p)
+        {
+          Epetra_SerialDenseMatrix& dtmp = derivde_me[p->first];
+          const double& ps = p->second;
+          for (int j = 0; j < nnodes; ++j)
+          {
+            fac = integrator.Weight(i) * val(j) * ps;
+            dtmp(nnodes, j) += fac;
+            for (int k = 0; k < nnodes; ++k) dtmp(k, j) += fac * val(k);
+          }
+        }
+      }
+
+      // compute inverse of matrix M_e and matrix A_e
+      if (MoData().DualShape() == Teuchos::null)
+      {
+        // how many non-zero nodes
+        const int nnodeslin = 2;
+
+        // reduce me to non-zero nodes before inverting
+        LINALG::Matrix<nnodeslin, nnodeslin> melin;
+        for (int j = 0; j < nnodeslin; ++j)
+          for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
+
+        // invert bi-ortho matrix melin
+        LINALG::Inverse2x2(melin);
+
+        // ensure zero coefficients for nodes without Lagrange multiplier
+        for (int j = 0; j < nnodes; ++j)
+          for (int k = 0; k < nnodes; ++k) me(j, k) = 0.0;
+
+        // re-inflate inverse of melin to full size
+        for (int j = 0; j < nnodeslin; ++j)
+          for (int k = 0; k < nnodeslin; ++k) me(j, k) = melin(j, k);
+
+        // get solution matrix with dual parameters
+        for (int j = 0; j < nnodes; ++j)
+          for (int k = 0; k < nnodes; ++k)
+            for (int u = 0; u < nnodes; ++u) ae(j, k) += de(j, u) * me(u, k);
+
+        // store coefficient matrix
+        MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+      }
+      // compute inverse of matrix M_e and get matrix A_e
+      else
+      {
+        // invert matrix M_e
+        LINALG::SymmetricPositiveDefiniteInverse<nnodes>(me);
+
+        // get coefficient matrix A_e
+        ae = *(MoData().DualShape());
+      }
+
+      // build linearization of ae and store in derivdual
+      // (this is done according to a quite complex formula, which
+      // we get from the linearization of the biorthogonality condition:
+      // Lin (Ae * Me = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
+      typedef GEN::pairedvector<int, Epetra_SerialDenseMatrix>::const_iterator _CIM;
+      for (_CIM p = derivde_me.begin(); p != derivde_me.end(); ++p)
+      {
+        Epetra_SerialDenseMatrix& dtmp = derivde_me[p->first];
+        Epetra_SerialDenseMatrix& pt = derivae[p->first];
+        for (int i = 0; i < nnodes; ++i)
+          for (int j = 0; j < nnodes; ++j)
+          {
+            pt(i, j) += me(i, j) * dtmp(nnodes, i);
+            for (int k = 0; k < nnodes; ++k)
+              for (int l = 0; l < nnodes; ++l) pt(i, j) -= ae(i, k) * me(l, j) * dtmp(l, k);
+          }
+      }
+      derivdual = *(MoData().DerivDualShape());
+
+    }
 
     break;
   }
@@ -3872,6 +4121,295 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(
      */
     break;
   }
+    //***********************************************************************
+    // 2D dual quadratic shape functions (tri6)
+    // (used for LINEAR interpolation of Lagrange mutliplier field)
+    // (including adaption process for distorted elements)
+    // (including modification of displacement shape functions)
+    //***********************************************************************
+  case MORTAR::MortarElement::quaddual2D_only_lin:
+  {
+    if (MoData().DerivDualShape() != Teuchos::null) derivdual = *(MoData().DerivDualShape());
+    else
+    {
+      // establish fundamental data
+      double detg = 0.0;
+      const int nnodes = 6;
+
+#ifdef DEBUG
+      if(nnodes!=NumNode())
+      dserror("MortarElement shape function for LM incompatible with number of element nodes!");
+#endif
+
+      MoData().DerivDualShape() = Teuchos::rcp(
+          new GEN::pairedvector<int, Epetra_SerialDenseMatrix>(nnodes * 3, 0,
+              Epetra_SerialDenseMatrix(nnodes, nnodes)));
+      GEN::pairedvector<int, Epetra_SerialDenseMatrix>& derivae = *(MoData().DerivDualShape());
+
+      typedef GEN::pairedvector<int, double>::const_iterator CI;
+      LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
+
+      // prepare computation with Gauss quadrature
+      MORTAR::ElementIntegrator integrator(Shape());
+      LINALG::SerialDenseVector val(nnodes);
+      LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
+      LINALG::Matrix<nnodes, nnodes> me(true);
+      LINALG::Matrix<nnodes, nnodes> de(true);
+
+      // two-dim arrays of maps for linearization of me/de
+      GEN::pairedvector<int, Epetra_SerialDenseMatrix> derivde_me(nnodes * 3, 0,
+          Epetra_SerialDenseMatrix(nnodes + 1, nnodes));
+
+      // build me, de, derivme, derivde
+      for (int i = 0; i < integrator.nGP(); ++i)
+      {
+        double gpc[2] = { integrator.Coordinate(i, 0), integrator.Coordinate(i,1) };
+        EvaluateShape(gpc, val, deriv, nnodes, true);
+        detg = Jacobian(gpc);
+
+        // directional derivative of Jacobian
+        GEN::pairedvector<int, double> testmap(nnodes * 3);
+        DerivJacobian(gpc, testmap);
+
+        // loop over all entries of me/de
+        for (int j = 0; j < nnodes; ++j)
+        {
+          for (int k = 0; k < nnodes; ++k)
+          {
+            double facme = integrator.Weight(i) * val(j) * val(k);
+            double facde = (j == k) * integrator.Weight(i) * val(j);
+            me(j, k) += facme * detg;
+            de(j, k) += facde * detg;
+          }
+        }
+
+        double fac = 0.0;
+        // loop over all directional derivatives
+        for (CI p = testmap.begin(); p != testmap.end(); ++p)
+        {
+          Epetra_SerialDenseMatrix& dtmp = derivde_me[p->first];
+          const double& ps = p->second;
+          for (int j = 0; j < nnodes; ++j)
+          {
+            fac = integrator.Weight(i) * val(j) * ps;
+            dtmp(nnodes, j) += fac;
+            for (int k = 0; k < nnodes; ++k) dtmp(k, j) += fac * val(k);
+          }
+        }
+      }
+
+      // compute inverse of matrix M_e and matrix A_e
+      if (MoData().DualShape() == Teuchos::null)
+      {
+        // how many non-zero nodes
+        const int nnodeslin = 3;
+
+        // reduce me to non-zero nodes before inverting
+        LINALG::Matrix<nnodeslin, nnodeslin> melin;
+        for (int j = 0; j < nnodeslin; ++j)
+          for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
+
+        // invert bi-ortho matrix melin
+        LINALG::Inverse3x3(melin);
+
+        // ensure zero coefficients for nodes without Lagrange multiplier
+        for (int j = 0; j < nnodes; ++j)
+          for (int k = 0; k < nnodes; ++k) me(j, k) = 0.0;
+
+        // re-inflate inverse of melin to full size
+        for (int j = 0; j < nnodeslin; ++j)
+          for (int k = 0; k < nnodeslin; ++k) me(j, k) = melin(j, k);
+
+        // get solution matrix with dual parameters
+        for (int j = 0; j < nnodes; ++j)
+          for (int k = 0; k < nnodes; ++k)
+            for (int u = 0; u < nnodes; ++u) ae(j, k) += de(j, u) * me(u, k);
+
+        // store coefficient matrix
+        MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+      }
+      // compute inverse of matrix M_e and get matrix A_e
+      else
+      {
+        // invert matrix M_e
+        LINALG::SymmetricPositiveDefiniteInverse<nnodes>(me);
+
+        // get coefficient matrix A_e
+        ae = *(MoData().DualShape());
+      }
+
+      // build linearization of ae and store in derivdual
+      // (this is done according to a quite complex formula, which
+      // we get from the linearization of the biorthogonality condition:
+      // Lin (Ae * Me = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
+      typedef GEN::pairedvector<int, Epetra_SerialDenseMatrix>::const_iterator _CIM;
+      for (_CIM p = derivde_me.begin(); p != derivde_me.end(); ++p)
+      {
+        Epetra_SerialDenseMatrix& dtmp = derivde_me[p->first];
+        Epetra_SerialDenseMatrix& pt = derivae[p->first];
+        for (int i = 0; i < nnodes; ++i)
+          for (int j = 0; j < nnodes; ++j)
+          {
+            pt(i, j) += me(i, j) * dtmp(nnodes, i);
+            for (int k = 0; k < nnodes; ++k)
+              for (int l = 0; l < nnodes; ++l) pt(i, j) -= ae(i, k) * me(l, j) * dtmp(l, k);
+          }
+      }
+      derivdual = *(MoData().DerivDualShape());
+    }
+    break;
+  }
+
+    // *********************************************************************
+    // 2D dual serendipity shape functions (quad8)
+    // (used for LINEAR interpolation of Lagrange mutliplier field)
+    // (including adaption process for distorted elements)
+    // (including modification of displacement shape functions)
+    // *********************************************************************
+  case MORTAR::MortarElement::serendipitydual2D_only_lin:
+  {
+    if (MoData().DerivDualShape() != Teuchos::null) derivdual = *(MoData().DerivDualShape());
+    else
+    {
+      // establish fundamental data
+      double detg = 0.0;
+      const int nnodes = 8;
+
+#ifdef DEBUG
+      if(nnodes!=NumNode())
+      dserror("MortarElement shape function for LM incompatible with number of element nodes!");
+#endif
+
+      MoData().DerivDualShape() = Teuchos::rcp(
+          new GEN::pairedvector<int, Epetra_SerialDenseMatrix>(nnodes * 3, 0,
+              Epetra_SerialDenseMatrix(nnodes, nnodes)));
+      GEN::pairedvector<int, Epetra_SerialDenseMatrix>& derivae = *(MoData().DerivDualShape());
+
+      typedef GEN::pairedvector<int, double>::const_iterator CI;
+      LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
+
+      // prepare computation with Gauss quadrature
+      MORTAR::ElementIntegrator integrator(Shape());
+      LINALG::SerialDenseVector val(nnodes);
+      LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
+      LINALG::Matrix<nnodes, nnodes> me(true);
+      LINALG::Matrix<nnodes, nnodes> de(true);
+
+      // two-dim arrays of maps for linearization of me/de
+      GEN::pairedvector<int, Epetra_SerialDenseMatrix> derivde_me(nnodes * 3, 0,
+          Epetra_SerialDenseMatrix(nnodes + 1, nnodes));
+
+      // build me, de, derivme, derivde
+      for (int i = 0; i < integrator.nGP(); ++i)
+      {
+        double gpc[2] = { integrator.Coordinate(i, 0), integrator.Coordinate(i,1) };
+        EvaluateShape(gpc, val, deriv, nnodes, true);
+        detg = Jacobian(gpc);
+
+        // directional derivative of Jacobian
+        GEN::pairedvector<int, double> testmap(nnodes * 3);
+        DerivJacobian(gpc, testmap);
+
+        // loop over all entries of me/de
+        for (int j = 0; j < nnodes; ++j)
+        {
+          for (int k = 0; k < nnodes; ++k)
+          {
+            double facme = integrator.Weight(i) * val(j) * val(k);
+            double facde = (j == k) * integrator.Weight(i) * val(j);
+            me(j, k) += facme * detg;
+            de(j, k) += facde * detg;
+          }
+        }
+
+        double fac = 0.0;
+        // loop over all directional derivatives
+        for (CI p = testmap.begin(); p != testmap.end(); ++p)
+        {
+          Epetra_SerialDenseMatrix& dtmp = derivde_me[p->first];
+          const double& ps = p->second;
+          for (int j = 0; j < nnodes; ++j)
+          {
+            fac = integrator.Weight(i) * val(j) * ps;
+            dtmp(nnodes, j) += fac;
+            for (int k = 0; k < nnodes; ++k) dtmp(k, j) += fac * val(k);
+          }
+        }
+      }
+
+      // compute inverse of matrix M_e and matrix A_e
+      if (MoData().DualShape() == Teuchos::null)
+      {
+        // how many non-zero nodes
+        const int nnodeslin = 4;
+
+        // reduce me to non-zero nodes before inverting
+        LINALG::Matrix<nnodeslin, nnodeslin> melin;
+        for (int j = 0; j < nnodeslin; ++j)
+          for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
+
+        // invert bi-ortho matrix melin
+        LINALG::Inverse4x4(melin);
+
+        // ensure zero coefficients for nodes without Lagrange multiplier
+        for (int j = 0; j < nnodes; ++j)
+          for (int k = 0; k < nnodes; ++k) me(j, k) = 0.0;
+
+        // re-inflate inverse of melin to full size
+        for (int j = 0; j < nnodeslin; ++j)
+          for (int k = 0; k < nnodeslin; ++k) me(j, k) = melin(j, k);
+
+        // get solution matrix with dual parameters
+        for (int j = 0; j < nnodes; ++j)
+          for (int k = 0; k < nnodes; ++k)
+            for (int u = 0; u < nnodes; ++u) ae(j, k) += de(j, u) * me(u, k);
+
+        // store coefficient matrix
+        MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+      }
+      // compute inverse of matrix M_e and get matrix A_e
+      else
+      {
+        // invert matrix M_e
+        LINALG::SymmetricPositiveDefiniteInverse<nnodes>(me);
+
+        // get coefficient matrix A_e
+        ae = *(MoData().DualShape());
+      }
+
+      // build linearization of ae and store in derivdual
+      // (this is done according to a quite complex formula, which
+      // we get from the linearization of the biorthogonality condition:
+      // Lin (Ae * Me = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
+      typedef GEN::pairedvector<int, Epetra_SerialDenseMatrix>::const_iterator _CIM;
+      for (_CIM p = derivde_me.begin(); p != derivde_me.end(); ++p)
+      {
+        Epetra_SerialDenseMatrix& dtmp = derivde_me[p->first];
+        Epetra_SerialDenseMatrix& pt = derivae[p->first];
+        for (int i = 0; i < nnodes; ++i)
+          for (int j = 0; j < nnodes; ++j)
+          {
+            pt(i, j) += me(i, j) * dtmp(nnodes, i);
+            for (int k = 0; k < nnodes; ++k)
+              for (int l = 0; l < nnodes; ++l) pt(i, j) -= ae(i, k) * me(l, j) * dtmp(l, k);
+          }
+      }
+      derivdual = *(MoData().DerivDualShape());
+    }
+    break;
+  }
+
+    // *********************************************************************
+    // 2D dual biquadratic shape functions (quad9)
+    // (used for LINEAR interpolation of Lagrange mutliplier field)
+    // (including adaption process for distorted elements)
+    // (including modification of displacement shape functions)
+    // *********************************************************************
+  case MORTAR::MortarElement::biquaddual2D_only_lin:
+  {
+    dserror("biquaddual2D_only_lin not available!");
+    break;
+  }
     // *********************************************************************
     // Unknown shape function type
     // *********************************************************************
@@ -4216,8 +4754,7 @@ bool MORTAR::MortarElement::DerivShapeDual(
 {
   // get node number and node pointers
   DRT::Node** mynodes = Nodes();
-  if (!mynodes)
-    dserror("ERROR: DerivShapeDual: Null pointer!");
+  if (!mynodes) dserror("ERROR: DerivShapeDual: Null pointer!");
 
   switch (Shape())
   {
@@ -4244,8 +4781,15 @@ bool MORTAR::MortarElement::DerivShapeDual(
     // 2D quadratic case (3noded line element)
   case DRT::Element::line3:
   {
-    // all 3 nodes are interior: use unmodified dual shape functions
-    ShapeFunctionLinearizations(MORTAR::MortarElement::quaddual1D, derivdual);
+    // check for middle "bound" node
+    MortarNode* mycnode2 = dynamic_cast<MortarNode*>(mynodes[2]);
+    if (!mycnode2) dserror("ERROR: DerivShapeDual: Null pointer!");
+    bool isonbound2 = mycnode2->IsOnBound();
+
+    // locally linear Lagrange multipliers
+    if (isonbound2) ShapeFunctionLinearizations(MORTAR::MortarElement::quaddual1D_only_lin,derivdual);
+    // use unmodified dual shape functions
+    else ShapeFunctionLinearizations(MORTAR::MortarElement::quaddual1D, derivdual);
 
     break;
   }
@@ -4271,6 +4815,7 @@ bool MORTAR::MortarElement::DerivShapeDual(
 
     break;
   }
+
   //==================================================
   //                     NURBS
   //==================================================

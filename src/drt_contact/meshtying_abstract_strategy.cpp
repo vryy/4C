@@ -49,7 +49,7 @@ CONTACT::MtAbstractStrategy::MtAbstractStrategy(
     alphaf,
     maxdof),
   interface_(interface),
-  dualquadslave3d_(false)
+  dualquadslavetrafo_(false)
 {
   // call setup method with flag redistributed=FALSE
   Setup(false);
@@ -239,7 +239,8 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
   //----------------------------------------------------------------------
   // These matrices need to be applied to the slave displacements
   // in the cases of dual LM interpolation for tet10/hex20 meshes
-  // in 3D. Here, the displacement basis functions have been modified
+  // in 3D or for locally linear Lagrange multipliers for line3 meshes
+  // in 2D. Here, the displacement basis functions have been modified
   // in order to assure positivity of the D matrix entries and at
   // the same time biorthogonality. Thus, to scale back the modified
   // discrete displacements \hat{d} to the nodal discrete displacements
@@ -247,14 +248,15 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
   // with the transformation matrix T^(-1).
   //----------------------------------------------------------------------
   INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"LM_SHAPEFCN");
-  if (shapefcn == INPAR::MORTAR::shape_dual && Dim()==3)
+  INPAR::MORTAR::LagMultQuad lagmultquad = DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(),"LM_QUAD");
+  if (shapefcn == INPAR::MORTAR::shape_dual && (Dim()==3 || (Dim()==2 && lagmultquad == INPAR::MORTAR::lagmult_lin)))
     for (int i=0; i<(int)interface_.size(); ++i)
-      dualquadslave3d_ += (interface_[i]->Quadslave() && !(interface_[i]->IsNurbs())) ;
+      dualquadslavetrafo_ += (interface_[i]->Quadslave() && !(interface_[i]->IsNurbs())) ;
 
   //----------------------------------------------------------------------
   // COMPUTE TRAFO MATRIX AND ITS INVERSE
   //----------------------------------------------------------------------
-  if (Dualquadslave3d())
+  if (Dualquadslavetrafo())
   {
     // for the MORTARTRAFO case consider both slave and master DOFs
     // else, only consider slave DOFs
