@@ -2662,17 +2662,24 @@ void SCATRA::ScaTraTimIntElch::ApplyDirichletBC(
           // extract global ID of current node
           const int nodegid = (*nodegids)[inode];
 
-          // consider only nodes owned by current processor
+          // consider only nodes stored by current processor
           if(discret_->HaveGlobalNode(nodegid))
           {
-            // extract global ID of electric potential degree of freedom carried by current node
-            const int gid = discret_->Dof(0,discret_->gNode(nodegid),1);   // Do not remove the zero, i.e., the first function argument, otherwise an error is thrown in debug mode!
+            // extract current node
+            const DRT::Node* const node = discret_->gNode(nodegid);
 
-            // add global ID to set
-            dbcgids.insert(gid);
+            // consider only nodes owned by current processor
+            if(node->Owner() == discret_->Comm().MyPID())
+            {
+              // extract global ID of electric potential degree of freedom carried by current node
+              const int gid = discret_->Dof(0,node,1);   // Do not remove the zero, i.e., the first function argument, otherwise an error is thrown in debug mode!
 
-            // apply cutoff voltage as Dirichlet boundary condition
-            phinp->ReplaceGlobalValue(gid,0,cutoff_voltage);
+              // add global ID to set
+              dbcgids.insert(gid);
+
+              // apply cutoff voltage as Dirichlet boundary condition
+              phinp->ReplaceGlobalValue(gid,0,cutoff_voltage);
+            }
           }
         } // loop over all nodes
 

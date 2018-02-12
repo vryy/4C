@@ -91,6 +91,9 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
 
   /*--- calculate and update -----------------------------------------------*/
 
+  //! determine whether there are still time steps to be evaluated
+  bool NotFinished();
+
   //! Update the solution after convergence of the nonlinear iteration.
   //! Current solution becomes old solution of next timestep.
   virtual void Update(const int num=0);
@@ -272,9 +275,6 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   void ApplyNeumannBC(
       const Teuchos::RCP<Epetra_Vector>&   neumann_loads   //!< Neumann loads
       );
-
-  //! determine whether there are still time steps to be evaluated
-  bool NotFinished();
 
   //! perform Aitken relaxation
   void PerformAitkenRelaxation(

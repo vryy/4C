@@ -458,6 +458,11 @@ public:
   //! @name Time, time-step and related methods
   /*========================================================================*/
 
+  /*--- calculate and update -----------------------------------------------*/
+
+  //! determine whether there are still time steps to be evaluated
+  virtual bool NotFinished() {return step_ < stepmax_ and time_ + 1.e-12 < maxtime_;};
+
   /*--- query and output ---------------------------------------------------*/
 
   //! return current time value
@@ -758,9 +763,6 @@ protected:
     Teuchos::RCP<Epetra_Vector> phinp, //!< transported scalar(s) (may be = null)
     Teuchos::RCP<Epetra_Vector> phidt  //!< first time derivative (may be = null)
   );
-
-  //! determine whether there are still time steps to be evaluated
-  virtual bool NotFinished() {return step_ < stepmax_ and time_ + 1.e-12 < maxtime_;};
 
   //! compute outward pointing unit normal vectors at given bc's
   Teuchos::RCP<Epetra_MultiVector> ComputeNormalVectors(

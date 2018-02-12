@@ -1902,7 +1902,7 @@ void SSI::SSI_Mono::Timeloop()
   }
 
   // time loop
-  while(NotFinished())
+  while(NotFinished() and scatra_->ScaTraField()->NotFinished())
   {
     // prepare time step
     PrepareTimeStep();
