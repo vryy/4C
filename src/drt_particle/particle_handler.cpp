@@ -682,13 +682,7 @@ void PARTICLE::ParticleHandler::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap
 
       for(int iparticle=0; iparticle<BinStrategy()->BinDiscret()->lColElement(k)->NumNode(); iparticle++)
       {
-        int ijk[3] = {-1,-1,-1};
-        for(int dim=0; dim<3; ++dim)
-        {
-          ijk[dim] = (int)((particles[iparticle]->X()[dim]-BinStrategy()->XAABB()(dim,0)) * BinStrategy()->InvBinSize()[dim]);
-        }
-
-        int gidofbin = BinStrategy()->ConvertijkToGid(&ijk[0]);
+        int gidofbin = BinStrategy()->ConvertPosToGid( particles[iparticle]->X() );
         if(gidofbin != binid)
           dserror("after ghosting: particle which should be in bin no. %i is in %i",gidofbin,binid);
       }

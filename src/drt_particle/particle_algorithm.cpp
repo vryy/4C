@@ -460,6 +460,10 @@ void PARTICLE::Algorithm::DynamicLoadBalancing()
   if(Step()%100 != 0 or Comm().NumProc() == 1)
     return;
 
+  // transfer particles into their correct bins
+  if ( rep_strategy_ == INPAR::PARTICLE::repstr_adaptive )
+    TransferParticles(true);
+
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::DynamicLoadBalancing()");
 
   const Epetra_Map* oldrowmap = BinStrategy()->BinDiscret()->ElementRowMap();
