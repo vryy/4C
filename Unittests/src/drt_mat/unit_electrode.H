@@ -73,6 +73,8 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
       ocp_para[14] = 9.302e4;
       ocp_para[15] = -3.280e4;
       container->Add("OCP_PARA",ocp_para);
+      container->Add("X_MIN",-1.);
+      container->Add("X_MAX",-1.);
 
       // initialize parameter class for anode material
       parameters_anode_ = Teuchos::rcp(new MAT::PAR::Electrode(container));
@@ -113,6 +115,8 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
       ocp_para[19] = 6.658e5;
       ocp_para[20] = -1.084e6;
       container->Add("OCP_PARA",ocp_para);
+      container->Add("X_MIN",-1.);
+      container->Add("X_MAX",-1.);
 
       // initialize parameter class for cathode material
       parameters_cathode_ = Teuchos::rcp(new MAT::PAR::Electrode(container));
