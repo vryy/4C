@@ -324,13 +324,11 @@ double MAT::Electrode::ComputeFirstDerivOpenCircuitPotential(
         break;
       }
 
-      // derivative polynomial ocp
+      // derivative of polynomial half cell open circuit potential w.r.t. concentration
       case MAT::PAR::ocp_polynomial:
       {
         for(int i=1; i<params_->ocpparanum_; ++i)
-        {
-          ocpderiv += params_->ocppara_[i]*pow(X,i-1);
-        }
+          ocpderiv += i*params_->ocppara_[i]*pow(X,i-1);
         ocpderiv /= params_->cmax_;
 
         break;
@@ -404,6 +402,16 @@ double MAT::Electrode::ComputeSecondDerivOpenCircuitPotential(
                     +8.*params_->ocppara_[4]*params_->ocppara_[5]*pow(X,6)*exp(params_->ocppara_[5]*pow(X,8))*(7.+8.*params_->ocppara_[5]*pow(X,8))
                     +params_->ocppara_[6]*params_->ocppara_[8]*(params_->ocppara_[8]+1.)/pow(params_->ocppara_[7]-X,params_->ocppara_[8]+2.)
                     +params_->ocppara_[10]*pow(params_->ocppara_[11],2)*exp(params_->ocppara_[11]*(X+params_->ocppara_[12]));
+        ocpderiv2 /= pow(params_->cmax_,2);
+
+        break;
+      }
+
+      // second derivative of polynomial half cell open circuit potential w.r.t. concentration
+      case MAT::PAR::ocp_polynomial:
+      {
+        for(int i=2; i<params_->ocpparanum_; ++i)
+          ocpderiv2 += i*(i-1)*params_->ocppara_[i]*pow(X,i-2);
         ocpderiv2 /= pow(params_->cmax_,2);
 
         break;

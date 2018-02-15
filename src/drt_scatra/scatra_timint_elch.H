@@ -100,6 +100,9 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
 
   /*--- query and output ---------------------------------------------------*/
 
+  //! output solution and restart data to file
+  void Output(const int num=0) final;
+
   //! problem-specific outputs
   void OutputProblemSpecific();
 
@@ -139,7 +142,7 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   //! output electrode interior status information to screen and files
   void OutputElectrodeInfoInterior();
 
-  //! output cell voltage to screen
+  //! output cell voltage to screen and file
   void OutputCellVoltage();
 
   //! output restart data

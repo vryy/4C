@@ -651,6 +651,29 @@ void SCATRA::ScaTraTimIntElch::Update(const int num)
 
 
 /*----------------------------------------------------------------------*
+ | output solution and restart data to file                  fang 02/18 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::Output(const int num)
+{
+  // call base class routine
+  ScaTraTimIntImpl::Output(num);
+
+  // output electrode interior status information and cell voltage in every time step
+  // in the presence of constant-current constant-voltage (CCCV) cell cycling boundary condition
+  if(not DoOutput() and discret_->GetCondition("CCCVCycling"))
+  {
+    // print electrode interior status information to screen and files
+    OutputElectrodeInfoInterior();
+
+    // print cell voltage to screen and file
+    OutputCellVoltage();
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | problem-specific outputs                                  fang 01/15 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::OutputProblemSpecific()
@@ -662,7 +685,7 @@ void SCATRA::ScaTraTimIntElch::OutputProblemSpecific()
   // print electrode interior status information to screen and files
   OutputElectrodeInfoInterior();
 
-  // print cell voltage to screen
+  // print cell voltage to screen and file
   OutputCellVoltage();
 
   // for elch problems with moving boundary
@@ -1270,7 +1293,7 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
 
 
 /*----------------------------------------------------------------------*
- | output cell voltage to screen                             fang 01/15 |
+ | output cell voltage to screen and file                    fang 01/15 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
 {
