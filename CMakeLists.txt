@@ -896,12 +896,18 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/periodic_boundingbox.cpp
   src/drt_beaminteraction/beam3contact_utils.cpp
   src/drt_beaminteraction/beam3contact_tangentsmoothing.cpp
+  src/drt_beaminteraction/beam_contact_evaluation_data.cpp
   src/drt_beaminteraction/beam_contact_params.cpp
   src/drt_beaminteraction/beam_contact_runtime_vtk_output_params.cpp
   src/drt_beaminteraction/beam_contact_pair.cpp
   src/drt_beaminteraction/beam_to_beam_contact_pair.cpp
+  src/drt_beaminteraction/beam_to_beam_contact_params.cpp
   src/drt_beaminteraction/beam_to_beam_contact_variables.cpp
-  src/drt_beaminteraction/beam_to_sphere_contact_pair
+  src/drt_beaminteraction/beam_to_solid_volume_meshtying_evaluation_data.cpp
+  src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair.cpp
+  src/drt_beaminteraction/beam_to_solid_volume_meshtying_params.cpp
+  src/drt_beaminteraction/beam_to_sphere_contact_pair.cpp
+  src/drt_beaminteraction/beam_to_sphere_contact_params.cpp
   src/drt_beaminteraction/beam_potential_params.cpp
   src/drt_beaminteraction/beam_potential_runtime_vtk_output_params.cpp
   src/drt_beaminteraction/beam_potential_pair.cpp

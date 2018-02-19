@@ -186,7 +186,7 @@ namespace MODELEVALUATOR{
     bool HaveSubModelType(INPAR::BEAMINTERACTION::SubModelType const& submodeltype) const;
 
     //! build, init and setup submodel evaluator
-    void InitAndSetupSubModeEvaluators();
+    void InitAndSetupSubModelEvaluators();
 
     //! give submodels a certain order in which they are evaluated
     virtual Teuchos::RCP< STR::MODELEVALUATOR::BeamInteraction::Vector > TransformToVector(

@@ -18,19 +18,17 @@
 
 namespace BEAMINTERACTION {
 
-  /*!
-   *  */
-  class BeamToBeamContactRuntimeVtkParams
+  class BeamContactRuntimeVtkOutputParams
   {
   public:
     //! constructor
-    BeamToBeamContactRuntimeVtkParams();
+    BeamContactRuntimeVtkOutputParams();
 
     //! destructor
-    virtual ~BeamToBeamContactRuntimeVtkParams() {};
+    virtual ~BeamContactRuntimeVtkOutputParams() {};
 
     //! initialize with the stuff coming from input file
-    void Init( const Teuchos::ParameterList& beam_contact_vtk_paramslist );
+    void Init();
 
     //! setup member variables
     void Setup();
@@ -71,6 +69,7 @@ namespace BEAMINTERACTION {
       return output_gaps_;
     };
 
+
   private:
     //! returns the isinit_ flag
     inline const bool& IsInit() const
@@ -87,13 +86,11 @@ namespace BEAMINTERACTION {
     void ThrowErrorIfNotInit() const;
 
 
-
   private:
 
     bool isinit_;
 
     bool issetup_;
-
 
     /// data format for numeric output data
     INPAR::BEAMCONTACT::OutputDataFormat output_data_format_;

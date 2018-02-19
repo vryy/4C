@@ -14,6 +14,7 @@
 
 #include "beam_contact_pair.H"
 #include "beam_contact_params.H"
+#include "beam_to_beam_contact_params.H"
 #include "beam_to_beam_contact_variables.H"
 #include "beam3contact_defines.H"
 #include "beam3contact_utils.H"
@@ -89,7 +90,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::Setup()
   //In case we want to apply a segment-based integration at the endpoints of the physical beam (in order to avoid
   //strong discontinuities in the integrand) we have to check, if a master beam element node coincides with a beams endpoint!
   bool determine_neighbors=false;
-  if(Params()->EndPointPenalty()) determine_neighbors=true;
+  if(Params()->BeamToBeamContactParams()->EndPointPenalty()) determine_neighbors=true;
 
   #ifdef ENDPOINTSEGMENTATION
     determine_neighbors=true;
@@ -144,11 +145,11 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::Setup()
   gpvariables_.resize(0);
   epvariables_.resize(0);
 
-  if (Params()->GapShift()!=0.0 and Params()->PenaltyLaw()!=INPAR::BEAMCONTACT::pl_lpqp)
+  if (Params()->BeamToBeamContactParams()->GapShift()!=0.0 and Params()->BeamToBeamContactParams()->PenaltyLaw()!=INPAR::BEAMCONTACT::pl_lpqp)
     dserror("BEAMS_GAPSHIFTPARAM only possible for penalty law LinPosQuadPen!");
 
-  double perpshiftangle1 = Params()->BeamToBeamPerpShiftingAngle1();
-  double parshiftangle2 = Params()->BeamToBeamPerpShiftingAngle2();
+  double perpshiftangle1 = Params()->BeamToBeamContactParams()->BeamToBeamPerpShiftingAngle1();
+  double parshiftangle2 = Params()->BeamToBeamContactParams()->BeamToBeamPerpShiftingAngle2();
 
 
   // Todo
@@ -158,7 +159,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::Setup()
 //  if((perpshiftangle1<acos(1.0-2*MAXCROSSSECTIONTOCURVATURE)) and !beamsdebug)
 //    dserror("Choose larger shifting angle BEAMS_PERPSHIFTANGLE1 in order to enable a unique CPP!");
 
-  double segangle = Params()->SegmentationAngle();
+  double segangle = Params()->BeamToBeamContactParams()->SegmentationAngle();
 
   double safetyfac=1.5;
   //Determine bound for search of large-angle contact pairs
@@ -175,7 +176,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::Setup()
   //Calculate maximal length distance between two gauss points (the factor 1.5 takes into account the not evenly distributed locations
   //of the Gauss points -> this does hold for a number of Gauss points <= 10!!!)
   DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::BEAMCONTACTGAUSSRULE);
-  int intintervals = Params()->NumIntegrationIntervals();
+  int intintervals = Params()->BeamToBeamContactParams()->NumIntegrationIntervals();
 
 //  double deltal1=1.5*l1/(intintervals*gausspoints.nquad);
 
@@ -200,6 +201,17 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::Setup()
 //  Print(std::cout);
   // ******************* END DEBUG ************************************************
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template<unsigned int numnodes, unsigned int numnodalvalues>
+void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::PreEvaluate()
+{
+  // do nothing
+  return;
+}
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
  |  Evaluate the element (public)                             meier 02/14|
@@ -251,7 +263,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::Evaluate(
   //since most of the elements leave directly after the closest point projection!
   ClearClassVariables();
 
-  double pp = Params()->BeamToBeamPointPenaltyParam();
+  double pp = Params()->BeamToBeamContactParams()->BeamToBeamPointPenaltyParam();
 
   //Subdevide the two elements in segments with linear approximation
   std::vector<LINALG::TMatrix<double,3,1> > endpoints1(0);
@@ -273,7 +285,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::Evaluate(
   closelargeanglesegments.clear();
   closesmallanglesegments.clear();
 
-  bool endpoint_penalty= Params()->EndPointPenalty();
+  bool endpoint_penalty= Params()->BeamToBeamContactParams()->EndPointPenalty();
 
   //Sub-devision of contact elements in search segments or not?
   #ifndef NOSEGMENTATION
@@ -496,8 +508,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateA
     CalcPenaltyLaw(cpvariables_[numcp]);
 
     // get shift angles from input file
-    double perpshiftangle1 = Params()->BeamToBeamPerpShiftingAngle1();
-    double perpshiftangle2 = Params()->BeamToBeamPerpShiftingAngle2();
+    double perpshiftangle1 = Params()->BeamToBeamContactParams()->BeamToBeamPerpShiftingAngle1();
+    double perpshiftangle2 = Params()->BeamToBeamContactParams()->BeamToBeamPerpShiftingAngle2();
 
     // call function to compute scale factor of penalty parameter
     CalcPerpPenaltyScaleFac(cpvariables_[numcp],r1_xi,r2_xi,perpshiftangle1,perpshiftangle2);
@@ -550,7 +562,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetActive
   int numpairs = closesmallanglesegments.size();
   std::vector<std::pair<double, double > > inversepairs(numpairs,std::make_pair(0.0,0.0));
   int pairiter=0;
-  int intintervals = Params()->NumIntegrationIntervals();
+  int intintervals = Params()->BeamToBeamContactParams()->NumIntegrationIntervals();
 
   std::map<std::pair<int,int>,LINALG::TMatrix<double,3,1> >::iterator iter;
 
@@ -846,7 +858,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetActive
                 std::pair<int,int> leftpoint_ids = std::make_pair(leftpoint_id1,leftpoint_id2);
                 TYPE jacobi = GetJacobiAtXi(Element1(),eta1_slave)*jacobi_interval;
 
-                const double parallel_pp = Params()->BeamToBeamLinePenaltyParam();
+                const double parallel_pp = Params()->BeamToBeamContactParams()->BeamToBeamLinePenaltyParam();
 
                 if(parallel_pp<0.0)
                   dserror("BEAMS_BTBLINEPENALTYPARAM not set!");
@@ -968,8 +980,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateA
     CalcPenaltyLaw(gpvariables_[numgptot]);
 
     // get shift angles from input file
-    double parshiftangle1 = Params()->BeamToBeamParallelShiftingAngle1();
-    double parshiftangle2 = Params()->BeamToBeamParallelShiftingAngle2();
+    double parshiftangle1 = Params()->BeamToBeamContactParams()->BeamToBeamParallelShiftingAngle1();
+    double parshiftangle2 = Params()->BeamToBeamContactParams()->BeamToBeamParallelShiftingAngle2();
 
     // call function to compute scale factor of penalty parameter
     CalcParPenaltyScaleFac(gpvariables_[numgptot],r1_xi,r2_xi,parshiftangle1,parshiftangle2);
@@ -1383,7 +1395,7 @@ template<unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::CalcPenaltyLaw(Teuchos::RCP<BeamToBeamContactVariables<numnodes, numnodalvalues> > variables)
 {
     //First parameter for contact force regularization
-    double g0 = Params()->BeamToBeamPenaltyLawRegularizationG0();
+    double g0 = Params()->BeamToBeamContactParams()->BeamToBeamPenaltyLawRegularizationG0();
     TYPE fp=0.0;
     TYPE dfp=0.0;
     TYPE e=0.0;
@@ -1393,7 +1405,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::CalcPenal
     if(!CheckContactStatus(FADUTILS::CastToDouble(gap)))
       return;
 
-    switch (Params()->PenaltyLaw())
+    switch (Params()->BeamToBeamContactParams()->PenaltyLaw())
     {
       case INPAR::BEAMCONTACT::pl_lp:               //linear penalty force law
       {
@@ -1437,7 +1449,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::CalcPenal
           dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
 
         //Parameter to shift penalty law
-        double gbar=Params()->GapShift();
+        double gbar=Params()->BeamToBeamContactParams()->GapShift();
         gap=gap+gbar;
 
         double f0=g0*pp/2.0;
@@ -1467,7 +1479,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::CalcPenal
           dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
 
         //Third parameter for contact force regularization
-        double c0 = Params()->BeamToBeamPenaltyLawRegularizationC0();
+        double c0 = Params()->BeamToBeamContactParams()->BeamToBeamPenaltyLawRegularizationC0();
         if(c0==-1.0)
           dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_C0!");
 
@@ -1501,12 +1513,12 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::CalcPenal
           dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
 
         //Third parameter for contact force regularization
-        double c0 = Params()->BeamToBeamPenaltyLawRegularizationC0();
+        double c0 = Params()->BeamToBeamContactParams()->BeamToBeamPenaltyLawRegularizationC0();
         if(c0==-1.0)
           dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_C0!");
 
         //Second parameter for contact force regularization
-        double f0 = Params()->BeamToBeamPenaltyLawRegularizationF0();
+        double f0 = Params()->BeamToBeamContactParams()->BeamToBeamPenaltyLawRegularizationF0();
         if(f0==-1.0)
           dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_F0!");
 
@@ -1546,7 +1558,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::CalcPenal
           dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
 
         //Second parameter for contact force regularization
-        double f0 = Params()->BeamToBeamPenaltyLawRegularizationF0();
+        double f0 = Params()->BeamToBeamContactParams()->BeamToBeamPenaltyLawRegularizationF0();
         if(f0==-1.0)
           dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_F0!");
 
@@ -1715,7 +1727,7 @@ double BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::CreateS
 {
   //endpoints of the segments
   std::vector<LINALG::TMatrix<double,3,1> > endpoints((int)MAXNUMSEG+1,LINALG::TMatrix<double,3,1>(true));
-  double segangle = Params()->SegmentationAngle();
+  double segangle = Params()->BeamToBeamContactParams()->SegmentationAngle();
 
   numsegment=1;
   double deltaxi=2.0;
@@ -1814,7 +1826,7 @@ template<unsigned int numnodes, unsigned int numnodalvalues>
 double BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetMaxActiveDist()
 {
   double maxactivedist = 0.0;
-  int penaltylaw = Params()->PenaltyLaw();
+  int penaltylaw = Params()->BeamToBeamContactParams()->PenaltyLaw();
 
   switch (penaltylaw)
   {
@@ -1827,12 +1839,12 @@ double BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetMaxA
     }
     case INPAR::BEAMCONTACT::pl_lpqp:
     {
-      double g0 = Params()->BeamToBeamPenaltyLawRegularizationG0();
+      double g0 = Params()->BeamToBeamContactParams()->BeamToBeamPenaltyLawRegularizationG0();
       if(g0==-1.0)
         dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
 
       //Parameter to shift penalty law
-      double gbar=Params()->GapShift();
+      double gbar=Params()->BeamToBeamContactParams()->GapShift();
 
       maxactivedist = g0 - gbar;
 
@@ -1842,7 +1854,7 @@ double BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetMaxA
     case INPAR::BEAMCONTACT::pl_lpdqp:
     case INPAR::BEAMCONTACT::pl_lpep:
     {
-      maxactivedist = Params()->BeamToBeamPenaltyLawRegularizationG0();
+      maxactivedist = Params()->BeamToBeamContactParams()->BeamToBeamPenaltyLawRegularizationG0();
       if(maxactivedist==-1.0)
         dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
       break;
@@ -1869,7 +1881,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::CheckSegm
   double angle1(0.0);
   double angle2(0.0);
   double dist(0.0);
-  double segangle = Params()->SegmentationAngle();
+  double segangle = Params()->BeamToBeamContactParams()->SegmentationAngle();
 
   //Calculate tangent and midpint of linear nodal interpolation
   for(int i=0;i<3;i++)
@@ -1916,7 +1928,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetCloseS
   LINALG::TMatrix<double,3,1> r2_b(true);
   double angle(0.0);
 
-  bool endpoint_penalty=Params()->EndPointPenalty();
+  bool endpoint_penalty=Params()->BeamToBeamContactParams()->EndPointPenalty();
 
   //Safety factor for determination of close segments
   double safetyfac = 1.1;
@@ -2250,7 +2262,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ClosestPo
       if(pointtolinesolfound and eta1_min>(eta_left1-1.0e-10) and eta1_min<(eta_left1+l1+1.0e-10) and eta_left2 - XIETAITERATIVEDISPTOL <= eta2 and eta2 <= eta_right2 + XIETAITERATIVEDISPTOL)
       {
 
-        double perpshiftangle1 = Params()->BeamToBeamPerpShiftingAngle1();
+        double perpshiftangle1 = Params()->BeamToBeamContactParams()->BeamToBeamPerpShiftingAngle1();
         //Here, we apply the conservative estimate that the closest-point gap is by 0.1*R2_ smaller than g_min
         double g_min_estimate=g_min-0.1*R2_;
 
@@ -2357,7 +2369,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ClosestPo
 
         double angle=fabs(BEAMCONTACT::CalcAngle(FADUTILS::CastToDouble<TYPE,3,1>(r1_xi),FADUTILS::CastToDouble<TYPE,3,1>(r2_xi)));
 
-        double perpshiftangle1 = Params()->BeamToBeamPerpShiftingAngle1();
+        double perpshiftangle1 = Params()->BeamToBeamContactParams()->BeamToBeamPerpShiftingAngle1();
 
         if(CheckContactStatus(gap) and angle >=perpshiftangle1)
           validpairfound=true;
@@ -2480,7 +2492,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::PointToLi
       N2_xixi.Clear();
 
       bool inversion_possible=false;
-      bool endpointpenalty = Params()->EndPointPenalty();
+      bool endpointpenalty = Params()->BeamToBeamContactParams()->EndPointPenalty();
       if(endpointpenalty) inversion_possible=true;
 
       #ifdef ENDPOINTSEGMENTATION
@@ -2701,7 +2713,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::PointToLi
         double angle=fabs(BEAMCONTACT::CalcAngle(FADUTILS::CastToDouble<TYPE,3,1>(r1_xi),FADUTILS::CastToDouble<TYPE,3,1>(r2_xi)));
         if(smallanglepair)
         {
-          double parshiftangle2 = Params()->BeamToBeamParallelShiftingAngle2();
+          double parshiftangle2 = Params()->BeamToBeamContactParams()->BeamToBeamParallelShiftingAngle2();
 
           if(angle > parshiftangle2)
             relevant_angle=false;
@@ -3087,7 +3099,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateS
   TYPE dppfac = variables->GetDPPfac();
 
   //In order to accelerate convergence, we only apply the basic stiffness part in case of very large gaps!
-  double basicstiffgap = Params()->BasicStiffGap();
+  double basicstiffgap = Params()->BeamToBeamContactParams()->BasicStiffGap();
   bool completestiff = true;
   if (basicstiffgap!=-1.0)
   {
@@ -4663,10 +4675,10 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::CheckCont
 {
 
   //First parameter for contact force regularization
-  double g0 = Params()->BeamToBeamPenaltyLawRegularizationG0();
+  double g0 = Params()->BeamToBeamContactParams()->BeamToBeamPenaltyLawRegularizationG0();
   bool contactflag = false;
 
-  int penaltylaw = Params()->PenaltyLaw();
+  int penaltylaw = Params()->BeamToBeamContactParams()->PenaltyLaw();
 
   if(penaltylaw==INPAR::BEAMCONTACT::pl_lp)
   {
@@ -4695,7 +4707,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::CheckCont
       dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
 
     //Parameter to shift penalty law
-    double gbar=Params()->GapShift();
+    double gbar=Params()->BeamToBeamContactParams()->GapShift();
     TYPE g=gap+gbar;
 
     if (g < g0)

@@ -129,6 +129,9 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
                 bstr_penalty, bstr_penalty),
         &beamtosolidcontact);
 
+  DoubleParameter("BEAMS_BTSVOLMTPENALTYPARAM",0.0,"Penalty parameter for beam-to-solid volume meshtying",&beamtosolidcontact);
+
+
   // ...
 
 }

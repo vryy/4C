@@ -12,7 +12,6 @@
 
 #include "beam_to_sphere_contact_pair.H"
 
-#include "beam_contact_params.H"
 #include "beam3contact_utils.H"
 #include "beam3contact_defines.H"
 
@@ -29,6 +28,10 @@
 
 #include "../linalg/linalg_utils.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+
+#include "beam_contact_params.H"
+#include "beam_to_sphere_contact_params.H"
+
 
 
 /*-----------------------------------------------------------------------------------------------*
@@ -99,6 +102,17 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Setup()
 //  Print(std::cout);
   // ******************* END DEBUG ************************************************
 }
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+template<unsigned int numnodes, unsigned int numnodalvalues>
+void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::PreEvaluate()
+{
+  // do nothing
+  return;
+}
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
@@ -204,7 +218,7 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
       EvaluateFcContact(
           *forcevec1,
           *forcevec2,
-          Params()->BeamToSpherePenaltyParam(),
+          Params()->BeamToSphereContactParams()->BeamToSpherePenaltyParam(),
           gap,
           normal,
           N1_i,
@@ -219,7 +233,7 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
           *stiffmat12,
           *stiffmat21,
           *stiffmat22,
-          Params()->BeamToSpherePenaltyParam(),
+          Params()->BeamToSphereContactParams()->BeamToSpherePenaltyParam(),
           gap,
           normal,
           norm,
@@ -304,7 +318,7 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
           EvaluateFcContact(
               *forcevec1,
               *forcevec2,
-              Params()->BeamToSpherePenaltyParam(),
+              Params()->BeamToSphereContactParams()->BeamToSpherePenaltyParam(),
               gap,
               normal,
               N1_i,
@@ -319,7 +333,7 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
               *stiffmat12,
               *stiffmat21,
               *stiffmat22,
-              Params()->BeamToSpherePenaltyParam(),
+              Params()->BeamToSphereContactParams()->BeamToSpherePenaltyParam(),
               gap,
               normal,
               norm,

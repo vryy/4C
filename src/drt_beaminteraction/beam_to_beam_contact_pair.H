@@ -74,6 +74,12 @@ public:
 
   //! @name Derived methods from base class
   /*!
+  \brief things that need to be done in a separate loop before the actual evaluation loop
+         over all contact pairs
+  */
+  void PreEvaluate() override;
+
+  /*!
   \brief Evaluate this contact element pair, return value indicates whether pair is active,
          i.e. non-zero values for force and stiffmat are returned
   */

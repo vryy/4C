@@ -13,6 +13,7 @@
 
 #include "../drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact.H"
 #include "../drt_beaminteraction/beam_contact_pair.H"
+#include "../drt_beaminteraction/beam_contact_evaluation_data.H"
 #include "../drt_beaminteraction/beam_contact_params.H"
 #include "../drt_beaminteraction/beam_contact_runtime_vtk_output_params.H"
 #include "../drt_beaminteraction/beaminteraction_calc_utils.H"
@@ -49,6 +50,7 @@
  *----------------------------------------------------------------------------*/
 BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::BeamContact()
     : beam_contact_params_ptr_(Teuchos::null),
+      beam_contact_evaluation_data_ptr_(Teuchos::null),
       contact_elepairs_(Teuchos::null)
 {
   // clear stl stuff
@@ -62,17 +64,50 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
 {
   CheckInit();
 
-  // init and setup beam to beam contact data container
-  beam_contact_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamContactParams() );
-  BeamContactParams().Init();
-  BeamContactParams().Setup();
+  // build a new data container to manage beam contact parameters
+  beam_contact_params_ptr_ = Teuchos::rcp( new BEAMINTERACTION::BeamContactParams() );
 
-  // initialize element types that are considered for beamt to ? contact
-  InitElementTypesConsideredForContact();
+  // build a new data container to manage beam contact evaluation data that can not be stored pairwise
+  beam_contact_evaluation_data_ptr_ = Teuchos::rcp( new BEAMINTERACTION::BeamContactEvaluationData() );
 
   // build runtime vtp writer if desired
-  if ( BeamContactParams().VtkRuntimeOutput() )
-    InitOutputRuntimeVtpBeamContact();
+  if ( (bool) DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->BeamContactParams().sublist(
+      "RUNTIME VTK OUTPUT"),"VTK_OUTPUT_BEAM_CONTACT") )
+  {
+    beam_contact_params_ptr_->BuildBeamContactRuntimeVtkOutputParams();
+  }
+
+
+  contactelementtypes_.clear();
+
+  if ( DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
+       DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO BEAM CONTACT"), "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none
+     )
+  {
+    contactelementtypes_.push_back(BINSTRATEGY::UTILS::Beam);
+
+    beam_contact_params_ptr_->BuildBeamToBeamContactParams();
+  }
+
+  if ( DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
+       DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SPHERE CONTACT"), "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none
+     )
+  {
+    contactelementtypes_.push_back(BINSTRATEGY::UTILS::RigidSphere);
+
+    beam_contact_params_ptr_->BuildBeamToSphereContactParams();
+  }
+
+  if ( DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
+       DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID CONTACT"), "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none
+     )
+  {
+    contactelementtypes_.push_back(BINSTRATEGY::UTILS::Solid);
+
+    beam_contact_params_ptr_->BuildBeamToSolidVolumeMeshtyingParams();
+    beam_contact_evaluation_data_ptr_->BuildBeamToSolidVolumeMeshtyingEvaluationData();
+  }
+
 
   // set flag
   issetup_ = true;
@@ -82,6 +117,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
  *----------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::PostSetup()
 {
+
   CheckInitSetup();
 
   // Todo really needed here? maybe find better place
@@ -100,29 +136,6 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::InitSubmodelDependencies(
   // no active influence on other submodels
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::InitElementTypesConsideredForContact()
-{
-  CheckInit();
-
-  contactelementtypes_.clear();
-
-  if ( DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
-       DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO BEAM CONTACT"), "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none
-     )
-    contactelementtypes_.push_back(BINSTRATEGY::UTILS::Beam);
-
-  if ( DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
-       DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SPHERE CONTACT"), "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none
-     )
-    contactelementtypes_.push_back(BINSTRATEGY::UTILS::RigidSphere);
-
-  if ( DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
-       DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID CONTACT"), "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none
-     )
-    contactelementtypes_.push_back(BINSTRATEGY::UTILS::Solid);
-}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -165,6 +178,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Reset()
  *----------------------------------------------------------------------*/
 bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForce()
 {
+
   CheckInitSetup();
 
   // resulting discrete element force vectors of the two interacting elements
@@ -183,11 +197,16 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForce()
   bool pair_is_active = false;
 
 
-  std::vector< Teuchos::RCP< BEAMINTERACTION::BeamContactPair > >::const_iterator iter;
-  for ( iter = contact_elepairs_.begin(); iter != contact_elepairs_.end(); ++iter )
+  for ( auto& elepairptr : contact_elepairs_ )
   {
-    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> elepairptr = *iter;
+    // PreEvaluate the pair
+    elepairptr->PreEvaluate();
+  }
 
+
+  for ( auto& elepairptr : contact_elepairs_ )
+  {
+    // Evaluate the pair and check if there is active contact
     pair_is_active = elepairptr->Evaluate(
         &eleforce_centerlineDOFs[0],
         &eleforce_centerlineDOFs[1],
@@ -229,6 +248,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForce()
  *----------------------------------------------------------------------*/
 bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateStiff()
 {
+
   CheckInitSetup();
 
   // linearizations
@@ -248,11 +268,15 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateStiff()
   bool pair_is_active = false;
 
 
-  std::vector< Teuchos::RCP< BEAMINTERACTION::BeamContactPair > >::const_iterator iter;
-  for ( iter = contact_elepairs_.begin(); iter != contact_elepairs_.end(); ++iter )
+  for ( auto& elepairptr : contact_elepairs_ )
   {
-    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> elepairptr = *iter;
+    // PreEvaluate the pair
+    elepairptr->PreEvaluate();
+  }
 
+  for ( auto& elepairptr : contact_elepairs_ )
+  {
+    // Evaluate the pair and check if there is active contact
     pair_is_active = elepairptr->Evaluate(
         NULL,
         NULL,
@@ -290,6 +314,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateStiff()
  *----------------------------------------------------------------------*/
 bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForceStiff()
 {
+
   CheckInitSetup();
 
   // resulting discrete element force vectors of the two interacting elements
@@ -314,14 +339,15 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForceStiff()
   bool pair_is_active = false;
 
 
-  std::vector< Teuchos::RCP< BEAMINTERACTION::BeamContactPair > >::const_iterator iter;
-  for ( iter = contact_elepairs_.begin(); iter != contact_elepairs_.end(); ++iter )
+  for ( auto& elepairptr : contact_elepairs_ )
   {
-    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> elepairptr = *iter;
+    // PreEvaluate the pair
+    elepairptr->PreEvaluate();
+  }
 
-    elegids[0] = elepairptr->Element1()->Id();
-    elegids[1] = elepairptr->Element2()->Id();
-
+  for ( auto& elepairptr : contact_elepairs_ )
+  {
+    // Evaluate the pair and check if there is active contact
     pair_is_active = elepairptr->Evaluate(
         &eleforce_centerlineDOFs[0],
         &eleforce_centerlineDOFs[1],
@@ -345,6 +371,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForceStiff()
           &eleforce,
           &elestiff);
 
+
       // Fixme
       eleforce[0].Scale(-1.0);
       eleforce[1].Scale(-1.0);
@@ -354,6 +381,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForceStiff()
       BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(),
           elegids, eleforce, elestiff, BeamInteractionDataStatePtr()->GetMutableForceNp(),
           BeamInteractionDataStatePtr()->GetMutableStiff() );
+
     }
 
   }
@@ -399,7 +427,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::UpdateStepElement(
    * from previous time step */
   if ( vtp_writer_ptr_ != Teuchos::null and
       GState().GetStepNp() %
-      BeamContactParams().GetBeamContactVtkParams()->OutputIntervalInSteps() == 0 )
+      BeamContactParams().BeamContactRuntimeVtkOutputParams()->OutputIntervalInSteps() == 0 )
     WriteTimeStepOutputRuntimeVtpBeamContact();
 
 
@@ -445,7 +473,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::InitOutputRuntimeVtpBeamCo
   // however, this 'only' affects the number of leading zeros in the vtk file names
   unsigned int num_timesteps_in_simulation_upper_bound = 1000000;
 
-  if ( BeamContactParams().GetBeamContactVtkParams()->OutputEveryIteration() )
+  if ( BeamContactParams().BeamContactRuntimeVtkOutputParams()->OutputEveryIteration() )
     num_timesteps_in_simulation_upper_bound *= 1000;
 
   // determine path of output directory
@@ -471,7 +499,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::InitOutputRuntimeVtpBeamCo
       "beam-contact",
       DRT::Problem::Instance()->OutputControlFile()->RestartName(),
       GState().GetTimeN(),
-      BeamContactParams().GetBeamContactVtkParams()->WriteBinaryOutput() );
+      BeamContactParams().BeamContactRuntimeVtkOutputParams()->WriteBinaryOutput() );
 }
 
 /*----------------------------------------------------------------------------*
@@ -481,7 +509,7 @@ WriteTimeStepOutputRuntimeVtpBeamContact() const
 {
   CheckInitSetup();
 
-  if ( not BeamContactParams().GetBeamContactVtkParams()->OutputEveryIteration() )
+  if ( not BeamContactParams().BeamContactRuntimeVtkOutputParams()->OutputEveryIteration() )
     WriteOutputRuntimeVtpBeamContact( GState().GetStepN(), GState().GetTimeN() );
   else
     WriteOutputRuntimeVtpBeamContact( 10000 * GState().GetStepN(), GState().GetTimeN() );
@@ -607,12 +635,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::WriteOutputRuntimeVtpBeamC
 
 
   // append all desired output data to the writer object's storage
-  if ( BeamContactParams().GetBeamContactVtkParams()->IsWriteContactForces() )
+  if ( BeamContactParams().BeamContactRuntimeVtkOutputParams()->IsWriteContactForces() )
   {
    vtp_writer_ptr_->AppendVisualizationPointDataVector( contact_force_vector,
        num_spatial_dimensions, "contact_force" );
   }
-  if ( BeamContactParams().GetBeamContactVtkParams()->IsWriteGaps() )
+  if ( BeamContactParams().BeamContactRuntimeVtkOutputParams()->IsWriteGaps() )
   {
    vtp_writer_ptr_->AppendVisualizationPointDataVector( gaps,
        1, "gap" );
@@ -674,7 +702,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::RunPostIterate(
   CheckInitSetup();
 
   if ( vtp_writer_ptr_ != Teuchos::null and
-      BeamContactParams().GetBeamContactVtkParams()->OutputEveryIteration() )
+      BeamContactParams().BeamContactRuntimeVtkOutputParams()->OutputEveryIteration() )
     WriteIterationOutputRuntimeVtpBeamContact( solver.getNumIterations() );
 }
 
@@ -855,11 +883,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::SelectElesToBeConsideredFo
     {
       for ( int i = 0; i < 2; ++i )
         for ( int j = 0; j < 2 ; ++j )
-          if( (*eiter)->NodeIds()[i] == currele->NodeIds()[j] )
+          if ( (*eiter)->NodeIds()[i] == currele->NodeIds()[j] )
             toerase = true;
     }
 
-    if( toerase )
+    if ( toerase )
       neighbors.erase(eiter++);
     else
       ++eiter;
@@ -871,6 +899,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::SelectElesToBeConsideredFo
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
     CreateBeamContactElementPairs()
 {
+
   // Todo maybe keep existing pairs and reuse them ?
   contact_elepairs_.clear();
 
@@ -883,7 +912,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
     ele_ptrs[0] = DiscretPtr()->gElement(elegid);
 
 #ifdef DEBUG
-    if( dynamic_cast< DRT::ELEMENTS::Beam3Base const* >(ele_ptrs[0]) == NULL )
+    if ( dynamic_cast< DRT::ELEMENTS::Beam3Base const* >(ele_ptrs[0]) == NULL )
       dserror("first element of element pair must be a beam element");
 #endif
 
@@ -895,7 +924,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
       // construct, init and setup contact pairs
       Teuchos::RCP<BEAMINTERACTION::BeamContactPair> newbeaminteractionpair =
           BEAMINTERACTION::BeamContactPair::Create(ele_ptrs);
-      newbeaminteractionpair->Init( beam_contact_params_ptr_, ele_ptrs );
+      newbeaminteractionpair->Init( beam_contact_evaluation_data_ptr_, beam_contact_params_ptr_, ele_ptrs );
       newbeaminteractionpair->Setup();
 
       // add to list of current contact pairs
@@ -927,9 +956,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
 {
   bool atleastoneactivepair = false;
 
-  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair> >::const_iterator iter;
-  for (iter=contact_elepairs_.begin(); iter!=contact_elepairs_.end(); ++iter)
-    if ( (*iter)->GetContactFlag() == true )
+  for ( auto& elepairptr : contact_elepairs_ )
+    if ( elepairptr->GetContactFlag() == true )
       atleastoneactivepair = true;
 
 
@@ -940,8 +968,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
     out << "    ID1            ID2              T    xi       eta      angle    gap         force\n";
 
 
-    for (iter=contact_elepairs_.begin(); iter!=contact_elepairs_.end(); ++iter)
-      (*iter)->PrintSummaryOneLinePerActiveSegmentPair(out);
+    for ( auto& elepairptr : contact_elepairs_ )
+      elepairptr->PrintSummaryOneLinePerActiveSegmentPair(out);
 
     out << std::endl;
   }

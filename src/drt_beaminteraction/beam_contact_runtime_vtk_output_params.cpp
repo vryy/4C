@@ -13,10 +13,11 @@
 #include "beam_contact_runtime_vtk_output_params.H"
 
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-BEAMINTERACTION::BeamToBeamContactRuntimeVtkParams::BeamToBeamContactRuntimeVtkParams()
+BEAMINTERACTION::BeamContactRuntimeVtkOutputParams::BeamContactRuntimeVtkOutputParams()
 : isinit_(false),
   issetup_(false),
   output_data_format_( INPAR::BEAMCONTACT::vague ),
@@ -30,11 +31,23 @@ BEAMINTERACTION::BeamToBeamContactRuntimeVtkParams::BeamToBeamContactRuntimeVtkP
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamToBeamContactRuntimeVtkParams::Init(
-    const Teuchos::ParameterList& beam_contact_vtk_paramslist )
+void BEAMINTERACTION::BeamContactRuntimeVtkOutputParams::Init()
 {
   issetup_ = false;
+  // empty for now
 
+  isinit_ = true;
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+void BEAMINTERACTION::BeamContactRuntimeVtkOutputParams::Setup()
+{
+  ThrowErrorIfNotInit();
+
+  // Teuchos parameter list for beam contact
+  const Teuchos::ParameterList& beam_contact_vtk_paramslist =
+      DRT::Problem::Instance()->BeamContactParams().sublist("RUNTIME VTK OUTPUT");
 
   /****************************************************************************/
   // get and check required parameters
@@ -57,23 +70,12 @@ void BEAMINTERACTION::BeamToBeamContactRuntimeVtkParams::Init(
       (bool) DRT::INPUT::IntegralValue<int>(beam_contact_vtk_paramslist, "GAPS");
 
 
-  isinit_ = true;
-}
-
-/*-----------------------------------------------------------------------------------------------*
- *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamToBeamContactRuntimeVtkParams::Setup()
-{
-  ThrowErrorIfNotInit();
-
-  // empty for now
-
   issetup_ = true;
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamToBeamContactRuntimeVtkParams::ThrowErrorIfNotInitAndSetup() const
+void BEAMINTERACTION::BeamContactRuntimeVtkOutputParams::ThrowErrorIfNotInitAndSetup() const
 {
   if (!IsInit() or !IsSetup())
     dserror("Call Init() and Setup() first!");
@@ -81,7 +83,7 @@ void BEAMINTERACTION::BeamToBeamContactRuntimeVtkParams::ThrowErrorIfNotInitAndS
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamToBeamContactRuntimeVtkParams::ThrowErrorIfNotInit() const
+void BEAMINTERACTION::BeamContactRuntimeVtkOutputParams::ThrowErrorIfNotInit() const
 {
   if (!IsInit())
     dserror("Init() has not been called, yet!");

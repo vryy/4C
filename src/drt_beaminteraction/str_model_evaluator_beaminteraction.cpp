@@ -106,7 +106,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   // clone problem discretization, the idea is simple: we redistribute only
   // the new discretization to enable all interactions (including the required
   // search), calculate the resulting force and stiffness contributions, export
-  // them no our initial discretization where all evaluation, assembly and
+  // them to our initial discretization where all evaluation, assembly and
   // solving is done. Therefore the maps of our initial discretization don't
   // change, i.e. there is no need to rebuild the global state.
   // -------------------------------------------------------------------------
@@ -167,7 +167,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   BEAMINTERACTION::UTILS::SetupEleTypeMapExtractor( ia_discret_, eletypeextractor_ );
 
   // initialize and setup submodel evaluators
-  InitAndSetupSubModeEvaluators();
+  InitAndSetupSubModelEvaluators();
 
   // distribute problem according to bin distribution to procs ( in case of restart
   // partitioning is done during ReadRestart() )
@@ -254,7 +254,7 @@ void STR::MODELEVALUATOR::BeamInteraction::SetSubModelTypes()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::InitAndSetupSubModeEvaluators()
+void STR::MODELEVALUATOR::BeamInteraction::InitAndSetupSubModelEvaluators()
 {
   CheckInit();
 
@@ -579,10 +579,10 @@ bool STR::MODELEVALUATOR::BeamInteraction::EvaluateForceStiff()
   // do communication
   if( ia_state_ptr_->GetMutableForceNp()->GlobalAssemble( Add, false ) != 0 )
     dserror("GlobalAssemble failed");
+
   // add to non fe vector
   if ( ia_force_beaminteraction_->Update( 1., *ia_state_ptr_->GetMutableForceNp(), 1. ) )
     dserror("update went wrong");
-
   if ( not ia_state_ptr_->GetMutableStiff()->Filled() )
     ia_state_ptr_->GetMutableStiff()->Complete();
 

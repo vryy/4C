@@ -16,6 +16,7 @@
 
 #include "../linalg/linalg_fixedsizematrix.H"
 
+
 //forward declaration ...
 namespace LINALG {
   class SerialDenseVector;
@@ -30,6 +31,7 @@ namespace BEAMINTERACTION
 
 //forward declaration ...
 class BeamContactParams;
+class BeamContactEvaluationData;
 
 
 /*!
@@ -54,6 +56,7 @@ public:
 
   //! Initialization
   void Init(
+      const Teuchos::RCP<BEAMINTERACTION::BeamContactEvaluationData> evaluation_data_ptr,
       const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
       std::vector< DRT::Element const*> elements);
 
@@ -62,6 +65,11 @@ public:
 
   //@}
 
+  /*!
+  \brief things that need to be done in a separate loop before the actual evaluation loop
+         over all contact pairs
+  */
+  virtual void PreEvaluate() = 0;
 
   //! @name Public evaluation methods
   /*!
@@ -94,6 +102,11 @@ public:
   inline Teuchos::RCP<BEAMINTERACTION::BeamContactParams> Params() const
   {
     return params_;
+  }
+
+  inline Teuchos::RCP<BEAMINTERACTION::BeamContactEvaluationData> EvaluationData() const
+  {
+    return evaluationData_;
   }
 
   /*!
@@ -237,6 +250,9 @@ private:
 
   //! beam contact parameter data container
   Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_;
+
+  //! beam contact evaluation data container
+  Teuchos::RCP<BEAMINTERACTION::BeamContactEvaluationData> evaluationData_;
 
   //! first element of interacting pair
   const DRT::Element* element1_;
