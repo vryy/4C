@@ -258,16 +258,18 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
   //----------------------------------------------------------------------
   if (Dualquadslavetrafo())
   {
-    // for the MORTARTRAFO case consider both slave and master DOFs
-    // else, only consider slave DOFs
-#ifdef MORTARTRAFO
-    trafo_    = Teuchos::rcp(new LINALG::SparseMatrix(*gsmdofrowmap_,10));
-    invtrafo_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsmdofrowmap_,10));
-
-#else
-    trafo_    = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
-    invtrafo_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
-#endif // #ifdef MORTARTRAFO
+    // for locally linear Lagrange multipliers, consider both slave and master DOFs,
+    // and otherwise, only consider slave DOFs
+    if (lagmultquad == INPAR::MORTAR::lagmult_lin)
+    {
+      trafo_    = Teuchos::rcp(new LINALG::SparseMatrix(*gsmdofrowmap_,10));
+      invtrafo_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsmdofrowmap_,10));
+    }
+    else
+    {
+      trafo_    = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+      invtrafo_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+    }
 
     // set of already processed nodes
     // (in order to avoid double-assembly for N interfaces)

@@ -76,13 +76,16 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const Teuchos::RCP<Epetra_Vector
   //----------------------------------------------------------------------
   if (Dualquadslavetrafo())
   {
-#ifdef MORTARTRAFO
-    dserror("MORTARTRAFO not yet implemented for meshtying with penalty strategy");
-#else
-    // modify dmatrix_
-    Teuchos::RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
-    dmatrix_    = temp1;
-#endif // #ifdef MORTARTRAFO
+    // type of LM interpolation for quadratic elements
+    INPAR::MORTAR::LagMultQuad lagmultquad = DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(),"LM_QUAD");
+
+    if (lagmultquad != INPAR::MORTAR::lagmult_lin)
+    {
+      // modify dmatrix_
+      Teuchos::RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
+      dmatrix_ = temp1;
+    }
+    else dserror("Locally linear LM interpolation is not yet implemented for meshtying with penalty strategy!");
   }
 
   // build mortar matrix products

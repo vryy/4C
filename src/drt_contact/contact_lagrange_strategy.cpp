@@ -1851,6 +1851,10 @@ void CONTACT::CoLagrangeStrategy::AddLineToLinContributionsFriction(
 void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOperator>& kteff,
                                                   Teuchos::RCP<Epetra_Vector>& feff)
 {
+  // shape function type and type of LM interpolation for quadratic elements
+  INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"LM_SHAPEFCN");
+  INPAR::MORTAR::LagMultQuad lagmultquad = DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(),"LM_QUAD");
+
   // In case of nonsmooth contact the scenario of contacting edges (non parallel)
   // requires a penalty regularization. Here, the penalty contriutions for this
   // special case are applied:
@@ -1976,22 +1980,21 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
   //----------------------------------------------------------------------
   if (Dualquadslavetrafo())
   {
-#ifdef MORTARTRAFO
-    if (ParRedist()) trafo_ = MORTAR::MatrixRowTransform(trafo_,gsmdofrowmap_);
-    lindmatrix_   = LINALG::MLMultiply(*lindmatrix_,false,*trafo_,false,false,false,true);  //Herb: LinD *  T
-    linmmatrix_   = LINALG::MLMultiply(*linmmatrix_,false,*trafo_,false,false,false,true);  //Herb: LinM *  T
-    smatrix_      = LINALG::MLMultiply(*smatrix_,false,*trafo_,false,false,false,true);     //Herb: S * T
-    tderivmatrix_ = LINALG::MLMultiply(*tderivmatrix_,false,*trafo_,false,false,false,true);     //Herb: Lint * T
-#else
-    // modify lindmatrix_
-    Teuchos::RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*invtrafo_,true,*lindmatrix_,false,false,false,true);
-    lindmatrix_ = temp1;
-#endif // #ifdef MORTARTRAFO
+    if (lagmultquad == INPAR::MORTAR::lagmult_lin)
+    {
+      if (ParRedist()) trafo_ = MORTAR::MatrixRowTransform(trafo_,gsmdofrowmap_);
+      lindmatrix_   = LINALG::MLMultiply(*lindmatrix_,false,*trafo_,false,false,false,true);
+      linmmatrix_   = LINALG::MLMultiply(*linmmatrix_,false,*trafo_,false,false,false,true);
+      smatrix_      = LINALG::MLMultiply(*smatrix_,false,*trafo_,false,false,false,true);
+      tderivmatrix_ = LINALG::MLMultiply(*tderivmatrix_,false,*trafo_,false,false,false,true);
+    }
+    else
+    {
+      // modify lindmatrix_
+      Teuchos::RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*invtrafo_,true,*lindmatrix_,false,false,false,true);
+      lindmatrix_ = temp1;
+    }
   }
-
-  // shape function
-  INPAR::MORTAR::ShapeFcn shapefcn =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"LM_SHAPEFCN");
 
   // do reagularization scaling
   if(regularized_)
@@ -2167,9 +2170,8 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
     // declare sparse matrix
     Teuchos::RCP<LINALG::SparseMatrix> kteffmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kteff);
 
-    if (Dualquadslavetrafo())
+    if (Dualquadslavetrafo() && lagmultquad == INPAR::MORTAR::lagmult_lin)
     {
-#ifdef MORTARTRAFO
       // basis transformation
       Teuchos::RCP<LINALG::SparseMatrix> systrafo = Teuchos::rcp(new LINALG::SparseMatrix(*ProblemDofs(),100,false,true));
       Teuchos::RCP<LINALG::SparseMatrix> eye = LINALG::Eye(*gndofrowmap_);
@@ -2182,7 +2184,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
       kteffmatrix = LINALG::MLMultiply(*kteffmatrix,false,*systrafo,false,false,false,true);
       kteffmatrix = LINALG::MLMultiply(*systrafo,true,*kteffmatrix,false,false,false,true);
       systrafo->Multiply(true,*feff,*feff);
-#endif // #ifdef MORTARTRAFO
     }
 
     // transform if necessary
@@ -2283,9 +2284,8 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
     // D^(-1)    ---->   T * D^(-1)
     // \hat{M}   ---->   T * \hat{M}
     //----------------------------------------------------------------------
-    if (Dualquadslavetrafo())
+    if (Dualquadslavetrafo() && lagmultquad != INPAR::MORTAR::lagmult_lin)
     {
-#ifndef MORTARTRAFO
       // modify dmatrix_, invd_ and mhatmatrix_
       Teuchos::RCP<LINALG::SparseMatrix> temp2 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
       Teuchos::RCP<LINALG::SparseMatrix> temp3 = LINALG::MLMultiply(*trafo_,false,*invd_,false,false,false,true);
@@ -2293,7 +2293,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
       dmatrix_    = temp2;
       invd_       = temp3;
       mhatmatrix_ = temp4;
-#endif
     }
 
     /**********************************************************************/
@@ -2743,23 +2742,24 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
       // modify dmatrix_
       //Teuchos::RCP<LINALG::SparseMatrix> temp2 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
       //dmatrix_    = temp2;
-#ifdef MORTARTRAFO
-      // basis transformation
-      Teuchos::RCP<LINALG::SparseMatrix> systrafo = Teuchos::rcp(new LINALG::SparseMatrix(*ProblemDofs(),100,false,true));
-      Teuchos::RCP<LINALG::SparseMatrix> eye = LINALG::Eye(*gndofrowmap_);
-      systrafo->Add(*eye,false,1.0,1.0);
-      if (ParRedist()) trafo_ = MORTAR::MatrixRowColTransform(trafo_,pgsmdofrowmap_,pgsmdofrowmap_);
-      systrafo->Add(*trafo_,false,1.0,1.0);
-      systrafo->Complete();
+      if (lagmultquad == INPAR::MORTAR::lagmult_lin)
+      {
+        // basis transformation
+        Teuchos::RCP<LINALG::SparseMatrix> systrafo = Teuchos::rcp(new LINALG::SparseMatrix(*ProblemDofs(),100,false,true));
+        Teuchos::RCP<LINALG::SparseMatrix> eye = LINALG::Eye(*gndofrowmap_);
+        systrafo->Add(*eye,false,1.0,1.0);
+        if (ParRedist()) trafo_ = MORTAR::MatrixRowColTransform(trafo_,pgsmdofrowmap_,pgsmdofrowmap_);
+        systrafo->Add(*trafo_,false,1.0,1.0);
+        systrafo->Complete();
 
-      // apply basis transformation to K and f
-      Teuchos::RCP<LINALG::SparseMatrix> kteffmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kteff);
-      Teuchos::RCP<LINALG::SparseMatrix> kteffnew = Teuchos::rcp(new LINALG::SparseMatrix(*ProblemDofs(),81,true,false,kteffmatrix->GetMatrixtype()));
-      kteffnew = LINALG::MLMultiply(*kteffmatrix,false,*systrafo,false,false,false,true);
-      kteffnew = LINALG::MLMultiply(*systrafo,true,*kteffnew,false,false,false,true);
-      kteff = kteffnew;
-      systrafo->Multiply(true,*feff,*feff);
-#endif // #ifdef MORTARTRAFO
+        // apply basis transformation to K and f
+        Teuchos::RCP<LINALG::SparseMatrix> kteffmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kteff);
+        Teuchos::RCP<LINALG::SparseMatrix> kteffnew = Teuchos::rcp(new LINALG::SparseMatrix(*ProblemDofs(),81,true,false,kteffmatrix->GetMatrixtype()));
+        kteffnew = LINALG::MLMultiply(*kteffmatrix,false,*systrafo,false,false,false,true);
+        kteffnew = LINALG::MLMultiply(*systrafo,true,*kteffnew,false,false,false,true);
+        kteff = kteffnew;
+        systrafo->Multiply(true,*feff,*feff);
+      }
     }
 
     // transform if necessary
@@ -3888,17 +3888,23 @@ void CONTACT::CoLagrangeStrategy::AssembleContactStiff()
     //----------------------------------------------------------------------
     if (Dualquadslavetrafo())
     {
-#ifdef MORTARTRAFO
-      if (ParRedist()) trafo_ = MORTAR::MatrixRowTransform(trafo_,gsmdofrowmap_);
-      lindmatrix_   = LINALG::MLMultiply(*lindmatrix_,false,*trafo_,false,false,false,true);  //Herb: LinD *  T
-      linmmatrix_   = LINALG::MLMultiply(*linmmatrix_,false,*trafo_,false,false,false,true);  //Herb: LinM *  T
-      smatrix_      = LINALG::MLMultiply(*smatrix_,false,*trafo_,false,false,false,true);     //Herb: S * T
-      tderivmatrix_ = LINALG::MLMultiply(*tderivmatrix_,false,*trafo_,false,false,false,true);     //Herb: Lint * T
-#else
-      // modify lindmatrix_
-      Teuchos::RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*invtrafo_,true,*lindmatrix_,false,false,false,true);
-      lindmatrix_ = temp1;
-#endif // #ifdef MORTARTRAFO
+      // type of LM interpolation for quadratic elements
+      INPAR::MORTAR::LagMultQuad lagmultquad = DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(),"LM_QUAD");
+
+      if (lagmultquad == INPAR::MORTAR::lagmult_lin)
+      {
+        if (ParRedist()) trafo_ = MORTAR::MatrixRowTransform(trafo_,gsmdofrowmap_);
+        lindmatrix_   = LINALG::MLMultiply(*lindmatrix_,false,*trafo_,false,false,false,true);
+        linmmatrix_   = LINALG::MLMultiply(*linmmatrix_,false,*trafo_,false,false,false,true);
+        smatrix_      = LINALG::MLMultiply(*smatrix_,false,*trafo_,false,false,false,true);
+        tderivmatrix_ = LINALG::MLMultiply(*tderivmatrix_,false,*trafo_,false,false,false,true);
+      }
+      else
+      {
+        // modify lindmatrix_
+        Teuchos::RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*invtrafo_,true,*lindmatrix_,false,false,false,true);
+        lindmatrix_ = temp1;
+      }
     }
 
     // do reagularization scaling
@@ -4930,8 +4936,9 @@ void CONTACT::CoLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
   // if not we can skip this routine to speed things up
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
 
-  // shape function and system types
+  // shape function type and type of LM interpolation for quadratic elements
   INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"LM_SHAPEFCN");
+  INPAR::MORTAR::LagMultQuad lagmultquad = DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(),"LM_QUAD");
 
   //**********************************************************************
   //**********************************************************************
@@ -4974,9 +4981,8 @@ void CONTACT::CoLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
     /* Undo basis transformation to solution                              */
     /* (currently only needed for quadratic FE with linear dual LM)       */
     /**********************************************************************/
-    if (Dualquadslavetrafo())
+    if (Dualquadslavetrafo() && lagmultquad == INPAR::MORTAR::lagmult_lin)
     {
-#ifdef MORTARTRAFO
       // undo basis transformation to solution
       Teuchos::RCP<LINALG::SparseMatrix> systrafo = Teuchos::rcp(new LINALG::SparseMatrix(*ProblemDofs(),100,false,true));
       Teuchos::RCP<LINALG::SparseMatrix> eye = LINALG::Eye(*gndofrowmap_);
@@ -4985,7 +4991,6 @@ void CONTACT::CoLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
       systrafo->Add(*trafo_,false,1.0,1.0);
       systrafo->Complete();
       systrafo->Multiply(false,*disi,*disi);
-#endif // #ifdef MORTARTRAFO
     }
 
     /**********************************************************************/
@@ -5055,9 +5060,8 @@ void CONTACT::CoLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
     /* Undo basis transformation to solution                              */
     /* (currently only needed for quadratic FE with linear dual LM)       */
     /**********************************************************************/
-    if (Dualquadslavetrafo())
+    if (Dualquadslavetrafo() && lagmultquad == INPAR::MORTAR::lagmult_lin)
     {
-#ifdef MORTARTRAFO
       // undo basis transformation to solution
       Teuchos::RCP<LINALG::SparseMatrix> systrafo = Teuchos::rcp(new LINALG::SparseMatrix(*ProblemDofs(),100,false,true));
       Teuchos::RCP<LINALG::SparseMatrix> eye = LINALG::Eye(*gndofrowmap_);
@@ -5066,7 +5070,6 @@ void CONTACT::CoLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
       systrafo->Add(*trafo_,false,1.0,1.0);
       systrafo->Complete();
       systrafo->Multiply(false,*disi,*disi);
-#endif // #ifdef MORTARTRAFO
     }
   }
 

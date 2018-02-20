@@ -1138,10 +1138,9 @@ bool CONTACT::SmoothingManager::ReadAndCheckInput(Teuchos::ParameterList& cparam
     // *********************************************************************
     // 3D quadratic mortar (choice of interpolation and testing fcts.)
     // *********************************************************************
-    if ((DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LM_QUAD") == INPAR::MORTAR::lagmult_pwlin
-      || DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LM_QUAD") == INPAR::MORTAR::lagmult_lin)
+    if (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LM_QUAD") == INPAR::MORTAR::lagmult_pwlin
       && DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") == INPAR::MORTAR::shape_dual)
-      dserror("ERROR: Only quadratic approach (for LM) implemented for quadratic contact with DUAL shape fct.");
+      dserror("ERROR: No piecewise linear approach (for LM) implemented for quadratic contact with DUAL shape fct.");
 
     // *********************************************************************
     // poroelastic contact
@@ -1177,9 +1176,6 @@ bool CONTACT::SmoothingManager::ReadAndCheckInput(Teuchos::ParameterList& cparam
         dserror("POROCONTACT: PoroContact with no penetration just tested for 3d!");
     }
 
-  #ifdef MORTARTRAFO
-    dserror("MORTARTRAFO not yet implemented for contact, only for meshtying");
-  #endif // #ifndef MORTARTRAFO
     // *********************************************************************
     // element-based vs. segment-based mortar integration
     // *********************************************************************

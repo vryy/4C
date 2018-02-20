@@ -543,12 +543,6 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"LM_SHAPEFCN") == INPAR::MORTAR::shape_dual)
     dserror("ERROR: No pwlin approach (for LM) implemented for quadratic meshtying with DUAL shape fct.");
 
-#ifndef MORTARTRAFO
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LM_QUAD") == INPAR::MORTAR::lagmult_lin &&
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"LM_SHAPEFCN") == INPAR::MORTAR::shape_dual)
-    dserror("ERROR: Linear approach (for LM) for quadratic meshtying with DUAL shape fct. requires MORTARTRAFO");
-#endif // #ifndef MORTARTRAFO
-
   // *********************************************************************
   // element-based vs. segment-based mortar integration
   // *********************************************************************
