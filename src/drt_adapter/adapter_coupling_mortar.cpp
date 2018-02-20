@@ -284,9 +284,6 @@ void ADAPTER::CouplingMortar::SetupInterface(
   // - fsi 3D: coupleddof = [1, 1, 1] -> at the interface only displacements are coupled
   // - ....
 
-  // processor ID
-  int myrank  = masterdis->Comm().MyPID();
-
   // get mortar coupling parameters
   const Teuchos::ParameterList& inputmortar = DRT::Problem::Instance()->MortarCouplingParams();
   const Teuchos::ParameterList& inputc      = DRT::Problem::Instance()->ContactDynamicParams();

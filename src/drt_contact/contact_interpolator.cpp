@@ -1312,8 +1312,6 @@ void NTS::CoInterpolator::DerivXiGP2D(MORTAR::MortarElement& sele,
   // we need the participating slave and master nodes
   DRT::Node** snodes = NULL;
   DRT::Node** mnodes = NULL;
-  DRT::Node* hsnodes[4] = {0,0,0,0};
-  DRT::Node* hmnodes[4] = {0,0,0,0};
   int numsnode = sele.NumNode();
   int nummnode = mele.NumNode();
 

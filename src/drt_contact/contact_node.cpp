@@ -1167,7 +1167,6 @@ void CONTACT::CoNode::BuildAveragedNormal()
 
   // temporary vector to store nodal normal
   double n_tmp[3]={0.,0.,0.};
-  double tangent[3] = {0.0, 0.0, 0.0};
   Epetra_SerialDenseMatrix elens(6,nseg);
 
   // we need to store some stuff here
