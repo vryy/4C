@@ -160,7 +160,6 @@ void BEAMINTERACTION::BeamToBeamContactParams::Init()
       beam_contact_params_list.get<double>("BEAMS_BASICSTIFFGAP");
 
   /****************************************************************************/
-  // Todo check need and usage of this parameter
   BTB_endpoint_penalty_ =
       DRT::INPUT::IntegralValue<int>(beam_contact_params_list,"BEAMS_ENDPOINTPENALTY");
 

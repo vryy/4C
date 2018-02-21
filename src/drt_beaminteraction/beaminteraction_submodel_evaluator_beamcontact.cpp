@@ -407,6 +407,25 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::PreUpdateStepElement(
     bool beam_redist )
 {
   CheckInitSetup();
+
+  /* Fixme
+   * writing vtk output needs to be done BEFORE updating (and thus clearing
+   * element pairs)
+   * move this to RuntimeOutputStepState as soon as we keep element pairs
+   * from previous time step */
+  /* Fixme
+   * writing this output also must be done BEFORE re-distribution which
+   * currently happens in STR::MODELEVALUATOR::BeamInteraction::UpdateStepElement()
+   * before calling UpdateStepElement() on all submodels.
+   * Hence, the only option currently is to call it from PreUpdateStepElement() */
+  /* Note: another option would be to not use any data from state vectors or elements and only
+   * write previously computed and (locally) stored data at this point. Like
+   * this, it works in SUBMODELEVALUATOR::BeamPotential */
+  if ( vtp_writer_ptr_ != Teuchos::null and
+      GState().GetStepNp() %
+      BeamContactParams().BeamContactRuntimeVtkOutputParams()->OutputIntervalInSteps() == 0 )
+    WriteTimeStepOutputRuntimeVtpBeamContact();
+
   // not repartition of binning discretization necessary
   return false;
 }
@@ -419,17 +438,6 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::UpdateStepElement(
   CheckInitSetup();
 
 //  PrintActiveBeamToBeamContactSet(std::cout);
-
-  /* Fixme
-   * writing vtk output needs to be done BEFORE updating (and thus clearing
-   * element pairs)
-   * move this to RuntimeOutputStepState as soon as we keep element pairs
-   * from previous time step */
-  if ( vtp_writer_ptr_ != Teuchos::null and
-      GState().GetStepNp() %
-      BeamContactParams().BeamContactRuntimeVtkOutputParams()->OutputIntervalInSteps() == 0 )
-    WriteTimeStepOutputRuntimeVtpBeamContact();
-
 
   nearby_elements_map_.clear();
   FindAndStoreNeighboringElements();
@@ -474,7 +482,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::InitOutputRuntimeVtpBeamCo
   unsigned int num_timesteps_in_simulation_upper_bound = 1000000;
 
   if ( BeamContactParams().BeamContactRuntimeVtkOutputParams()->OutputEveryIteration() )
-    num_timesteps_in_simulation_upper_bound *= 1000;
+    num_timesteps_in_simulation_upper_bound *= 10000;
 
   // determine path of output directory
   const std::string outputfilename( DRT::Problem::Instance()->OutputControlFile()->FileName() );
@@ -579,74 +587,73 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::WriteOutputRuntimeVtpBeamC
   // loop over contact pairs and retrieve all active contact point coordinates
   for ( pair_iter=contact_elepairs_.begin(); pair_iter!=contact_elepairs_.end(); ++pair_iter )
   {
-   if ( (*pair_iter)->GetContactFlag() == true )
-   {
-     // active contact points of element 1 and element 2
-     (*pair_iter)->GetAllActiveContactPointCoordsElement1( coordinates_ele1_this_pair );
-     (*pair_iter)->GetAllActiveContactPointCoordsElement2( coordinates_ele2_this_pair );
-     (*pair_iter)->GetAllActiveContactForces( contact_forces_this_pair );
-     (*pair_iter)->GetAllActiveContactGaps( gaps_this_pair );
+    if ( (*pair_iter)->GetContactFlag() == true )
+    {
+      // active contact points of element 1 and element 2
+      (*pair_iter)->GetAllActiveContactPointCoordsElement1( coordinates_ele1_this_pair );
+      (*pair_iter)->GetAllActiveContactPointCoordsElement2( coordinates_ele2_this_pair );
+      (*pair_iter)->GetAllActiveContactForces( contact_forces_this_pair );
+      (*pair_iter)->GetAllActiveContactGaps( gaps_this_pair );
 
-     const unsigned int num_active_point_pairs =
-         (unsigned int) coordinates_ele1_this_pair.size();
+      const unsigned int num_active_point_pairs =
+          (unsigned int) coordinates_ele1_this_pair.size();
 
-     dsassert( num_active_point_pairs == (unsigned int) coordinates_ele2_this_pair.size(),
-         "number of active points on element 1 does not match number of active points "
-         "on element 2!" );
+      dsassert( num_active_point_pairs == (unsigned int) coordinates_ele2_this_pair.size(),
+          "number of active points on element 1 does not match number of active points "
+          "on element 2!" );
 
-     dsassert( num_active_point_pairs == (unsigned int) contact_forces_this_pair.size(),
-         "number of active points on element 1 does not match number of contact forces!" );
+      dsassert( num_active_point_pairs == (unsigned int) contact_forces_this_pair.size(),
+          "number of active points on element 1 does not match number of contact forces!" );
+
+      dsassert( num_active_point_pairs == (unsigned int) gaps_this_pair.size(),
+          "number of active points on element 1 does not match number of gap values!" );
 
 
-     dsassert( num_active_point_pairs == (unsigned int) gaps_this_pair.size(),
-         "number of active points on element 1 does not match number of gap values!" );
+      for ( unsigned int ipointpair=0; ipointpair < num_active_point_pairs; ++ipointpair )
+      {
+        LINALG::TMatrix<double,3,1> normal_vector;
+        normal_vector.Update(1.0, coordinates_ele1_this_pair[ipointpair],
+            -1.0, coordinates_ele2_this_pair[ipointpair]);
 
+        // contact point on first element
+        for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
+        {
+          point_coordinates.push_back( coordinates_ele1_this_pair[ipointpair](idim) );
 
-     for ( unsigned int ipointpair=0; ipointpair < num_active_point_pairs; ++ipointpair )
-     {
-       LINALG::TMatrix<double,3,1> normal_vector;
-       normal_vector.Update(1.0, coordinates_ele1_this_pair[ipointpair],
-           -1.0, coordinates_ele2_this_pair[ipointpair]);
+          contact_force_vector.push_back( contact_forces_this_pair[ipointpair]
+                                          * normal_vector(idim) );
+        }
+        gaps.push_back( gaps_this_pair[ipointpair] );
 
-       // contact point on first element
-       for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
-       {
-         point_coordinates.push_back( coordinates_ele1_this_pair[ipointpair](idim) );
+        // contact point on second element
+        for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
+        {
+          point_coordinates.push_back( coordinates_ele2_this_pair[ipointpair](idim) );
 
-         contact_force_vector.push_back( contact_forces_this_pair[ipointpair]
-                                         * normal_vector(idim) );
-       }
-       gaps.push_back( gaps_this_pair[ipointpair] );
+          contact_force_vector.push_back( -1.0 * contact_forces_this_pair[ipointpair]
+                                          * normal_vector(idim) );
+        }
+        gaps.push_back( gaps_this_pair[ipointpair] );
 
-       // contact point on second element
-       for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
-       {
-         point_coordinates.push_back( coordinates_ele2_this_pair[ipointpair](idim) );
+      }
 
-         contact_force_vector.push_back( -1.0 * contact_forces_this_pair[ipointpair]
-                                         * normal_vector(idim) );
-       }
-       gaps.push_back( gaps_this_pair[ipointpair] );
-
-     }
-
-   }
+    }
   }
 
 
   // append all desired output data to the writer object's storage
   if ( BeamContactParams().BeamContactRuntimeVtkOutputParams()->IsWriteContactForces() )
   {
-   vtp_writer_ptr_->AppendVisualizationPointDataVector( contact_force_vector,
-       num_spatial_dimensions, "contact_force" );
+    vtp_writer_ptr_->AppendVisualizationPointDataVector( contact_force_vector,
+        num_spatial_dimensions, "force" );
   }
   if ( BeamContactParams().BeamContactRuntimeVtkOutputParams()->IsWriteGaps() )
   {
-   vtp_writer_ptr_->AppendVisualizationPointDataVector( gaps,
-       1, "gap" );
+    vtp_writer_ptr_->AppendVisualizationPointDataVector( gaps,
+        1, "gap" );
   }
 
-  // finalize everything and write all required VTU files to filesystem
+  // finalize everything and write all required vtk files to filesystem
   vtp_writer_ptr_->WriteFiles();
 
 

@@ -1009,8 +1009,6 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateA
       int numinterval = gpvariables_[numgptot]->GetIntIds().second;
     #endif
 
-    //TODO: Here we apply an element jacobian that is constant along the beam element. This works only for initially straight elements!
-    //Furthermore we assume, that the element is subdivided in a total of intintervals integration intervals of equal length!
     //The intfac has NOT to be of TYPE FAD in order to deal with non-constant jacobis (in case of ENDPOINTSEGMENTATION) since we explicitly
     //consider the linearization of the jacobi in EvaluateStiffcContactIntSeg()!
     double intfac = FADUTILS::CastToDouble(jacobi)*weight;
@@ -1899,7 +1897,20 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::CheckSegm
   if(std::fabs(angle1)<segangle and std::fabs(angle2)<segangle) //segment distribution is fine enough
   {
     if(std::fabs(dist)>segdist)
-      dserror("Value of segdist too large, approximation as circle segment not possible!");
+    {
+      this->Print(std::cout);
+
+      std::cout << "\n\nangle_left= " << angle1/M_PI*180 << "°, angle_right= " << angle2/M_PI*180
+          << "°, segangle= " << segangle/M_PI*180 << "°";
+      std::cout << "\n\nsegment midpoint position (linear approx)= " << rm_lin;
+      std::cout << "\n\nsegment midpoint position                = " << rm;
+      std::cout << "\n\ndist= " << dist << ", segdist= " << segdist;
+
+      dserror("Segmentation in beam contact search (step 2/2, i.e. 'fine' search) failed!\n"
+          "Maximal spatial extension of this segment cannot be approximated by a double cone!\n"
+          "Check for extremely deformed beam elements and try to avoid this.\n"
+          "Increase value of BEAMS_SEGANGLE ?!");
+    }
 
     return true;
   }
@@ -4925,6 +4936,11 @@ GetAllActiveContactPointCoordsElement1(
     TYPE eta1 = cpvariables_[i]->GetCP().first;
     for(int j=0;j<3;j++)
       coords[i](j) = FADUTILS::CastToDouble( r(eta1,Element1())(j) );
+    /* Todo: Element1 might no longer be available on this proc after re-distribution!
+     * take care that this method is called BEFORE any re-distribution
+     * OR reformulate this such that Element1() is no longer required;
+     * e.g. compute and store coord vector in instance of contact variables
+     * (just like for gap and contact force) */
   }
 
   for (int i=size1; i<size2+size1; ++i)

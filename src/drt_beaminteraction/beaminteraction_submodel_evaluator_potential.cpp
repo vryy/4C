@@ -878,7 +878,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::InitOutputRuntimeVtpBeam
   unsigned int num_timesteps_in_simulation_upper_bound = 1000000;
 
   if ( BeamPotentialParams().GetBeamPotentialVtkParams()->OutputEveryIteration() )
-    num_timesteps_in_simulation_upper_bound *= 1000;
+    num_timesteps_in_simulation_upper_bound *= 10000;
 
   // determine path of output directory
   const std::string outputfilename( DRT::Problem::Instance()->OutputControlFile()->FileName() );
@@ -1019,19 +1019,19 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteOutputRuntimeVtpBea
         // interacting point on first element
         for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
         {
-         point_coordinates.push_back( coordinates_ele1_this_pair[ipointpair](idim) );
+          point_coordinates.push_back( coordinates_ele1_this_pair[ipointpair](idim) );
 
-         potential_force_vector.push_back( potential_forces_ele1_this_pair[ipointpair](idim) );
-         potential_moment_vector.push_back( potential_moments_ele1_this_pair[ipointpair](idim) );
+          potential_force_vector.push_back( potential_forces_ele1_this_pair[ipointpair](idim) );
+          potential_moment_vector.push_back( potential_moments_ele1_this_pair[ipointpair](idim) );
         }
 
         // interacting point on second element
         for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
         {
-         point_coordinates.push_back( coordinates_ele2_this_pair[ipointpair](idim) );
+          point_coordinates.push_back( coordinates_ele2_this_pair[ipointpair](idim) );
 
-         potential_force_vector.push_back( potential_forces_ele2_this_pair[ipointpair](idim) );
-         potential_moment_vector.push_back( potential_moments_ele2_this_pair[ipointpair](idim) );
+          potential_force_vector.push_back( potential_forces_ele2_this_pair[ipointpair](idim) );
+          potential_moment_vector.push_back( potential_moments_ele2_this_pair[ipointpair](idim) );
         }
       }
 
@@ -1043,17 +1043,17 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteOutputRuntimeVtpBea
   // append all desired output data to the writer object's storage
   if ( BeamPotentialParams().GetBeamPotentialVtkParams()->IsWriteForces() )
   {
-   vtp_writer_ptr_->AppendVisualizationPointDataVector( potential_force_vector,
-       num_spatial_dimensions, "force" );
+    vtp_writer_ptr_->AppendVisualizationPointDataVector( potential_force_vector,
+        num_spatial_dimensions, "force" );
   }
 
   if ( BeamPotentialParams().GetBeamPotentialVtkParams()->IsWriteMoments() )
   {
-   vtp_writer_ptr_->AppendVisualizationPointDataVector( potential_moment_vector,
-       num_spatial_dimensions, "moment" );
+    vtp_writer_ptr_->AppendVisualizationPointDataVector( potential_moment_vector,
+        num_spatial_dimensions, "moment" );
   }
 
-  // finalize everything and write all required VTU files to filesystem
+  // finalize everything and write all required vtk files to filesystem
   vtp_writer_ptr_->WriteFiles();
 
 
