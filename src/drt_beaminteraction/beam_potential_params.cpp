@@ -27,6 +27,9 @@ BEAMINTERACTION::BeamPotentialParams::BeamPotentialParams()
   pot_law_exponents_(Teuchos::null),
   pot_law_prefactors_(Teuchos::null),
   potential_type_(INPAR::BEAMPOTENTIAL::beampot_vague),
+  strategy_(INPAR::BEAMPOTENTIAL::strategy_vague),
+  num_integration_segments_(-1),
+  num_GPs_(-1),
   useFAD_(false),
   vtk_output_(false),
   params_runtime_vtk_BTB_potential_(Teuchos::null)
@@ -96,10 +99,16 @@ void BEAMINTERACTION::BeamPotentialParams::Init()
     dserror("You must specify a strategy to be used to evaluate beam interaction potential!");
 
   /****************************************************************************/
+  num_integration_segments_ = beam_potential_params_list.get<int>("NUM_INTEGRATION_SEGMENTS");
+
+  if (num_integration_segments_ <= 0)
+    dserror("Invalid number of integration segments per element!");
+
+  /****************************************************************************/
   num_GPs_ = beam_potential_params_list.get<int>("NUM_GAUSSPOINTS");
 
   if (num_GPs_ <= 0)
-    dserror("Invalid number of Gauss points!");
+    dserror("Invalid number of Gauss points per integration segment!");
 
   /****************************************************************************/
   useFAD_ = DRT::INPUT::IntegralValue<int>(beam_potential_params_list,"AUTOMATIC_DIFFERENTIATION");

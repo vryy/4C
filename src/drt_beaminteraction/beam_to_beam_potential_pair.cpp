@@ -209,21 +209,27 @@ EvaluateFpotandStiffpot_LargeSepApprox(
   // prepare differentiation via FAD if desired
   SetAutomaticDifferentiationVariablesIfRequired( ele1pos_, ele2pos_ );
 
-  // Set gauss integration rule
+  // number of integration segments per element
+  const unsigned int num_integration_segments = Params()->NumberIntegrationSegments();
+
+  // Set Gauss integration rule applied in each integration segment
   DRT::UTILS::GaussRule1D gaussrule = GetGaussRule();
 
-  // Get gauss points (gp) for integration
+  // Get Gauss points (gp) for integration
   DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
-  // number of gps
-  const int numgp=gausspoints.nquad;
+  // number of Gauss points per integration segment and in total per element
+  int numgp_persegment = gausspoints.nquad;
+  int numgp_perelement = num_integration_segments * numgp_persegment;
 
   // vectors for shape functions and their derivatives
   // Attention: these are individual shape function values, NOT shape function matrices
-  // values at all gauss points are stored in advance (more efficient due to double integral)
-  std::vector<LINALG::TMatrix<double,1,numnodes*numnodalvalues> > N1_i(numgp);        // = N1_i
-  std::vector<LINALG::TMatrix<double,1,numnodes*numnodalvalues> > N2_i(numgp);        // = N2_i
-  std::vector<LINALG::TMatrix<double,1,numnodes*numnodalvalues> > N1_i_xi(numgp);     // = N1_i,xi
-  std::vector<LINALG::TMatrix<double,1,numnodes*numnodalvalues> > N2_i_xi(numgp);     // = N2_i,eta
+  std::vector<LINALG::TMatrix<double,1,numnodes*numnodalvalues> > N1_i(numgp_persegment);
+  std::vector<LINALG::TMatrix<double,1,numnodes*numnodalvalues> > N2_i(numgp_persegment);
+  std::vector<LINALG::TMatrix<double,1,numnodes*numnodalvalues> > N1_i_xi(numgp_persegment);
+  std::vector<LINALG::TMatrix<double,1,numnodes*numnodalvalues> > N2_i_xi(numgp_persegment);
+
+  // Evaluate shape functions at gauss points and store values
+  // Todo think about pre-computing and storing values for inner Gauss point loops here
 
   // coords of the two gauss points
   LINALG::TMatrix<T, 3, 1> r1(true);                               // = r1
@@ -251,125 +257,180 @@ EvaluateFpotandStiffpot_LargeSepApprox(
   switch ( Params()->PotentialType() )
   {
   case INPAR::BEAMPOTENTIAL::beampot_surf:
-    prefactor *= 4 * radius1_ * radius2_ * std::pow(M_PI,2);
+    prefactor *= 4 * radius1_ * radius2_ * M_PI*M_PI;
     break;
   case INPAR::BEAMPOTENTIAL::beampot_vol:
-    prefactor *= std::pow(radius1_,2) * std::pow(radius2_,2) * std::pow(M_PI,2);
+    prefactor *= radius1_*radius1_ * radius2_*radius2_ * M_PI*M_PI;
     break;
   default:
     dserror("No valid BEAMPOTENTIAL_TYPE specified. Choose either Surface or Volume in input file!");
   }
 
   // prepare data storage for vtk visualization
-  centerline_coords_GP1_.resize( numgp );
-  centerline_coords_GP2_.resize( numgp );
+  centerline_coords_GP1_.resize( numgp_perelement );
+  centerline_coords_GP2_.resize( numgp_perelement );
   forces_pot_GP1_.clear();
-  forces_pot_GP1_.resize( numgp, LINALG::TMatrix<double,3,1>(true) );
+  forces_pot_GP1_.resize( numgp_perelement, LINALG::TMatrix<double,3,1>(true) );
   forces_pot_GP2_.clear();
-  forces_pot_GP2_.resize( numgp, LINALG::TMatrix<double,3,1>(true) );
+  forces_pot_GP2_.resize( numgp_perelement, LINALG::TMatrix<double,3,1>(true) );
   moments_pot_GP1_.clear();
-  moments_pot_GP1_.resize( numgp, LINALG::TMatrix<double,3,1>(true) );
+  moments_pot_GP1_.resize( numgp_perelement, LINALG::TMatrix<double,3,1>(true) );
   moments_pot_GP2_.clear();
-  moments_pot_GP2_.resize( numgp, LINALG::TMatrix<double,3,1>(true) );
+  moments_pot_GP2_.resize( numgp_perelement, LINALG::TMatrix<double,3,1>(true) );
 
-  // loop over gauss points on ele1
-  for (int gp1=0; gp1 < numgp; ++gp1)
+  for (unsigned int isegment1 = 0; isegment1 < num_integration_segments; ++isegment1)
   {
-    ComputeCenterlinePosition(r1,N1_i[gp1],ele1pos_);
+    // compute element parameter coordinate for lower and upper limit of current integration segment
+    double integration_segment1_lower_limit = -1.0 + isegment1 * 2.0 / num_integration_segments;
+    double integration_segment1_upper_limit = -1.0 + (isegment1+1) * 2.0 / num_integration_segments;
 
-    // store for vtk visualization
-    centerline_coords_GP1_[gp1] = FADUTILS::CastToDouble<T,3,1>( r1 );
+    double jacobifactor_segment1 =
+        0.5 * ( integration_segment1_upper_limit - integration_segment1_lower_limit );
 
-    double jacobifac1 = BeamElement1()->GetJacobiFacAtXi(gausspoints.qxg[gp1][0]);
+    DRT::UTILS::BEAM::EvaluateShapeFunctionsAndDerivsAllGPs<numnodes,numnodalvalues>( gausspoints,
+        N1_i, N1_i_xi, BeamElement1()->Shape(), ele1length_, integration_segment1_lower_limit,
+        integration_segment1_upper_limit );
 
-    // loop over gauss points on ele2
-    for (int gp2=0; gp2 < numgp; ++gp2)
+    for (unsigned int isegment2 = 0; isegment2 < num_integration_segments; ++isegment2)
     {
-      ComputeCenterlinePosition(r2,N2_i[gp2],ele2pos_);
+      // compute element parameter coordinate for lower and upper limit of current integration segment
+      double integration_segment2_lower_limit = -1.0 + isegment2 * 2.0 / num_integration_segments;
+      double integration_segment2_upper_limit = -1.0 + (isegment2+1) * 2.0 / num_integration_segments;
 
-      // store for vtk visualization
-      centerline_coords_GP2_[gp2] = FADUTILS::CastToDouble<T,3,1>( r2 );
+      double jacobifactor_segment2 =
+          0.5 * ( integration_segment2_upper_limit - integration_segment2_lower_limit );
 
-      dist = FADUTILS::DiffVector(r1,r2);
+      DRT::UTILS::BEAM::EvaluateShapeFunctionsAndDerivsAllGPs<numnodes,numnodalvalues>(gausspoints,
+          N2_i, N2_i_xi, BeamElement2()->Shape(), ele2length_, integration_segment2_lower_limit,
+          integration_segment2_upper_limit );
 
-      norm_dist = FADUTILS::VectorNorm<3>(dist);
 
-      // auxiliary variables to store pre-calculated common terms
-      T norm_dist_exp1 = 0.0;
-      if ( norm_dist!=0.0 )
+      // loop over Gauss points in current segment on ele1
+      for (int igp1 = 0; igp1 < numgp_persegment; ++igp1)
       {
-        norm_dist_exp1 = std::pow(norm_dist,-m_-2);
-      }
-      else
-      {
-        dserror("\n|r1-r2|=0 ! Interacting points are identical! Potential law not defined in this"
-            " case! Think about shifting nodes in unconverged state?!");
-      }
+        int igp1_total = isegment1*numgp_persegment + igp1;
 
-      double q1q2_JacFac_GaussWeights =
-          q1 * q2 * jacobifac1 * BeamElement2()->GetJacobiFacAtXi(gausspoints.qxg[gp2][0])
-          * gausspoints.qwgt[gp1] * gausspoints.qwgt[gp2];
+        // Get location of GP in element parameter space xi \in [-1;1]
+        const double xi_GP1_tilde = gausspoints.qxg[igp1][0];
 
-      // compute fpot_tmp here, same for both element forces
-      for (unsigned int i=0; i<3; ++i)
-        fpot_tmp(i) = q1q2_JacFac_GaussWeights * norm_dist_exp1 * dist(i);
+        /* do a mapping into integration segment, i.e. coordinate transformation
+         * note: this has no effect if integration interval is [-1;1] */
+        const double xi_GP1 = 0.5*( (1.0 - xi_GP1_tilde)*integration_segment1_lower_limit
+                          + (1.0 + xi_GP1_tilde)*integration_segment1_upper_limit );
 
-      //********************************************************************
-      // calculate fpot1: force on element 1
-      //********************************************************************
-      // sum up the contributions of all nodes (in all dimensions)
-      for (unsigned int i=0; i<(numnodes*numnodalvalues); ++i)
-      {
-        // loop over dimensions
-        for (unsigned int j=0; j<3; ++j)
+        ComputeCenterlinePosition(r1,N1_i[igp1],ele1pos_);
+
+        // store for vtk visualization
+        centerline_coords_GP1_[igp1_total] = FADUTILS::CastToDouble<T,3,1>( r1 );
+
+        double jacobifac1 = BeamElement1()->GetJacobiFacAtXi( xi_GP1 );
+
+        // loop over Gauss points in current segment on ele2
+        for (int igp2 = 0; igp2 < numgp_persegment; ++igp2)
         {
-          force_pot1(3*i+j) -= N1_i[gp1](i)*fpot_tmp(j);
-        }
-      }
+          int igp2_total = isegment2*numgp_persegment + igp2;
 
-      //********************************************************************
-      // calculate fpot2: force on element 2
-      //********************************************************************
-      // sum up the contributions of all nodes (in all dimensions)
-      for (unsigned int i=0; i<(numnodes*numnodalvalues); ++i)
-      {
-        // loop over dimensions
-        for (unsigned int j=0; j<3; ++j)
-        {
-          force_pot2(3*i+j) += N2_i[gp2](i)*fpot_tmp(j);
-        }
-      }
+          // Get location of GP in element parameter space xi \in [-1;1]
+          const double xi_GP2_tilde = gausspoints.qxg[igp2][0];
 
-      // evaluate analytic contributions to linearization
-      if ( stiffmat11 != NULL and stiffmat12 != NULL and stiffmat21 != NULL and stiffmat22 != NULL )
-      {
-        EvaluateStiffpotAnalyticContributions_LargeSepApprox(
-            dist,
-            norm_dist,
-            norm_dist_exp1,
-            q1q2_JacFac_GaussWeights,
-            N1_i[gp1],
-            N2_i[gp2],
-            *stiffmat11,
-            *stiffmat12,
-            *stiffmat21,
-            *stiffmat22);
-      }
+          /* do a mapping into integration segment, i.e. coordinate transformation
+           * note: this has no effect if integration interval is [-1;1] */
+          const double xi_GP2 = 0.5*( (1.0 - xi_GP2_tilde)*integration_segment2_lower_limit
+                            + (1.0 + xi_GP2_tilde)*integration_segment2_upper_limit );
 
+          // compute coord vector
+          ComputeCenterlinePosition(r2,N2_i[igp2],ele2pos_);
 
-      // store for vtk visualization
-      forces_pot_GP1_[gp1].Update( 1.0*prefactor*q1*q2*
-          FADUTILS::CastToDouble(norm_dist_exp1),
-          FADUTILS::CastToDouble<T,3,1>( dist ),
-          1.0 );
-      forces_pot_GP2_[gp2].Update( -1.0*prefactor*q1*q2*
-          FADUTILS::CastToDouble(norm_dist_exp1),
-          FADUTILS::CastToDouble<T,3,1>( dist ),
-          1.0 );
+          // store for vtk visualization
+          centerline_coords_GP2_[igp2_total] = FADUTILS::CastToDouble<T,3,1>( r2 );
 
-    } // end gauss quadrature loop (element 2)
-  } // end gauss quadrature loop (element 1)
+          double jacobifac2 = BeamElement2()->GetJacobiFacAtXi( xi_GP2 );
 
+          dist = FADUTILS::DiffVector(r1,r2);
+
+          norm_dist = FADUTILS::VectorNorm<3>(dist);
+
+          // auxiliary variables to store pre-calculated common terms
+          T norm_dist_exp1 = 0.0;
+          if ( norm_dist!=0.0 )
+          {
+            norm_dist_exp1 = std::pow(norm_dist,-m_-2);
+          }
+          else
+          {
+            dserror("\n|r1-r2|=0 ! Interacting points are identical! Potential law not defined in this"
+                " case! Think about shifting nodes in unconverged state?!");
+          }
+
+          double q1q2_JacFac_GaussWeights =
+              q1 * q2 * jacobifac1 * jacobifactor_segment1 * jacobifac2 * jacobifactor_segment2
+              * gausspoints.qwgt[igp1] * gausspoints.qwgt[igp2];
+
+          // compute fpot_tmp here, same for both element forces
+          for (unsigned int i=0; i<3; ++i)
+            fpot_tmp(i) = q1q2_JacFac_GaussWeights * norm_dist_exp1 * dist(i);
+
+          //********************************************************************
+          // calculate fpot1: force on element 1
+          //********************************************************************
+          // sum up the contributions of all nodes (in all dimensions)
+          for (unsigned int i=0; i<(numnodes*numnodalvalues); ++i)
+          {
+            // loop over dimensions
+            for (unsigned int j=0; j<3; ++j)
+            {
+              force_pot1(3*i+j) -= N1_i[igp1](i)*fpot_tmp(j);
+            }
+          }
+
+          //********************************************************************
+          // calculate fpot2: force on element 2
+          //********************************************************************
+          // sum up the contributions of all nodes (in all dimensions)
+          for (unsigned int i=0; i<(numnodes*numnodalvalues); ++i)
+          {
+            // loop over dimensions
+            for (unsigned int j=0; j<3; ++j)
+            {
+              force_pot2(3*i+j) += N2_i[igp2](i)*fpot_tmp(j);
+            }
+          }
+
+          // evaluate analytic contributions to linearization
+          if ( stiffmat11 != NULL and stiffmat12 != NULL and stiffmat21 != NULL and stiffmat22 != NULL )
+          {
+            EvaluateStiffpotAnalyticContributions_LargeSepApprox(
+                dist,
+                norm_dist,
+                norm_dist_exp1,
+                q1q2_JacFac_GaussWeights,
+                N1_i[igp1],
+                N2_i[igp2],
+                *stiffmat11,
+                *stiffmat12,
+                *stiffmat21,
+                *stiffmat22);
+          }
+
+          // store for vtk visualization
+          forces_pot_GP1_[igp1_total].Update( 1.0*prefactor*q1*q2
+              * FADUTILS::CastToDouble(norm_dist_exp1)
+              * jacobifac2 * jacobifactor_segment2
+              * gausspoints.qwgt[igp2],
+              FADUTILS::CastToDouble<T,3,1>( dist ),
+              1.0 );
+          forces_pot_GP2_[igp2_total].Update( -1.0*prefactor*q1*q2
+              * FADUTILS::CastToDouble(norm_dist_exp1)
+              * jacobifac1 * jacobifactor_segment1
+              * gausspoints.qwgt[igp1],
+              FADUTILS::CastToDouble<T,3,1>( dist ),
+              1.0 );
+
+        } // end gauss quadrature loop (element 2)
+      } // end gauss quadrature loop (element 1)
+
+    }// end: loop over integration segments of element 2
+  }// end: loop over integration segments of element 1
 
   // apply constant prefactor
   force_pot1.Scale(prefactor);
@@ -536,24 +597,27 @@ EvaluateFpotandStiffpot_DoubleLengthSpecific_SmallSepApprox(
   // prepare differentiation via FAD if desired
   SetAutomaticDifferentiationVariablesIfRequired( ele1pos_, ele2pos_ );
 
-  // Set gauss integration rule
+  // number of integration segments per element
+  const unsigned int num_integration_segments = Params()->NumberIntegrationSegments();
+
+  // Set Gauss integration rule applied in each integration segment
   DRT::UTILS::GaussRule1D gaussrule = GetGaussRule();
 
-  // Get gauss points (gp) for integration
+  // Get Gauss points (gp) for integration
   DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
-  // number of gps
-  int numgp = gausspoints.nquad;
+  // number of Gauss points per integration segment and in total per element
+  int numgp_persegment = gausspoints.nquad;
+  int numgp_perelement = num_integration_segments * numgp_persegment;
 
   // vectors for shape functions and their derivatives
   // Attention: these are individual shape function values, NOT shape function matrices
-  // values at all gauss points are stored in advance (more efficient due to double integral)
-  std::vector<LINALG::TMatrix<double,1,numnodes*numnodalvalues> > N1_i(numgp);        // = N1_i
-  std::vector<LINALG::TMatrix<double,1,numnodes*numnodalvalues> > N2_i(numgp);        // = N2_i
-  std::vector<LINALG::TMatrix<double,1,numnodes*numnodalvalues> > N1_i_xi(numgp);     // = N1_i,xi
-  std::vector<LINALG::TMatrix<double,1,numnodes*numnodalvalues> > N2_i_xi(numgp);     // = N2_i,eta
+  std::vector<LINALG::TMatrix<double,1,numnodes*numnodalvalues> > N1_i(numgp_persegment);
+  std::vector<LINALG::TMatrix<double,1,numnodes*numnodalvalues> > N2_i(numgp_persegment);
+  std::vector<LINALG::TMatrix<double,1,numnodes*numnodalvalues> > N1_i_xi(numgp_persegment);
+  std::vector<LINALG::TMatrix<double,1,numnodes*numnodalvalues> > N2_i_xi(numgp_persegment);
 
   // Evaluate shape functions at gauss points and store values
-  GetShapeFunctions(N1_i, N2_i, N1_i_xi, N2_i_xi, gausspoints);
+  // Todo think about pre-computing and storing values for inner Gauss point loops here
 
   // coords of the two gauss points
   LINALG::TMatrix<T, 3, 1> r1(true);                               // = r1
@@ -591,16 +655,16 @@ EvaluateFpotandStiffpot_DoubleLengthSpecific_SmallSepApprox(
 
 
   // prepare data storage for vtk visualization
-  centerline_coords_GP1_.resize( numgp );
-  centerline_coords_GP2_.resize( numgp );
+  centerline_coords_GP1_.resize( numgp_perelement );
+  centerline_coords_GP2_.resize( numgp_perelement );
   forces_pot_GP1_.clear();
-  forces_pot_GP1_.resize( numgp, LINALG::TMatrix<double,3,1>(true) );
+  forces_pot_GP1_.resize( numgp_perelement, LINALG::TMatrix<double,3,1>(true) );
   forces_pot_GP2_.clear();
-  forces_pot_GP2_.resize( numgp, LINALG::TMatrix<double,3,1>(true) );
+  forces_pot_GP2_.resize( numgp_perelement, LINALG::TMatrix<double,3,1>(true) );
   moments_pot_GP1_.clear();
-  moments_pot_GP1_.resize( numgp, LINALG::TMatrix<double,3,1>(true) );
+  moments_pot_GP1_.resize( numgp_perelement, LINALG::TMatrix<double,3,1>(true) );
   moments_pot_GP2_.clear();
-  moments_pot_GP2_.resize( numgp, LINALG::TMatrix<double,3,1>(true) );
+  moments_pot_GP2_.resize( numgp_perelement, LINALG::TMatrix<double,3,1>(true) );
 
   // auxiliary variables
   LINALG::TMatrix<T, 3, 1> fpot_tmp(true);
@@ -608,106 +672,161 @@ EvaluateFpotandStiffpot_DoubleLengthSpecific_SmallSepApprox(
   double prefactor = k_ * 2* M_PI* (m_-3.5) * pow(m_-2,-2) *
       std::sqrt( 2*radius1_*radius2_/(radius1_+radius2_) ) * C;
 
-  // loop over gauss points of element 1
-  for (int gp1 = 0; gp1 < numgp; ++gp1)
+  for (unsigned int isegment1 = 0; isegment1 < num_integration_segments; ++isegment1)
   {
-    // compute coord vector
-    ComputeCenterlinePosition(r1,N1_i[gp1],ele1pos_);
+    // compute element parameter coordinate for lower and upper limit of current integration segment
+    double integration_segment1_lower_limit = -1.0 + isegment1 * 2.0 / num_integration_segments;
+    double integration_segment1_upper_limit = -1.0 + (isegment1+1) * 2.0 / num_integration_segments;
 
-    // store for vtk visualization
-    centerline_coords_GP1_[gp1] = FADUTILS::CastToDouble<T,3,1>( r1 );
+    double jacobifactor_segment1 =
+        0.5 * ( integration_segment1_upper_limit - integration_segment1_lower_limit );
 
-    double jacobifac1 = BeamElement1()->GetJacobiFacAtXi(gausspoints.qxg[gp1][0]);
+    DRT::UTILS::BEAM::EvaluateShapeFunctionsAndDerivsAllGPs<numnodes,numnodalvalues>( gausspoints,
+        N1_i, N1_i_xi, BeamElement1()->Shape(), ele1length_, integration_segment1_lower_limit,
+        integration_segment1_upper_limit );
 
-    // loop over gauss points of element 2
-    for (int gp2 = 0; gp2 < numgp; ++gp2)
+    for (unsigned int isegment2 = 0; isegment2 < num_integration_segments; ++isegment2)
     {
-      // compute coord vector
-      ComputeCenterlinePosition(r2,N2_i[gp2],ele2pos_);
+      // compute element parameter coordinate for lower and upper limit of current integration segment
+      double integration_segment2_lower_limit = -1.0 + isegment2 * 2.0 / num_integration_segments;
+      double integration_segment2_upper_limit = -1.0 + (isegment2+1) * 2.0 / num_integration_segments;
 
-      // store for vtk visualization
-      centerline_coords_GP2_[gp2] = FADUTILS::CastToDouble<T,3,1>( r2 );
+      double jacobifactor_segment2 =
+          0.5 * ( integration_segment2_upper_limit - integration_segment2_lower_limit );
 
-      dist = FADUTILS::DiffVector(r1,r2);
+      DRT::UTILS::BEAM::EvaluateShapeFunctionsAndDerivsAllGPs<numnodes,numnodalvalues>(gausspoints,
+          N2_i, N2_i_xi, BeamElement2()->Shape(), ele2length_, integration_segment2_lower_limit,
+          integration_segment2_upper_limit );
 
-      norm_dist = FADUTILS::VectorNorm<3>(dist);
-
-      gap = norm_dist - radius1_ - radius2_;
-
-
-      // auxiliary variables to store pre-calculated common terms
-      T gap_exp1 = 0.0;
-
-      if ( gap >= 0.0 )
-        gap_exp1 = std::pow(gap,-m_+2.5);
-      else
-        dserror("gap<=0!");
-
-      double q1q2_JacFac_GaussWeights =
-          q1 * q2 * jacobifac1 * BeamElement2()->GetJacobiFacAtXi(gausspoints.qxg[gp2][0])
-          * gausspoints.qwgt[gp1] * gausspoints.qwgt[gp2];
-
-      // auxiliary term, same for both element forces
-      for (unsigned int i=0; i<3; i++)
-        fpot_tmp(i) = q1q2_JacFac_GaussWeights * dist(i) / norm_dist * gap_exp1;
-
-
-      //********************************************************************
-      // calculate fpot1: force on element 1
-      //********************************************************************
-      // sum up the contributions of all nodes (in all dimensions)
-      for (unsigned int i=0; i<(numnodes*numnodalvalues); ++i)
+      // loop over gauss points of current segment on element 1
+      for (int igp1 = 0; igp1 < numgp_persegment; ++igp1)
       {
-        // loop over dimensions
-        for (unsigned int j=0; j<3; ++j)
+        int igp1_total = isegment1*numgp_persegment + igp1;
+
+        // Get location of GP in element parameter space xi \in [-1;1]
+        const double xi_GP1_tilde = gausspoints.qxg[igp1][0];
+
+        /* do a mapping into integration segment, i.e. coordinate transformation
+         * note: this has no effect if integration interval is [-1;1] */
+        const double xi_GP1 = 0.5*( (1.0 - xi_GP1_tilde)*integration_segment1_lower_limit
+                          + (1.0 + xi_GP1_tilde)*integration_segment1_upper_limit );
+
+        // compute coord vector
+        ComputeCenterlinePosition(r1,N1_i[igp1],ele1pos_);
+
+        // store for vtk visualization
+        centerline_coords_GP1_[igp1_total] = FADUTILS::CastToDouble<T,3,1>( r1 );
+
+        double jacobifac1 = BeamElement1()->GetJacobiFacAtXi( xi_GP1 );
+
+        // loop over gauss points of current segment on element 2
+        for (int igp2 = 0; igp2 < numgp_persegment; ++igp2)
         {
-          force_pot1(3*i+j) -= N1_i[gp1](i)*fpot_tmp(j);
-        }
-      }
+          int igp2_total = isegment2*numgp_persegment + igp2;
 
-      //********************************************************************
-      // calculate fpot2: force on element 2
-      //********************************************************************
-      // sum up the contributions of all nodes (in all dimensions)
-      for (unsigned int i=0; i<(numnodes*numnodalvalues); ++i)
-      {
-        // loop over dimensions
-        for (unsigned int j=0; j<3; ++j)
-        {
-          force_pot2(3*i+j) += N2_i[gp2](i)*fpot_tmp(j);
-        }
-      }
+          // Get location of GP in element parameter space xi \in [-1;1]
+          const double xi_GP2_tilde = gausspoints.qxg[igp2][0];
 
-      // evaluate analytic contributions to linearization
-      if ( stiffmat11 != NULL and stiffmat12 != NULL and stiffmat21 != NULL and stiffmat22 != NULL )
-      {
-        EvaluateStiffpotAnalyticContributions_DoubleLengthSpecific_SmallSepApprox(
-            dist,
-            norm_dist,
-            gap,
-            gap_exp1,
-            q1q2_JacFac_GaussWeights,
-            N1_i[gp1],
-            N2_i[gp2],
-            *stiffmat11,
-            *stiffmat12,
-            *stiffmat21,
-            *stiffmat22);
-      }
+          /* do a mapping into integration segment, i.e. coordinate transformation
+           * note: this has no effect if integration interval is [-1;1] */
+          const double xi_GP2 = 0.5*( (1.0 - xi_GP2_tilde)*integration_segment2_lower_limit
+                            + (1.0 + xi_GP2_tilde)*integration_segment2_upper_limit );
+
+          // compute coord vector
+          ComputeCenterlinePosition(r2,N2_i[igp2],ele2pos_);
+
+          // store for vtk visualization
+          centerline_coords_GP2_[igp2_total] = FADUTILS::CastToDouble<T,3,1>( r2 );
+
+          double jacobifac2 = BeamElement2()->GetJacobiFacAtXi( xi_GP2 );
+
+          dist = FADUTILS::DiffVector(r1,r2);
+
+          norm_dist = FADUTILS::VectorNorm<3>(dist);
+
+          gap = norm_dist - radius1_ - radius2_;
 
 
-      // store for vtk visualization
-      forces_pot_GP1_[gp1].Update( 1.0*prefactor*q1*q2/FADUTILS::CastToDouble(norm_dist)*
-          FADUTILS::CastToDouble(gap_exp1),
-          FADUTILS::CastToDouble<T,3,1>( dist ),
-          1.0 );
-      forces_pot_GP2_[gp2].Update( -1.0*prefactor*q1*q2/FADUTILS::CastToDouble(norm_dist)*
-          FADUTILS::CastToDouble(gap_exp1),
-          FADUTILS::CastToDouble<T,3,1>( dist ),
-          1.0 );
+          // auxiliary variables to store pre-calculated common terms
+          T gap_exp1 = 0.0;
 
-    }// end: loop over gauss points of element 2
-  }// end: loop over gauss points of element 1
+          if ( gap >= 0.0 )
+            gap_exp1 = std::pow(gap,-m_+2.5);
+          else
+            dserror("gap<=0!");
+
+          double q1q2_JacFac_GaussWeights =
+              q1 * q2 * jacobifac1 * jacobifactor_segment1
+              * jacobifac2 * jacobifactor_segment2
+              * gausspoints.qwgt[igp1] * gausspoints.qwgt[igp2];
+
+          // auxiliary term, same for both element forces
+          for (unsigned int i=0; i<3; i++)
+            fpot_tmp(i) = q1q2_JacFac_GaussWeights * dist(i) / norm_dist * gap_exp1;
+
+
+          //********************************************************************
+          // calculate fpot1: force on element 1
+          //********************************************************************
+          // sum up the contributions of all nodes (in all dimensions)
+          for (unsigned int i=0; i<(numnodes*numnodalvalues); ++i)
+          {
+            // loop over dimensions
+            for (unsigned int j=0; j<3; ++j)
+            {
+              force_pot1(3*i+j) -= N1_i[igp1](i)*fpot_tmp(j);
+            }
+          }
+
+          //********************************************************************
+          // calculate fpot2: force on element 2
+          //********************************************************************
+          // sum up the contributions of all nodes (in all dimensions)
+          for (unsigned int i=0; i<(numnodes*numnodalvalues); ++i)
+          {
+            // loop over dimensions
+            for (unsigned int j=0; j<3; ++j)
+            {
+              force_pot2(3*i+j) += N2_i[igp2](i)*fpot_tmp(j);
+            }
+          }
+
+          // evaluate analytic contributions to linearization
+          if ( stiffmat11 != NULL and stiffmat12 != NULL and stiffmat21 != NULL and stiffmat22 != NULL )
+          {
+            EvaluateStiffpotAnalyticContributions_DoubleLengthSpecific_SmallSepApprox(
+                dist,
+                norm_dist,
+                gap,
+                gap_exp1,
+                q1q2_JacFac_GaussWeights,
+                N1_i[igp1],
+                N2_i[igp2],
+                *stiffmat11,
+                *stiffmat12,
+                *stiffmat21,
+                *stiffmat22);
+          }
+
+          // store for vtk visualization
+          forces_pot_GP1_[igp1_total].Update( 1.0*prefactor*q1*q2
+              * FADUTILS::CastToDouble(gap_exp1) / FADUTILS::CastToDouble(norm_dist)
+              * jacobifac2 * jacobifactor_segment2
+              * gausspoints.qwgt[igp2],
+              FADUTILS::CastToDouble<T,3,1>( dist ),
+              1.0 );
+          forces_pot_GP2_[igp2_total].Update( -1.0*prefactor*q1*q2
+              * FADUTILS::CastToDouble(gap_exp1) / FADUTILS::CastToDouble(norm_dist)
+              * jacobifac1 * jacobifactor_segment1
+              * gausspoints.qwgt[igp1],
+              FADUTILS::CastToDouble<T,3,1>( dist ),
+              1.0 );
+
+        }// end: loop over gauss points of element 2
+      }// end: loop over gauss points of element 1
+
+    }// end: loop over integration segments of element 2
+  }// end: loop over integration segments of element 1
 
   // apply constant prefactor
   force_pot1.Scale(prefactor);
@@ -878,6 +997,10 @@ EvaluateFpotandStiffpot_SingleLengthSpecific_SmallSepApprox(
   if ( radius1_ != radius2_ )
     dserror("The strategy 'SingleLengthSpecific_SmallSepApprox' to evaluate the interaction "
         "potential requires the beam radii to be identical!");
+
+  if ( Params()->NumberIntegrationSegments() != 1 )
+    dserror("More than one integration segment per element not implemented yet for this "
+        "strategy 'SingleLengthSpecific_SmallSepApprox'!");
 
   /* parameter coordinate of the closest point on the master beam,
    * determined via point-to-curve projection */

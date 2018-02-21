@@ -173,9 +173,11 @@ namespace BEAM
    *  \date 03/16 */
   template<unsigned int nnode, unsigned int vpernode, typename T>
   void EvaluateShapeFunctionsAllGPs(const DRT::UTILS::IntegrationPoints1D& gausspoints,
-                                    std::vector<LINALG::TMatrix<T,1,vpernode*nnode> >& I_i,
-                                    const DRT::Element::DiscretizationType& distype,
-                                    double hermite_length_param = -1.0)
+      std::vector<LINALG::TMatrix<T,1,vpernode*nnode> >& I_i,
+      const DRT::Element::DiscretizationType& distype,
+      double hermite_length_param = -1.0,
+      double integration_interval_lower_limit = -1.0,
+      double integration_interval_upper_limit = 1.0)
   {
     if (I_i.size()!= (unsigned int) gausspoints.nquad)
       dserror("vector for individual shape functions to be evaluated at %d GPs has wrong size: %d"
@@ -184,7 +186,13 @@ namespace BEAM
     for (int numgp=0; numgp < gausspoints.nquad; numgp++)
     {
       // Get location of GP in element parameter space xi \in [-1;1]
-      const T xi = gausspoints.qxg[numgp][0];
+      const T xi_tilde = gausspoints.qxg[numgp][0];
+
+      /* do a mapping into integration interval, i.e. coordinate transformation
+       * note: this has no effect if integration interval is [-1;1] */
+      const T xi = 0.5*( (1.0 - xi_tilde)*integration_interval_lower_limit
+                        + (1.0 + xi_tilde)*integration_interval_upper_limit );
+
       EvaluateShapeFunctionsAtXi<nnode,vpernode>(xi, I_i[numgp], distype, hermite_length_param);
     }
   }
@@ -198,7 +206,9 @@ namespace BEAM
       const DRT::UTILS::IntegrationPoints1D& gausspoints,
       std::vector<LINALG::TMatrix<T,1,vpernode*nnode> >& I_i_xi,
       const DRT::Element::DiscretizationType& distype,
-      double hermite_length_param = -1.0)
+      double hermite_length_param = -1.0,
+      double integration_interval_lower_limit = -1.0,
+      double integration_interval_upper_limit = 1.0)
   {
     if (I_i_xi.size()!= (unsigned int) gausspoints.nquad)
       dserror("vector for individual shape function derivatives to be evaluated at %d GPs has "
@@ -207,8 +217,14 @@ namespace BEAM
     for (int numgp=0; numgp < gausspoints.nquad; ++numgp)
     {
       // Get location of GP in element parameter space xi \in [-1;1]
-      const T xi = gausspoints.qxg[numgp][0];
-      EvaluateShapeFunctionDerivsAtXi<nnode,vpernode>(xi,I_i_xi[numgp], distype,
+      const T xi_tilde = gausspoints.qxg[numgp][0];
+
+      /* do a mapping into integration interval, i.e. coordinate transformation
+       * note: this has no effect if integration interval is [-1;1] */
+      const T xi = 0.5*( (1.0 - xi_tilde)*integration_interval_lower_limit
+                        + (1.0 + xi_tilde)*integration_interval_upper_limit );
+
+      EvaluateShapeFunctionDerivsAtXi<nnode,vpernode>(xi, I_i_xi[numgp], distype,
           hermite_length_param);
     }
   }
@@ -223,11 +239,14 @@ namespace BEAM
       std::vector<LINALG::TMatrix<T,1,vpernode*nnode> >& I_i,
       std::vector<LINALG::TMatrix<T,1,vpernode*nnode> >& I_i_xi,
       const DRT::Element::DiscretizationType& distype,
-      double hermite_length_param = -1.0)
+      double hermite_length_param = -1.0,
+      double integration_interval_lower_limit = -1.0,
+      double integration_interval_upper_limit = 1.0)
   {
-    EvaluateShapeFunctionsAllGPs<nnode,vpernode>(gausspoints, I_i, distype, hermite_length_param);
+    EvaluateShapeFunctionsAllGPs<nnode,vpernode>(gausspoints, I_i, distype, hermite_length_param,
+        integration_interval_lower_limit, integration_interval_upper_limit);
     EvaluateShapeFunctionDerivsAllGPs<nnode,vpernode>(gausspoints, I_i_xi, distype,
-        hermite_length_param);
+        hermite_length_param, integration_interval_lower_limit, integration_interval_upper_limit);
   }
 
   /** \brief assemble one shape function matrix, such that: r=N*d
@@ -244,8 +263,8 @@ namespace BEAM
     unsigned int assembly_N[3][3*numnodes*numnodalvalues];
 
     //Initialize to zero
-    for (unsigned int i=0;i<3*numnodes*numnodalvalues;i++)
-      for (unsigned int j=0;j<3; j++)
+    for (unsigned int i=0; i<3*numnodes*numnodalvalues; ++i)
+      for (unsigned int j=0; j<3; ++j)
         assembly_N[j][i]=0;
 
     /*
@@ -261,7 +280,7 @@ namespace BEAM
                              {0,0,1,0,0,2,0,0,3,0,0,4}};
     */
 
-    for (unsigned int i=0;i<numnodes*numnodalvalues;i++)
+    for (unsigned int i=0; i<numnodes*numnodalvalues; ++i)
     {
       assembly_N[0][3*i]=i+1;
       assembly_N[1][3*i+1]=i+1;
@@ -269,9 +288,9 @@ namespace BEAM
     }
 
     //Assemble the matrices of the shape functions
-    for (unsigned int i=0; i<3*numnodes*numnodalvalues; i++)
+    for (unsigned int i=0; i<3*numnodes*numnodalvalues; ++i)
     {
-      for (unsigned int j=0; j<3; j++)
+      for (unsigned int j=0; j<3; ++j)
       {
         if ( assembly_N[j][i]==0 )
         {

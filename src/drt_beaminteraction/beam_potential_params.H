@@ -79,6 +79,12 @@ class BeamToBeamPotentialRuntimeVtkParams;
       return strategy_;
     }
 
+    inline int NumberIntegrationSegments() const
+    {
+      ThrowErrorIfNotInitAndSetup();
+      return num_integration_segments_;
+    }
+
     inline int NumberGaussPoints() const
     {
       ThrowErrorIfNotInitAndSetup();
@@ -125,7 +131,10 @@ class BeamToBeamPotentialRuntimeVtkParams;
     //! strategy to evaluate interaction potential
     enum INPAR::BEAMPOTENTIAL::BeamPotentialStrategy strategy_;
 
-    //! number of Gauss points to be used per beam element
+    //! number of integration segments to be used per beam element
+    int num_integration_segments_;
+
+    //! number of Gauss points to be used per integration segment
     int num_GPs_;
 
     //! use automatic differentiation via FAD

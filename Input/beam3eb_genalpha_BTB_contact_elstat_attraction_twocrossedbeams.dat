@@ -83,15 +83,30 @@ BEAMS_MAXDELTADISSCALEFAC       -1   //10000
 BEAMS_OCTREE                    none //octree_spherical
 BEAMS_ADDITEXT                  Yes
 BEAMS_EXTVAL                    0.01
+------------------------------------------------------BEAM CONTACT/RUNTIME VTK OUTPUT
+VTK_OUTPUT_BEAM_CONTACT         yes
+OUTPUT_DATA_FORMAT              binary
+EVERY_ITERATION                 no
+INTERVAL_STEPS                  1
+CONTACT_FORCES                  yes
+GAPS                            yes
 --------------------------------------------------------------BEAM POTENTIAL
 POT_LAW_PREFACTOR               0.3 0.1
 POT_LAW_EXPONENT                1.0 1.0
 BEAMPOTENTIAL_TYPE              Surface
 STRATEGY                        DoubleLengthSpecific_LargeSepApprox
+NUM_INTEGRATION_SEGMENTS        1
+NUM_GAUSSPOINTS                 10
 
 // only needed for old beam_contact_manager
 BEAMPOT_OCTREE                  none
 CUTOFFRADIUS                    -1
+-------------------------------------------------BEAM POTENTIAL/RUNTIME VTK OUTPUT
+VTK_OUTPUT_BEAM_POTENTIAL       yes
+OUTPUT_DATA_FORMAT              binary
+EVERY_ITERATION                 no
+INTERVAL_STEPS                  1
+FORCES                          yes
 --------------------------------------------------------------------BINNING STRATEGY
 DEFINEBINSPER                   cutoff
 CUTOFF_RADIUS                   3

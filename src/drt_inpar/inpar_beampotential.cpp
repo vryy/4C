@@ -55,7 +55,11 @@ void INPAR::BEAMPOTENTIAL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLis
            strategy_singlelengthspec_smallsepapprox),
            &beampotential);
 
-  IntParameter("NUM_GAUSSPOINTS",10,"Number of Gauss points used per beam element",&beampotential);
+  IntParameter("NUM_INTEGRATION_SEGMENTS",1,"Number of integration segments used per beam element",
+      &beampotential);
+
+  IntParameter("NUM_GAUSSPOINTS",10,"Number of Gauss points used per integration segment",
+      &beampotential);
 
   setStringToIntegralParameter<int>("AUTOMATIC_DIFFERENTIATION","No",
       "apply automatic differentiation via FAD?", yesnotuple,yesnovalue,&beampotential);
