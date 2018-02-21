@@ -84,8 +84,8 @@ namespace PARTICLE
         Teuchos::RCP<Epetra_Vector> angVeln,
         Teuchos::RCP<const Epetra_Vector> radiusn,
         Teuchos::RCP<Epetra_Vector> anglen,
-        Teuchos::RCP<Epetra_Vector> mass,
-        Teuchos::RCP<Epetra_Vector> densityn = Teuchos::null);
+        Teuchos::RCP<Epetra_Vector> mass
+        );
 
     /// compute collisions (inter-particle and particle-wall), returns contact energy
     virtual double EvaluateParticleContact(

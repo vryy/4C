@@ -445,11 +445,9 @@ void PARTICLE::ParticleCollisionHandlerBase::Init(
     Teuchos::RCP<Epetra_Vector> angVeln,
     Teuchos::RCP<const Epetra_Vector> radiusn,
     Teuchos::RCP<Epetra_Vector> orientn,
-    Teuchos::RCP<Epetra_Vector> mass,
-    Teuchos::RCP<Epetra_Vector> densityn)
+    Teuchos::RCP<Epetra_Vector> mass)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleCollisionHandlerBase::ContactInit");
-  // export everything in col layout
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleCollisionHandlerBase::Init");
 
   // dof based vectors
   Teuchos::RCP<Epetra_Vector> disnCol = LINALG::CreateVector(*discret_->DofColMap(),false);
@@ -459,23 +457,23 @@ void PARTICLE::ParticleCollisionHandlerBase::Init(
   if(orientn != Teuchos::null)
     orientnCol = LINALG::CreateVector(*discret_->DofColMap(),false);
 
-  // setup importer for dof based vectors once in the beginning and reuse it
-  Epetra_Import dofimporter(*discret_->DofColMap(), *discret_->DofRowMap());
+  // export dof based vectors
   int err = 0;
-  err += disnCol->Import(*disn, dofimporter, Insert);
-  err += velnCol->Import(*veln, dofimporter, Insert);
-  err += angVelnCol->Import(*angVeln, dofimporter, Insert);
+  err += disnCol->Import(*disn, *particle_algorithm_->DofImporter(), Insert);
+  err += velnCol->Import(*veln, *particle_algorithm_->DofImporter(), Insert);
+  err += angVelnCol->Import(*angVeln, *particle_algorithm_->DofImporter(), Insert);
   if(orientn != Teuchos::null)
-    err += orientnCol->Import(*orientn, dofimporter, Insert);
+    err += orientnCol->Import(*orientn, *particle_algorithm_->DofImporter(), Insert);
   if (err)
     dserror("Export using importer failed for dof based Epetra_Vector: return value != 0");
 
   // node based vector
   Teuchos::RCP<Epetra_Vector> massCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
 
-  // setup importer for node based vector once in the beginning and reuse it
-  Epetra_Import nodeimporter(*discret_->NodeColMap(), *discret_->NodeRowMap());
-  err += massCol->Import(*mass, nodeimporter, Insert);
+  // export node based vector
+  err += massCol->Import(*mass, *particle_algorithm_->NodeImporter(), Insert);
+  if (err)
+    dserror("Export using importer failed for node based Epetra_Vector: return value != 0");
 
   // export radius vector
   bool radius_nodebased(true);
@@ -483,26 +481,19 @@ void PARTICLE::ParticleCollisionHandlerBase::Init(
   if(radiusn->Map().SameAs(*discret_->NodeRowMap()))
   {
     radiusnCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
-    err += radiusnCol->Import(*radiusn, nodeimporter, Insert);
+    err += radiusnCol->Import(*radiusn, *particle_algorithm_->NodeImporter(), Insert);
   }
   else if(radiusn->Map().SameAs(*discret_->DofRowMap()))
   {
     radius_nodebased = false;
     radiusnCol = LINALG::CreateVector(*discret_->DofColMap(),false);
-    err += radiusnCol->Import(*radiusn, dofimporter, Insert);
+    err += radiusnCol->Import(*radiusn, *particle_algorithm_->DofImporter(), Insert);
   }
   else
     dserror("You have a very strange radius vector...");
 
-  Teuchos::RCP<Epetra_Vector> densityCol;
-  if (densityn != Teuchos::null)
-  {
-    densityCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
-    err += densityCol->Import(*densityn, nodeimporter, Insert);
-  }
-
   if (err)
-    dserror("Export using importer failed for node based Epetra_Vector: return value != 0");
+    dserror("Export using importer failed for dof/node based Epetra_Vector: return value != 0");
 
   // fill particleData_
   const int numcolparticles = discret_->NodeColMap()->NumMyElements();
@@ -537,8 +528,6 @@ void PARTICLE::ParticleCollisionHandlerBase::Init(
       data.rad = data.semiaxes.MaxValue();
     }
     data.mass = (*massCol)[lid];
-    if (densityn != Teuchos::null)
-      data.density = (*densityCol)[lid];
 
     // set ddt
     data.ddt = 0;

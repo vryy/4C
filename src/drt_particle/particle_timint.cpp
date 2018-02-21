@@ -643,7 +643,6 @@ void PARTICLE::TimInt::DetermineSPHDensAndAcc(Teuchos::RCP<Epetra_Vector> acc,
                                             const double time,
                                             const double dt)
 {
-
   //Initialize all columns and boundary particles, set sate vectors, search for neighbor particles.
   interHandler_->Init(disn_, veln_, radiusn_, mass_, density0_);
   //Set also state vector velConv
@@ -880,6 +879,9 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
   UpdateStateVectorMap(radiusn_,true);
   UpdateStateVectorMap(densityn_,true);
   UpdateStateVectorMap(densityDotn_,true);
+
+  if(density0_!=Teuchos::null)
+    UpdateStateVectorMap(density0_,true);
 
   UpdateStateVectorMap(fifc_);
   UpdateStateVectorMap(orient_);
@@ -1405,12 +1407,16 @@ void PARTICLE::TimInt::PerformSPHRendering(bool clearstate, bool writeoutput)
       // clear the (averaged) rendering vectors
       if (clearstate)
       {
-        std::cout << "Clear rendering state vectors before first averaging step!" << std::endl;
+        if (myrank_ == 0)
+          std::cout << "Clear rendering state vectors before first averaging step!" << std::endl;
+
         rendering->ClearState();
       }
 
       // determine the (averaged) rendering vectors
-      std::cout << "Update (averaged) rendering vectors!" << std::endl;
+      if (myrank_ == 0)
+        std::cout << "Update (averaged) rendering vectors!" << std::endl;
+
       if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"TRANSPORT_VELOCITY")==true)
         rendering->UpdateRenderingVectors(discret_, (*dis_)(0), (*vel_)(0), (*acc_)(0), (*velmod_)(0), (*density_)(0), (*radius_)(0), pressure_, mass_);
       else
@@ -1419,7 +1425,9 @@ void PARTICLE::TimInt::PerformSPHRendering(bool clearstate, bool writeoutput)
       // write the (averaged) rendering vectors
       if (writeoutput)
       {
-        std::cout << "Write rendering output!" << std::endl;
+        if (myrank_ == 0)
+          std::cout << "Write rendering output!" << std::endl;
+
         rendering->OutputState();
       }
     }
@@ -1634,21 +1642,6 @@ void PARTICLE::TimInt::UpdateStateVectorMap(Teuchos::RCP<Epetra_Vector> &stateVe
   }
 }
 
-/*-----------------------------------------------------------------------------*/
-/* Update TimIntMStep state vector with the new dof map from discret_*/
-void PARTICLE::TimInt::UpdateStateVectorMap(Teuchos::RCP<Epetra_MultiVector> &stateVector, bool trg_nodeVectorType)
-{
-  if (stateVector != Teuchos::null)
-  {
-    Teuchos::RCP<Epetra_MultiVector> old = stateVector;
-    stateVector = Teuchos::rcp(new Epetra_MultiVector(*DofRowMapView(), old->NumVectors(), true));
-    int err = stateVector->Export(*old, *dofmapexporter_, Insert);
-    if (err)
-      dserror("Export using exporter returned err=%d", err);
-
-  }
-}
-
 /*----------------------------------------------------------------------*/
 //! Check exixstence of the state vectors
 void PARTICLE::TimInt::CheckStateVector(std::string vecName, const Teuchos::RCP<const Epetra_Vector> vec, bool trg_showVec)
@@ -1732,25 +1725,6 @@ void PARTICLE::TimInt::UpdateStepState()
 // wrapper. On top of the output_->WriteVector() it checks that the pointer is not null. In case, it does not write
 void PARTICLE::TimInt::WriteVector(const std::string name,
                                            Teuchos::RCP<Epetra_Vector> vec,
-                                           const bool isdof) const
-{
-  if (vec != Teuchos::null)
-  {
-    if (isdof)
-    {
-      output_->WriteVector(name, vec, IO::dofvector);
-    }
-    else
-    {
-      output_->WriteVector(name, vec, IO::nodevector);
-    }
-  }
-}
-
-/*----------------------------------------------------------------------*/
-// wrapper. On top of the output_->WriteVector() it checks that the pointer is not null. In case, it does not write
-void PARTICLE::TimInt::WriteVector(const std::string name,
-                                           Teuchos::RCP<Epetra_MultiVector> vec,
                                            const bool isdof) const
 {
   if (vec != Teuchos::null)

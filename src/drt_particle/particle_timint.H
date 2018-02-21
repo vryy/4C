@@ -487,14 +487,8 @@ namespace PARTICLE
     /* Update state vector with the new map from discret_*/
     virtual void UpdateStateVectorMap(Teuchos::RCP<Epetra_Vector> &stateVector, bool trg_nodeVectorType = false);
 
-    /* Wrapper update state multi vector with the new map from discret_*/
-    virtual void UpdateStateVectorMap(Teuchos::RCP<Epetra_MultiVector> &stateVector, bool trg_nodeVectorType = false);
-
     //! wrapper. On top of the output_->WriteVector() it checks that the pointer is not null. In case, it does not write
     virtual void WriteVector(const std::string name, Teuchos::RCP<Epetra_Vector> vec, const bool isdof = true) const;
-
-    //! wrapper. On top of the output_->WriteVector() it checks that the pointer is not null. In case, it does not write
-    virtual void WriteVector(const std::string name, Teuchos::RCP<Epetra_MultiVector> vec, const bool isdof = true) const;
 
     //! wrapper. On top of the output_->WriteVector() it checks that the pointer is not null. In case, it does not write
     virtual void WriteVector(const std::string name, Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > vec, const bool isdof = true) const;

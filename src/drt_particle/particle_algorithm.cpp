@@ -53,6 +53,8 @@ PARTICLE::Algorithm::Algorithm(
   const Teuchos::ParameterList& params
   ) : AlgorithmBase(comm,params), ParticleHandler(comm),
   particles_(Teuchos::null),
+  dofimporter_(Teuchos::null),
+  nodeimporter_(Teuchos::null),
   writeresultsevery_(0),
   particlewalldis_(Teuchos::null),
   particlewallelecolmap_standardghosting_(Teuchos::null),
@@ -227,6 +229,10 @@ void PARTICLE::Algorithm::Init(bool restarted)
 
   // determine one layer ghosting around boundary bins determined in previous step
   BinStrategy()->DetermineBoundaryColBinsIds();
+
+  // setup importer for dof and node based vectors
+  if ( particleInteractionType_ != INPAR::PARTICLE::None )
+    SetupImporter();
 
   // the following has only to be done once --> skip in case of restart
   if(not restarted)
@@ -541,6 +547,10 @@ void PARTICLE::Algorithm::DynamicLoadBalancing()
     BuildElementToBinPointers(true);
   }
 
+  // setup importer for dof and node based vectors
+  if ( particleInteractionType_ != INPAR::PARTICLE::None )
+    SetupImporter();
+
   // update of state vectors to the new maps
   particles_->UpdateStatesAfterParticleTransfer();
 
@@ -674,6 +684,10 @@ void PARTICLE::Algorithm::UpdateConnectivity()
       // transfer particles into their correct bins
       TransferParticles(true);
 
+      // setup importer for dof and node based vectors
+      if ( particleInteractionType_ != INPAR::PARTICLE::None )
+        SetupImporter();
+
       // update displacement state of particles after redistribution
       dis_at_last_redistr_ = Teuchos::rcp( new Epetra_Vector( *particles_->Dispn() ) );
     }
@@ -683,6 +697,10 @@ void PARTICLE::Algorithm::UpdateConnectivity()
   {
     // transfer particles into their correct bins
     TransferParticles(true);
+
+    // setup importer for dof and node based vectors
+    if ( particleInteractionType_ != INPAR::PARTICLE::None )
+      SetupImporter();
   }
   // default
   else
@@ -879,6 +897,20 @@ Teuchos::RCP<std::list<int> > PARTICLE::Algorithm::TransferParticles(const bool 
   }
 
   return deletedparticles;
+}
+
+/*----------------------------------------------------------------------*
+ | setup importer for dof and node based vectors           sfuchs 02/18 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::SetupImporter()
+{
+  // setup importer for dof based vectors
+  dofimporter_ = Teuchos::rcp(new Epetra_Import(*BinStrategy()->BinDiscret()->DofColMap(), *BinStrategy()->BinDiscret()->DofRowMap() ) );
+
+  // setup importer for node based vectors
+  nodeimporter_ = Teuchos::rcp(new Epetra_Import(*BinStrategy()->BinDiscret()->NodeColMap(), *BinStrategy()->BinDiscret()->NodeRowMap() ) );
+
+  return;
 }
 
 /*----------------------------------------------------------------------*

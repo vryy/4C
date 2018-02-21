@@ -171,6 +171,12 @@ namespace PARTICLE
         const bool ghosting = true
     );
 
+    /// return importer for dof based vectors
+    virtual const Teuchos::RCP<Epetra_Import> DofImporter() const { return dofimporter_; }
+
+    /// return importer for node based vectors
+    virtual const Teuchos::RCP<Epetra_Import> NodeImporter() const { return nodeimporter_; }
+
     /// get bins in range and call FindNeighbors
     virtual void GetNeighbouringItems(
         DRT::Node* particle,
@@ -191,7 +197,7 @@ namespace PARTICLE
     /// get particle interaction type
     INPAR::PARTICLE::ParticleInteractions ParticleInteractionType() const {return particleInteractionType_; }
 
-    /// Return vector of pointers to particle material parameters
+    /// return vector of pointers to particle material parameters
     std::vector<const MAT::PAR::ParticleMat*> ParticleMat() const { return particleMat_; }
 
     /// get SPH rendering handler
@@ -221,6 +227,9 @@ namespace PARTICLE
 
     /// update state vectors which do not live in the time integrator to new layout
     virtual void UpdateStates(){};
+
+    /// setup importer for dof and node based vectors
+    virtual void SetupImporter();
 
     /// build extended bin column map
     virtual Teuchos::RCP<Epetra_Map> ExtendedBinColMap();
@@ -278,6 +287,12 @@ namespace PARTICLE
 
     /// particle time integration
     Teuchos::RCP<ADAPTER::Particle> particles_;
+
+    ///< importer for dof based vectors
+    Teuchos::RCP<Epetra_Import> dofimporter_;
+
+    ///< importer for node based vectors
+    Teuchos::RCP<Epetra_Import> nodeimporter_;
 
     /// acceleration due to gravity
     LINALG::Matrix<3,1> gravity_acc_;

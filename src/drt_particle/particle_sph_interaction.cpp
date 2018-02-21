@@ -283,9 +283,8 @@ void PARTICLE::ParticleSPHInteractionHandler::InitDensityAndMass(
 
 
   //in case of two-phase flow, the initial density is determined via density summation!
-  const INPAR::PARTICLE::FreeSurfaceType freeSurfaceType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::FreeSurfaceType>(DRT::Problem::Instance()->ParticleParams(),"FREE_SURFACE_TYPE");
   bool initSummation=false;
-  if(freeSurfaceType==INPAR::PARTICLE::TwoPhase and DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"DENSITY_SUMMATION")==true)
+  if(freeSurfaceType_==INPAR::PARTICLE::TwoPhase and DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"DENSITY_SUMMATION")==true)
     initSummation=true;
 
   const int num_row_nodes = discret_->NodeRowMap()->NumMyElements();
@@ -423,15 +422,12 @@ void PARTICLE::ParticleSPHInteractionHandler::Clear()
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleSPHInteractionHandler::SetStateVector(Teuchos::RCP<const Epetra_Vector> stateVector, const PARTICLE::StateVectorType svt)
 {
-  // checks
-  if (stateVector == Teuchos::null)
-  {
-    dserror("the state vector is empty");
-  }
-
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleSPHInteractionHandler::SetStateVector");
 
-  /// miraculous transformation into column vector... ///
+  // safety check
+  if (stateVector == Teuchos::null)
+    dserror("The given state vector is empty!");
+
   Teuchos::RCP<Epetra_Vector> stateVectorCol;
   switch (svt)
   {
@@ -445,17 +441,22 @@ void PARTICLE::ParticleSPHInteractionHandler::SetStateVector(Teuchos::RCP<const 
     case PARTICLE::CFG_F1S :
     case PARTICLE::CFG_F2S :
     {
-      stateVectorCol = LINALG::CreateVector(*discret_->DofColMap(),false);
+      stateVectorCol = LINALG::CreateVector(*discret_->DofColMap(), false);
+      int err = stateVectorCol->Import(*stateVector, *particle_algorithm_->DofImporter(), Insert);
+      if (err)
+        dserror("Export using importer failed for dof based Epetra_Vector: return value != 0");
       break;
     }
     // node based vectors
     default :
     {
-      stateVectorCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
+      stateVectorCol = LINALG::CreateVector(*discret_->NodeColMap(), false);
+      int err = stateVectorCol->Import(*stateVector, *particle_algorithm_->NodeImporter(), Insert);
+      if (err)
+        dserror("Export using importer failed for dof based Epetra_Vector: return value != 0");
       break;
     }
   }
-  LINALG::Export(*stateVector ,*stateVectorCol);
 
   // fill particleData_
   for (int lidNodeCol=0; lidNodeCol<discret_->NodeColMap()->NumMyElements(); ++lidNodeCol)
@@ -468,7 +469,6 @@ void PARTICLE::ParticleSPHInteractionHandler::SetStateVector(Teuchos::RCP<const 
       case PARTICLE::Dis :
       {
         DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*stateVectorCol, data.dis_, data.lm_);
-
         break;
       }
       case PARTICLE::Vel :
@@ -2025,8 +2025,7 @@ double PARTICLE::ParticleSPHInteractionHandler::Inter_generalCoeff_ij(
   else
   {
     // In case of two-phase flow, the initial density is used for calculating the volume of a boundary particle required for generalCoeff_ij
-    const INPAR::PARTICLE::FreeSurfaceType freeSurfaceType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::FreeSurfaceType>(DRT::Problem::Instance()->ParticleParams(),"FREE_SURFACE_TYPE");
-    if(freeSurfaceType!=INPAR::PARTICLE::TwoPhase)
+    if(freeSurfaceType_!=INPAR::PARTICLE::TwoPhase)
     {
       // According to Adami et al. 2012 Eq (28), the density of boundary particle is determined based on the extrapolated pressure in Eq (27) and
       // the equation of state based on material data / mass of the interacting particle_i (for multi-phase flows, the material data might strongly differ from particle to particle).
