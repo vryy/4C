@@ -121,6 +121,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::Reset()
 
     // update the Dof values in the interaction element pair object
     elepairptr->ResetState(
+        GState().GetTimeNp(),
         element_posdofvec_absolutevalues[0],
         element_posdofvec_absolutevalues[1]);
   }

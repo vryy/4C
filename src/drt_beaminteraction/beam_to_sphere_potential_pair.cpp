@@ -17,6 +17,8 @@
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
 
+#include "../drt_lib/drt_globalproblem.H"
+
 // Todo get rid of outdated header inclusions
 #include "../drt_beaminteraction/beam3contact_utils.H"
 #include "../drt_inpar/inpar_beampotential.H"
@@ -43,6 +45,7 @@ BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::BeamToSphe
     BeamPotentialPair(),
     beam_element_(NULL),
     sphere_element_(NULL),
+    time_(0.0),
     k_(0.0),
     m_(0.0),
     beamele_reflength_(0.0),
@@ -249,13 +252,21 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
   // evaluate charge density from DLINE charge condition specified in input file
   double q1 = chargeconds_[0]->GetDouble("val");
 
-  // TODO evaluate given functions in line charge conditions! for now: dserror
-  if (chargeconds_[0]->GetInt("funct") != -1)
-    dserror("DLINE beam potential charge condition: No functions allowed yet! "
-        "Set 'funct' to '-1' -> off");
-
   // read charge of rigid sphere; note: this is NOT a charge density but the total charge of the sphere!!!
   double q2 =  chargeconds_[1]->GetDouble("val");
+
+  // evaluate function in time if specified in line charge conditions
+  // TODO allow for functions in space, i.e. varying charge along beam centerline
+  int function_number = chargeconds_[0]->GetInt("funct");
+
+  if ( function_number != -1 )
+    q1 *= DRT::Problem::Instance()->Funct(function_number-1).EvaluateTime(time_);
+
+  function_number = chargeconds_[1]->GetInt("funct");
+
+  if ( function_number != -1 )
+    q2 *= DRT::Problem::Instance()->Funct(function_number-1).EvaluateTime(time_);
+
 
   // auxiliary variable
   LINALG::TMatrix<TYPE, 3, 1> fpot_tmp(true);
@@ -562,9 +573,12 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Compu
  *-----------------------------------------------------------------------------------------------*/
 template<unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::ResetState(
+    double time,
     const std::vector<double>& centerline_dofvec_ele1,
     const std::vector<double>& centerline_dofvec_ele2)
 {
+  time_ = time;
+
   if (centerline_dofvec_ele1.size() != 3*numnodes*numnodalvalues)
     dserror("size mismatch! expected %d values for centerline_dofvec_ele1, but got %d",
         3*numnodes*numnodalvalues,

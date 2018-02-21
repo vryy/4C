@@ -95,6 +95,7 @@ public:
   \brief Update state of translational nodal DoFs (absolute positions and tangents) of both elements
   */
   virtual void ResetState(
+      double time,
       std::vector<double> const& centerline_dofvec_ele1,
       std::vector<double> const& centerline_dofvec_ele2)=0;
 

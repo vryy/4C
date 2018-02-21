@@ -23,6 +23,7 @@
 
 #include "../drt_inpar/inpar_beampotential.H"
 
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_dserror.H"
 
 #include "../headers/FAD_utils.H"
@@ -41,6 +42,7 @@ BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::BeamToBea
     BeamPotentialPair(),
     beam_element1_(NULL),
     beam_element2_(NULL),
+    time_(0.0),
     k_(0.0),
     m_(0.0),
     ele1length_(0.0),
@@ -224,12 +226,10 @@ EvaluateFpotandStiffpot_LargeSepApprox(
   int numgp_persegment = gausspoints.nquad;
   int numgp_perelement = num_integration_segments * numgp_persegment;
 
-  // vectors for shape functions and their derivatives
+  // vectors for shape functions
   // Attention: these are individual shape function values, NOT shape function matrices
   std::vector<LINALG::TMatrix<double,1,numnodes*numnodalvalues> > N1_i(numgp_persegment);
   std::vector<LINALG::TMatrix<double,1,numnodes*numnodalvalues> > N2_i(numgp_persegment);
-  std::vector<LINALG::TMatrix<double,1,numnodes*numnodalvalues> > N1_i_xi(numgp_persegment);
-  std::vector<LINALG::TMatrix<double,1,numnodes*numnodalvalues> > N2_i_xi(numgp_persegment);
 
   // Evaluate shape functions at gauss points and store values
   // Todo think about pre-computing and storing values for inner Gauss point loops here
@@ -240,16 +240,22 @@ EvaluateFpotandStiffpot_LargeSepApprox(
   LINALG::TMatrix<T, 3, 1> dist(true);                             // = r1-r2
   T norm_dist= 0.0;                                                // = |r1-r2|
 
-  // Evaluate shape functions at gauss points and store values
-  GetShapeFunctions(N1_i,N2_i,N1_i_xi,N2_i_xi,gausspoints);
-
   // evaluate charge densities from DLINE charge condition specified in input file
   double q1 = linechargeconds_[0]->GetDouble("val");
   double q2 = linechargeconds_[1]->GetDouble("val");
 
-  // TODO evaluate given functions in line charge conditions! for now: dserror
-  if (linechargeconds_[0]->GetInt("funct") != -1 or linechargeconds_[1]->GetInt("funct") != -1)
-    dserror("DLINE beam potential charge condition: No functions allowed yet! Set 'funct' to '-1' -> off");
+  // evaluate function in time if specified in line charge conditions
+  // TODO allow for functions in space, i.e. varying charge along beam centerline
+  int function_number = linechargeconds_[0]->GetInt("funct");
+
+  if ( function_number != -1 )
+    q1 *= DRT::Problem::Instance()->Funct(function_number-1).EvaluateTime(time_);
+
+  function_number = linechargeconds_[1]->GetInt("funct");
+
+  if ( function_number != -1 )
+    q2 *= DRT::Problem::Instance()->Funct(function_number-1).EvaluateTime(time_);
+
 
   // auxiliary variable
   LINALG::TMatrix<T, 3, 1> fpot_tmp(true);
@@ -290,8 +296,8 @@ EvaluateFpotandStiffpot_LargeSepApprox(
     double jacobifactor_segment1 =
         0.5 * ( integration_segment1_upper_limit - integration_segment1_lower_limit );
 
-    DRT::UTILS::BEAM::EvaluateShapeFunctionsAndDerivsAllGPs<numnodes,numnodalvalues>( gausspoints,
-        N1_i, N1_i_xi, BeamElement1()->Shape(), ele1length_, integration_segment1_lower_limit,
+    DRT::UTILS::BEAM::EvaluateShapeFunctionsAllGPs<numnodes,numnodalvalues>( gausspoints,
+        N1_i, BeamElement1()->Shape(), ele1length_, integration_segment1_lower_limit,
         integration_segment1_upper_limit );
 
     for (unsigned int isegment2 = 0; isegment2 < num_integration_segments; ++isegment2)
@@ -303,8 +309,8 @@ EvaluateFpotandStiffpot_LargeSepApprox(
       double jacobifactor_segment2 =
           0.5 * ( integration_segment2_upper_limit - integration_segment2_lower_limit );
 
-      DRT::UTILS::BEAM::EvaluateShapeFunctionsAndDerivsAllGPs<numnodes,numnodalvalues>(gausspoints,
-          N2_i, N2_i_xi, BeamElement2()->Shape(), ele2length_, integration_segment2_lower_limit,
+      DRT::UTILS::BEAM::EvaluateShapeFunctionsAllGPs<numnodes,numnodalvalues>(gausspoints,
+          N2_i, BeamElement2()->Shape(), ele2length_, integration_segment2_lower_limit,
           integration_segment2_upper_limit );
 
 
@@ -619,12 +625,10 @@ EvaluateFpotandStiffpot_DoubleLengthSpecific_SmallSepApprox(
   int numgp_persegment = gausspoints.nquad;
   int numgp_perelement = num_integration_segments * numgp_persegment;
 
-  // vectors for shape functions and their derivatives
+  // vectors for shape function values
   // Attention: these are individual shape function values, NOT shape function matrices
   std::vector<LINALG::TMatrix<double,1,numnodes*numnodalvalues> > N1_i(numgp_persegment);
   std::vector<LINALG::TMatrix<double,1,numnodes*numnodalvalues> > N2_i(numgp_persegment);
-  std::vector<LINALG::TMatrix<double,1,numnodes*numnodalvalues> > N1_i_xi(numgp_persegment);
-  std::vector<LINALG::TMatrix<double,1,numnodes*numnodalvalues> > N2_i_xi(numgp_persegment);
 
   // Evaluate shape functions at gauss points and store values
   // Todo think about pre-computing and storing values for inner Gauss point loops here
@@ -639,6 +643,19 @@ EvaluateFpotandStiffpot_DoubleLengthSpecific_SmallSepApprox(
   // evaluate charge/particle densities from DLINE charge condition specified in input file
   double q1 = linechargeconds_[0]->GetDouble("val");
   double q2 = linechargeconds_[1]->GetDouble("val");
+
+  // evaluate function in time if specified in line charge conditions
+  // TODO allow for functions in space, i.e. varying charge along beam centerline
+  int function_number = linechargeconds_[0]->GetInt("funct");
+
+  if ( function_number != -1 )
+    q1 *= DRT::Problem::Instance()->Funct(function_number-1).EvaluateTime(time_);
+
+  function_number = linechargeconds_[1]->GetInt("funct");
+
+  if ( function_number != -1 )
+    q2 *= DRT::Problem::Instance()->Funct(function_number-1).EvaluateTime(time_);
+
 
   // Evaluation of the Gamma-Function term:
   // gamma(nue-3.5)*gamma(0.5*(nue-1))/gamma(nue-2)/gamma(0.5*nue-1)
@@ -691,8 +708,8 @@ EvaluateFpotandStiffpot_DoubleLengthSpecific_SmallSepApprox(
     double jacobifactor_segment1 =
         0.5 * ( integration_segment1_upper_limit - integration_segment1_lower_limit );
 
-    DRT::UTILS::BEAM::EvaluateShapeFunctionsAndDerivsAllGPs<numnodes,numnodalvalues>( gausspoints,
-        N1_i, N1_i_xi, BeamElement1()->Shape(), ele1length_, integration_segment1_lower_limit,
+    DRT::UTILS::BEAM::EvaluateShapeFunctionsAllGPs<numnodes,numnodalvalues>( gausspoints,
+        N1_i, BeamElement1()->Shape(), ele1length_, integration_segment1_lower_limit,
         integration_segment1_upper_limit );
 
     for (unsigned int isegment2 = 0; isegment2 < num_integration_segments; ++isegment2)
@@ -704,8 +721,8 @@ EvaluateFpotandStiffpot_DoubleLengthSpecific_SmallSepApprox(
       double jacobifactor_segment2 =
           0.5 * ( integration_segment2_upper_limit - integration_segment2_lower_limit );
 
-      DRT::UTILS::BEAM::EvaluateShapeFunctionsAndDerivsAllGPs<numnodes,numnodalvalues>(gausspoints,
-          N2_i, N2_i_xi, BeamElement2()->Shape(), ele2length_, integration_segment2_lower_limit,
+      DRT::UTILS::BEAM::EvaluateShapeFunctionsAllGPs<numnodes,numnodalvalues>(gausspoints,
+          N2_i, BeamElement2()->Shape(), ele2length_, integration_segment2_lower_limit,
           integration_segment2_upper_limit );
 
       // loop over gauss points of current segment on element 1
@@ -1143,6 +1160,18 @@ EvaluateFpotandStiffpot_SingleLengthSpecific_SmallSepApprox(
   // evaluate charge/particle densities from DLINE charge condition specified in input file
   double rho1 = linechargeconds_[0]->GetDouble("val");
   double rho2 = linechargeconds_[1]->GetDouble("val");
+
+  // evaluate function in time if specified in line charge conditions
+  // TODO allow for functions in space, i.e. varying charge along beam centerline
+  int function_number = linechargeconds_[0]->GetInt("funct");
+
+  if ( function_number != -1 )
+    rho1 *= DRT::Problem::Instance()->Funct(function_number-1).EvaluateTime(time_);
+
+  function_number = linechargeconds_[1]->GetInt("funct");
+
+  if ( function_number != -1 )
+    rho2 *= DRT::Problem::Instance()->Funct(function_number-1).EvaluateTime(time_);
 
 
   // auxiliary variables
@@ -2222,9 +2251,12 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Comp
  *-----------------------------------------------------------------------------------------------*/
 template<unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::ResetState(
+    double time,
     const std::vector<double>& centerline_dofvec_ele1,
     const std::vector<double>& centerline_dofvec_ele2)
 {
+  time_ = time;
+
   for (unsigned int i=0; i<3*numnodes*numnodalvalues; ++i)
   {
     ele1pos_(i) = centerline_dofvec_ele1[i];

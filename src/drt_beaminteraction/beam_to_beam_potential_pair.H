@@ -80,6 +80,7 @@ public:
   \brief Update state of translational nodal DoFs (absolute positions and tangents) of both elements
   */
   virtual void ResetState(
+      double time,
       const std::vector<double>& centerline_dofvec_ele1,
       const std::vector<double>& centerline_dofvec_ele2);
 
@@ -458,6 +459,9 @@ private:
 
   //! line charge conditions
   std::vector<DRT::Condition*> linechargeconds_;
+
+  //! current time
+  double time_;
 
   //! current node coordinates of the two elements
   LINALG::TMatrix<T,3*numnodes*numnodalvalues,1> ele1pos_;

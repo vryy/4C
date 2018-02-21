@@ -155,6 +155,8 @@ void INPAR::BEAMPOTENTIAL::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPU
   rigidsphere_potential_charge->AddComponent(Teuchos::rcp(new IntConditionComponent("potlaw",false,false)));
   rigidsphere_potential_charge->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("VAL")));
   rigidsphere_potential_charge->AddComponent(Teuchos::rcp(new RealVectorConditionComponent("val", 1)));
+  rigidsphere_potential_charge->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("FUNCT")));
+  rigidsphere_potential_charge->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("funct", 1, false, true, true)));
 
   beam_potential_line_charge->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("POTLAW")));
   beam_potential_line_charge->AddComponent(Teuchos::rcp(new IntConditionComponent("potlaw",false,false)));
