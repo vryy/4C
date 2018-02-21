@@ -218,6 +218,11 @@ void STR::TIMINT::BaseDataGlobalState::Setup()
     }
   }
 
+  if ( datasdyn_->GetDynamicType() == INPAR::STR::dyna_statics
+      and datasdyn_->GetMassLinType() != INPAR::STR::ml_none )
+    dserror("Do not set parameter MASSLIN in static simulations as this leads to undesired"
+        " evaluation of mass matrix on element level!");
+
   SetInitialFields();
 
   issetup_ = true;
