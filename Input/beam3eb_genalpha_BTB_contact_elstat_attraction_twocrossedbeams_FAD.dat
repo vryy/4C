@@ -89,10 +89,6 @@ POT_LAW_EXPONENT                1.0 1.0
 BEAMPOTENTIAL_TYPE              Surface
 STRATEGY                        DoubleLengthSpecific_LargeSepApprox
 AUTOMATIC_DIFFERENTIATION       yes
-
-// only needed for old beam_contact_manager
-BEAMPOT_OCTREE                  none
-CUTOFFRADIUS                    -1
 --------------------------------------------------------------------BINNING STRATEGY
 DEFINEBINSPER                   cutoff
 CUTOFF_RADIUS                   3

@@ -79,6 +79,12 @@ class BeamToBeamPotentialRuntimeVtkParams;
       return strategy_;
     }
 
+    inline double CutoffRadius() const
+    {
+      ThrowErrorIfNotInitAndSetup();
+      return cutoff_radius_;
+    }
+
     inline int NumberIntegrationSegments() const
     {
       ThrowErrorIfNotInitAndSetup();
@@ -130,6 +136,9 @@ class BeamToBeamPotentialRuntimeVtkParams;
 
     //! strategy to evaluate interaction potential
     enum INPAR::BEAMPOTENTIAL::BeamPotentialStrategy strategy_;
+
+    //! neglect all contributions at separation larger than this cutoff radius
+    double cutoff_radius_;
 
     //! number of integration segments to be used per beam element
     int num_integration_segments_;

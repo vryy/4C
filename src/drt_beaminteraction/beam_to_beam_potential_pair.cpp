@@ -209,6 +209,9 @@ EvaluateFpotandStiffpot_LargeSepApprox(
   // prepare differentiation via FAD if desired
   SetAutomaticDifferentiationVariablesIfRequired( ele1pos_, ele2pos_ );
 
+  // get cutoff radius
+  const double cutoff_radius = Params()->CutoffRadius();
+
   // number of integration segments per element
   const unsigned int num_integration_segments = Params()->NumberIntegrationSegments();
 
@@ -349,6 +352,10 @@ EvaluateFpotandStiffpot_LargeSepApprox(
           dist = FADUTILS::DiffVector(r1,r2);
 
           norm_dist = FADUTILS::VectorNorm<3>(dist);
+
+          // check cutoff criterion: if specified, contributions are neglected at larger separation
+          if ( cutoff_radius != -1.0 and FADUTILS::CastToDouble(norm_dist) > cutoff_radius )
+            continue;
 
           // auxiliary variables to store pre-calculated common terms
           T norm_dist_exp1 = 0.0;
@@ -597,6 +604,9 @@ EvaluateFpotandStiffpot_DoubleLengthSpecific_SmallSepApprox(
   // prepare differentiation via FAD if desired
   SetAutomaticDifferentiationVariablesIfRequired( ele1pos_, ele2pos_ );
 
+  // get cutoff radius
+  const double cutoff_radius = Params()->CutoffRadius();
+
   // number of integration segments per element
   const unsigned int num_integration_segments = Params()->NumberIntegrationSegments();
 
@@ -743,6 +753,10 @@ EvaluateFpotandStiffpot_DoubleLengthSpecific_SmallSepApprox(
           dist = FADUTILS::DiffVector(r1,r2);
 
           norm_dist = FADUTILS::VectorNorm<3>(dist);
+
+          // check cutoff criterion: if specified, contributions are neglected at larger separation
+          if ( cutoff_radius != -1.0 and FADUTILS::CastToDouble(norm_dist) > cutoff_radius )
+            continue;
 
           gap = norm_dist - radius1_ - radius2_;
 
@@ -1001,6 +1015,9 @@ EvaluateFpotandStiffpot_SingleLengthSpecific_SmallSepApprox(
   if ( Params()->NumberIntegrationSegments() != 1 )
     dserror("More than one integration segment per element not implemented yet for this "
         "strategy 'SingleLengthSpecific_SmallSepApprox'!");
+
+  // get cutoff radius
+  const double cutoff_radius = Params()->CutoffRadius();
 
   /* parameter coordinate of the closest point on the master beam,
    * determined via point-to-curve projection */
@@ -1266,6 +1283,10 @@ EvaluateFpotandStiffpot_SingleLengthSpecific_SmallSepApprox(
     //************************** DEBUG ******************************************
 //    std::cout << "\ndist_ul: " << FADUTILS::CastToDouble<T,3,1>( dist_ul );
     //*********************** END DEBUG *****************************************
+
+    // check cutoff criterion: if specified, contributions are neglected at larger separation
+    if ( cutoff_radius != -1.0 and FADUTILS::CastToDouble(FADUTILS::Norm(dist_ul)) > cutoff_radius )
+      continue;
 
     // mutual angle of tangent vectors at unilateral closest points
     BEAMINTERACTION::GEO::CalcEnclosedAngle(alpha, cos_alpha, r_xi_slave, r_xi_master);

@@ -61,10 +61,6 @@ BEAMPOTENTIAL_TYPE              Volume
 STRATEGY                        DoubleLengthSpecific_SmallSepApprox
 NUM_INTEGRATION_SEGMENTS        10
 NUM_GAUSSPOINTS                 10
-
-// only needed for old beam_contact_manager
-BEAMPOT_OCTREE                  none
-CUTOFFRADIUS                    -1
 -------------------------------------------------BEAM POTENTIAL/RUNTIME VTK OUTPUT
 VTK_OUTPUT_BEAM_POTENTIAL       yes
 OUTPUT_DATA_FORMAT              binary

@@ -220,6 +220,9 @@ bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
 template<unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::EvaluateFpotandStiffpot_LargeSepApprox()
 {
+  // get cutoff radius
+  const double cutoff_radius = Params()->CutoffRadius();
+
   // Set gauss integration rule
   DRT::UTILS::GaussRule1D gaussrule = GetGaussRule();
 
@@ -285,6 +288,9 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
 
     norm_dist = FADUTILS::VectorNorm<3>(dist);
 
+    // check cutoff criterion: if specified, contributions are neglected at larger separation
+    if ( cutoff_radius != -1.0 and FADUTILS::CastToDouble( norm_dist ) > cutoff_radius )
+      continue;
 
 
     // temporary hacks for cell-ecm interaction

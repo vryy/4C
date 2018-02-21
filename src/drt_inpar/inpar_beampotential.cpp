@@ -34,7 +34,6 @@ void INPAR::BEAMPOTENTIAL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLis
 
   setNumericStringParameter("POT_LAW_EXPONENT","1.0", "negative(!) exponent(s) m_i of potential law Phi(r) = sum_i (k_i * r^(-m_i)).",&beampotential);
   setNumericStringParameter("POT_LAW_PREFACTOR","0.0", "prefactor(s) k_i of potential law Phi(r) = sum_i (k_i * r^(-m_i)).",&beampotential);
-  DoubleParameter("CUTOFFRADIUS",-1.0,"cutoff radius for search of potential-based interaction pairs",&beampotential);
 
   setStringToIntegralParameter<int>("BEAMPOTENTIAL_TYPE","Surface","Type of potential interaction: surface (default) or volume potential",
        tuple<std::string>("Surface","surface",
@@ -54,6 +53,9 @@ void INPAR::BEAMPOTENTIAL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLis
            strategy_doublelengthspec_smallsepapprox,
            strategy_singlelengthspec_smallsepapprox),
            &beampotential);
+
+  DoubleParameter("CUTOFF_RADIUS",-1.0,"Neglect all potential contributions at separation larger"
+      "than this cutoff radius",&beampotential);
 
   IntParameter("NUM_INTEGRATION_SEGMENTS",1,"Number of integration segments used per beam element",
       &beampotential);

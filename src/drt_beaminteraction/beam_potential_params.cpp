@@ -28,6 +28,7 @@ BEAMINTERACTION::BeamPotentialParams::BeamPotentialParams()
   pot_law_prefactors_(Teuchos::null),
   potential_type_(INPAR::BEAMPOTENTIAL::beampot_vague),
   strategy_(INPAR::BEAMPOTENTIAL::strategy_vague),
+  cutoff_radius_(0.0),
   num_integration_segments_(-1),
   num_GPs_(-1),
   useFAD_(false),
@@ -99,6 +100,12 @@ void BEAMINTERACTION::BeamPotentialParams::Init()
     dserror("You must specify a strategy to be used to evaluate beam interaction potential!");
 
   /****************************************************************************/
+  cutoff_radius_ = beam_potential_params_list.get<double>("CUTOFF_RADIUS");
+
+  if ( cutoff_radius_ != -1.0 and cutoff_radius_ <= 0.0 )
+    dserror("Invalid cutoff radius! Must be positive value or -1 to deactivate.");
+
+  /****************************************************************************/
   num_integration_segments_ = beam_potential_params_list.get<int>("NUM_INTEGRATION_SEGMENTS");
 
   if (num_integration_segments_ <= 0)
@@ -134,11 +141,6 @@ void BEAMINTERACTION::BeamPotentialParams::Init()
   /****************************************************************************/
   // safety checks for currently unsupported parameter settings
   /****************************************************************************/
-  // read cutoff radius for search of potential-based interaction pairs
-  if ( beam_potential_params_list.get<double>("CUTOFFRADIUS") != -1.0 )
-    dserror("The parameter CUTOFFRADIUS in beam potential input section is deprecated!"
-        " Choose your cutoff globally in MESHFREE section and remove this parameter as"
-        " soon as old code is completely gone");
 
   // outdated: octtree for search of potential-based interaction pairs
   if ( DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::OctreeType>(

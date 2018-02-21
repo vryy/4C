@@ -76,10 +76,6 @@ BEAMPOTENTIAL_TYPE              Volume
 STRATEGY                        SingleLengthSpecific_SmallSepApprox
 NUM_GAUSSPOINTS                 32
 AUTOMATIC_DIFFERENTIATION       yes
-
-// only needed for old beam_contact_manager
-BEAMPOT_OCTREE                  none
-CUTOFFRADIUS                    -1
 ----------------------------------BEAM POTENTIAL/RUNTIME VTK OUTPUT
 VTK_OUTPUT_BEAM_POTENTIAL       yes
 OUTPUT_DATA_FORMAT              binary
