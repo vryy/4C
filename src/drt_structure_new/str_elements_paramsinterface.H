@@ -18,6 +18,7 @@
 #ifndef SRC_DRT_STRUCTURE_NEW_STR_ELEMENTS_PARAMSINTERFACE_H_
 #define SRC_DRT_STRUCTURE_NEW_STR_ELEMENTS_PARAMSINTERFACE_H_
 
+#include "str_enum_lists.H"
 #include "../drt_inpar/inpar_structure.H"         // enums
 #include "../drt_inpar/inpar_browniandyn.H"         // enums
 #include "../drt_lib/drt_elements_paramsinterface.H"    // base class
@@ -145,6 +146,10 @@ namespace ELEMENTS {
 
     //! get the current coupling stress type
     virtual enum INPAR::STR::StressType GetCouplingStressOutputType() const = 0;
+
+    //! add contribution to energy of specified type
+    virtual void AddContributionToEnergyType(
+        double value, enum STR::EnergyType type ) = 0;
 
     //! add the current partial update norm of the given quantity
     virtual void SumIntoMyUpdateNorm(

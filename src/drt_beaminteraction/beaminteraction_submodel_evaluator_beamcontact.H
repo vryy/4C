@@ -79,6 +79,9 @@ namespace SUBMODELEVALUATOR {
     virtual void PostUpdateStepElement();
 
     //! derived
+    double GetEnergy() const override;
+
+    //! derived
     virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const;
 
     //! derived

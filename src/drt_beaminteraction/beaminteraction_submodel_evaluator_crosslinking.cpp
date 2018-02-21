@@ -1237,6 +1237,17 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PostUpdateStepElement()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+double BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::GetEnergy() const
+{
+  CheckInitSetup();
+
+  dserror("Computation of energy not implemented yet for sphere-beam linking!");
+
+  return 0.0;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::OutputStepState(
     IO::DiscretizationWriter& iowriter) const
 {

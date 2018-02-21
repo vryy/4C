@@ -24,22 +24,24 @@ OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 FILESTEPS                       1000
 VERBOSITY                       standard
-//-----------------------------------IO/RUNTIME VTK OUTPUT STRUCTURE
-//OUTPUT_DATA_FORMAT              binary
-//INTERVAL_STEPS                  1
-//EVERY_ITERATION                 No
-//DISPLACEMENT                    Yes
-//SPECIAL_OUTPUT_BEAMS            Yes
-//-----------------------------IO/RUNTIME VTK OUTPUT STRUCTURE/BEAMS
-//USE_ABSOLUTE_POSITIONS          Yes
-//TRIAD_VISUALIZATIONPOINT        Yes
-//STRAINS_GAUSSPOINT              Yes
-//MATERIAL_FORCES_GAUSSPOINT             Yes
+----------------------------------------------------------IO/RUNTIME VTK OUTPUT
+OUTPUT_DATA_FORMAT              binary
+INTERVAL_STEPS                  1
+EVERY_ITERATION                 No
+----------------------------------------------------------IO/RUNTIME VTK OUTPUT/BEAMS
+OUTPUT_BEAMS                    Yes
+DISPLACEMENT                    Yes
+USE_ABSOLUTE_POSITIONS          Yes
+TRIAD_VISUALIZATIONPOINT        Yes
+STRAINS_GAUSSPOINT              Yes
+INTERNAL_ENERGY_ELEMENT         Yes
+KINETIC_ENERGY_ELEMENT          Yes
 --------------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlphaLieGroup
 RESULTSEVRY                     1
+RESEVRYERGY                     1
 RESTARTEVRY                     50
 NLNSOL                          fullnewton
 TIMESTEP                        0.01

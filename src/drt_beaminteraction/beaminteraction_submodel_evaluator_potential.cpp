@@ -487,6 +487,22 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::PostUpdateStepElement()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
+double BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::GetEnergy() const
+{
+  CheckInitSetup();
+
+  double beam_interaction_potential = 0.0;
+
+  for ( auto& elepairptr : beam_potential_element_pairs_ )
+  {
+    beam_interaction_potential += elepairptr->GetEnergy();
+  }
+
+  return beam_interaction_potential;
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::OutputStepState(
     IO::DiscretizationWriter& iowriter) const
 {

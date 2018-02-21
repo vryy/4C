@@ -48,7 +48,8 @@ BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::BeamToBea
     ele1length_(0.0),
     ele2length_(0.0),
     radius1_(0.0),
-    radius2_(0.0)
+    radius2_(0.0),
+    interaction_potential_(0.0)
 {
   // empty constructor
 }
@@ -275,6 +276,9 @@ EvaluateFpotandStiffpot_LargeSepApprox(
     dserror("No valid BEAMPOTENTIAL_TYPE specified. Choose either Surface or Volume in input file!");
   }
 
+  // reset interaction potential of this pair
+  interaction_potential_ = 0.0;
+
   // prepare data storage for vtk visualization
   centerline_coords_GP1_.resize( numgp_perelement );
   centerline_coords_GP2_.resize( numgp_perelement );
@@ -438,6 +442,10 @@ EvaluateFpotandStiffpot_LargeSepApprox(
               * gausspoints.qwgt[igp1],
               FADUTILS::CastToDouble<T,3,1>( dist ),
               1.0 );
+
+          // store for energy output
+          interaction_potential_ += prefactor / m_ * q1q2_JacFac_GaussWeights
+              * std::pow( FADUTILS::CastToDouble(norm_dist), -m_ );
 
         } // end gauss quadrature loop (element 2)
       } // end gauss quadrature loop (element 1)
@@ -681,6 +689,9 @@ EvaluateFpotandStiffpot_DoubleLengthSpecific_SmallSepApprox(
   }
 
 
+  // reset interaction potential of this pair
+  interaction_potential_ = 0.0;
+
   // prepare data storage for vtk visualization
   centerline_coords_GP1_.resize( numgp_perelement );
   centerline_coords_GP2_.resize( numgp_perelement );
@@ -696,7 +707,7 @@ EvaluateFpotandStiffpot_DoubleLengthSpecific_SmallSepApprox(
   // auxiliary variables
   LINALG::TMatrix<T, 3, 1> fpot_tmp(true);
 
-  double prefactor = k_ * 2* M_PI* (m_-3.5) * pow(m_-2,-2) *
+  double prefactor = k_ * 2 * M_PI * (m_-3.5) / (m_-2) / (m_-2) *
       std::sqrt( 2*radius1_*radius2_/(radius1_+radius2_) ) * C;
 
   for (unsigned int isegment1 = 0; isegment1 < num_integration_segments; ++isegment1)
@@ -852,6 +863,10 @@ EvaluateFpotandStiffpot_DoubleLengthSpecific_SmallSepApprox(
               * gausspoints.qwgt[igp1],
               FADUTILS::CastToDouble<T,3,1>( dist ),
               1.0 );
+
+          // store for energy output
+          interaction_potential_ += prefactor / (m_-3.5) * q1q2_JacFac_GaussWeights
+              * std::pow( FADUTILS::CastToDouble(gap),-m_+3.5 );
 
         }// end: loop over gauss points of element 2
       }// end: loop over gauss points of element 1
@@ -1185,6 +1200,8 @@ EvaluateFpotandStiffpot_SingleLengthSpecific_SmallSepApprox(
 //  std::cout << "\n\n\nStart evaluation via Gauss integration..." << std::endl;
   //*********************** END DEBUG *****************************************
 
+  // reset interaction potential of this pair
+  interaction_potential_ = 0.0;
 
   // prepare data storage for vtk visualization
   centerline_coords_GP1_.resize( numgp );
@@ -1894,6 +1911,8 @@ EvaluateFpotandStiffpot_SingleLengthSpecific_SmallSepApprox(
     interaction_potential_GP *= prefactor;
     interaction_potential += interaction_potential_GP;
 
+    // store for energy output
+    interaction_potential_ += FADUTILS::CastToDouble( interaction_potential_GP );
 
     // ************************************ DEBUG *********************************************
 //    CalcFpotGausspointAutomaticDifferentiationIfRequired(

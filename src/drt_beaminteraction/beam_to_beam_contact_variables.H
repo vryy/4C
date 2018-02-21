@@ -72,22 +72,22 @@ public:
   /*!
   \brief Get closest point
   */
-  std::pair<TYPE,TYPE> GetCP() { return closestpoint_; };
+  std::pair<TYPE,TYPE> GetCP() const { return closestpoint_; };
 
   /*!
   \brief Get Segment Ids
   */
-  std::pair<int,int> GetSegIds() { return segids_; };
+  std::pair<int,int> GetSegIds() const { return segids_; };
 
   /*!
   \brief Get Integration Ids
   */
-  std::pair<int,int> GetIntIds() { return intids_; };
+  std::pair<int,int> GetIntIds() const { return intids_; };
 
   /*!
   \brief Get jacobi factor
   */
-  TYPE GetJacobi() { return jacobi_; };
+  TYPE GetJacobi() const { return jacobi_; };
 
   /*!
   \brief Set gap
@@ -97,7 +97,7 @@ public:
   /*!
   \brief Get gap
   */
-  TYPE GetGap() { return gap_; };
+  TYPE GetGap() const { return gap_; };
 
   /*!
   \brief Set gap
@@ -107,12 +107,12 @@ public:
   /*!
   \brief Get gap
   */
-  LINALG::TMatrix<TYPE,3,1> GetNormal() { return normal_; };
+  LINALG::TMatrix<TYPE,3,1> GetNormal() const { return normal_; };
 
   /*!
   \brief Get penalty parameter
   */
-  double GetPP() { return pp_; };
+  double GetPP() const { return pp_; };
 
   /*!
   \brief Set penalty force
@@ -122,7 +122,7 @@ public:
   /*!
   \brief Get penalty force
   */
-  TYPE Getfp() { return fp_; };
+  TYPE Getfp() const { return fp_; };
 
   /*!
   \brief Set derivative of penalty force
@@ -132,7 +132,7 @@ public:
   /*!
   \brief Get pre-factor for penalty parameter
   */
-  TYPE GetPPfac() { return ppfac_; };
+  TYPE GetPPfac() const { return ppfac_; };
 
   /*!
   \brief Set pre-factor for penalty parameter
@@ -142,7 +142,7 @@ public:
   /*!
   \brief Get linearization of pre-factor for penalty parameter
   */
-  TYPE GetDPPfac() { return dppfac_; };
+  TYPE GetDPPfac() const { return dppfac_; };
 
   /*!
   \brief Set linearization of pre-factor for penalty parameter
@@ -152,7 +152,7 @@ public:
   /*!
   \brief Get derivative of penalty force
   */
-  TYPE Getdfp() { return dfp_; };
+  TYPE Getdfp() const { return dfp_; };
 
   /*!
   \brief Set penalty energy
@@ -162,7 +162,7 @@ public:
   /*!
   \brief Get penalty energy
   */
-  TYPE GetEnergy() { return energy_; };
+  TYPE GetEnergy() const { return energy_; };
 
   /*!
   \brief Set length integrated penalty energy
@@ -172,7 +172,7 @@ public:
   /*!
   \brief Get length integrated penalty energy
   */
-  double GetIntegratedEnergy() { return integratedenergy_; };
+  double GetIntegratedEnergy() const { return integratedenergy_; };
 
   /*!
   \brief Set contact angle
@@ -182,7 +182,7 @@ public:
   /*!
   \brief Get contact angle
   */
-  double GetAngle() { return angle_; };
+  double GetAngle() const { return angle_; };
 
   //@}
 

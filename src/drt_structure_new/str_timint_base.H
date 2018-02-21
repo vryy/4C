@@ -835,6 +835,9 @@ namespace TIMINT {
     /// output stress and/or strain state
     void OutputStressStrain();
 
+    /// output energy
+    void OutputEnergy() const;
+
     /// write restart information
     void OutputRestart(bool& datawritten);
 
@@ -848,6 +851,19 @@ namespace TIMINT {
      *
      *  \author hiermeier \date 11/17 */
     void SetNumberOfNonlinearIterations();
+
+    /** \brief decide which contributions to the total system energy shall be
+     *         computed and written during simulation
+     *
+     *  \author grill */
+    void SelectEnergyTypesToBeWritten();
+
+    /** \brief initialize file stream for energy values and write all the
+     *         column headers for the previously selected energy contributions
+     *         to be written separately
+     *
+     *  \author grill */
+    void InitializeEnergyFileStreamAndWriteHeaders();
 
   protected:
     /// flag indicating if Init() has been called

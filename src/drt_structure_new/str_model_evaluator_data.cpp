@@ -46,6 +46,7 @@ STR::MODELEVALUATOR::Data::Data()
       stressdata_ptr_(Teuchos::null),
       straindata_ptr_(Teuchos::null),
       plastic_straindata_ptr_(Teuchos::null),
+      couplstressdata_ptr_(Teuchos::null),
       sdyn_ptr_(Teuchos::null),
       io_ptr_(Teuchos::null),
       gstate_ptr_(Teuchos::null),
@@ -476,6 +477,48 @@ enum INPAR::STR::StressType STR::MODELEVALUATOR::Data::GetCouplingStressOutputTy
 {
   CheckInitSetup();
   return io_ptr_->GetCouplingStressOutputType();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+std::map<enum STR::EnergyType, double> const &
+STR::MODELEVALUATOR::Data::GetEnergyData() const
+{
+  return energy_data_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Data::InsertEnergyTypeToBeConsidered(
+    enum STR::EnergyType type)
+{
+  energy_data_[type] = 0.0;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Data::SetValueForEnergyType(double value,
+    enum STR::EnergyType type)
+{
+  energy_data_[type] = value;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Data::ClearValuesForAllEnergyTypes()
+{
+  for ( auto& energy_data_iter : energy_data_ )
+  {
+    energy_data_iter.second = 0.0;
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Data::AddContributionToEnergyType(
+    double value, enum STR::EnergyType type)
+{
+  energy_data_[type] += value;
 }
 
 /*----------------------------------------------------------------------*

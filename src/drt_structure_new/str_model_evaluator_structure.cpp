@@ -1105,7 +1105,42 @@ void STR::MODELEVALUATOR::Structure::DetermineStressStrain()
 void STR::MODELEVALUATOR::Structure::DetermineEnergy()
 {
   CheckInitSetup();
-  dserror("Not yet implemented!");
+
+  // set required parameters in the evaluation data container
+  EvalData().SetActionType(DRT::ELEMENTS::struct_calc_energy);
+  EvalData().SetTotalTime(GState().GetTimeNp());
+  EvalData().SetDeltaTime((*GState().GetDeltaTime())[0]);
+
+  // set state vector values needed by elements
+  Discret().ClearState();
+  Discret().SetState(0, "displacement", GState().GetDisNp());
+  Discret().SetState(0, "residual displacement", dis_incr_ptr_);
+
+  // set dummy evaluation vectors and matrices
+  Teuchos::RCP<Epetra_Vector> eval_vec [3] =
+      {Teuchos::null,Teuchos::null,Teuchos::null};
+  Teuchos::RCP<LINALG::SparseOperator> eval_mat[2] =
+      {Teuchos::null,Teuchos::null};
+
+  // evaluate energy contributions on element level
+  EvaluateInternal(eval_mat,eval_vec);
+
+
+  // global calculation of kinetic energy
+  if ( masslin_type_ == INPAR::STR::ml_none )
+  {
+    double kinetic_energy_times2 = 0.0;
+
+    Teuchos::RCP<Epetra_Vector> linear_momentum =
+        LINALG::CreateVector( *GState().DofRowMapView(), true );
+
+    Mass().Multiply( false, *GState().GetVelNp(), *linear_momentum );
+
+    linear_momentum->Dot( *GState().GetVelNp(), &kinetic_energy_times2 );
+
+    EvalData().AddContributionToEnergyType( 0.5*kinetic_energy_times2, STR::kinetic_energy );
+  }
+
 }
 
 /*----------------------------------------------------------------------------*

@@ -24,10 +24,12 @@
 #include "str_resulttest.H"
 #include "str_timint_basedataio_runtime_vtk_output.H"
 #include "str_timint_basedataio_runtime_vtp_output.H"
+#include "str_enum_lists.H"
 
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
+#include "../drt_io/io_control.H"
 
 #include "../drt_comm/comm_utils.H"
 
@@ -73,7 +75,7 @@ void STR::TIMINT::Base::Init(
   issetup_ = false;
 
   // ---------------------------------------------------------------------------
-  // initilize the data container ptrs
+  // initialize the data container ptrs
   // ---------------------------------------------------------------------------
   dataio_ = dataio;
   datasdyn_ = datasdyn;
@@ -118,6 +120,15 @@ void STR::TIMINT::Base::Setup()
 
   // Initialize and Setup the input/output writer for every Newton iteration
   dataio_->InitSetupEveryIterationWriter( this, DataSDyn().GetMutableNoxParams() );
+
+  // Initialize the output of system energy
+  if ( dataio_->GetWriteEnergyEveryNStep() )
+  {
+    SelectEnergyTypesToBeWritten();
+
+    if ( dataglobalstate_->GetMyRank() == 0 )
+      InitializeEnergyFileStreamAndWriteHeaders();
+  }
 
   issetup_ = true;
 }
@@ -306,6 +317,63 @@ void STR::TIMINT::Base::SetNumberOfNonlinearIterations()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::TIMINT::Base::SelectEnergyTypesToBeWritten()
+{
+  STR::MODELEVALUATOR::Data& evaldata = int_ptr_->EvalData();
+
+  // decide which types of energy contributions shall be written separately
+  const std::set<enum INPAR::STR::ModelType>& mtypes =
+      datasdyn_->GetModelTypes();
+
+  std::set<enum INPAR::STR::ModelType>::const_iterator model_iter;
+  for ( model_iter=mtypes.begin(); model_iter!=mtypes.end(); ++model_iter )
+  {
+    switch ( *model_iter )
+    {
+      case INPAR::STR::model_structure:
+      {
+        evaldata.InsertEnergyTypeToBeConsidered( STR::internal_energy );
+        evaldata.InsertEnergyTypeToBeConsidered( STR::kinetic_energy );
+        break;
+      }
+      case INPAR::STR::model_beaminteraction:
+      {
+        evaldata.InsertEnergyTypeToBeConsidered( STR::beam_contact_penalty_potential );
+        evaldata.InsertEnergyTypeToBeConsidered( STR::beam_interaction_potential );
+        break;
+      }
+      default:
+      {
+        break;
+      }
+    }
+  }
+
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Base::InitializeEnergyFileStreamAndWriteHeaders()
+{
+  auto& evaldata = int_ptr_->EvalData();
+
+  dataio_->SetupEnergyOutputFile();
+
+  // write column headers to file
+  dataio_->GetEnergyOutputStream() << std::setw(12) << "#timestep,"
+      << std::setw(24) << "time,";
+
+  for ( auto& energy_data : evaldata.GetEnergyData() )
+  {
+    dataio_->GetEnergyOutputStream() << std::setw(24)
+        << STR::EnergyType2String( energy_data.first ) + ",";
+  }
+
+  dataio_->GetEnergyOutputStream() << std::setw(24) << "total_energy" <<  std::endl;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 Teuchos::RCP<DRT::ResultTest> STR::TIMINT::Base::CreateFieldTest()
 {
   CheckInitSetup();
@@ -354,18 +422,37 @@ void STR::TIMINT::Base::PrepareOutput()
 {
   CheckInitSetup();
   // --- stress and strain calculation -----------------------------------------
-  if (dataio_->GetWriteResultsEveryNStep() and
-      dataglobalstate_->GetStepN()%dataio_->GetWriteResultsEveryNStep() == 0)
+  if ( dataio_->GetWriteResultsEveryNStep() and
+      dataglobalstate_->GetStepN()%dataio_->GetWriteResultsEveryNStep() == 0 )
   {
     int_ptr_->DetermineStressStrain();
   }
- // --- energy calculation ------------------------------------------------------
-  if (     dataio_->GetWriteEnergyEveryNStep()
-      and (dataglobalstate_->GetStepN()%dataio_->GetWriteEnergyEveryNStep() == 0))
+
+  // --- energy calculation -----------------------------------------------------
+  if ( dataio_->GetWriteEnergyEveryNStep()
+      and (dataglobalstate_->GetStepN()%dataio_->GetWriteEnergyEveryNStep() == 0) )
   {
+    STR::MODELEVALUATOR::Data& evaldata = int_ptr_->EvalData();
+    evaldata.ClearValuesForAllEnergyTypes();
+
     int_ptr_->DetermineEnergy();
+
+    // sum processor-local values of all separate contributions into global value
+    double energy_local = 0.0;
+    double energy_global = 0.0;
+
+    for ( auto& energy_data : evaldata.GetEnergyData() )
+    {
+      energy_local = energy_data.second;
+
+      dataglobalstate_->GetComm().SumAll( &energy_local, &energy_global, 1 );
+
+      // Fixme: do we need this before overwriting data in the following line?
+      dataglobalstate_->GetComm().Barrier();
+
+      evaldata.SetValueForEnergyType( energy_global, energy_data.first );
+    }
   }
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -456,11 +543,10 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
   }
 
   // output energy
-  if (     dataio_->GetWriteEnergyEveryNStep()
+  if ( dataio_->GetWriteEnergyEveryNStep()
       and (dataglobalstate_->GetStepN()%dataio_->GetWriteEnergyEveryNStep() == 0) )
   {
-    dserror("OutputEnergy() is not yet implemented!");
-//    OutputEnergy();
+    OutputEnergy();
   }
 
   // ToDo print error norms
@@ -645,6 +731,38 @@ void STR::TIMINT::Base::OutputStressStrain()
   evaldata.MutablePlasticStrainDataPtr() = Teuchos::null;
 
   return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Base::OutputEnergy() const
+{
+  CheckInitSetup();
+
+  if ( dataglobalstate_->GetMyRank() == 0 )
+  {
+    std::ostream & energy_output_stream = dataio_->GetEnergyOutputStream();
+
+    energy_output_stream << std::setw(11)
+        << dataglobalstate_->GetStepN() << std::setw(1) << ","
+        << std::scientific << std::setprecision(14) << std::setw(23)
+        << dataglobalstate_->GetTimeN()
+        << std::setw(1) << ",";
+
+    STR::MODELEVALUATOR::Data& evaldata = int_ptr_->EvalData();
+
+    double total_energy = 0.0;
+
+    for ( auto& energy_data : evaldata.GetEnergyData() )
+    {
+      energy_output_stream << std::setw(23) << energy_data.second << std::setw(1) << ",";
+      total_energy += energy_data.second;
+    }
+
+    energy_output_stream << std::setw(24) << total_energy << std::endl;
+
+    IO::cout(IO::verbose) << "\n\nOutput for energy written to file!" << IO::endl;
+  }
 }
 
 /*----------------------------------------------------------------------------*

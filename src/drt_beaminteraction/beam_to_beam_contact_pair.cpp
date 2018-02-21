@@ -5051,6 +5051,43 @@ GetAllActiveContactGaps( std::vector<double> & gaps ) const
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template<unsigned int numnodes, unsigned int numnodalvalues>
+double BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetEnergy() const
+{
+  if ( Params()->BeamToBeamContactParams()->PenaltyLaw() != INPAR::BEAMCONTACT::pl_lp
+      and Params()->BeamToBeamContactParams()->PenaltyLaw() != INPAR::BEAMCONTACT::pl_qp
+      and Params()->BeamToBeamContactParams()->PenaltyLaw()  != INPAR::BEAMCONTACT::pl_lpqp )
+    dserror("Contact Energy calculation not implemented for the chosen penalty law!");
+
+  double energy = 0.0;
+
+  for (unsigned int i=0; i<cpvariables_.size(); ++i)
+  {
+    double ppfac = FADUTILS::CastToDouble( cpvariables_[i]->GetPPfac() );
+    double e = -cpvariables_[i]->GetIntegratedEnergy();
+    energy += ppfac*e;
+  }
+
+  for (unsigned int i=0; i<gpvariables_.size(); ++i)
+  {
+    double ppfac = FADUTILS::CastToDouble( gpvariables_[i]->GetPPfac() );
+    double e = -gpvariables_[i]->GetIntegratedEnergy();
+    energy += ppfac*e;
+  }
+
+  for (unsigned int i=0; i<epvariables_.size(); ++i)
+  {
+    double ppfac = FADUTILS::CastToDouble( epvariables_[i]->GetPPfac() );
+    double e = -epvariables_[i]->GetIntegratedEnergy();
+    energy += ppfac*e;
+  }
+
+  return energy;
+}
+
+
 #ifdef FADCHECKS
   /*----------------------------------------------------------------------*
    |  FAD-Check for Linearizations of contact point            meier 02/14|

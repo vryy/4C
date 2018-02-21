@@ -142,7 +142,7 @@ namespace MODELEVALUATOR{
     void DetermineStressStrain();
 
     //! derived
-    void DetermineEnergy();
+    void DetermineEnergy() override;
 
     //! derived
     virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const;

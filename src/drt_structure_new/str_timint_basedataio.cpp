@@ -20,6 +20,8 @@
 #include "str_timint_basedataio_runtime_vtp_output.H"
 
 #include "../drt_io/every_iteration_writer.H"
+#include "../drt_io/io_control.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../solver_nonlin_nox/nox_nln_aux.H"
 
 #include <NOX_Solver_Generic.H>
@@ -51,9 +53,6 @@ STR::TIMINT::BaseDataIO::BaseDataIO()
       writereducedrestart_(-1),
       writeresultsevery_(-1),
       writeenergyevery_(-1),
-      kinergy_(-1.0),
-      intergy_(-1.0),
-      extergy_(-1.0),
       writestress_(INPAR::STR::stress_none),
       writecouplstress_(INPAR::STR::stress_none),
       writestrain_(INPAR::STR::strain_none),
@@ -164,6 +163,20 @@ void STR::TIMINT::BaseDataIO::InitSetupEveryIterationWriter(
           *writer_every_iter_ ) );
 
   NOX::NLN::AUX::AddToPrePostOpVector( p_sol_opt, prepost_solver_ptr );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::BaseDataIO::SetupEnergyOutputFile()
+{
+  if ( energyfile_.is_null() )
+  {
+    std::string energy_file_name
+      = DRT::Problem::Instance()->OutputControlFile()->FileName()
+      + "_energy.csv";
+
+    energyfile_ = Teuchos::rcp( new std::ofstream( energy_file_name.c_str() ) );
+  }
 }
 
 /*----------------------------------------------------------------------------*

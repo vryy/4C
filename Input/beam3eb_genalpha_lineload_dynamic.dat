@@ -5,7 +5,9 @@
                         General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-First dynamic test for beam3eb elements
+straight beam subject to a sinusoidal lineload (x/y/z force)
+//  - loading, unloading and free oscillation
+//  - torsion-free Kirchhoff beam elements
 ------------------------------------------------------PROBLEM SIZE
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
@@ -19,23 +21,27 @@ NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
-STRUCT_STRESS                   No
-STRUCT_STRAIN                   No
-FLUID_SOL                       No
-FLUID_STRESS                    No
-FLUID_VIS                       No
-THERM_TEMPERATURE               No
-THERM_HEATFLUX                  No
 FILESTEPS                       1000
+VERBOSITY                       standard
+----------------------------------------------------------IO/RUNTIME VTK OUTPUT
+OUTPUT_DATA_FORMAT              binary
+INTERVAL_STEPS                  1
+EVERY_ITERATION                 No
+----------------------------------------------------------IO/RUNTIME VTK OUTPUT/BEAMS
+OUTPUT_BEAMS                    Yes
+DISPLACEMENT                    Yes
+USE_ABSOLUTE_POSITIONS          Yes
+STRAINS_GAUSSPOINT              Yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
 RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESEVRYERGY                     1
+RESTARTEVRY                     50
 NLNSOL                          fullnewton
 TIMESTEP                        0.01
-NUMSTEP                         10000000
+NUMSTEP                         200
 MAXTIME                         2
 DAMPING                         Material
 M_DAMP                          0
@@ -50,6 +56,10 @@ ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 MAXITER                         80
 LOADLIN                         Yes
+------------------------------------------------STRUCT NOX/Printing
+Outer Iteration                 = Yes
+Inner Iteration                 = No
+Outer Iteration StatusTest      = No
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 ALPHA_F         0.487179487179

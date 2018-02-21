@@ -186,12 +186,12 @@ public:
 //    \Check, if there is a difference between the result of the new and old gap definition, i.e. if the beams centerlines have already crossed or not.
 //  */
 //  virtual bool GetNewGapStatus()=0;
-//
-//  /*!
-//    \Get energy of penalty contact.
-//  */
-//  virtual double GetEnergy()=0;
-//
+
+  /*!
+  \brief Get energy of penalty contact.
+  */
+  virtual double GetEnergy() const = 0;
+
 //  /*!
 //    \Get energy of perp penalty contact without transition factor contribution.
 //  */

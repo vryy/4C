@@ -136,6 +136,15 @@ public:
   {
     dserror("not yet implemented!");
   }
+
+  /*!
+  \brief Get energy of penalty contact.
+  */
+  double GetEnergy() const override
+  {
+    dserror("not implemented yet!");
+    return 0.0;
+  }
   //@}
 
 private:

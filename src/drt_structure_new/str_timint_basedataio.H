@@ -103,13 +103,17 @@ namespace TIMINT {
       return params_runtime_vtp_output_;
     };
 
-    /// @name Get printing and output parameters/files (read only access)
+    /// @name Get printing and output parameters/files
     ///@{
-    /// get the output file for energy (read only access)
-    Teuchos::RCP<const std::ostream> GetEnergyFilePtr() const
+    /// get the output file for energy
+    std::ostream & GetEnergyOutputStream()
     {
       CheckInitSetup();
-      return energyfile_;
+
+      if ( energyfile_.is_null() )
+        dserror("energy file stream uninitialized");
+
+      return *energyfile_;
     };
 
     /// get error file pointer
@@ -231,27 +235,6 @@ namespace TIMINT {
       return writeenergyevery_;
     }
 
-    /// get kinetic energy of system
-    const double& GetKineticEnergy() const
-    {
-      CheckInitSetup();
-      return kinergy_;
-    };
-
-    /// get internal energy of system
-    const double& GetInternalEnergy() const
-    {
-      CheckInitSetup();
-      return intergy_;
-    }
-
-    /// get external energy of system
-    const double& GetExternalEnergy() const
-    {
-      CheckInitSetup();
-      return extergy_;
-    }
-
     /// get stress output type
     const INPAR::STR::StressType& GetStressOutputType() const
     {
@@ -292,6 +275,9 @@ namespace TIMINT {
     void InitSetupEveryIterationWriter(
         IO::EveryIterationWriterInterface* interface,
         Teuchos::ParameterList& p_nox );
+
+    /// initialize the output of system energy
+    void SetupEnergyOutputFile();
 
   protected:
     /// @name variables for internal use only
@@ -371,15 +357,6 @@ namespace TIMINT {
 
     /// write system energy every given step
     int writeenergyevery_;
-
-    /// kinetic energy of system
-    double kinergy_;
-
-    /// internal energy of system
-    double intergy_;
-
-    /// external energy of system
-    double extergy_;
 
     /// stress output type
     INPAR::STR::StressType writestress_;

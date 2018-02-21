@@ -21,19 +21,14 @@ NUMTHERMDIS                     0
 ------------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
-STRUCT_STRESS                   No
-STRUCT_STRAIN                   No
-FLUID_SOL                       No
-FLUID_STRESS                    No
-FLUID_VIS                       No
-THERM_TEMPERATURE               No
-THERM_HEATFLUX                  No
 FILESTEPS                       1000
+VERBOSITY                       standard
 --------------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlphaLieGroup
 RESULTSEVRY                     1
+RESEVRYERGY                     1
 RESTARTEVRY                     50
 NLNSOL                          fullnewton
 TIMESTEP                        0.01

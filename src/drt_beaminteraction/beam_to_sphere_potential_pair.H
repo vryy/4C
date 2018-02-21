@@ -138,6 +138,14 @@ public:
     dserror("not implemented yet");
   }
 
+  /*!
+  \brief Get interaction free energy / potential
+  */
+  double GetEnergy() const override
+  {
+    return interaction_potential_;
+  }
+
   /** \brief print this beam potential-based element pair to screen
    *
    *  \author grill */
@@ -201,6 +209,9 @@ private:
   //! stiffness contributions
   LINALG::TMatrix<TYPE, 3*numnodes*numnodalvalues, 3*numnodes*numnodalvalues+3> stiffpot1_;
   LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues+3> stiffpot2_;
+
+  //! total interaction potential of this pair
+  double interaction_potential_;
 
   //@}
 

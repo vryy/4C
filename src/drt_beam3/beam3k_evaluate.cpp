@@ -169,8 +169,21 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
 
     case ELEMENTS::struct_calc_energy:
     {
-      elevec1(0)=Eint_;
-      //elevec1(1)=Ekin_;
+      if ( elevec1 != Teuchos::null ) // old structural time integration
+      {
+        if ( elevec1.M() != 1 )
+          dserror("energy vector of invalid size %i, expected row dimension 1 (total elastic energy of element)!", elevec1.M());
+        elevec1(0) = Eint_;
+      }
+      else if ( IsParamsInterface() ) // new structural time integration
+      {
+        // only add contributions from row elements to avoid counting them on more than one proc
+        if ( discretization.Comm().MyPID() == Owner() )
+        {
+          ParamsInterface().AddContributionToEnergyType( Eint_, STR::internal_energy );
+          ParamsInterface().AddContributionToEnergyType( Ekin_, STR::kinetic_energy );
+        }
+      }
       break;
     }
 

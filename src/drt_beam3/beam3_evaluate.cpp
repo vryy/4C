@@ -101,47 +101,61 @@ int DRT::ELEMENTS::Beam3::Evaluate(Teuchos::ParameterList& params,
     break;
     case ELEMENTS::struct_calc_energy:
     {
-      // need current global displacement and and get them from discretization
-      // making use of the local-to-global map lm one can extract current displacemnet and residual values for each degree of freedom
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-      std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
-      const int nnode = NumNode();
-
-      switch(nnode)
+      if ( elevec1 != Teuchos::null ) // old structural time integration
       {
-        case 2:
+        if ( elevec1.M() != 1 )
+          dserror("energy vector of invalid size %i, expected row dimension 1 (total elastic energy of element)!", elevec1.M());
+
+        // need current global displacement and and get them from discretization
+        // making use of the local-to-global map lm one can extract current displacemnet and residual values for each degree of freedom
+        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+        if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+        std::vector<double> mydisp(lm.size());
+        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+
+        const int nnode = NumNode();
+
+        switch(nnode)
         {
-          b3_energy<2>(params,mydisp,&elevec1);
-          break;
+          case 2:
+          {
+            b3_energy<2>(params,mydisp,&elevec1);
+            break;
+          }
+          case 3:
+          {
+            b3_energy<3>(params,mydisp,&elevec1);
+            break;
+          }
+          case 4:
+          {
+            b3_energy<4>(params,mydisp,&elevec1);
+            break;
+          }
+          case 5:
+          {
+            b3_energy<5>(params,mydisp,&elevec1);
+            break;
+          }
+          case 6:
+          {
+            b3_energy<6>(params,mydisp,&elevec1);
+            break;
+          }
+          default:
+            dserror("Only Line2, Line3, Line4, Line5 and Line6 Elements implemented.");
         }
-        case 3:
-        {
-          b3_energy<3>(params,mydisp,&elevec1);
-          break;
-        }
-        case 4:
-        {
-          b3_energy<4>(params,mydisp,&elevec1);
-          break;
-        }
-        case 5:
-        {
-          b3_energy<5>(params,mydisp,&elevec1);
-          break;
-        }
-        case 6:
-         {
-           b3_energy<6>(params,mydisp,&elevec1);
-           break;
-         }
-        default:
-          dserror("Only Line2, Line3, Line4, Line5 and Line6 Elements implemented.");
+
       }
+      else if ( IsParamsInterface() ) // new structural time integration
+      {
+        dserror("not implemented yet");
+      }
+
+      break;
     }
-    break;
+
     //nonlinear stiffness and mass matrix are calculated even if only nonlinear stiffness matrix is required
     case ELEMENTS::struct_calc_nlnstiffmass:
     case ELEMENTS::struct_calc_nlnstifflmass:

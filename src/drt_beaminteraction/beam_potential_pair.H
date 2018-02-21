@@ -145,6 +145,11 @@ public:
   virtual void GetMomentsAtAllInteractingPointsElement2(
       std::vector<LINALG::TMatrix<double,3,1> >& moments ) const=0;
 
+  /*!
+  \brief Get interaction free energy / potential
+  */
+  virtual double GetEnergy() const = 0;
+
   /** \brief print this beam potential-based element pair to screen
    *
    *  \author grill */

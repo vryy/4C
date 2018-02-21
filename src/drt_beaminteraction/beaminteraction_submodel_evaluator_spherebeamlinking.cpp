@@ -431,6 +431,17 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::PostUpdateStepElemen
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
+double BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::GetEnergy() const
+{
+  CheckInitSetup();
+
+  dserror("Computation of energy not implemented yet for sphere-beam linking!");
+
+  return 0.0;
+}
+
+/*-------------------------------------------------------------------------------*
+ *-------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::OutputStepState(
     IO::DiscretizationWriter& iowriter) const
 {

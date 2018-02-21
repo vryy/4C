@@ -129,6 +129,14 @@ public:
     moments = moments_pot_GP2_;
   }
 
+  /*!
+  \brief Get interaction free energy / potential
+  */
+  double GetEnergy() const override
+  {
+    return interaction_potential_;
+  }
+
   /** \brief print this beam potential-based element pair to screen
    *
    *  \author grill */
@@ -495,6 +503,9 @@ private:
   //! resulting moments at interacting points of element 1 and 2
   std::vector<LINALG::TMatrix<double,3,1> > moments_pot_GP1_;
   std::vector<LINALG::TMatrix<double,3,1> > moments_pot_GP2_;
+
+  //! total interaction potential of this pair
+  double interaction_potential_;
   //@}
 
 };

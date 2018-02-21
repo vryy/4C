@@ -150,6 +150,11 @@ public:
   */
   virtual void GetAllActiveContactGaps( std::vector<double> & gaps ) const;
 
+  /*!
+  \brief Get energy of penalty contact.
+  */
+  double GetEnergy() const override;
+
   //@}
 
 private:

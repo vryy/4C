@@ -32,6 +32,7 @@
 #include "../drt_mat/micromaterial.H"
 #include "../drt_lib/drt_condition.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "../drt_structure_new/str_enum_lists.H"
 
 
 /*----------------------------------------------------------------------*
@@ -466,11 +467,21 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
-      // check length of elevec1
-      if (elevec1_epetra.Length() < 1)
-        dserror("The given result vector is too short.");
 
-      elevec1_epetra(0) = sosh8_calc_energy(mydisp, params);
+      if ( IsParamsInterface() )  // new structural time integration
+      {
+        StrParamsInterface().AddContributionToEnergyType(
+            sosh8_calc_energy(mydisp, params), STR::internal_energy );
+      }
+      else  // old structural time integration
+      {
+        // check length of elevec1
+        if (elevec1_epetra.Length() < 1)
+          dserror("The given result vector is too short.");
+
+        elevec1_epetra(0) = sosh8_calc_energy(mydisp, params);
+      }
+
       break;
     }
     case ELEMENTS::struct_calc_predict:

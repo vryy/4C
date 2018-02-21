@@ -50,7 +50,8 @@ BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::BeamToSphe
     m_(0.0),
     beamele_reflength_(0.0),
     radius1_(0.0),
-    radius2_(0.0)
+    radius2_(0.0),
+    interaction_potential_(0.0)
 {
   // empty constructor
 }
@@ -290,6 +291,9 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
   for (int i=0; i<3; ++i)
     r2(i) = ele2pos_(i);
 
+  // reset interaction potential of this pair
+  interaction_potential_ = 0.0;
+
   // loop over gauss points on ele1
   for (int gp1=0; gp1 < numgp; ++gp1)
   {
@@ -463,8 +467,11 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
       }
     }
 
+    // store for energy output
+    interaction_potential_ += prefactor / m_ * q1q2_JacFac_GaussWeights *
+        std::pow( FADUTILS::CastToDouble(norm_dist), -m_ );
 
-  } // end gauss quadrature loop (element 1)
+  }
 
 
   // apply constant prefactor
@@ -473,8 +480,6 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
 
   stiffpot1_.Scale(prefactor);
   stiffpot2_.Scale(prefactor);
-
-  return;
 }
 
 /*-----------------------------------------------------------------------------------------------*

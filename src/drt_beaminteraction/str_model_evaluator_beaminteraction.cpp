@@ -15,6 +15,8 @@
 
 #include "../drt_structure_new/str_timint_base.H"
 #include "../drt_structure_new/str_utils.H"
+#include "../drt_structure_new/str_enum_lists.H"
+#include "../drt_structure_new/str_model_evaluator_data.H"
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
@@ -878,7 +880,41 @@ void STR::MODELEVALUATOR::BeamInteraction::DetermineStressStrain()
 void STR::MODELEVALUATOR::BeamInteraction::DetermineEnergy()
 {
   CheckInitSetup();
-  dserror("Not yet implemented!");
+
+  double energy_this_submodel = 0.0;
+
+  for ( auto& submodel : (*me_vec_ptr_) )
+  {
+    energy_this_submodel = submodel->GetEnergy();
+
+    switch ( submodel->Type() )
+    {
+      case INPAR::BEAMINTERACTION::submodel_beamcontact:
+      {
+        EvalData().AddContributionToEnergyType( energy_this_submodel,
+            STR::beam_contact_penalty_potential );
+
+        break;
+      }
+
+      case INPAR::BEAMINTERACTION::submodel_potential:
+      {
+        EvalData().AddContributionToEnergyType( energy_this_submodel,
+            STR::beam_interaction_potential );
+
+        break;
+      }
+
+      default:
+      {
+        dserror("computation of energy not implemented for this beam interaction"
+            " submodel! Implement energy evaluation and add submodel here.");
+
+        break;
+      }
+    }
+
+  }
 }
 
 /*----------------------------------------------------------------------------*

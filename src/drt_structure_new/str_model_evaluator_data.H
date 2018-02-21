@@ -20,6 +20,7 @@
 #include <NOX_Abstract_Vector.H>
 #include "str_elements_paramsinterface.H"   // base class of the Data class
 #include "str_timint_basedatasdyn.H"   // base class of the Data class
+#include "str_enum_lists.H"
 #include "../drt_contact/contact_paramsinterface.H" // base class of the ContactData class
 #include "../drt_lib/drt_discret.H"
 #include "../drt_inpar/inpar_browniandyn.H"         // enums
@@ -162,6 +163,21 @@ namespace MODELEVALUATOR {
 
     //! get the current coupling stress type [derived]
     virtual enum INPAR::STR::StressType GetCouplingStressOutputType() const;
+
+    //! register energy type to be computed and written to file
+    void InsertEnergyTypeToBeConsidered(enum STR::EnergyType type);
+
+    //! read-only access to energy data
+    std::map<enum STR::EnergyType, double> const & GetEnergyData() const;
+
+    //! set value for a specific energy type
+    void SetValueForEnergyType(double value, enum STR::EnergyType type);
+
+    //! clear values for all energy types
+    void ClearValuesForAllEnergyTypes();
+
+    //! add contribution to energy of specified type [derived]
+    void AddContributionToEnergyType(double value, enum STR::EnergyType type) override;
 
     //! get Interface to brownian dyn data [derived]
     virtual inline const Teuchos::RCP<BROWNIANDYN::ParamsInterface> GetBrownianDynParamInterface() const
@@ -595,7 +611,7 @@ namespace MODELEVALUATOR {
     double timintfactor_vel_;
     //! @}
 
-    //! @name output parameters
+    //! @name references to output data container
     //! @{
     //! stress data vector
     Teuchos::RCP<std::vector<char> > stressdata_ptr_;
@@ -609,6 +625,9 @@ namespace MODELEVALUATOR {
     //! coupling stress data vector
     //! e.g. in TSI: couplstress corresponds to thermal stresses
     Teuchos::RCP<std::vector<char> > couplstressdata_ptr_;
+
+    //! system energy, stored separately by type
+    std::map<enum STR::EnergyType, double> energy_data_;
     //! @}
 
     //! map holding the force/rhs norm type of the active quantities

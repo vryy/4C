@@ -28,6 +28,7 @@
 #include "inversedesign.H"
 #include "../drt_patspec/patspec.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "../drt_structure_new/str_enum_lists.H"
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
@@ -432,9 +433,6 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
 
     case ELEMENTS::struct_calc_energy:
     {
-      // check length of elevec1
-      if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
-
       // initialization of internal energy
       double intenergy = 0.0;
 
@@ -636,8 +634,17 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
         intenergy += fac*psi;
       }
 
-      // return result
-      elevec1_epetra(0) = intenergy;
+      if ( IsParamsInterface() )  // new structural time integration
+      {
+        StrParamsInterface().AddContributionToEnergyType( intenergy, STR::internal_energy );
+      }
+      else  // old structural time integration
+      {
+        // check length of elevec1
+        if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
+
+        elevec1_epetra(0) = intenergy;
+      }
     }
     break;
 

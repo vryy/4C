@@ -456,6 +456,22 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::PostUpdateStepElement()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+double BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::GetEnergy() const
+{
+  CheckInitSetup();
+
+  double contact_penalty_potential = 0.0;
+
+  for ( auto& elepairptr : contact_elepairs_ )
+  {
+    contact_penalty_potential += elepairptr->GetEnergy();
+  }
+
+  return contact_penalty_potential;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::OutputStepState(
     IO::DiscretizationWriter& iowriter) const
 {

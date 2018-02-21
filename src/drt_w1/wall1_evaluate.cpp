@@ -32,6 +32,7 @@
 #include "../drt_mat/stvenantkirchhoff.H"
 
 #include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "../drt_structure_new/str_enum_lists.H"
 
 /*----------------------------------------------------------------------*/
 
@@ -445,8 +446,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
       if (disp==Teuchos::null) dserror("Cannot get state vectors");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      // check if length suffices
-      if (elevec1.Length() < 1) dserror("Result vector too short");
+
       // determine energies
       Energy(params,lm,mydisp,&elevec1,actmat);
       break;
@@ -2201,6 +2201,9 @@ void DRT::ELEMENTS::Wall1::Energy(
   // Gaussian points
   const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
 
+  // internal/strain energy
+  double internal_energy = 0.0;
+
   // general arrays
   Epetra_SerialDenseVector shpfct(numnode);  // shape functions at Gauss point
   Epetra_SerialDenseMatrix shpdrv(Wall1::numdim_,numnode);  // parametric derivatives of shape funct. at Gauss point
@@ -2300,9 +2303,22 @@ void DRT::ELEMENTS::Wall1::Energy(
       w1_call_defgrad_tot(Fenhv, Fm, Fuv, Ev);  // at t_{n}
     }
 
-    // internal/strain energy
-    if (energies) (*energies)(0) += fac * EnergyInternal(material, params, Ev);
+    internal_energy += fac * EnergyInternal(material, params, Ev);
   }  // end loop Gauss points
+
+
+  if ( IsParamsInterface() )  // new structural time integration
+  {
+    StrParamsInterface().AddContributionToEnergyType( internal_energy, STR::internal_energy );
+  }
+  else if ( energies )  // old structural time integration
+  {
+    // check length of elevec1
+    if ( (*energies).Length() < 1 )
+      dserror("The given result vector is too short.");
+
+    (*energies)(0) += internal_energy;
+  }
 
   // bye
   return;
