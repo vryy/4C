@@ -31,6 +31,7 @@
 
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_utils_discret.H"
 
 #include "../drt_io/io.H"
 #include "../drt_io/discretization_runtime_vtu_writer.H"
@@ -861,6 +862,32 @@ void STR::MODELEVALUATOR::Structure::EvaluateInternal(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::EvaluateInternalSpecifiedElements(
+    Teuchos::ParameterList& p,
+    Teuchos::RCP<LINALG::SparseOperator>* eval_mat,
+    Teuchos::RCP<Epetra_Vector>* eval_vec,
+    const Epetra_Map * ele_map_to_be_evaluated)
+{
+  if (p.numParams()>1)
+    dserror("Please use the STR::ELEMENTS::Interface and its derived "
+        "classes to set and get parameters.");
+  if (not p.INVALID_TEMPLATE_QUALIFIER
+        isType< Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> > ("interface"))
+    dserror("The given parameter has the wrong type!");
+
+  // write data to the parameter list.
+  // this is about to go, once the old time integration is deleted
+  ParamsInterface2ParameterList(EvalDataPtr(),p);
+
+  DRT::UTILS::Evaluate(
+      *(Teuchos::rcp_dynamic_cast<DRT::Discretization>(DiscretPtr(), true )),
+      p, *eval_mat, *eval_vec, ele_map_to_be_evaluated );
+
+  Discret().ClearState();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::EvaluateNeumann(
     const Teuchos::RCP<Epetra_Vector> & eval_vec,
     const Teuchos::RCP<LINALG::SparseOperator> & eval_mat)
@@ -1107,14 +1134,14 @@ void STR::MODELEVALUATOR::Structure::DetermineEnergy()
   CheckInitSetup();
 
   // set required parameters in the evaluation data container
-  EvalData().SetActionType(DRT::ELEMENTS::struct_calc_energy);
-  EvalData().SetTotalTime(GState().GetTimeNp());
-  EvalData().SetDeltaTime((*GState().GetDeltaTime())[0]);
+  EvalData().SetActionType( DRT::ELEMENTS::struct_calc_energy );
+  EvalData().SetTotalTime( GState().GetTimeNp() );
+  EvalData().SetDeltaTime( (*GState().GetDeltaTime())[0] );
 
   // set state vector values needed by elements
   Discret().ClearState();
-  Discret().SetState(0, "displacement", GState().GetDisNp());
-  Discret().SetState(0, "residual displacement", dis_incr_ptr_);
+  Discret().SetState( 0, "displacement", GState().GetDisNp() );
+  Discret().SetState( 0, "residual displacement", dis_incr_ptr_ );
 
   // set dummy evaluation vectors and matrices
   Teuchos::RCP<Epetra_Vector> eval_vec [3] =
@@ -1122,8 +1149,14 @@ void STR::MODELEVALUATOR::Structure::DetermineEnergy()
   Teuchos::RCP<LINALG::SparseOperator> eval_mat[2] =
       {Teuchos::null,Teuchos::null};
 
-  // evaluate energy contributions on element level
-  EvaluateInternal(eval_mat,eval_vec);
+  PreEvaluateInternal();
+
+  Teuchos::ParameterList p;
+  p.set<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> >("interface",
+      EvalDataPtr());
+
+  // evaluate energy contributions on element level (row elements only)
+  EvaluateInternalSpecifiedElements(p, eval_mat, eval_vec, Discret().ElementRowMap() );
 
 
   // global calculation of kinetic energy
@@ -1138,7 +1171,12 @@ void STR::MODELEVALUATOR::Structure::DetermineEnergy()
 
     linear_momentum->Dot( *GState().GetVelNp(), &kinetic_energy_times2 );
 
-    EvalData().AddContributionToEnergyType( 0.5*kinetic_energy_times2, STR::kinetic_energy );
+    // only add the result on one processor because we sum over all procs later
+    if ( GState().GetMyRank() == 0 )
+    {
+      EvalData().AddContributionToEnergyType( 0.5*kinetic_energy_times2,
+          STR::kinetic_energy );
+    }
   }
 
 }

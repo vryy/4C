@@ -177,12 +177,8 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
       }
       else if ( IsParamsInterface() ) // new structural time integration
       {
-        // only add contributions from row elements to avoid counting them on more than one proc
-        if ( discretization.Comm().MyPID() == Owner() )
-        {
-          ParamsInterface().AddContributionToEnergyType( Eint_, STR::internal_energy );
-          ParamsInterface().AddContributionToEnergyType( Ekin_, STR::kinetic_energy );
-        }
+        ParamsInterface().AddContributionToEnergyType( Eint_, STR::internal_energy );
+        ParamsInterface().AddContributionToEnergyType( Ekin_, STR::kinetic_energy );
       }
       break;
     }

@@ -206,6 +206,16 @@ namespace MODELEVALUATOR{
         Teuchos::RCP<LINALG::SparseOperator>* eval_mat,
         Teuchos::RCP<Epetra_Vector>* eval_vec);
 
+    /*! \brief  Check if the given parameter list is valid and call the
+     *  Evaluate routine for all elements specified in the element map
+     *
+     *  \author grill */
+    void EvaluateInternalSpecifiedElements(
+        Teuchos::ParameterList& p,
+        Teuchos::RCP<LINALG::SparseOperator>* eval_mat,
+        Teuchos::RCP<Epetra_Vector>* eval_vec,
+        const Epetra_Map * ele_map_to_be_evaluated);
+
     /*! \brief Add static structural internal force and stiffness matrix to the
      *         evaluate call (default)
      *

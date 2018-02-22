@@ -423,14 +423,14 @@ void STR::TIMINT::Base::PrepareOutput()
   CheckInitSetup();
   // --- stress and strain calculation -----------------------------------------
   if ( dataio_->GetWriteResultsEveryNStep() and
-      dataglobalstate_->GetStepN()%dataio_->GetWriteResultsEveryNStep() == 0 )
+      dataglobalstate_->GetStepNp()%dataio_->GetWriteResultsEveryNStep() == 0 )
   {
     int_ptr_->DetermineStressStrain();
   }
 
   // --- energy calculation -----------------------------------------------------
   if ( dataio_->GetWriteEnergyEveryNStep()
-      and (dataglobalstate_->GetStepN()%dataio_->GetWriteEnergyEveryNStep() == 0) )
+      and (dataglobalstate_->GetStepNp()%dataio_->GetWriteEnergyEveryNStep() == 0) )
   {
     STR::MODELEVALUATOR::Data& evaldata = int_ptr_->EvalData();
     evaldata.ClearValuesForAllEnergyTypes();
@@ -446,9 +446,6 @@ void STR::TIMINT::Base::PrepareOutput()
       energy_local = energy_data.second;
 
       dataglobalstate_->GetComm().SumAll( &energy_local, &energy_global, 1 );
-
-      // Fixme: do we need this before overwriting data in the following line?
-      dataglobalstate_->GetComm().Barrier();
 
       evaldata.SetValueForEnergyType( energy_global, energy_data.first );
     }
