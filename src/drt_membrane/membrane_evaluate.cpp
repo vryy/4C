@@ -54,11 +54,11 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList&   params,
   // start with ActionType none
   ELEMENTS::ActionType act = ELEMENTS::none;
 
-  if (IsParamsInterface())
+  if ( IsParamsInterface() ) // new structural time integration
   {
     act = ParamsInterface().GetActionType();
   }
-  else
+  else // old structural time integration
   {
     // get the action required
     std::string action = params.get<std::string>("action","none");
@@ -170,7 +170,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList&   params,
         INPAR::STR::StressType iostress = INPAR::STR::stress_none;
         INPAR::STR::StrainType iostrain = INPAR::STR::strain_none;
 
-        if (IsParamsInterface())
+        if ( IsParamsInterface() ) // new structural time integration
         {
           stressdata   = StrParamsInterface().MutableStressDataPtr();
           straindata   = StrParamsInterface().MutableStrainDataPtr();
@@ -178,7 +178,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList&   params,
           iostress   = StrParamsInterface().GetStressOutputType();
           iostrain   = StrParamsInterface().GetStrainOutputType();
         }
-        else
+        else // old structural time integration
         {
           stressdata = params.get<Teuchos::RCP<std::vector<char> > >("stress",Teuchos::null);
           straindata = params.get<Teuchos::RCP<std::vector<char> > >("strain",Teuchos::null);
@@ -220,9 +220,6 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList&   params,
      *===============================================================================*/
     case ELEMENTS::struct_calc_energy:
     {
-      // check length of elevec1
-      if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
-
       // initialization of internal energy
       double intenergy = 0.0;
 
@@ -326,8 +323,19 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList&   params,
         intenergy += fac*psi;
       }
 
-      // return result
-      elevec1_epetra(0) = intenergy;
+      if ( IsParamsInterface() ) // new structural time integration
+      {
+        // only add contributions from row elements to avoid counting them on more than one proc
+        if ( discretization.Comm().MyPID() == Owner() )
+          StrParamsInterface().AddContributionToEnergyType( intenergy, STR::internal_energy );
+      }
+      else // old structural time integration
+      {
+        // check length of elevec1
+        if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
+
+        elevec1_epetra(0) = intenergy;
+      }
     }
     break;
 
@@ -702,9 +710,9 @@ int DRT::ELEMENTS::Membrane<distype>::EvaluateNeumann(Teuchos::ParameterList&   
   // find out whether we will use a time curve
   double time = -1.0;
 
-  if (IsParamsInterface())
+  if ( IsParamsInterface() ) // new structural time integration
     time = ParamsInterface().GetTotalTime();
-  else
+  else // old structural time integration
     time = params.get("total time",-1.0);
 
   // ensure that at least as many curves/functs as dofs are available
