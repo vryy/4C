@@ -100,6 +100,7 @@ ntsprojtol_(parameters.get<double>("NTSPROJTOL")),
 intlayergrowth_evaluation_(DRT::INPUT::IntegralValue<INPAR::S2I::GrowthEvaluation>(parameters,"INTLAYERGROWTH_EVALUATION")),
 intlayergrowth_convtol_(parameters.get<double>("INTLAYERGROWTH_CONVTOL")),
 intlayergrowth_itemax_(parameters.get<int>("INTLAYERGROWTH_ITEMAX")),
+intlayergrowth_timestep_(parameters.get<double>("INTLAYERGROWTH_TIMESTEP")),
 blockmapgrowth_(Teuchos::null),
 extendedblockmaps_(Teuchos::null),
 extendedsystemmatrix_(Teuchos::null),
@@ -309,10 +310,6 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
     // set global state vectors according to time-integration scheme
     scatratimint_->Discretization()->ClearState();
     scatratimint_->AddTimeIntegrationSpecificVectors();
-
-    // fill interface state vector imasterphinp_ with transformed master dof values and add to discretization
-    interfacemaps_->InsertVector(icoup_->MasterToSlave(interfacemaps_->ExtractVector(*(scatratimint_->Phiafnp()),2)),1,imasterphinp_);
-    scatratimint_->Discretization()->SetState("imasterphinp",imasterphinp_);
 
     // evaluate scatra-scatra interface coupling at time t_{n+1} or t_{n+alpha_F}
     islavematrix_->Zero();
@@ -869,9 +866,6 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
         scatratimint_->Discretization()->ClearState();
         scatratimint_->AddTimeIntegrationSpecificVectors();
 
-        // set interface state vector
-        scatratimint_->Discretization()->SetState("imasterphinp",imasterphinp_);
-
         // evaluate scatra-scatra interface coupling at time t_{n+1} or t_{n+alpha_F}
         islavematrix_->Zero();
         imastermatrix_->Zero();
@@ -898,10 +892,10 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
             // we only need to linearize the master-side fluxes w.r.t. the slave-side and master-side degrees of freedom.
 
             // derive linearizations of master fluxes w.r.t. slave dofs and assemble into global system matrix
-            (*islavetomasterrowtransform_)(*islavematrix_,-1.,ADAPTER::CouplingSlaveConverter(*icoup_),*systemmatrix,true);
+            FSI::UTILS::MatrixRowTransform()(*islavematrix_,-1.,ADAPTER::CouplingSlaveConverter(*icoup_),*systemmatrix,true);
 
             // derive linearizations of master fluxes w.r.t. master dofs and assemble into global system matrix
-            (*islavetomasterrowcoltransform_)(*imastermatrix_,-1.,ADAPTER::CouplingSlaveConverter(*icoup_),ADAPTER::CouplingSlaveConverter(*icoup_),*systemmatrix,true,true);
+            FSI::UTILS::MatrixRowColTransform()(*imastermatrix_,-1.,ADAPTER::CouplingSlaveConverter(*icoup_),ADAPTER::CouplingSlaveConverter(*icoup_),*systemmatrix,true,true);
 
             break;
           }
@@ -967,9 +961,6 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
           // set global state vectors according to time-integration scheme
           scatratimint_->Discretization()->ClearState();
           scatratimint_->AddTimeIntegrationSpecificVectors();
-
-          // set interface state vector
-          scatratimint_->Discretization()->SetState("imasterphinp",imasterphinp_);
 
           // compute additional linearizations and residuals depending on type of scalar transport system matrix
           switch(matrixtype_)
@@ -2918,6 +2909,14 @@ void SCATRA::MeshtyingStrategyS2I::ExtractMatrixRows(
  *---------------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::AddTimeIntegrationSpecificVectors() const
 {
+  // only relevant for scatra-scatra interface coupling with pairwise coinciding interface nodes
+  if(couplingtype_ == INPAR::S2I::coupling_matching_nodes)
+  {
+    // add state vector containing master-side scatra degrees of freedom to scatra discretization
+    interfacemaps_->InsertVector(icoup_->MasterToSlave(interfacemaps_->ExtractVector(*(scatratimint_->Phiafnp()),2)),1,imasterphinp_);
+    scatratimint_->Discretization()->SetState("imasterphinp",imasterphinp_);
+  }
+
   // only relevant for monolithic or semi-implicit evaluation of scatra-scatra interface layer growth
   if (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic or intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_semi_implicit)
   {
@@ -2927,6 +2926,19 @@ void SCATRA::MeshtyingStrategyS2I::AddTimeIntegrationSpecificVectors() const
     // set state vector
     scatratimint_->Discretization()->SetState(2,"growth",growth);
   }
+
+  return;
+}
+
+
+/*---------------------------------------------------------------------------*
+ | compute time step size                                         fang 02/18 |
+ *---------------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyS2I::ComputeTimeStepSize(double& dt)
+{
+  // not implemented for standard scalar transport
+  if(intlayergrowth_timestep_ > 0.)
+    dserror("Adaptive time stepping for scatra-scatra interface layer growth not implemented for standard scalar transport!");
 
   return;
 }
@@ -2982,6 +2994,17 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
   // safety check
   else if(intlayergrowth_evaluation_ != INPAR::S2I::growth_evaluation_none)
     dserror("Cannot evaluate scatra-scatra interface coupling involving interface layer growth without specifying a corresponding boundary condition!");
+
+  // safety checks associated with adaptive time stepping for scatra-scatra interface layer growth
+  if(intlayergrowth_timestep_ > 0.)
+  {
+    if(not DRT::INPUT::IntegralValue<bool>(*scatratimint_->ScatraParameterList(),"ADAPTIVE_TIMESTEPPING"))
+      dserror("Adaptive time stepping for scatra-scatra interface layer growth requires ADAPTIVE_TIMESTEPPING flag to be set!");
+    if(not scatratimint_->Discretization()->GetCondition("S2ICouplingGrowth"))
+      dserror("Adaptive time stepping for scatra-scatra interface layer growth requires corresponding boundary condition!");
+    if(not (intlayergrowth_timestep_ < scatratimint_->Dt()))
+      dserror("Adaptive time stepping for scatra-scatra interface layer growth requires that the modified time step size is smaller than the original time step size!");
+  }
 
   return;
 }

@@ -51,6 +51,9 @@ class MeshtyingStrategyS2IElch : public MeshtyingStrategyS2I
     //! destructor
     virtual ~MeshtyingStrategyS2IElch(){return;};
 
+    //! compute time step size
+    void ComputeTimeStepSize(double& dt) final;
+
     //! compute meshtying residual terms and their linearizations
     void EvaluateMeshtying();
 
@@ -76,6 +79,12 @@ class MeshtyingStrategyS2IElch : public MeshtyingStrategyS2I
 
     //! instantiate strategy for Newton-Raphson convergence check
     void InitConvCheckStrategy();
+
+    //! minimum interfacial overpotential associated with scatra-scatra interface layer growth
+    double etagrowthmin_;
+
+    //! flag indicating modified time step size for scatra-scatra interface layer growth
+    bool intlayergrowth_timestep_active_;
 }; // class MeshtyingStrategyS2IElch
 
 

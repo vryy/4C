@@ -449,6 +449,10 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
     result = scatratimint_->Omega()[index];
   }
 
+  // test total number of time steps
+  else if(!quantity.compare(0,7,"numstep"))
+    result = scatratimint_->Step();
+
   // catch unknown quantity strings
   else
     dserror("Quantity '%s' not supported in result test!", quantity.c_str());

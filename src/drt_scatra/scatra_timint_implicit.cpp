@@ -1005,6 +1005,9 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   // -------------------------------------------------------------------
   //              set time dependent parameters
   // -------------------------------------------------------------------
+  // adapt time step size if desired
+  AdaptTimeStepSize();
+
   // note the order of the following three functions is important
   IncrementTimeAndStep();
 
@@ -3148,6 +3151,50 @@ inline void SCATRA::ScaTraTimIntImpl::IncrementTimeAndStep()
 {
   step_ += 1;
   time_ += dta_;
+}
+
+
+/*----------------------------------------------------------------------*
+ | adapt time step size if desired                           fang 02/18 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::AdaptTimeStepSize()
+{
+  // check flag for adaptive time stepping
+  if(DRT::INPUT::IntegralValue<bool>(*params_,"ADAPTIVE_TIMESTEPPING"))
+  {
+    // initialize time step size with original value
+    double dt(params_->get<double>("TIMESTEP"));
+
+    // reduce time step size if necessary
+    ComputeTimeStepSize(dt);
+
+    // adapt time step size if necessary
+    if(dt < dta_ or dt > dta_)
+    {
+      // print information about adaptation of time step size to screen
+      if(myrank_ == 0)
+      {
+        std::cout << std::scientific << std::setprecision(2) << std::endl;
+        std::cout << "ADAPTIVE TIME STEPPING:" << std::endl;
+        std::cout << "Time step size is " << (dt < dta_ ? "decreased" : "increased") << " from " << dta_ << " to " << dt << "!" << std::endl;
+      }
+
+      // adapt time step size
+      SetDt(dt);
+    }
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | compute time step size                                    fang 02/18 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::ComputeTimeStepSize(double& dt)
+{
+  strategy_->ComputeTimeStepSize(dt);
+  return;
 }
 
 

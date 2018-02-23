@@ -96,6 +96,7 @@ void INPAR::ELCH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   BoolParameter("INITPOTCALC","No","Automatically calculate initial field for electric potential",&elchcontrol);
   BoolParameter("ONLYPOTENTIAL","no","Coupling of general ion transport equation with Laplace equation",&elchcontrol);
   BoolParameter("COUPLE_BOUNDARY_FLUXES","Yes","Coupling of lithium-ion flux density and electric current density at Dirichlet and Neumann boundaries",&elchcontrol);
+  DoubleParameter("CYCLING_TIMESTEP",-1.,"modified time step size for CCCV cell cycling",&elchcontrol);
 
   /*----------------------------------------------------------------------*/
   // attention: this list is a sublist of elchcontrol

@@ -68,6 +68,15 @@ namespace DRT
           Epetra_SerialDenseVector&      elevec2_epetra,   //!< element right-hand side vector 2
           Epetra_SerialDenseVector&      elevec3_epetra    //!< element right-hand side vector 3
           );
+
+      //! evaluate minimum and maximum interfacial overpotential associated with scatra-scatra interface layer growth
+      void EvaluateMinMaxOverpotential(
+          const DRT::FaceElement*        ele,              //!< current boundary element
+          Teuchos::ParameterList&        params,           //!< parameter list
+          DRT::Discretization&           discretization,   //!< discretization
+          DRT::Element::LocationArray&   la                //!< location array
+          );
+
       //! evaluate scatra-scatra interface coupling condition
       void EvaluateS2ICoupling(
           const DRT::FaceElement*        ele,              ///< current boundary element

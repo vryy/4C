@@ -15,6 +15,8 @@
 *----------------------------------------------------------------------*/
 #include "scatra_timint_meshtying_strategy_s2i_elch.H"
 
+#include "../drt_adapter/adapter_coupling.H"
+
 #include "../drt_lib/drt_discret.H"
 
 #include "../drt_mat/electrode.H"
@@ -39,10 +41,85 @@ SCATRA::MeshtyingStrategyS2IElch::MeshtyingStrategyS2IElch(
     SCATRA::ScaTraTimIntElch*       elchtimint,   //!< elch time integrator
     const Teuchos::ParameterList&   parameters    //!< input parameters for scatra-scatra interface coupling
     ) :
-MeshtyingStrategyS2I(elchtimint,parameters)
+MeshtyingStrategyS2I(elchtimint,parameters),
+etagrowthmin_(0.),
+intlayergrowth_timestep_active_(false)
 {
   return;
 } // SCATRA::MeshtyingStrategyS2IElch::MeshtyingStrategyS2IElch
+
+
+/*---------------------------------------------------------------------------*
+ | compute time step size                                         fang 02/18 |
+ *---------------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyS2IElch::ComputeTimeStepSize(double& dt)
+{
+  // consider adaptive time stepping for scatra-scatra interface layer growth if necessary
+  if(intlayergrowth_timestep_ > 0.)
+  {
+    // add state vectors to discretization
+    scatratimint_->Discretization()->ClearState();
+    scatratimint_->AddTimeIntegrationSpecificVectors();
+
+    // create parameter list
+    Teuchos::ParameterList condparams;
+
+    // action for elements
+    condparams.set<int>("action",SCATRA::bd_calc_elch_minmax_overpotential);
+
+    // initialize results
+    condparams.set<double>("etagrowthmin",std::numeric_limits<double>::infinity());
+    condparams.set<double>("etagrowthmax",-std::numeric_limits<double>::infinity());
+
+    // evaluate minimum and maximum interfacial overpotential associated with scatra-scatra interface layer growth
+    scatratimint_->Discretization()->EvaluateCondition(condparams,"S2ICouplingGrowth");
+    scatratimint_->Discretization()->ClearState();
+
+    // adaptive time stepping for scatra-scatra interface layer growth is currently inactive
+    if(not intlayergrowth_timestep_active_)
+    {
+      // communicate minimum interfacial overpotential associated with scatra-scatra interface layer growth
+      double etagrowthmin(0.);
+      scatratimint_->Discretization()->Comm().MinAll(&condparams.get<double>("etagrowthmin"),&etagrowthmin,1);
+
+      // check whether adaptive time stepping for scatra-scatra interface layer growth needs to be activated
+      // this is the case if the minimum interfacial overpotential is currently positive, but would turn negative
+      // after adding twice the change in the minimum interfacial overpotential during the previous time step,
+      // i.e., eta - 2*(eta_old - eta) < 0, so that lithium plating could take place after the current time step
+      if(etagrowthmin > 0. and etagrowthmin - 2.*(etagrowthmin_ - etagrowthmin) < 0.)
+      {
+        // activate adaptive time stepping for scatra-scatra interface layer growth
+        intlayergrowth_timestep_active_ = true;
+
+        // reset minimum interfacial overpotential associated with scatra-scatra interface layer growth
+        etagrowthmin_ = 0.;
+      }
+
+      else
+        // update minimum interfacial overpotential associated with scatra-scatra interface layer growth
+        etagrowthmin_ = etagrowthmin;
+    }
+
+    // adaptive time stepping for scatra-scatra interface layer growth is currently active
+    else
+    {
+      // communicate maximum interfacial overpotential associated with scatra-scatra interface layer growth
+      double etagrowthmax(0.);
+      scatratimint_->Discretization()->Comm().MaxAll(&condparams.get<double>("etagrowthmax"),&etagrowthmax,1);
+
+      // check whether time stepping for scatra-scatra interface layer growth needs to be deactivated
+      // this is the case if the maximum interfacial overpotential has become negative
+      if(etagrowthmax < 0.)
+        intlayergrowth_timestep_active_ = false;
+    }
+
+    // reduce time step size if necessary
+    if(dt > intlayergrowth_timestep_ and intlayergrowth_timestep_active_)
+      dt = intlayergrowth_timestep_;
+  }
+
+  return;
+} // SCATRA::MeshtyingStrategyS2IElch::ComputeTimeStepSize
 
 
 /*--------------------------------------------------------------------------------------*

@@ -338,6 +338,8 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   // flag for point-based null space calculation
   BoolParameter("NULLSPACE_POINTBASED","No","flag for point-based null space calculation",&scatradyn);
 
+  // flag for adaptive time stepping
+  BoolParameter("ADAPTIVE_TIMESTEPPING","No","flag for adaptive time stepping",&scatradyn);
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scatra_variational = scatradyn.sublist(
       "VARIATIONAL",

@@ -98,6 +98,9 @@ class MeshtyingStrategyBase
     //! provide global state vectors for element evaluation
     virtual void AddTimeIntegrationSpecificVectors() const {return;};
 
+    //! compute time step size
+    virtual void ComputeTimeStepSize(double& dt) {return;};
+
     //! compute time derivatives of discrete state variables
     virtual void ComputeTimeDerivative() const {return;};
 

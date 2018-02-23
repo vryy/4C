@@ -93,6 +93,91 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::ScaTraEleBound
 }
 
 
+/*--------------------------------------------------------------------------------------------------------------------------*
+ | evaluate minimum and maximum interfacial overpotential associated with scatra-scatra interface layer growth   fang 02/18 |
+ *--------------------------------------------------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateMinMaxOverpotential(
+    const DRT::FaceElement*        ele,              //!< current boundary element
+    Teuchos::ParameterList&        params,           //!< parameter list
+    DRT::Discretization&           discretization,   //!< discretization
+    DRT::Element::LocationArray&   la                //!< location array
+    )
+{
+  // access material of parent element
+  Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->ParentElement()->Material());
+  if (matelectrode == Teuchos::null)
+    dserror("Invalid electrode material for scatra-scatra interface coupling!");
+
+  // extract local nodal values on present and opposite side of scatra-scatra interface
+  ExtractNodeValues(discretization,la);
+  std::vector<LINALG::Matrix<my::nen_,1> > emasterphinp(my::numdofpernode_,LINALG::Matrix<my::nen_,1>(true));
+  my::ExtractNodeValues(emasterphinp,discretization,la,"imasterphinp");
+
+  // get scatra-scatra interface coupling condition
+  Teuchos::RCP<DRT::Condition> s2icondition = params.get<Teuchos::RCP<DRT::Condition> >("condition");
+  if(s2icondition == Teuchos::null)
+    dserror("Cannot access scatra-scatra interface coupling condition!");
+  if(s2icondition->Type() != DRT::Condition::S2ICouplingGrowth)
+    dserror("Received illegal condition type!");
+
+  // access input parameters associated with condition
+  const int kineticmodel = s2icondition->GetInt("kinetic model");
+  if(kineticmodel != INPAR::S2I::growth_kinetics_butlervolmer)
+    dserror("Received illegal kinetic model for scatra-scatra interface coupling involving interface layer growth!");
+  const double faraday = INPAR::ELCH::faraday_const;
+  const double alphaa = s2icondition->GetDouble("alpha_a");
+  const double alphac = s2icondition->GetDouble("alpha_c");
+  const double kr = s2icondition->GetDouble("k_r");
+  if (kr < 0.)
+    dserror("Charge transfer constant k_r is negative!");
+  const double conductivity_inverse = 1./s2icondition->GetDouble("conductivity");
+
+  // integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // loop over integration points
+  for (int gpid=0; gpid<intpoints.IP().nquad; ++gpid)
+  {
+    // evaluate values of shape functions at current integration point
+    my::EvalShapeFuncAndIntFac(intpoints,gpid);
+
+    // evaluate factor F/RT
+    const double frt = myelectrode::GetFRT();
+
+    // evaluate dof values at current integration point on present and opposite side of scatra-scatra interface
+    const double eslavepotint = my::funct_.Dot(my::ephinp_[1]);
+    const double eslavegrowthint = my::funct_.Dot(egrowth_);
+    const double emasterphiint = my::funct_.Dot(emasterphinp[0]);
+    const double emasterpotint = my::funct_.Dot(emasterphinp[1]);
+
+    // evaluate scatra-scatra interface layer resistance at current integration point
+    const double eslaveresistanceint = eslavegrowthint*conductivity_inverse;
+
+    // compute exchange current density
+    double i0 = kr*faraday*pow(emasterphiint,alphaa);
+
+    // compute Butler-Volmer current density via Newton-Raphson iteration
+    const double i = GetButlerVolmerCurrentDensity(i0,alphaa,alphac,frt,eslavepotint,emasterpotint,0.,eslaveresistanceint,eslavegrowthint,s2icondition);
+
+    // calculate electrode-electrolyte overpotential at integration point
+    const double eta = eslavepotint-emasterpotint-i*eslaveresistanceint;
+
+    // check for minimality and update result if applicable
+    double& etagrowthmin = params.get<double>("etagrowthmin");
+    if(eta < etagrowthmin)
+      etagrowthmin = eta;
+
+    // check for maximality and update result if applicable
+    double& etagrowthmax = params.get<double>("etagrowthmax");
+    if(eta > etagrowthmax)
+      etagrowthmax = eta;
+  }
+
+  return;
+}
+
+
 /*-------------------------------------------------------------------------------------------*
  | evaluate scatra-scatra interface coupling condition (electrochemistry)         fang 01/17 |
  *-------------------------------------------------------------------------------------------*/
@@ -323,6 +408,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateAc
           );
       break;
     }
+
     case SCATRA::bd_calc_s2icoupling_scatragrowth:
     {
       EvaluateS2ICouplingScatraGrowth(
@@ -331,6 +417,17 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateAc
           discretization,
           la,
           elemat1_epetra
+          );
+      break;
+    }
+
+    case SCATRA::bd_calc_elch_minmax_overpotential:
+    {
+      EvaluateMinMaxOverpotential(
+          ele,
+          params,
+          discretization,
+          la
           );
       break;
     }

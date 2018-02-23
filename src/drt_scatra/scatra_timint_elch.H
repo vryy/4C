@@ -211,6 +211,9 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
 
   /*--- set, prepare, and predict ------------------------------------------*/
 
+  //! compute time step size
+  void ComputeTimeStepSize(double& dt) final;
+
   //! Parameter check for diffusion-conduction formulation
   void ValidParameterDiffCond();
 
@@ -352,6 +355,12 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   //! cell voltage
   double cellvoltage_;
 
+  //! cell voltage from previous time step
+  double cellvoltage_old_;
+
+  //! cutoff voltage for CCCV cell cycling
+  double cutoff_voltage_;
+
   //! cell C rate
   double cellcrate_;
 
@@ -369,6 +378,15 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
 
   //! number of current charge or discharge half-cycle
   int ihalfcycle_;
+
+  //! time step at the start of current charge or discharge half-cycle
+  int ihalfcycle_startstep_;
+
+  //! modified time step size for CCCV cell cycling
+  const double cycling_timestep_;
+
+  //! flag indicating modified time step size for CCCV cell cycling
+  bool cycling_timestep_active_;
 
   //! map extractor for macro scale in multi-scale simulations
   Teuchos::RCP<const LINALG::MultiMapExtractor> splitter_macro_;

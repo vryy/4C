@@ -157,6 +157,9 @@ void INPAR::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   // ID of linear solver for monolithic scatra-scatra interface coupling involving interface layer growth
   IntParameter("INTLAYERGROWTH_LINEAR_SOLVER",-1,"ID of linear solver for monolithic scatra-scatra interface coupling involving interface layer growth",&s2icoupling);
+
+  // modified time step size for scatra-scatra interface coupling involving interface layer growth
+  DoubleParameter("INTLAYERGROWTH_TIMESTEP",-1.,"modified time step size for scatra-scatra interface coupling involving interface layer growth",&s2icoupling);
 }
 
 

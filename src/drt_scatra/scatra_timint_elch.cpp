@@ -63,12 +63,17 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(
     electrodeeta_   (Teuchos::null),
     electrodecurr_  (Teuchos::null),
     cellvoltage_    (0.),
+    cellvoltage_old_(-1.),
+    cutoff_voltage_ (0.),
     cellcrate_      (0.),
     charging_       (false),
     cc_             (false),
     condid_cccv_    (-1),
     nhalfcycles_    (-1),
     ihalfcycle_     (-1),
+    ihalfcycle_startstep_(-1),
+    cycling_timestep_(elchparams_->get<double>("CYCLING_TIMESTEP")),
+    cycling_timestep_active_(false),
     splitter_macro_ (Teuchos::null)
 {
   // safety check
@@ -88,6 +93,17 @@ void SCATRA::ScaTraTimIntElch::Init()
   // Let's check for valid options
   if(DRT::INPUT::IntegralValue<int>(*elchparams_,"DIFFCOND_FORMULATION"))
     ValidParameterDiffCond();
+
+  // additional safety checks associated with adaptive time stepping for CCCV cell cycling
+  if(cycling_timestep_ > 0.)
+  {
+    if(not DRT::INPUT::IntegralValue<bool>(*params_,"ADAPTIVE_TIMESTEPPING"))
+      dserror("Adaptive time stepping for CCCV cell cycling requires ADAPTIVE_TIMESTEPPING flag to be set!");
+    if(not discret_->GetCondition("CCCVCycling"))
+      dserror("Adaptive time stepping for CCCV cell cycling requires corresponding boundary condition!");
+    if(not (cycling_timestep_ < dta_))
+      dserror("Adaptive time stepping for CCCV cell cycling requires that the modified time step size is smaller than the original time step size!");
+  }
 
   return;
 }
@@ -334,6 +350,59 @@ void SCATRA::ScaTraTimIntElch::SetElementSpecificScaTraParameters(Teuchos::Param
   eleparams.set<double>("frt",INPAR::ELCH::faraday_const/(INPAR::ELCH::gas_const*(elchparams_->get<double>("TEMPERATURE"))));
   eleparams.set<int>("equpot",equpot_);
   eleparams.set<bool>("boundaryfluxcoupling",DRT::INPUT::IntegralValue<bool>(*elchparams_,"COUPLE_BOUNDARY_FLUXES"));
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | compute time step size                                    fang 02/18 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::ComputeTimeStepSize(double& dt)
+{
+  // call base class routine
+  ScaTraTimIntImpl::ComputeTimeStepSize(dt);
+
+  // consider adaptive time stepping for CCCV cell cycling if necessary
+  if(cycling_timestep_ > 0.)
+  {
+    // adaptive time stepping for CCCV cell cycling is currently inactive
+    if(not cycling_timestep_active_)
+    {
+      // initialize variable for cell voltage from previous time step
+      if(cellvoltage_old_ < 0.)
+        cellvoltage_old_ = cellvoltage_;
+
+      // check whether adaptive time stepping for CCCV cell cycling needs to be activated
+      // this is the case if twice the change in the cell voltage during the previous time step
+      // would exceed the cutoff voltage after the current time step, i.e.:
+      // charging:    cellvoltage + 2*(cellvoltage - cellvoltage_old) > cutoffvoltage
+      // discharging: cellvoltage - 2*(cellvoltage_old - cellvoltage) < cutoffvoltage
+      const double cellvoltage_new = cellvoltage_ + 2.*(cellvoltage_ - cellvoltage_old_);
+      if((charging_ and cellvoltage_new > cutoff_voltage_) or (not charging_ and cellvoltage_new < cutoff_voltage_))
+      {
+        // activate adaptive time stepping for CCCV cell cycling
+        cycling_timestep_active_ = true;
+
+        // reset cell voltage from previous time step
+        cellvoltage_old_ = -1.;
+      }
+
+      else
+        // update cell voltage
+        cellvoltage_old_ = cellvoltage_;
+    }
+
+    // adaptive time stepping for CCCV cell cycling is currently active
+    // check whether time stepping for CCCV cell cycling needs to be deactivated
+    // this is the case if ten time steps have passed since the current reversal
+    else if(step_ == ihalfcycle_startstep_ + 10)
+      cycling_timestep_active_ = false;
+
+    // reduce time step size if necessary
+    if(dt > cycling_timestep_ and cycling_timestep_active_)
+      dt = cycling_timestep_;
+  }
 
   return;
 }
@@ -2826,7 +2895,6 @@ bool SCATRA::ScaTraTimIntElch::NotFinished()
 
     // initialize variables for cutoff C rate and cutoff voltage
     double cutoff_c_rate(0.);
-    double cutoff_voltage(0.);
 
     // loop over all conditions
     for(unsigned icond=0; icond<cccvhalfcycleconditions.size(); ++icond)
@@ -2838,7 +2906,7 @@ bool SCATRA::ScaTraTimIntElch::NotFinished()
       if(condition.GetInt("ConditionID") == condid_cccv_)
       {
         cutoff_c_rate = condition.GetDouble("CutoffCRate");
-        cutoff_voltage = condition.GetDouble("CutoffVoltage");
+        cutoff_voltage_ = condition.GetDouble("CutoffVoltage");
 
         // leave loop after relevant condition has been processed
         break;
@@ -2846,7 +2914,7 @@ bool SCATRA::ScaTraTimIntElch::NotFinished()
     }
 
     // check whether cell is currently being operated in constant-current (CC) or constant-voltage (CV) mode
-    cc_ = (charging_ and cellvoltage_ < cutoff_voltage) or (!charging_ and cellvoltage_ > cutoff_voltage);
+    cc_ = (charging_ and cellvoltage_ < cutoff_voltage_) or (!charging_ and cellvoltage_ > cutoff_voltage_);
 
     // current charge or discharge half-cycle is not yet over
     if(cc_ == true or (cc_ == false and cellcrate_ > cutoff_c_rate))
@@ -2870,6 +2938,9 @@ bool SCATRA::ScaTraTimIntElch::NotFinished()
 
       // update number of current charge or discharge half-cycle
       ++ihalfcycle_;
+
+      // store time step at the start of current charge or discharge half-cycle
+      ihalfcycle_startstep_ = step_;
 
       // set outcome
       notfinished = true;

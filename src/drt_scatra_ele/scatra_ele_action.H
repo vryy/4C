@@ -116,6 +116,7 @@ namespace SCATRA
     bd_calc_elch_boundary_kinetics,
     bd_calc_elch_cell_voltage,
     bd_calc_elch_linearize_nernst,
+    bd_calc_elch_minmax_overpotential,
     bd_calc_fps3i_surface_permeability,   // Kedem-Katchalsky equations --> FPS3I problem
     bd_calc_fs3i_surface_permeability,
     bd_calc_loma_therm_press,

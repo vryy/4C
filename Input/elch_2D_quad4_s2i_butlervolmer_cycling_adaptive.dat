@@ -1,0 +1,176 @@
+//
+// Maintainer: Rui Fang
+// fang@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de/
+// 089 - 289-15251
+//
+==================================================================
+                  General Data File BACI
+==================================================================
+-------------------------------------------------------------TITLE
+Test case for periodic cycling of lithium-ion cells:
+- two-dimensional problem with two one-dimensional electrode-electrolyte interfaces
+- anode, electrolyte, and cathode each represented by one quad4 element
+- constant initial lithium concentrations and electric potentials
+- charge transfer kinetics characterized by Butler-Volmer equation
+- cycling starts with constant-current (CC) charge from the fully
+  discharged state at a C rate of 1 and switches to constant-voltage
+  (CV) charge at a cutoff voltage of 3.55
+- discharge begins in constant-current (CC) mode at a cutoff C rate
+  of 0.25 and ends at a cutoff voltage of 3.316
+- simulation ends after one more charge half-cycle, i.e., after a
+  total of three half-cycles
+- 3 quad4 elements with matching interface nodes
+- adaptive time stepping with reduced time step size around current reversals
+------------------------------------------------------PROBLEM SIZE
+//ELEMENTS    3
+//NODES       12
+DIM           2
+--------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Electrochemistry
+-------------------------------------------SCALAR TRANSPORT DYNAMIC
+SOLVERTYPE                      nonlinear
+TIMEINTEGR                      One_Step_Theta
+TIMESTEP                        1.0
+THETA                           0.5
+INITIALFIELD                    field_by_condition
+CALCFLUX_BOUNDARY               total
+LINEAR_SOLVER                   1
+RESULTSEVRY                     100
+RESTARTEVRY                     100
+ADAPTIVE_TIMESTEPPING           Yes
+---------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
+ABSTOLRES                       0.0
+-----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
+STABTYPE                        no_stabilization
+DEFINITION_TAU                  Zero
+EVALUATION_TAU                  integration_point
+EVALUATION_MAT                  integration_point
+------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
+COUPLINGTYPE                    MatchingNodes
+-------------------------------------------------------ELCH CONTROL
+INITPOTCALC                     yes
+DIFFCOND_FORMULATION            Yes
+EQUPOT                          divi
+CYCLING_TIMESTEP                0.5
+-----------------------------------------------------------SOLVER 1
+SOLVER                          UMFPACK
+----------------------------------------------------------MATERIALS
+MAT 1 MAT_electrode DIFFCOEF -1 COND -1 DIFF_PARA_NUM 1 DIFF_PARA 2.e-10 COND_PARA_NUM 1 COND_PARA 1.e5 C_MAX 16.1 OCP_MODEL Redlich-Kister X_MIN -1.0 X_MAX -1.0 OCP_PARA_NUM 16 OCP_PARA 1.1652e4 -3.268e3 3.955e3 -4.573e3 6.147e3 -3.339e3 1.117e4 2.997e2 -4.866e4 1.362e2 1.373e5 -2.129e4 -1.722e5 3.956e4 9.302e4 -3.280e4 END
+MAT 2 MAT_elchmat NUMDOF 2 NUMSCAL 1 NUMPHASE 1 PHASEIDS 4 END
+MAT 3 MAT_electrode DIFFCOEF -1 COND -1 DIFF_PARA_NUM 1 DIFF_PARA 3.7e-10 COND_PARA_NUM 1 COND_PARA 1.e4 C_MAX 23.9 OCP_MODEL Redlich-Kister X_MIN -1.0 X_MAX -1.0 OCP_PARA_NUM 21 OCP_PARA 3.954616e5 -7.676e4 3.799e4 -2.873e4 1.169e4 1.451e4 -8.938e4 1.671e5 -7.236e4 -1.746e5 -4.067e5 9.534e5 5.897e5 -7.455e5 -1.102e6 -2.927e5 7.214e5 9.029e5 -1.599e5 6.658e5 -1.084e6 END
+MAT 4 MAT_elchphase EPSILON 1.0 TORTUOSITY 1.0 NUMMAT 1 MATIDS 5 END
+MAT 5 MAT_newman VALENCE 1.0 DIFFCOEF -1 TRANSNR -1 THERMFAC 0 COND -11 DIFF_PARA_NUM 1 DIFF_PARA 2.6e-4 TRANS_PARA_NUM 1 TRANS_PARA 0.363 COND_PARA_NUM 3 COND_PARA 1.58e3 0.85 1.4 END
+-------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION 2.029
+COMPONENT 1 FUNCTION 2.97e-10
+-------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION 1.2
+COMPONENT 1 FUNCTION -0.177573557
+-------------------------------------------------------------FUNCT3
+COMPONENT 0 FUNCTION 22.37
+COMPONENT 1 FUNCTION 3.39
+----------------------------------------------------------RESULT DESCRIPTION
+SCATRA DIS scatra NODE 1 QUANTITY phi1 VALUE 5.65433050749190169e+00 TOLERANCE 1.e-09                  // local lithium concentration at anode-electrolyte interface (anode side)
+SCATRA DIS scatra NODE 1 QUANTITY phi2 VALUE 1.47887675094401627e-10 TOLERANCE 1.e-16                  // local electric potential at anode-electrolyte interface (anode side)
+SCATRA DIS scatra NODE 1 QUANTITY flux_boundary_1_x VALUE -3.19264118413256493e-07 TOLERANCE 1.e-16    // local flux at anode-electrolyte interface (anode side)
+SCATRA DIS scatra NODE 6 QUANTITY flux_boundary_1_x VALUE -3.19264118372160202e-07 TOLERANCE 1.e-16    // local flux at anode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 6 QUANTITY phi1 VALUE 1.19999970488763608e+00 TOLERANCE 1.e-09                  // local lithium concentration at anode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 6 QUANTITY phi2 VALUE -1.09929523561067694e-01 TOLERANCE 1.e-10                 // local electric potential at anode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 5 QUANTITY phi1 VALUE 1.20000029511249995e+00 TOLERANCE 1.e-09                  // local lithium concentration at cathode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 5 QUANTITY phi2 VALUE -1.09929504865858410e-01 TOLERANCE 1.e-10                 // local electric potential at cathode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 5 QUANTITY flux_boundary_1_x VALUE -3.19264118310638663e-07 TOLERANCE 1.e-16    // local flux at cathode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 10 QUANTITY flux_boundary_1_x VALUE -3.19264118415163323e-07 TOLERANCE 1.e-16   // local flux at cathode-electrolyte interface (cathode side)
+SCATRA DIS scatra NODE 10 QUANTITY phi1 VALUE 1.89215692893210097e+01 TOLERANCE 1.e-08                 // local lithium concentration at cathode-electrolyte interface (cathode side)
+SCATRA DIS scatra NODE 10 QUANTITY phi2 VALUE 3.54999999852112325e+00 TOLERANCE 1.e-09                 // local electric potential at cathode-electrolyte interface (cathode side)
+SCATRA DIS scatra SPECIAL QUANTITY soc1 VALUE 3.74613943082118317e-01 TOLERANCE 1.e-10                 // anode state of charge
+SCATRA DIS scatra SPECIAL QUANTITY soc2 VALUE 2.80754276902610456e-01 TOLERANCE 1.e-10                 // cathode state of charge
+SCATRA DIS scatra SPECIAL QUANTITY cellvoltage VALUE 3.55e+00 TOLERANCE 1.e-09                         // cell voltage
+SCATRA DIS scatra SPECIAL QUANTITY numiterlastnewton VALUE 3.0 TOLERANCE 1.e-20                        // number of Newton-Raphson iterations during last time step
+SCATRA DIS scatra SPECIAL QUANTITY numstep VALUE 4921.0 TOLERANCE 1.e-20                               // total number of time steps
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 0
+NDLINE  17
+NDSURF  8
+NDVOL   0
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
+DLINE  1
+E 1 - NUMDOF 2  ONOFF 0 1  VAL 0.0 0.0  FUNCT 0 0
+------------------------------DESIGN SURF INITIAL FIELD CONDITIONS
+DSURF  3
+E 1 - ScaTra 1
+E 2 - ScaTra 2
+E 3 - ScaTra 3
+-------------------------------DESIGN S2I COUPLING LINE CONDITIONS
+DLINE  4
+E 2 - 0 Slave KineticModel Butler-Volmer numscal 1 stoichiometries -1 e- 1 k_r 4.52e-5 alpha_a 0.5 alpha_c 0.5
+E 3 - 0 Master
+E 4 - 1 Master
+E 5 - 1 Slave KineticModel Butler-Volmer numscal 1 stoichiometries -1 e- 1 k_r 2.07e-5 alpha_a 0.5 alpha_c 0.5
+----------------------------------SCATRA FLUX CALC LINE CONDITIONS
+DLINE  6
+E 1 -
+E 2 -
+E 3 -
+E 4 -
+E 5 -
+E 6 -
+------------------DESIGN ELECTRODE STATE OF CHARGE SURF CONDITIONS
+DSURF  2
+E 1 - ID 0 c_0% 2.029 c_100% 10.88
+E 3 - ID 1 c_0% 22.37 c_100% 10.56
+-------------------------------DESIGN CELL VOLTAGE LINE CONDITIONS
+DLINE  2
+E 1 - ID 0
+E 6 - ID 1
+--------------------------DESIGN CCCV CELL CYCLING LINE CONDITIONS
+DLINE  1
+E 6 - NumberOfHalfCycles 3 BeginWithCharging 1 ConditionIDForCharge 1 ConditionIDForDischarge 2
+----------------------------DESIGN CCCV HALF-CYCLE LINE CONDITIONS
+DLINE  2
+E 6 - ID 1 Current 1.229302022e-06 CutoffVoltage 3.55 CutoffCRate 0.25
+E 6 - ID 2 Current -1.229302022e-06 CutoffVoltage 3.316 CutoffCRate 100.0
+-----------------------------------------------DLINE-NODE TOPOLOGY
+NODE    2 DLINE 1
+NODE    3 DLINE 1
+NODE    1 DLINE 2
+NODE    4 DLINE 2
+NODE    6 DLINE 3
+NODE    7 DLINE 3
+NODE    5 DLINE 4
+NODE    8 DLINE 4
+NODE    10 DLINE 5
+NODE    11 DLINE 5
+NODE    9 DLINE 6
+NODE    12 DLINE 6
+-----------------------------------------------DSURF-NODE TOPOLOGY
+NODE    1 DSURFACE 1
+NODE    2 DSURFACE 1
+NODE    3 DSURFACE 1
+NODE    4 DSURFACE 1
+NODE    5 DSURFACE 2
+NODE    6 DSURFACE 2
+NODE    7 DSURFACE 2
+NODE    8 DSURFACE 2
+NODE    9 DSURFACE 3
+NODE    10 DSURFACE 3
+NODE    11 DSURFACE 3
+NODE    12 DSURFACE 3
+-------------------------------------------------------NODE COORDS
+NODE  1 COORD  2.5000000000000001e-04  2.5000000000000001e-04 0.0000000000000000e+00
+NODE  2 COORD -2.5000000000000001e-04  2.5000000000000001e-04 0.0000000000000000e+00
+NODE  3 COORD -2.5000000000000001e-04 -2.5000000000000001e-04 0.0000000000000000e+00
+NODE  4 COORD  2.5000000000000001e-04 -2.5000000000000001e-04 0.0000000000000000e+00
+NODE  5 COORD  7.5000000000000002e-04  2.5000000000000001e-04 0.0000000000000000e+00
+NODE  6 COORD  2.5000000000000001e-04  2.5000000000000001e-04 0.0000000000000000e+00
+NODE  7 COORD  2.5000000000000001e-04 -2.5000000000000001e-04 0.0000000000000000e+00
+NODE  8 COORD  7.5000000000000002e-04 -2.5000000000000001e-04 0.0000000000000000e+00
+NODE  9 COORD  1.2500000000000000e-03  2.5000000000000001e-04 0.0000000000000000e+00
+NODE 10 COORD  7.5000000000000002e-04  2.5000000000000001e-04 0.0000000000000000e+00
+NODE 11 COORD  7.5000000000000002e-04 -2.5000000000000001e-04 0.0000000000000000e+00
+NODE 12 COORD  1.2500000000000000e-03 -2.5000000000000001e-04 0.0000000000000000e+00
+------------------------------------------------TRANSPORT ELEMENTS
+1 TRANSP QUAD4  1 2 3 4    MAT 1 TYPE ElchElectrode
+2 TRANSP QUAD4  5 6 7 8    MAT 2 TYPE ElchDiffCond
+3 TRANSP QUAD4  9 10 11 12    MAT 3 TYPE ElchElectrode
+---------------------------------------------------------------END

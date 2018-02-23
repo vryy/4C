@@ -104,6 +104,9 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     //! provide global state vectors for element evaluation
     void AddTimeIntegrationSpecificVectors() const;
 
+    //! compute time step size
+    virtual void ComputeTimeStepSize(double& dt) override;
+
     //! return map extractor associated with blocks of global system matrix
     const LINALG::MultiMapExtractor& BlockMaps() const {return *blockmaps_;};
 
@@ -368,6 +371,9 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
 
     //! maximum number of local Newton-Raphson iterations for scatra-scatra interface coupling involving interface layer growth
     const unsigned intlayergrowth_itemax_;
+
+    //! modified time step size for scatra-scatra interface coupling involving interface layer growth
+    const double intlayergrowth_timestep_;
 
     //! map extractor associated with all degrees of freedom for scatra-scatra interface layer growth
     Teuchos::RCP<const LINALG::MultiMapExtractor> blockmapgrowth_;

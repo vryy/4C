@@ -1294,9 +1294,6 @@ void STI::Monolithic::AssembleODBlockScatraThermo()
         // action for elements
         condparams.set<int>("action",SCATRA::bd_calc_s2icoupling_od);
 
-        // add state vector containing master-side scatra degrees of freedom to scatra discretization
-        scatra_->Discretization()->SetState("imasterphinp",strategyscatra_->MasterPhinp());
-
         switch(strategyscatra_->MatrixType())
         {
           case INPAR::S2I::matrix_block_condition:

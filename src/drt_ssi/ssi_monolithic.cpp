@@ -793,9 +793,6 @@ void SSI::SSI_Mono::AssembleODBlockScatraStructure() const
     // number of dofset associated with displacement-related dofs on scalar transport discretization
     condparams.set<int>("ndsdisp",1);
 
-    // add state vector containing master-side scatra degrees of freedom to scatra discretization
-    scatra_->ScaTraField()->Discretization()->SetState("imasterphinp",strategy_scatra_->MasterPhinp());
-
     switch(matrixtype_scatra_)
     {
       case INPAR::S2I::matrix_block_condition:

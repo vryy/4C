@@ -912,6 +912,12 @@ protected:
 
   /*--- set, prepare, and predict ------------------------------------------*/
 
+  //! adapt time step size if desired
+  void AdaptTimeStepSize();
+
+  //! compute time step size
+  virtual void ComputeTimeStepSize(double& dt);
+
   //! increment time and step value
   void IncrementTimeAndStep();
 
