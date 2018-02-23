@@ -58,6 +58,8 @@ MAXTIME                         180000
 TIMESTEP                        1000.0
 COUPALGO                        ssi_Monolithic
 SCATRATIMINTTYPE                Elch
+RESULTSEVRY                     2
+RESTARTEVRY                     2
 --------------------------------------------SSI CONTROL/MONOLITHIC
 LINEAR_SOLVER                   1
 MATRIXTYPE                      sparse

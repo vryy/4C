@@ -1531,8 +1531,6 @@ void SSI::SSI_Mono::Output()
   // output scalar transport field
   scatra_->ScaTraField()->Output();
 
-  // prepare structure output
-  structure_->PrepareOutput();
   // output structure field
   structure_->Output();
 
@@ -1891,11 +1889,11 @@ void SSI::SSI_Mono::Solve()
  *--------------------------------------------------------------------------*/
 void SSI::SSI_Mono::Timeloop()
 {
-  // output initial solution to screen and files
+  // output initial scalar transport solution to screen and files
   if(Step() == 0)
   {
     SetStructSolution(structure_->Dispnp(),structure_->Velnp());
-    Output();
+    scatra_->ScaTraField()->Output();
   }
 
   // time loop
@@ -1917,6 +1915,9 @@ void SSI::SSI_Mono::Timeloop()
     // output performance statistics associated with nonlinear solver into *.csv file if applicable
     if(DRT::INPUT::IntegralValue<int>(*scatra_->ScaTraField()->ScatraParameterList(),"OUTPUTNONLINSOLVERSTATS"))
       scatra_->ScaTraField()->OutputNonlinSolverStats(iter_,dtnonlinsolve,Step(),Comm());
+
+    // prepare structure output
+    structure_->PrepareOutput();
 
     // update scalar transport and structure fields
     Update();
