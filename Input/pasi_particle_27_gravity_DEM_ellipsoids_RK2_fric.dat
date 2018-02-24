@@ -30,6 +30,7 @@ NUMSTEP                         3000
 COUPALGO                        partitioned_onewaycoup
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      RK2
+REPARTITIONSTRATEGY             Everydt
 RESEVRYERGY                     3000
 GRAVITY_ACCELERATION            0.0 0.0 -9.81
 PARTICLE_INTERACTION            NormalAndTangentialContact_DEM

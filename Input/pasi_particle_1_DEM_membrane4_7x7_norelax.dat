@@ -23,6 +23,7 @@ M_DAMP                          1.0
 K_DAMP                          1.0
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      CentrDiff
+REPARTITIONSTRATEGY             Everydt
 GRAVITY_ACCELERATION            0.0 0.0 -9.81
 PARTICLE_INTERACTION            NormalContact_DEM
 NORMAL_CONTACT_LAW              LinearSpring

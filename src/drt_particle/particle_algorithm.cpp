@@ -111,6 +111,9 @@ PARTICLE::Algorithm::Algorithm(
         "Set parameter PROBLEMTYP to 'Particle_Structure_Interaction' in ---PROBLEM TYP section\n"
         "and set the particle structure interaction parameters in ---PASI DYNAMIC section\n");
 
+  if (moving_walls_ == true and rep_strategy_ != INPAR::PARTICLE::repstr_everydt)
+    dserror("REPARTITIONSTRATEGY must be set to Everydt for particle problems with moving walls!");
+
   gravity_acc_.PutScalar(0.0);
   // get acceleration vector due to gravity for particles
   std::istringstream accstream(Teuchos::getNumericStringParameter(particleparams,"GRAVITY_ACCELERATION"));
