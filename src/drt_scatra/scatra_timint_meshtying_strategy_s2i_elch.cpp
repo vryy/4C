@@ -43,6 +43,7 @@ SCATRA::MeshtyingStrategyS2IElch::MeshtyingStrategyS2IElch(
     ) :
 MeshtyingStrategyS2I(elchtimint,parameters),
 etagrowthmin_(0.),
+intlayergrowth_startstep_(-1),
 intlayergrowth_timestep_active_(false)
 {
   return;
@@ -75,29 +76,20 @@ void SCATRA::MeshtyingStrategyS2IElch::ComputeTimeStepSize(double& dt)
     scatratimint_->Discretization()->EvaluateCondition(condparams,"S2ICouplingGrowth");
     scatratimint_->Discretization()->ClearState();
 
+    // communicate minimum interfacial overpotential associated with scatra-scatra interface layer growth
+    double etagrowthmin(0.);
+    scatratimint_->Discretization()->Comm().MinAll(&condparams.get<double>("etagrowthmin"),&etagrowthmin,1);
+
     // adaptive time stepping for scatra-scatra interface layer growth is currently inactive
     if(not intlayergrowth_timestep_active_)
     {
-      // communicate minimum interfacial overpotential associated with scatra-scatra interface layer growth
-      double etagrowthmin(0.);
-      scatratimint_->Discretization()->Comm().MinAll(&condparams.get<double>("etagrowthmin"),&etagrowthmin,1);
-
       // check whether adaptive time stepping for scatra-scatra interface layer growth needs to be activated
       // this is the case if the minimum interfacial overpotential is currently positive, but would turn negative
       // after adding twice the change in the minimum interfacial overpotential during the previous time step,
       // i.e., eta - 2*(eta_old - eta) < 0, so that lithium plating could take place after the current time step
       if(etagrowthmin > 0. and etagrowthmin - 2.*(etagrowthmin_ - etagrowthmin) < 0.)
-      {
         // activate adaptive time stepping for scatra-scatra interface layer growth
         intlayergrowth_timestep_active_ = true;
-
-        // reset minimum interfacial overpotential associated with scatra-scatra interface layer growth
-        etagrowthmin_ = 0.;
-      }
-
-      else
-        // update minimum interfacial overpotential associated with scatra-scatra interface layer growth
-        etagrowthmin_ = etagrowthmin;
     }
 
     // adaptive time stepping for scatra-scatra interface layer growth is currently active
@@ -107,11 +99,26 @@ void SCATRA::MeshtyingStrategyS2IElch::ComputeTimeStepSize(double& dt)
       double etagrowthmax(0.);
       scatratimint_->Discretization()->Comm().MaxAll(&condparams.get<double>("etagrowthmax"),&etagrowthmax,1);
 
-      // check whether time stepping for scatra-scatra interface layer growth needs to be deactivated
-      // this is the case if the maximum interfacial overpotential has become negative
-      if(etagrowthmax < 0.)
+      // check whether maximum interfacial overpotential has become negative
+      if(etagrowthmax < 0. and intlayergrowth_startstep_ < 0)
+        // store current time step as indicator for completed onset of scatra-scatra interface layer growth
+        intlayergrowth_startstep_ = scatratimint_->Step();
+
+      // check whether adaptive time stepping for scatra-scatra interface layer growth needs to be deactivated
+      // this is the case if ten time steps have passed since the completed onset of scatra-scatra interface layer growth
+      // or if the minimum interfacial overpotential is positive and increasing
+      if(scatratimint_->Step() == intlayergrowth_startstep_ + 10 or (etagrowthmin > 0. and etagrowthmin > etagrowthmin_))
+      {
+        // deactivate adaptive time stepping for scatra-scatra interface layer growth
         intlayergrowth_timestep_active_ = false;
+
+        // reset time step tracker
+        intlayergrowth_startstep_ = -1;
+      }
     }
+
+    // update minimum interfacial overpotential associated with scatra-scatra interface layer growth
+    etagrowthmin_ = etagrowthmin;
 
     // reduce time step size if necessary
     if(dt > intlayergrowth_timestep_ and intlayergrowth_timestep_active_)

@@ -83,6 +83,9 @@ class MeshtyingStrategyS2IElch : public MeshtyingStrategyS2I
     //! minimum interfacial overpotential associated with scatra-scatra interface layer growth
     double etagrowthmin_;
 
+    //! time step at the start of scatra-scatra interface layer growth
+    int intlayergrowth_startstep_;
+
     //! flag indicating modified time step size for scatra-scatra interface layer growth
     bool intlayergrowth_timestep_active_;
 }; // class MeshtyingStrategyS2IElch
