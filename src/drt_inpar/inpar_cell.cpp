@@ -668,6 +668,9 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   // flag for point-based null space calculation
   BoolParameter("NULLSPACE_POINTBASED","No","flag for point-based null space calculation",&cellscatradyn);
 
+  // flag for adaptive time stepping
+  BoolParameter("ADAPTIVE_TIMESTEPPING","No","flag for adaptive time stepping",&cellscatradyn);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& cellscatra_nonlin = cellscatradyn.sublist(
       "NONLINEAR",
