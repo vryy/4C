@@ -30,6 +30,7 @@ namespace LINALG
   // forward declarations
   class BlockSparseMatrixBase;
   class SparseMatrixBase;
+  class SparseMatrix;
 
   /*! \enum LINALG::DataAccess
    *  \brief Handling of data access (Copy or View)
@@ -278,6 +279,20 @@ class SparseOperator : public Epetra_Operator
     ///  quite expensive, because the matrix is stored in a sparse and distributed
     ///  manner.
     virtual void ApplyDirichlet(const Epetra_Map& dbcmap, bool diagonalblock=true) = 0;
+
+    /** \brief Return TRUE if all Dirichlet boundary conditions have been applied
+     *  to this matrix
+     *
+     *  \param (in) dbcmap: DBC map holding all dbc dofs
+     *  \param (in) diagonalblock: Is this matrix a diagonalblock of a blocksparsematrix?
+     *                             If it is only one block/matrix, this boolean should be TRUE.
+     *  \param (in) trafo: pointer to an optional trafo matrix (see LocSys).
+     *
+     *  \author hiermeier \date 01/18 */
+    virtual bool IsDbcApplied(
+        const Epetra_Map& dbcmap,
+        bool diagonalblock=true,
+        const LINALG::SparseMatrix* trafo=NULL ) const = 0;
 
     /// Returns the Epetra_Map object associated with the (full) domain of this operator.
     virtual const Epetra_Map& DomainMap() const = 0;

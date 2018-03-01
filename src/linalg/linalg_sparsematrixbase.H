@@ -59,6 +59,23 @@ namespace LINALG
     /// If Complete() has been called, this query returns true, otherwise it returns false.
     bool Filled() const { return sysmat_->Filled(); }
 
+    /** \brief Return TRUE if all Dirichlet boundary conditions have been applied
+     *  to this matrix */
+    /** Actual implementation of the check. If a local coordinate transformation
+     *  has been considered, we do a point by point comparison of each DBC row
+     *  of the diagonal block. Note that the number of entries in each row
+     *  of the trafo matrix must not coincide with the number of entries in
+     *  each corresponding DBC row of this matrix, if the DBCs are not applied
+     *  explicitly.
+     *  If no local transformation is involved, we are just looking for a 1.0
+     *  on the diagonal of diagonal blocks and zeros everywhere else in the DBC
+     *  rows.
+     *
+     *  \author hiermeier \date 01/2018 */
+    virtual bool IsDbcApplied(const Epetra_Map& dbcmap,
+        bool diagonalblock=true,
+        const LINALG::SparseMatrix* trafo=NULL ) const;
+
     //@}
 
     /** \name Mathematical functions */

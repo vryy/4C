@@ -107,6 +107,12 @@ class BlockSparseMatrixBase : public SparseOperator
 
   void ApplyDirichlet(const Epetra_Map& dbcmap, bool diagonalblock=true);
 
+  /// derived
+  virtual bool IsDbcApplied(
+      const Epetra_Map& dbcmap,
+      bool diagonalblock=true,
+      const LINALG::SparseMatrix* trafo=NULL ) const;
+
   //@}
 
   /** \name Matrix Properties Query Methods */
@@ -245,6 +251,7 @@ class BlockSparseMatrixBase : public SparseOperator
                                              bool completeoutput);
 
 protected:
+
   /// extract a partial map extractor from the full map extractor
   void GetPartialExtractor(
       const MultiMapExtractor& full_extractor,
@@ -310,6 +317,7 @@ public:
       bool savegraph=false);
 
   /// clone the full block sparse matrix
+
   /** Do not forget to call Complete() after cloning, even if you
    *  use LINALG::View! */
   Teuchos::RCP<BlockSparseMatrixBase> Clone(DataAccess access);
@@ -368,6 +376,7 @@ public:
   void Complete();
 
 private:
+
   /** \brief internal clone method which provides the possibility to clone only
    *         a sub-set of all blocks
    *

@@ -1454,7 +1454,7 @@ void LINALG::ApplyDirichlettoSystem(Teuchos::RCP<LINALG::SparseOperator> A,
     const Teuchos::RCP<const Epetra_Vector>& dbcval, const Epetra_Map& dbcmap)
 {
   if (trafo != Teuchos::null)
-    Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(A)->ApplyDirichletWithTrafo(
+    Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(A,true)->ApplyDirichletWithTrafo(
         trafo, dbcmap);
   else
     // trafo==Teuchos::null
@@ -1469,7 +1469,7 @@ void LINALG::ApplyDirichlettoSystem(Teuchos::RCP<LINALG::SparseOperator> A,
     const Teuchos::RCP<const Epetra_Vector>& dbcval, const Epetra_Map& dbcmap)
 {
   if (trafo != Teuchos::null)
-    Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(A)->ApplyDirichletWithTrafo(
+    Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(A,true)->ApplyDirichletWithTrafo(
         trafo, dbcmap);
   else
     // trafo==Teuchos::null

@@ -1169,9 +1169,11 @@ void LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Map& dbctoggle,
 /*----------------------------------------------------------------------*
  |  Apply dirichlet conditions  (public)                     mwgee 02/07|
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::ApplyDirichletWithTrafo(Teuchos::RCP<const LINALG::SparseMatrix> trafo,
-                                                   const Epetra_Map& dbctoggle,
-                                                   bool diagonalblock)
+void LINALG::SparseMatrix::ApplyDirichletWithTrafo(
+    Teuchos::RCP<const LINALG::SparseMatrix> trafo,
+    const Epetra_Map& dbctoggle,
+    bool diagonalblock,
+    bool complete )
 {
   if (not Filled())
     dserror("expect filled matrix to apply dirichlet conditions");
@@ -1271,7 +1273,8 @@ void LINALG::SparseMatrix::ApplyDirichletWithTrafo(Teuchos::RCP<const LINALG::Sp
     //                     dofs in x/y/z-direction, trafo block is put at the
     //                     position of the dofs of this node, rest of row is blanked
     sysmat_ = Anew;
-    Complete();
+    if ( complete )
+      Complete();
   }
   else
   {
@@ -1525,7 +1528,8 @@ void LINALG::SparseMatrix::Put(const LINALG::SparseMatrix& A,
     if (err) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d",err);
     if (scalarA != 1.0) for (int j=0; j<NumEntries; ++j) Values[j] *= scalarA;
     err = sysmat_->ReplaceGlobalValues(Row,NumEntries,&(Values[0]),&(Indices[0]));
-    if (err) dserror("Epetra_CrsMatrix::ReplaceGlobalValues returned err=%d",err);
+    if ( err )
+      dserror("Epetra_CrsMatrix::ReplaceGlobalValues returned err=%d",err);
   }
 
   return;

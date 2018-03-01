@@ -321,7 +321,8 @@ class SparseMatrix : public SparseMatrixBase
     /// for the DOFs of the nodes.
     void ApplyDirichletWithTrafo(Teuchos::RCP<const LINALG::SparseMatrix> trafo,
                                  const Epetra_Map& dbctoggle,
-                                 bool diagonalblock=true);
+                                 bool diagonalblock=true,
+                                 bool complete=true);
 
     /// create matrix that contains all Dirichlet lines from my
     Teuchos::RCP<SparseMatrix> ExtractDirichletRows(const Teuchos::RCP<Epetra_Vector> dbctoggle);

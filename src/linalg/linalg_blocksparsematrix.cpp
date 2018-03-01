@@ -90,6 +90,7 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::BlockSparseMatrixBase::Merge(bool exp
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::BlockSparseMatrixBase::Merge");
 
   const SparseMatrix& m00 = Matrix(0,0);
+
   Teuchos::RCP<SparseMatrix> sparse = Teuchos::rcp(new SparseMatrix(*fullrowmap_,
                                                                     m00.MaxNumEntries(),
                                                                     explicitdirichlet)
@@ -236,6 +237,28 @@ void LINALG::BlockSparseMatrixBase::ApplyDirichlet(const Epetra_Map& dbcmap, boo
   }
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool LINALG::BlockSparseMatrixBase::IsDbcApplied(
+    const Epetra_Map& dbcmap,
+    bool diagonalblock,
+    const LINALG::SparseMatrix* trafo ) const
+{
+  const int rows = Rows();
+  const int cols = Cols();
+
+  for (int rblock=0; rblock<rows; ++rblock)
+  {
+    for (int cblock=0; cblock<cols; ++cblock)
+    {
+      if ( not Matrix(rblock,cblock).IsDbcApplied( dbcmap,
+          diagonalblock and (rblock==cblock), trafo ) )
+        return false;
+    }
+  }
+  return true;
+}
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -268,7 +291,8 @@ int LINALG::BlockSparseMatrixBase::Apply(const Epetra_MultiVector &X, Epetra_Mul
         const LINALG::SparseMatrix& bmat = Matrix(rblock,cblock);
         int err = bmat.Apply(*colx,*rowy);
         if (err!=0)
-          dserror("failed to apply vector to matrix: err=%d",err);
+          dserror("failed to apply vector to matrix block (%d,%d): err=%d",
+              rblock,cblock,err);
         rowresult->Update(1.0,*rowy,1.0);
       }
       rangemaps_.InsertVector(*rowresult,rblock,Y);
@@ -456,6 +480,7 @@ void LINALG::BlockSparseMatrixBase::GetPartialExtractor(
 
   std::vector<Teuchos::RCP<const Epetra_Map> > p_block_maps;
   p_block_maps.reserve( num_blocks );
+
   for ( const unsigned id : block_ids )
   {
     p_block_maps.push_back( full_extractor.Map( id ) );
