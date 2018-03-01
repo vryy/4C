@@ -52,7 +52,7 @@ namespace CONSTRAINT {
     //! generate a clone of the given object concerning the given \c CopyType
     Teuchos::RCP<NOX::Abstract::Group> clone(CopyType type) const;
 
-    virtual NOX::Abstract::Group& operator=(const NOX::Epetra::Group& source);
+    NOX::Abstract::Group& operator=(const NOX::Epetra::Group& source) override;
 
     //! Returns the interface map
     const ReqInterfaceMap& GetConstrInterfaces() const;
@@ -69,43 +69,44 @@ namespace CONSTRAINT {
     //@{
 
     /// derived
-    virtual double GetModelValue(
-        const enum NOX::NLN::MeritFunction::MeritFctName merit_func_type ) const;
+    double GetModelValue(
+        const enum NOX::NLN::MeritFunction::MeritFctName merit_func_type ) const override;
 
     /// derived
-    virtual double GetLinearizedModelTerms(
+    double GetLinearizedModelTerms(
         const NOX::Abstract::Vector& dir,
         const enum NOX::NLN::MeritFunction::MeritFctName mf_type,
         const enum NOX::NLN::MeritFunction::LinOrder linorder,
-        const enum NOX::NLN::MeritFunction::LinType lintype ) const;
+        const enum NOX::NLN::MeritFunction::LinType lintype ) const override;
 
     //! Returns the right-hand-side norms of the primary and constraint quantities
-    virtual Teuchos::RCP<const std::vector<double> > GetRHSNorms(
+    Teuchos::RCP<const std::vector<double> > GetRHSNorms(
         const std::vector<NOX::Abstract::Vector::NormType>& type,
         const std::vector<NOX::NLN::StatusTest::QuantityType>& chQ,
-        const Teuchos::RCP<const std::vector<NOX::StatusTest::NormF::ScaleType> > scale = Teuchos::null) const;
+        const Teuchos::RCP<const std::vector<NOX::StatusTest::NormF::ScaleType> > scale = Teuchos::null)
+            const override;
 
     //! Returns the root mean square norm of the primary and Lagrange multiplier updates
-    virtual Teuchos::RCP<std::vector<double> > GetSolutionUpdateRMS(
+    Teuchos::RCP<std::vector<double> > GetSolutionUpdateRMS(
         const NOX::Abstract::Vector& xOld,
         const std::vector<double>& aTol,
         const std::vector<double>& rTol,
         const std::vector<NOX::NLN::StatusTest::QuantityType>& chQ,
-        const std::vector<bool>& disable_implicit_weighting) const;
+        const std::vector<bool>& disable_implicit_weighting) const override;
 
     //! Returns the desired norm of the primary solution updates and Lagrange multiplier updates
-    virtual Teuchos::RCP<std::vector<double> > GetSolutionUpdateNorms(
+    Teuchos::RCP<std::vector<double> > GetSolutionUpdateNorms(
         const NOX::Abstract::Vector& xOld,
         const std::vector<NOX::Abstract::Vector::NormType>& type,
         const std::vector<StatusTest::QuantityType>& chQ,
-        Teuchos::RCP<const std::vector<StatusTest::NormUpdate::ScaleType> > scale) const;
+        Teuchos::RCP<const std::vector<StatusTest::NormUpdate::ScaleType> > scale) const override;
 
     //! Returns the desired norm of the previous primary solution and Lagrange multiplier solution
-    virtual Teuchos::RCP<std::vector<double> > GetPreviousSolutionNorms(
+    Teuchos::RCP<std::vector<double> > GetPreviousSolutionNorms(
         const NOX::Abstract::Vector& xOld,
         const std::vector<NOX::Abstract::Vector::NormType>& type,
         const std::vector<StatusTest::QuantityType>& chQ,
-        Teuchos::RCP<const std::vector<StatusTest::NormUpdate::ScaleType> > scale) const;
+        Teuchos::RCP<const std::vector<StatusTest::NormUpdate::ScaleType> > scale) const override;
     //! @}
 
     //! @name Handle active set strategies

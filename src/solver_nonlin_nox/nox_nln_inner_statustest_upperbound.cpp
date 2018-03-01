@@ -14,11 +14,12 @@
 
 #include "nox_nln_inner_statustest_upperbound.H"
 #include "nox_nln_linesearch_generic.H"
+#include "nox_nln_group.H"
 
 #include <NOX_Utils.H>
-#include <NOX_Abstract_Group.H>
 #include <NOX_Abstract_Vector.H>
 #include <NOX_Epetra_Vector.H>
+#include <NOX_Solver_Generic.H>
 #include <Epetra_Vector.h>
 
 
@@ -28,23 +29,28 @@
  *----------------------------------------------------------------------------*/
 NOX::NLN::INNER::StatusTest::UpperBound::UpperBound(
     const double& upperboundval,
-    const NOX::Abstract::Vector::NormType& normtype) :
-    status_(status_unevaluated),
-    upperboundval_(upperboundval),
-    normtype_(normtype),
-    stepmaxval_(0.0)
+    const NOX::Abstract::Vector::NormType normtype,
+    const NOX::NLN::StatusTest::QuantityType qtype )
+    : status_(status_unevaluated),
+      normtype_(normtype),
+      qtype_(qtype),
+      upperboundval_(upperboundval),
+      stepmaxval_(0.0)
 {
   // empty
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::UpperBound::Setup(
+double NOX::NLN::INNER::StatusTest::UpperBound::GetSearchDirectionLength(
     const NOX::NLN::LineSearch::Generic& linesearch,
-    const NOX::Abstract::Group& grp)
+    const NOX::Solver::Generic& solver,
+    const NOX::Abstract::Group& grp ) const
 {
-  /* ToDo setup a DofMap that specifies the entries of the update vector
-   * which should be checked for upper bound (e.g. only structural position DoFs) */
+  const NOX::NLN::Group& nln_grp = dynamic_cast<const NOX::NLN::Group&>( grp );
+
+  return nln_grp.GetTrialUpdateNorm( linesearch.GetSearchDirection(),
+      normtype_, qtype_ );
 }
 
 /*----------------------------------------------------------------------------*
@@ -72,12 +78,11 @@ NOX::NLN::INNER::StatusTest::StatusType
    * line search (i.e. inner) iteration and do nothing in all following iterations */
   if (interface.GetNumIterations()==0)
   {
-    Setup(*linesearch,grp);
-
+    const double dir_length = GetSearchDirectionLength( *linesearch, solver, grp );
     double steplength = linesearch->GetStepLength();
 
     // compute specified norm
-    stepmaxval_ = steplength * linesearch->GetSearchDirection().norm(normtype_);
+    stepmaxval_ = steplength * dir_length;
 
     // check the value for specified upper bound
     status_ = (stepmaxval_ < upperboundval_) ? status_converged : status_step_too_long;

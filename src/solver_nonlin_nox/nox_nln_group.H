@@ -60,20 +60,20 @@ namespace GROUP {
     //! Destructor
     virtual ~Group(){};
 
-    virtual NOX::Abstract::Group& operator=(const NOX::Abstract::Group& source);
-    virtual NOX::Abstract::Group& operator=(const NOX::Epetra::Group& source);
+    NOX::Abstract::Group& operator=(const NOX::Abstract::Group& source) override;
+    NOX::Abstract::Group& operator=(const NOX::Epetra::Group& source) override;
 
     //! generate a clone of the given object concerning the given \c CopyType
-    virtual Teuchos::RCP<NOX::Abstract::Group> clone(CopyType type = DeepCopy) const;
+    Teuchos::RCP<NOX::Abstract::Group> clone(CopyType type = DeepCopy) const override;
 
     //! compute/update the current state variables
-    virtual void computeX(
+    void computeX(
         const NOX::NLN::Group& grp,
         const NOX::Epetra::Vector& d,
         double step);
-    virtual void computeX(const NOX::Abstract::Group& grp,
+    void computeX(const NOX::Abstract::Group& grp,
               const NOX::Abstract::Vector& d,
-              double step);
+              double step) override;
 
     //! derived
     virtual NOX::Abstract::Group::ReturnType computeF();
@@ -95,7 +95,7 @@ namespace GROUP {
     NOX::Abstract::Group::ReturnType setF(Teuchos::RCP<NOX::Epetra::Vector> Fptr);
 
     //! set jacobian operator
-    virtual NOX::Abstract::Group::ReturnType setJacobianOperator(const Teuchos::RCP<const Epetra_Operator> jacOperator);
+    NOX::Abstract::Group::ReturnType setJacobianOperator(const Teuchos::RCP<const Epetra_Operator> jacOperator);
 
     //! set flag whether update of x vector should be skipped (because it has already be done in preComputeX)
     void setSkipUpdateX(bool skipUpdateX);
@@ -104,7 +104,7 @@ namespace GROUP {
      * separately and get the ownership, if necessary. This prevents unnecessary
      * evaluation calls of the expensive computeJacobian() routines! Afterwards
      * the base class function is called.                   hiermeier 03/2016 */
-    virtual bool isJacobian() const;
+    bool isJacobian() const override;
 
     //! returns the nox_nln_interface_required pointer
     Teuchos::RCP<const NOX::NLN::Interface::Required> GetNlnReqInterfacePtr() const;
@@ -123,6 +123,12 @@ namespace GROUP {
         const std::vector<NOX::NLN::StatusTest::QuantityType>& chQ,
         const std::vector<bool>& disable_implicit_weighting) const;
 
+    double GetTrialUpdateNorm(
+        const NOX::Abstract::Vector& dir,
+        const NOX::Abstract::Vector::NormType normtype,
+        const StatusTest::QuantityType quantity,
+        const StatusTest::NormUpdate::ScaleType scale = StatusTest::NormUpdate::Unscaled ) const;
+
     //! returns the desired norm of the primary solution updates
     virtual Teuchos::RCP<std::vector<double> > GetSolutionUpdateNorms(
         const NOX::Abstract::Vector& xOld,
@@ -138,11 +144,11 @@ namespace GROUP {
         Teuchos::RCP<const std::vector<StatusTest::NormUpdate::ScaleType> > scale) const;
 
     //! create a backup state
-    virtual void CreateBackupState(
+    void CreateBackupState(
         const NOX::Abstract::Vector& dir ) const;
 
     //! recover from stored backup state
-    virtual void RecoverFromBackupState();
+    void RecoverFromBackupState();
 
     //! @name reset the pre/post operator wrapper objects
     //! @{
@@ -186,10 +192,10 @@ namespace GROUP {
         const NOX::NLN::Solver::PseudoTransient& ptcsolver);
 
     //! get the lumped mass matrix
-    virtual Teuchos::RCP<const Epetra_Vector> GetLumpedMassMatrixPtr() const;
+    Teuchos::RCP<const Epetra_Vector> GetLumpedMassMatrixPtr() const;
 
     // Get element based scaling operator
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetContributionsFromElementLevel();
+    Teuchos::RCP<LINALG::SparseMatrix> GetContributionsFromElementLevel();
     //! @}
 
     //! @name XFEM related methods

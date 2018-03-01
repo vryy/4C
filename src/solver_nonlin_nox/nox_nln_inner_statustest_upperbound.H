@@ -25,6 +25,9 @@ namespace Abstract {
   class Vector;
 } // namespace Abstract
 namespace NLN {
+namespace StatusTest {
+  enum QuantityType : int;
+} // namespace QuantityType
 namespace LineSearch {
   class Generic;
 } // namespace LineSearch
@@ -34,8 +37,10 @@ namespace StatusTest {
   {
   public:
     //! constructor
-    UpperBound(const double& upperboundval,
-              const NOX::Abstract::Vector::NormType& normtype);
+    UpperBound(
+        const double& upperboundval,
+        const NOX::Abstract::Vector::NormType normtype,
+        const NOX::NLN::StatusTest::QuantityType qtype);
 
     //! destructor
     virtual ~UpperBound() {};
@@ -54,8 +59,11 @@ namespace StatusTest {
     virtual std::ostream& Print(std::ostream& stream, int indent = 0) const;
 
   protected:
-    void Setup(const NOX::NLN::LineSearch::Generic& linesearch,
-              const NOX::Abstract::Group& grp);
+
+    double GetSearchDirectionLength(
+        const NOX::NLN::LineSearch::Generic& linesearch,
+        const NOX::Solver::Generic& solver,
+        const NOX::Abstract::Group& grp ) const;
 
   private:
     void throwError(
@@ -66,15 +74,17 @@ namespace StatusTest {
     //! Status
     NOX::NLN::INNER::StatusTest::StatusType status_;
 
-    //! value for upper bound of Newton step size
-    double upperboundval_;
-
     //! norm type
     NOX::Abstract::Vector::NormType normtype_;
 
+    //! degree of freedom type
+    NOX::NLN::StatusTest::QuantityType qtype_;
+
+    //! value for upper bound of Newton step size
+    double upperboundval_;
+
     //! current maximal value of step size
     double stepmaxval_;
-
   };
 } // namespace StatusTest
 } // namespace INNER

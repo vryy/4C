@@ -290,7 +290,7 @@ const double& NOX::NLN::LineSearch::Backtrack::GetStepLength() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LineSearch::Backtrack::SetStepLength(double& step)
+void NOX::NLN::LineSearch::Backtrack::SetStepLength(double step)
 {
   if (stepPtr_==NULL)
     throwError("GetMutableStepLength","Step pointer is NULL!");

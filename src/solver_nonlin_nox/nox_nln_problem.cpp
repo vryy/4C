@@ -166,7 +166,8 @@ void NOX::NLN::Problem::CreateStatusTests(
   {
     Teuchos::ParameterList& iParams =
         p.sublist("Status Test",true).sublist("Inner Status Test");
-    innerTests = NOX::NLN::INNER::StatusTest::BuildInnerStatusTests(iParams, noxNlnGlobalData_->GetNoxUtils());
+    innerTests = NOX::NLN::INNER::StatusTest::BuildInnerStatusTests(iParams,
+        noxNlnGlobalData_->GetNoxUtils());
   }
 
   return;

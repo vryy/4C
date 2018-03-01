@@ -264,7 +264,7 @@ NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeCorrectionSystem(
       nlnSharedLinearSystem->computeCorrectionSystem( type, *this, xVector, RHSVector );
 
   if ( not success )
-    dserror( "computeCheapSOCSystem failed!" );
+    run_time_error( "computeCorrectionSystem failed!" );
 
   isValidRHS = true;
   isValidJacobian = true;
@@ -358,6 +358,39 @@ Teuchos::RCP<std::vector<double> > NOX::NLN::Group::GetSolutionUpdateRMS(
   }
 
   return rms;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double NOX::NLN::Group::GetTrialUpdateNorm(
+    const NOX::Abstract::Vector& dir,
+    const NOX::Abstract::Vector::NormType normtype,
+    const StatusTest::QuantityType quantity,
+    const StatusTest::NormUpdate::ScaleType scale ) const
+{
+  const std::vector<NOX::Abstract::Vector::NormType> normtypes( 1, normtype );
+  const std::vector<StatusTest::QuantityType> quantities( 1, quantity );
+  const std::vector<StatusTest::NormUpdate::ScaleType> scales( 1, scale );
+
+  if ( tmpVectorPtr.is_null() or
+      !tmpVectorPtr->Map().SameAs( xVector.getEpetraVector().Map() ) )
+    tmpVectorPtr = Teuchos::rcp( new Epetra_Vector( xVector.getEpetraVector() ) );
+  else
+    tmpVectorPtr->Scale(1.0,xVector.getEpetraVector());
+
+  // change the internally stored x-vector for the norm evaluation
+  NOX::Epetra::Vector& x_mutable = const_cast<NOX::Epetra::Vector&>( xVector);
+  x_mutable.update( 1.0, dir, 1.0 );
+
+  NOX::Epetra::Vector xold( tmpVectorPtr, NOX::Epetra::Vector::CreateView );
+
+  const double rval = GetSolutionUpdateNorms( xold, normtypes, quantities,
+      Teuchos::rcpFromRef( scales ) )->at(0);
+
+  // un-do the changes to the x-vector
+  x_mutable.getEpetraVector().Scale( 1.0, *tmpVectorPtr );
+
+  return rval;
 }
 
 /*----------------------------------------------------------------------------*
@@ -467,8 +500,8 @@ double NOX::NLN::Group::GetLinearizedModelTerms(
       this, dir_epetra, mf_type, linorder, lintype );
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void NOX::NLN::Group::ResetPrePostOperator(
     Teuchos::ParameterList& grpOptionParams,
     const bool& resetIsValidFlags)
@@ -479,8 +512,8 @@ void NOX::NLN::Group::ResetPrePostOperator(
   prePostOperatorPtr_->reset(grpOptionParams);
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void NOX::NLN::Group::ResetLinSysPrePostOperator(
     Teuchos::ParameterList& linearSolverParams,
     const bool& resetIsValidFlags)
@@ -498,8 +531,8 @@ void NOX::NLN::Group::ResetLinSysPrePostOperator(
   nlnLinsysPtr->resetPrePostOperator(linearSolverParams);
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void NOX::NLN::Group::adjustPseudoTimeStep(double& delta,
     const double& stepSize,
     const NOX::Abstract::Vector& dir,
@@ -510,8 +543,8 @@ void NOX::NLN::Group::adjustPseudoTimeStep(double& delta,
   adjustPseudoTimeStep(delta,stepSize,dirEpetra,ptcsolver);
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void NOX::NLN::Group::adjustPseudoTimeStep(double& delta,
     const double& stepSize,
     const NOX::Epetra::Vector& dir,
@@ -533,24 +566,24 @@ void NOX::NLN::Group::adjustPseudoTimeStep(double& delta,
       ptcsolver);
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> NOX::NLN::Group::GetLumpedMassMatrixPtr() const
 {
   return Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Required>(
       userInterfacePtr)->GetLumpedMassMatrixPtr();
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix> NOX::NLN::Group::GetContributionsFromElementLevel()
 {
   return Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Jacobian>(
       userInterfacePtr)->CalcJacobianContributionsFromElementLevelForPTC();
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool NOX::NLN::Group::DestroyJacobian()
 {
   Teuchos::RCP<NOX::NLN::LinearSystem> nlnSharedLinearSystem =
@@ -562,8 +595,8 @@ bool NOX::NLN::Group::DestroyJacobian()
   return nlnSharedLinearSystem->DestroyJacobian();
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool NOX::NLN::Group::isJacobian() const
 {
   if (isValidJacobian and not sharedLinearSystem.isOwner(this))
@@ -572,8 +605,8 @@ bool NOX::NLN::Group::isJacobian() const
   return NOX::Epetra::Group::isJacobian();
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void NOX::NLN::Group::throwError(
     const std::string& functionName,
     const std::string& errorMsg) const
@@ -585,23 +618,21 @@ void NOX::NLN::Group::throwError(
   dserror(msg.str());
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 const Epetra_BlockMap& NOX::NLN::Group::getDofMap() const
 {
   return xVector.getEpetraVector().Map();
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void NOX::NLN::Group::CreateBackupState(
     const NOX::Abstract::Vector& dir ) const
 {
   Teuchos::RCP<NOX::NLN::Interface::Required> nln_required =
-      Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Required>(userInterfacePtr);
-
-  if ( nln_required.is_null() )
-    dserror( "Dynamic cast failed." );
+      Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Required>(userInterfacePtr,
+          true);
 
   const NOX::Epetra::Vector* epetra_dir =
       dynamic_cast<const NOX::Epetra::Vector*>( &dir );
@@ -611,8 +642,8 @@ void NOX::NLN::Group::CreateBackupState(
   nln_required->CreateBackupState( epetra_dir->getEpetraVector() );
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void NOX::NLN::Group::RecoverFromBackupState()
 {
   Teuchos::RCP<NOX::NLN::Interface::Required> nln_required =

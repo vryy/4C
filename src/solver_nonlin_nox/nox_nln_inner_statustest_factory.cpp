@@ -14,6 +14,7 @@
 /*-----------------------------------------------------------*/
 
 #include "nox_nln_inner_statustest_factory.H"
+#include "nox_nln_params_utils.H"
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -166,16 +167,15 @@ NOX::NLN::INNER::StatusTest::Factory::BuildFilterTest(
   NOX::NLN::CorrectionType soc_type = NOX::NLN::CorrectionType::vague;
   if ( use_soc )
   {
-    static const Teuchos::Array<std::string> soc_types =
-        Teuchos::tuple<std::string>( "auto", "cheap", "full" );
-    Teuchos::setStringToIntegralParameter<NOX::NLN::CorrectionType>(
-        "SOC Type","auto","Second order correction type. Per default the SOC "
-        "type is set to \"auto\".", soc_types,
+    // setup validator
+    soc_type = NOX::NLN::PUTILS::SetAndValidate<NOX::NLN::CorrectionType>(
+        p, "SOC Type","auto","Second order correction type. Per default the "
+        "SOC type is set to \"auto\".",
+        Teuchos::tuple<std::string>( "auto", "cheap", "full" ),
         Teuchos::tuple<NOX::NLN::CorrectionType>(
             NOX::NLN::CorrectionType::soc_automatic,
             NOX::NLN::CorrectionType::soc_cheap,
-            NOX::NLN::CorrectionType::soc_full ), &p );
-    soc_type = Teuchos::getIntegralValue<NOX::NLN::CorrectionType>(p,"SOC Type");
+            NOX::NLN::CorrectionType::soc_full ) );
   }
 
   // build internal Armijo test
@@ -208,8 +208,19 @@ NOX::NLN::INNER::StatusTest::Factory::BuildUpperBoundTest(
   double upperboundval = p.get("Value",1.0e10);
   if (upperboundval < 1e-14)
   {
-    std::string msg = "\"Value\" for Inner Status Test \"UpperBound\" must be greater than zero!";
+    std::string msg = "\"Value\" for Inner Status Test \"UpperBound\" must be "
+        "greater than zero!";
     TEUCHOS_TEST_FOR_EXCEPTION(true, std::logic_error, msg);
+  }
+
+  const std::string& quantity_type_string = p.get("Quantity Type","???");
+  const NOX::NLN::StatusTest::QuantityType qtype =
+      NOX::NLN::StatusTest::String2QuantityType(quantity_type_string);
+  if (qtype == NOX::NLN::StatusTest::quantity_unknown)
+  {
+    std::ostringstream msg;
+    dserror( "The \"Quantity Type\" is a required parameter "
+        "and the chosen option \"%s\" is invalid!", quantity_type_string.c_str() );
   }
 
   // Norm Type
@@ -227,7 +238,8 @@ NOX::NLN::INNER::StatusTest::Factory::BuildUpperBoundTest(
   }
 
   Teuchos::RCP<NOX::NLN::INNER::StatusTest::UpperBound> status_test =
-      Teuchos::rcp(new NOX::NLN::INNER::StatusTest::UpperBound(upperboundval,norm_type));
+      Teuchos::rcp(new NOX::NLN::INNER::StatusTest::UpperBound(upperboundval,
+          norm_type,qtype));
 
   return status_test;
 }

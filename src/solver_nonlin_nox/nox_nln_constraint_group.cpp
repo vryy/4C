@@ -175,22 +175,32 @@ Teuchos::RCP<const std::vector<double> > NOX::NLN::CONSTRAINT::Group::GetRHSNorm
       continue;
     }
 
-    enum NOX::NLN::SolutionType soltype =
-        NOX::NLN::AUX::ConvertQuantityType2SolutionType(chQ[i]);
-    Teuchos::RCP<const NOX::NLN::CONSTRAINT::Interface::Required> constrptr =
-        GetConstraintInterfacePtr(soltype);
-    rval = constrptr->GetConstraintRHSNorms(RHSVector.getEpetraVector(),chQ[i],type[i],
-        (*scale)[i]==NOX::StatusTest::NormF::Scaled);
+    // avoid the execution of this block for NaN and Inf return values
+    if ( rval < 0.0 )
+    {
+      enum NOX::NLN::SolutionType soltype =
+          NOX::NLN::AUX::ConvertQuantityType2SolutionType(chQ[i]);
+      Teuchos::RCP<const NOX::NLN::CONSTRAINT::Interface::Required> constrptr =
+          GetConstraintInterfacePtr(soltype);
+      rval = constrptr->GetConstraintRHSNorms(RHSVector.getEpetraVector(),chQ[i],type[i],
+          (*scale)[i]==NOX::StatusTest::NormF::Scaled);
+    }
+
     if (rval>=0.0)
       norms->push_back(rval);
-    else
+    else if (rval<0.0)
     {
       std::ostringstream msg;
       msg << "The desired quantity"
           " for the \"NormF\" Status Test could not be found! (enum="
           << chQ[i] << " | " << NOX::NLN::StatusTest::QuantityType2String(chQ[i])
-          << ")" << std::endl;
-      throwError("GetRhsNorms",msg.str());
+          << " | return value=" << rval << ")" << std::endl;
+      dserror(msg.str());
+    }
+    else
+    {
+      dserror("The norm value %e for quantity %s is not valid!", rval,
+          NOX::NLN::StatusTest::QuantityType2String(chQ[i]).c_str() );
     }
   }
 

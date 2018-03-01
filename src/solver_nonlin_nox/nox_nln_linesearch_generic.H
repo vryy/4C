@@ -43,7 +43,7 @@ namespace LineSearch {
     virtual const double& GetStepLength() const = 0;
 
     //! sets the stepSize
-    virtual void SetStepLength(double& step) = 0;
+    virtual void SetStepLength(double step) = 0;
     //! @}
 
     //! @name NOX::LineSearch::Generic

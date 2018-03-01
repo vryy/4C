@@ -547,8 +547,10 @@ void NOX::NLN::INNER::StatusTest::Filter::ThrowIfStepTooShort(
       GetActiveSetStatus( solver );
 
   if ( step < gamma_alpha_ * amin_ )
-    dserror("The step-length is too short! We can't find a feasible solution "
-        "in the current search direction! (active-set status = %s)",
+    dserror("The step-length %1.6e is lower than the minimal allowed step length"
+        "amin = %1.6e. This indicates that we can't find a feasible solution "
+        "in the current search direction and we decide to stop here. (active-set status = %s)",
+        step, gamma_alpha_ * amin_,
         NOX::NLN::StatusTest::StatusType2String( active_set_status ).c_str() );
 }
 
@@ -600,6 +602,8 @@ NOX::NLN::INNER::StatusTest::Filter::SecondOrderCorrection::execute(
   NOX::Abstract::Group& mutable_grp = const_cast<NOX::Abstract::Group&>( grp );
   NOX::NLN::Group& nln_grp = dynamic_cast<NOX::NLN::Group&>( mutable_grp );
   curr_type_ = whichType( solver );
+
+  filter_.utils_.out() << "SOC-type       = " << CorrectionType2String( curr_type_ ) << "\n";
 
   {
     const double t_start = Teuchos::Time::wallTime();
@@ -710,19 +714,7 @@ void NOX::NLN::INNER::StatusTest::Filter::SecondOrderCorrection::computeSystem(
     NOX::NLN::Group& grp,
     const NOX::Solver::Generic& solver ) const
 {
-  switch ( curr_type_ )
-  {
-    /* If the active-set seems to be converged, we will perform the cheap
-     * correction. */
-    case CorrectionType::soc_cheap:
-      grp.computeCorrectionSystem( curr_type_ );
-      break;
-    /* If the active-set is not yet converged or the status is undefined, a full
-     * step will be performed. */
-    default:
-      grp.computeFandJacobian();
-      break;
-  }
+  grp.computeCorrectionSystem( curr_type_ );
 }
 
 /*----------------------------------------------------------------------------*
@@ -928,13 +920,10 @@ NOX::NLN::INNER::StatusTest::Filter::AcceptabilityCheck( const Point& trial_fp )
     // If the check failed for one filter point, the whole test failed.
     if ( not passed_check )
     {
-      if ( utils_.isPrintType( NOX::Utils::Debug ) )
-      {
-        utils_.out() << "\n======================\n";
-        utils_.out() << "rejected by:\n";
-        fp.print(std::cout);
-        utils_.out() << "\n======================\n";
-      }
+      utils_.out(NOX::Utils::Debug) << "\n" << NOX::Utils::fill(22,'=') << "\n";
+      utils_.out(NOX::Utils::Debug) << "rejected by:\n";
+      fp.print( utils_.out(NOX::Utils::Debug) );
+      utils_.out(NOX::Utils::Debug) << "\n" << NOX::Utils::fill(22,'=') << "\n";
       break;
     }
   }
