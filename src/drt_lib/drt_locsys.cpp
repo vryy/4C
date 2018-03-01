@@ -16,6 +16,7 @@ vectors and matrices.
 #include "../drt_io/io_pstream.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_blocksparsematrix.H"
+#include "../linalg/linalg_multiply.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_fem_general/largerotations.H"
@@ -777,11 +778,13 @@ void DRT::UTILS::LocsysManager::RotateGlobalToLocal(
 /*----------------------------------------------------------------------*
  |  Transform system matrix global -> local (public)       mueller 05/10|
  *----------------------------------------------------------------------*/
-void DRT::UTILS::LocsysManager::RotateGlobalToLocal(Teuchos::RCP<LINALG::SparseMatrix> sysmat)
-    const
+void DRT::UTILS::LocsysManager::RotateGlobalToLocal(
+    Teuchos::RCP<LINALG::SparseMatrix> sysmat ) const
 {
   // selective multiplication from left
-  Teuchos::RCP<LINALG::SparseMatrix> temp = LINALG::Multiply(*subtrafo_,false,*sysmat,false,true);
+  Teuchos::RCP<LINALG::SparseMatrix> temp = LINALG::MLMultiply(
+      *subtrafo_,*sysmat,sysmat->ExplicitDirichlet(),sysmat->SaveGraph(),true);
+
   // put transformed rows back into global matrix
   sysmat->Put(*temp,1.0,locsysdofmap_);
 

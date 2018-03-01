@@ -268,16 +268,25 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
   DoubleParameter("CN_UPPER_BOUND", std::numeric_limits<double>::max(),
       "Upper bound for the cn value. Used during the dynamic cn update.",&sacontact);
 
+  DoubleParameter("CORRECTION_PARAMETER", 0.0,
+      "Some penalty update methods use a user-specified correction parameter, "
+      "which accelerates the convergence. This parameter can be specified here.",
+      &sacontact);
+
   setStringToIntegralParameter<PenaltyUpdate>("PENALTY_UPDATE","Vague","Which kind of "
       "penalty update should be used?",
         tuple<std::string>("Vague",
                            "LMGapRatio",
                            "Complementarity",
+                           "SufficientLinearReduction",
+                           "SufficientAngle",
                            "None" ),
         tuple<PenaltyUpdate>(
             PenaltyUpdate::vague,
             PenaltyUpdate::lm_gap_ratio,
             PenaltyUpdate::complementarity,
+            PenaltyUpdate::sufficient_lin_reduction,
+            PenaltyUpdate::sufficient_angle,
             PenaltyUpdate::none ),
         &sacontact);
 
@@ -316,6 +325,10 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
           tuple<std::string>("PreAsymptotic"),
           tuple<int>( switch_preasymptotic ),
           &combo_contact);
+
+  setStringToIntegralParameter<int>("PRINT2SCREEN","Yes",
+      "Activate the screen output of the COMBO strategy and the different "
+      "switching strategies.", yesnotuple,yesnovalue,&combo_contact);
 
   // --------------------------------------------------------------------------
   // sub-sub-list "Augmented/Lagrange_Multiplier_Function"

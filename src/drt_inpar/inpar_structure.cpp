@@ -437,6 +437,7 @@ namespace INPAR
                                    "ConstAcc",
                                    "ConstDisVelAcc",
                                    "TangDis",
+                                   "TangDisConstFext",
                                    "ConstDisPres",
                                    "ConstDisVelAccPres"),
                                  tuple<int>(
@@ -446,6 +447,7 @@ namespace INPAR
                                    pred_constacc,
                                    pred_constdisvelacc,
                                    pred_tangdis,
+                                   pred_tangdis_constfext,
                                    pred_constdispres,
                                    pred_constdisvelaccpres),
                                  &sdyn);

@@ -229,6 +229,7 @@ namespace INPAR
       lm_gap_ratio,             ///< use the ratio between Lagrange multiplier and weighted gap
       complementarity,          ///< enforce the complementarity condition
       sufficient_lin_reduction, ///< enforce sufficient reduction of the linear infeasibility model
+      sufficient_angle,         ///< enforce sufficient angle
       none                      ///< perform no penalty parameter update
     };
 
@@ -245,6 +246,8 @@ namespace INPAR
           return "PenaltyUpdate::complementarity";
         case PenaltyUpdate::sufficient_lin_reduction:
           return "PenaltyUpdate::sufficient_lin_reduction";
+        case PenaltyUpdate::sufficient_angle:
+          return "PenaltyUpdate::sufficient_angle";
         case PenaltyUpdate::none:
           return "PenaltyUpdate::none";
         default:

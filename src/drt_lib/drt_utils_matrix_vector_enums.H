@@ -41,7 +41,7 @@ namespace UTILS {
   };
 
   //! map matrix block type enum to std::string
-  static inline const std::string MatBlockType2String(const enum MatBlockType& type)
+  inline const std::string MatBlockType2String(const enum MatBlockType type)
   {
     switch (type)
     {
@@ -62,16 +62,32 @@ namespace UTILS {
       default:
         return "unknown matrix block type";
     }
-    return "";
   }
 
-  /// enum, which specifies the desired matrix block for the different models
+  /** enum, which specifies the desired vector blocks for the different models */
   enum VecBlockType
   {
     block_displ,      ///< displacement block (structural block)
     block_constraint, ///< lagrange multiplier/constraint block of the corresponding model
     block_temp,       ///< temperature block (thermal block)
   };
+
+  //! map vector block type enum to std::string
+  inline const std::string VecBlockType2String( const enum VecBlockType type )
+  {
+    switch (type)
+    {
+      case block_displ:
+        return "block_displ";
+      case block_constraint:
+        return "block_constraint";
+      case block_temp:
+        return "block_temp";
+      default:
+        return "unknown vector block type";
+    }
+  }
+
 } // namespace UTILS
 } // namespace DRT
 

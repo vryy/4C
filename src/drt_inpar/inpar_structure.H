@@ -437,7 +437,7 @@ namespace INPAR
 
 
     /// Type of predictor
-    enum PredEnum
+    enum PredEnum : int
     {
       pred_vague,  ///< undetermined
       pred_constdis,  ///< constant displacements, consistent velocities and accelerations
@@ -450,6 +450,9 @@ namespace INPAR
                     ///< This looks hilarious, but remember Ktan_{n,eff}^{-1} is not
                     ///< the inverse of Ktan_{n} due to the application of the
                     ///< Dirichlet BCs (i.e. the reduction to the test space).
+      pred_tangdis_constfext, ///< tangential displacement predictor with respect
+                              ///< to a constant Neumann force during the predictor
+                              ///< step
       pred_constdispres,  ///< constant displacements and pressure
       pred_constdisvelaccpres  ///< constant displacements,
                            ///< velocities and accelerations
@@ -466,31 +469,25 @@ namespace INPAR
       {
       case pred_vague :
         return "Vague";
-        break;
       case pred_constdis :
         return "ConstDis";
-        break;
       case pred_constvel :
         return "ConstVel";
-        break;
       case pred_constacc :
         return "ConstAcc";
-        break;
       case pred_constdisvelacc :
         return "ConstDisVelAcc";
-        break;
       case pred_tangdis :
         return "TangDis";
-        break;
+      case pred_tangdis_constfext:
+        return "TangDisConstFext";
       case pred_constdispres :
         return "ConstDisPres";
-        break;
       case pred_constdisvelaccpres :
         return "ConstDisVelAccPres";
-        break;
       default :
         dserror("Cannot make std::string for predictor %d", name);
-        return "";
+        exit(EXIT_FAILURE);
       }
     }
 

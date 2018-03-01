@@ -265,6 +265,8 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==ScaTraCellIntCalc)             os << "Scalar transport biochemo internalization boundary condition for cell migration";
   else if (Type()==ScaTraCellExtCalc)             os << "Scalar transport biochemo externalization boundary condition for cell migration";
   else if (Type()==S2ICoupling)                   os << "Scatra-scatra interface coupling";
+  else if (Type()==ElementTag)                    os << "Tagged elements";
+  else if (Type()==NodeTag)                       os << "Tagged nodes";
   else dserror("no output std::string for condition defined in DRT::Condition::Print");
 
   Container::Print(os);
