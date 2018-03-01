@@ -56,6 +56,7 @@ void IO::EveryIterationWriter::Init(
   parent_writer_ = parent_writer;
   interface_ = interface;
 
+
   myrank_ = parent_writer_->Output()->MyRank();
 
   run_number_ = params.get<int>("RUN_NUMBER");
@@ -180,9 +181,17 @@ std::string IO::RemoveRestartCountFromFileName( const std::string& filename )
 
   size_t pos = filename.rfind('-');
   if (pos==std::string::npos)
-    dserror("Couldn't find the restart separator \"-\"!");
+    return filename;
 
-  return filename.substr( 0, pos );
+  // potential restart counter
+  const char rc = filename.at(pos+1);
+
+  // check if it is really an integer
+  const int irc = rc - '0';
+  if ( irc>=0 and irc<=9 )
+    return filename.substr( 0, pos );
+  else
+    return filename;
 }
 
 /*----------------------------------------------------------------------------*

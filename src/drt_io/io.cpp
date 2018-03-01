@@ -128,8 +128,11 @@ void IO::DiscretizationReader::ReadMultiVector(
   }
   Teuchos::RCP<Epetra_MultiVector> nv = reader_->ReadResultData(id_path,
       value_path, columns, Comm());
-  if(nv->GlobalLength() != vec->GlobalLength())
-    dserror("Length of source and target (Multi-) Vector does (globally) not match! Data loss !?! Source size: %d Target size: %d",nv->GlobalLength(),vec->GlobalLength());
+  if(nv->GlobalLength() > vec->GlobalLength())
+    dserror("Reading vector \"%s\": Global length of source exceeds target "
+        "(Multi-) Vector length! This case is not supported ! "
+        "Source size: %d Target size: %d", name, nv->GlobalLength(),
+        vec->GlobalLength());
 
   LINALG::Export(*nv, *vec);
 }
