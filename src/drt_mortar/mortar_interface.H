@@ -32,6 +32,7 @@ namespace DRT
 {
   class Discretization;
   class Element;
+  class Exporter;
 }
 
 namespace LINALG
@@ -47,6 +48,7 @@ namespace MORTAR
 {
 
 // forward declarations
+class MortarInterface;
 class MortarNode;
 class MortarElement;
 class IntElement;
@@ -558,6 +560,37 @@ public:
     return poro_;
   }
 
+  inline Teuchos::RCP<DRT::Exporter>& SlExporterPtr()
+  {
+    return sl_exporter_;
+  }
+
+  inline DRT::Exporter& Exporter()
+  {
+    if ( sl_exporter_.is_null() )
+      dserror( "The exporter has not been initialized." );
+
+    return *sl_exporter_;
+  }
+
+  void SetMaSharingRefInterfacePtr(
+      const MortarInterface* interface_ptr )
+  {
+    masharingrefinterface_ = interface_ptr;
+  }
+
+  const MortarInterface* GetMaSharingRefInterfacePtr() const
+  {
+    return masharingrefinterface_;
+  }
+
+  const MortarInterface& GetMaSharingRefInterface() const
+  {
+    if ( masharingrefinterface_ == NULL )
+      dserror("NULL pointer");
+    return *masharingrefinterface_;
+  }
+
   inline bool& IsEhl()
   {
     return ehl_;
@@ -567,6 +600,7 @@ public:
   {
     return ehl_;
   }
+
   /// @}
 
   /// @name DataContainer specific functions
@@ -590,6 +624,8 @@ private:
   Teuchos::RCP<Epetra_Comm>          lcomm_;         ///< interface local communicator
   std::map<int,int>                  procmap_;       ///< mapping global -> local communicator PIDs
   bool                               redistributed_; ///< redistribution for this time step?
+
+  const MortarInterface* masharingrefinterface_ = NULL; ///< master sharing reference interface ptr
 
   Teuchos::RCP<DRT::Discretization>  idiscret_;      ///< the discretization of the mortar interface
   int                                dim_;           ///< dimension of problem (2D or 3D)
@@ -636,6 +672,8 @@ private:
   bool                               nurbs_; ///< flag for nurbs shape functions
   bool                               poro_;  ///< flag if poro contact problem!
   bool                               ehl_;   ///< flag if ehl contact problem!
+
+  Teuchos::RCP<DRT::Exporter>        sl_exporter_;
 
 private:
   bool isinit_;                     ///< Is this data container object initialized?
@@ -691,6 +729,11 @@ public:
   */
   virtual ~MortarInterface() {}
 
+  inline int Id() const
+  {
+    return id_;
+  }
+
   /*!
   \brief Print this Interface
   */
@@ -704,7 +747,7 @@ public:
   /*!
   \brief Print parallel distribution of this Interface
   */
-  virtual void PrintParallelDistribution(int index);
+  void PrintParallelDistribution(int index) const;
 
   /*!
   \brief Get communicator
@@ -766,7 +809,7 @@ public:
 
   Returns status of redundancy in interface storage (nodes, elements).
   */
-  virtual const INPAR::MORTAR::RedundantStorage& Redundant() { return redundant_; };
+  INPAR::MORTAR::RedundantStorage Redundant() const { return redundant_; };
 
   /*!
   \brief Get type of search algorithm
@@ -1315,7 +1358,18 @@ public:
 
   //@}
 
+  bool HasMaSharingRefInterface() const;
+  void AddMaSharingRefInterface( const MortarInterface* ref_interface );
+
 protected:
+  const MortarInterface* GetMaSharingRefInterfacePtr() const;
+  void RedistributeMasterSide(
+      Teuchos::RCP<Epetra_Map>& mrownodes,
+      Teuchos::RCP<Epetra_Map>& mcolnodes,
+      const Teuchos::RCP<Epetra_Map>& mroweles,
+      const Teuchos::RCP<Epetra_Comm>& comm,
+      int parts ) const;
+
   /** \brief function called at the beginning of each MortarCoupling call
    *
    *  \param sele        (in): pointer to the current slave element
@@ -1349,6 +1403,7 @@ protected:
 
   */
   virtual void EvaluateSTS(
+      const Epetra_Map& selecolmap,
       const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
   /*!
@@ -1385,7 +1440,7 @@ protected:
   all adjacent elements and thus would compute wrong nodal normals by itself.
 
   */
-  virtual void ExportNodalNormals();
+  virtual void ExportNodalNormals() const;
 
   /*!
   \brief build nodal normals and other stuff before real coupling
@@ -1404,6 +1459,8 @@ protected:
 
   */
   virtual void EvaluateCoupling(
+      const Epetra_Map& selecolmap,
+      const Epetra_Map* snoderowmap,
       const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
   /*!

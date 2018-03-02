@@ -48,8 +48,8 @@ void STR::IMPLICIT::Generic::Setup()
       SDyn().GetMutableNoxParams().sublist("Group Options");
 
   // create the new generic pre/post operator
-  Teuchos::RCP<NOX::NLN::Abstract::PrePostOperator> prepost_group_ptr =
-      Teuchos::rcp(new NOX::NLN::GROUP::PrePostOp::IMPLICIT::Generic(
+  Teuchos::RCP<NOX::NLN::Abstract::PrePostOperator> prepost_generic_ptr =
+      Teuchos::rcp(new NOX::NLN::PrePostOp::IMPLICIT::Generic(
           *this ) );
 
   // Get the current map. If there is no map, return a new empty one. (reference)
@@ -57,7 +57,7 @@ void STR::IMPLICIT::Generic::Setup()
       NOX::NLN::GROUP::PrePostOp::GetMutableMap(p_grp_opt);
 
   // insert/replace the old pointer in the map
-  prepostgroup_map[NOX::NLN::GROUP::prepost_impl_generic] = prepost_group_ptr;
+  prepostgroup_map[NOX::NLN::GROUP::prepost_impl_generic] = prepost_generic_ptr;
 
   // ---------------------------------------------------------------------------
   // set the new pre/post operator for the nox nln solver in the parameter list
@@ -65,11 +65,7 @@ void STR::IMPLICIT::Generic::Setup()
   Teuchos::ParameterList& p_sol_opt =
       SDyn().GetMutableNoxParams().sublist("Solver Options");
 
-  Teuchos::RCP<NOX::Abstract::PrePostOperator> prepost_solver_ptr =
-      Teuchos::rcp( new NOX::NLN::Solver::PrePostOp::IMPLICIT::Generic(
-          *this ) );
-
-  NOX::NLN::AUX::AddToPrePostOpVector( p_sol_opt, prepost_solver_ptr );
+  NOX::NLN::AUX::AddToPrePostOpVector( p_sol_opt, prepost_generic_ptr );
 
   // No issetup_ = true, since the Setup() functions of the derived classes
   // have to be called and finished first!
@@ -89,6 +85,13 @@ void STR::IMPLICIT::Generic::SetIsPredictorState(const bool& ispredictor_state)
 const bool& STR::IMPLICIT::Generic::IsPredictorState() const
 {
   return ispredictor_state_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::ParameterList& STR::IMPLICIT::Generic::GetNoxParams()
+{
+  return SDyn().GetMutableNoxParams();
 }
 
 /*----------------------------------------------------------------------------*
@@ -138,7 +141,70 @@ void STR::IMPLICIT::Generic::PrintJacobianInMatlabFormat(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::GROUP::PrePostOp::IMPLICIT::Generic::runPreComputeX(
+bool STR::IMPLICIT::Generic::ApplyCorrectionSystem(
+    const enum NOX::NLN::CorrectionType type,
+    const std::vector<INPAR::STR::ModelType>& constraint_models,
+    const Epetra_Vector& x,
+    Epetra_Vector& f,
+    LINALG::SparseOperator& jac )
+{
+  CheckInitSetup();
+
+  ResetEvalParams();
+
+  /* Set the default step indicator to FALSE during the evaluation. The
+   * automatic detection via the current step length won't work in the
+   * correction case, since the correction is often performed directly after a
+   * full step, i.e. the step length is equal to the default step length.
+   * (see SOC) */
+  EvalData().SetIsDefaultStep( false );
+
+  bool ok = false;
+  switch ( type )
+  {
+    case NOX::NLN::CorrectionType::soc_full:
+    {
+      // Do a standard full step.
+      /* Note that there is a difference, since we tagged this evaluation by
+       * setting it to a non-default step. */
+      ok = ApplyForceStiff( x, f, jac );
+      break;
+    }
+    case NOX::NLN::CorrectionType::soc_cheap:
+    {
+      ok = ModelEval().ApplyCheapSOCRhs(type,constraint_models,x,f,1.0);
+      if ( not jac.Filled() )
+        dserror("The jacobian is supposed to be filled at this point!");
+
+      break;
+    }
+    case NOX::NLN::CorrectionType::sufficient_linear_infeasibility_reduction:
+    {
+      ok = ModelEval().CorrectParameters( type );
+      ApplyForceStiff( x,f,jac );
+
+      break;
+    }
+    default:
+    {
+      dserror("No action defined for the given second order correction type: "
+          "\"%s\"", NOX::NLN::CorrectionType2String( type ).c_str() );
+      exit(EXIT_FAILURE);
+    }
+  }
+
+  if (not ok)
+    return false;
+
+  if ( not jac.Filled() )
+    jac.Complete();
+
+  return ok;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPreComputeX(
     const NOX::NLN::Group& input_grp,
     const Epetra_Vector& dir,
     const double& step,
@@ -158,7 +224,7 @@ void NOX::NLN::GROUP::PrePostOp::IMPLICIT::Generic::runPreComputeX(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::GROUP::PrePostOp::IMPLICIT::Generic::runPostComputeX(
+void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPostComputeX(
     const NOX::NLN::Group& input_grp,
     const Epetra_Vector& dir,
     const double& step,
@@ -171,12 +237,12 @@ void NOX::NLN::GROUP::PrePostOp::IMPLICIT::Generic::runPostComputeX(
       dynamic_cast<const NOX::Epetra::Vector&>(curr_grp.getX()).getEpetraVector();
 
   bool isdefaultstep = (step == default_step_);
-  impl_.ModelEval().RecoverState( xold, dir, step, xnew, isdefaultstep );
+  impl_.ModelEval().RunPostComputeX( xold, dir, step, xnew, isdefaultstep );
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Solver::PrePostOp::IMPLICIT::Generic::runPostIterate(
+void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPostIterate(
     const NOX::Solver::Generic& solver )
 {
   // try to cast the given solver object
@@ -202,7 +268,48 @@ void NOX::NLN::Solver::PrePostOp::IMPLICIT::Generic::runPostIterate(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Generic::ComputeJacobianContributionsFromElementLevelForPTC(Teuchos::RCP<LINALG::SparseMatrix>& scalingMatrixOpPtr)
+void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPostApplyJacobianInverse(
+    const NOX::Abstract::Vector& rhs,
+    NOX::Abstract::Vector& result,
+    const NOX::Abstract::Vector& xold,
+    const NOX::NLN::Group& grp )
+{
+  impl_.ModelEval().RunPostApplyJacobianInverse(
+      convert2EpetraVector( rhs ),
+      convert2EpetraVector( result ),
+      convert2EpetraVector( xold ),
+      grp );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Epetra_Vector& NOX::NLN::PrePostOp::IMPLICIT::Generic::convert2EpetraVector(
+    NOX::Abstract::Vector& vec ) const
+{
+  NOX::Epetra::Vector* epetra_vec = dynamic_cast<NOX::Epetra::Vector*>( &vec );
+  if ( epetra_vec == NULL )
+    dserror("The given NOX::Abstract::Vector is no NOX::Epetra::Vector!");
+
+  return epetra_vec->getEpetraVector();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+const Epetra_Vector& NOX::NLN::PrePostOp::IMPLICIT::Generic::convert2EpetraVector(
+    const NOX::Abstract::Vector& vec ) const
+{
+  const NOX::Epetra::Vector* epetra_vec =
+      dynamic_cast<const NOX::Epetra::Vector*>( &vec );
+  if ( epetra_vec == NULL )
+    dserror("The given NOX::Abstract::Vector is no NOX::Epetra::Vector!");
+
+  return epetra_vec->getEpetraVector();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::IMPLICIT::Generic::ComputeJacobianContributionsFromElementLevelForPTC(
+    Teuchos::RCP<LINALG::SparseMatrix>& scalingMatrixOpPtr)
 {
   ModelEval().ComputeJacobianContributionsFromElementLevelForPTC(scalingMatrixOpPtr);
 }

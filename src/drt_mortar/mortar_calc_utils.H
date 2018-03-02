@@ -60,163 +60,249 @@ bool LocalToGlobal(MORTAR::MortarElement& ele,
   DRT::Node** mynodes = ele.Points();
   if (!mynodes) dserror("ERROR: LocalToGlobal: Null pointer!");
 
-  for (int i=0;i<ndim;++i)
-    globcoord[i]=0.0;
-
-  LINALG::Matrix<ndim,n>   coord;
+  std::fill( globcoord, globcoord+ndim, 0.0 );
 
   //===========================================
   // Basic value
-  if(inttype==0)
+  switch ( inttype )
   {
-    LINALG::Matrix<n,1>      val;
-    if(ndim==2)
+    case 0:
     {
-      if(distype==DRT::Element::nurbs2 || distype==DRT::Element::nurbs3)
+      LINALG::Matrix<n,1> val;
+      switch (ndim)
       {
-        LINALG::SerialDenseVector auxval(n);
-        LINALG::SerialDenseMatrix auxderiv(n,1);
-        ele.EvaluateShape(xi, auxval, auxderiv, ele.NumNode());
+        case 2:
+        {
+          switch(distype)
+          {
+            case DRT::Element::nurbs2:
+            case DRT::Element::nurbs3:
+            {
+              LINALG::SerialDenseVector auxval(n);
+              LINALG::SerialDenseMatrix auxderiv(n,1);
+              ele.EvaluateShape(xi, auxval, auxderiv, ele.NumNode());
 
-        for(int i=0;i<n;++i)
-          val(i)=auxval(i);
+              for(int i=0;i<n;++i)
+                val(i)=auxval(i);
+
+              break;
+            }
+            default:
+            {
+              DRT::UTILS::shape_function_1D(val,xi[0],distype);
+              break;
+            }
+          }
+          break;
+        }
+        case 3:
+        {
+          switch (distype)
+          {
+            case DRT::Element::nurbs4:
+            case DRT::Element::nurbs8:
+            case DRT::Element::nurbs9:
+            {
+              LINALG::SerialDenseVector auxval(n);
+              LINALG::SerialDenseMatrix auxderiv(n,2);
+              ele.EvaluateShape(xi, auxval, auxderiv, ele.NumNode());
+
+              for(int i=0;i<n;++i)
+                val(i)=auxval(i);
+
+              break;
+            }
+            default:
+            {
+              DRT::UTILS::shape_function_2D(val,xi[0],xi[1],distype);
+              break;
+            }
+          }
+
+          break;
+        }
+        default:
+        {
+          dserror("Wrong Dimension");
+          exit( EXIT_FAILURE );
+        }
       }
-      else
-        DRT::UTILS::shape_function_1D(val,xi[0],distype);
+
+      for (int i=0;i<n;++i)
+      {
+        MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
+        dsassert( mymrtrnode, "ERROR: LocalToGlobal: Null pointer!" );
+
+        for(int j=0;j<ndim;++j)
+        {
+          // use shape function values for interpolation
+          globcoord[j] += val(i) * mymrtrnode->xspatial()[j];
+        }
+      }
+      break;
     }
-    else if(ndim==3)
+    //===========================================
+    // First Derivation (xi)
+    case 1:
     {
-      if(distype==DRT::Element::nurbs4 || distype==DRT::Element::nurbs8 || distype==DRT::Element::nurbs9)
-      {
-        LINALG::SerialDenseVector auxval(n);
-        LINALG::SerialDenseMatrix auxderiv(n,2);
-        ele.EvaluateShape(xi, auxval, auxderiv, ele.NumNode());
+      LINALG::Matrix<ndim-1,n>   deriv1;
 
-        for(int i=0;i<n;++i)
-          val(i)=auxval(i);
+      switch (ndim)
+      {
+        case 2:
+        {
+          switch (distype)
+          {
+            case DRT::Element::nurbs2:
+            case DRT::Element::nurbs3:
+            {
+              LINALG::SerialDenseVector auxval(n);
+              LINALG::SerialDenseMatrix auxderiv(n,1);
+              ele.EvaluateShape(xi, auxval, auxderiv, ele.NumNode());
+
+              for(int i=0;i<n;++i)
+                deriv1(0,i)=auxderiv(i,0);
+
+              break;
+            }
+            default:
+            {
+              DRT::UTILS::shape_function_1D_deriv1(deriv1,xi[0],distype);
+              break;
+            }
+          }
+
+          break;
+        }
+        case 3:
+        {
+          switch (distype)
+          {
+            case DRT::Element::nurbs4:
+            case DRT::Element::nurbs8:
+            case DRT::Element::nurbs9:
+            {
+              LINALG::SerialDenseVector auxval(n);
+              LINALG::SerialDenseMatrix auxderiv(n,2);
+              ele.EvaluateShape(xi, auxval, auxderiv, ele.NumNode());
+
+              for(int i=0;i<n;++i)
+                deriv1(0,i)=auxderiv(i,0);
+
+              break;
+            }
+            default:
+            {
+              DRT::UTILS::shape_function_2D_deriv1(deriv1,xi[0],xi[1],distype);
+              break;
+            }
+          }
+
+          break;
+        }
+        default:
+        {
+          dserror("Wrong Dimension");
+          break;
+        }
       }
-      else
-        DRT::UTILS::shape_function_2D(val,xi[0],xi[1],distype);
+      for (int i=0;i<n;++i)
+      {
+        MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
+        dsassert( mymrtrnode, "ERROR: LocalToGlobal: Null pointer!" );
+
+        for(int j=0;j<ndim;++j)
+        {
+          // use shape function values for interpolation
+          globcoord[j] += deriv1(0,i) * mymrtrnode->xspatial()[j];
+        }
+      }
+      break;
     }
-    else dserror("Wrong Dimension");
-
-    for (int i=0;i<n;++i)
+    //===========================================
+    // Second Derivation (eta)
+    case 2:
     {
-      MortarNode* mymrtrnode = dynamic_cast<MortarNode*> (mynodes[i]);
-      if (!mymrtrnode) dserror("ERROR: LocalToGlobal: Null pointer!");
-
-      for(int j=0;j<ndim;++j)
+      LINALG::Matrix<ndim-1,n>   deriv2;
+      switch (ndim)
       {
-        coord(j,i)   =  mymrtrnode->xspatial()[j];
+        case 2:
+        {
+          switch ( distype )
+          {
+            case DRT::Element::nurbs2:
+            case DRT::Element::nurbs3:
+            {
+              LINALG::SerialDenseVector auxval(n);
+              LINALG::SerialDenseMatrix auxderiv(n,1);
+              ele.EvaluateShape(xi, auxval, auxderiv, ele.NumNode());
 
-        // use shape function values for interpolation
-        globcoord[j] += val(i)*coord(j,i);
+              for(int i=0;i<n;++i)
+                deriv2(0,i)=auxderiv(i,0);
+
+              break;
+            }
+            default:
+            {
+              DRT::UTILS::shape_function_1D_deriv1(deriv2,xi[0],distype);
+              break;
+            }
+          }
+
+          break;
+        }
+        case 3:
+        {
+          switch ( distype )
+          {
+            case DRT::Element::nurbs4:
+            case DRT::Element::nurbs8:
+            case DRT::Element::nurbs9:
+            {
+              LINALG::SerialDenseVector auxval(n);
+              LINALG::SerialDenseMatrix auxderiv(n,2);
+              ele.EvaluateShape(xi, auxval, auxderiv, ele.NumNode());
+
+              for(int i=0;i<n;++i)
+                deriv2(1,i)=auxderiv(i,1);
+
+              break;
+            }
+            default:
+            {
+              DRT::UTILS::shape_function_2D_deriv1(deriv2,xi[0],xi[1],distype);
+              break;
+            }
+          }
+
+          break;
+        }
+        default:
+        {
+          dserror("Wrong Dimension");
+          exit( EXIT_FAILURE );
+        }
       }
+
+      for (int i=0;i<n;++i)
+      {
+        MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
+        dsassert( mymrtrnode, "ERROR: LocalToGlobal: Null pointer!" );
+
+        for(int j=0;j<ndim;++j)
+        {
+          // use shape function values for interpolation
+          globcoord[j] += deriv2(1,i) * mymrtrnode->xspatial()[j];
+        }
+      }
+      break;
+    }
+    default:
+    {
+      dserror("ERROR: Invalid interpolation type requested, only 0,1,2!");
+      exit( EXIT_FAILURE );
     }
   }
-
-  //===========================================
-  // First Derivation (xi)
-  else if (inttype==1)
-  {
-    LINALG::Matrix<ndim-1,n>   deriv1;
-    if(ndim==2)
-    {
-      if(distype==DRT::Element::nurbs2 || distype==DRT::Element::nurbs3)
-      {
-        LINALG::SerialDenseVector auxval(n);
-        LINALG::SerialDenseMatrix auxderiv(n,1);
-        ele.EvaluateShape(xi, auxval, auxderiv, ele.NumNode());
-
-        for(int i=0;i<n;++i)
-          deriv1(0,i)=auxderiv(i,0);
-      }
-      else
-        DRT::UTILS::shape_function_1D_deriv1(deriv1,xi[0],distype);
-    }
-    else if(ndim==3)
-    {
-      if(distype==DRT::Element::nurbs4 || distype==DRT::Element::nurbs8 || distype==DRT::Element::nurbs9)
-      {
-        LINALG::SerialDenseVector auxval(n);
-        LINALG::SerialDenseMatrix auxderiv(n,2);
-        ele.EvaluateShape(xi, auxval, auxderiv, ele.NumNode());
-
-        for(int i=0;i<n;++i)
-          deriv1(0,i)=auxderiv(i,0);
-      }
-      else
-        DRT::UTILS::shape_function_2D_deriv1(deriv1,xi[0],xi[1],distype);
-    }
-    else dserror("Wrong Dimension");
-
-    for (int i=0;i<n;++i)
-    {
-      MortarNode* mymrtrnode = dynamic_cast<MortarNode*> (mynodes[i]);
-      if (!mymrtrnode) dserror("ERROR: LocalToGlobal: Null pointer!");
-
-      for(int j=0;j<ndim;++j)
-      {
-        coord(j,i)   =  mymrtrnode->xspatial()[j];
-
-        // use shape function values for interpolation
-        globcoord[j] += deriv1(0,i)*coord(j,i);
-      }
-    }
-  }
-  //===========================================
-  // Second Derivation (eta)
-  else if(inttype==2)
-  {
-    LINALG::Matrix<ndim-1,n>   deriv2;
-    if(ndim==2)
-    {
-      if(distype==DRT::Element::nurbs2 || distype==DRT::Element::nurbs3)
-      {
-        LINALG::SerialDenseVector auxval(n);
-        LINALG::SerialDenseMatrix auxderiv(n,1);
-        ele.EvaluateShape(xi, auxval, auxderiv, ele.NumNode());
-
-        for(int i=0;i<n;++i)
-          deriv2(0,i)=auxderiv(i,0);
-      }
-      else
-        DRT::UTILS::shape_function_1D_deriv1(deriv2,xi[0],distype);
-    }
-    else if(ndim==3)
-    {
-      if(distype==DRT::Element::nurbs4 || distype==DRT::Element::nurbs8 || distype==DRT::Element::nurbs9)
-      {
-        LINALG::SerialDenseVector auxval(n);
-        LINALG::SerialDenseMatrix auxderiv(n,2);
-        ele.EvaluateShape(xi, auxval, auxderiv, ele.NumNode());
-
-        for(int i=0;i<n;++i)
-          deriv2(1,i)=auxderiv(i,1);
-      }
-      else
-        DRT::UTILS::shape_function_2D_deriv1(deriv2,xi[0],xi[1],distype);
-    }
-    else dserror("Wrong Dimension");
-
-    for (int i=0;i<n;++i)
-    {
-      MortarNode* mymrtrnode = dynamic_cast<MortarNode*> (mynodes[i]);
-      if (!mymrtrnode) dserror("ERROR: LocalToGlobal: Null pointer!");
-
-      for(int j=0;j<ndim;++j)
-      {
-        coord(j,i)   =  mymrtrnode->xspatial()[j];
-
-        // use shape function values for interpolation
-        globcoord[j] += deriv2(1,i)*coord(j,i);
-      }
-    }
-
-  }
-  else
-    dserror("ERROR: Invalid interpolation type requested, only 0,1,2!");
-
   return true;
 };
 

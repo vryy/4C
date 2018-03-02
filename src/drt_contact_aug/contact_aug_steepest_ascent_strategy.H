@@ -21,6 +21,8 @@
 
 namespace CONTACT {
 namespace AUG {
+  class LagrangeMultiplierFunction;
+  class PenaltyUpdate;
 namespace STEEPESTASCENT {
   // forward declarations
   class Interface;
@@ -55,6 +57,66 @@ namespace STEEPESTASCENT {
       return cn_upper_bound_;
     }
 
+    void SetPenaltyCorrectionParameter( const double correction_param )
+    {
+      if ( correction_param < 0.0 )
+        dserror("The correction parameter must be equal to 0.0 (default) or "
+            "larger! A value of %.4e is not allowed!", correction_param );
+
+      penalty_correction_parameter_ = correction_param;
+    }
+
+    double GetPenaltyCorrectionParameter() const
+    {
+      return penalty_correction_parameter_;
+    }
+
+    Teuchos::RCP<const LagrangeMultiplierFunction> LagrangeMultiplierFuncPtr() const
+    {
+      return lm_func_ptr_.getConst();
+    }
+
+    Teuchos::RCP<LagrangeMultiplierFunction>& LagrangeMultiplierFuncPtr()
+    {
+      return lm_func_ptr_;
+    }
+
+    LagrangeMultiplierFunction& LagrangeMultiplierFunc()
+    {
+      if ( lm_func_ptr_.is_null() )
+        dserror( "The lm_func_ptr_ is not initialized correctly!" );
+
+      return *lm_func_ptr_;
+    }
+
+    Teuchos::RCP<const AUG::PenaltyUpdate> PenaltyUpdatePtr() const
+    {
+      return penalty_update_ptr_.getConst();
+    }
+
+    Teuchos::RCP<AUG::PenaltyUpdate>& PenaltyUpdatePtr()
+    {
+      return penalty_update_ptr_;
+    }
+
+    AUG::PenaltyUpdate& PenaltyUpdate()
+    {
+      if ( penalty_update_ptr_.is_null() )
+        dserror( "The lm_func_ptr_ is not initialized correctly!" );
+
+      return *penalty_update_ptr_;
+    }
+
+    void SetStepLength( double steplength )
+    {
+      steplength_ = steplength;
+    }
+
+    double StepLength() const
+    {
+      return steplength_;
+    }
+
   protected:
     // don't want assignment operator and copy constructor
     DataContainer operator =(const DataContainer& old);
@@ -62,10 +124,18 @@ namespace STEEPESTASCENT {
 
   private:
     // old constraint violation from the last converged Newton step
-    double old_infeasibility_measure_;
+    double old_infeasibility_measure_ = 0.0;
 
     // user provided upper bound for the cn value
-    double cn_upper_bound_;
+    double cn_upper_bound_ = 0.0;
+
+    double penalty_correction_parameter_ = 0.0;
+
+    double steplength_ = 1.0;
+
+    Teuchos::RCP<LagrangeMultiplierFunction> lm_func_ptr_ = Teuchos::null;
+
+    Teuchos::RCP<AUG::PenaltyUpdate> penalty_update_ptr_ = Teuchos::null;
 
   };  // class DataContainer
 
@@ -91,19 +161,35 @@ namespace STEEPESTASCENT {
     /// destructor
     virtual ~Strategy() {};
 
-    virtual INPAR::CONTACT::SolvingStrategy Type() const
+    INPAR::CONTACT::SolvingStrategy Type() const override
     {
       return INPAR::CONTACT::solution_steepest_ascent;
     }
 
   protected:
-    /// derived
-    virtual void AddContributionsToConstrRHS(
-        Epetra_Vector& augConstrRhs ) const;
 
     /// derived
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
-        const enum DRT::UTILS::MatBlockType& bt) const;
+    Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtrForNormCheck(
+        const enum DRT::UTILS::VecBlockType& bt) const override;
+
+    /// derived
+    void PostSetup(
+        bool redistributed,
+        bool init) override;
+
+    /// derived
+    void AddContributionsToConstrRHS(
+        Epetra_Vector& augConstrRhs ) const override;
+
+    /// derived
+    Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
+        const enum DRT::UTILS::MatBlockType& bt,
+        const CONTACT::ParamsInterface* cparams = NULL) const override;
+
+    /// derived
+    void AddContributionsToMatrixBlockDisplDispl(
+        LINALG::SparseMatrix& kdd,
+        const CONTACT::ParamsInterface* cparams = NULL ) const override;
 
     /*! \brief Derived function, which is called at the very beginning of a call to
      *  NOX::NLN::Group::computeX()
@@ -115,16 +201,28 @@ namespace STEEPESTASCENT {
      *  step.
      *
      *  \author hiermeier \date 03/17 */
-    virtual void RunPreComputeX(
+    void RunPreComputeX(
         const CONTACT::ParamsInterface& cparams,
         const Epetra_Vector& xold,
-        Epetra_Vector& dir_mutable );
+        Epetra_Vector& dir_mutable ) override;
+
+    void RunPostApplyJacobianInverse(
+        const CONTACT::ParamsInterface& cparams,
+        const Epetra_Vector& rhs,
+        Epetra_Vector& result,
+        const Epetra_Vector& xold,
+        const NOX::NLN::Group& grp ) override;
 
     void RunPostIterate(
-        const CONTACT::ParamsInterface& cparams );
+        const CONTACT::ParamsInterface& cparams ) override;
 
-    /// derived
-    virtual bool AssembleContactRHS();
+    /** \brief parameter correction during a more sophisticated non-linear
+     *  solver approach (e.g. the filter method) [derived]
+     *
+     *  \author hiermeier \date 12/17 */
+    void CorrectParameters(
+        CONTACT::ParamsInterface& cparams,
+        const NOX::NLN::CorrectionType type ) override;
 
   private:
 
@@ -139,12 +237,12 @@ namespace STEEPESTASCENT {
         const Epetra_Vector& displ_incr );
 
     Teuchos::RCP<Epetra_Vector> ComputeInactiveLagrangeIncrInNormalDirection(
-        const Epetra_Vector& displ_incr, const Epetra_Vector& zold_inactive  );
+        const Epetra_Vector& displ_incr, const Epetra_Vector& zold );
 
-    void PostAugmentDirection();
-
-  private:
-    Teuchos::RCP<CONTACT::AUG::DataContainer> dataPtr_;
+    void PostAugmentDirection(
+        const CONTACT::ParamsInterface& cparams,
+        const Epetra_Vector& xold,
+        Epetra_Vector& dir );
   };  //  class Strategy
 
 } // namespace STEEPESTASCENT

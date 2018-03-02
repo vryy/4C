@@ -17,6 +17,11 @@
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_condition.H"
+#include "../drt_io/every_iteration_writer.H"
+
+#include "../drt_inpar/inpar_mortar.H"
+
+#include "../linalg/linalg_serialdensematrix.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -205,5 +210,224 @@ void CONTACT::UTILS::GetMasterSlaveSideInfo(
     for (int j = 1; j < (int) isself.size(); ++j)
       if (!isself[j])
         dserror("ERROR: Inconsistent definition of self contact condition group!");
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::UTILS::WriteConservationDataToFile(
+    const int mypid,
+    const int interface_id,
+    const int nln_iter,
+    const LINALG::SerialDenseMatrix& conservation_data,
+    const std::string& ofile_path,
+    const std::string& prefix )
+{
+  if ( mypid != 0 )
+    return;
+
+  static std::vector<std::string> done_prefixes;
+
+  const std::string path( IO::ExtractPath( ofile_path ) );
+  const std::string dir_name( IO::RemoveRestartCountFromFileName(
+      IO::ExtractFileName( ofile_path ) ) + "_conservation" );
+
+  std::string full_filepath( path + dir_name );
+  IO::CreateDirectory( full_filepath, mypid );
+  full_filepath += "/" + prefix + "_" + "conservation.data";
+
+  bool is_done = false;
+  for ( const std::string& done_prefix : done_prefixes )
+  {
+    if ( done_prefix == prefix )
+    {
+      is_done = true;
+      break;
+    }
+  }
+
+  // first attempt: clear file content and write header
+  if ( not is_done )
+  {
+    done_prefixes.push_back( prefix );
+
+    std::ofstream of( full_filepath, std::ios_base::out );
+    of << std::setw(24) << "it"
+           << std::setw(24) << "interface"
+           << std::setw(24) << "Fsl_X" << std::setw(24) << "Fsl_Y"
+           << std::setw(24) << "Fsl_Z" << std::setw(24) << "Fma_X"
+           << std::setw(24) << "Fma_Y" << std::setw(24) << "Fma_Z"
+           << std::setw(24) << "Fb_X"  << std::setw(24) << "Fb_Y"
+           << std::setw(24) << "Fb_Z"
+           << std::setw(24) << "Mosl_X" << std::setw(24) << "Mosl_Y"
+           << std::setw(24) << "Mosl_Z" << std::setw(24) << "Moma_X"
+           << std::setw(24) << "Moma_Y" << std::setw(24) << "Moma_Z"
+           << std::setw(24) << "Mob_X"  << std::setw(24) << "Mob_Y"
+           << std::setw(24) << "Mob_Z\n";
+    of.close();
+  }
+
+  std::ofstream of( full_filepath, std::ios_base::out|std::ios_base::app );
+
+  if ( conservation_data.M() < 18 )
+    dserror("The conservation_data has insufficient size!");
+
+  of << std::setw(24) << nln_iter << std::setw(24) << interface_id;
+  of << std::setprecision(16);
+  for ( unsigned i=0; i<static_cast<unsigned>(conservation_data.M()); ++i )
+  {
+    of << std::setw(24) << std::setw(24) << std::scientific
+        << conservation_data(i,0);
+  }
+  of << "\n";
+  of.close();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::UTILS::DbcHandler::DetectDbcSlaveNodesAndElements(
+    const DRT::DiscretizationInterface& str_discret,
+    const std::vector<std::vector<DRT::Condition*> >& ccond_grps,
+    std::set<const DRT::Node*>& dbc_slave_nodes,
+    std::set<const DRT::Element*>& dbc_slave_eles )
+{
+  dbc_slave_nodes.clear();
+  dbc_slave_eles.clear();
+
+  std::map<const DRT::Node*,int> dbc_slave_node_map;
+
+  std::vector<const DRT::Condition*> sl_conds;
+
+  for ( auto& ccond_grp : ccond_grps )
+  {
+    std::vector<bool> isslave;
+    std::vector<bool> isself;
+    CONTACT::UTILS::GetMasterSlaveSideInfo( isslave, isself, ccond_grp);
+
+    for ( unsigned i=0; i<ccond_grp.size(); ++i )
+    {
+      if ( not isslave[i] )
+        continue;
+
+      const DRT::Condition* sl_cond = ccond_grp[i];
+
+      const int dbc_handling_id = sl_cond->GetInt("dbc_handling");
+      const INPAR::MORTAR::DBCHandling dbc_handling =
+          static_cast<INPAR::MORTAR::DBCHandling>( dbc_handling_id );
+
+      switch ( dbc_handling )
+      {
+        case INPAR::MORTAR::DBCHandling::remove_dbc_nodes_from_slave_side:
+        {
+          sl_conds.push_back( sl_cond );
+          break;
+        }
+        case INPAR::MORTAR::DBCHandling::do_nothing:
+        {
+          break;
+        }
+        default:
+          dserror("Unknown dbc_handlin enum %d", dbc_handling );
+          exit( EXIT_FAILURE );
+      }
+    }
+  }
+
+  DetectDbcSlaveNodes( dbc_slave_node_map, str_discret, sl_conds );
+
+  for ( auto& dbc_slave_node_pair : dbc_slave_node_map )
+    dbc_slave_nodes.insert( dbc_slave_node_pair.first );
+
+  DetectDbcSlaveElements( dbc_slave_eles, dbc_slave_node_map, sl_conds );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::UTILS::DbcHandler::DetectDbcSlaveNodes(
+    std::map<const DRT::Node*,int>& dbc_slave_node_map,
+    const DRT::DiscretizationInterface& str_discret,
+    const std::vector<const DRT::Condition*>& sl_conds )
+{
+  std::vector<DRT::Condition*> dconds;
+  str_discret.GetCondition("Dirichlet",dconds);
+
+  // collect all slave node ids
+  std::vector< std::pair<int,int> > slnodeids;
+  for ( auto& sl_cond : sl_conds)
+  {
+    const std::vector<int>* sl_nids = sl_cond->Get<std::vector<int> >("Node Ids");
+    slnodeids.reserve( slnodeids.size()+sl_nids->size() );
+    for ( int sl_nid : *sl_nids )
+      slnodeids.push_back( std::make_pair( sl_nid, sl_cond->Id() ) );
+  }
+
+  for ( std::pair<int,int> slpair : slnodeids )
+  {
+    const int snid = slpair.first;
+
+    bool found = false;
+
+    for ( DRT::Condition* dcond : dconds )
+    {
+      const std::vector<int>* dnids = dcond->Get<std::vector<int> >("Node Ids");
+      for ( int dnid : *dnids )
+      {
+        if ( snid == dnid )
+        {
+          found = true;
+          break;
+        }
+      }
+      if ( found )
+        break;
+    }
+
+    // skip non dbc nodes
+    if ( not found )
+      continue;
+
+    const DRT::Node* node = str_discret.gNode( snid );
+    // skip NULL ptrs
+    if ( node )
+      dbc_slave_node_map.insert( std::make_pair(node, slpair.second ) );
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::UTILS::DbcHandler::DetectDbcSlaveElements(
+    std::set<const DRT::Element*>& dbc_slave_eles,
+    const std::map<const DRT::Node*, int>& dbc_slave_nodes,
+    const std::vector<const DRT::Condition*>& sl_conds )
+{
+  for ( auto& dbc_sl_node : dbc_slave_nodes )
+  {
+    const int slnid = dbc_sl_node.first->Id();
+    const int slcond_id = dbc_sl_node.second;
+
+    auto sl_citer = sl_conds.cbegin();
+    while ( sl_citer != sl_conds.cend() )
+    {
+      if ( (*sl_citer)->Id() == slcond_id )
+        break;
+
+      ++sl_citer;
+    }
+    const DRT::Condition& slcond = **sl_citer;
+
+    const std::map<int, Teuchos::RCP<DRT::Element> >& geometry = slcond.Geometry();
+    for ( auto& iele_pair : geometry )
+    {
+      const DRT::Element* ele = iele_pair.second.get();
+
+      const int* ele_nids = ele->NodeIds();
+      for ( int i=0; i<ele->NumNode(); ++i )
+      {
+        const int ele_nid = ele_nids[i];
+
+        if ( ele_nid == slnid )
+          dbc_slave_eles.insert( ele );
+      }
+    }
   }
 }

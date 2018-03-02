@@ -45,6 +45,7 @@ Teuchos::RCP<STR::PREDICT::Generic>  STR::PREDICT::Factory::BuildPredictor(
       predictor = Teuchos::rcp(new STR::PREDICT::ConstDisVelAccPress());
       break;
     case INPAR::STR::pred_tangdis:
+    case INPAR::STR::pred_tangdis_constfext:
       predictor = Teuchos::rcp(new STR::PREDICT::TangDis());
       break;
     case INPAR::STR::pred_vague:

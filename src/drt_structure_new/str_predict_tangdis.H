@@ -48,6 +48,9 @@ namespace PREDICT {
     //! return the switch for the pre/post operator
     const bool& IsApplyLinearReactionForces() const;
 
+    //! derived
+    bool PreApplyForceExternal( Epetra_Vector& fextnp ) const override;
+
   private:
     Teuchos::RCP<Epetra_Vector> dbc_incr_ptr_;
 

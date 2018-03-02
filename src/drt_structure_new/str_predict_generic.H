@@ -21,6 +21,7 @@
 #include "../drt_inpar/inpar_structure.H"
 
 // forward declaration ...
+class Epetra_Vector;
 namespace NOX {
 namespace Abstract {
   class Group;
@@ -79,6 +80,9 @@ namespace PREDICT {
 
     //! print the result of the predictor step
     void Print() const;
+
+    //! Run before the external force are computed and assembled
+    virtual bool PreApplyForceExternal( Epetra_Vector& fextnp ) const;
 
   protected:
     //! returns init state

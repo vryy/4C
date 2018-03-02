@@ -78,6 +78,11 @@ public:
     return integrationtype_;
   }
 
+  const Epetra_Comm& Comm() const
+  {
+    return Comm_;
+  }
+
   //! @name 2D and 3D integration methods
 
   /*!
@@ -311,6 +316,19 @@ public:
   {
     return weights_[gp];
   }
+
+  /*!
+   \brief Get problem dimension
+
+   Note that only 2D and 3D are possible here as this refers to the global
+   problem dimension. On integration level this corresponds to 1D integration
+   (dim_==2) and 2D integration (dim_==3) on the interface!
+
+   */
+  int Dim() const
+  {
+    return dim_;
+  };
 
 protected:
 
@@ -1024,20 +1042,6 @@ protected:
     return lagmultquad_;
   }
   //@}
-
-  /*!
-   \brief Get problem dimension
-
-   Note that only 2D and 3D are possible here as this refers to the global
-   problem dimension. On integration level this corresponds to 1D integration
-   (dim_==2) and 2D integration (dim_==3) on the interface!
-
-   */
-  int Dim() const
-  {
-    return dim_;
-  }
-  ;
 
     // don't want = operator and cctor
     CoIntegrator operator = (const CoIntegrator& old);

@@ -86,6 +86,43 @@ namespace MORTAR
   Teuchos::RCP<LINALG::SparseMatrix> MatrixColTransformGIDs(Teuchos::RCP<const LINALG::SparseMatrix> inmat,
                                                             Teuchos::RCP<const Epetra_Map> newdomainmap);
 
+  /*! \brief Replace the column and domain map of a filled matrix
+   *
+   *  This method changes the domain map of an input matrix to a new domain
+   *  map with different GID numbering (and the corresponding column map, accordingly).
+   *  However, the parallel distribution of the new domain map is exactly
+   *  the same as in the old domain map. Thus, this is simply a processor-local
+   *  1:1 matching of old and new GIDs. But the creation of the column map can
+   *  afford some effort. This effort can be avoided, if a suitable column map
+   *  is provided by the user (e.g. if it doesn't change during one step to another).
+   *
+   *  \param mat           (in)     : Filled matrix, which has already a column and domain map
+   *  \param newdomainmap  (in)     : new domain map which is supposed to replace the
+   *                                  old domain map
+   *  \param newcolmap_ptr (in/out) : This is optional and can be used to store the newly
+   *                                  created column map for later use or to provide an already
+   *                                  capable column map. In the latter case some communication
+   *                                  effort can be avoided.
+   *
+   *  \author hiermeier \date 04/17  */
+  void ReplaceColumnAndDomainMap(
+      LINALG::SparseMatrix&           mat,
+      const Epetra_Map&               newdomainmap,
+      Teuchos::RCP<Epetra_Map>* const newcolmap_ptr = NULL );
+
+  /*! \brief Create a new column map
+   *
+   *  \param mat          (in) : Filled matrix, which has already a column and domain map
+   *  \param newdomainmap (in) : new domain map which is going to replace the old column map of
+   *                             the matrix %mat.
+   *  \param newcolmap    (out): new column map
+   *
+   *  \author hiermeier \date 04/17 */
+  void CreateNewColMap(
+      const LINALG::SparseMatrix&     mat,
+      const Epetra_Map&         newdomainmap,
+      Teuchos::RCP<Epetra_Map>& newcolmap );
+
   /*!
   \brief Transform the row and column maps of a matrix (only GIDs)
 

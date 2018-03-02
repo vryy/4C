@@ -165,6 +165,24 @@ const bool& STR::PREDICT::TangDis::IsApplyLinearReactionForces() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+bool STR::PREDICT::TangDis::PreApplyForceExternal(
+    Epetra_Vector& fextnp ) const
+{
+  CheckInitSetup();
+
+  if ( GetType() != INPAR::STR::pred_tangdis_constfext )
+    return false;
+
+  if ( applyLinearReactionForces_ )
+  {
+    fextnp.Scale( 1.0, *GlobalState().GetFextN() );
+    return true;
+  }
+  return false;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 NOX::NLN::GROUP::PrePostOp::TangDis::TangDis(
     const Teuchos::RCP<const ::STR::PREDICT::TangDis>& tang_predict_ptr)
     : tang_predict_ptr_(tang_predict_ptr)

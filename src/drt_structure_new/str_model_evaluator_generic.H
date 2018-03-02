@@ -29,6 +29,7 @@ namespace Solver {
 } // namespace Solver
 namespace NLN {
   class Group;
+  enum class CorrectionType : int;
 } // namespace NLN
 } // namespace NOX
 namespace LINALG {
@@ -136,6 +137,15 @@ namespace MODELEVALUATOR {
      *  \author hiermeier */
     virtual bool EvaluateForceStiff() = 0;
 
+    /** \brief evaluate the right hand side for the cheap second order correction step
+     *
+     *  This is an optional method which is mainly considered for constraint
+     *  models.
+     *
+     *  \author hiermeier \date 12/17 */
+    virtual bool EvaluateCheapSOCRhs()
+    { return true; };
+
     /*! \brief Called at the end of each call to one of the STR::ModelEvaluator::Evaluate routines,
      *         i.e. EvaluateForce, EvaluateStiff, EvaluateForceStiff.
      *
@@ -168,6 +178,10 @@ namespace MODELEVALUATOR {
         LINALG::SparseOperator& jac,
         const double & timefac_np) const = 0;
 
+    virtual bool AssembleCheapSOCRhs(Epetra_Vector& f,
+        const double & timefac_np) const
+    { return true; };
+
     /*! \brief write model specific restart
      *
      *  \param iowriter            (in) : output writer
@@ -195,7 +209,7 @@ namespace MODELEVALUATOR {
      *  Do NOT use it to reset your model variables! Use the Reset() method instead.
      *
      *  \author hiermeier \date 07/2016 */
-    virtual void RecoverState(
+    virtual void RunPostComputeX(
         const Epetra_Vector& xold,
         const Epetra_Vector& dir,
         const Epetra_Vector& xnew) = 0;
@@ -216,12 +230,37 @@ namespace MODELEVALUATOR {
     virtual void RunPostIterate( const NOX::Solver::Generic& solver ) = 0;
 
 
+    /*! \brief Executed at the end of the NOX::NLN::LinearSystem::applyJacobianInverse()
+     *  method
+     *
+     *  \note See comment in the NOX::NLN::PrePostOp::IMPLICIT::Generic class.
+     *
+     *  \param rhs   : read-only access to the rhs vector
+     *  \param result: full access to the result vector of the linear system
+     *  \param xold  : read-only access to the old x state vector
+     *  \param grp   : read only access to the group object
+     *
+     *  \author hiermeier \date 12/17 */
+    virtual void RunPostApplyJacobianInverse(
+        const Epetra_Vector& rhs,
+        Epetra_Vector& result,
+        const Epetra_Vector& xold,
+        const NOX::NLN::Group& grp )
+    { /* empty */ }
+
+    virtual bool CorrectParameters( NOX::NLN::CorrectionType type )
+    { return true; };
+
+    /// update the model state corresponding to the time/load-step
     virtual void UpdateStepState(const double& timefac_n) = 0;
 
     // compute the element contributions for element based scaling using PTC
-    virtual void EvaluateJacobianContributionsFromElementLevelForPTC(){return;};
+    virtual void EvaluateJacobianContributionsFromElementLevelForPTC()
+    { return; };
     // assemble the element contributions
-    virtual void AssembleJacobianContributionsFromElementLevelForPTC(Teuchos::RCP<LINALG::SparseMatrix>& modjac,const double& timefac_n ) {return;};
+    virtual void AssembleJacobianContributionsFromElementLevelForPTC(
+        Teuchos::RCP<LINALG::SparseMatrix>& modjac,const double& timefac_n )
+    { return; };
 
     virtual void UpdateStepElement() = 0;
 
@@ -257,16 +296,38 @@ namespace MODELEVALUATOR {
     //! post output routine for model evlaluator
     virtual void PostOutput() = 0;
 
+    /** \brief Create a backup state
+     *
+     *  This is foremost meant for internally condensed quantities like for
+     *  example the EAS state or the condensed Lagrange multiplier state. The
+     *  global state in terms of the x-vector is stored more globally.
+     *
+     *  \author hiermeier \date 12/17 */
+    virtual void CreateBackupState(const Epetra_Vector& dir)
+    { /* do nothing in default */ };
+
+    /** \brief Recover from the previously created backup state
+     *
+     *  This is foremost meant for internally condensed quantities like for
+     *  example the EAS state or the condensed Lagrange multiplier state. The
+     *  global state in terms of the x-vector is recovered more globally.
+     *
+     *  \author hiermeier \date 12/17 */
+    virtual void RecoverFromBackupState() { /* do nothing in default */ };
+
     //! @name Accessors to model specific things
     //! @{
     //! Returns a pointer to the model specific dof row map
     virtual Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const = 0;
 
-    //! Returns a pointer to the current model solution vector (usually the Lagrange multiplier vector)
+    /*! Returns a pointer to the current model solution vector (usually the
+     *  Lagrange multiplier vector) */
     virtual Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const = 0;
 
-    //! Returns a pointer to the model solution vector of the last time step (usually the Lagrange multiplier vector)
+    /*! Returns a pointer to the model solution vector of the last time step
+     *  (usually the Lagrange multiplier vector) */
     virtual Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const = 0;
+
     //! @}
 
   protected:

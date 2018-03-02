@@ -27,14 +27,9 @@ NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
-FLUID_SOL                       No
-FLUID_STRESS                    No
-FLUID_VIS                       No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Cauchy
-THERM_HEATFLUX                  No
-THERM_TEMPERATURE               No
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 RESTART                         0
@@ -59,85 +54,34 @@ NORMCOMBI_RESFDISP              Or
 MAXITER                         100
 PREDICT                         TangDis
 ---------------------------------------------------------STRUCT NOX
-//
-//     Line Search Based
-//     Pseudo Transient
-//     Trust Region Based
-//     Inexact Trust Region Based
-//     Tensor Based
 Nonlinear Solver                = Line Search Based
-//
 -----------------------------------------STRUCT NOX/Solver Options
-//
-//    Sum of Squares, Lagrangian
 Merit Function                  = Sum of Squares
-//    Complete, Minimal, None
 Status Test Check Type          = Complete
-//
 --------------------------------------------STRUCT NOX/Status Test
 XML File                        = sohex8fbar_cooks_nl_new_struc.xml
-//
 -----------------------------------------------STRUCT NOX/Direction
-//
-//     Newton,Steepest Descent,NonlinearCG,Broyden
 Method                          = Newton
-//
 ---------------------------------------------STRUCT NOX/Line Search
-//
-//     Full Step,Backtrack,Polynomial,More'-Thuente,User Defined
 Method                          = Backtrack
-//
 -----------------------------------STRUCT NOX/Line Search/Backtrack
-//
-// starting step length
 Default Step                    = 1
-//
-// minimum acceptable step length
 Minimum Step                    = 1e-12
-//
-// step to take when the line search fails (defaults to value for "Default Step")
 Recovery Step                   = 1
-//
-// maximum number of iterations (i.e., RHS computations)
 Max Iters                       = 50
-//
-// A multiplier between zero and one that reduces the step size between line search iterations
 Reduction Factor                = 0.5
-//
 Allow Exceptions                = Yes
-//
 ------------------------------------------------STRUCT NOX/Printing
-//
-//     Yes,No,yes,no,YES,NO
 Error                           = No
-//
-//     Yes,No,yes,no,YES,NO
 Warning                         = Yes
-//
-//     Yes,No,yes,no,YES,NO
 Outer Iteration                 = Yes
-//
-//     Yes,No,yes,no,YES,NO
-Inner Iteration                 = Yes
-//
-//     Yes,No,yes,no,YES,NO
+Inner Iteration                 = No
 Parameters                      = No
-//
-//     Yes,No,yes,no,YES,NO
 Details                         = No
-//
-//     Yes,No,yes,no,YES,NO
-Outer Iteration StatusTest      = Yes
-//
-//     Yes,No,yes,no,YES,NO
+Outer Iteration StatusTest      = No
 Linear Solver Details           = No
-//
-//     Yes,No,yes,no,YES,NO
 Test Details                    = No
-//
-//     Yes,No,yes,no,YES,NO
 Debug                           = No
-//
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

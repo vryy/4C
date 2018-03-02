@@ -37,6 +37,8 @@
 #include "../drt_mortar/mortar_coupling3d_classes.H"
 #include "contact_nitsche_utils.H"
 
+#include <Teuchos_TimeMonitor.hpp>
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::IDataContainer::IDataContainer()
@@ -1175,17 +1177,7 @@ bool CONTACT::CoInterface::Redistribute(int index)
   Teuchos::RCP<Epetra_Map> mrownodes = Teuchos::null;
   Teuchos::RCP<Epetra_Map> mcolnodes = Teuchos::null;
 
-  // build redundant vector of all master node ids on all procs
-  // (do not include crosspoints / boundary nodes if there are any)
-  std::vector<int> mnids;
-  std::vector<int> mnidslocal(MasterRowNodesNoBound()->NumMyElements());
-  for (int i=0; i<MasterRowNodesNoBound()->NumMyElements(); ++i)
-    mnidslocal[i] = MasterRowNodesNoBound()->GID(i);
-  LINALG::Gather<int>(mnidslocal,mnids,numproc,&allproc[0],Comm());
-
-  //**********************************************************************
-  DRT::UTILS::PartUsingParMetis(idiscret_,mroweles,mrownodes,mcolnodes,comm,false,mproc);
-  //**********************************************************************
+  RedistributeMasterSide( mrownodes, mcolnodes, mroweles, comm, mproc );
 
   //**********************************************************************
   // (7) Merge global interface node row and column map
@@ -1700,6 +1692,8 @@ void CONTACT::CoInterface::PreEvaluate(
     const int& step,
     const int& iter)
 {
+  TEUCHOS_FUNC_TIME_MONITOR( "CONTACT::CoInterface::PreEvaluate" );
+
   //**********************************************************************
   // search algorithm
   //**********************************************************************
@@ -3916,9 +3910,10 @@ void CONTACT::CoInterface::ScaleTermsLTL()
  |  evaluate coupling type segment-to-segment coupl          farah 02/16|
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::EvaluateSTS(
+    const Epetra_Map& selecolmap,
     const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
-  MORTAR::MortarInterface::EvaluateSTS(mparams_ptr);
+  MORTAR::MortarInterface::EvaluateSTS(selecolmap,mparams_ptr);
   return;
 //  // loop over all slave col elements
 //  for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
@@ -3975,6 +3970,8 @@ void CONTACT::CoInterface::EvaluateSTS(
  |  protected evaluate routine                               farah 07/16|
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::EvaluateCoupling(
+    const Epetra_Map& selecolmap,
+    const Epetra_Map* snoderowmap,
     const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   // ask if nonsmooth contact is activated!
@@ -3989,7 +3986,7 @@ void CONTACT::CoInterface::EvaluateCoupling(
       // 3) compute directional derivative of M and g and store into nodes
       //    (only for contact setting)
       //********************************************************************
-      EvaluateSTS(mparams_ptr);
+      EvaluateSTS(selecolmap,mparams_ptr);
 
       //********************************************************************
       // 1) perform coupling (find closest point between to lines)
@@ -4047,7 +4044,7 @@ void CONTACT::CoInterface::EvaluateCoupling(
       // 2) integrate Mortar matrix M and weighted gap g
       // 3) compute directional derivative of M and g and store into nodes
       //********************************************************************
-      EvaluateSTS(mparams_ptr);
+      EvaluateSTS(selecolmap,mparams_ptr);
 
       //********************************************************************
       // perform LTS steps for master edges
@@ -4074,7 +4071,7 @@ void CONTACT::CoInterface::EvaluateCoupling(
     //********************************************************************
     // call base routine for standard mortar/nts evaluation
     //********************************************************************
-    MORTAR::MortarInterface::EvaluateCoupling(mparams_ptr);
+    MORTAR::MortarInterface::EvaluateCoupling(selecolmap,snoderowmap,mparams_ptr);
   }
 
   return;
@@ -6732,7 +6729,7 @@ void CONTACT::CoInterface::SetCPPNormal(
 /*----------------------------------------------------------------------*
  |  export nodal normals (public)                             popp 11/10|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::ExportNodalNormals()
+void CONTACT::CoInterface::ExportNodalNormals() const
 {
   // create empty data objects
   std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > triad;
@@ -6836,8 +6833,10 @@ void CONTACT::CoInterface::ExportNodalNormals()
     }
   }
 
+
   // communicate from slave node row to column map
-  DRT::Exporter ex(*snoderowmapbound_,*snodecolmapbound_,Comm());
+  DRT::Exporter& ex = idata_.Exporter();
+
   ex.Export(triad);
 
   ex.Export(n_x_key);
@@ -13579,12 +13578,42 @@ bool CONTACT::CoInterface::SplitActiveDofs()
   return true;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::CoInterface::GetForceOfNode(
+    LINALG::Matrix<3,1>& nodal_force,
+    const Epetra_Vector& force,
+    const DRT::Node& node ) const
+{
+  std::vector<int> dofs;
+  idiscret_->Dof(&node,dofs);
+
+  // reset nodal force vector
+  std::fill( nodal_force.A(), nodal_force.A()+3, 0.0 );
+  const double* f_vals = force.Values();
+
+  if ( dofs.size()>3 )
+    dserror("The interface node seems to have more than 3 DOFs!");
+
+  for ( unsigned i=0; i<dofs.size(); ++i )
+  {
+    const int dof = dofs[i];
+    const int f_lid = force.Map().LID( dof );
+    if ( f_lid == -1 )
+      dserror("Couldn't find the nodal DOF %d in the global force vector!",
+          dof );
+
+    nodal_force(i,0) = f_vals[f_lid];
+  }
+}
+
 /*----------------------------------------------------------------------*
  |  Calculate angular interface moments                  hiermeier 08/14|
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::EvalResultantMoment(
     const Epetra_Vector& fs,
-    const Epetra_Vector& fm) const
+    const Epetra_Vector& fm,
+    LINALG::SerialDenseMatrix* conservation_data_ptr) const
 {
   static int step = 0;
 
@@ -13597,32 +13626,32 @@ void CONTACT::CoInterface::EvalResultantMoment(
   double gresMoMa[3] = {0.0,0.0,0.0};   // global master moment
   double gbalMo[3]   = {0.0,0.0,0.0};   // global moment balance
 
-  double lresFSl[3] = {0.0,0.0,0.0};   // local slave moment
-  double gresFSl[3] = {0.0,0.0,0.0};   // global slave moment
-  double lresFMa[3] = {0.0,0.0,0.0};   // local master momemnt
-  double gresFMa[3] = {0.0,0.0,0.0};   // global master moment
-  double gbalF[3]   = {0.0,0.0,0.0};   // global moment balance
+  double lresFSl[3] = {0.0,0.0,0.0};  // local slave force
+  double gresFSl[3] = {0.0,0.0,0.0};  // global slave force
+  double lresFMa[3] = {0.0,0.0,0.0};  // local master force
+  double gresFMa[3] = {0.0,0.0,0.0};  // global master force
+  double gbalF[3]   = {0.0,0.0,0.0};  // global force balance
 
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
+  LINALG::Matrix<3,1> nforce(true);
   for (int i=0;i<snoderowmap_->NumMyElements();++i)
   {
     int gid = snoderowmap_->GID(i);
     CoNode* snode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
 
+    GetForceOfNode(nforce, fs, *snode);
+
     if (Dim()==2)
-      lresMoSl[2] += snode->xspatial()[0] * fs[2*i+1] - snode->xspatial()[1]*fs[2*i];
+      lresMoSl[2] += snode->xspatial()[0] * nforce(1,0) - snode->xspatial()[1]*nforce(0,0);
     else
     {
-      lresMoSl[0] += snode->xspatial()[1] * fs[3*i+2] - snode->xspatial()[2] * fs[3*i+1];
-      lresMoSl[1] += snode->xspatial()[2] * fs[3*i]   - snode->xspatial()[0] * fs[3*i+2];
-      lresMoSl[2] += snode->xspatial()[0] * fs[3*i+1] - snode->xspatial()[1] * fs[3*i];
-
-      lresFSl[0] +=fs[3*i];
-      lresFSl[1] +=fs[3*i+1];
-      lresFSl[2] +=fs[3*i+2];
-
+      lresMoSl[0] += snode->xspatial()[1] * nforce(2,0) - snode->xspatial()[2] * nforce(1,0);
+      lresMoSl[1] += snode->xspatial()[2] * nforce(0,0) - snode->xspatial()[0] * nforce(2,0);
+      lresMoSl[2] += snode->xspatial()[0] * nforce(1,0) - snode->xspatial()[1] * nforce(0,0);
     }
+    for ( unsigned k=0; k<3; ++k )
+      lresFSl[k] += nforce(k,0);
   }
   Comm().SumAll(&lresMoSl[0],&gresMoSl[0],3);
   Comm().SumAll(&lresFSl[0],&gresFSl[0],3);
@@ -13634,18 +13663,18 @@ void CONTACT::CoInterface::EvalResultantMoment(
     int gid = mnoderowmap_->GID(i);
     CoNode* mnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
 
+    GetForceOfNode(nforce, fm, *mnode);
+
     if (Dim()==2)
-      lresMoMa[2] += mnode->xspatial()[0] * fm[2*i+1] - mnode->xspatial()[1]*fm[2*i];
+      lresMoMa[2] += mnode->xspatial()[0] * nforce(1,0) - mnode->xspatial()[1]*nforce(0,0);
     else
     {
-      lresMoMa[0] += mnode->xspatial()[1] * fm[3*i+2] - mnode->xspatial()[2] * fm[3*i+1];
-      lresMoMa[1] += mnode->xspatial()[2] * fm[3*i]   - mnode->xspatial()[0] * fm[3*i+2];
-      lresMoMa[2] += mnode->xspatial()[0] * fm[3*i+1] - mnode->xspatial()[1] * fm[3*i];
-
-      lresFMa[0] +=fm[3*i];
-      lresFMa[1] +=fm[3*i+1];
-      lresFMa[2] +=fm[3*i+2];
+      lresMoMa[0] += mnode->xspatial()[1] * nforce(2,0) - mnode->xspatial()[2] * nforce(1,0);
+      lresMoMa[1] += mnode->xspatial()[2] * nforce(0,0) - mnode->xspatial()[0] * nforce(2,0);
+      lresMoMa[2] += mnode->xspatial()[0] * nforce(1,0) - mnode->xspatial()[1] * nforce(0,0);
     }
+    for ( unsigned k=0; k<3; ++k )
+      lresFMa[k] += nforce(k,0);
   }
   Comm().SumAll(&lresMoMa[0],&gresMoMa[0],3);
   Comm().SumAll(&lresFMa[0],&gresFMa[0],3);
@@ -13676,55 +13705,21 @@ void CONTACT::CoInterface::EvalResultantMoment(
         "]"  << std::endl;
   }
 
-  // write angular momentum conservation in xxx.amom
-  FILE* MyFile = NULL;
-  std::ostringstream filename;
-  const std::string filebase = "xxx";
-  filename << filebase <<".amom";
-  MyFile = fopen(filename.str().c_str(), "at+");
-
-  // store data
-  if (MyFile)
+  if ( conservation_data_ptr )
   {
-    fprintf(MyFile, "%d\t", step);
-    fprintf(MyFile, "%g\t", gresMoSl[0]);
-    fprintf(MyFile, "%g\t", gresMoSl[1]);
-    fprintf(MyFile, "%g\t", gresMoSl[2]);
-    fprintf(MyFile, "%g\t", gresMoMa[0]);
-    fprintf(MyFile, "%g\t", gresMoMa[1]);
-    fprintf(MyFile, "%g\t", gresMoMa[2]);
-    fprintf(MyFile, "%g\t", gbalMo[0]);
-    fprintf(MyFile, "%g\t", gbalMo[1]);
-    fprintf(MyFile, "%g\n", gbalMo[2]);
-    fclose(MyFile);
-  }
-  else
-    dserror("ERROR: File could not be opened.");
+    LINALG::SerialDenseMatrix& conservation_data = *conservation_data_ptr;
+    conservation_data.Zero();
+    if (conservation_data.M() < 18 )
+      dserror("conservation_data length is too short!");
 
-  // write angular momentum conservation in xxx.amom
-  FILE* MyFile2 = NULL;
-  std::ostringstream filename2;
-  const std::string filebase2 = "xxx";
-  filename2 << filebase2 <<".lmom2";
-  MyFile2 = fopen(filename2.str().c_str(), "at+");
+    std::copy( gresFSl, gresFSl+3, conservation_data.A() );
+    std::copy( gresFMa, gresFMa+3, conservation_data.A()+3 );
+    std::copy( gbalF, gbalF+3, conservation_data.A()+6 );
 
-  // store data
-  if (MyFile2)
-  {
-    fprintf(MyFile2, "%d\t", step);
-    fprintf(MyFile2, "%g\t", gresFSl[0]);
-    fprintf(MyFile2, "%g\t", gresFSl[1]);
-    fprintf(MyFile2, "%g\t", gresFSl[2]);
-    fprintf(MyFile2, "%g\t", gresFMa[0]);
-    fprintf(MyFile2, "%g\t", gresFMa[1]);
-    fprintf(MyFile2, "%g\t", gresFMa[2]);
-    fprintf(MyFile2, "%g\t", gbalF[0]);
-    fprintf(MyFile2, "%g\t", gbalF[1]);
-    fprintf(MyFile2, "%g\n", gbalF[2]);
-    fclose(MyFile2);
+    std::copy( gresMoSl, gresMoSl+3, conservation_data.A()+9 );
+    std::copy( gresMoMa, gresMoMa+3, conservation_data.A()+12 );
+    std::copy( gbalMo, gbalMo+3, conservation_data.A()+15 );
   }
-  else
-    dserror("ERROR: File could not be opened.");
 
   ++step;
   return;
@@ -13847,6 +13842,14 @@ void CONTACT::CoInterface::AssembleNCoupLin(LINALG::SparseMatrix& sglobal, ADAPT
     }
   }
   return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+const CONTACT::CoInterface&
+CONTACT::CoInterface::GetMaSharingRefInterface() const
+{
+  return dynamic_cast<const CoInterface&>(idata_.GetMaSharingRefInterface());
 }
 
 /*------------------------------------------------------------------------*

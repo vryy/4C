@@ -1,0 +1,1201 @@
+//
+// Maintainer: Michael Hiermeier
+// hiermeier@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+//
+==================================================================
+         General Data File BACI
+==================================================================
+---------------------------------------------------------------------TITLE
+NURBS27 PATCH TEST
+Testing of the AUGMENTED LAGRANGE strategy for NURBS9 surface elements.
+Here the COMPLETE variational approach is going to be tested. For this
+purpose cN is chosen to 1. A value equal to 10 or 100 leads to cycling
+of the active set, even though it would be no problem, if the standard
+Lagrange strategy is chosen. Therefore the behavior is different for
+the incomplete and complete approach in this regard.
+Note that the NURBS element normal factor for the slave side is equal
+to -1.0.
+--------------------------------------------------------------PROBLEM SIZE
+ELEMENTS                          2
+NODES                             54
+DIM                               3
+MATERIALS                         2
+NUMDF                             3
+--------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Structure
+//
+RESTART                         0
+//
+// Used defined restart time
+RESTARTTIME                     -1
+//
+// Defines the function spaces for the spatial approximation
+//     Polynomial,Nurbs,Meshfree,HDG
+SHAPEFCT                        Nurbs
+-----------------------------------------------------------------IO
+OUTPUT_GMSH                     No
+OUTPUT_ROT                      No
+OUTPUT_SPRING                   No
+OUTPUT_BIN                      yes
+OUTPUT_EVERY_ITER               no
+OEI_FILE_COUNTER                0
+STRUCT_DISP                     Yes
+STRUCT_STRESS                   No
+STRUCT_STRAIN                   No
+STRUCT_VEL_ACC                  No
+STRUCT_SE                       No
+STRUCT_COUPLING_STRESS          No
+STRUCT_PLASTIC_STRAIN           No
+STRUCT_SURFACTANT               No
+STRUCT_JACOBIAN_MATLAB          No
+FILESTEPS                       1000
+WRITE_TO_SCREEN                 Yes
+WRITE_TO_FILE                   No
+LIMIT_OUTP_TO_PROC              0
+VERBOSITY                       verbose
+RESTARTWALLTIMEINTERVAL         -1
+RESTARTEVRY                     -1
+//
+-------------------------------------------------IO/EVERY ITERATION
+OUTPUT_EVERY_ITER               yes
+RUN_NUMBER                      -1
+STEP_NP_NUMBER                  1
+-------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
+DYNAMICTYP                      Statics
+RESULTSEVRY                     1
+RESEVRYERGY                     0
+RESTARTEVRY                     1
+TIMESTEP                        1.0
+NUMSTEP                         100
+TIMEINIT                        0
+MAXTIME                         1.0
+STC_SCALING                     no
+STC_LAYER                       1
+NLNSOL                          fullnewton // noxnln, fullnewton
+MATERIALTANGENT                 analytical // finitedifferences, analytical
+CONTROLNODE                     -1 -1 -1
+LOADLIN                         No
+MASSLIN                         No
+NEGLECTINERTIA                  No
+PREDICT                         TangDis
+LINEAR_SOLVER                   1
+MAXITER                         10
+----------------------------------------------------MORTAR COUPLING
+LM_SHAPEFCN                     standard
+SEARCH_ALGORITHM                Binarytree
+SEARCH_PARAM                    1.0
+LM_QUAD                         quad
+REDUNDANT_STORAGE               Master
+PARALLEL_STRATEGY               redundant_ghosting
+PARALLEL_REDIST                 Static
+ALGORITHM                       Mortar
+MAX_BALANCE                     2
+MIN_ELEPROC                     0
+INTTYPE                         Elements
+NUMGP_PER_DIM                   10
+TRIANGULATION                   Delaunay
+----------------------------------------------------CONTACT DYNAMIC
+LINEAR_SOLVER                   1
+STRATEGY                        Augmented // Combo
+SYSTEM                          SaddlePoint
+SEMI_SMOOTH_NEWTON              Yes
+SEMI_SMOOTH_CN                  1
+SEMI_SMOOTH_CT                  100
+CPP_NORMALS                     No
+------------------------------------------CONTACT DYNAMIC/AUGMENTED
+PRINT_LINEAR_CONSERVATION       Yes // Yes
+PRINT_ANGULAR_CONSERVATION      Yes // Yes
+VARIATIONAL_APPROACH            complete // complete, incomplete
+ASSEMBLE_STRATEGY               node_based
+--------------------------------------------------------------------SOLVER 1
+NAME                            Structure_Solver
+SOLVER                          UMFPACK
+-----------------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS structure NODE 27 QUANTITY dispx VALUE -1.24185176821889828e-02 TOLERANCE 1.0e-08
+STRUCTURE DIS structure NODE 27 QUANTITY dispy VALUE -1.24185176821882907e-02 TOLERANCE 1.0e-08
+STRUCTURE DIS structure NODE 31 QUANTITY dispx VALUE -3.88030531623073096e-03 TOLERANCE 1.0e-08
+STRUCTURE DIS structure NODE 31 QUANTITY dispy VALUE 0.0 TOLERANCE 1.0e-08
+STRUCTURE SPECIAL QUANTITY num_iter_step_1 VALUE 5.0 TOLERANCE 1.0e-20
+---------------------------------------------------------MATERIALS
+MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.1
+MAT 2 ELAST_CoupLogNeoHooke MODE YN C1 1 C2 0.0       // C1 = Young, C2 = nue
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION ramp
+VARIABLE 0 NAME ramp TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1.0 10.0 VALUES 0 1.2 1.2
+----------------------------------------------DESIGN POINT DIRICH CONDITIONS
+DPOINT                          0
+-----------------------------------------------DESIGN SURF DIRICH CONDITIONS
+DSURF                           2
+E 5 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 1.0 FUNCT 0 0 1
+E 12 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+-----------------------------------------------DESIGN LINE DIRICH CONDITIONS
+DLINE                           0
+----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
+DLINE                           0
+-----------------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
+DSURF                           2
+E 6 - 1 Master Inactive FrCoeffOrBound 0.0
+E 11 - 1 Slave Inactive FrCoeffOrBound 0.0
+-----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
+DLINE                           0
+-----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
+DVOL                            0
+--------------------------------------------------------DESIGN DESCRIPTION
+NDPOINT                           16
+NDLINE                            24
+NDSURF                            12
+NDVOL                             2
+-------------------------------------------------------DNODE-NODE TOPOLOGY
+//
+// structure: patch 1, (0,0,0)
+//
+//          +-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       +-----------+  |       |
+//       |  X--------|--+       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------+       / t
+//
+//
+NODE            1   DNODE   1
+//
+// structure: patch 1, (1,0,0)
+//
+//          +-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       +-----------+  |       |
+//       |  O--------|--X       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------+       / t
+//
+//
+NODE            3   DNODE   2
+//
+// structure: patch 1, (0,1,0)
+//
+//          X-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       +-----------+  |       |
+//       |  O--------|--+       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------+       / t
+//
+//
+NODE            3   DNODE   3
+//
+// structure: patch 1, (1,1,0)
+//
+//          +-----------X     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       +-----------+  |       |
+//       |  O--------|--+       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------+       / t
+//
+//
+NODE            9   DNODE   4
+//
+// structure: patch 1, (0,0,1)
+//
+//          +-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       +-----------+  |       |
+//       |  O--------|--+       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       X-----------+       / t
+//
+//
+NODE           19   DNODE   5
+// structure: patch 1, (1,0,1)
+//
+//          +-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       +-----------+  |       |
+//       |  O--------|--+       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------X       / t
+//
+//
+NODE           21   DNODE   6
+//
+// structure: patch 1, (0,1,1)
+//
+//          +-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       X-----------+  |       |
+//       |  O--------|--+       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------+       / t
+//
+//
+NODE           21   DNODE   7
+//
+// structure: patch 1, (1,1,1)
+//
+//          +-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       +-----------X  |       |
+//       |  O--------|--+       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------+       / t
+//
+//
+NODE           27   DNODE   8
+//
+// structure: patch 2, (0,0,0)
+//
+//          +-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       +-----------+  |       |
+//       |  X--------|--+       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------+       / t
+//
+//
+NODE           28   DNODE   9
+//
+// structure: patch 2, (1,0,0)
+//
+//          +-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       +-----------+  |       |
+//       |  O--------|--X       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------+       / t
+//
+//
+NODE           30   DNODE  10
+//
+// structure: patch 2, (0,1,0)
+//
+//          X-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       +-----------+  |       |
+//       |  O--------|--+       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------+       / t
+//
+//
+NODE           30   DNODE  11
+//
+// structure: patch 2, (1,1,0)
+//
+//          +-----------X     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       +-----------+  |       |
+//       |  O--------|--+       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------+       / t
+//
+//
+NODE           36   DNODE  12
+//
+// structure: patch 2, (0,0,1)
+//
+//          +-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       +-----------+  |       |
+//       |  O--------|--+       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       X-----------+       / t
+//
+//
+NODE           46   DNODE  13
+// structure: patch 2, (1,0,1)
+//
+//          +-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       +-----------+  |       |
+//       |  O--------|--+       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------X       / t
+//
+//
+NODE           48   DNODE  14
+//
+// structure: patch 2, (0,1,1)
+//
+//          +-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       X-----------+  |       |
+//       |  O--------|--+       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------+       / t
+//
+//
+NODE           48   DNODE  15
+//
+// structure: patch 2, (1,1,1)
+//
+//          +-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       +-----------X  |       |
+//       |  O--------|--+       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------+       / t
+//
+//
+NODE           54   DNODE  16
+-------------------------------------------------------DLINE-NODE TOPOLOGY
+//
+// structure: patch 1, inner_bottom line
+//
+//          +-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       +-----------+  |       |
+//       |  XXXXXXXXX|XXX       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------+       / t
+//
+//
+NODE            1   DLINE   1
+NODE            2   DLINE   1
+NODE            3   DLINE   1
+//
+// structure: patch 1, inner_top line
+//
+//          +-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       +-----------+  |       |
+//       |  O--------|--+       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       XXXXXXXXXXXXX       / t
+//
+//
+NODE           19   DLINE   2
+NODE           20   DLINE   2
+NODE           21   DLINE   2
+//
+// structure: patch 1, outer_bottom line
+//
+//          XXXXXXXXXXXXX     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       +-----------+  |       |
+//       |  O--------|--+       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------+       / t
+//
+//
+NODE            7   DLINE   3
+NODE            8   DLINE   3
+NODE            9   DLINE   3
+//
+// structure: patch 1, outer_top line
+//
+//          +-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       XXXXXXXXXXXXX  |       |
+//       |  O--------|--+       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------+       / t
+//
+//
+NODE           25   DLINE   4
+NODE           26   DLINE   4
+NODE           27   DLINE   4
+//
+// structure: patch 1, left_bottom line
+//
+//          X-----------+     s ^
+//         /X          /|       |
+//        / X         / |       |
+//       +-----------+  |       |
+//       |  X--------|--+       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------+       / t
+//
+//
+NODE            1   DLINE   5
+NODE            4   DLINE   5
+NODE            7   DLINE   5
+//
+// structure: patch 1, left_top line
+//
+//          +-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       X-----------+  |       |
+//       X  O--------|--+       +----->
+//       X /         | /       /       r
+//       X/          |/       /
+//       X-----------+       / t
+//
+//
+NODE           19   DLINE   6
+NODE           22   DLINE   6
+NODE           25   DLINE   6
+//
+// structure: patch 1, right_bottom line
+//
+//          +-----------X     s ^
+//         /|          /X       |
+//        / |         / X       |
+//       +-----------+  X       |
+//       |  O--------|--X       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------+       / t
+//
+//
+NODE            3   DLINE   7
+NODE            6   DLINE   7
+NODE            9   DLINE   7
+//
+// structure: patch 1, right_top line
+//
+//          +-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       +-----------X  |       |
+//       |  O--------X--+       +----->
+//       | /         X /       /       r
+//       |/          X/       /
+//       +-----------X       / t
+//
+//
+NODE           21   DLINE   8
+NODE           24   DLINE   8
+NODE           27   DLINE   8
+//
+// structure: patch 1, inner_left line
+//
+//          +-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       +-----------+  |       |
+//       |  X--------|--+       +----->
+//       | X         | /       /       r
+//       |X          |/       /
+//       X-----------+       / t
+//
+//
+NODE            1   DLINE   9
+NODE           10   DLINE   9
+NODE           19   DLINE   9
+//
+// structure: patch 1, outer_left line
+//
+//          X-----------+     s ^
+//         X|          /|       |
+//        X |         / |       |
+//       X-----------+  |       |
+//       |  O--------|--+       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------+       / t
+//
+//
+NODE            7   DLINE  10
+NODE           16   DLINE  10
+NODE           25   DLINE  10
+//
+// structure: patch 1, inner_right line
+//
+//          +-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       +-----------+  |       |
+//       |  O--------|--X       +----->
+//       | /         | X       /       r
+//       |/          |X       /
+//       +-----------X       / t
+//
+//
+NODE            3   DLINE  11
+NODE           12   DLINE  11
+NODE           21   DLINE  11
+//
+// structure: patch 1, outer_right line
+//
+//          +-----------X     s ^
+//         /|          X|       |
+//        / |         X |       |
+//       +-----------X  |       |
+//       |  X--------|--+       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------+       / t
+//
+//
+NODE            9   DLINE  12
+NODE           18   DLINE  12
+NODE           27   DLINE  12
+//
+// structure: patch 2, inner_bottom line
+//
+//          +-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       +-----------+  |       |
+//       |  XXXXXXXXX|XXX       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------+       / t
+//
+//
+NODE           28   DLINE  13
+NODE           29   DLINE  13
+NODE           30   DLINE  13
+//
+// structure: patch 2, inner_top line
+//
+//          +-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       +-----------+  |       |
+//       |  O--------|--+       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       XXXXXXXXXXXXX       / t
+//
+//
+NODE           46   DLINE  14
+NODE           47   DLINE  14
+NODE           48   DLINE  14
+//
+// structure: patch 2, outer_bottom line
+//
+//          XXXXXXXXXXXXX     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       +-----------+  |       |
+//       |  O--------|--+       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------+       / t
+//
+//
+NODE           34   DLINE  15
+NODE           35   DLINE  15
+NODE           36   DLINE  15
+//
+// structure: patch 2, outer_top line
+//
+//          +-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       XXXXXXXXXXXXX  |       |
+//       |  O--------|--+       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------+       / t
+//
+//
+NODE           52   DLINE  16
+NODE           53   DLINE  16
+NODE           54   DLINE  16
+//
+// structure: patch 2, left_bottom line
+//
+//          X-----------+     s ^
+//         /X          /|       |
+//        / X         / |       |
+//       +-----------+  |       |
+//       |  X--------|--+       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------+       / t
+//
+//
+NODE           28   DLINE  17
+NODE           31   DLINE  17
+NODE           34   DLINE  17
+//
+// structure: patch 2, left_top line
+//
+//          +-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       X-----------+  |       |
+//       X  O--------|--+       +----->
+//       X /         | /       /       r
+//       X/          |/       /
+//       X-----------+       / t
+//
+//
+NODE           46   DLINE  18
+NODE           49   DLINE  18
+NODE           52   DLINE  18
+//
+// structure: patch 2, right_bottom line
+//
+//          +-----------X     s ^
+//         /|          /X       |
+//        / |         / X       |
+//       +-----------+  X       |
+//       |  O--------|--X       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------+       / t
+//
+//
+NODE           30   DLINE  19
+NODE           33   DLINE  19
+NODE           36   DLINE  19
+//
+// structure: patch 2, right_top line
+//
+//          +-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       +-----------X  |       |
+//       |  O--------X--+       +----->
+//       | /         X /       /       r
+//       |/          X/       /
+//       +-----------X       / t
+//
+//
+NODE           48   DLINE  20
+NODE           51   DLINE  20
+NODE           54   DLINE  20
+//
+// structure: patch 2, inner_left line
+//
+//          +-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       +-----------+  |       |
+//       |  X--------|--+       +----->
+//       | X         | /       /       r
+//       |X          |/       /
+//       X-----------+       / t
+//
+//
+NODE           28   DLINE  21
+NODE           37   DLINE  21
+NODE           46   DLINE  21
+//
+// structure: patch 2, outer_left line
+//
+//          X-----------+     s ^
+//         X|          /|       |
+//        X |         / |       |
+//       X-----------+  |       |
+//       |  O--------|--+       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------+       / t
+//
+//
+NODE           34   DLINE  22
+NODE           43   DLINE  22
+NODE           52   DLINE  22
+//
+// structure: patch 2, inner_right line
+//
+//          +-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       +-----------+  |       |
+//       |  O--------|--X       +----->
+//       | /         | X       /       r
+//       |/          |X       /
+//       +-----------X       / t
+//
+//
+NODE           30   DLINE  23
+NODE           39   DLINE  23
+NODE           48   DLINE  23
+//
+// structure: patch 2, outer_right line
+//
+//          +-----------X     s ^
+//         /|          X|       |
+//        / |         X |       |
+//       +-----------X  |       |
+//       |  X--------|--+       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------+       / t
+//
+//
+NODE           36   DLINE  24
+NODE           45   DLINE  24
+NODE           54   DLINE  24
+-------------------------------------------------------DSURF-NODE TOPOLOGY
+//
+// structure: patch 1, inner wall surface
+//
+//          +-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       +-----------+  |       |
+//       |  XXXXXXXXX|XXX       +----->
+//       | XXXXXXXXXX|XX       /       r
+//       |XXXXXXXXXXX|X       /
+//       XXXXXXXXXXXXX       / t
+//
+//
+NODE     1   DSURF    1
+NODE    10   DSURF    1
+NODE    19   DSURF    1
+NODE     2   DSURF    1
+NODE    11   DSURF    1
+NODE    20   DSURF    1
+NODE     3   DSURF    1
+NODE    12   DSURF    1
+NODE    21   DSURF    1
+//
+// structure: patch 1, outer wall surface
+//
+//          XXXXXXXXXXXXX     s ^
+//         XXXXXXXXXXXXX|       |
+//        XXXXXXXXXXXXX |       |
+//       XXXXXXXXXXXXX  |       |
+//       |  O--------|--+       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------+       / t
+//
+//
+NODE     7   DSURF    1
+NODE    16   DSURF    1
+NODE    25   DSURF    1
+NODE     8   DSURF    1
+NODE    17   DSURF    1
+NODE    26   DSURF    1
+NODE     9   DSURF    1
+NODE    18   DSURF    1
+NODE    27   DSURF    1
+//
+// structure: patch 1, left wall surface
+//
+//          X-----------+     s ^
+//         XX          /|       |
+//        XXX         / |       |
+//       X-----------+  |       |
+//       XXXX--------|--+       +----->
+//       XXX         | /       /       r
+//       XX          |/       /
+//       X-----------+       / t
+//
+//
+NODE     1   DSURF    3
+NODE    10   DSURF    3
+NODE    19   DSURF    3
+NODE     4   DSURF    3
+NODE    13   DSURF    3
+NODE    22   DSURF    3
+NODE     7   DSURF    3
+NODE    16   DSURF    3
+NODE    25   DSURF    3
+//
+// structure: patch 1, right wall surface
+//
+//          +-----------X     s ^
+//         /|          XX       |
+//        / |         XXX       |
+//       +-----------XXXX       |
+//       |  O--------XXXX       +----->
+//       | /         XXX       /       r
+//       |/          XX       /
+//       +-----------X       / t
+//
+//
+NODE     3   DSURF    4
+NODE    12   DSURF    4
+NODE    21   DSURF    4
+NODE     6   DSURF    4
+NODE    15   DSURF    4
+NODE    24   DSURF    4
+NODE     9   DSURF    4
+NODE    18   DSURF    4
+NODE    27   DSURF    4
+//
+// structure: patch 1, bottom wall surface
+//
+//          XXXXXXXXXXXXX     s ^
+//         /XXXXXXXXXXX/X       |
+//        / XXXXXXXXXX/XX       |
+//       +-----------+XXX       |
+//       |  XXXXXXXXX|XXX       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------+       / t
+//
+//
+NODE     1   DSURF    5
+NODE     2   DSURF    5
+NODE     3   DSURF    5
+NODE     4   DSURF    5
+NODE     5   DSURF    5
+NODE     6   DSURF    5
+NODE     7   DSURF    5
+NODE     8   DSURF    5
+NODE     9   DSURF    5
+//
+// structure: patch 1, top wall surface
+//
+//          +-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       XXXXXXXXXXXXX  |       |
+//       XXXXXXXXXXXXX--+       +----->
+//       XXXXXXXXXXXXX /       /       r
+//       XXXXXXXXXXXXX/       /
+//       XXXXXXXXXXXXX       / t
+//
+//
+NODE    19   DSURF    6
+NODE    20   DSURF    6
+NODE    21   DSURF    6
+NODE    22   DSURF    6
+NODE    23   DSURF    6
+NODE    24   DSURF    6
+NODE    25   DSURF    6
+NODE    26   DSURF    6
+NODE    27   DSURF    6
+//
+// structure: patch 2, inner wall surface
+//
+//          +-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       +-----------+  |       |
+//       |  XXXXXXXXX|XXX       +----->
+//       | XXXXXXXXXX|XX       /       r
+//       |XXXXXXXXXXX|X       /
+//       XXXXXXXXXXXXX       / t
+//
+//
+NODE    28   DSURF    7
+NODE    37   DSURF    7
+NODE    46   DSURF    7
+NODE    29   DSURF    7
+NODE    38   DSURF    7
+NODE    47   DSURF    7
+NODE    30   DSURF    7
+NODE    39   DSURF    7
+NODE    48   DSURF    7
+//
+// structure: patch 2, outer wall surface
+//
+//          XXXXXXXXXXXXX     s ^
+//         XXXXXXXXXXXXX|       |
+//        XXXXXXXXXXXXX |       |
+//       XXXXXXXXXXXXX  |       |
+//       |  O--------|--+       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------+       / t
+//
+//
+NODE    34   DSURF    8
+NODE    43   DSURF    8
+NODE    52   DSURF    8
+NODE    35   DSURF    8
+NODE    44   DSURF    8
+NODE    53   DSURF    8
+NODE    36   DSURF    8
+NODE    45   DSURF    8
+NODE    54   DSURF    8
+//
+// structure: patch 2, left wall surface
+//
+//          X-----------+     s ^
+//         XX          /|       |
+//        XXX         / |       |
+//       X-----------+  |       |
+//       XXXX--------|--+       +----->
+//       XXX         | /       /       r
+//       XX          |/       /
+//       X-----------+       / t
+//
+//
+NODE    28   DSURF    9
+NODE    37   DSURF    9
+NODE    46   DSURF    9
+NODE    31   DSURF    9
+NODE    40   DSURF    9
+NODE    49   DSURF    9
+NODE    34   DSURF    9
+NODE    43   DSURF    9
+NODE    52   DSURF    9
+//
+// structure: patch 2, right wall surface
+//
+//          +-----------X     s ^
+//         /|          XX       |
+//        / |         XXX       |
+//       +-----------XXXX       |
+//       |  O--------XXXX       +----->
+//       | /         XXX       /       r
+//       |/          XX       /
+//       +-----------X       / t
+//
+//
+NODE    30   DSURF   10
+NODE    39   DSURF   10
+NODE    48   DSURF   10
+NODE    33   DSURF   10
+NODE    42   DSURF   10
+NODE    51   DSURF   10
+NODE    36   DSURF   10
+NODE    45   DSURF   10
+NODE    54   DSURF   10
+//
+// structure: patch 2, bottom wall surface
+//
+//          XXXXXXXXXXXXX     s ^
+//         /XXXXXXXXXXX/X       |
+//        / XXXXXXXXXX/XX       |
+//       +-----------+XXX       |
+//       |  XXXXXXXXX|XXX       +----->
+//       | /         | /       /       r
+//       |/          |/       /
+//       +-----------+       / t
+//
+//
+NODE    28   DSURF   11
+NODE    29   DSURF   11
+NODE    30   DSURF   11
+NODE    31   DSURF   11
+NODE    32   DSURF   11
+NODE    33   DSURF   11
+NODE    34   DSURF   11
+NODE    35   DSURF   11
+NODE    36   DSURF   11
+//
+// structure: patch 2, top wall surface
+//
+//          +-----------+     s ^
+//         /|          /|       |
+//        / |         / |       |
+//       XXXXXXXXXXXXX  |       |
+//       XXXXXXXXXXXXX--+       +----->
+//       XXXXXXXXXXXXX /       /       r
+//       XXXXXXXXXXXXX/       /
+//       XXXXXXXXXXXXX       / t
+//
+//
+NODE    46   DSURF   12
+NODE    47   DSURF   12
+NODE    48   DSURF   12
+NODE    49   DSURF   12
+NODE    50   DSURF   12
+NODE    51   DSURF   12
+NODE    52   DSURF   12
+NODE    53   DSURF   12
+NODE    54   DSURF   12
+--------------------------------------------------------DVOL-NODE TOPOLOGY
+// structure: patch 1, vol
+NODE     1   DVOL    1
+NODE    10   DVOL    1
+NODE    19   DVOL    1
+NODE     4   DVOL    1
+NODE    13   DVOL    1
+NODE    22   DVOL    1
+NODE     7   DVOL    1
+NODE    16   DVOL    1
+NODE    25   DVOL    1
+NODE     2   DVOL    1
+NODE    11   DVOL    1
+NODE    20   DVOL    1
+NODE     5   DVOL    1
+NODE    14   DVOL    1
+NODE    23   DVOL    1
+NODE     8   DVOL    1
+NODE    17   DVOL    1
+NODE    26   DVOL    1
+NODE     3   DVOL    1
+NODE    12   DVOL    1
+NODE    21   DVOL    1
+NODE     6   DVOL    1
+NODE    15   DVOL    1
+NODE    24   DVOL    1
+NODE     9   DVOL    1
+NODE    18   DVOL    1
+NODE    27   DVOL    1
+// structure: patch 2, vol
+NODE    28   DVOL    1
+NODE    37   DVOL    1
+NODE    46   DVOL    1
+NODE    31   DVOL    1
+NODE    40   DVOL    1
+NODE    49   DVOL    1
+NODE    34   DVOL    1
+NODE    43   DVOL    1
+NODE    52   DVOL    1
+NODE    29   DVOL    1
+NODE    38   DVOL    1
+NODE    47   DVOL    1
+NODE    32   DVOL    1
+NODE    41   DVOL    1
+NODE    50   DVOL    1
+NODE    35   DVOL    1
+NODE    44   DVOL    1
+NODE    53   DVOL    1
+NODE    30   DVOL    1
+NODE    39   DVOL    1
+NODE    48   DVOL    1
+NODE    33   DVOL    1
+NODE    42   DVOL    1
+NODE    51   DVOL    1
+NODE    36   DVOL    1
+NODE    45   DVOL    1
+NODE    54   DVOL    1
+-----------------------------------------------------STRUCTURE KNOTVECTORS
+BEGIN NURBSPATCH
+ID        1
+NUMKNOTS  6
+DEGREE    2
+TYPE      Interpolated
++0.000000000000
++0.000000000000
++0.000000000000
++1.000000000000
++1.000000000000
++1.000000000000
+NUMKNOTS  6
+DEGREE    2
+TYPE      Interpolated
++0.000000000000
++0.000000000000
++0.000000000000
++1.000000000000
++1.000000000000
++1.000000000000
+NUMKNOTS  6
+DEGREE    2
+TYPE      Interpolated
++0.000000000000
++0.000000000000
++0.000000000000
++1.000000000000
++1.000000000000
++1.000000000000
+END NURBSPATCH
+BEGIN NURBSPATCH
+ID        2
+NUMKNOTS  6
+DEGREE    2
+TYPE      Interpolated
++0.000000000000
++0.000000000000
++0.000000000000
++1.000000000000
++1.000000000000
++1.000000000000
+NUMKNOTS  6
+DEGREE    2
+TYPE      Interpolated
++0.000000000000
++0.000000000000
++0.000000000000
++1.000000000000
++1.000000000000
++1.000000000000
+NUMKNOTS  6
+DEGREE    2
+TYPE      Interpolated
++0.000000000000
++0.000000000000
++0.000000000000
++1.000000000000
++1.000000000000
++1.000000000000
+END NURBSPATCH
+---------------------------------------------------------------NODE COORDS
+CP           1 COORD  -2.00000000e+00  -2.00000000e+00  +0.00000000e+00  +1.000000000000e+00
+CP           2 COORD  +0.00000000e+00  -2.00000000e+00  +0.00000000e+00  +1.000000000000e+00
+CP           3 COORD  +2.00000000e+00  -2.00000000e+00  +0.00000000e+00  +1.000000000000e+00
+CP           4 COORD  -2.00000000e+00  +0.00000000e+00  +0.00000000e+00  +1.000000000000e+00
+CP           5 COORD  +0.00000000e+00  +0.00000000e+00  +0.00000000e+00  +1.000000000000e+00
+CP           6 COORD  +2.00000000e+00  +0.00000000e+00  +0.00000000e+00  +1.000000000000e+00
+CP           7 COORD  -2.00000000e+00  +2.00000000e+00  +0.00000000e+00  +1.000000000000e+00
+CP           8 COORD  +0.00000000e+00  +2.00000000e+00  +0.00000000e+00  +1.000000000000e+00
+CP           9 COORD  +2.00000000e+00  +2.00000000e+00  +0.00000000e+00  +1.000000000000e+00
+CP          10 COORD  -2.00000000e+00  -2.00000000e+00  +2.00000000e+00  +1.000000000000e+00
+CP          11 COORD  +0.00000000e+00  -2.00000000e+00  +2.00000000e+00  +1.000000000000e+00
+CP          12 COORD  +2.00000000e+00  -2.00000000e+00  +2.00000000e+00  +1.000000000000e+00
+CP          13 COORD  -2.00000000e+00  +0.00000000e+00  +2.00000000e+00  +1.000000000000e+00
+CP          14 COORD  +0.00000000e+00  +0.00000000e+00  +2.00000000e+00  +1.000000000000e+00
+CP          15 COORD  +2.00000000e+00  +0.00000000e+00  +2.00000000e+00  +1.000000000000e+00
+CP          16 COORD  -2.00000000e+00  +2.00000000e+00  +2.00000000e+00  +1.000000000000e+00
+CP          17 COORD  +0.00000000e+00  +2.00000000e+00  +2.00000000e+00  +1.000000000000e+00
+CP          18 COORD  +2.00000000e+00  +2.00000000e+00  +2.00000000e+00  +1.000000000000e+00
+CP          19 COORD  -2.00000000e+00  -2.00000000e+00  +4.00000000e+00  +1.000000000000e+00
+CP          20 COORD  +0.00000000e+00  -2.00000000e+00  +4.00000000e+00  +1.000000000000e+00
+CP          21 COORD  +2.00000000e+00  -2.00000000e+00  +4.00000000e+00  +1.000000000000e+00
+CP          22 COORD  -2.00000000e+00  +0.00000000e+00  +4.00000000e+00  +1.000000000000e+00
+CP          23 COORD  +0.00000000e+00  +0.00000000e+00  +4.00000000e+00  +1.000000000000e+00
+CP          24 COORD  +2.00000000e+00  +0.00000000e+00  +4.00000000e+00  +1.000000000000e+00
+CP          25 COORD  -2.00000000e+00  +2.00000000e+00  +4.00000000e+00  +1.000000000000e+00
+CP          26 COORD  +0.00000000e+00  +2.00000000e+00  +4.00000000e+00  +1.000000000000e+00
+CP          27 COORD  +2.00000000e+00  +2.00000000e+00  +4.00000000e+00  +1.000000000000e+00
+CP          28 COORD  -1.00000000e+00  -1.00000000e+00  +5.00000000e+00  +1.000000000000e+00
+CP          29 COORD  +0.00000000e+00  -1.00000000e+00  +5.00000000e+00  +1.000000000000e+00
+CP          30 COORD  +1.00000000e+00  -1.00000000e+00  +5.00000000e+00  +1.000000000000e+00
+CP          31 COORD  -1.00000000e+00  +0.00000000e+00  +5.00000000e+00  +1.000000000000e+00
+CP          32 COORD  +0.00000000e+00  +0.00000000e+00  +5.00000000e+00  +1.000000000000e+00
+CP          33 COORD  +1.00000000e+00  +0.00000000e+00  +5.00000000e+00  +1.000000000000e+00
+CP          34 COORD  -1.00000000e+00  +1.00000000e+00  +5.00000000e+00  +1.000000000000e+00
+CP          35 COORD  +0.00000000e+00  +1.00000000e+00  +5.00000000e+00  +1.000000000000e+00
+CP          36 COORD  +1.00000000e+00  +1.00000000e+00  +5.00000000e+00  +1.000000000000e+00
+CP          37 COORD  -1.00000000e+00  -1.00000000e+00  +6.00000000e+00  +1.000000000000e+00
+CP          38 COORD  +0.00000000e+00  -1.00000000e+00  +6.00000000e+00  +1.000000000000e+00
+CP          39 COORD  +1.00000000e+00  -1.00000000e+00  +6.00000000e+00  +1.000000000000e+00
+CP          40 COORD  -1.00000000e+00  +0.00000000e+00  +6.00000000e+00  +1.000000000000e+00
+CP          41 COORD  +0.00000000e+00  +0.00000000e+00  +6.00000000e+00  +1.000000000000e+00
+CP          42 COORD  +1.00000000e+00  +0.00000000e+00  +6.00000000e+00  +1.000000000000e+00
+CP          43 COORD  -1.00000000e+00  +1.00000000e+00  +6.00000000e+00  +1.000000000000e+00
+CP          44 COORD  +0.00000000e+00  +1.00000000e+00  +6.00000000e+00  +1.000000000000e+00
+CP          45 COORD  +1.00000000e+00  +1.00000000e+00  +6.00000000e+00  +1.000000000000e+00
+CP          46 COORD  -1.00000000e+00  -1.00000000e+00  +7.00000000e+00  +1.000000000000e+00
+CP          47 COORD  +0.00000000e+00  -1.00000000e+00  +7.00000000e+00  +1.000000000000e+00
+CP          48 COORD  +1.00000000e+00  -1.00000000e+00  +7.00000000e+00  +1.000000000000e+00
+CP          49 COORD  -1.00000000e+00  +0.00000000e+00  +7.00000000e+00  +1.000000000000e+00
+CP          50 COORD  +0.00000000e+00  +0.00000000e+00  +7.00000000e+00  +1.000000000000e+00
+CP          51 COORD  +1.00000000e+00  +0.00000000e+00  +7.00000000e+00  +1.000000000000e+00
+CP          52 COORD  -1.00000000e+00  +1.00000000e+00  +7.00000000e+00  +1.000000000000e+00
+CP          53 COORD  +0.00000000e+00  +1.00000000e+00  +7.00000000e+00  +1.000000000000e+00
+CP          54 COORD  +1.00000000e+00  +1.00000000e+00  +7.00000000e+00  +1.000000000000e+00
+------------------------------------------------------------FLUID ELEMENTS
+--------------------------------------------------------STRUCTURE ELEMENTS
+            1     SONURBS27       NURBS27             1             2             3             4             5             6             7             8             9            10            11            12            13            14            15            16            17            18            19            20            21            22            23            24            25            26            27 MAT 1 GP 3 3 3
+            2     SONURBS27       NURBS27            28            29            30            31            32            33            34            35            36            37            38            39            40            41            42            43            44            45            46            47            48            49            50            51            52            53            54 MAT 1 GP 3 3 3
+--------------------------------------------------------------ALE ELEMENTS
+-----------------------------------------------------------------------END

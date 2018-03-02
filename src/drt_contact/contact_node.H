@@ -14,6 +14,7 @@
 #define CONTACT_NODE_H
 
 #include "../drt_mortar/mortar_node.H"
+#include "../drt_contact_aug/contact_aug_utils.H"
 #include <unordered_map>
 
 /*!
@@ -391,9 +392,19 @@ protected:
 };
 
 namespace AUG {
+  /** \brief Nodal data container for all contact contributions related to the
+   *  augmented framework
+   *
+   *  \author hiermeier \date 02/18 */
   class NodeDataContainer
   {
   public:
+    enum SideType
+    {
+      slave,
+      master
+    };
+
     /// @name General methods
     /// @{
 
@@ -401,7 +412,9 @@ namespace AUG {
     NodeDataContainer( CoNode& parentNode );
 
     /// constructor
-    NodeDataContainer( CoNode& parentNode, int maxNumMasterElements );
+    NodeDataContainer( CoNode& parentNode,
+        const int slMaElementAreaRatio,
+        const bool isTriangleOnMaster );
 
     virtual ~NodeDataContainer() {};
 
@@ -422,6 +435,7 @@ namespace AUG {
     void Unpack( std::vector<char>::size_type& position,
                  const std::vector<char>& data );
 
+    void Complete();
     /// @}
 
     /// @name accessors
@@ -431,83 +445,215 @@ namespace AUG {
     inline double& GetWGap() { return wGap_; }
     inline double GetWGap() const { return wGap_; }
 
-    /*! \brief Return the scaling factor kappa for this node */
+    /*! \brief Return the scaling factor kappa for this node
+     *
+     *  This factor is equivalent to the tributary area of the (potentially)
+     *  active nodes. The term is evaluated for all found slave and master
+     *  element pairs. Therefore, contributions of non-projectable GP are
+     *  missing. This stands in contrast to the augA quantities!*/
     inline double& GetKappa() { return kappa_; }
     inline double GetKappa() const { return kappa_; }
 
-    /*!
-    \brief Return the linearization of the scaling factor kappa
+    /*! \brief Return the linearization of the scaling factor kappa
+      *
+      *  Only potentially active parts are considered. See note for
+      *  GetKappa(). */
+    inline Deriv1stMap& GetDeriv1st_Kappa() { return d_kappa_; }
+    inline const Deriv1stMap& GetDeriv1st_Kappa() const { return d_kappa_; }
 
-    */
-    std::map<int,double>& GetKappaLin() { return kappaLin_; }
-    const std::map<int,double>& GetKappaLin() const { return kappaLin_; }
+    /*! \brief Return the 2-nd order derivative of the tributary area
+      *
+      *  Only potentially active parts are considered. See note for
+      *  GetKappa(). */
+     inline Deriv2ndMap& GetDeriv2nd_Kappa() { return dd_kappa_; }
+     inline const Deriv2ndMap& GetDeriv2nd_Kappa() const { return dd_kappa_; }
 
     /*! \brief Return the scaling factor augA
      *
      *  Integration over the whole slave interface, without consideration of
-     *  the segments */
+     *  the segments or projections. */
     inline double& GetAugA() { return augA_; }
     inline double GetAugA() const { return augA_; }
 
-    /*! \brief Return the linearization of the scaling factor augA
+    /*! \brief Return the first order derivative of the scaling factor augA
      *
      *  Integration over the whole slave interface, without consideration of
-     *  the segments */
-    inline GEN::pairedvector<int,double>& GetAugALin() { return augALin_; }
-    inline const GEN::pairedvector<int,double>& GetAugALin() const { return augALin_; }
+     *  the segments or projections. */
+    inline Deriv1stMap& GetDeriv1st_A() { return d_augA_; }
+    inline const Deriv1stMap& GetDeriv1st_A() const { return d_augA_; }
 
-    /*! \brief Return the linearization of the averaged weighted gap */
-    std::map<int,double>& GetAWGapLin() {return aWGapLin_; }
-    const std::map<int,double>& GetAWGapLin() const {return aWGapLin_; }
+    /*! \brief Return the second order derivative of the scaling factor augA
+     *
+     *  Integration over the whole slave interface, without consideration of
+     *  the segments or projections. */
+    inline Deriv2ndMap& GetDeriv2nd_A() { return dd_augA_; }
+    inline const Deriv2ndMap& GetDeriv2nd_A() const { return dd_augA_; }
 
-    /*! \brief Return the linearization of the weighted gap */
-    std::map<int,double>& GetWGapLin() {return wGapLin_; }
-    const std::map<int,double>& GetWGapLin() const {return wGapLin_; }
+     /*! \brief Return the 1-st order derivative of smooth averaged unit normal */
+    inline Deriv1stVecMap& GetDeriv1st_N() { return d_avg_unit_normal_; }
+    inline const Deriv1stVecMap& GetDeriv1st_N() const { return d_avg_unit_normal_; }
 
-    /*! \brief Return the variation of the weighted gap (slave part) */
-    inline GEN::pairedvector<int,std::pair<int,double> >& GetVarWGapSl() {return varWGapSl_; }
-    inline const GEN::pairedvector<int,std::pair<int,double> >& GetVarWGapSl() const {return varWGapSl_; }
-
-    /*! \brief Return the variation of the weighted gap (master part) */
-    std::map<int,std::pair<int,double> >& GetVarWGapMa() {return varWGapMa_; }
-    const std::map<int,std::pair<int,double> >& GetVarWGapMa() const {return varWGapMa_; }
-
-    /*! \brief Return the linearization of the variation of the weighted gap
-     *  (slave part) */
-    std::map<int,std::map<int,double> >& GetVarWGapLinSl() {return varWGapLinSl_; }
-    const std::map<int,std::map<int,double> >& GetVarWGapLinSl() const {return varWGapLinSl_; }
-
-    /*! \brief Return the linearization of the variation of the weighted gap
-     *  (master part) */
-    std::map<int,std::map<int,double> >& GetVarWGapLinMa() {return varWGapLinMa_; }
-    const std::map<int,std::map<int,double> >& GetVarWGapLinMa() const {return varWGapLinMa_; }
+    /*! \brief Return the 2-nd order derivative of smooth averaged unit normal */
+    inline Deriv2ndVecMap& GetDeriv2nd_N() { return dd_avg_unit_normal_; }
+    inline const Deriv2ndVecMap& GetDeriv2nd_N() const { return dd_avg_unit_normal_; }
 
     /// @}
 
+    inline Deriv1stMap& GetDeriv1st_WGapSl() { return d_wgap_sl_; }
+    inline const Deriv1stMap& GetDeriv1st_WGapSl() const { return d_wgap_sl_; }
+
+    inline Deriv1stMap& GetDeriv1st_WGapMa() { return d_wgap_ma_; }
+    inline const Deriv1stMap& GetDeriv1st_WGapMa() const { return d_wgap_ma_; }
+
+    inline Teuchos::RCP<Deriv1stMap>& GetDeriv1st_WGapSl_Complete_Ptr()
+    { return d_wgap_sl_complete_; }
+
+    inline Deriv1stMap& GetDeriv1st_WGapSl_Complete()
+    {
+      if ( d_wgap_sl_complete_.is_null() )
+         dserror( "The complete 1-st order derivative of the weighted gap "
+             "(slave) is not initialized! [NULL pointer]" );
+      return *d_wgap_sl_complete_;
+    }
+
+    inline const Deriv1stMap& GetDeriv1st_WGapSl_Complete() const
+    {
+      if ( d_wgap_sl_complete_.is_null() )
+         dserror( "The complete 1-st order derivative of the weighted gap "
+             "(slave) is not initialized! [NULL pointer]" );
+      return *d_wgap_sl_complete_;
+    }
+
+    inline Teuchos::RCP<Deriv1stMap>& GetDeriv1st_WGapMa_Complete_Ptr()
+    { return d_wgap_ma_complete_; }
+
+    inline Deriv1stMap& GetDeriv1st_WGapMa_Complete()
+    {
+      if ( d_wgap_ma_complete_.is_null() )
+         dserror( "The complete 1-st order derivative of the weighted gap "
+             "(master) is not initialized! [NULL pointer]" );
+      return *d_wgap_ma_complete_;
+    }
+
+    inline const Deriv1stMap& GetDeriv1st_WGapMa_Complete() const
+    {
+      if ( d_wgap_ma_complete_.is_null() )
+        dserror( "The complete 1-st order derivative of the weighted gap "
+            "(master) is not initialized! [NULL pointer]" );
+      return *d_wgap_ma_complete_;
+    }
+
+    inline Deriv2ndMap& GetDeriv2nd_WGapSl() { return dd_wgap_sl_; }
+    inline const Deriv2ndMap& GetDeriv2nd_WGapSl() const { return dd_wgap_sl_; }
+
+    inline Deriv2ndMap& GetDeriv2nd_WGapMa() { return dd_wgap_ma_; }
+    inline const Deriv2ndMap& GetDeriv2nd_WGapMa() const { return dd_wgap_ma_; }
+
+    /// @name Debug nodal values
+    /// @{
+
+    inline std::pair<int,double>& Get_Debug() { return debug_.x_; }
+    inline const std::pair<int,double>& Get_Debug() const { return debug_.x_; }
+
+    inline std::vector<std::pair<int,double> >& Get_DebugVec()
+    { return debug_.x_vec_; }
+    inline const std::vector<std::pair<int,double> >& Get_DebugVec() const
+    { return debug_.x_vec_; }
+
+    inline Deriv1stMap& GetDeriv1st_Debug() { return debug_.d_; }
+    inline const Deriv1stMap& GetDeriv1st_Debug() const { return debug_.d_; }
+
+    inline Deriv2ndMap& GetDeriv2nd_Debug() { return debug_.dd_; }
+    inline const Deriv2ndMap& GetDeriv2nd_Debug() const { return debug_.dd_; }
+
+    inline Deriv1stVecMap& GetDeriv1st_DebugVec() { return debug_.d_vec_; }
+    inline const Deriv1stVecMap& GetDeriv1st_DebugVec() const { return debug_.d_vec_; }
+
+    inline Deriv2ndVecMap& GetDeriv2nd_DebugVec() { return debug_.dd_vec_; }
+    inline const Deriv2ndVecMap& GetDeriv2nd_DebugVec() const { return debug_.dd_vec_; }
+
+    /// @}
+
+    inline int GetNumMEntries() const { return mentries_; }
+
+    inline void SetNumMEntries( int mentries ) { mentries_ = mentries; }
+
+  private:
+    int ApproximateMEntries(
+        const int slMaElementAreaRatio,
+        const bool isTriangleOnMaster ) const;
+
   private:
     // *** Augmented Lagrangian formulation ********************
-
-    /// one slave element projects approximately maximal in this number of master elements
-    int maxNumMasterElements_;
+    int mentries_;
 
     // nodal scalar values
-    double kappa_;        ///< gap-scaling factor kappa
-    double wGap_;         ///< nodal entry of weighted gap vector
-    double augA_;         ///< nodal scaling factor
+    double kappa_; ///< gap-scaling factor kappa
+    double wGap_;  ///< nodal entry of weighted gap vector
+    double augA_;  ///< nodal scaling factor
 
-    // Variation -- RHS
-    GEN::pairedvector<int,std::pair<int,double> > varWGapSl_; ///< variation of the weighted gap (slave)
-    std::map<int,std::pair<int,double> > varWGapMa_;          ///< variation of the weighted gap (master)
+    /// @name Linearization
+    /// @{
 
-    // Linearization
-    std::map<int,std::map<int,double> > varWGapLinSl_;  ///< linearization of the weighted gap variation (slave)
-    std::map<int,std::map<int,double> > varWGapLinMa_;  ///< linearization of the weighted gap variation (master)
-    std::map<int,double> kappaLin_;     ///< linearization of the scaling factor (segment based integration)
-    GEN::pairedvector<int,double> augALin_;             ///< linearization of the scaling factor (element based integration)
-    std::map<int,double> aWGapLin_;     ///< linearization of the averaged weighted gap
-    std::map<int,double> wGapLin_;      ///< linearization of the weighted gap
+    /// 1-st order derivative of the tributary area (active part)
+    Deriv1stMap d_kappa_;
 
+    /// 2-nd order derivative of the tributary area (active part)
+    Deriv2ndMap dd_kappa_;
+
+    /// 1-st order derivative of the tributary area (inactive part)
+    Deriv1stMap d_augA_;
+
+    /// 2-nd order derivative of the tributary area (inactive part)
+    Deriv2ndMap dd_augA_;
+
+    // 1-st derivative of the smooth averaged nodal unit normal
+    Deriv1stVecMap d_avg_unit_normal_;
+
+    // 2-nd derivative of the smooth averaged nodal unit normal
+    Deriv2ndVecMap dd_avg_unit_normal_;
+
+    /// @}
+
+    /** In correspondence with the chosen integration strategy this variable
+     *  contains the complete or the incomplete contributions of the slave side
+     *  to the weighted gap */
+    Deriv1stMap d_wgap_sl_;
+    Deriv1stMap d_wgap_ma_;
+
+    /** This variable contains always the complete contributions of the slave
+     *  side to the weighted gap */
+    Teuchos::RCP<Deriv1stMap> d_wgap_sl_complete_;
+    Teuchos::RCP<Deriv1stMap> d_wgap_ma_complete_;
+
+    Deriv2ndMap dd_wgap_sl_;
+    Deriv2ndMap dd_wgap_ma_;
+
+    /// internal debug data structure, holding debug information only
+    struct Debug
+    {
+      Debug() : d_(0), dd_(0), d_vec_(0), dd_vec_(0)
+      {};
+
+      ~Debug() {};
+
+      void Complete();
+
+      std::pair<int,double> x_;
+      std::vector<std::pair<int,double> > x_vec_;
+
+      Deriv1stMap d_;
+      Deriv2ndMap dd_;
+
+      Deriv1stVecMap d_vec_;
+      Deriv2ndVecMap dd_vec_;
+    };
+
+    Debug debug_;
+
+    /// constant reference to the parent node
     const CoNode& parentNode_;
+
   };  // class NodeDataContainer
 } // namespace AUG
 
@@ -943,6 +1089,7 @@ public:
 
    */
   inline CONTACT::CoNodeDataContainer& CoData() { return *codata_; }
+  inline CONTACT::CoNodeDataContainer& CoData() const { return *codata_; }
 
   /*! \brief Return data container of this augmented contact node
    *
@@ -1023,7 +1170,7 @@ public:
   \param val : value to be added
 
   */
-  void AddWGapValue(double& val);
+  void AddWGapValue( const double val );
 
   /*!
   \brief Add a value to the scaling factor kappa of this node (augmented Lagrange)
@@ -1034,24 +1181,6 @@ public:
   \param val : value to be added
   */
   void AddKappaValue(double& val);
-
-  /*!
-  \brief Add a value to the variation of weighted gap (slave)
-
-  \param cal : slave dof id
-  \param gid : slave gid
-  \param val : value to be added
-  */
-  void AddVarWGapSl(int col, int gid, double val);
-
-  /*!
-  \brief Add a value to the variation of weighted gap (master)
-
-  \param cal : master dof id
-  \param gid : master gid
-  \param val : value to be added
-  */
-  void AddVarWGapMa(int col, int gid, double val);
 
   /*!
   \brief TODO
@@ -1117,7 +1246,9 @@ public:
    quantities/information is initialized.
 
    */
-  void InitializeAugDataContainer( int maxNumMasterEles );
+  void InitializeAugDataContainer(
+      const int slMaElementAreaRatio,
+      const bool isTriangleOnMaster );
 
   /*!
   \brief Initializes the poro data container of the node

@@ -17,6 +17,7 @@
 #define SRC_DRT_STRUCTURE_NEW_STR_MODEL_EVALUATOR_CONTACT_H_
 
 #include "str_model_evaluator_generic.H"
+#include "../drt_lib/drt_utils_matrix_vector_enums.H"
 
 // forward declarations...
 namespace CONTACT {
@@ -73,6 +74,10 @@ namespace MODELEVALUATOR {
         LINALG::SparseOperator& jac,
         const double & timefac_np) const;
 
+    //! Perform a correction of adaptive parameters
+    virtual bool CorrectParameters(
+        NOX::NLN::CorrectionType type );
+
     //! [derived]
     virtual void WriteRestart(
         IO::DiscretizationWriter& iowriter,
@@ -86,7 +91,7 @@ namespace MODELEVALUATOR {
     {return;};
 
     //! recover condensed Lagrange multipliers
-    virtual void RecoverState(
+    virtual void RunPostComputeX(
         const Epetra_Vector& xold,
         const Epetra_Vector& dir,
         const Epetra_Vector& xnew);
@@ -99,6 +104,13 @@ namespace MODELEVALUATOR {
 
     //! [derived]
     virtual void RunPostIterate( const NOX::Solver::Generic& solver);
+
+    //! [derived]
+    virtual void RunPostApplyJacobianInverse(
+        const Epetra_Vector& rhs,
+        Epetra_Vector& result,
+        const Epetra_Vector& xold,
+        const NOX::NLN::Group& grp );
 
     //! [derived]
     virtual void UpdateStepState(const double& timefac_n);
@@ -130,17 +142,35 @@ namespace MODELEVALUATOR {
     //! [derived]
     virtual void PostOutput();
 
-    Teuchos::RCP<Epetra_Vector> AssembleForceOfAllModels() const;
+    //! [derived]
+    virtual bool EvaluateCheapSOCRhs();
+
+    //! [derived]
+    virtual bool AssembleCheapSOCRhs(
+        Epetra_Vector& f, const double & timefac_np) const;
+
     //! @}
 
     /// @name call-back routines
     /// @{
 
+    Teuchos::RCP<const LINALG::SparseMatrix> GetJacobianBlock(
+        const DRT::UTILS::MatBlockType bt ) const;
+
+    /** \brief Assemble the structural right-hand side vector
+     *
+     *  \param[in] without_these_models  Exclude all models defined in this vector
+     *                                   during the assembly
+     *  \param[in] apply_dbc             Apply Dirichlet boundary conditions
+     *
+     *  \author hiermeier \date 08/17 */
+    Teuchos::RCP<Epetra_Vector> AssembleForceOfModels(
+        const std::vector<INPAR::STR::ModelType>* without_these_models = NULL,
+        const bool apply_dbc = false ) const;
+
     virtual Teuchos::RCP<LINALG::SparseOperator> GetAuxDisplJacobian() const;
 
-    Teuchos::RCP<Epetra_Vector> AssembleForceOfModels(
-        const std::vector<INPAR::STR::ModelType>* without_these_models =
-            NULL ) const;
+    void EvaluateWeightedGapGradientError();
 
     /// @}
 
@@ -158,10 +188,13 @@ namespace MODELEVALUATOR {
   protected:
 
     STR::MODELEVALUATOR::ContactData& EvalContact();
+    const STR::MODELEVALUATOR::ContactData& EvalContact() const;
 
     virtual void CheckPseudo2D() const;
 
   private:
+    void PostSetup( Teuchos::ParameterList& cparams );
+
     void PostUpdateStepState();
 
   private:

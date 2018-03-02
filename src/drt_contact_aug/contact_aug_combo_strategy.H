@@ -69,81 +69,119 @@ namespace AUG {
     /// @name Derived public methods from the base class ( a.k.a. CoAbstractStrategy )
     /// @{
 
-    virtual void Reset(
+    /// return the type of currently active wrapped contact strategy
+    INPAR::CONTACT::SolvingStrategy Type() const override;
+
+    void Reset(
         const CONTACT::ParamsInterface& cparams,
         const Epetra_Vector& dispnp,
-        const Epetra_Vector& xnew );
+        const Epetra_Vector& xnew ) override;
 
     /// function wrapper
-    virtual bool IsSaddlePointSystem() const;
+    bool IsSaddlePointSystem() const override;
 
     /// function wrapper
-    virtual void ResetActiveSet();
+    void ResetActiveSet() override;
 
     /// function wrapper
-    virtual double ConstraintNorm() const;
+    double ConstraintNorm() const override;
 
     /// function wrapper
-    virtual void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis);
+    void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) override;
 
     /// function wrapper
-    virtual bool ActiveSetConverged();
+    bool ActiveSetConverged() override;
 
     /// function wrapper
-    virtual int ActiveSetSteps();
+    int ActiveSetSteps() override;
 
     /// function wrapper
-    virtual void UpdateActiveSet();
+    void UpdateActiveSet() override;
 
     /// function wrapper
-    virtual void EvaluateRelMovPredict();
+    void EvaluateRelMovPredict() override;
 
     /// function wrapper
-    virtual bool ActiveSetSemiSmoothConverged() const;
+    bool ActiveSetSemiSmoothConverged() const override;
 
     /// function wrapper
-    virtual Teuchos::RCP<const Epetra_Map> GetOldActiveRowNodes() const;
+    Teuchos::RCP<const Epetra_Map> GetOldActiveRowNodes() const override;
 
     /// function wrapper
-    virtual Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const;
+    Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const override;
 
     /// function wrapper
-    virtual Teuchos::RCP<const Epetra_Map> SlNormalDoFRowMapPtr(const bool& redist) const;
+    Teuchos::RCP<const Epetra_Map> SlNormalDoFRowMapPtr(const bool& redist) const override;
 
     /// function wrapper
-    virtual const Epetra_Map& SlNormalDoFRowMap(const bool& redist) const;
+    const Epetra_Map& SlNormalDoFRowMap(const bool& redist) const override;
 
     /// function wrapper
-    virtual Teuchos::RCP<const Epetra_Map> SlTangentialDoFRowMapPtr(const bool& redist) const;
+    Teuchos::RCP<const Epetra_Map> SlTangentialDoFRowMapPtr(const bool& redist) const override;
 
     /// function wrapper
-    virtual const Epetra_Map& SlTangentialDoFRowMap(const bool& redist) const;
+    const Epetra_Map& SlTangentialDoFRowMap(const bool& redist) const override;
 
     /// function wrapper
     virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
             const enum DRT::UTILS::VecBlockType& bt) const;
 
     /// function wrapper
-    virtual Teuchos::RCP<const Epetra_Vector> GetCondensedRhsPtr() const;
+    Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtrForNormCheck(
+        const enum DRT::UTILS::VecBlockType& bt) const override;
 
     /// function wrapper
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
-            const enum DRT::UTILS::MatBlockType& bt) const;
+    Teuchos::RCP<const Epetra_Vector> GetCondensedRhsPtr(
+        Epetra_Vector& f, const double & timefac_np ) const override;
 
     /// function wrapper
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetCondensedMatrixBlockPtr() const;
+    Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
+        const enum DRT::UTILS::MatBlockType& bt,
+        const CONTACT::ParamsInterface* cparams=NULL ) const override;
 
     /// function wrapper
-    virtual Teuchos::RCP<Epetra_Vector> ConstrRhs();
+    Teuchos::RCP<LINALG::SparseMatrix> GetCondensedMatrixBlockPtr(
+        Teuchos::RCP<LINALG::SparseMatrix>& kteff,
+        const double & timefac_np ) const override;
 
     /// function wrapper
-    virtual void Initialize();
+    Teuchos::RCP<Epetra_Vector> ConstrRhs() override;
 
     /// function wrapper
-    virtual void EvalConstrRHS();
+    void Initialize() override;
 
     /// function wrapper
-    virtual void UpdateActiveSetSemiSmooth();
+    void EvalConstrRHS() override;
+
+    /// function wrapper
+    void UpdateActiveSetSemiSmooth() override;
+
+    /// function wrapper
+    void DoReadRestart(
+        IO::DiscretizationReader& reader,
+        Teuchos::RCP<const Epetra_Vector> dis,
+        Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr) override;
+
+    /// function wrapper
+    void Update( Teuchos::RCP<const Epetra_Vector> dis ) override;
+
+    /// function wrapper
+    double GetPotentialValue(
+        const enum NOX::NLN::MeritFunction::MeritFctName mrt_type ) const override;
+
+    /// function wrapper
+    double GetLinearizedPotentialValueTerms(
+        const Epetra_Vector& dir,
+        const enum NOX::NLN::MeritFunction::MeritFctName mrt_type,
+        const enum NOX::NLN::MeritFunction::LinOrder linorder,
+        const enum NOX::NLN::MeritFunction::LinType lintype ) const override;
+
+    /// function wrapper
+    void WriteOutput( IO::DiscretizationWriter& writer ) const override;
+
+    /// function wrapper
+    void EvaluateReferenceState(
+        Teuchos::RCP<const Epetra_Vector> vec) override;
 
     /// @}
 
@@ -162,59 +200,77 @@ namespace AUG {
     /// @{
 
     /// Get the set of currently active interfaces
-    virtual std::vector<Teuchos::RCP<CONTACT::CoInterface> >& Interfaces();
+    std::vector<Teuchos::RCP<CONTACT::CoInterface> >& Interfaces() override;
 
     /// Get the set of currently active interfaces
-    virtual const std::vector<Teuchos::RCP<CONTACT::CoInterface> >& Interfaces() const;
+    const std::vector<Teuchos::RCP<CONTACT::CoInterface> >& Interfaces() const override;
 
     /// function wrapper
-    virtual void OutputStresses();
+    void OutputStresses() override;
 
     /** \brief function wrapper: Redistribute and setup augmented Lagrangian members
      *
      *  \author hiermeier \date 03/17 */
-    virtual void PostSetup( bool redistributed, bool init );
+    void PostSetup( bool redistributed, bool init ) override;
 
     /** \brief function wrapper: Compute force terms
      *
      *  \author hiermeier \date 03/17 */
-    virtual void EvalForce(CONTACT::ParamsInterface& cparams);
+    void EvalForce(CONTACT::ParamsInterface& cparams) override;
 
     /** \brief function wrapper: Compute force and stiffness terms
      *
      *  \author hiermeier \date 03/17 */
-    virtual void EvalForceStiff(CONTACT::ParamsInterface& cparams);
+    void EvalForceStiff(CONTACT::ParamsInterface& cparams) override;
 
     /// function wrapper
-    virtual void RunPostEvaluate( CONTACT::ParamsInterface& cparams );
+    void EvalStaticConstraintRHS(CONTACT::ParamsInterface& cparams) override;
 
     /// function wrapper
-    virtual void RunPostIterate(
-          const CONTACT::ParamsInterface& cparams );
+    void RunPostEvaluate( CONTACT::ParamsInterface& cparams ) override;
 
     /// function wrapper
-    virtual void RunPreComputeX(
-          const CONTACT::ParamsInterface& cparams,
-          const Epetra_Vector& xold,
-          Epetra_Vector& dir_mutable );
+    void RunPostIterate(
+        const CONTACT::ParamsInterface& cparams ) override;
 
     /// function wrapper
-    virtual void RecoverState(
-            const CONTACT::ParamsInterface& cparams,
-            const Epetra_Vector& xold,
-            const Epetra_Vector& dir,
-            const Epetra_Vector& xnew);
+    void RunPreComputeX(
+        const CONTACT::ParamsInterface& cparams,
+        const Epetra_Vector& xold,
+        Epetra_Vector& dir_mutable ) override;
 
     /// function wrapper
-    virtual void ResetLagrangeMultipliers(
-            const CONTACT::ParamsInterface& cparams,
-            const Epetra_Vector& xnew);
+    void RunPostComputeX(
+        const CONTACT::ParamsInterface& cparams,
+        const Epetra_Vector& xold,
+        const Epetra_Vector& dir,
+        const Epetra_Vector& xnew) override;
 
-    virtual void PostStoreDirichletStatus(
-        Teuchos::RCP<const LINALG::MapExtractor> dbcmaps );
+    /// function wrapper
+    void RunPostApplyJacobianInverse(
+        const CONTACT::ParamsInterface& cparams,
+        const Epetra_Vector& rhs,
+        Epetra_Vector& result,
+        const Epetra_Vector& xold,
+        const NOX::NLN::Group& grp ) override;
+
+    /// function wrapper
+    void CorrectParameters(
+        CONTACT::ParamsInterface& cparams,
+        const NOX::NLN::CorrectionType type ) override;
+
+    /// function wrapper
+    void ResetLagrangeMultipliers(
+        const CONTACT::ParamsInterface& cparams,
+        const Epetra_Vector& xnew) override;
+
+    void PostStoreDirichletStatus(
+        Teuchos::RCP<const LINALG::MapExtractor> dbcmaps ) override;
 
     /// @}
   private:
+    /// @name class member functions
+    /// @{
 
     /// access the currently active contact strategy
     CONTACT::AUG::Strategy& Get();
@@ -222,38 +278,44 @@ namespace AUG {
     /// access the currently active contact strategy (read-only)
     const CONTACT::AUG::Strategy& Get() const;
 
+    void SwitchUpdate( CONTACT::ParamsInterface& cparams );
+
     void RunPostEvalForce( CONTACT::ParamsInterface& cparams );
 
     void RunPostEvalForceStiff( CONTACT::ParamsInterface& cparams );
+
+    void RunPostEvalStaticConstraintRHS( CONTACT::ParamsInterface& cparams );
+
+    /// @}
 
     //! @name Unsupported derived routines (dead-end)
     //! @{
 
     //! @name Deprecated methods
     //! @{
-    virtual void EvaluateContact(
+    void EvaluateContact(
         Teuchos::RCP<LINALG::SparseOperator>& kteff,
-        Teuchos::RCP<Epetra_Vector>& feff)
+        Teuchos::RCP<Epetra_Vector>& feff) override
     { dserror("Deprecated function call!"); };
-    virtual void EvaluateFriction(
+    void EvaluateFriction(
         Teuchos::RCP<LINALG::SparseOperator>& kteff,
-        Teuchos::RCP<Epetra_Vector>& feff)
+        Teuchos::RCP<Epetra_Vector>& feff) override
     { dserror("Deprecated function call!"); };
-    virtual void BuildSaddlePointSystem(
+    void BuildSaddlePointSystem(
         Teuchos::RCP<LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd,
         Teuchos::RCP<Epetra_Vector> sold,
         Teuchos::RCP<LINALG::MapExtractor> dbcmaps,
         int numiter,Teuchos::RCP<Epetra_Operator>& blockMat,
         Teuchos::RCP<Epetra_Vector>& blocksol,
-        Teuchos::RCP<Epetra_Vector>& blockrhs)
+        Teuchos::RCP<Epetra_Vector>& blockrhs) override
     { dserror("Deprecated function call!"); };
-    virtual void UpdateDisplacementsAndLMincrements(
+    void UpdateDisplacementsAndLMincrements(
         Teuchos::RCP<Epetra_Vector> sold,
-        Teuchos::RCP<Epetra_Vector> blocksol)
+        Teuchos::RCP<Epetra_Vector> blocksol) override
     { dserror("Deprecated function call!"); };
-    virtual void Recover(Teuchos::RCP<Epetra_Vector> disi)
-    { dserror("Deprecated function call! Replaced by RecoverState()."); };
+    void Recover(Teuchos::RCP<Epetra_Vector> disi) override
+    { dserror("Deprecated function call! Replaced by RunPostComputeX()."); };
     //! @}
 
     /*! @name Dead-end for penalty and Uzawa methods (wrong strategy)
@@ -262,24 +324,25 @@ namespace AUG {
      * Actually it would be a much better idea to cast the object to the right strategy at the
      * place where it is needed.                                            hiermeier 05/16 */
     //! @{
-    virtual double InitialPenalty()
+    double InitialPenalty() override
     { dserror("Wrong strategy!"); exit(EXIT_FAILURE); };
-    virtual void InitializeUzawa(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
+    void InitializeUzawa(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) override
     { dserror("Wrong strategy!"); };
-    virtual void ResetPenalty()
+    void ResetPenalty() override
     { dserror("Wrong strategy!"); };
-    virtual void ModifyPenalty()
+    void ModifyPenalty() override
     { dserror("Wrong strategy!"); };
-    virtual void UpdateUzawaAugmentedLagrange()
+    void UpdateUzawaAugmentedLagrange() override
     { dserror("Wrong strategy!"); };
-    virtual void UpdateConstraintNorm(int uzawaiter = 0)
+    void UpdateConstraintNorm(int uzawaiter = 0) override
     { dserror("Wrong strategy!"); };
     //! @}
     //! @}
 
   private:
+    // nested classes
     class Switching;
-
+    class PreAsymptoticSwitching;
 
   private:
     /// wrapped contact solution strategies
@@ -289,10 +352,6 @@ namespace AUG {
     plain_interface_sets interface_sets_;
 
     CONTACT::AUG::DataContainer& data_;
-
-    enum MORTAR::ActionType eval_action_type_;
-
-    bool is_assemblecontactrhs_;
 
     struct GlobalNoDbc
     {
@@ -323,7 +382,25 @@ namespace AUG {
       Teuchos::RCP<Epetra_Vector> maForce_;
     };
 
+    class Output
+    {
+    public:
+      Output() = default;
+      ~Output() = default;
+
+      void initScreenOutput( bool print2screen );
+
+      std::ostream& oscreen() const;
+
+    private:
+      std::ostream* oscreen_ = NULL;
+
+      const Teuchos::RCP<Teuchos::oblackholestream> blackhole_ =
+          Teuchos::rcp( new Teuchos::oblackholestream );
+    };
+
     GlobalNoDbc no_dbc_;
+    Output output_;
 
     Teuchos::RCP<Switching> switch_;
   };
@@ -341,16 +418,17 @@ namespace AUG {
     /// destructor
     virtual ~Switching() {};
 
-    /// return the active ID
-    unsigned Id() const;
-
     /// return the ID of the given solving strategy
     unsigned Id( enum INPAR::CONTACT::SolvingStrategy sol_type ) const;
 
-    /// check the switching condition and update the member variables
-    void Update( CONTACT::ParamsInterface& cparams );
+    /// return the active ID
+    virtual unsigned Id() const = 0;
 
-  private:
+    /// check the switching condition and update the member variables
+    virtual void Update( CONTACT::ParamsInterface& cparams,
+        std::ostream& os ) = 0;
+
+  protected:
     unsigned FindId( INPAR::CONTACT::SolvingStrategy sol_type ) const;
 
     /// detect strategy types of the wrapped strategies
@@ -358,10 +436,37 @@ namespace AUG {
         const plain_strategy_set& strategies,
         plain_strattype_set& strat_types ) const;
 
-    bool CheckPenetration() const;
+  protected:
+    /// reference to the combo strategy
+    ComboStrategy& combo_;
+
+    plain_strattype_set strat_types_;
+  };  // class SwitchingStrategy
+
+  /*--------------------------------------------------------------------------*/
+  class ComboStrategy::PreAsymptoticSwitching : public ComboStrategy::Switching
+  {
+  public:
+    /// constructor
+    PreAsymptoticSwitching( ComboStrategy& combo,
+        const Teuchos::ParameterList& p_combo );
+
+    /// destructor
+    virtual ~PreAsymptoticSwitching() {};
+
+  private:
+    /// derived
+    unsigned Id() const override;
+
+    /// derived
+    void Update( CONTACT::ParamsInterface& cparams,
+        std::ostream& os ) override;
+
+    bool CheckPenetration( std::ostream& os );
 
     bool CheckResidual(
-        CONTACT::ParamsInterface& cparams );
+        CONTACT::ParamsInterface& cparams,
+        std::ostream& os );
 
     double GetPenetrationBound() const;
 
@@ -370,11 +475,13 @@ namespace AUG {
 
     bool CheckContactResidualNorm(
         const Epetra_Vector& str_slmaforce,
-        const Epetra_Vector& constr_slmaforce ) const;
+        const Epetra_Vector& constr_slmaforce,
+        std::ostream& os ) const;
 
     bool CheckAngleBetweenStrForceAndContactForce(
         const Epetra_Vector& str_slmaforce,
-        const Epetra_Vector& constr_slmaforce ) const;
+        const Epetra_Vector& constr_slmaforce,
+        std::ostream& os ) const;
 
     void GetActiveSlMaForces(
         const Epetra_Vector& str_force,
@@ -387,9 +494,29 @@ namespace AUG {
         Teuchos::RCP<Epetra_Map>& gSlActiveForceMap,
         Teuchos::RCP<Epetra_Map>& gMaActiveForceMap ) const;
 
+    void PrintUpdateHead( std::ostream& os ) const;
+
   private:
-    /// reference to the combo strategy
-    ComboStrategy& combo_;
+    struct MinAWGap
+    {
+      MinAWGap( PreAsymptoticSwitching& switching )
+          : switch_( switching ),
+            asymptotic_( 1.0e12 ),
+            pre_asymptotic_( 1.012 )
+      {};
+
+      inline void Update( const double min_awgap )
+      {
+        if ( switch_.is_asymptotic_ )
+          asymptotic_ = min_awgap;
+        else
+          pre_asymptotic_ = min_awgap;
+      }
+
+      const PreAsymptoticSwitching& switch_;
+      double asymptotic_;
+      double pre_asymptotic_;
+    };
 
     /// id of the pre-asymptotic solution strategy
     unsigned preasymptotic_id_;
@@ -400,8 +527,8 @@ namespace AUG {
     /// which phase is currently active?
     bool is_asymptotic_;
 
-    plain_strattype_set strat_types_;
-  };  // class SwitchingStrategy
+    MinAWGap minawgap_;
+  };
 } // namespace AUG
 } // namespace CONTACT
 

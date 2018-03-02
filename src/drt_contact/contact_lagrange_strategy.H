@@ -124,7 +124,7 @@ class CoLagrangeStrategy : public CoAbstractStrategy
      *  \param xold    (in): old solution vector of the NOX solver
      *  \param dir     (in): current search direction (in general NOT the actual step, keep in mind that the step length can differ from 1.0)
      *  \param xnew    (in): new solution vector of the NOX solver*/
-    virtual void RecoverState(
+    virtual void RunPostComputeX(
         const CONTACT::ParamsInterface& cparams,
         const Epetra_Vector& xold,
         const Epetra_Vector& dir,
@@ -135,9 +135,11 @@ class CoLagrangeStrategy : public CoAbstractStrategy
      *  \remark Please note, that a Teuchos::null pointer is returned, if no active contact
      *  contributions are present.
      *
-     *  \param bt (in): Desired matrix block type, e.g. block_displ_displ, block_displ_lm, ...*/
+     *  \param bt (in): Desired matrix block type, e.g. block_displ_displ, block_displ_lm, ...
+     *  \param cparams (in): contact parameter interface (read-only) */
     virtual Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
-        const enum DRT::UTILS::MatBlockType& bt) const;
+        const enum DRT::UTILS::MatBlockType& bt,
+        const CONTACT::ParamsInterface* cparams=NULL) const;
 
     virtual Teuchos::RCP<LINALG::SparseMatrix> GetCondensedMatrixBlockPtr(
         Teuchos::RCP<LINALG::SparseMatrix>& kteff, const double & timefac_np) const;

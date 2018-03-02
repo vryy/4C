@@ -42,6 +42,7 @@ namespace STRATEGY {
     //! destructor
     virtual ~Factory() {};
 
+    //! derived
     virtual void Setup();
 
     //! Check the problem dimension
@@ -129,7 +130,7 @@ namespace STRATEGY {
 
     //! print some final screen output
     void Print(
-        std::vector<Teuchos::RCP<CONTACT::CoInterface> >& interfaces,
+        const std::vector<Teuchos::RCP<CONTACT::CoInterface> >& interfaces,
         const Teuchos::RCP<CONTACT::CoAbstractStrategy>& strategy_ptr,
         const Teuchos::ParameterList& cparams) const;
 
@@ -167,13 +168,24 @@ namespace STRATEGY {
      *
      *  \param full_discret (in) : full structural discretization
      *  \param given_cgroup (in) : given contact condition group/pair
+     *  \param parent_dis_pair (out) : pair of enumerator and discretization interface
+     *                                 belonging to the given contact condition group/pair
      *
      *  \author hiermeier
      *  \date 10/16 */
     void ExtractParentDiscretization(
         const DRT::DiscretizationInterface & full_discret,
         const std::vector<DRT::Condition*> & given_ccgroup,
-        std::pair<enum XFEM::FieldName, Teuchos::RCP<const DRT::DiscretizationInterface> > & xdispair) const;
+        std::pair<enum XFEM::FieldName, Teuchos::RCP<const DRT::DiscretizationInterface> > & parent_dis_pair ) const;
+
+  private:
+    void FullyOverlappingInterfaces(
+        std::vector<Teuchos::RCP<CONTACT::CoInterface> >& interfaces ) const;
+
+    int IdentifyFullSubset(
+        const Epetra_Map& map_0,
+        const Epetra_Map& map_1,
+        bool throw_if_partial_subset_on_proc = true ) const;
   };  // class Factory
 } // namespace STRATEGY
 } // namespace CONTACT

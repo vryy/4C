@@ -6951,3 +6951,54 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
   return;
 } // FDCheckPenaltyFricTrac
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::CoInterface::WriteNodalCoordinatesToFile(
+    const int interfacel_id,
+    const Epetra_Map& nodal_map,
+    const std::string& full_path ) const
+{
+  // only processor zero writes header
+  if ( Comm().MyPID() == 0 and interfacel_id == 0 )
+  {
+    std::ofstream of( full_path, std::ios_base::out );
+    of << std::setw(7) << "ID"
+       << std::setw(24) << "x" << std::setw(24) << "y" << std::setw(24) << "z"
+       << std::setw(24) << "X" << std::setw(24) << "Y" << std::setw(24) << "Z\n";
+    of.close();
+  }
+
+  Comm().Barrier();
+
+  for ( int p=0; p<Comm().NumProc(); ++p )
+  {
+    if ( p==Comm().MyPID() )
+    {
+      // open the output stream again on all procs
+      std::ofstream of( full_path, std::ios_base::out|std::ios_base::app );
+
+      const int* nodal_map_gids = nodal_map.MyGlobalElements();
+      const unsigned nummyeles  = nodal_map.NumMyElements();
+      for ( unsigned lid=0; lid<nummyeles; ++lid )
+      {
+        const int gid = nodal_map_gids[lid];
+
+        if ( not idiscret_->NodeRowMap()->MyGID( gid ) )
+          continue;
+
+        const CoNode& cnode = dynamic_cast<const CoNode&>( *idiscret_->gNode( gid ) );
+
+        of << std::setw(7)  << cnode.Id();
+        of << std::setprecision(16);
+        of << std::setw(24) << std::scientific << cnode.xspatial()[0]
+           << std::setw(24) << std::scientific << cnode.xspatial()[1]
+           << std::setw(24) << std::scientific << cnode.xspatial()[2]
+           << std::setw(24) << std::scientific << cnode.X()[0]
+           << std::setw(24) << std::scientific << cnode.X()[1]
+           << std::setw(24) << std::scientific << cnode.X()[2] << "\n";
+      }
+      of.close();
+    }
+    Comm().Barrier();
+  }
+}

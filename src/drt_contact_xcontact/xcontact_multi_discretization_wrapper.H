@@ -164,7 +164,6 @@ namespace XCONTACT {
     XMapPairedRCPVector master_dof_col_maps_;
 
     GEN::pairedvector<XFEM::FieldName, Teuchos::RCP<Epetra_Export> > contact2scatra_exporter_;
-
     GEN::pairedvector<XFEM::FieldName, Teuchos::RCP<Epetra_Export> > scatra2contact_exporter_;
 
     bool is_exporter_;

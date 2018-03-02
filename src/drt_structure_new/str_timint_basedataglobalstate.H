@@ -178,6 +178,13 @@ namespace TIMINT {
         const INPAR::STR::ModelType& mt,
         const DRT::UTILS::MatBlockType& bt) const;
 
+    Teuchos::RCP<std::vector<LINALG::SparseMatrix*> > ExtractDisplRowOfBlocks(
+        LINALG::SparseOperator& jac ) const;
+
+    Teuchos::RCP<std::vector<LINALG::SparseMatrix*> > ExtractRowOfBlocks(
+        LINALG::SparseOperator& jac,
+        const INPAR::STR::ModelType& mt ) const;
+
     /** \brief Assign a LINALG::SparseMatrix to one of the blocks of the corresponding model
      *
      *  You can choose between one of the following blocks
@@ -336,6 +343,13 @@ namespace TIMINT {
       CheckInit();
       return stepn_;
     };
+
+    /// Return the restart step
+    int GetRestartStep() const
+    {
+      CheckInit();
+      return restartstep_;
+    }
 
     /// Get the number of non-linear iterations of the %step
     int GetNlnIterationNumber( const unsigned step ) const;
@@ -896,6 +910,10 @@ namespace TIMINT {
 
     /// time step index \f$n+1\f$
     int stepnp_;
+
+    /** step number from which the current simulation has been restarted. If
+     *  no restart has been performed, zero is returned. */
+    int restartstep_;
 
     /// pairs of (step ID, number of nonlinear iteration in this step)
     std::vector<std::pair<int,int> > nln_iter_numbers_;

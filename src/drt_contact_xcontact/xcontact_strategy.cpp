@@ -554,7 +554,8 @@ Teuchos::RCP<const Epetra_Vector> XCONTACT::Strategy::GetRhsBlockPtr(
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix> XCONTACT::Strategy::GetMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bt) const
+    const enum DRT::UTILS::MatBlockType& bt,
+    const CONTACT::ParamsInterface* cparams) const
 {
   // if no contact contributions were evaluated
    if (not IsInContact())
@@ -693,7 +694,7 @@ Teuchos::RCP<LINALG::SparseMatrix> XCONTACT::Strategy::GetMatrixBlockPtr(
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-void XCONTACT::Strategy::RecoverState(
+void XCONTACT::Strategy::RunPostComputeX(
     const CONTACT::ParamsInterface& cparams,
     const Epetra_Vector& xold,
     const Epetra_Vector& dir,

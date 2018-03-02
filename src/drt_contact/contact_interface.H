@@ -17,6 +17,7 @@
 #include "../drt_mortar/mortar_interface.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../linalg/linalg_sparseoperator.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 #include <Epetra_FEVector.h>
 
 
@@ -24,16 +25,17 @@
 \brief CONTACT: namespace of the BACI contact and meshtying algorithms
 
 */
-namespace ADAPTER
-{
-// forward declarations
+namespace LINALG {
+  class SerialDenseMatrix;
+}
+namespace ADAPTER {
   class Coupling;
 }
-
-namespace CONTACT
-{
-
-// forward declarations
+namespace DRT {
+  class Node;
+}
+namespace CONTACT {
+class CoInterface;
 class CoNode;
 class CoElement;
 class SelfBinaryTree;
@@ -468,9 +470,10 @@ public:
   */
   virtual const Teuchos::RCP<Epetra_Map> ActiveNodes() const
   {
-    if (Filled()) return activenodes_;
-    else dserror("CONTACT::Interface::FillComplete was not called");
-    exit(EXIT_FAILURE); // calm down the compiler
+    if (not Filled())
+      dserror("CONTACT::Interface::FillComplete was not called");
+
+    return activenodes_;
   }
 
 
@@ -480,16 +483,18 @@ public:
   */
   virtual const Teuchos::RCP<Epetra_Map> ActiveDofs() const
   {
-    if (Filled()) return activedofs_;
-    else dserror("CONTACT::Interface::FillComplete was not called");
-    exit(EXIT_FAILURE); // calm down the compiler
+    if (not Filled())
+      dserror("CONTACT::Interface::FillComplete was not called");
+
+    return activedofs_;
   }
 
   virtual const Teuchos::RCP<Epetra_Map> InActiveNodes() const
   {
-    if (Filled()) return inactivenodes_;
-    else dserror("CONTACT::Interface::FillComplete was not called");
-    exit(EXIT_FAILURE); // calm down the compiler
+    if (not Filled())
+      dserror("CONTACT::Interface::FillComplete was not called");
+
+    return inactivenodes_;
   }
 
 
@@ -499,9 +504,10 @@ public:
   */
   virtual const Teuchos::RCP<Epetra_Map> InActiveDofs() const
   {
-    if (Filled()) return inactivedofs_;
-    else dserror("CONTACT::Interface::FillComplete was not called");
-    exit(EXIT_FAILURE); // calm down the compiler
+    if (not Filled())
+      dserror("CONTACT::Interface::FillComplete was not called");
+
+    return inactivedofs_;
   }
 
   /*!
@@ -510,9 +516,10 @@ public:
   */
   virtual const Teuchos::RCP<Epetra_Map> ActiveNDofs() const
   {
-    if (Filled()) return activen_;
-    else dserror("CONTACT::Interface::FillComplete was not called");
-    exit(EXIT_FAILURE); // calm down the compiler
+    if (not Filled())
+      dserror("CONTACT::Interface::FillComplete was not called");
+
+    return activen_;
   }
 
   /*!
@@ -521,9 +528,10 @@ public:
   */
   virtual const Teuchos::RCP<Epetra_Map> ActiveTDofs() const
   {
-    if (Filled()) return activet_;
-    else dserror("CONTACT::Interface::FillComplete was not called");
-    exit(EXIT_FAILURE); // calm down the compiler
+    if (not Filled())
+      dserror("CONTACT::Interface::FillComplete was not called");
+
+    return activet_;
   }
 
   /*!
@@ -762,7 +770,7 @@ public:
   Derived version!
 
   */
-  void ExportNodalNormals();
+  void ExportNodalNormals() const;
 
   /*!
   \brief Binary tree search algorithm for potentially coupling slave /
@@ -1076,8 +1084,16 @@ public:
   Necessary to check the angular momentum conservation
 
   */
-  void EvalResultantMoment(const Epetra_Vector& fs,
-                           const Epetra_Vector& fm) const;
+  void EvalResultantMoment(
+      const Epetra_Vector& fs,
+      const Epetra_Vector& fm,
+      LINALG::SerialDenseMatrix* conservation_data_ptr = NULL) const;
+
+  // get the nodal interface force
+  void GetForceOfNode(
+      LINALG::Matrix<3,1>& nodal_force,
+      const Epetra_Vector& force,
+      const DRT::Node& node ) const;
 
   /*!
   \brief Visualize contact stuff with gmsh
@@ -1173,6 +1189,10 @@ public:
   */
   virtual void FDCheckPenaltyTracFric();
 
+  void WriteNodalCoordinatesToFile(
+      const int interfacel_id,
+      const Epetra_Map& nodal_map,
+      const std::string& full_path ) const;
 
   /*!
   \brief Add line to line penalty forces
@@ -1248,6 +1268,8 @@ public:
   }
   //@}
 
+  const CoInterface& GetMaSharingRefInterface() const;
+
 protected:
 
   /*!
@@ -1295,13 +1317,17 @@ protected:
   Derived version!
 
   */
-  virtual void EvaluateCoupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+  virtual void EvaluateCoupling(
+      const Epetra_Map& selecolmap,
+      const Epetra_Map* snoderowmap,
+      const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
   /*!
   \brief Evaluate segment-to-segment coupling (mortar...)
 
   */
   virtual void EvaluateSTS(
+      const Epetra_Map& selecolmap,
       const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
   /*!

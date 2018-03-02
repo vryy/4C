@@ -22,6 +22,7 @@
 #include "str_model_evaluator.H"
 #include "str_model_evaluator_data.H"
 #include "str_model_evaluator_generic.H"
+#include "str_monitor_dbc.H"
 #include "nox_nln_str_linearsystem.H"
 
 #include "../solver_nonlin_nox/nox_nln_aux.H"
@@ -88,6 +89,14 @@ void STR::Integrator::Setup()
   modelevaluator_ptr_->Init(eval_data_ptr_,sdyn_ptr_,gstate_ptr_,io_ptr_,
       Teuchos::rcp(this,false),timint_ptr_);
   modelevaluator_ptr_->Setup();
+
+  // ---------------------------------------------------------------------------
+  // build monitor for a tensile test
+  // ---------------------------------------------------------------------------
+  monitor_dbc_ptr_ = Teuchos::rcp( new STR::MonitorDbc );
+  monitor_dbc_ptr_->Init( *gstate_ptr_->GetMutableDiscret(), *gstate_ptr_,
+      *dbc_ptr_ );
+  monitor_dbc_ptr_->Setup();
 
   // the issetup_ flag is not set here!!!
 }
@@ -315,7 +324,15 @@ void STR::Integrator::DetermineEnergy()
 void STR::Integrator::OutputStepState(IO::DiscretizationWriter& iowriter) const
 {
   CheckInitSetup();
+  MonitorDbc(iowriter);
   ModelEval().OutputStepState(iowriter);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::Integrator::MonitorDbc( IO::DiscretizationWriter& writer ) const
+{
+  monitor_dbc_ptr_->Execute( writer );
 }
 
 /*----------------------------------------------------------------------------*
@@ -545,4 +562,20 @@ const STR::TIMINT::Base& STR::Integrator::TimInt() const
 {
   CheckInit();
   return *timint_ptr_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::Integrator::CreateBackupState(const Epetra_Vector& dir)
+{
+  CheckInitSetup();
+  ModelEval().CreateBackupState(dir);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::Integrator::RecoverFromBackupState()
+{
+  CheckInitSetup();
+  ModelEval().RecoverFromBackupState();
 }

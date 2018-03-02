@@ -603,12 +603,12 @@ public:
   /*!
   \brief Get local coordinates for local node id
   */
-  virtual bool LocalCoordinatesOfNode(int& lid, double* xi);
+  bool LocalCoordinatesOfNode(int lid, double* xi) const;
 
   /*!
   \brief Get local numbering for global node id
   */
-  virtual int GetLocalNodeId(int& nid);
+  int GetLocalNodeId(int nid) const;
 
   /*!
   \brief Build element normal at node passed in
@@ -701,7 +701,7 @@ public:
   /*!
   \brief Evaluate element metrics (local basis vectors)
   */
-  virtual void Metrics(const double* xi, std::vector<double>& gxi, std::vector<double>& geta);
+  virtual void Metrics(const double* xi, double* gxi, double* geta);
 
   /*!
   \brief Evaluate Jacobian determinant for parameter space integration
@@ -756,8 +756,8 @@ public:
       const double* xi,
       LINALG::Matrix<elenumnode,1>& val,
       LINALG::Matrix<elenumnode,eledim>& deriv,
-      unsigned valdim,
-      bool dualquad3d)
+      unsigned valdim = elenumnode,
+      bool dualquad3d = false)
   {
     LINALG::SerialDenseVector sdv_val( View, val.A(), elenumnode );
     LINALG::SerialDenseMatrix sdm_deriv( View, deriv.A(),elenumnode, elenumnode, eledim );
@@ -925,7 +925,8 @@ public:
   \brief factor for normal calculation (default 1.0)
 
   */
-  virtual double& NormalFac() { return normalfac_; };
+  double& NormalFac() { return normalfac_; };
+  double NormalFac() const { return normalfac_; };
 
   /*!
   \brief get knot vectors for this mortar element

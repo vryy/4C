@@ -36,6 +36,7 @@ namespace IO {
 namespace STR {
   class ModelEvaluator;
   class Dbc;
+  class MonitorDbc;
 namespace MODELEVALUATOR {
   class Data;
   class Generic;
@@ -105,6 +106,11 @@ namespace TIMINT {
     virtual bool AssembleJac( LINALG::SparseOperator& jac,
         const std::vector<INPAR::STR::ModelType>* without_these_models = NULL ) const {return false;};
 
+    //! Create backup state
+    void CreateBackupState(const Epetra_Vector& dir);
+
+    //! recover state from the stored backup
+    void RecoverFromBackupState();
 
     //! return integration factor
     virtual double GetIntParam() const = 0;
@@ -277,6 +283,8 @@ namespace TIMINT {
         const enum NOX::Abstract::Vector::NormType& normtype,
         double& mynorm) const;
 
+    void MonitorDbc( IO::DiscretizationWriter& writer ) const;
+
   protected:
     //! indicates if the Init() function has been called
     bool isinit_;
@@ -305,6 +313,8 @@ namespace TIMINT {
 
     //! pointer to the underlying time integrator (read-only)
     Teuchos::RCP<const STR::TIMINT::Base> timint_ptr_;
+
+    Teuchos::RCP<STR::MonitorDbc> monitor_dbc_ptr_ = Teuchos::null;
   };
 } // namespace STR
 

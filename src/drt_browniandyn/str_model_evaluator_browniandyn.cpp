@@ -467,7 +467,7 @@ void STR::MODELEVALUATOR::BrownianDyn::ReadRestart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BrownianDyn::RecoverState(
+void STR::MODELEVALUATOR::BrownianDyn::RunPostComputeX(
     const Epetra_Vector& xold,
     const Epetra_Vector& dir,
     const Epetra_Vector& xnew)

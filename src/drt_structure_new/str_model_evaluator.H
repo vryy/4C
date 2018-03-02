@@ -28,6 +28,7 @@ namespace Solver {
   class Generic;
 } // namespace Solver
 namespace NLN {
+  enum class CorrectionType : int;
   class Group;
 } // namespace NLN
 } // namespace NOX
@@ -106,6 +107,17 @@ namespace MODELEVALUATOR {
         Epetra_Vector& f,
         LINALG::SparseOperator& jac,
         const double& timefac_np) const;
+
+    //! compute cheap second order correction right hand side
+    bool ApplyCheapSOCRhs(
+        const enum NOX::NLN::CorrectionType type,
+        const std::vector<INPAR::STR::ModelType>& constraint_models,
+        const Epetra_Vector& x,
+        Epetra_Vector& f,
+        const double& timefac_np ) const;
+
+    bool CorrectParameters(
+        const enum NOX::NLN::CorrectionType type ) const;
 
     //! predict all internal variables in model evaluators
     void Predict(const INPAR::STR::PredEnum& pred_type) const;
@@ -200,16 +212,32 @@ namespace MODELEVALUATOR {
 
     //! @}
 
+    void CreateBackupState(const Epetra_Vector& dir);
+
+    void RecoverFromBackupState();
+
     /*! \brief reset all model states (incl. the structural dynamic state)
      *
      *  \param x (in) : current full state vector */
     void ResetStates(const Epetra_Vector& x) const;
 
-    /*! \brief reset all model states (incl. the structural dynamic state)
+    /*! \brief reset all model states (optional even. the structural dynamic
+     *  state)
      *
      *  \param x (in) : current full state vector
      *  \param setstate (in) : flag to set state */
     void ResetStates(const Epetra_Vector& x, bool setstate) const;
+
+    /*! \brief reset a sub-set of all model states (optional even the structural
+     *  dynamic state)
+     *
+     *  \param x (in) : current full state vector
+     *  \param setstate (in) : flag to set state
+     *  \param me_vec (in) : vector containing the sub-set of model evaluators */
+    void ResetStates(
+        const Epetra_Vector& x,
+        bool setstate,
+        Vector& me_vec ) const;
 
     //! Write current restart
     void WriteRestart(IO::DiscretizationWriter& iowriter,
@@ -263,7 +291,7 @@ namespace MODELEVALUATOR {
     /*! \brief Recover the current state
      *
      * Necessary for condensed systems, e.g. EAS, dual mortar, etc.*/
-    void RecoverState(
+    void RunPostComputeX(
         const Epetra_Vector& xold,
         const Epetra_Vector& dir,
         const double& step,
@@ -287,6 +315,16 @@ namespace MODELEVALUATOR {
         const NOX::Solver::Generic& solver,
         const double step,
         const bool isdefaultstep ) const;
+
+    /*! \brief Executed at the end of the NOX::NLN::Group::applyJacobianInverse
+     *  method
+     *
+     *  \author hiermeier \date 12/17 */
+    void RunPostApplyJacobianInverse(
+        const Epetra_Vector& rhs,
+        Epetra_Vector& result,
+        const Epetra_Vector& xold,
+        const NOX::NLN::Group& grp  ) const;
 
     //! @}
 
@@ -340,13 +378,32 @@ namespace MODELEVALUATOR {
         const double timefac_np,
         LINALG::SparseOperator& jac ) const;
 
+    void AssembleCheapSOCRhs(
+        bool& ok,
+        const Vector& me_vec,
+        const double timefac_np,
+        Epetra_Vector& f ) const;
+
     void EvaluateForce( bool& ok, const Vector& me_vec ) const;
 
     void EvaluateStiff( bool& ok, const Vector& me_vec ) const;
 
     void EvaluateForceStiff( bool& ok, const Vector& me_vec ) const;
 
+    void EvaluateCheapSOCRhs( bool& ok, const Vector& me_vec ) const;
+
     void PostEvaluate( bool ok, const Vector& me_vec ) const;
+
+    /** \brief split the internally stored model vector and get the set without
+     *  the specified models */
+    void SplitModelVector( Vector& partial_me_vec,
+        const std::vector<INPAR::STR::ModelType>& without_these_models ) const;
+
+    /** \brief Extract from the internally stored model vector all models
+     *  with the desired types */
+    void ExtractModelVector(
+        STR::ModelEvaluator::Vector& partial_me_vec,
+        const std::vector<INPAR::STR::ModelType>& only_these_models ) const;
 
   private:
     bool isinit_;

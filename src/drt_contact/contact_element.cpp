@@ -198,8 +198,9 @@ void CONTACT::CoElement::DerivNormalAtXi(double* xi, int& i,
     dserror("ERROR: DerivNormalAtXi: Null pointer!");
   LINALG::SerialDenseVector val(nnodes);
   LINALG::SerialDenseMatrix deriv(nnodes,2,true);
-  std::vector<double> gxi(3);
-  std::vector<double> geta(3);
+
+  double gxi[3];
+  double geta[3];
 
   // get shape function values and derivatives at xi
   EvaluateShape(xi, val, deriv, nnodes);
@@ -324,8 +325,8 @@ void CONTACT::CoElement::DJacDXi(double* djacdxi, double* xi,
     GetNodalCoords(coord);
 
     // metrics routine gives local basis vectors
-    std::vector<double> gxi(3);
-    std::vector<double> geta(3);
+    double gxi[3];
+    double geta[3];
     Metrics(xi, gxi, geta);
 
     double gsec[3] = { 0.0, 0.0, 0.0 };
@@ -354,8 +355,8 @@ void CONTACT::CoElement::DJacDXi(double* djacdxi, double* xi,
     GetNodalCoords(coord);
 
     // metrics routine gives local basis vectors
-    std::vector<double> gxi(3);
-    std::vector<double> geta(3);
+    double gxi[3];
+    double geta[3];
     Metrics(xi, gxi, geta);
 
     // cross product of gxi and geta

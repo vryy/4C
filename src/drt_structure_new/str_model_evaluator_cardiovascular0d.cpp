@@ -254,7 +254,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::ReadRestart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::RecoverState(
+void STR::MODELEVALUATOR::Cardiovascular0D::RunPostComputeX(
     const Epetra_Vector& xold,
     const Epetra_Vector& dir,
     const Epetra_Vector& xnew)

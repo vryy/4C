@@ -1111,6 +1111,7 @@ set(OBJS_DRT_UTILS
   src/drt_lib/drt_utils.cpp
   src/drt_lib/drt_utils_metis.cpp
   src/drt_lib/drt_utils_parallel.cpp
+  src/drt_lib/epetra_utils.cpp
   src/drt_beaminteraction/drt_utils_parallel_proctoproc.cpp
   src/drt_lib/drt_utils_parmetis.cpp
   src/pss_full/pss_am.c
@@ -1709,6 +1710,7 @@ set(OBJS_DRT_MORTAR
   src/drt_mortar/mortar_strategy_factory.cpp
   src/drt_mortar/mortar_projector.cpp
   src/drt_mortar/mortar_strategy_base.cpp
+  src/drt_mortar/mortar_matrix_transform.cpp
   src/drt_mortar/mortar_multifield_coupling.cpp
 )
 set(OBJS_DRT_MORTAR_LIB
@@ -1747,6 +1749,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure/stru_resulttest.cpp
   src/drt_structure_new/str_utils.cpp
   src/drt_structure_new/str_dbc.cpp
+  src/drt_structure_new/str_monitor_dbc.cpp
 #  src/drt_beaminteraction/str_dbc_biopolynet.cpp
   src/drt_structure_new/str_resulttest.cpp
   src/drt_structure_new/str_factory.cpp
@@ -2234,14 +2237,21 @@ set(OBJS_DRT_CONTACT_AUG
   src/drt_contact_aug/contact_augmented_interface_tools.cpp
   src/drt_contact_aug/contact_augmented_integrator.cpp
   src/drt_contact_aug/contact_augmented_integrator_evaluate.cpp
+  src/drt_contact_aug/contact_aug_projector.cpp
   src/drt_contact_aug/contact_aug_lagrange_strategy.cpp
   src/drt_contact_aug/contact_aug_lagrange_interface.cpp
   src/drt_contact_aug/contact_aug_steepest_ascent_strategy.cpp
   src/drt_contact_aug/contact_aug_steepest_ascent_interface.cpp
+  src/drt_contact_aug/contact_aug_penalty_update.cpp
   src/drt_contact_aug/contact_aug_combo_strategy.cpp
   src/drt_contact_aug/contact_aug_combo_strategy_switching.cpp
   src/drt_contact_aug/contact_aug_potential.cpp
+  src/drt_contact_aug/contact_aug_plot.cpp
   src/drt_contact_aug/contact_integrator_utils.cpp
+  src/drt_contact_aug/contact_aug_integrator_policy.cpp
+  src/drt_contact_aug/contact_aug_integrator_policy_debug.cpp
+  src/drt_contact_aug/contact_aug_lagrange_multiplier_function.cpp
+  src/drt_contact_aug/contact_aug_interface_assembly.cpp
   src/drt_contact_xcontact/xcontact_strategy.cpp
   src/drt_contact_xcontact/xcontact_interface.cpp
   src/drt_contact_xcontact/xcontact_integrator.cpp

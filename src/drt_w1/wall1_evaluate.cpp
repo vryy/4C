@@ -882,6 +882,22 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
     case ELEMENTS::struct_calc_predict:
       break;
     //==================================================================================
+    case ELEMENTS::struct_create_backup:
+    {
+      if ( iseas_ )
+        dserror("EAS for the wall element is not yet considered!");
+
+      break;
+    }
+    //==================================================================================
+    case ELEMENTS::struct_recover_from_backup:
+    {
+      if ( iseas_ )
+        dserror("EAS for the wall element is not yet considered!");
+
+      break;
+    }
+    //==================================================================================
     default:
     {
       dserror("Unknown type of action for Wall1 %d", act);

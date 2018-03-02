@@ -24,6 +24,12 @@
 #include "../drt_lib/drt_utils_matrix_vector_enums.H"
 
 // forward declarations
+namespace NOX {
+namespace NLN {
+  class Group;
+} // namespace NLN
+} // namespace NOX
+
 namespace DRT {
   class Discretization;
 } // namespace DRT
@@ -356,10 +362,6 @@ public:
   int& NlnIter() { return iter_; };
   int NlnIter() const { return iter_; };
 
-  //! return nonlinear (Line Search) iteration index
-  int& IterLS() { return iterls_; };
-  int IterLS() const { return iterls_; };
-
   //! return flag indicating global contact status
   bool& IsInContact() { return isincontact_; };
   bool IsInContact() const { return isincontact_; };
@@ -581,9 +583,6 @@ private:
 
   //! nonlinear (Newton) iteration index
   int iter_;
-
-  //! nonlinear (Line Search) iteration index
-  int iterls_;
 
   //! flag indicating global contact status
   bool isincontact_;
@@ -807,6 +806,7 @@ public:
   virtual const Epetra_Map& SlMaDoFRowMap(const bool& redist) const
   { return *SlMaDoFRowMapPtr(redist); }
 
+
   /*! \brief Return the desired right-hand-side block pointer (read-only)
    *
    *  \remark Please note, that a Teuchos::null pointer is returned, if no active contact
@@ -819,6 +819,26 @@ public:
   virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
      const enum DRT::UTILS::VecBlockType& bt) const
   { dserror("Not yet implemented!"); exit(EXIT_FAILURE); };
+
+  /*! \brief Return the desired right-hand side block pointer for norm check
+   *  (read-only)
+   *
+   *  In the default case this method returns the standard right-hand side block,
+   *  i.e. the same as for the assembly procedure. Anyway, in some cases it is
+   *  meaningful to use a modified right-hand side, e.g. without penalty
+   *  contributions in an augmented framework.
+   *
+   *  \remark Please note, that a Teuchos::null pointer is returned, if no active contact
+   *  contributions are present.
+   *
+   *  \param bt (in): Desired vector block type, e.g. block_displ, block_constraint, ...
+   *
+   *  \author hiermeier \date 08/17  */
+  virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtrForNormCheck(
+       const enum DRT::UTILS::VecBlockType& bt) const
+  {
+    return GetRhsBlockPtr( bt );
+  }
 
   /*! Return the condensed right-hand-side (read-only)
    *
@@ -841,7 +861,8 @@ public:
    *  \date 05/2016
    *  \author hiermeier */
   virtual Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
-      const enum DRT::UTILS::MatBlockType& bt) const
+      const enum DRT::UTILS::MatBlockType& bt,
+      const CONTACT::ParamsInterface* cparams=NULL) const
   { dserror("Not yet implemented!"); exit(EXIT_FAILURE); };
 
   /*! Return the condensed matrix block pointer (read-only)
@@ -1108,6 +1129,28 @@ public:
   Teuchos::RCP<LINALG::SparseMatrix> EvaluateNormals(
       Teuchos::RCP<Epetra_Vector> dis);
 
+  /** \brief Write strategy specific output
+   *
+   *  \param(in) writer: output writer */
+  virtual void WriteOutput( IO::DiscretizationWriter& writer ) const
+  {
+    return;
+  }
+
+  //! @}
+
+  //! @name merit function methods
+  //! @{
+
+  virtual double GetPotentialValue(
+      const enum NOX::NLN::MeritFunction::MeritFctName mrt_type ) const;
+
+  virtual double GetLinearizedPotentialValueTerms(
+      const Epetra_Vector& dir,
+      const enum NOX::NLN::MeritFunction::MeritFctName mrt_type,
+      const enum NOX::NLN::MeritFunction::LinOrder linorder,
+      const enum NOX::NLN::MeritFunction::LinType lintype ) const;
+
   //! @}
 
   //! @name Preconditioner methods
@@ -1333,9 +1376,16 @@ protected:
    *
    *  \param cparams (in): parameter interface between the contact objects and the structural time integration
    *
-   *  \date 03/2016
-   *  \author hiermeier */
+   *  \author hiermeier \date 03/2016 */
   virtual void EvalForce(CONTACT::ParamsInterface& cparams);
+
+  /*! \brief Compute the constraint rhs
+   *
+   *  \param(in) cparams: parameter interface between the contact objects and
+   *                      the structural time integrator
+   *
+   *  \author hiermeier \date 12/17 */
+  virtual void EvalStaticConstraintRHS(CONTACT::ParamsInterface& cparams);
 
   /** \brief Run in the end of a call to STR::ModelEvaluator::EvaluteForce/Stiff/ForceStiff
    *
@@ -1360,7 +1410,7 @@ protected:
    *
    *  \date 05/2016
    *  \author hiermeier */
-  virtual void RecoverState(
+  virtual void RunPostComputeX(
       const CONTACT::ParamsInterface& cparams,
       const Epetra_Vector& xold,
       const Epetra_Vector& dir,
@@ -1385,6 +1435,24 @@ protected:
       const Epetra_Vector& xold,
       Epetra_Vector& dir_mutable );
 
+  /*! \brief Executed at the end of the NOX::NLN::Group::applyJacobianInverse()
+   *  method
+   *
+   *  \param cparams: parameter interface between the contact objects and the
+   *                  structural time integration
+   *  \param rhs    : read-only access to the rhs vector
+   *  \param result : full access to the result vector
+   *  \param xold   : read-only access to the jacobian
+   *  \param grp    : read only access to the group object
+   *
+   *  \author hiermeier \date 12/2017 */
+   virtual void RunPostApplyJacobianInverse(
+      const CONTACT::ParamsInterface& cparams,
+      const Epetra_Vector& rhs,
+      Epetra_Vector& result,
+      const Epetra_Vector& xold,
+      const NOX::NLN::Group& grp );
+
   /*! \brief run pre-compute x routine for contact
    *
    *  This routine is called in the end of a NOX::Solver::step() call.
@@ -1406,6 +1474,14 @@ protected:
   virtual void ResetLagrangeMultipliers(
       const CONTACT::ParamsInterface& cparams,
       const Epetra_Vector& xnew);
+
+  /// \brief Evaluate the weighted gap gradient error
+  virtual void EvalWeightedGapGradientError(
+      CONTACT::ParamsInterface& cparams );
+
+  virtual void CorrectParameters(
+      CONTACT::ParamsInterface& cparams,
+      const NOX::NLN::CorrectionType type );
 
   //! @}
 protected:
@@ -1507,6 +1583,26 @@ protected:
   void UpdateMasterSlaveSetsGlobal();
 
 private:
+  /*! \brief Create the global Lagrange multiplier DoF row map
+   *
+   *  The global Lagrange multiplier DoF row map is created in a deterministic
+   *  manner based on the previously created global slave DoF row map. This is
+   *  necessary for the later ReplaceMap calls. Especially, the std::sort during
+   *  a LINALG::MergeMap call would otherwise destroy the correlation. This becomes
+   *  obvious if more than one interface is considered.
+   *
+   *  \pre The method UpdateLagMultSets() has to be called on each involved
+   *  interface before this method is executed.
+   *
+   *  \param[in] gsdofrowmap: Already new global slave DoF row map.
+   *
+   *  \return New Lagrange multiplier DoF row map in correlation to the given
+   *          global slave DoF row map.
+   *
+   *  \author hiermeier \date 10/17 */
+  Teuchos::RCP<Epetra_Map> CreateDeterministicLMDofRowMap(
+      const Epetra_Map& gsdofrowmap ) const;
+
   //! \brief Calculate mean velocity of interface for binning range
   void CalcMeanVelforBinning(Teuchos::RCP<const Epetra_Vector> vel);
 
@@ -1609,7 +1705,6 @@ protected:
 
     int& step_;                //!< ref. to time step index
     int& iter_;                //!< ref. to nonlinear (Newton) iteration index
-    int& iterls_;              //!< ref. to nonlinear (Line Search) iteration index
 
     bool& isincontact_;        //!< ref. to flag indicating global contact status
     bool& wasincontact_;       //!< ref. to flag indicating global contact status of this time step (history)

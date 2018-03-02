@@ -13,6 +13,9 @@
 #include "contact_node.H"
 #include "contact_element.H"
 #include "contact_defines.H"
+
+#include "../drt_contact_aug/contact_integrator_utils.H"
+
 #include "../linalg/linalg_serialdensevector.H"
 #include "../drt_lib/drt_dserror.H"
 
@@ -110,12 +113,11 @@ void CONTACT::CoNodeDataContainer::Unpack(std::vector<char>::size_type& position
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::NodeDataContainer::NodeDataContainer( CoNode& parentNode)
-    : maxNumMasterElements_( -1 ),
+    : mentries_( -1 ),
       kappa_( 1.0e12 ),
       wGap_( 1.0e12 ),
       augA_( 1.0e12 ),
-      varWGapSl_( 0 ),
-      augALin_( 0 ),
+      d_augA_( 0 ),
       parentNode_( parentNode )
 {
 
@@ -123,31 +125,88 @@ CONTACT::AUG::NodeDataContainer::NodeDataContainer( CoNode& parentNode)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::NodeDataContainer::NodeDataContainer( CoNode& parentNode,
-    int maxNumMasterElements )
-    : maxNumMasterElements_( maxNumMasterElements ),
-      kappa_( 1.0e12 ),
+CONTACT::AUG::NodeDataContainer::NodeDataContainer(
+    CoNode& parentNode,
+    const int slMaElementAreaRatio,
+    const bool isTriangleOnMaster )
+    : kappa_( 1.0e12 ),
       wGap_( 1.0e12 ),
       augA_( 1.0e12 ),
-      varWGapSl_( 0 ),
-      augALin_( 0 ),
       parentNode_( parentNode )
 {
+  mentries_ = ApproximateMEntries( slMaElementAreaRatio,
+      isTriangleOnMaster );
+}
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int CONTACT::AUG::NodeDataContainer::ApproximateMEntries(
+    const int slMaElementAreaRatio,
+    const bool isTriangleOnMaster ) const
+{
+  // number of adjacent slave elements
+  const int numSlEle = parentNode_.NumElement();
+
+  // numSlEle slave elements project approximately into numMaEle if there is no
+  // off-set
+  int numMaEle = numSlEle * slMaElementAreaRatio;
+
+  /* These numMaEle elements are approximately surrounded by numSurround
+   * elements + numCorner elements */
+  int numMaSurrounding = -1;
+  int numCorner = -1;
+  if ( isTriangleOnMaster )
+  {
+    numMaSurrounding = 4 * std::ceil(
+        std::sqrt( static_cast<double>( numMaEle ) / 2.0 ) );
+    numCorner = 2;
+  }
+  else
+  {
+    numMaSurrounding = 2 * std::ceil(
+        std::sqrt( static_cast<double>( numMaEle ) ) );
+    numCorner = 1;
+  }
+
+  // approximate number of relevant master elements
+  numMaEle += numMaSurrounding + numCorner;
+
+  // approximate number of dentries per element
+  const int dentries_per_element = parentNode_.GetNumDentries() / numSlEle;
+
+  // approximate number of mentries
+  double mentries = dentries_per_element * numMaEle;
+
+  double exp2 = std::ceil( std::log( mentries ) / std::log( 2.0 ) );
+  exp2 = std::max( exp2, 1.0 );
+
+  return static_cast<int>( std::pow( 2.0, exp2 ) );
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::NodeDataContainer::Setup()
 {
-  if ( maxNumMasterElements_ == -1 )
-    dserror( "maxNumMasterElements_ must be initialized!" );
+  if ( mentries_ == -1 )
+    dserror( "mentries_ must be initialized!" );
 
-  const int linsize = parentNode_.GetLinsize();
+//  const int linsize = parentNode_.GetLinsize();
   const int dentries = parentNode_.GetNumDentries();
 
-  augALin_.resize( linsize );
-  varWGapSl_.resize( dentries );
+  d_augA_.resize( dentries );
+  d_kappa_.resize( dentries );
+
+  GEN_DATA::reset( dentries, dd_augA_ );
+  GEN_DATA::reset( dentries, dd_kappa_ );
+
+  d_wgap_sl_.resize( dentries );
+  d_wgap_ma_.resize( mentries_ );
+
+  d_wgap_sl_complete_ = Teuchos::rcp( new Deriv1stMap(dentries) );
+  d_wgap_ma_complete_ = Teuchos::rcp( new Deriv1stMap(mentries_) );
+
+  GEN_DATA::reset( dentries, dd_wgap_sl_ );
+  GEN_DATA::reset( mentries_, dd_wgap_ma_);
 }
 
 /*----------------------------------------------------------------------------*
@@ -155,7 +214,7 @@ void CONTACT::AUG::NodeDataContainer::Setup()
 void CONTACT::AUG::NodeDataContainer::Pack(DRT::PackBuffer& data) const
 {
   // add maxNumMasterElements
-  DRT::ParObject::AddtoPack(data,maxNumMasterElements_);
+  DRT::ParObject::AddtoPack(data,mentries_);
   // add kappa_
   DRT::ParObject::AddtoPack(data,kappa_);
   // add grow_
@@ -176,7 +235,7 @@ void CONTACT::AUG::NodeDataContainer::Unpack(
     const std::vector<char>& data)
 {
   // maxNumMasterElements
-  DRT::ParObject::ExtractfromPack(position,data,maxNumMasterElements_);
+  DRT::ParObject::ExtractfromPack(position,data,mentries_);
   // kappa_
   DRT::ParObject::ExtractfromPack(position,data,kappa_);
   // grow_
@@ -185,6 +244,37 @@ void CONTACT::AUG::NodeDataContainer::Unpack(
   DRT::ParObject::ExtractfromPack(position,data,augA_);
 
   return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::AUG::NodeDataContainer::Complete()
+{
+  GetDeriv1st_WGapSl().complete();
+  GetDeriv1st_WGapMa().complete();
+
+  GetDeriv2nd_WGapSl().complete();
+  GetDeriv2nd_WGapMa().complete();
+
+  GetDeriv1st_WGapSl_Complete().complete();
+  GetDeriv1st_WGapMa_Complete().complete();
+
+  GetDeriv1st_Kappa().complete();
+  GetDeriv2nd_Kappa().complete();
+  GetDeriv1st_A().complete();
+
+  debug_.Complete();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::AUG::NodeDataContainer::Debug::Complete()
+{
+  d_.complete();
+  dd_.complete();
+
+  GEN_DATA::complete( d_vec_ );
+  GEN_DATA::complete( dd_vec_ );
 }
 
 /*----------------------------------------------------------------------*
@@ -523,7 +613,7 @@ void CONTACT::CoNode::AddgValue(double& val)
 /*----------------------------------------------------------------------*
  |  Add a value to the weighted gap                      hiermeier 04/14|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNode::AddWGapValue(double& val)
+void CONTACT::CoNode::AddWGapValue( const double val )
 {
   // check if this is a master node or slave boundary node
   if (IsSlave()==false)
@@ -532,7 +622,8 @@ void CONTACT::CoNode::AddWGapValue(double& val)
     dserror("ERROR: AddWGapValue: function called for boundary node %i", Id());
 
   // initialize if called for the first time
-  if (AugData().GetWGap()==1.0e12) AugData().GetWGap()=0;
+  if (AugData().GetWGap()==1.0e12)
+    AugData().GetWGap()=0;
 
   // add given value to wGap_
   AugData().GetWGap()+=val;
@@ -640,48 +731,11 @@ void CONTACT::CoNode::AddKappaValue(double& val)
     dserror("ERROR: AddKappaValue: function called for boundary node %i", Id());
 
   // initialize if called for the first time
-  if (AugData().GetKappa()==1.0e12) AugData().GetKappa()=0;
+  if ( AugData().GetKappa() == 1.0e12 )
+    AugData().GetKappa() = 0.0;
 
   // add given value to kappa_
-  AugData().GetKappa()+=val;
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Add a value to the variation of the weighted gap     hiermeier 05/14|
- *----------------------------------------------------------------------*/
-void CONTACT::CoNode::AddVarWGapSl(int col, int gid, double val)
-{
-  // check if this is a master node or slave boundary node
-  if (!IsSlave())
-    dserror("ERROR: AddVarWGapSl: function called for master node %i", Id());
-  if (IsOnBound())
-    dserror("ERROR: AddVarWGapSl: function called for boundary node %i", Id());
-
-   // add the pair (col,val) to the given row
-  GEN::pairedvector<int,std::pair<int,double> >& varWGapSlMap = AugData().GetVarWGapSl();
-  varWGapSlMap[col].first   = gid;
-  varWGapSlMap[col].second += val;
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Add a value to the variation of the weighted gap     hiermeier 05/14|
- *----------------------------------------------------------------------*/
-void CONTACT::CoNode::AddVarWGapMa(int col, int gid, double val)
-{
-  // check if this is a master node or slave boundary node
-  if (!IsSlave())
-    dserror("ERROR: AddVarWGapSl: function called for master node %i", Id());
-  if (IsOnBound())
-    dserror("ERROR: AddVarWGapSl: function called for boundary node %i", Id());
-
-   // add the pair (col,val) to the given column
-  std::map<int,std::pair<int,double> >& varWGapMaMap = AugData().GetVarWGapMa();
-  varWGapMaMap[col].first   = gid;
-  varWGapMaMap[col].second += val;
+  AugData().GetKappa() += val;
 
   return;
 }
@@ -840,13 +894,16 @@ void CONTACT::CoNode::InitializeDataContainer()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::CoNode::InitializeAugDataContainer( int maxNumMasterEles )
+void CONTACT::CoNode::InitializeAugDataContainer(
+    const int slMaElementAreaRatio,
+    const bool isTriangleOnMaster )
 {
   // Do it only, if the container has not been initialized, yet.
   if ( augdata_.is_null() )
   {
     augdata_ = Teuchos::rcp( new CONTACT::AUG::NodeDataContainer( *this,
-        maxNumMasterEles ) );
+        slMaElementAreaRatio, isTriangleOnMaster ) );
+
     augdata_->Setup();
   }
 }
@@ -1318,7 +1375,7 @@ void CONTACT::CoNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
       CoData().GetDerivN()[i].clear();
 
   // normalize directional derivative
-  // (length differs for weighted/unweighted case bot not the procedure!)
+  // (length differs for weighted/unweighted case but not the procedure!)
   // (be careful with reference / copy of derivative maps!)
   typedef GEN::pairedvector<int,double>::const_iterator CI;
   GEN::pairedvector<int,double>& derivnx = CoData().GetDerivN()[0];

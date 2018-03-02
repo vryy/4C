@@ -703,7 +703,11 @@ public:
    \brief Return weighting for nurbs control point (node)
 
    */
-  virtual inline double& NurbsW()
+  inline double& NurbsW()
+  {
+    return nurbsw_;
+  }
+  inline double NurbsW() const
   {
     return nurbsw_;
   }

@@ -260,7 +260,7 @@ void STR::MODELEVALUATOR::LagPenConstraint::ReadRestart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::LagPenConstraint::RecoverState(
+void STR::MODELEVALUATOR::LagPenConstraint::RunPostComputeX(
     const Epetra_Vector& xold,
     const Epetra_Vector& dir,
     const Epetra_Vector& xnew)

@@ -50,136 +50,51 @@ NUMSTEP                         60
 MAXTIME                         300.0
 PREDICT                         TangDis
 ---------------------------------------------------------STRUCT NOX
-//
-//     Line Search Based
-//     Pseudo Transient
-//     Trust Region Based
-//     Inexact Trust Region Based
-//     Tensor Based
 Nonlinear Solver                = Pseudo Transient //Line Search Based
-//
 -----------------------------------------STRUCT NOX/Solver Options
-//
-//    Sum of Squares, Lagrangian
 Merit Function                  = Sum of Squares
-//    Complete, Minimal, None
 Status Test Check Type          = Complete
-//
 --------------------------------------------STRUCT NOX/Status Test
 XML File                        = sohex8fbar_cooks_nl_new_struc.xml
-//
 -----------------------------------------------STRUCT NOX/Direction
-//
-//     Newton,Steepest Descent,NonlinearCG,Broyden
 Method                          = Newton
-//
 ----------------------------------------STRUCT NOX/Direction/Newton
-//
-//     Constant,Type 1,Type 2
 Forcing Term Method             = Constant
-//
-// initial linear solver tolerance
 Forcing Term Initial Tolerance  = 0.1
-//
 Forcing Term Minimum Tolerance  = 1e-06
-//
 Forcing Term Maximum Tolerance  = 0.01
-//
-// used only by "Type 2"
 Forcing Term Alpha              = 1.5
-//
-// used only by "Type 2"
 Forcing Term Gamma              = 0.9
-//
-// If set to true, we will use the computed direction even if the linear solve does not achieve the tolerance specified by the forcing term
-//     Yes,No,yes,no,YES,NO
 Rescue Bad Newton Solve         = Yes
-//
 ------------------------------STRUCT NOX/Direction/Steepest Descent
-//
-//     2-Norm,Quadratic Model Min,F 2-Norm,None
 Scaling Type                    = None
-//
 ----------------------------------------STRUCT NOX/Pseudo Transient
-//
-// Initial time step size
 deltaInit                       = -1.0
-//
-// Maximum time step size.  If the new step size is greater than this value, the transient terms will be eliminated from the Newton iteration resulting in a full Newton solve.
-//deltaMax                        = 1.0
-//
-// Minimum step size.
 deltaMin                        = 1.0e-6
-//
-// SER, Switched Evolution Relaxation, TTE, Temporal Truncation Error, MRR, Model Reduction Ratio
 Time Step Control               = MRR
-//
-// Norm Type for the time step control.
-// Two Norm, One Norm, Max Norm
 Norm Type for TSC               = Max Norm
-//
-// Type of the scaling matrix for the PTC method.
-// Identity, CFL Diagonal
 Scaling Type                    = Identity
 ---------------------------------------------STRUCT NOX/Line Search
-//
-//     Full Step,Backtrack,Polynomial,More'-Thuente,User Defined
 Method                          = Backtrack//Full Step
-//
 -----------------------------------STRUCT NOX/Line Search/Full Step
-//
-// length of a full step
 Full Step                       = 1
-//
 -----------------------------------STRUCT NOX/Line Search/Backtrack
-//
-// starting step length
 Default Step                    = 1
-//
-// minimum acceptable step length
 Minimum Step                    = 1e-12
-//
-// step to take when the line search fails (defaults to value for "Default Step")
 Recovery Step                   = 1
-//
-// maximum number of iterations (i.e., RHS computations)
 Max Iters                       = 50
-//
-// A multiplier between zero and one that reduces the step size between line search iterations
 Reduction Factor                = 0.5
-//
 ------------------------------------------------STRUCT NOX/Printing
-//
-//     Yes,No,yes,no,YES,NO
 Error                           = No
-//
-//     Yes,No,yes,no,YES,NO
 Warning                         = Yes
-//
-//     Yes,No,yes,no,YES,NO
 Outer Iteration                 = Yes
-//
-//     Yes,No,yes,no,YES,NO
 Inner Iteration                 = Yes
-//
-//     Yes,No,yes,no,YES,NO
 Parameters                      = No
-//
-//     Yes,No,yes,no,YES,NO
 Details                         = Yes
-//
-//     Yes,No,yes,no,YES,NO
 Outer Iteration StatusTest      = Yes
-//
-//     Yes,No,yes,no,YES,NO
 Linear Solver Details           = No
-//
-//     Yes,No,yes,no,YES,NO
 Test Details                    = No
-//
-//     Yes,No,yes,no,YES,NO
 Debug                           = No
-//
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
@@ -195,66 +110,16 @@ NDPOINT                         0
 NDLINE                          0
 NDSURF                          3
 NDVOL                           0
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DPOINT                          0
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           2
 //node_ns1
 E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //node_ns3
 E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DVOL                            0
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL NSURF
-DPOINT                          0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE NSURF
-DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE NSURF
 DSURF                           1
 //node_ns2
 E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0625 0.0 FUNCT 0 1 0 Live Mid
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
-DVOL                            0
------------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
-// DOBJECT FSI_ID FIELD MESH FLAG
-DLINE                           0
------------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
-// DOBJECT FSI_ID FIELD MESH FLAG
-DSURF                           0
------------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
-//                              DOBJECT
-DLINE                           0
------------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
-//                              DOBJECT
-DSURF                           0
--------------------------------------------------DESIGN FLUID LINE LIFT&DRAG
-// DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER
-DLINE                           0
--------------------------------------------------DESIGN FLUID SURF LIFT&DRAG
-// DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER Z_CENTER ALE_LINE
-DSURF                           0
-----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
-// DOBJECT Id
-DPOINT                          0
------------------------------------------------DESIGN LINE LOCSYS CONDITIONS
-// DOBJECT Id
-DLINE                           0
------------------------------------------------DESIGN SURF LOCSYS CONDITIONS
-// DOBJECT Id
-DSURF                           0
-------------------------------------------------DESIGN VOL LOCSYS CONDITIONS
-// DOBJECT Id
-DVOL                            0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY

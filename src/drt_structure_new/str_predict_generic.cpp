@@ -95,7 +95,6 @@ void STR::PREDICT::Generic::Predict(NOX::Abstract::Group& grp)
 void STR::PREDICT::Generic::PostPredict(NOX::Abstract::Group& grp)
 {
   CheckInitSetup();
-  // ToDo The pressure dofs need an extra treatment.
 
   Dbc().ApplyDirichletBC(GlobalState().GetTimeNp(),
       GlobalState().GetMutableDisNp(),
@@ -244,4 +243,12 @@ void STR::PREDICT::Generic::Print() const
     IO::cout << "=== Structural predictor: " << Name().c_str() <<
         " ===" << IO::endl;
   }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::PREDICT::Generic::PreApplyForceExternal( Epetra_Vector& fextnp ) const
+{
+  // do nothing
+  return false;
 }

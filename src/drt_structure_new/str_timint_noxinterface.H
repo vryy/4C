@@ -22,7 +22,13 @@
 #include "../solver_nonlin_nox/nox_nln_interface_jacobian.H" // (2) base class: jacobian
 #include <NOX_Epetra_Interface_Preconditioner.H>             // (3) base class: preconditioner stuff
 
+#include "../solver_nonlin_nox/nox_nln_enum_lists.H"
 // forward declaration ...
+namespace NOX {
+namespace NLN {
+  enum class CorrectionType : int;
+} // namespace NLN
+} // namespace NOX
 namespace LINALG {
   class SparseOperator;
   class SparseMatrix;
@@ -73,6 +79,13 @@ namespace TIMINT {
      *  (derived from NOX::NLN::Interface::Jacobian) */
     virtual bool computeFandJacobian(const Epetra_Vector& x,
         Epetra_Vector& rhs, Epetra_Operator& jac);
+
+    virtual bool computeCorrectionSystem(
+          const enum NOX::NLN::CorrectionType type,
+          const NOX::Abstract::Group& grp,
+          const Epetra_Vector& x,
+          Epetra_Vector& rhs,
+          Epetra_Operator& jac );
 
     /*! compute preconditioner
      *  (derived from NOX::Epetra::Interface::Preconditioner) */
@@ -131,6 +144,11 @@ namespace TIMINT {
      *  Necessary for the LinearSystem objects.
      *  (derived from NOX::NLN::Interface::Required) */
     virtual double CalcRefNormForce();
+
+    virtual void CreateBackupState( const Epetra_Vector& dir );
+
+    virtual void RecoverFromBackupState();
+
     //!@}
 
     // Get element based scaling operator

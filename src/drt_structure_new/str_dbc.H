@@ -41,6 +41,7 @@ namespace LINALG {
 namespace STR {
 namespace TIMINT {
   class Base;
+  class BaseDataGlobalState;
 } // namespace TIMINT
   class Dbc
   {
@@ -73,7 +74,7 @@ namespace TIMINT {
     /*! \brief Apply the DBC to the rhs vector and calculate and save the reaction forces
      *
      *  Note: Stay in the global coordinate system (Rotation: global-->local-->global).*/
-    void ApplyDirichletToRhs(Teuchos::RCP<Epetra_Vector>& b);
+    void ApplyDirichletToRhs(Teuchos::RCP<Epetra_Vector>& b) const;
 
     //! Update the locsys manager
     void UpdateLocSysManager();
@@ -116,6 +117,22 @@ namespace TIMINT {
     void RemoveDirichDofs(
         const Teuchos::RCP<const Epetra_Map> maptoremove);
 
+    /*! Rotate the system matrix from a global to a local coordinate system,
+     *  if the locsysman_ is defined.
+     *
+     *  Works only for LINALG::SparseMatrices! */
+    bool RotateGlobalToLocal(const Teuchos::RCP<LINALG::SparseOperator> & A) const;
+
+    /*! Rotate the rhs vector from the global to the local coordinate system, if
+     *  the locsysman_ is defined. */
+    bool RotateGlobalToLocal(const Teuchos::RCP<Epetra_Vector> & v) const;
+    bool RotateGlobalToLocal(const Teuchos::RCP<Epetra_Vector> & v, bool offset) const;
+
+    /*! Rotate a vector from the local to the global coordinate system, if
+     *  the locsysman_ is defined. */
+    bool RotateLocalToGlobal(const Teuchos::RCP<Epetra_Vector> & v) const;
+    bool RotateLocalToGlobal(const Teuchos::RCP<Epetra_Vector> & v, bool offset) const;
+
   protected:
     //! Returns the initialization status
     const bool& IsInit() const
@@ -133,30 +150,17 @@ namespace TIMINT {
 
     //! Get discretization pointer
     Teuchos::RCP<DRT::Discretization> DiscretPtr();
+    Teuchos::RCP<const DRT::Discretization> DiscretPtr() const;
 
     //! Access the reaction force
     Epetra_Vector & Freact() const;
 
-    /*! Rotate the system matrix from a global to a local coordinate system,
-     *  if the locsysman_ is defined.
-     *
-     *  Works only for LINALG::SparseMatrices! */
-    bool RotateGlobalToLocal(const Teuchos::RCP<LINALG::SparseOperator> & A) const;
-
-    /*! Rotate the rhs vector from the global to the local coordinate system, if
-     *  the locsysman_ is defined. */
-    bool RotateGlobalToLocal(const Teuchos::RCP<Epetra_Vector> & v) const;
-    bool RotateGlobalToLocal(const Teuchos::RCP<Epetra_Vector> & v, bool offset) const;
-
-    /*! Rotate a vector from the local to the global coordinate system, if
-     *  the locsysman_ is defined. */
-    bool RotateLocalToGlobal(const Teuchos::RCP<Epetra_Vector> & v) const;
-    bool RotateLocalToGlobal(const Teuchos::RCP<Epetra_Vector> & v, bool offset) const;
-
     //! Get the locsys transformation matrix
     Teuchos::RCP<const LINALG::SparseMatrix> GetLocSysTrafo() const;
 
-    const bool& IsLocSys() const
+    const STR::TIMINT::BaseDataGlobalState& GState() const;
+
+    bool IsLocSys() const
     { return islocsys_; };
 
     //! Extract the reaction forces

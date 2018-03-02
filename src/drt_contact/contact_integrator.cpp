@@ -1448,7 +1448,19 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(
       // warning, if an element which is declared not to be on the boundary by the above test
       // has non-projectable Gauss points
       if (is_on_mele == false && *boundary_ele==false)
+      {
         std::cout << "*** warning *** Non-boundary element has non-projectable Gauss point \n" ;
+        DRT::Node** snodes = sele.Nodes();
+        for ( int e=0; e<sele.NumNode(); ++e )
+        {
+          CoNode* cnode = dynamic_cast<CoNode*>( snodes[e] );
+          std::cout << "#eID " << sele.Id() << " | #nID " <<
+              cnode->Id() << ": " <<
+              cnode->X()[0] << ", " << cnode->X()[1] << ", "
+              << cnode->X()[2] << std::endl;
+        }
+
+      }
 
       //if one gp has counterparts on 2 elements --> non-uniqueness
       if (iter_proj>1)

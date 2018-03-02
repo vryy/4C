@@ -83,6 +83,13 @@ namespace IMPLICIT {
         Epetra_Vector& f,
         LINALG::SparseOperator& jac) = 0;
 
+    bool ApplyCorrectionSystem(
+        const enum NOX::NLN::CorrectionType type,
+        const std::vector<INPAR::STR::ModelType>& constraint_models,
+        const Epetra_Vector& x,
+        Epetra_Vector& f,
+        LINALG::SparseOperator& jac );
+
     //! derived
     virtual bool AssembleForce( Epetra_Vector& f,
         const std::vector<INPAR::STR::ModelType>* without_these_models = NULL ) const = 0;
@@ -180,6 +187,8 @@ namespace IMPLICIT {
     void PrintJacobianInMatlabFormat(
         const NOX::NLN::Group& curr_grp ) const;
 
+    Teuchos::ParameterList& GetNoxParams();
+
   protected:
     //! reset the time step dependent parameters for the element evaluation [derived]
     virtual void ResetEvalParams();
@@ -200,7 +209,6 @@ namespace IMPLICIT {
 } // namespace STR
 namespace NOX {
 namespace NLN {
-namespace GROUP {
 namespace PrePostOp {
 namespace IMPLICIT {
   /*! \brief Implicit time integration helper class
@@ -255,41 +263,6 @@ namespace IMPLICIT {
         const double& step,
         const NOX::NLN::Group& curr_grp);
 
-  private:
-    //! reference to the STR::IMPLICIT::Generic object (read-only)
-    const ::STR::IMPLICIT::Generic& impl_;
-
-    //! default step length
-    const double default_step_;
-
-  }; // class Generic
-} // namespace IMPLICIT
-} // namespace PrePostOp
-} // namespace GROUP
-namespace Solver {
-namespace PrePostOp {
-namespace IMPLICIT {
-  /*! \brief Implicit time integration helper class
-   *
-   *  This class is an implementation of the NOX::Abstract::PrePostOperator
-   *  and is used to modify the step() routine of the given NOX::Solver::Generic
-   *  class.
-   *  It's called by the wrapper classes NOX::Solver::PrePostOperator and
-   *  NOX::PrePostOperatorVector.
-   *
-   *  \author Michael Hiermeier \date 03/17 */
-  class Generic : public NOX::Abstract::PrePostOperator
-  {
-  public:
-    /// constructor
-    Generic( const ::STR::IMPLICIT::Generic& implicit )
-        : impl_( implicit ),
-          default_step_(implicit.GetDefaultStepLength())
-    { /* empty */ };
-
-    /// destructor
-    virtual ~Generic() {};
-
     /*! \brief Derived function, which is called at the very end of a call to
      *  NOX::Solver::Generic::step()
      *
@@ -300,6 +273,33 @@ namespace IMPLICIT {
      *  \author hiermeier \date 03/17 */
     virtual void runPostIterate( const NOX::Solver::Generic& solver );
 
+    /*! \brief Derived function, which is called at the very end of a call to
+     *  NOX::NLN::Group::applyJacobianInverse()
+     *
+     *  This method gives you the opportunity to do something in the end of
+     *  a successful or unsuccessful linear solver attempt.
+     *
+     *  \note The result vector is the actual result vector of the internal
+     *  linear solver and, accordingly, due to the used sign convention in NOX,
+     *  the NEGATIVE direction vector. The sign will be changed again in the
+     *  NOX::Epetra::Group::computeNewton method.
+     *
+     *  \param rhs    : read-only access to the rhs vector
+     *  \param result : full access to the result vector
+     *  \param xold   : read-only access to the old state vector
+     *  \param grp    : read only access to the group object
+     *
+     *  \author hiermeier \date 12/17 */
+    virtual void runPostApplyJacobianInverse(
+        const NOX::Abstract::Vector& rhs,
+        NOX::Abstract::Vector& result,
+        const NOX::Abstract::Vector& xold,
+        const NOX::NLN::Group& grp );
+
+  private:
+    Epetra_Vector& convert2EpetraVector( NOX::Abstract::Vector& vec ) const;
+    const Epetra_Vector& convert2EpetraVector( const NOX::Abstract::Vector& vec ) const;
+
   private:
     //! reference to the STR::IMPLICIT::Generic object (read-only)
     const ::STR::IMPLICIT::Generic& impl_;
@@ -307,10 +307,9 @@ namespace IMPLICIT {
     //! default step length
     const double default_step_;
 
-  };  // class Generic
+  }; // class Generic
 } // namespace IMPLICIT
 } // namespace PrePostOp
-} // namespace Solver
 } // namespace NLN
 } // namespace NOX
 

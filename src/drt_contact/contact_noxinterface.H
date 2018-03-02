@@ -87,6 +87,20 @@ namespace CONTACT {
         enum NOX::NLN::StatusTest::QuantityType qt) const;
     /// @}
 
+    /// @name Merit function support functions
+    /// @{
+
+    virtual double GetModelValue(
+        NOX::NLN::MeritFunction::MeritFctName name ) const;
+
+    virtual double GetLinearizedModelTerms(
+        const Epetra_Vector& dir,
+        const enum NOX::NLN::MeritFunction::MeritFctName name,
+        const enum NOX::NLN::MeritFunction::LinOrder linorder,
+        const enum NOX::NLN::MeritFunction::LinType lintype ) const;
+
+    /// @}
+
   protected:
     /// get the init indicator state
     inline const bool& IsInit() const

@@ -52,8 +52,8 @@ RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     1
 TIMESTEP                        1.0
-NUMSTEP                         1
-MAXTIME                         1.0
+NUMSTEP                         2
+MAXTIME                         2.0
 NLNSOL                          fullnewton
 PREDICT                         TangDis
 LUMPMASS                        No
@@ -72,7 +72,7 @@ INTTYPE                         Elements
 NUMGP_PER_DIM                   3
 ---------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
-STRATEGY                        SteepestAscent // Augmented
+STRATEGY                        SteepestAscent // StdLagrange // Combo // SteepestAscent // Augmented
 SYSTEM                          SaddlePoint
 FRICTION                        None
 SEMI_SMOOTH_NEWTON              Yes
@@ -81,8 +81,16 @@ SEMI_SMOOTH_CT                  1.0
 -----------------------------------------CONTACT DYNAMIC/AUGMENTED
 PRINT_LINEAR_CONSERVATION       No// Yes
 PRINT_ANGULAR_CONSERVATION      No// Yes
+VARIATIONAL_APPROACH            incomplete
 --------------------------CONTACT DYNAMIC/AUGMENTED/STEEPESTASCENT
-CN_UPPER_BOUND                  1.0e6
+CN_UPPER_BOUND                  1.0e9
+PENALTY_UPDATE                  Complementarity // Minimal_Error // Slope_Enforcement // LMGapRatio // None
+-----------------------------------CONTACT DYNAMIC/AUGMENTED/COMBO
+STRATEGY_0                      SteepestAscent
+STRATEGY_1                      StdLagrange
+SWITCHING_STRATEGY              PreAsymptotic
+------------CONTACT DYNAMIC/AUGMENTED/LAGRANGE_MULTIPLIER_FUNCTION
+LINEAR_SOLVER                   1
 --------------------------------------------STRUCT NOX/Status Test
 XML File                        = contact_large_pen.xml
 ------------------------------------------------STRUCT NOX/Printing
@@ -112,13 +120,15 @@ MAT 4   ELAST_CoupNeoHooke YOUNG 25000 NUE 0.25
 -----------------------------------------------CLONING MATERIAL MAP
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
-VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.00000 1.0 5.0 VALUES 0 -7.0 -7.0
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.00000 1.0 2.0 VALUES 0 -7.0 -4.0
 -------------------------------------------------------------FUNCT2
 -------------------------------------------------------------FUNCT3
 -------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 932 QUANTITY dispx VALUE 6.11248889091607461e-01 TOLERANCE 1.0e-08
-STRUCTURE DIS structure NODE 932 QUANTITY dispy VALUE 3.44648943704649380e+00 TOLERANCE 1.0e-08
+STRUCTURE DIS structure NODE 932 QUANTITY dispx VALUE 4.27030414099786648e-01 TOLERANCE 1.0e-08
+STRUCTURE DIS structure NODE 932 QUANTITY dispy VALUE 2.00454241867450822e+00 TOLERANCE 1.0e-08
+STRUCTURE SPECIAL QUANTITY num_iter_step_1 VALUE 19.0 TOLERANCE 1.0e-20
+STRUCTURE SPECIAL QUANTITY num_iter_step_2 VALUE 19.0 TOLERANCE 1.0e-20
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  6

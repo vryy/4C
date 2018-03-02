@@ -18,6 +18,7 @@
 #include "contact_defines.H"
 #include "contact_paramsinterface.H"
 #include "contact_element.H"
+#include "contact_utils.H"
 #include "friction_node.H"
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_utils.H"
@@ -3919,7 +3920,8 @@ void CONTACT::CoLagrangeStrategy::AssembleContactStiff()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetMatrixBlockPtr(
-        const enum DRT::UTILS::MatBlockType& bt) const
+    const enum DRT::UTILS::MatBlockType& bt,
+    const CONTACT::ParamsInterface* cparams) const
 {
   // if there are no active contact contributions
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
@@ -4402,7 +4404,7 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetCondensedMatr
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::RecoverState(
+void CONTACT::CoLagrangeStrategy::RunPostComputeX(
     const CONTACT::ParamsInterface& cparams,
     const Epetra_Vector& xold,
     const Epetra_Vector& dir,
@@ -5635,14 +5637,12 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
   }
 
   // only if it's a full Newton step...
-  if (iterls_ <= 0)
-  {
-    // store the previous active set
-    if (gactivenodes_ != Teuchos::null)
-      gOldActiveSlaveNodes_ = Teuchos::rcp(new Epetra_Map(*gactivenodes_));
-    else
-      gOldActiveSlaveNodes_ = Teuchos::rcp(new Epetra_Map(0,0,Comm()));
-  }
+  // store the previous active set
+  if (gactivenodes_ != Teuchos::null)
+    gOldActiveSlaveNodes_ = Teuchos::rcp(new Epetra_Map(*gactivenodes_));
+  else
+    gOldActiveSlaveNodes_ = Teuchos::rcp(new Epetra_Map(0,0,Comm()));
+
 
   // also update special flag for semi-smooth Newton convergence
   activesetssconv_ = activesetconv_;

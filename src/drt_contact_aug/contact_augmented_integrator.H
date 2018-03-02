@@ -19,9 +19,13 @@
 #define CONTACT_AUGMENTED_INTEGRATOR_H_
 
 #include "../drt_contact/contact_integrator.H"
-#include "../drt_contact_aug/contact_integrator_utils.H"
 #include "../drt_fem_general/drt_utils_integration.H"
+#include "contact_aug_integrator_policy.H"
+#include "../drt_lib/drt_singletondestruction.H"
 
+namespace MORTAR {
+  enum ActionType : int;
+}
 
 namespace CONTACT {
 namespace AUG {
@@ -98,7 +102,7 @@ namespace AUG {
          const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr);
 
   private:
-    Teuchos::RCP<IntegratorGeneric> integrator_;
+    IntegratorGeneric* integrator_;
 
     static INTEGRATOR::UniqueProjInfoPair projInfo_;
   };  // class IntegratorWrapper
@@ -108,49 +112,81 @@ namespace AUG {
   class IntegratorGeneric
   {
   public:
-    static Teuchos::RCP<CONTACT::AUG::IntegratorGeneric> Create(
+    static CONTACT::AUG::IntegratorGeneric* Create(
         int probdim,
         DRT::Element::DiscretizationType slavetype,
         DRT::Element::DiscretizationType mastertype,
-        const CONTACT::ParamsInterface & cparams,
+        CONTACT::ParamsInterface & cparams,
         CONTACT::CoIntegrator* wrapper );
 
   private:
     static CONTACT::AUG::IntegratorGeneric* Create2D(
         DRT::Element::DiscretizationType slavetype,
         DRT::Element::DiscretizationType mastertype,
-        const CONTACT::ParamsInterface & cparams,
+        CONTACT::ParamsInterface& cparams,
         CONTACT::CoIntegrator* wrapper );
 
     template < DRT::Element::DiscretizationType slavetype >
     static CONTACT::AUG::IntegratorGeneric * Create2D(
         DRT::Element::DiscretizationType mastertype,
-        const CONTACT::ParamsInterface & cparams,
+        CONTACT::ParamsInterface & cparams,
+        CONTACT::CoIntegrator* wrapper );
+
+    template < DRT::Element::DiscretizationType slavetype,
+               DRT::Element::DiscretizationType mastertype >
+    static CONTACT::AUG::IntegratorGeneric* Create2D(
+        CONTACT::ParamsInterface& cparams,
         CONTACT::CoIntegrator* wrapper );
 
     static CONTACT::AUG::IntegratorGeneric* Create3D(
         DRT::Element::DiscretizationType slavetype,
         DRT::Element::DiscretizationType mastertype,
-        const CONTACT::ParamsInterface & cparams,
+        CONTACT::ParamsInterface& cparams,
         CONTACT::CoIntegrator* wrapper );
 
     template < DRT::Element::DiscretizationType slavetype >
     static CONTACT::AUG::IntegratorGeneric * Create3D(
         DRT::Element::DiscretizationType mastertype,
-        const CONTACT::ParamsInterface & cparams,
+        CONTACT::ParamsInterface& cparams,
         CONTACT::CoIntegrator* wrapper );
+
+    template < DRT::Element::DiscretizationType slavetype,
+               DRT::Element::DiscretizationType mastertype >
+    static CONTACT::AUG::IntegratorGeneric * Create3D(
+        CONTACT::ParamsInterface& cparams,
+        CONTACT::CoIntegrator* wrapper );
+
+  protected:
+    /// empty constructor for singleton construction
+    IntegratorGeneric()
+        : cparams_( NULL ), wrapper_( NULL )
+    { /* empty */ }
+
+    /// initialize the singleton instance
+    void Init( CONTACT::ParamsInterface* cparams,
+        CONTACT::CoIntegrator* wrapper )
+    {
+      if ( not cparams or not wrapper )
+        dserror( "The initialization list is not properly filled. No new"
+            "instance can be created." );
+
+      cparams_ = cparams;
+      wrapper_ = dynamic_cast<IntegrationWrapper*>( wrapper );
+      if ( not wrapper_ )
+        dserror( "dynamic cast failed!" );
+    }
 
   public:
     IntegratorGeneric(
-        const CONTACT::ParamsInterface& cparams,
+        CONTACT::ParamsInterface& cparams,
         CONTACT::CoIntegrator& wrapper)
-        : cparams_(cparams),
-          wrapper_( static_cast<IntegrationWrapper&>( wrapper ) )
+        : cparams_(&cparams),
+          wrapper_( dynamic_cast<IntegrationWrapper*>( &wrapper ) )
     {};
 
     virtual ~IntegratorGeneric() {};
 
-    //! @name 2D augmented Lagrange integration methods
+    //! @name segment based integration methods
     //! @{
 
     virtual void IntegrateDerivSegment2D(
@@ -161,30 +197,20 @@ namespace AUG {
        double& mxia,
        double& mxib ) = 0;
 
-    virtual void IntegrateDerivEle2D(
-        MORTAR::MortarElement& sele,
-        MORTAR::MortarElement& mele,
-        const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo ) = 0;
-
-    //! @}
-
-    //! @name 3D augmented Lagrange integration methods
-    //! @{
     //! [derived]
     virtual void IntegrateDerivCell3DAuxPlane(
          MORTAR::MortarElement& sele,
          MORTAR::MortarElement& mele,
          MORTAR::IntCell& cell,
          double* auxn ) = 0;
-
-    //! [derived]
-    virtual void IntegrateDerivEle3D(
-         MORTAR::MortarElement& sele,
-         MORTAR::MortarElement& mele,
-         bool boundary_ele,
-         const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo ) = 0;
-
     //! @}
+
+    virtual void Evaluate(
+      MORTAR::MortarElement& sele,
+      MORTAR::MortarElement& mele,
+      bool boundary_ele,
+      const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo ) = 0;
+
 
     //! Build the remaining integrals and linearizations on the 1-D/2-D slave interface
     virtual void IntegrateDerivSlaveElement( MORTAR::MortarElement& sele ) = 0;
@@ -192,37 +218,84 @@ namespace AUG {
   protected:
     INPAR::MORTAR::ShapeFcn ShapeFcn()
     {
-      return wrapper_.shapefcn_;
+      return Wrapper().shapefcn_;
     }
 
-  protected:
-    const CONTACT::ParamsInterface & cparams_;
+    CONTACT::ParamsInterface& CParams()
+    {
+      if ( not cparams_ )
+        dserror("cparams_ seems no longer valid!");
 
-    CONTACT::AUG::IntegrationWrapper & wrapper_;
+      return *cparams_;
+    }
 
+    const CONTACT::ParamsInterface& CParams() const
+    {
+      if ( not cparams_ )
+        dserror("cparams_ seems no longer valid!");
+
+      return *cparams_;
+    }
+
+    IntegrationWrapper& Wrapper()
+    {
+      if ( not wrapper_ )
+        dserror("wrapper_ seems no longer valid!");
+
+      return *wrapper_;
+    }
+
+  private:
+    CONTACT::ParamsInterface * cparams_;
+
+    CONTACT::AUG::IntegrationWrapper * wrapper_;
   };  //
 
   /*--------------------------------------------------------------------------*/
   template < unsigned probdim,
              DRT::Element::DiscretizationType slavetype,
              DRT::Element::DiscretizationType mastertype,
-             unsigned slavedim = DRT::UTILS::DisTypeToDim<slavetype>::dim,
-             unsigned slavenumnode = DRT::UTILS::DisTypeToNumNodePerEle<slavetype>::numNodePerElement,
-             unsigned masterdim = DRT::UTILS::DisTypeToDim<mastertype>::dim,
-             unsigned masternumnode = DRT::UTILS::DisTypeToNumNodePerEle<mastertype>::numNodePerElement >
-  class Integrator : public IntegratorGeneric
+             class IntPolicy>
+  class Integrator : public IntegratorGeneric,
+                     public IntPolicy,
+                     public ::DRT::SingletonDestruction
   {
+    // used for static const declarations
+    typedef IntPolicy my;
+
+  private:
+    /// empty constructor for singleton construction
+    Integrator();
+
+  public:
+    /** \brief Create a new instance or return a already existing one.
+     *
+     *  \author hiermeier \date 06/17 */
+    static Integrator<probdim,slavetype,mastertype,IntPolicy>* Instance(
+        CONTACT::ParamsInterface* cparams,
+        CONTACT::CoIntegrator* wrapper,
+        const bool delete_me = false );
+
+    /** \brief Delete all created instances at the end of a simulation run
+     *
+     *  \author hiermeier \date 06/17 */
+    virtual void Done();
+
   public:
     //! Default constructor without active set information
     Integrator(
-        const CONTACT::ParamsInterface & cparams,
+        CONTACT::ParamsInterface & cparams,
         CONTACT::CoIntegrator& wrapper );
 
     //! Destructor
-    virtual ~Integrator() {}
+    virtual ~Integrator() = default;
+
+    // don't want = operator and cctor
+    Integrator operator = (const Integrator& old) = delete;
+    Integrator(const Integrator& old) = delete;
 
   protected:
-    //! @name 2D augmented Lagrange integration methods
+    //! @name segment based integration methods
     //! @{
 
     virtual void IntegrateDerivSegment2D(
@@ -233,15 +306,6 @@ namespace AUG {
        double& mxia,
        double& mxib );
 
-    virtual void IntegrateDerivEle2D(
-        MORTAR::MortarElement& sele,
-        MORTAR::MortarElement& mele,
-        const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo );
-
-    //! @}
-
-    //! @name 3D augmented Lagrange integration methods
-    //! @{
     //! [derived]
     virtual void IntegrateDerivCell3DAuxPlane(
          MORTAR::MortarElement& sele,
@@ -249,8 +313,8 @@ namespace AUG {
          MORTAR::IntCell& cell,
          double* auxn );
 
-    //! [derived]
-    virtual void IntegrateDerivEle3D(
+    //! element based evaluation
+    virtual void Evaluate(
         MORTAR::MortarElement& sele,
         MORTAR::MortarElement& mele,
         bool boundary_ele,
@@ -258,355 +322,367 @@ namespace AUG {
 
     //! @}
 
-    //! Build the remaining integrals and linearizations on the 1-D/2-D slave interface
+    /**  \brief Build the remaining integrals and linearizations on the 1-D/2-D
+     *          slave interface
+     *
+     *  \author hiermeier */
     virtual void IntegrateDerivSlaveElement( MORTAR::MortarElement& sele );
 
   private:
-    //! evaluate averaged weighted gap at gp
-    void GP_2D_wG(
-         MORTAR::MortarElement& sele,
-         MORTAR::MortarElement& mele,
-         LINALG::SerialDenseVector& sval,
-         LINALG::SerialDenseVector& mval,
-         LINALG::SerialDenseVector& lmval,
-         LINALG::SerialDenseMatrix& scoord,
-         LINALG::SerialDenseMatrix& mcoord,
-         double* awgap,double* gpn,
-         double* lengthn,
-         double& dxdsxi,double& dsxideta,
-         double& wgt);
+    class Evaluator;
+    class EvaluatorDeriv1stOnly;
+    class EvaluatorFull;
+
+    void SetEvaluator(
+        const enum MORTAR::ActionType action );
+
+    //! element based integration
+    void IntegrateDerivEle(
+        MORTAR::MortarElement& sele,
+        MORTAR::MortarElement& mele,
+        bool boundary_ele,
+        const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo );
+
+    void IntegrateWeightedGap(
+        MORTAR::MortarElement& sele,
+        MORTAR::MortarElement& mele,
+        bool boundary_ele,
+        const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo );
+
+    //! integrate the weighted gap gradient error
+    void IntegrateWeightedGapGradientError(
+        MORTAR::MortarElement& sele,
+        MORTAR::MortarElement& mele,
+        bool boundary_ele,
+        const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo );
+
+    void ExtractActiveSlaveNodeLIDs(
+        std::vector<unsigned>& active_nlids,
+        const MORTAR::MortarElement& sele) const;
+
+    int GetLinSize( MORTAR::MortarElement& sele ) const;
+
+    /// reset member variables at the beginning of each gauss point loop
+    void HardReset( const unsigned linsize );
+
+    void WeakReset( const unsigned linsize );
 
     //! evaluate the scaling factor kappa at gp
     void GP_kappa(
          MORTAR::MortarElement& sele,
-         const LINALG::Matrix<slavenumnode,1>& lmval,
+         const LINALG::Matrix<my::SLAVENUMNODE,1>& lmval,
          double wgt,
          double jac) const;
 
+    /// \brief evaluate the lin. of the scaling factor kappa at gp (3-D)
+    void Get_Deriv1st_Kappa(
+        MORTAR::MortarElement& sele,
+        const LINALG::Matrix<my::SLAVENUMNODE,1>& lmval,
+        double wgt,
+        const Deriv1stMap& d_jac);
+
+
     //! evaluate the weighted element Area at gp
     void GP_AugA(
-        int it,
         MORTAR::MortarElement& sele,
-        const LINALG::Matrix<slavenumnode,1>& lmval,
+        const LINALG::Matrix<my::SLAVENUMNODE,1>& lmval,
         double wgt,
         double jac) const;
-
-    //! evaluate the normal and the derivative of the normal at gp
-    void GP_Normal_DerivNormal(
-        MORTAR::MortarElement& sele,
-        const MORTAR::MortarElement& mele,
-        const LINALG::Matrix<slavenumnode,1>& sval,
-        const LINALG::Matrix<slavenumnode,slavedim>& sderiv,
-        const std::vector<GEN::pairedvector<int,double> >& dsxigp,
-        double* gpn,
-        std::vector<GEN::pairedvector<int,double> >& dnmap_unit,
-        int linsize);
-
-    /*! \brief evaluate the variation of the weighted gap (inner integral)
-     *
-     * ---> SLAVE and MASTER side */
-    void GP_VarWGap(
-        MORTAR::MortarElement& sele,
-        MORTAR::MortarElement& mele,
-        const LINALG::Matrix<slavenumnode,1>& sval,
-        const LINALG::Matrix<masternumnode,1>& mval,
-        const LINALG::Matrix<slavenumnode,1>& lmval,
-        const double* gpn,
-        double wgt,
-        double jac) const;
-
-    /*! evaluate the lin. of the scaling factor kappa at gp (2-D)
-     *  (segment based integration) */
-    void GP_2D_kappa_Lin(
-        unsigned iter,
-        MORTAR::MortarElement& sele,
-        const LINALG::Matrix<slavenumnode,1>& lmval,
-        const LINALG::Matrix<slavenumnode,slavedim>& lmderiv,
-        double dsxideta,
-        double dxdsxi,
-        double dxdsxidsxi,
-        double wgt,
-        const GEN::pairedvector<int,double>& dsxigp,
-        const GEN::pairedvector<int,double>& derivjac,
-        const std::vector<GEN::pairedvector<int,double> >& ximaps);
-
-    /*! \brief evaluate the lin. of the scaling factor kappa at gp (2-D)
-     *  (Element based integration) */
-    void GP_2D_kappa_Ele_Lin(
-        unsigned iter,
-        MORTAR::MortarElement& sele,
-        const LINALG::Matrix<slavenumnode,1>& lmval,
-        const LINALG::Matrix<slavenumnode,slavedim>& lmderiv,
-        double dxdsxi,
-        double wgt,
-        const GEN::pairedvector<int,double>& derivjac);
-
-    /*!
-    \brief evaluate the lin. of the scaling factor kappa at gp (3-D)
-
-    */
-    void GP_3D_kappa_Lin(
-        unsigned iter,
-        MORTAR::MortarElement& sele,
-        const LINALG::Matrix<slavenumnode,1>& lmval,
-        const LINALG::Matrix<slavenumnode,slavedim>& lmderiv,
-        double wgt,
-        double jac,
-        const std::vector<GEN::pairedvector<int,double> >& dsxigp,
-        const GEN::pairedvector<int,double>& jacintcellmap);
 
     //! evaluate the linearization of weighted element area at gp
-    void GP_AugA_Lin(
-        unsigned iter,
+    void Get_Deriv1st_AugA(
         MORTAR::MortarElement& sele,
-        const LINALG::Matrix<slavenumnode,1>& lmval,
+        const LINALG::Matrix<my::SLAVENUMNODE,1>& lmval,
         double wgt,
         double jac,
-        const GEN::pairedvector<int,double>& derivjac) const;
+        const Deriv1stMap& derivjac) const;
 
-    /*! \brief evaluate linearization of the variation of the weighted gap (2-D)
+    /** \brief pure element based variant
      *
-     *  ---> SLAVE and MASTER side */
-    void GP_2D_VarWGap_Lin(
-        unsigned iter,
+     *  Note that it is crucial that we unify the gauss point normal once more
+     *  since we neglect the variational term of the smooth normal during the
+     *  variation of the normal gauss point gap. Without this normalization
+     *  the neglected term wouldn't be equal to zero.
+     *
+     *  \author hiermeier */
+    void GP_Normal_DerivNormal(
+        MORTAR::MortarElement& sele,
+        const LINALG::Matrix<my::SLAVENUMNODE,1>& sval,
+        double* gpn,
+        Deriv1stVecMap& dn_non_unit,
+        Deriv2ndVecMap& ddn_non_unit,
+        Deriv1stVecMap& dn_unit,
+        Deriv2ndVecMap& ddn_unit );
+
+    //! evaluate the linearization of weighted element area at gp
+    void Get_Deriv2nd_Kappa(
+        MORTAR::MortarElement& sele,
+        const LINALG::Matrix<my::SLAVENUMNODE,1>& lmval,
+        const double wgt,
+        const Deriv2ndMap& dd_jac ) const;
+
+    /** \brief Evaluate the discrete gap at the current GP
+     *
+     *  \author hiermeier \date 06/17 */
+    void GapN(
         MORTAR::MortarElement& sele,
         MORTAR::MortarElement& mele,
-        const LINALG::Matrix<slavenumnode,1>& sval,
-        const LINALG::Matrix<masternumnode,1>& mval,
-        const LINALG::Matrix<slavenumnode,1>& lmval,
+        const LINALG::Matrix<my::SLAVENUMNODE,1>& sval,
+        const LINALG::Matrix<my::MASTERNUMNODE,1>& mval,
         const double* gpn,
-        const LINALG::Matrix<slavenumnode,slavedim>& sderiv,
-        const LINALG::Matrix<masternumnode,masterdim>& mderiv,
-        const LINALG::Matrix<slavenumnode,slavedim>& lmderiv,
-        double dsxideta,
-        double dxdsxi,
-        double dxdsxidsxi,
-        double wgt,
-        const GEN::pairedvector<int,double>& dsxigp,
-        const GEN::pairedvector<int,double>& dmxigp,
-        const GEN::pairedvector<int,double>& derivjac,
-        const std::vector<GEN::pairedvector<int,double> >& dnmap_unit,
-        const std::vector<GEN::pairedvector<int,double> >& ximaps) const;
+        double & gapn_sl,
+        double & gapn_ma ) const;
 
-    /*! \brief evaluate linearization of the variation of the weighted gap (2-D)
-     *
-     *  ---> SLAVE and MASTER side
-     *  (element based integration) */
-    void GP_2D_VarWGap_Ele_Lin(
-        unsigned iter,
+    void GP_WGap(
         MORTAR::MortarElement& sele,
-        MORTAR::MortarElement& mele,
-        const LINALG::Matrix<slavenumnode,1>& sval,
-        const LINALG::Matrix<masternumnode,1>& mval,
-        const LINALG::Matrix<slavenumnode,1>& lmval,
-        const double* gpn,
-        const LINALG::Matrix<slavenumnode,slavedim>& sderiv,
-        const LINALG::Matrix<masternumnode,masterdim>& mderiv,
-        const LINALG::Matrix<slavenumnode,slavedim>& lmderiv,
-        double dxdsxi,
-        double wgt,
-        const GEN::pairedvector<int,double>& dmxigp,
-        const GEN::pairedvector<int,double>&derivjac,
-        const std::vector<GEN::pairedvector<int,double> >& dnmap_unit) const;
-
-    /*! \brief evaluate linearization of the variation of the weighted gap (3-D)
-     *
-     * ---> SLAVE and MASTER side */
-    void GP_3D_VarWGap_Lin(
-        unsigned iter,
-        MORTAR::MortarElement& sele,
-        MORTAR::MortarElement& mele,
-        const LINALG::Matrix<slavenumnode,1>& sval,
-        const LINALG::Matrix<masternumnode,1>& mval,
-        const LINALG::Matrix<slavenumnode,1>& lmval,
-        const double* gpn,
-        const LINALG::Matrix<slavenumnode,slavedim>& sderiv,
-        const LINALG::Matrix<masternumnode,masterdim>& mderiv,
-        const LINALG::Matrix<slavenumnode,slavedim>& lmderiv,
-        double wgt,
-        double jac,
-        const std::vector<GEN::pairedvector<int,double> >& dsxigp,
-        const std::vector<GEN::pairedvector<int,double> >& dmxigp,
-        const GEN::pairedvector<int,double>& jacintcellmap,
-        const std::vector<GEN::pairedvector<int,double> >& dnmap_unit) const;
-    //@}
-
-
-  protected:
-    // don't want = operator and cctor
-    Integrator operator = (const Integrator& old);
-    Integrator(const Integrator& old);
+        const LINALG::Matrix<my::SLAVENUMNODE,1>& lmval,
+        const double gapn_sl,
+        const double gapn_ma,
+        const double wg,
+        const double jac ) const;
 
   private:
     // vectors for shape fct. evaluation
-    static LINALG::Matrix<slavenumnode,1> sval_;
-    static LINALG::Matrix<slavenumnode,slavedim> sderiv_;
-    static LINALG::Matrix<masternumnode,1> mval_;
-    static LINALG::Matrix<masternumnode,masterdim> mderiv_;
-    static LINALG::Matrix<slavenumnode,1> lmval_;
-    static LINALG::Matrix<slavenumnode,slavedim> lmderiv_;
+    LINALG::Matrix<my::SLAVENUMNODE,1> sval_;
+    LINALG::Matrix<my::SLAVEDIM,my::SLAVENUMNODE> sderiv_;
+    LINALG::Matrix<my::MASTERNUMNODE,1> mval_;
+    LINALG::Matrix<my::MASTERDIM,my::MASTERNUMNODE> mderiv_;
+    LINALG::Matrix<3,my::MASTERNUMNODE> mderiv2nd_;
+    LINALG::Matrix<my::SLAVENUMNODE,1> lmval_;
+    LINALG::Matrix<my::SLAVENUMNODE,my::SLAVEDIM> lmderiv_;
 
     // create empty vectors for shape fct. evaluation
-    static LINALG::Matrix<slavenumnode,3> ssecderiv_;
+    LINALG::Matrix<my::SLAVENUMNODE,3> ssecderiv_;
 
     // slave and master nodal coords for Jacobian / GP evaluation
-    static LINALG::Matrix<3,slavenumnode> scoord_;
-    static LINALG::Matrix<3,masternumnode> mcoord_;
+    LINALG::Matrix<3,my::SLAVENUMNODE> scoord_;
+    LINALG::Matrix<3,my::MASTERNUMNODE> mcoord_;
 
     // directional derivatives of sxia, sxib, mxia, mxib
-    static std::vector<GEN::pairedvector<int,double> > ximaps_;
+    Deriv1stVecMap ximaps_;
 
-    // deriv of x and y comp. of gpn [a.k.a. GaussPoint normal] (unit)
-    static std::vector<GEN::pairedvector<int,double> > dnmap_unit_;
+    // smooth gauss point normal
+    double gpn_[3];
+
+    // 1-st order derivative of the smooth unit gauss point normal
+    Deriv1stVecMap dn_unit_;
+
+    // 2-nd order derivative of the smooth unit gauss point normal
+    Deriv2ndVecMap ddn_unit_;
+
+    // 1-st order derivative of the smooth non-unit gauss point normal
+    Deriv1stVecMap dn_non_unit_;
+
+    // 2-nd order derivative of the smooth non-unit gauss point normal
+    Deriv2ndVecMap ddn_non_unit_;
 
     // GP slave coordinate derivatives
-    static std::vector<GEN::pairedvector<int,double> > dsxigp_;
+    Deriv1stVecMap dsxigp_;
 
-    // GP master coordinate derivatives
-    static std::vector<GEN::pairedvector<int,double> > dmxigp_;
+    // GP master coordinate derivatives (1-st order)
+    Deriv1stVecMap dmxigp_;
 
-    // Jacobian derivative
-    static GEN::pairedvector<int,double> derivjac_;
+    // GP auxiliary distance derivatives (1-st order)
+    Deriv1stMap dalpha_;
 
-    static GEN::pairedvector<int,LINALG::Matrix<3,1> > lingp_;
+    // GP master coordinate derivatives (2-nd order)
+    Deriv2ndVecMap ddmxigp_;
+
+    // Jacobian derivative (1-st order)
+    Deriv1stMap derivjac_;
+
+    GEN_DATA::pairedvector<int,LINALG::Matrix<3,1> > lingp_;
 
     // directional derivative of slave GP normal (non-unit)
-    static GEN::pairedvector<int,double> dmap_nxsl_gp_;
-    static GEN::pairedvector<int,double> dmap_nysl_gp_;
-    static GEN::pairedvector<int,double> dmap_nzsl_gp_;
+    Deriv1stMap dmap_nxsl_gp_;
+    Deriv1stMap dmap_nysl_gp_;
+    Deriv1stMap dmap_nzsl_gp_;
 
+    // 2-nd order derivative of the jacobian matrix
+    Deriv2ndMap deriv2ndjac_;
+
+    Deriv1stMap deriv_gapn_sl_;
+    Deriv1stMap deriv_gapn_ma_;
+
+    Teuchos::RCP<Evaluator> evaluator_ = Teuchos::null;
   }; // class AugmentedIntegrator
 
+  /*--------------------------------------------------------------------------*/
+  template < unsigned probdim,
+             DRT::Element::DiscretizationType slavetype,
+             DRT::Element::DiscretizationType mastertype,
+             class IntPolicy>
+  class Integrator<probdim,slavetype,mastertype,IntPolicy>::Evaluator
+  {
+  protected:
+    typedef Integrator<probdim,slavetype,mastertype,IntPolicy> parent_type;
+    typedef parent_type::my my;
+  private:
+    typedef parent_type::Evaluator class_type;
+
+  public:
+    enum class Type {
+      deriv1st_only,
+      full
+    };
+
+    Evaluator( parent_type& parent )
+        : parent_(parent)
+    {};
+
+    Evaluator( const class_type& source ) = delete;
+
+    virtual ~Evaluator() {};
+
+    virtual Type GetType() const = 0;
+
+    virtual void Deriv_Jacobian(
+        MORTAR::MortarElement& ele,
+        const double* xi,
+        const LINALG::Matrix<my::SLAVEDIM,my::SLAVENUMNODE>& sderiv,
+        const LINALG::Matrix<3,2>& stau ) = 0;
+
+    virtual void Deriv_MXiGP(
+        MORTAR::MortarElement& sele,
+        MORTAR::MortarElement& mele,
+        const double* sxi,
+        const double* mxi,
+        const double  alpha,
+        const LINALG::Matrix<my::SLAVENUMNODE,1>& sval,
+        const LINALG::Matrix<my::MASTERNUMNODE,1>& mval,
+        const LINALG::Matrix<my::MASTERDIM,my::MASTERNUMNODE>& mderiv,
+        const LINALG::Matrix<3,2>& mtau ) = 0;
+
+    virtual void Get_Deriv2nd_AugA(
+        MORTAR::MortarElement& sele,
+        const LINALG::Matrix<my::SLAVENUMNODE,1>& lmval,
+        const double wgt,
+        const Deriv2ndMap& dd_jac ) const = 0;
+
+  protected:
+    parent_type& parent_;
+  };
+
+  /*--------------------------------------------------------------------------*/
+  template < unsigned probdim,
+             DRT::Element::DiscretizationType slavetype,
+             DRT::Element::DiscretizationType mastertype,
+             class IntPolicy>
+  class Integrator<probdim,slavetype,mastertype,IntPolicy>::EvaluatorDeriv1stOnly
+      : public Integrator<probdim,slavetype,mastertype,IntPolicy>::Evaluator
+  {
+  protected:
+    typedef Integrator<probdim,slavetype,mastertype,IntPolicy>::Evaluator base_type;
+    typedef typename base_type::parent_type parent_type;
+    typedef typename base_type::my my;
+  private:
+    typedef typename parent_type::EvaluatorDeriv1stOnly class_type;
+  public:
+    EvaluatorDeriv1stOnly( parent_type& parent ) : base_type( parent ) {};
+
+    EvaluatorDeriv1stOnly( const class_type& source ) = delete;
+
+    virtual ~EvaluatorDeriv1stOnly() {};
+
+  protected:
+    virtual typename base_type::Type GetType() const { return base_type::Type::deriv1st_only; };
+
+    virtual void Deriv_Jacobian(
+            MORTAR::MortarElement& ele,
+            const double* xi,
+            const LINALG::Matrix<my::SLAVEDIM,my::SLAVENUMNODE>& sderiv,
+            const LINALG::Matrix<3,2>& stau );
+
+    void Deriv1st_Jacobian(
+        MORTAR::MortarElement& ele,
+        const double* xi,
+        const LINALG::Matrix<my::SLAVEDIM,my::SLAVENUMNODE>& sderiv,
+        const LINALG::Matrix<3,2>& stau,
+        LINALG::TMatrix<int,probdim,my::SLAVENUMNODE>& nodal_dofs,
+        LINALG::Matrix<probdim,1>& unit_normal,
+        double& length_n_inv,
+        Deriv1stVecMap& d_non_unit_normal );
+
+    virtual void Deriv_MXiGP(
+        MORTAR::MortarElement& sele,
+        MORTAR::MortarElement& mele,
+        const double* sxi,
+        const double* mxi,
+        const double  alpha,
+        const LINALG::Matrix<my::SLAVENUMNODE,1>& sval,
+        const LINALG::Matrix<my::MASTERNUMNODE,1>& mval,
+        const LINALG::Matrix<my::MASTERDIM,my::MASTERNUMNODE>& mderiv,
+        const LINALG::Matrix<3,2>& mtau );
+
+    void Deriv1st_MXiGP(
+        MORTAR::MortarElement& sele,
+        MORTAR::MortarElement& mele,
+        const double* sxi,
+        const double* mxi,
+        const double  alpha,
+        const LINALG::Matrix<my::SLAVENUMNODE,1>& sval,
+        const LINALG::Matrix<my::MASTERNUMNODE,1>& mval,
+        const LINALG::Matrix<my::MASTERDIM,my::MASTERNUMNODE>& mderiv,
+        const LINALG::Matrix<3,2>& mtau,
+        LINALG::Matrix<probdim,probdim>& lmat_inv );
+
+    virtual void Get_Deriv2nd_AugA(
+        MORTAR::MortarElement& sele,
+        const LINALG::Matrix<my::SLAVENUMNODE,1>& lmval,
+        const double wgt,
+        const Deriv2ndMap& dd_jac ) const
+    { /* do nothing */ };
+  };
+
+  /*--------------------------------------------------------------------------*/
+  template < unsigned probdim,
+             DRT::Element::DiscretizationType slavetype,
+             DRT::Element::DiscretizationType mastertype,
+             class IntPolicy>
+  class Integrator<probdim,slavetype,mastertype,IntPolicy>::EvaluatorFull
+      : public Integrator<probdim,slavetype,mastertype,IntPolicy>::EvaluatorDeriv1stOnly
+  {
+  private:
+    typedef Integrator<probdim,slavetype,mastertype,IntPolicy>::EvaluatorDeriv1stOnly base_type;
+    typedef typename base_type::parent_type parent_type;
+    typedef typename base_type::my my;
+  private:
+    typedef typename parent_type::EvaluatorFull class_type;
+  public:
+    EvaluatorFull( parent_type& parent ) : base_type( parent ) {};
+
+    EvaluatorFull( const class_type& source ) = delete;
+
+    virtual ~EvaluatorFull() {};
+
+  private:
+    virtual typename base_type::Type GetType() const { return base_type::Type::full; };
+
+    virtual void Deriv_Jacobian(
+        MORTAR::MortarElement& ele,
+        const double* xi,
+        const LINALG::Matrix<my::SLAVEDIM,my::SLAVENUMNODE>& sderiv,
+        const LINALG::Matrix<3,2>& stau );
+
+    virtual void Deriv_MXiGP(
+        MORTAR::MortarElement& sele,
+        MORTAR::MortarElement& mele,
+        const double* sxi,
+        const double* mxi,
+        const double  alpha,
+        const LINALG::Matrix<my::SLAVENUMNODE,1>& sval,
+        const LINALG::Matrix<my::MASTERNUMNODE,1>& mval,
+        const LINALG::Matrix<my::MASTERDIM,my::MASTERNUMNODE>& mderiv,
+        const LINALG::Matrix<3,2>& mtau );
+
+    virtual void Get_Deriv2nd_AugA(
+        MORTAR::MortarElement& sele,
+        const LINALG::Matrix<my::SLAVENUMNODE,1>& lmval,
+        const double wgt,
+        const Deriv2ndMap& dd_jac ) const;
+  };
 } // namespace AUG
 } // namespace CONTACT
-
-/*----------------------------------------------------------------------------*/
-// static members in CONTACT::AUG::Integrator
-template < unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype,
-    unsigned slavedim, unsigned slavenumnode,
-    unsigned masterdim, unsigned masternumnode > LINALG::Matrix<slavenumnode,1>
-CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode,
-    masterdim,masternumnode>::sval_;
-
-template < unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype,
-    unsigned slavedim, unsigned slavenumnode,
-    unsigned masterdim, unsigned masternumnode > LINALG::Matrix<slavenumnode,slavedim>
-CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode,
-    masterdim,masternumnode>::sderiv_;
-
-template < unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype,
-    unsigned slavedim, unsigned slavenumnode,
-    unsigned masterdim, unsigned masternumnode > LINALG::Matrix<masternumnode,1>
-CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode,
-    masterdim,masternumnode>::mval_;
-
-template < unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype,
-    unsigned slavedim, unsigned slavenumnode,
-    unsigned masterdim, unsigned masternumnode > LINALG::Matrix<masternumnode,masterdim>
-CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode,
-    masterdim,masternumnode>::mderiv_;
-
-template < unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype,
-    unsigned slavedim, unsigned slavenumnode,
-    unsigned masterdim, unsigned masternumnode > LINALG::Matrix<slavenumnode,1>
-CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode,
-    masterdim,masternumnode>::lmval_;
-
-template < unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype,
-    unsigned slavedim, unsigned slavenumnode,
-    unsigned masterdim, unsigned masternumnode > LINALG::Matrix<slavenumnode,slavedim>
-CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode,
-    masterdim,masternumnode>::lmderiv_;
-
-template < unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype,
-    unsigned slavedim, unsigned slavenumnode,
-    unsigned masterdim, unsigned masternumnode > LINALG::Matrix<slavenumnode,3>
-CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode,
-    masterdim,masternumnode>::ssecderiv_;
-
-template < unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype,
-    unsigned slavedim, unsigned slavenumnode,
-    unsigned masterdim, unsigned masternumnode > LINALG::Matrix<3,slavenumnode>
-CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode,
-    masterdim,masternumnode>::scoord_;
-
-template < unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype,
-    unsigned slavedim, unsigned slavenumnode,
-    unsigned masterdim, unsigned masternumnode > LINALG::Matrix<3,masternumnode>
-CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode,
-    masterdim,masternumnode>::mcoord_;
-
-template < unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype,
-    unsigned slavedim, unsigned slavenumnode,
-    unsigned masterdim, unsigned masternumnode > std::vector<GEN::pairedvector<int,double> >
-CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode,
-    masterdim,masternumnode>::ximaps_( 0, GEN::pairedvector<int,double>(0) );
-
-template < unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype,
-    unsigned slavedim, unsigned slavenumnode,
-    unsigned masterdim, unsigned masternumnode > std::vector<GEN::pairedvector<int,double> >
-CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode,
-    masterdim,masternumnode>::dnmap_unit_( 0, GEN::pairedvector<int,double>(0) );
-
-template < unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype,
-    unsigned slavedim, unsigned slavenumnode,
-    unsigned masterdim, unsigned masternumnode > std::vector<GEN::pairedvector<int,double> >
-CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode,
-    masterdim,masternumnode>::dsxigp_( 0, GEN::pairedvector<int,double>(0) );
-
-template < unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype,
-    unsigned slavedim, unsigned slavenumnode,
-    unsigned masterdim, unsigned masternumnode > std::vector<GEN::pairedvector<int,double> >
-CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode,
-    masterdim,masternumnode>::dmxigp_( 0, GEN::pairedvector<int,double>(0) );
-
-template < unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype,
-    unsigned slavedim, unsigned slavenumnode,
-    unsigned masterdim, unsigned masternumnode > GEN::pairedvector<int,double>
-CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode,
-    masterdim,masternumnode>::derivjac_( 0 );
-
-template < unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype,
-    unsigned slavedim, unsigned slavenumnode,
-    unsigned masterdim, unsigned masternumnode > GEN::pairedvector<int,LINALG::Matrix<3,1> >
-CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode,
-    masterdim,masternumnode>::lingp_( 0 );
-
-template < unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype,
-    unsigned slavedim, unsigned slavenumnode,
-    unsigned masterdim, unsigned masternumnode > GEN::pairedvector<int,double>
-CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode,
-    masterdim,masternumnode>::dmap_nxsl_gp_( 0 );
-
-template < unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype,
-    unsigned slavedim, unsigned slavenumnode,
-    unsigned masterdim, unsigned masternumnode > GEN::pairedvector<int,double>
-CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode,
-    masterdim,masternumnode>::dmap_nysl_gp_( 0 );
-
-template < unsigned probdim, DRT::Element::DiscretizationType slavetype,
-    DRT::Element::DiscretizationType mastertype,
-    unsigned slavedim, unsigned slavenumnode,
-    unsigned masterdim, unsigned masternumnode > GEN::pairedvector<int,double>
-CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode,
-    masterdim,masternumnode>::dmap_nzsl_gp_( 0 );
 
 
 #endif /* CONTACT_AUGMENTED_INTEGRATOR_H_ */

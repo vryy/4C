@@ -90,7 +90,7 @@ namespace MODELEVALUATOR{
     { return; };
 
     //! derived
-    virtual void RecoverState(
+    virtual void RunPostComputeX(
         const Epetra_Vector& xold,
         const Epetra_Vector& dir,
         const Epetra_Vector& xnew);

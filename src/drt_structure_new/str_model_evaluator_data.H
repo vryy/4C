@@ -25,6 +25,8 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_inpar/inpar_browniandyn.H"         // enums
 
+#include "../headers/pairedvector.H"
+
 
 // forward declaration ...
 class Epetra_Comm;
@@ -59,6 +61,9 @@ namespace MODELEVALUATOR {
    *  \author hiermeier */
   class Data : public STR::ELEMENTS::ParamsInterface
   {
+    typedef std::map<enum NOX::NLN::StatusTest::QuantityType,
+        enum NOX::Abstract::Vector::NormType> quantity_norm_type_map;
+
   public:
     //! constructor
     Data();
@@ -241,9 +246,9 @@ namespace MODELEVALUATOR {
       CheckInitSetup();
       std::map<enum NOX::NLN::StatusTest::QuantityType,double>::const_iterator c_it;
       c_it = my_update_norm_.find(qtype);
+      // not on this proc
       if (c_it == my_update_norm_.end())
-        dserror("The corresponding partial update norm could not be found! (quantity: %s)",
-            NOX::NLN::StatusTest::QuantityType2String(qtype).c_str());
+        return 0.0;
       return c_it->second;
     }
 
@@ -254,9 +259,9 @@ namespace MODELEVALUATOR {
       CheckInitSetup();
       std::map<enum NOX::NLN::StatusTest::QuantityType,double>::const_iterator c_it;
       c_it = my_rms_norm_.find(qtype);
+      // not on this proc
       if (c_it == my_rms_norm_.end())
-        dserror("The corresponding partial rms norm could not be found! (quantity: %s)",
-            NOX::NLN::StatusTest::QuantityType2String(qtype).c_str());
+        return 0.0;
       return c_it->second;
     }
 
@@ -267,9 +272,9 @@ namespace MODELEVALUATOR {
       CheckInitSetup();
       std::map<enum NOX::NLN::StatusTest::QuantityType,double>::const_iterator c_it;
       c_it = my_prev_sol_norm_.find(qtype);
+      // not on this proc
       if (c_it == my_prev_sol_norm_.end())
-        dserror("The corresponding partial solution norm could not be found! (quantity: %s)",
-            NOX::NLN::StatusTest::QuantityType2String(qtype).c_str());
+        return 0.0;
       return c_it->second;
     }
 
@@ -278,6 +283,14 @@ namespace MODELEVALUATOR {
         const enum NOX::NLN::StatusTest::QuantityType& qtype) const
     {
       CheckInitSetup();
+      // collect the norm types only once
+      static bool iscollected = false;
+      if ( not iscollected )
+      {
+        CollectNormTypesOverAllProcs( normtype_update_ );
+        iscollected = true;
+      }
+
       std::map<enum NOX::NLN::StatusTest::QuantityType,
           enum NOX::Abstract::Vector::NormType>::const_iterator c_it;
       c_it = normtype_update_.find(qtype);
@@ -294,9 +307,9 @@ namespace MODELEVALUATOR {
       CheckInitSetup();
       std::map<enum NOX::NLN::StatusTest::QuantityType,std::size_t>::const_iterator c_it;
       c_it = my_dof_number_.find(qtype);
+      // not on this proc
       if (c_it == my_dof_number_.end())
-        dserror("The corresponding dof number could not be found! (quantity: %s)",
-            NOX::NLN::StatusTest::QuantityType2String(qtype).c_str());
+        return 0;
       return static_cast<int>(c_it->second);
     }
 
@@ -493,7 +506,11 @@ namespace MODELEVALUATOR {
     int GetStepNp() const;
 
     //! get the predictor indicator
-    const bool& IsPredictor() const;
+    bool IsPredictor() const;
+
+    /*! Get the step number from which the current simulation has been
+     *  restarted. Equal to 0 if no restart has been performed. */
+    int GetRestartStep() const;
 
     //! @}
 
@@ -561,6 +578,9 @@ namespace MODELEVALUATOR {
         const double* my_new_sol_values,
         double& my_rms) const;
 
+    void CollectNormTypesOverAllProcs(
+        const quantity_norm_type_map& normtypes ) const;
+
   private:
     //! indicator if the Init() routine has been called, yet.
     bool isinit_;
@@ -568,6 +588,8 @@ namespace MODELEVALUATOR {
     //! indicator if the Setup() routine has been called, yet.
     bool issetup_;
 
+    /*! indicator for the norm type maps. If true the norm type maps have
+     *  already been initialized successfully. */
     bool isntmaps_filled_;
 
     //! @name General element control parameters
@@ -631,12 +653,10 @@ namespace MODELEVALUATOR {
     //! @}
 
     //! map holding the force/rhs norm type of the active quantities
-    std::map<enum NOX::NLN::StatusTest::QuantityType,
-    enum NOX::Abstract::Vector::NormType> normtype_force_;
+    quantity_norm_type_map normtype_force_;
 
     //! map holding the update norm type of the active quantities
-    std::map<enum NOX::NLN::StatusTest::QuantityType,
-    enum NOX::Abstract::Vector::NormType> normtype_update_;
+    quantity_norm_type_map normtype_update_;
 
     //! map holding the dof number of the the active quantities on the current processor
     std::map<enum NOX::NLN::StatusTest::QuantityType,std::size_t> my_dof_number_;
@@ -827,24 +847,33 @@ namespace MODELEVALUATOR {
     };
 
     //! get the nonlinear iteration number
-    int GetNlnIter() const
+    virtual int GetNlnIter() const
     {
       CheckInit();
       return str_data_ptr_->GetNlnIter();
     };
 
     //! get the current step counter \f$(n+1)\f$
-    int GetStepNp() const
+    virtual int GetStepNp() const
     {
       CheckInit();
       return str_data_ptr_->GetStepNp();
     };
 
-    const bool& IsPredictor() const
+    virtual bool IsPredictor() const
     {
       CheckInit();
       return str_data_ptr_->IsPredictor();
     };
+
+    /// \brief get the current active predictor type
+    /** If no predictor is active pred_vague will be returned.
+     *  \author hiermeier \date 02/18 */
+    virtual enum INPAR::STR::PredEnum GetPredictorType() const
+    {
+      CheckInit();
+      return str_data_ptr_->GetPredictorType();
+    }
 
     //! get the current step length [derived]
     virtual inline double GetStepLength() const
@@ -872,6 +901,31 @@ namespace MODELEVALUATOR {
     {
       CheckInit();
       return str_data_ptr_->GetModelEvaluator();
+    }
+
+    //! get output file name
+    virtual std::string GetOutputFilePath() const;
+
+    //! get variational approach enumerator
+    virtual enum INPAR::CONTACT::VariationalApproach
+    GetVariationalApproachType() const
+    {
+      return var_type_;
+    }
+
+    //! set variational approach enumerator
+    virtual void SetVariationalApproachType(
+        const enum INPAR::CONTACT::VariationalApproach var_type )
+    {
+      var_type_ = var_type;
+    }
+
+    /*! Get the step number from which the current simulation has been
+     *  restarted. Equal to 0 if no restart has been performed. */
+    virtual int GetRestartStep() const
+    {
+      CheckInit();
+      return str_data_ptr_->GetRestartStep();
     }
 
     /*! @name set routines which are used to set the parameters of the data container
@@ -944,6 +998,8 @@ namespace MODELEVALUATOR {
     bool issetup_;
 
     enum MORTAR::ActionType mortar_action_;
+
+    enum INPAR::CONTACT::VariationalApproach var_type_;
 
     Teuchos::RCP<const STR::MODELEVALUATOR::Data> str_data_ptr_;
 

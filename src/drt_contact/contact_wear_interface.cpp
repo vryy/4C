@@ -975,7 +975,7 @@ void WEAR::WearInterface::EvaluateNodalNormals() const
 /*----------------------------------------------------------------------*
  |  export nodal normals (public)                            farah 11/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::ExportNodalNormals()
+void WEAR::WearInterface::ExportNodalNormals() const
 {
   // call contact function
   CONTACT::CoInterface::ExportNodalNormals();

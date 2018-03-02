@@ -100,7 +100,7 @@ namespace MODELEVALUATOR{
     { return; };
 
     //! derived
-    virtual void RecoverState(
+    virtual void RunPostComputeX(
             const Epetra_Vector& xold,
             const Epetra_Vector& dir,
             const Epetra_Vector& xnew);
@@ -150,6 +150,13 @@ namespace MODELEVALUATOR{
     //! [derived]
     virtual void AssembleJacobianContributionsFromElementLevelForPTC(Teuchos::RCP<LINALG::SparseMatrix>& modjac,const double& timefac_n );
 
+    //! [derived]
+    virtual void CreateBackupState(
+        const Epetra_Vector& dir);
+
+    //! [derived]
+    virtual void RecoverFromBackupState();
+
     //! @}
 
   protected:
@@ -169,6 +176,18 @@ namespace MODELEVALUATOR{
 
     //! apply the external force contributions and evaluate possible linearization contributions
     bool ApplyForceStiffExternal();
+
+    /** \brief Run before ApplyForceStiffExternal is executed
+     *
+     *  \param(in) fextnp: external force vector
+     *  \param(in) stiff : structural tangential stiffness block
+     *
+     *  \return TRUE, if the execution of ApplyForceStiffExternal shall be
+     *  skipped. Otherwise FALSE will be returned.
+     *
+     *  \author hiermeier \date 02/18 */
+    bool PreApplyForceStiffExternal( Epetra_Vector& fextnp,
+        LINALG::SparseMatrix& stiff ) const;
 
     //! Set the ParamsInterface in the parameter list and call the other EvaluateNeumann routine
     void EvaluateNeumann(

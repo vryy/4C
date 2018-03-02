@@ -82,7 +82,8 @@ public:
      const enum DRT::UTILS::VecBlockType& bt) const;
 
   virtual Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
-      const enum DRT::UTILS::MatBlockType& bt) const ;
+      const enum DRT::UTILS::MatBlockType& bt,
+      const CONTACT::ParamsInterface* cparams=NULL) const ;
 
   /*! \brief Setup this strategy object (maps, vectors, etc.)
 

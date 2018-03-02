@@ -220,6 +220,85 @@ Teuchos::RCP<LINALG::SparseMatrix> MORTAR::MatrixColTransformGIDs(Teuchos::RCP<c
 }
 
 /*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MORTAR::CreateNewColMap(
+    const LINALG::SparseMatrix&     mat,
+    const Epetra_Map&         newdomainmap,
+    Teuchos::RCP<Epetra_Map>& newcolmap )
+{
+  if ( not mat.Filled() )
+    dserror( "Matrix must be filled!" );
+
+  if ( not newcolmap.is_null() and
+       mat.ColMap().SameAs( *newcolmap ) )
+    return;
+
+  // reset old no longer correct column map
+  newcolmap = Teuchos::null;
+
+  // mapping of column gids
+  std::map<int,int> gidmap;
+  DRT::Exporter exDomain2Col( mat.DomainMap(), mat.ColMap(), mat.Comm() );
+
+  const int nummyelements = mat.DomainMap().NumMyElements();
+  if ( nummyelements != newdomainmap.NumMyElements() )
+    dserror( "NumMyElements must be the same on each proc!" );
+
+  const int* old_gids = mat.DomainMap().MyGlobalElements();
+  const int* new_gids = newdomainmap.MyGlobalElements();
+
+  for ( int i=0; i<nummyelements; ++i )
+    gidmap[ old_gids[i] ] = new_gids[i];
+
+  exDomain2Col.Export( gidmap );
+
+  std::vector<int> my_col_gids( gidmap.size(), -1 );
+  for ( std::map<int,int>::const_iterator cit = gidmap.begin();
+        cit != gidmap.end(); ++cit )
+  {
+    const int lid = mat.ColMap().LID( cit->first );
+    if ( lid == -1 )
+      dserror("Couldn't find the GID %d in the old column map on proc %d.",
+          cit->first, mat.Comm().MyPID() );
+
+    my_col_gids[ lid ] = cit->second;
+  }
+
+  newcolmap = Teuchos::rcp( new Epetra_Map( mat.ColMap().NumGlobalElements(),
+      static_cast<int>( my_col_gids.size() ), &my_col_gids[0], 0, mat.Comm() ) );
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MORTAR::ReplaceColumnAndDomainMap(
+    LINALG::SparseMatrix&           mat,
+    const Epetra_Map&               newdomainmap,
+    Teuchos::RCP<Epetra_Map>* const newcolmap_ptr )
+{
+  if ( not mat.Filled() )
+    dserror( "Matrix must be filled!" );
+
+  Teuchos::RCP<Epetra_Map> newcolmap = Teuchos::null;
+  if ( newcolmap_ptr )
+  {
+    CreateNewColMap( mat, newdomainmap, *newcolmap_ptr );
+    newcolmap = *newcolmap_ptr;
+  }
+  else
+    CreateNewColMap( mat, newdomainmap, newcolmap );
+
+  int err = mat.EpetraMatrix()->ReplaceColMap( *newcolmap );
+  if ( err )
+    dserror( "ReplaceColMap failed! ( err = %d )", err );
+
+  Epetra_Import importer( *newcolmap, newdomainmap );
+
+  err = mat.EpetraMatrix()->ReplaceDomainMapAndImporter( newdomainmap, &importer );
+  if ( err )
+    dserror( "ReplaceDomainMapAndImporter failed! ( err = %d )", err );
+}
+
+/*----------------------------------------------------------------------*
  | transform the row and column maps of a matrix (GIDs)       popp 08/10|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix> MORTAR::MatrixRowColTransformGIDs(Teuchos::RCP<const LINALG::SparseMatrix> inmat,

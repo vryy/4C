@@ -37,8 +37,10 @@
 #include "../drt_lib/drt_utils_parmetis.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_parallel.H"
 
 #include <Teuchos_Time.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_Time.h>
 #include <Epetra_SerialComm.h>
 
@@ -299,7 +301,7 @@ bool MORTAR::MortarInterface::Filled() const
 /*----------------------------------------------------------------------*
  |  print parallel distribution (public)                      popp 06/10|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::PrintParallelDistribution(int index)
+void MORTAR::MortarInterface::PrintParallelDistribution(int index) const
 {
   // how many processors
   const int numproc = Discret().Comm().NumProc();
@@ -1280,18 +1282,7 @@ void MORTAR::MortarInterface::Redistribute()
   Teuchos::RCP<Epetra_Map> mrownodes = Teuchos::null;
   Teuchos::RCP<Epetra_Map> mcolnodes = Teuchos::null;
 
-  // build redundant vector of all master node ids on all procs
-  // (do not include crosspoints / boundary nodes if there are any)
-  std::vector<int> mnids;
-  std::vector<int> mnidslocal(MasterRowNodesNoBound()->NumMyElements());
-  for (int i = 0; i < MasterRowNodesNoBound()->NumMyElements(); ++i)
-    mnidslocal[i] = MasterRowNodesNoBound()->GID(i);
-  LINALG::Gather<int>(mnidslocal, mnids, numproc, &allproc[0], Comm());
-
-  //**********************************************************************
-  // call ZOLTAN for parallel redistribution
-  DRT::UTILS::PartUsingParMetis(idiscret_, mroweles, mrownodes, mcolnodes, comm,false,mproc);
-  //**********************************************************************
+  RedistributeMasterSide( mrownodes, mcolnodes, mroweles, comm, mproc );
 
   //**********************************************************************
   // (4) Merge global interface node row and column map
@@ -1320,6 +1311,30 @@ void MORTAR::MortarInterface::Redistribute()
   Discret().ExportColumnElements(*coleles);
 
   return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void MORTAR::MortarInterface::RedistributeMasterSide(
+    Teuchos::RCP<Epetra_Map>& mrownodes,
+    Teuchos::RCP<Epetra_Map>& mcolnodes,
+    const Teuchos::RCP<Epetra_Map>& mroweles,
+    const Teuchos::RCP<Epetra_Comm>& comm,
+    int parts ) const
+{
+  if ( not HasMaSharingRefInterface() )
+    // call ZOLTAN for parallel redistribution
+    DRT::UTILS::PartUsingParMetis(idiscret_, mroweles, mrownodes, mcolnodes, comm,false,parts);
+  else
+  {
+    DRT::UTILS::RedistributeInAccordanceWithReference(
+        *GetMaSharingRefInterfacePtr()->MasterRowNodes(),
+        *MasterRowNodes(), mrownodes );
+
+    DRT::UTILS::RedistributeInAccordanceWithReference(
+        *GetMaSharingRefInterfacePtr()->MasterColNodes(),
+        *MasterColNodes(), mcolnodes );
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -1717,6 +1732,10 @@ void MORTAR::MortarInterface::UpdateMasterSlaveSets()
         new Epetra_Map(-1, (int) mrb.size(), &mrb[0], 0, Comm()));
     mnodecolmapnobound_ = Teuchos::rcp<Epetra_Map>(
         new Epetra_Map(-1, (int) mcb.size(), &mcb[0], 0, Comm()));
+
+    // build exporter
+    idata_.SlExporterPtr() = Teuchos::rcp( new DRT::Exporter(
+        *snoderowmapbound_, *snodecolmapbound_, Comm() ) );
   }
 
   //********************************************************************
@@ -2349,6 +2368,8 @@ void MORTAR::MortarInterface::Evaluate(
     const int& iter,
     Teuchos::RCP<MORTAR::ParamsInterface> mparams_ptr)
 {
+  TEUCHOS_FUNC_TIME_MONITOR( "MORTAR::MortarInterface::Evaluate" );
+
   // interface needs to be complete
   if (!Filled() && Comm().MyPID() == 0)
     dserror("ERROR: FillComplete() not called on interface %", id_);
@@ -2368,7 +2389,7 @@ void MORTAR::MortarInterface::Evaluate(
   PreEvaluate(step,iter);
 
   // evaluation routine for coupling
-  EvaluateCoupling(mparams_ptr);
+  EvaluateCoupling(*selecolmap_,snoderowmap_.get(),mparams_ptr);
 
   // do some post operations. nothing happens for standard cases...
   PostEvaluate(step,iter);
@@ -2391,6 +2412,8 @@ void MORTAR::MortarInterface::Evaluate(
  |  protected evaluate routine                               farah 02/16|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::EvaluateCoupling(
+    const Epetra_Map& selecolmap,
+    const Epetra_Map* snoderowmap,
     const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   // decide which type of coupling should be evaluated
@@ -2413,7 +2436,7 @@ void MORTAR::MortarInterface::EvaluateCoupling(
     // 3) compute directional derivative of M and g and store into nodes
     //    (only for contact setting)
     //********************************************************************
-    MORTAR::MortarInterface::EvaluateSTS(mparams_ptr);
+    MORTAR::MortarInterface::EvaluateSTS(selecolmap, mparams_ptr);
     break;
   }
   //*********************************
@@ -2498,12 +2521,15 @@ void MORTAR::MortarInterface::EvaluateCoupling(
  |  evaluate coupling type segment-to-segment coupl          farah 02/16|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::EvaluateSTS(
+    const Epetra_Map& selecolmap,
     const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
+  TEUCHOS_FUNC_TIME_MONITOR( "MORTAR::MortarInterface::EvaluateSTS" );
+
   // loop over all slave col elements
-  for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
+  for (int i = 0; i < selecolmap.NumMyElements(); ++i)
   {
-    const int gid1 = selecolmap_->GID(i);
+    const int gid1 = selecolmap.GID(i);
     DRT::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1)
       dserror("ERROR: Cannot find slave element with gid %d", gid1);
@@ -2854,7 +2880,7 @@ void MORTAR::MortarInterface::EvaluateNodalNormals(
 /*----------------------------------------------------------------------*
  |  export nodal normals (public)                             popp 11/10|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::ExportNodalNormals()
+void MORTAR::MortarInterface::ExportNodalNormals() const
 {
   // create empty data objects
   std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > triad;
@@ -2879,8 +2905,8 @@ void MORTAR::MortarInterface::ExportNodalNormals()
   }
 
   // communicate from slave node row to column map
-  DRT::Exporter ex(*snoderowmapbound_, *snodecolmapbound_, Comm());
-  ex.Export(triad);
+
+  idata_.Exporter().Export(triad);
 
   // extract info on column map
   for (int i = 0; i < snodecolmapbound_->NumMyElements(); ++i)
@@ -4591,3 +4617,53 @@ void MORTAR::MortarInterface::CreateVolumeGhosting()
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool MORTAR::MortarInterface::HasMaSharingRefInterface() const
+{
+  return ( idata_.GetMaSharingRefInterfacePtr() != NULL );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+const MORTAR::MortarInterface*
+MORTAR::MortarInterface::GetMaSharingRefInterfacePtr() const
+{
+  return idata_.GetMaSharingRefInterfacePtr();
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void MORTAR::MortarInterface::AddMaSharingRefInterface(
+    const MortarInterface* ref_interface )
+{
+  // avoid non-uniqueness and closed loops
+  if ( ref_interface->HasMaSharingRefInterface() )
+  {
+    if ( ref_interface->GetMaSharingRefInterfacePtr() == this )
+      return;
+  }
+
+  /* The following test is valid, since this interface must be a FULL subset of
+   * the reference interface, i.e. all master elements of this interface must
+   * be also contained in the reference master element map. Therefore, if a new
+   * reference interface candidate is supposed to replace the current one, it
+   * must have more global entries in its master element map. Otherwise, it is
+   * as well a sub-set of the current reference interface.
+   *
+   * Again: The last assumption holds only if no partial overlaps are allowed.
+   *                                                          hiermeier 01/18 */
+  if ( HasMaSharingRefInterface() )
+  {
+    const int size_curr_ref_interface =
+        GetMaSharingRefInterfacePtr()->MasterRowElements()->NumGlobalElements();
+    const int size_new_ref_interface =
+        ref_interface->MasterRowElements()->NumGlobalElements();
+
+    if ( size_curr_ref_interface >= size_new_ref_interface )
+      return;
+  }
+
+  idata_.SetMaSharingRefInterfacePtr( ref_interface );
+}

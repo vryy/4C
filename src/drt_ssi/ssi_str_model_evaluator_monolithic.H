@@ -89,7 +89,7 @@ namespace STR
         void ReadRestart(IO::DiscretizationReader& ioreader){return;};
 
         //! recover condensed solution variables
-        void RecoverState(const Epetra_Vector& xold,const Epetra_Vector& dir,const Epetra_Vector& xnew){return;};
+        void RunPostComputeX(const Epetra_Vector& xold,const Epetra_Vector& dir,const Epetra_Vector& xnew){return;};
 
         //! reset model-specific variables (without Jacobian)
         void Reset(const Epetra_Vector& x){return;};

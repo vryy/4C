@@ -276,7 +276,7 @@ void STR::MODELEVALUATOR::SpringDashpot::ReadRestart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::RecoverState(
+void STR::MODELEVALUATOR::SpringDashpot::RunPostComputeX(
     const Epetra_Vector& xold,
     const Epetra_Vector& dir,
     const Epetra_Vector& xnew)

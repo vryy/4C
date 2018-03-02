@@ -4,14 +4,14 @@
 // http://www.lnm.mw.tum.de
 //
 // 3-D augmented contact framework
-// segment based integration
+// - element based integration
+// - complete variational approach
 
 ==================================================================
 General Data File BACI
 ==================================================================
 -------------------------------------------------------------TITLE
-frictionless contact with segment based integration
-(two curved beams, test 3-D augmented framework)
+frictionless contact (two curved beams, test 3-D augmented framework)
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    350
 //NODES       885
@@ -34,6 +34,7 @@ FLUID_VIS               No
 FILESTEPS               100
 OUTPUT_EVERY_ITER       No
 OEI_FILE_COUNTER        0
+LIMIT_OUTP_TO_PROC      0
 ------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY            Standard
 DYNAMICTYP              Statics
@@ -54,24 +55,6 @@ NORMCOMBI_RESFDISP      And
 MAXITER                 50
 PREDICT                 TangDis
 LINEAR_SOLVER           1
----------------------------------------------------CONTACT DYNAMIC
-LINEAR_SOLVER                   2
-STRATEGY                        Augmented // SteepestAscent // Augmented
-SYSTEM                          SaddlePoint
-FRICTION                        None
-SEMI_SMOOTH_NEWTON              Yes
-SEMI_SMOOTH_CN                  1.0e2
-SEMI_SMOOTH_CT                  1.0e2
------------------------------------------CONTACT DYNAMIC/AUGMENTED
-PRINT_LINEAR_CONSERVATION       No// Yes
-PRINT_ANGULAR_CONSERVATION      No// Yes
----------------------------------------------------MORTAR COUPLING
-LM_SHAPEFCN             std
-SEARCH_ALGORITHM        BinaryTree
-SEARCH_PARAM            1.0
-INTTYPE                 Segments //elements
-//NUMGP_PER_DIM           3
-PARALLEL_REDIST         dynamic
 --------------------------------------------STRUCT NOX/Status Test
 XML File                        = contact_two_beams_horizontal_new_struc.xml
 ------------------------------------------------STRUCT NOX/Printing
@@ -85,6 +68,25 @@ Outer Iteration StatusTest      = yes
 Linear Solver Details           = No
 Test Details                    = No
 Debug                           = No
+---------------------------------------------------CONTACT DYNAMIC
+LINEAR_SOLVER                   2
+STRATEGY                        Augmented
+SYSTEM                          SaddlePoint
+FRICTION                        None
+SEMI_SMOOTH_NEWTON              Yes
+SEMI_SMOOTH_CN                  1.0e2
+SEMI_SMOOTH_CT                  1.0e2
+-----------------------------------------CONTACT DYNAMIC/AUGMENTED
+PRINT_LINEAR_CONSERVATION       Yes
+PRINT_ANGULAR_CONSERVATION      Yes
+VARIATIONAL_APPROACH            complete
+---------------------------------------------------MORTAR COUPLING
+LM_SHAPEFCN             std
+SEARCH_ALGORITHM        BinaryTree
+SEARCH_PARAM            1.0
+INTTYPE                 elements
+NUMGP_PER_DIM           3
+PARALLEL_REDIST         dynamic
 ----------------------------------------------------------SOLVER 1
 NAME                    Structure_Solver
 SOLVER                  UMFPACK
@@ -96,9 +98,13 @@ MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 0.1
 MAT 2   ELAST_CoupNeoHooke YOUNG 200 NUE 0.3
 ------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
-VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.00000 1.0 5.0 VALUES 0 25.0 25.0
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 1.0 5.0 VALUES 0 25.0 25.0
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 405 QUANTITY dispx VALUE 1.00290917997885831e+00 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 405 QUANTITY dispx VALUE 1.00235820379739726e+00 TOLERANCE 1e-6
+STRUCTURE SPECIAL QUANTITY num_iter_step_1 VALUE 1.0 TOLERANCE 1.0e-20
+STRUCTURE SPECIAL QUANTITY num_iter_step_2 VALUE 8.0 TOLERANCE 1.0e-20
+STRUCTURE SPECIAL QUANTITY num_iter_step_3 VALUE 6.0 TOLERANCE 1.0e-20
+STRUCTURE SPECIAL QUANTITY num_iter_step_4 VALUE 6.0 TOLERANCE 1.0e-20
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0

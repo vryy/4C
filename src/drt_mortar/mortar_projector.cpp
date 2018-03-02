@@ -996,8 +996,8 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
 
     // start in the element center
     DRT::Element::DiscretizationType dt = ele.Shape();
-    double eta[2] =
-    { 0.0, 0.0};
+    double eta[2] = { 0.0, 0.0};
+
     if (dt==DRT::Element::tri3 || dt==DRT::Element::tri6)
     {
       eta[0] = 1.0/3.0;
@@ -1008,8 +1008,7 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
     double alpha = 0.0;
 
     // function f (vector-valued)
-    double f[3] =
-    { 0.0, 0.0, 0.0};
+    double f[3] = { 0.0, 0.0, 0.0};
 
     // gradient of f (df/deta[0], df/deta[1], df/dalpha)
     LINALG::Matrix<3, 3> df;
@@ -1089,20 +1088,28 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectGaussPointAuxn3D(
   {
     // start in the element center
     DRT::Element::DiscretizationType dt = ele.Shape();
-    double eta[2] =
-    { 0.0, 0.0 };
-    if (dt == DRT::Element::tri3 || dt == DRT::Element::tri6)
+    double eta[2] = { 0.0, 0.0 };
+
+    switch (dt)
     {
-      eta[0] = 1.0 / 3.0;
-      eta[1] = 1.0 / 3.0;
+      case DRT::Element::tri3:
+      case DRT::Element::tri6:
+      {
+        eta[0] = 1.0 / 3.0;
+        eta[1] = 1.0 / 3.0;
+
+        break;
+      }
+      default:
+        break;
     }
 
     // auxiliary variable
-    double alpha = 0.0;
+    double& alpha = par;
+    alpha = 0.0;
 
     // function f (vector-valued)
-    double f[3] =
-    { 0.0, 0.0, 0.0 };
+    double f[3] = { 0.0, 0.0, 0.0 };
 
     // gradient of f (df/deta[0], df/deta[1], df/dalpha)
     LINALG::Matrix<3, 3> df;
@@ -1152,7 +1159,6 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectGaussPointAuxn3D(
       xi[1] = eta[1];
     }
 
-    par = alpha;
     //std::cout << "Newton iteration converged in " << k << " steps!" << std::endl;
   }
 
@@ -1179,10 +1185,17 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3D(
 
   // start in the element center
   double eta[2] =  { 0.0, 0.0 };
-  if (distype == DRT::Element::tri3 || distype == DRT::Element::tri6)
+  switch ( distype )
   {
-    eta[0] = 1.0 / 3.0;
-    eta[1] = 1.0 / 3.0;
+    case DRT::Element::tri3:
+    case DRT::Element::tri6:
+    {
+      eta[0] = 1.0 / 3.0;
+      eta[1] = 1.0 / 3.0;
+      break;
+    }
+    default:
+      break;
   }
 
   // auxiliary variable for distance
@@ -2994,7 +3007,7 @@ double MORTAR::MortarProjectorCalc<distype>::EvaluateGradFElementNormal(
 
     // subtract master node coordinates
     for(int j=0;j<ndim_;++j)
-    nx[j]-=node.xspatial()[j];
+      nx[j]-=node.xspatial()[j];
 
     // calculate GradF
     fgrad = nxeta[0]*nn[1] + nx[0]*nneta[1]
@@ -3119,18 +3132,14 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::EvaluateGradFGaus
 //  double nxeta2[3] = {0.0, 0.0, 0.0};
 //  ele.LocalToGlobal(eta,nxeta1,1);
 //  ele.LocalToGlobal(eta,nxeta2,2);
-  double nxeta1[ndim_];
-  double nxeta2[ndim_];
+  double* nxeta1 = &fgrad(0,0);
+  double* nxeta2 = &fgrad(0,1);
   MORTAR::UTILS::LocalToGlobal<distypeM>(ele, eta, nxeta1, 1);
   MORTAR::UTILS::LocalToGlobal<distypeM>(ele, eta, nxeta2, 2);
 
   //evaluate function f gradient
   for (int i = 0; i < ndim_; ++i)
-  {
-    fgrad(i, 0) = nxeta1[i];
-    fgrad(i, 1) = nxeta2[i];
     fgrad(i, 2) = -gpn[i];
-  }
 
   return true;
 }
@@ -3183,18 +3192,16 @@ bool MORTAR::MortarProjectorCalc<distype>::EvaluateGradFGaussPointAuxn3D(
    auxn    normal of AuxPlane along which to project            */
 
   // build interpolation of ele node coordinates for current eta
-  double nxeta1[ndim_];
-  double nxeta2[ndim_];
+//  double nxeta1[ndim_];
+//  double nxeta2[ndim_];
+  double* nxeta1 = &fgrad(0,0);
+  double* nxeta2 = &fgrad(0,1);
   MORTAR::UTILS::LocalToGlobal<distype>(ele, eta, nxeta1, 1);
   MORTAR::UTILS::LocalToGlobal<distype>(ele, eta, nxeta2, 2);
 
   // evaluate function f gradient
   for (int i = 0; i < ndim_; ++i)
-  {
-    fgrad(i, 0) = nxeta1[i];
-    fgrad(i, 1) = nxeta2[i];
     fgrad(i, 2) = -auxn[i];
-  }
 
   return true;
 }

@@ -52,23 +52,6 @@
 //#define WEARIMPLICITFD            /* flag for FD-check w.r.t. disp. */
 //#define WEARIMPLICITFDLM          /* flag for FD-check w.r.t. lm-mult. */
 
-// AUGMENTED LAGRANGE DEBUGGING OPTIONS
-// *** GP level ***
-//#define CONTACTFD_KAPPA           /* flag for FD-check of the scaling parameter kappa w.r.t. displ. */
-//#define CONTACTFD_AWGAP           /* flag for FD-check of the averaged weighted gap w.r.t. displ. */
-//#define CONTACTFD_VARWGAPSL       /* flag for FD-check of the variation of wgap w.r.t. displ. */
-//#define CONTACTFD_VARWGAPMA       /* flag for FD-check of the variation of wgap w.r.t. displ. */
-//#define CONTACTFD_AUGA            /* flag for FD-check of the scaling parameter augA w.r.t. displ. */
-
-// *** Global level ***
-//#define CONTACTFD_DLMNWGAPLINMATRIX    /* flag for global FD-check of the dLmNWGapLinMatrix w.r.t. displ. */
-//#define CONTACTFD_DLMTLMTLINMATRIX     /* flag for global FD-check of the dLmTLmTLinMatrix w.r.t. displ. */
-//#define CONTACTFD_AUGINACTIVELINMATRIX /* flag for global FD-check of the augInactiveLinMatrix w.r.t. displ. */
-//#define CONTACTFD_DGLMSLLINMATRIX      /* flag for global FD-check of the dGLmSlLinMatrix w.r.t. displ. */
-//#define CONTACTFD_DGLMMALINMATRIX      /* flag for global FD-check of the dGLmMaLinMatrix w.r.t. displ. */
-//#define CONTACTFD_DGGSLLINMATRIX       /* flag for global FD-check of the dGGSlLinMatrix w.r.t. displ. */
-//#define CONTACTFD_DGGMALINMATRIX       /* flag for global FD-check of the dGGMaLinMatrix w.r.t. displ. */
-
 // DISCRETE WEAR DEBUGGING OPTIONS
 //#define CONTACTFDT_D              /* flag for FD check of mortar matrix T lin for wear cond */
 //#define CONTACTFDE_D              /* flag for FD check of mortar matrix E lin for wear cond */

@@ -252,7 +252,8 @@ namespace XCONTACT
 
     //! [derived]
     virtual Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
-        const enum DRT::UTILS::MatBlockType& bt) const;
+        const enum DRT::UTILS::MatBlockType& bt,
+        const CONTACT::ParamsInterface* cparams = NULL) const;
 
     //! [derived]
     virtual Teuchos::RCP<const Epetra_Map> SlNormalDoFRowMapPtr(const bool& redist) const
@@ -347,7 +348,7 @@ namespace XCONTACT
     virtual void EvalStrContactRHS();
 
     //! [derived]
-    virtual void RecoverState(
+    virtual void RunPostComputeX(
         const CONTACT::ParamsInterface& cparams,
         const Epetra_Vector& xold,
         const Epetra_Vector& dir,
@@ -508,7 +509,7 @@ namespace XCONTACT
     virtual void Recover(
         Teuchos::RCP<Epetra_Vector> disi)
     {
-      dserror("Deprecated function call! Replaced by RecoverState().");
+      dserror("Deprecated function call! Replaced by RunPostComputeX().");
     }
     //! @}
 

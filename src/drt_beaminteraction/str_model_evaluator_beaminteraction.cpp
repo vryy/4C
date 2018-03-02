@@ -700,7 +700,7 @@ void STR::MODELEVALUATOR::BeamInteraction::ReadRestart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::RecoverState(
+void STR::MODELEVALUATOR::BeamInteraction::RunPostComputeX(
     const Epetra_Vector& xold,
     const Epetra_Vector& dir,
     const Epetra_Vector& xnew)

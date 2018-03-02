@@ -13,6 +13,7 @@
 
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_lib/drt_element.H"
+#include "../headers/pairedvector.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 /*!

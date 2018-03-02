@@ -186,7 +186,8 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategyTsi::GetRhsBlockPtr(
 
 
 Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategyTsi::GetMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bt) const
+    const enum DRT::UTILS::MatBlockType& bt,
+    const CONTACT::ParamsInterface* cparams) const
 {
   if (curr_state_eval_==false)
     dserror("you didn't evaluate this contact state first");
@@ -196,7 +197,7 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategyTsi::GetMatrixBlock
   case DRT::UTILS::block_temp_temp:   return ktt_; break;
   case DRT::UTILS::block_temp_displ:  return ktd_; break;
   case DRT::UTILS::block_displ_temp:  return kdt_; break;
-  default: return CONTACT::CoNitscheStrategy::GetMatrixBlockPtr(bt); break;
+  default: return CONTACT::CoNitscheStrategy::GetMatrixBlockPtr(bt,cparams); break;
   }
 }
 

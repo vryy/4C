@@ -57,8 +57,7 @@ namespace LAGRANGE {
      *
      *  \author hiermeier \date 03/17 */
     virtual void AssembleDGGLinMatrix(
-            LINALG::SparseMatrix& dGGSlLinMatrix,
-            LINALG::SparseMatrix& dGGMaLinMatrix,
+            LINALG::SparseMatrix& dGGLinMatrix,
             const Epetra_Vector& cnVec) const;
 
   };  // class Interface

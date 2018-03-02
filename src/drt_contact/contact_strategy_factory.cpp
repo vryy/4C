@@ -42,6 +42,7 @@
 // -- standard strategies and interfaces
 #include "contact_wear_interface.H"
 #include "contact_tsi_interface.H"
+#include "contact_nitsche_strategy_tsi.H"
 #include "contact_poro_lagrange_strategy.H"
 #include "contact_tsi_lagrange_strategy.H"
 #include "contact_lagrange_strategy.H"
@@ -57,7 +58,7 @@
 // --xcontact strategies and interfaces
 #include "../drt_contact_xcontact/xcontact_interface.H"
 #include "../drt_contact_xcontact/xcontact_strategy.H"
-#include "contact_nitsche_strategy_tsi.H"
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -557,6 +558,11 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
   std::vector<std::vector<DRT::Condition*> > ccond_grps(0);
   CONTACT::UTILS::GetContactConditionGroups(ccond_grps,Discret());
 
+  std::set<const DRT::Node*> dbc_slave_nodes;
+  std::set<const DRT::Element*> dbc_slave_eles;
+  CONTACT::UTILS::DbcHandler::DetectDbcSlaveNodesAndElements(
+      Discret(), ccond_grps, dbc_slave_nodes, dbc_slave_eles );
+
   // maximum dof number in discretization
   // later we want to create NEW Lagrange multiplier degrees of
   // freedom, which of course must not overlap with displacement dofs
@@ -574,7 +580,6 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
       INPAR::CONTACT::FrictionType>(cparams, "FRICTION");
   INPAR::CONTACT::AdhesionType ad = DRT::INPUT::IntegralValue<
       INPAR::CONTACT::AdhesionType>(cparams, "ADHESION");
-  const bool nurbs = cparams.get<bool>("NURBS");
   INPAR::MORTAR::AlgorithmType algo = DRT::INPUT::IntegralValue<
       INPAR::MORTAR::AlgorithmType>(cparams,"ALGORITHM");
 
@@ -775,6 +780,24 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
         if (!node)
           dserror("ERROR: Cannot find node with gid %", gid);
 
+        if ( node->NumElement() == 0 )
+          dserror("surface node without adjacent element detected! "
+              "(node-id = %d)", node->Id());
+
+        const bool nurbs = DRT::UTILS::IsNurbsDisType( node->Elements()[0]->Shape() );
+        for ( unsigned elid=0; elid<static_cast<unsigned>(node->NumElement()); ++elid )
+        {
+          const DRT::Element* adj_ele = node->Elements()[elid];
+          if ( nurbs != DRT::UTILS::IsNurbsDisType( adj_ele->Shape() ) )
+            dserror( "There are NURBS and non-NURBS adjacent elements to this "
+                "node. What shall be done?" );
+        }
+
+        // skip dbc slave nodes ( if the corresponding option is set for
+        // the slave condition )
+        if ( dbc_slave_nodes.find( node ) != dbc_slave_nodes.end() )
+          continue;
+
         // store initial active node gids
         if (isactive[j])
           initialactive.push_back(gid);
@@ -810,7 +833,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
                   friplus));
           //-------------------
           // get nurbs weight!
-          if (nurbs)
+          if ( nurbs )
           {
             PrepareNURBSNode(node,cnode);
           }
@@ -872,7 +895,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
                   isactive[j] + foundinitialactive));
           //-------------------
           // get nurbs weight!
-          if (nurbs)
+          if ( nurbs )
           {
             PrepareNURBSNode(node,cnode);
           }
@@ -919,7 +942,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
 
           /* note that we do not have to worry about double entries
            * as the AddNode function can deal with this case!
-           * the only problem would have occured for the initial active nodes,
+           * the only problem would have occurred for the initial active nodes,
            * as their status could have been overwritten, but is prevented
            * by the "foundinitialactive" block above! */
           interface->AddCoNode(cnode);
@@ -956,9 +979,24 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
       int gsize = 0;
       Comm().SumAll(&lsize, &gsize, 1);
 
+      bool nurbs = false;
+      if ( currele.size() > 0 )
+        nurbs = DRT::UTILS::IsNurbsDisType( currele.begin()->second->Shape() );
+
       for (fool = currele.begin(); fool != currele.end(); ++fool)
       {
         Teuchos::RCP<DRT::Element> ele = fool->second;
+        if ( DRT::UTILS::IsNurbsDisType( ele->Shape() ) != nurbs )
+          dserror("All elements of one interface side (i.e. slave or master) "
+              "must be NURBS or LAGRANGE elements. A mixed NURBS/Lagrange "
+              "discretizations on one side of the interface is currently "
+              "unsupported.");
+
+        // skip dbc slave elements ( if the corresponding option is set for
+        // the slave condition )
+        if ( dbc_slave_eles.find( ele.get() ) != dbc_slave_eles.end() )
+          continue;
+
         Teuchos::RCP<CONTACT::CoElement> cele = Teuchos::rcp(
             new CONTACT::CoElement(
                 ele->Id() + ggsize,
@@ -1006,9 +1044,133 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
 
   } // for (int i=0; i<(int)contactconditions.size(); ++i)
 
+  FullyOverlappingInterfaces( interfaces );
+
   // finish the interface creation
   if (Comm().MyPID() == 0)
     std::cout << "done!" << std::endl;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::STRATEGY::Factory::FullyOverlappingInterfaces(
+    std::vector<Teuchos::RCP<CONTACT::CoInterface> >& interfaces ) const
+{
+  int ocount = 0;
+  for ( auto it=interfaces.begin(); it!=interfaces.end(); ++it, ++ocount )
+  {
+    CoInterface& interface = **it;
+
+    const Epetra_Map& srownodes_i = *interface.SlaveRowNodes();
+    const Epetra_Map& mrownodes_i = *interface.MasterRowNodes();
+
+    for ( auto iit = (it+1); iit!=interfaces.end(); ++iit )
+    {
+      CoInterface& iinterface = **iit;
+
+      const Epetra_Map& srownodes_ii = *iinterface.SlaveRowNodes();
+      const Epetra_Map& mrownodes_ii = *iinterface.MasterRowNodes();
+
+      const int sl_fullsubset_id = IdentifyFullSubset( srownodes_i, srownodes_ii );
+      if ( sl_fullsubset_id != -1 )
+        dserror( "Currently the slave element maps are not allowed to overlap!" );
+
+      const int ma_fullsubset_id = IdentifyFullSubset( mrownodes_i, mrownodes_ii );
+
+      // handle fully overlapping master interfaces
+      if ( ma_fullsubset_id == 0 )
+        interface.AddMaSharingRefInterface( &iinterface );
+      else if ( ma_fullsubset_id == 1 )
+        iinterface.AddMaSharingRefInterface( &interface );
+    }
+  }
+
+  for ( const auto& inter : interfaces )
+  {
+    if ( inter->HasMaSharingRefInterface() )
+      IO::cout << "master side of mortar interface #" << inter->Id()
+          << " is fully overlapping with the master side of interface #"
+          << inter->GetMaSharingRefInterface().Id() << IO::endl;
+  }
+
+  for ( auto it = interfaces.begin(); it!=interfaces.end(); ++it  )
+    IO::cout << (*it)->Id() << " HasMaSharingRefInterface  = "
+        << ( (*it)->HasMaSharingRefInterface() ? "TRUE" : "FALSE" ) << IO::endl;
+
+  // resort the interface vector via a short bubble sort:
+  /* Move all interfaces with an shared reference interface to the end of the
+   * vector */
+  for ( auto it = interfaces.begin(); it!=interfaces.end(); ++it  )
+  {
+    if ( (*it)->HasMaSharingRefInterface() )
+    {
+      for ( auto iit = it+1; iit!=interfaces.end(); ++iit )
+        if ( not (*iit)->HasMaSharingRefInterface() )
+        {
+          std::swap( *it, *iit );
+          break;
+        }
+    }
+  }
+
+  IO::cout << "After sorting:\n";
+  for ( auto it = interfaces.begin(); it!=interfaces.end(); ++it  )
+    IO::cout << (*it)->Id() << " HasMaSharingRefInterface  = "
+        << ( (*it)->HasMaSharingRefInterface() ? "TRUE" : "FALSE" ) << IO::endl;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int CONTACT::STRATEGY::Factory::IdentifyFullSubset(
+    const Epetra_Map& map_0,
+    const Epetra_Map& map_1,
+    bool throw_if_partial_subset_on_proc ) const
+{
+  const Epetra_Map* ref_map = NULL;
+  const Epetra_Map* sub_map = NULL;
+
+  int sub_id = -1;
+
+  if ( map_0.NumGlobalElements() >= map_1.NumGlobalElements() )
+  {
+    ref_map = &map_0;
+
+    sub_id = 1;
+    sub_map = &map_1;
+  }
+  else
+  {
+    ref_map = &map_1;
+
+    sub_id = 0;
+    sub_map = &map_0;
+  }
+
+  const unsigned nummysubentries = sub_map->NumMyElements();
+  const int* mysubgids = sub_map->MyGlobalElements();
+
+  bool is_fullsubmap = false;
+  for ( unsigned i=0; i<nummysubentries; ++i )
+  {
+    if ( i==0 and ref_map->MyGID( mysubgids[i] ) )
+      is_fullsubmap = true;
+    else if ( is_fullsubmap != ref_map->MyGID( mysubgids[i] ) )
+    {
+      if ( throw_if_partial_subset_on_proc)
+        dserror( "Partial sub-map detected on proc #%d!", Comm().MyPID() );
+      is_fullsubmap = false;
+    }
+  }
+
+  if ( nummysubentries == 0 )
+    is_fullsubmap = true;
+
+  int lfullsubmap = static_cast<int>( is_fullsubmap );
+  int gfullsubmap = 0;
+
+  Comm().SumAll( &lfullsubmap, &gfullsubmap, 1 );
+
+  return ( gfullsubmap == Comm().NumProc() ? sub_id : -1 );
 }
 
 /*----------------------------------------------------------------------------*
@@ -1574,7 +1736,8 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
   }
   else
   {
-    dserror("ERROR: Unrecognized strategy");
+    dserror("ERROR: Unrecognized strategy: \"%s\"",
+        INPAR::CONTACT::SolvingStrategy2String( stype ).c_str() );
   }
 
   // setup the stategy object
@@ -1599,7 +1762,7 @@ void CONTACT::STRATEGY::Factory::BuildSearchTree(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::STRATEGY::Factory::Print(
-    std::vector<Teuchos::RCP<CONTACT::CoInterface> >& interfaces,
+    const std::vector<Teuchos::RCP<CONTACT::CoInterface> >& interfaces,
     const Teuchos::RCP<CONTACT::CoAbstractStrategy>& strategy_ptr,
     const Teuchos::ParameterList& cparams) const
 {
@@ -1610,7 +1773,7 @@ void CONTACT::STRATEGY::Factory::Print(
     INPAR::CONTACT::FrictionType ftype = DRT::INPUT::IntegralValue<
           INPAR::CONTACT::FrictionType>(cparams, "FRICTION");
 
-    for (int i = 0; i < (int) interfaces.size(); ++i)
+    for (unsigned i = 0; i < interfaces.size(); ++i)
     {
       double checkfrcoeff = 0.0;
       if (ftype == INPAR::CONTACT::friction_tresca)
@@ -1629,7 +1792,7 @@ void CONTACT::STRATEGY::Factory::Print(
   }
 
   // print initial parallel redistribution
-  for (int i = 0; i < (int) interfaces.size(); ++i)
+  for (unsigned i = 0; i < interfaces.size(); ++i)
     interfaces[i]->PrintParallelDistribution(i + 1);
 
   // show default parameters

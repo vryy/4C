@@ -13,6 +13,7 @@
       <ParameterList name="Test 0">
         <Parameter name="Test Type"  type="string" value="NormF" />
         <!-- NormF - Quantity 0: Check the right-hand-side norm of the structural quantities -->
+        <!--
         <ParameterList name="Quantity 0">
           <Parameter name="Quantity Type"  type="string" value="Structure" />
           <Parameter name="Tolerance Type" type="string" value="Absolute" />
@@ -20,8 +21,9 @@
           <Parameter name="Norm Type"      type="string" value="Two Norm" />
           <Parameter name="Scale Type"     type="string" value="Unscaled" />
         </ParameterList>
+        -->
         <!-- NormF - Quantity 1: Check the right-hand-side norm of the contact quantities -->
-        <ParameterList name="Quantity 1">
+        <ParameterList name="Quantity 0">
           <Parameter name="Quantity Type"  type="string" value="Contact-Normal" />
           <Parameter name="Tolerance Type" type="string" value="Absolute" />
           <Parameter name="Tolerance"      type="double" value="1.0e-6" />

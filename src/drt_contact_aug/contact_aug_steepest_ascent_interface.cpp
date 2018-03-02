@@ -16,6 +16,9 @@
 
 
 #include "contact_aug_steepest_ascent_interface.H"
+#include "../drt_contact/contact_node.H"
+
+#include "../drt_lib/drt_discret.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -41,65 +44,36 @@ CONTACT::AUG::STEEPESTASCENT::Interface::Interface(
   /* left blank, nothing to do here */
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void CONTACT::AUG::STEEPESTASCENT::Interface::AssembleDGGLinMatrixOnSlaveSide(
-    const CoNode& cnode,
-    const GEN::pairedvector<int,std::pair<int,double> >& varWGapSlMap,
-    const std::map<int,double>& aWGapLinMap,
-    double cn,
-    double aWGap,
-    LINALG::SparseMatrix& dGGSlLinMatrix ) const
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<CONTACT::AUG::INTERFACE::AssembleStrategy>
+CONTACT::AUG::STEEPESTASCENT::Interface::CreateNodeBasedAssembleStrategy()
 {
-  typedef GEN::pairedvector<int,std::pair<int,double> >::const_iterator CI;
+  const enum INPAR::CONTACT::VariationalApproach var_type =
+      GetVariationalApproachType();
 
-  // iteration over ALL slave Dof Ids
-  for ( CI p=varWGapSlMap.begin(); p!=varWGapSlMap.end(); ++p )
+  switch ( var_type )
   {
-    const int sRow = p->first;
+    case INPAR::CONTACT::var_complete:
+    {
+      typedef CONTACT::AUG::INTERFACE::CompleteAssemblePolicy complete_policy;
 
-    // *** linearization of varWGap w.r.t. displacements ***
-    // nothing to do for the steepest ascent method
+      return Teuchos::rcp( new STEEPESTASCENT::INTERFACE::NodeBasedAssembleStrategy<
+          complete_policy>( this ) );
+    }
+    case INPAR::CONTACT::var_incomplete:
+    {
+      typedef CONTACT::AUG::INTERFACE::IncompleteAssemblePolicy incomplete_policy;
 
-    // *** linearization of the averaged weighted gap w.r.t. displacements ***
-    AssembleMapIntoMatrix( sRow, cn*(p->second).second, aWGapLinMap, dGGSlLinMatrix );
+      return Teuchos::rcp( new STEEPESTASCENT::INTERFACE::NodeBasedAssembleStrategy<
+          incomplete_policy>( this ) );
+    }
+    default:
+    {
+      dserror( "Unknown variational approach! (var_type= \"%s\" | %d)",
+          INPAR::CONTACT::VariationalApproach2String( var_type ).c_str(),
+          var_type );
+      exit( EXIT_FAILURE );
+    }
   }
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void CONTACT::AUG::STEEPESTASCENT::Interface::AssembleDGGLinMatrixOnMasterSide(
-    const CoNode& cnode,
-    const std::map<int,std::pair<int,double> >& varWGapMaMap,
-    const std::map<int,double>& aWGapLinMap,
-    double cn,
-    double aWGap,
-    LINALG::SparseMatrix& dGGMaLinMatrix ) const
-{
-  typedef std::map<int,std::pair<int,double> >::const_iterator CI;
-
-  // iteration over ALL master Dof Ids
-  for ( CI p=varWGapMaMap.begin(); p!=varWGapMaMap.end(); ++p )
-  {
-    const int mRow = p->first;
-
-    // *** linearization of varWGap w.r.t. displacements ***
-    // nothing to do for the steepest ascent method
-
-    // *** linearization of the averaged weighted gap w.r.t. displacements ***
-    AssembleMapIntoMatrix( mRow, -cn*(p->second).second, aWGapLinMap, dGGMaLinMatrix );
-  }
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void CONTACT::AUG::STEEPESTASCENT::Interface::AddKappaLinToGapLinearization(
-    const std::map<int,double>& kappaLinMap,
-    double x,
-    double kappainv,
-    double varWGap,
-    double scale,
-    std::map<int,double>& aWGapLinMap ) const
-{
-  // do nothing for the steepest ascent method
 }

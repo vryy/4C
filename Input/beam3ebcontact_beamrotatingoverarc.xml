@@ -50,6 +50,7 @@
   <!-- limit the step length per Newton step to a certain value -->
   <Parameter name="Test Type"  type="string" value="UpperBound" />
   <Parameter name="Norm Type"  type="string" value="Max Norm" />
+  <Parameter name="Quantity Type" type="string" value="Structure" />
   <Parameter name="Value"      type="double" value="3.0e-3" />
 </ParameterList>
 </ParameterList>

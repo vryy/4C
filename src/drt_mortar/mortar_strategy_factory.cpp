@@ -190,6 +190,8 @@ void MORTAR::STRATEGY::Factory::PrepareNURBSElement(
   double normalfac = 0.0;
   Teuchos::RCP<DRT::FaceElement> faceele =
       Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele,true);
+  if ( faceele.is_null() )
+    dserror( "Cast to FaceElement failed!" );
 
   bool zero_size = knots->GetBoundaryEleAndParentKnots(
       parentknots,

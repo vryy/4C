@@ -71,15 +71,24 @@ double CONTACT::NoxInterface::GetConstraintRHSNorms(
     return -1.0;
 
   Teuchos::RCP<const Epetra_Vector> constrRhs =
-      Strategy().GetRhsBlockPtr(DRT::UTILS::block_constraint);
+      Strategy().GetRhsBlockPtrForNormCheck(DRT::UTILS::block_constraint);
+
   // no contact contributions present
   if (constrRhs.is_null())
     return 0.0;
 
   // export the vector to the current redistributed map
-  Teuchos::RCP<Epetra_Vector> constrRhs_red =
-      Teuchos::rcp(new Epetra_Vector(Strategy().LMDoFRowMap(true)));
-  LINALG::Export(*constrRhs,*constrRhs_red);
+  Teuchos::RCP<Epetra_Vector> constrRhs_red = Teuchos::null;
+  // Note: PointSameAs is faster than SameAs and should do the job right here,
+  // since we replace the map afterwards anyway.               hiermeier 08/17
+  if ( not constrRhs->Map().PointSameAs( Strategy().LMDoFRowMap(true) ) )
+  {
+    constrRhs_red = Teuchos::rcp(new Epetra_Vector(Strategy().LMDoFRowMap(true)));
+    LINALG::Export(*constrRhs,*constrRhs_red);
+  }
+  else
+    constrRhs_red = Teuchos::rcp( new Epetra_Vector( *constrRhs ) );
+
   // replace the map
   constrRhs_red->ReplaceMap(Strategy().SlDoFRowMap(true));
 
@@ -278,6 +287,10 @@ double CONTACT::NoxInterface::GetPreviousLagrangeMultiplierNorms(
   if (isScaled)
     zoldnorm /= static_cast<double>(zold_nox_ptr->length());
 
+  // avoid very small norm values for the pure inactive case
+  if ( not Strategy().IsInContact() )
+    zoldnorm = std::max( zoldnorm, 1.0 );
+
   return zoldnorm;
 }
 
@@ -374,4 +387,72 @@ Teuchos::RCP<const Epetra_Map> CONTACT::NoxInterface::GetOldActiveSetMap(
   } // switch (active_set_type)
 
   return Teuchos::null;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double CONTACT::NoxInterface::GetModelValue(
+    NOX::NLN::MeritFunction::MeritFctName name ) const
+{
+  switch ( name )
+  {
+    case NOX::NLN::MeritFunction::mrtfct_lagrangian:
+    case NOX::NLN::MeritFunction::mrtfct_lagrangian_active:
+    {
+      return Strategy().GetPotentialValue( name );
+    }
+    case NOX::NLN::MeritFunction::mrtfct_infeasibility_two_norm:
+    case NOX::NLN::MeritFunction::mrtfct_infeasibility_two_norm_active:
+    {
+      double val = Strategy().GetPotentialValue( name );
+      val = std::sqrt( val );
+
+      return val;
+    }
+    case NOX::NLN::MeritFunction::mrtfct_energy:
+    {
+      // The energy of the primary field is considered, no contact contribution.
+      return 0.0;
+    }
+    default:
+      dserror( "Unsupported Merit function name! (enum = %d)", name );
+      exit( EXIT_FAILURE );
+  }
+
+  dserror( "Impossible to reach this point." );
+  exit( EXIT_FAILURE );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double CONTACT::NoxInterface::GetLinearizedModelTerms(
+    const Epetra_Vector& dir,
+    const enum NOX::NLN::MeritFunction::MeritFctName name,
+    const enum NOX::NLN::MeritFunction::LinOrder linorder,
+    const enum NOX::NLN::MeritFunction::LinType lintype ) const
+{
+  switch ( name )
+  {
+    case NOX::NLN::MeritFunction::mrtfct_lagrangian:
+    case NOX::NLN::MeritFunction::mrtfct_lagrangian_active:
+    {
+      return Strategy().GetLinearizedPotentialValueTerms(
+          dir, name, linorder, lintype );
+    }
+    case NOX::NLN::MeritFunction::mrtfct_infeasibility_two_norm:
+    case NOX::NLN::MeritFunction::mrtfct_infeasibility_two_norm_active:
+    {
+      double lin_val = Strategy().GetLinearizedPotentialValueTerms(
+          dir, name, linorder, lintype );
+      lin_val /= GetModelValue( name );
+
+      return lin_val;
+    }
+    default:
+      dserror( "Unsupported Merit function name! (enum = %d)", name );
+      exit( EXIT_FAILURE );
+  }
+
+  dserror( "Impossible to reach this point." );
+  exit( EXIT_FAILURE );
 }

@@ -102,7 +102,7 @@ namespace MODELEVALUATOR {
         const NOX::NLN::Group& curr_grp );
 
     //! recover condensed Lagrange multipliers
-    virtual void RecoverState(
+    virtual void RunPostComputeX(
         const Epetra_Vector& xold,
         const Epetra_Vector& dir,
         const Epetra_Vector& xnew)

@@ -16,45 +16,36 @@
 
 #include "contact_augmented_strategy.H"
 #include "contact_augmented_interface.H"
-#include "../drt_contact/contact_defines.H"
+
+#include "../drt_contact/contact_node.H"
+
 #include "../linalg/linalg_utils.H"
+
+#include "../drt_fsi/fsi_matrixtransform.H"
+
+//#define CONTACTFD_DLMGAPLINMATRIX      /* flag for global FD-check of the weighted gap gradient w.r.t. displ. */
+//#define CONTACTFD_DGLMLINMATRIX        /* flag for global FD-check of the dGLmLinMatrix w.r.t. displ. */
+//#define CONTACTFD_DGGLINMATRIX         /* flag for global FD-check of the dGGLinMatrix w.r.t. displ. */
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::AUG::Strategy::AugFDCheckGP(
     CONTACT::ParamsInterface& cparams)
 {
-#ifdef CONTACTFD_KAPPA
-  // FD check of the linearization of the scaling parameter kappa
-  for (int i=0;i<(int)interface_.size();++i)
-    interface_[i]->FDCheckKappaLin(cparams);
-#endif
+  if ( not IsInContact() )
+    return;
 
-#ifdef CONTACTFD_AWGAP
-  // FD check of the linearization
-  for (int i=0;i<(int)interface_.size();++i)
-    interface_[i]->FDCheckAWGapLin(cparams);
-#endif
+  for ( auto& interface_ptr : interface_ )
+  {
+    Teuchos::RCP<Interface> aug_interface_ptr =
+        Teuchos::rcp_dynamic_cast<Interface>( interface_ptr, true );
 
-#ifdef CONTACTFD_VARWGAPSL
-  // FD check of the linearization
-  // of the variation of WGap (slave)
-  for (int i=0;i<(int)interface_.size();++i)
-    interface_[i]->FDCheckVarWGapLinSl(cparams);
-#endif
+    aug_interface_ptr->FD_Debug_GPCheck1stOrder( cparams );
+    aug_interface_ptr->FD_Debug_GPCheck2ndOrder( cparams );
 
-#ifdef CONTACTFD_VARWGAPMA
-  // FD check of the linearization
-  // of the variation of WGap (master)
-  for (int i=0;i<(int)interface_.size();++i)
-    interface_[i]->FDCheckVarWGapLinMa(cparams);
-#endif
-
-#ifdef CONTACTFD_AUGA
-  // FD check of the linearization of the scaling parameter kappa
-  for (int i=0;i<(int)interface_.size();++i)
-    interface_[i]->FDCheckAugALin(cparams);
-#endif
+    aug_interface_ptr->FD_DebugVec_GPCheck1stOrder( cparams );
+    aug_interface_ptr->FD_DebugVec_GPCheck2ndOrder( cparams );
+  }
 
   return;
 }
@@ -65,82 +56,133 @@ void CONTACT::AUG::Strategy::AugFDCheckGlobal(
     CONTACT::ParamsInterface& cparams)
 {
   // *** linearization w.r.t. displ. *********************************
-  /*---------------------------------*
-   | Active normal constraint        |
-   *---------------------------------*/
-#ifdef CONTACTFD_DLMNWGAPLINMATRIX
-  if (!Data().FiniteDifferenceIndicator())
-    EvalFDCheckGlobalDispl(*dLmNWGapLinMatrix_,dLmNWGapRhs_,cparams);
+#ifdef CONTACTFD_DLMGAPLINMATRIX
+  static bool first_attempt = true;
+  if ( first_attempt )
+  {
+    std::cout << "*-------------------------------------------------------*\n";
+    std::cout << "| Finite Difference check of [g_{N}]_{i,j}              |\n";
+    std::cout << "*-------------------------------------------------------*\n";
+    first_attempt = false;
+  }
+
+  FD_Debug::Instance(this)->Evaluate( Data().DLmNWGapLinMatrixPtr(),
+      Data().WGapPtr(), cparams );
 #endif
-  /*---------------------------------*
-   | Active tangential constraint    |
-   *---------------------------------*/
-#ifdef CONTACTFD_DLMTLMTLINMATRIX
-  if (!Data().FiniteDifferenceIndicator())
-    EvalFDCheckGlobalDispl(*dLmTLmTLinMatrix_,dLmTLmTRhs_,cparams);
-#endif
-  /*---------------------------------*
-   | Active tangential constraint    |
-   *---------------------------------*/
-#ifdef CONTACTFD_AUGINACTIVELINMATRIX
-  if (!Data().FiniteDifferenceIndicator())
-    EvalFDCheckGlobalDispl(*augInactiveLinMatrix_,augInactiveRhs_,cparams);
-#endif
+
   /*---------------------------------*
    | Std force terms                 |
    *---------------------------------*/
-#if defined(CONTACTFD_DGLMSLLINMATRIX) || defined(CONTACTFD_DGLMMALINMATRIX)
-  Teuchos::RCP<Epetra_Vector>  z_exp = Teuchos::rcp(new Epetra_Vector(*gAugActiveSlaveNDofs_));
-  LINALG::Export(*z_,*z_exp);
-  // *** slave side ***
-#ifdef CONTACTFD_DGLMSLLINMATRIX
-  augDnMatrix_->Multiply(true,*z_exp,*augfs_lm_);
-  if (!Data().FiniteDifferenceIndicator())
-    EvalFDCheckGlobalDispl(*dGLmSlLinMatrix_,augfs_lm_,cparams);
-#endif
-  // *** master side ***
-#ifdef CONTACTFD_DGLMMALINMATRIX
-  augMnMatrix_->Multiply(true,*z_exp,*augfm_lm_);
-  if (!Data().FiniteDifferenceIndicator())
-    EvalFDCheckGlobalDispl(*dGLmMaLinMatrix_,augfm_lm_,cparams);
-#endif
+#ifdef CONTACTFD_DGLMLINMATRIX
+  static Teuchos::RCP<Epetra_Vector> dGLm = Teuchos::null;
+  dGLm = Teuchos::rcp( new Epetra_Vector( *Data().GSlMaDofRowMapPtr(), true ) );
+
+  LINALG::AssembleMyVector( 0.0, *dGLm, 1.0, Data().SlForceLm() );
+  LINALG::AssembleMyVector( 1.0, *dGLm, 1.0, Data().MaForceLm() );
+
+  double nrm2 = 0.0;
+  dGLm->Norm2( &nrm2 );
+  if ( nrm2 == 0.0 )
+    return;
+
+  static bool first_attempt = true;
+  if ( first_attempt )
+  {
+    std::cout << "*-------------------------------------------------------*\n";
+    std::cout << "| Finite Difference check of [g_{N}]_{i,jk} [l_{N}]^{i} |\n";
+    std::cout << "*-------------------------------------------------------*\n";
+    first_attempt = false;
+  }
+
+  FD_Debug::Instance(this)->Evaluate( Data().DGLmLinMatrixPtr(), dGLm, cparams );
 #endif
   /*---------------------------------*
    | Regularization term             |
    *---------------------------------*/
-#if defined(CONTACTFD_DGGSLLINMATRIX) || defined(CONTACTFD_DGGMALINMATRIX)
-  double cn= Params().get<double>("SEMI_SMOOTH_CN");
-  // *** slave side ***
-#ifdef CONTACTFD_DGGSLLINMATRIX
-  augDnMatrix_->Multiply(true,*aWGapRhs_,*augfs_g_);
-  augfs_g_->Scale(-cn);
-  if (!Data().FiniteDifferenceIndicator())
-    EvalFDCheckGlobalDispl(*dGGSlLinMatrix_,augfs_g_,cparams);
-#endif
-  // *** master side ***
-#ifdef CONTACTFD_DGGMALINMATRIX
-  augMnMatrix_->Multiply(true,*aWGapRhs_,*augfm_g_);
-  augfm_g_->Scale(-cn);
-  if (!Data().FiniteDifferenceIndicator())
-    EvalFDCheckGlobalDispl(*dGGMaLinMatrix_,augfm_g_,cparams);
-#endif
+#ifdef CONTACTFD_DGGLINMATRIX
+  static Teuchos::RCP<Epetra_Vector> dGG = Teuchos::null;
+  dGG = Teuchos::rcp( new Epetra_Vector( *Data().GSlMaDofRowMapPtr(), true ) );
+
+  LINALG::AssembleMyVector( 0.0, *dGG, 1.0, Data().SlForceG() );
+  LINALG::AssembleMyVector( 1.0, *dGG, 1.0, Data().MaForceG() );
+
+  static bool first_attempt = true;
+  if ( first_attempt )
+  {
+    std::cout << "*------------------------------------------------------------*\n";
+    std::cout << "| Finite Difference check of ([g_{N}]_{i} [g_{N}]^{i})_{,jk} |\n";
+    std::cout << "*------------------------------------------------------------*\n";
+    first_attempt = false;
+  }
+  FD_Debug::Instance(this)->Evaluate(Data().DGGLinMatrixPtr(),dGG,cparams);
 #endif
 
   return;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+CONTACT::AUG::Strategy::FD_Debug* CONTACT::AUG::Strategy::FD_Debug::Instance(
+    Strategy* strat,
+    const double delta,
+    const bool delete_me )
+{
+  static FD_Debug* instance = NULL;
+
+  if ( delete_me )
+  {
+    if ( instance )
+      delete instance;
+
+    return NULL;
+  }
+
+  if ( not instance )
+  {
+    instance = new FD_Debug();
+    instance->Init( strat, delta );
+  }
+
+  return instance;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::AUG::Strategy::FD_Debug::Done()
+{
+  Instance( NULL, 0.0, true );
+}
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AUG::Strategy::EvalFDCheckGlobalDispl(
-    LINALG::SparseMatrix derivMatrix,
+void CONTACT::AUG::Strategy::FD_Debug::Init(
+    Strategy* strat,
+    const double delta )
+{
+  if ( not strat )
+    dserror( "NULL pointer!" );
+
+  strat_ = strat;
+  delta_ = delta;
+  is_fd_check_ = false;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::AUG::Strategy::FD_Debug::Evaluate(
+    const Teuchos::RCP<LINALG::SparseMatrix>& derivMatrixPtr,
     Teuchos::RCP<Epetra_Vector>& rhsVector,
     CONTACT::ParamsInterface& cparams)
 {
-  // activate global finite difference indicator
- Data().FiniteDifferenceIndicator() = true;
+  if ( is_fd_check_ )
+    return;
+  else
+    is_fd_check_ = true;
 
-  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
-//  if ((int) interface_.size()>1) dserror("ERROR: FD check only for ONE interface");
+  if ( strat_->Comm().NumProc() > 1 )
+    dserror("ERROR: FD checks only for serial case");
+
+  LINALG::SparseMatrix derivMatrix( *derivMatrixPtr );
 
   const Epetra_Map rowMap = derivMatrix.RowMap();
   const Epetra_Map colMap = derivMatrix.ColMap();
@@ -149,7 +191,7 @@ void CONTACT::AUG::Strategy::EvalFDCheckGlobalDispl(
 
   LINALG::SparseMatrix fdMatrixRef = LINALG::SparseMatrix(rowMap,100);
   LINALG::SparseMatrix fdMatrixNew = LINALG::SparseMatrix(rowMap,100);
-  int dim = Dim();
+  int dim = strat_->Dim();
 
   // create reference Matrix:
   // loop over all columns
@@ -161,7 +203,8 @@ void CONTACT::AUG::Strategy::EvalFDCheckGlobalDispl(
     {
       int rowId = rhsMap.GID(r);
       if (rowMap.LID(rowId)==-1)
-        dserror("ERROR: Row gids of the corresponding rhs-vector and the derivative matrix do not match!");
+        dserror("ERROR: Row gids of the corresponding rhs-vector and the "
+            "derivative matrix do not match!");
 
       double val = (*rhsVector)[r];
 
@@ -170,60 +213,52 @@ void CONTACT::AUG::Strategy::EvalFDCheckGlobalDispl(
   }
   fdMatrixRef.Complete(colMap,rowMap);
 
-  double delta = 1.0e-8;
+  ref_x_.clear();
   // loop over all columns of the reference Matrix
   for (int fd=0;fd<colMap.NumMyElements();++fd)
   {
-    int colId = colMap.GID(fd);
-    int gid = colId/dim;
-    int dof = colId%dim;
-    bool iCheck = false;
+    const int colId = colMap.GID(fd);
+    const int gid = colId/dim;
+    const int dof = colId%dim;
+    const char xyz[3] = {'x','y','z'};
+
+    std::cout << "Performing FD perturbation of column " << (fd+1) << "/" <<
+        colMap.NumMyElements() << " corresponding to DOF " <<
+        colId << "(" << xyz[dof] << ") of node " << gid << "..." << std::flush;
 
     // do the finite difference step
-    for ( std::vector<Teuchos::RCP<CONTACT::CoInterface> >::const_iterator cit =
-          interface_.begin(); cit != interface_.end(); ++cit )
-    {
-      CONTACT::AUG::Interface& interface =
-          dynamic_cast<CONTACT::AUG::Interface&>( **cit );
-
-      iCheck = interface.UpdateInterfaces(gid,dof,delta,true,cparams);
-      if (iCheck) break;
-    }
-    if (!iCheck) dserror("ERROR: Node % not found!",gid);
+    DoPerturbation( gid, dof );
 
     // Update matrix and rhs
-    Initialize();
-    AssembleContactRHS();
-    AssembleContactStiff();
+    for ( auto& iptr : strat_->Interfaces() )
+      iptr->SetElementAreas();
+    strat_->EvalForceStiff( cparams );
 
     // loop over all rows of the updated right hand side vector
     // and save the values in a new matrix
     for (int r=0; r<rhsMap.NumMyElements();++r)
     {
-      int rowId = rhsMap.GID(r);
-      double val = (*rhsVector)[r];
+      const int rowId = rhsMap.GID(r);
+      if ( rowId == -1 )
+        dserror( "Couldn't find the GID for lid %d!", r );
+      const double val = (*rhsVector)[r];
       fdMatrixNew.Assemble(val,rowId,colId);
     }
 
     // Undo finite difference step
-    iCheck = false;
-    for ( std::vector<Teuchos::RCP<CONTACT::CoInterface> >::const_iterator cit =
-          interface_.begin(); cit != interface_.end(); ++cit )
-    {
-      CONTACT::AUG::Interface& interface =
-          dynamic_cast<CONTACT::AUG::Interface&>( **cit );
+    UndoPerturbation( gid, dof );
 
-      iCheck = interface.UpdateInterfaces(gid,dof,delta,false,cparams);
-      if (iCheck) break;
-    }
-    if (!iCheck) dserror("ERROR: Node % not found!",gid);
-    Initialize();
-    AssembleContactRHS();
-    AssembleContactStiff();
+    // Update matrix and rhs
+    for ( auto& iptr : strat_->Interfaces() )
+      iptr->SetElementAreas();
+    strat_->EvalForceStiff( cparams );
+
+    std::cout << "done!" << std::endl;
   }
 
   // calculate the finite difference
-  fdMatrixNew.Add(fdMatrixRef,false,-1.0/delta,1.0/delta);
+  const double delta_inv = 1.0 / delta_;
+  fdMatrixNew.Add(fdMatrixRef,false,-delta_inv,delta_inv);
   fdMatrixNew.Complete(colMap,rowMap);
 
   // loop over all rows
@@ -232,7 +267,7 @@ void CONTACT::AUG::Strategy::EvalFDCheckGlobalDispl(
     int rowId = rowMap.GID(r);
     // check if the row belongs to the slave or master side
     std::string rSlMa = "(S)";
-    if (gsdofrowmap_->LID(rowId)==-1)
+    if ( strat_->SlaveRowDofs()->LID(rowId)==-1)
       rSlMa = "(M)";
 
     int w = 0;
@@ -260,57 +295,150 @@ void CONTACT::AUG::Strategy::EvalFDCheckGlobalDispl(
     for (int c=0; c<rLengthFD;++c)
     {
       // Do the finite difference check only for values which are greater than some threshold
-      if (rValFD[c]>1e-12)
-      {
-        // check if the column belongs to the slave or master side
-        std::string cSlMa = "(S)";
-        if (gsdofrowmap_->LID(cIdsFD[c])==-1)
-          cSlMa = "(M)";
+      if ( std::abs( rValFD[c] ) < 1e-12 )
+        continue;
 
-        // search for entry in the analytical solution
-        int anaId = -1;
-        for (int cc=0;cc<rLengthAna;++cc)
-          if (cIdsFD[c]==cIdsAna[cc])
-          {
-            anaId = cc;
-            break;
-          }
+      // check if the column belongs to the slave or master side
+      std::string cSlMa = "(S)";
+      if ( strat_->SlaveRowDofs()->LID(cIdsFD[c])==-1 )
+        cSlMa = "(M)";
 
-        if(anaId==-1)
-          std::cout << "*** WARNING: Global column #" << cIdsFD[c] << " in global row #" << rowId <<
-            " could not be found in the analytical derivative matrix! (fd= " << rValFD[c] << ") ***" << std::endl;
-        else
+      // search for entry in the analytical solution
+      int anaId = -1;
+      for (int cc=0;cc<rLengthAna;++cc)
+        if (cIdsFD[c]==cIdsAna[cc])
         {
-          double dev = rValFD[c]-rValAna[anaId];
-
-          std::cout << cIdsFD[c] << cSlMa << ":"
-              "   fd="  << std::setw(14) << std::setprecision(5) << std::scientific << rValFD[c] <<
-              "   ana=" << std::setw(14) << std::setprecision(5) << std::scientific << rValAna[anaId] <<
-              "   DEVIATION=" << std::setw(14) << std::setprecision(5) << std::scientific << dev <<
-              "   REL-ERROR [%]=" << std::setw(14) << std::setprecision(5) << std::scientific << abs(dev/rValFD[c])*100;
-
-          if( abs(dev) > 1.0e-4 )
-          {
-            std::cout << " ***** WARNING ***** ";
-            w++;
-          }
-          else if( abs(dev) > 1.0e-5 )
-          {
-            std::cout << " ***** warning ***** ";
-            w++;
-          }
-
-          std::cout << std::endl;
+          anaId = cc;
+          break;
         }
+
+      if ( std::abs( rValFD[c] ) < delta_ and anaId==-1 )
+        continue;
+      else if(anaId==-1)
+        std::cout << "*** WARNING: Global column #" << cIdsFD[c] << " in global row #" << rowId <<
+          " could not be found in the analytical derivative matrix! (fd= " << rValFD[c] << ") ***" << std::endl;
+      else
+      {
+        double dev = rValFD[c]-rValAna[anaId];
+
+        std::cout << cIdsFD[c] << cSlMa << ":"
+            "   fd="  << std::setw(14) << std::setprecision(5) << std::scientific << rValFD[c] <<
+            "   ana=" << std::setw(14) << std::setprecision(5) << std::scientific << rValAna[anaId] <<
+            "   DEVIATION=" << std::setw(14) << std::setprecision(5) << std::scientific << dev <<
+            "   REL-ERROR [%]=" << std::setw(14) << std::setprecision(5) << std::scientific << abs(dev/rValFD[c])*100;
+
+        if( abs(dev) > 1.0e-4 )
+        {
+          std::cout << " ***** WARNING ***** ";
+          w++;
+        }
+        else if( abs(dev) > 1.0e-5 )
+        {
+          std::cout << " ***** warning ***** ";
+          w++;
+        }
+
+        std::cout << std::endl;
       }
+
     }
     std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
   }
 
   // deactivate global finite difference indicator
-  Data().FiniteDifferenceIndicator() = false;
+  is_fd_check_ = false;
 
   return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::AUG::Strategy::FD_Debug::DoPerturbation(
+    const int gid, const int dof )
+{
+  DRT::Node* node = FindINode( gid );
+
+  CoNode* cnode = dynamic_cast<CoNode*>( node );
+
+  // store current position
+  LINALG::Matrix<3,1>& x = ref_x_[gid];
+  std::copy( cnode->xspatial(), cnode->xspatial()+3, x.A() );
+
+  // change forward step to backward step
+  switch ( dof )
+  {
+    case 0:
+      cnode->xspatial()[0] += delta_;
+      break;
+    case 1:
+      cnode->xspatial()[1] += delta_;
+      break;
+    case 2:
+      cnode->xspatial()[2] += delta_;
+      break;
+    default:
+      dserror("Unsupported case!");
+      exit( EXIT_FAILURE );
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::AUG::Strategy::FD_Debug::UndoPerturbation(
+    const int gid, const int dof ) const
+{
+  DRT::Node* node = FindINode( gid );
+
+  CoNode* cnode = dynamic_cast<CoNode*>( node );
+
+  // get stored position
+  const LINALG::Matrix<3,1>& x = ref_x_.at(gid);
+  std::copy( x.A(), x.A()+3, cnode->xspatial() );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+DRT::Node* CONTACT::AUG::Strategy::FD_Debug::FindINode( const int gid ) const
+{
+  DRT::Node* node = NULL;
+
+  // do the finite difference step
+  for ( auto& interface : strat_->Interfaces() )
+  {
+    node = interface->Discret().gNode( gid );
+    if ( node )
+      return node;
+  }
+  dserror( "Node %d not found!", gid );
+  exit( EXIT_FAILURE );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix> CONTACT::AUG::ExtractMatrix(
+    const LINALG::SparseMatrix& source,
+    const Epetra_Map& target_range_map,
+    const Epetra_Map& target_domain_map )
+{
+  if ( not source.Filled() )
+    dserror( "The source matrix must be filled!" );
+
+  const int maxnumentries = source.MaxNumEntries();
+  Teuchos::RCP<LINALG::SparseMatrix> target_ptr =
+        Teuchos::rcp( new  LINALG::SparseMatrix( target_range_map,
+           maxnumentries ) );
+  LINALG::SparseMatrix& target = *target_ptr;
+
+  if ( target_range_map.NumGlobalElements() )
+  {
+    FSI::UTILS::MatrixLogicalSplitAndTransform extractor;
+    extractor( source, target_range_map, target_domain_map, 1.0,
+        NULL, NULL, target );
+  }
+
+  target.Complete( target_domain_map, target_range_map );
+
+  return target_ptr;
 }
 
 /*----------------------------------------------------------------------*
@@ -328,8 +456,8 @@ void CONTACT::AUG::MultiplyElementwise(
     dserror("The number of local elements of the source2targetMap and the "
         "target.Map() have to be equal! \n"
         ".........................................................\n"
-        "source2targetMap.NumMyElements() = %i on proc %i \n"
-        "target.Map().NumMyElements() = %i on proc %i \n"
+        "source2targetMap.NumMyElements() = %d on proc %i \n"
+        "target.Map().NumMyElements() = %d on proc %i \n"
         ".........................................................\n",
         source2targetMap.NumMyElements(),comm.MyPID(),
         target.Map().NumMyElements(),comm.MyPID());
@@ -346,7 +474,7 @@ void CONTACT::AUG::MultiplyElementwise(
   int error = source_exp.ReplaceMap(target.Map());
 
   if (error)
-    dserror("The source map couldn't be replaced by the target map! (error=%i)",
+    dserror("The source map couldn't be replaced by the target map! (error=%d)",
         error);
 
   if (inverse)
@@ -355,7 +483,7 @@ void CONTACT::AUG::MultiplyElementwise(
     error = target.Multiply(1.0,source_exp,target,0.0);
 
   if (error)
-    dserror("The element-wise multiplication failed! (error=%i)",error);
+    dserror("The element-wise multiplication failed! (error=%d)",error);
 
   return;
 }

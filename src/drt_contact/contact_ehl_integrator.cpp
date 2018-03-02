@@ -127,7 +127,7 @@ void CONTACT::CoIntegratorEhl::GP_WeightedSurfGradAndDeriv(
   std::vector<std::vector<double>> gxi(2,std::vector<double>(3,0));
 
   // metrics routine gives local basis vectors
-  sele.Metrics(xi,gxi.at(0),gxi.at(1));
+  sele.Metrics(xi,gxi.at(0).data(),gxi.at(1).data());
 
   if (Dim()==2)
   {

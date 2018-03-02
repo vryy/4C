@@ -206,10 +206,12 @@ void CONTACT::CoNitscheStrategy::Evaluate(
   case MORTAR::eval_run_post_evaluate: break;
   case MORTAR::eval_reset:
     SetState(MORTAR::state_new_displacement, *((*eval_vec)[0])); break;
-  case MORTAR::eval_recover: break;
+  case MORTAR::eval_run_post_compute_x: break;
   case MORTAR::eval_run_pre_compute_x: break;
   case MORTAR::eval_run_post_iterate: break;
-  default: dserror("unknown action"); break;
+  case MORTAR::eval_run_post_apply_jacobian_inverse: break;
+  default: dserror("unknown action: %s",
+      MORTAR::ActionType2String(act).c_str()); break;
   }
   return;
 }
@@ -300,7 +302,8 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::CreateMatrixBlock
 }
 
 Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::GetMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bt) const
+    const enum DRT::UTILS::MatBlockType& bt,
+    const CONTACT::ParamsInterface* cparams) const
 {
   if (curr_state_eval_==false)
     dserror("you didn't evaluate this contact state first");

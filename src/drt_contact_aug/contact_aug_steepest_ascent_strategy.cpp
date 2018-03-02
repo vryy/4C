@@ -17,19 +17,25 @@
 #include "contact_aug_steepest_ascent_strategy.H"
 #include "contact_aug_steepest_ascent_interface.H"
 #include "contact_aug_potential.H"
+#include "contact_aug_lagrange_multiplier_function.H"
+#include "contact_aug_penalty_update.H"
 
 #include "../drt_contact/contact_paramsinterface.H"
 
 #include "../drt_mortar/mortar_utils.H"
+#include "../drt_mortar/mortar_matrix_transform.H"
+
+#include "../drt_inpar/inpar_structure.H"
 
 #include "../drt_io/io_pstream.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_lib/epetra_utils.H"
+
+#define LAGRANGE_FUNC
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::STEEPESTASCENT::DataContainer::DataContainer()
-    : old_infeasibility_measure_( 0.0 ),
-      cn_upper_bound_( 0.0 )
 {
   /* intentionally left blank */
 }
@@ -51,7 +57,16 @@ CONTACT::AUG::STEEPESTASCENT::Strategy::Strategy(
   Data().InitSubDataContainer( INPAR::CONTACT::solution_steepest_ascent );
   const Teuchos::ParameterList& sa_params =
       Params().sublist("AUGMENTED",true).sublist("STEEPESTASCENT",true);
+
   Data().SaData().SetCnUpperBound( sa_params.get<double>( "CN_UPPER_BOUND" ) );
+  Data().SaData().SetPenaltyCorrectionParameter(
+      sa_params.get<double>( "CORRECTION_PARAMETER" ) );
+
+  Data().SaData().LagrangeMultiplierFuncPtr() =
+      Teuchos::rcp( new LagrangeMultiplierFunction() );
+
+  Data().SaData().PenaltyUpdatePtr() =
+      Teuchos::rcp( PenaltyUpdate::Create( sa_params ) );
 
   // cast to steepest ascent interfaces
   for ( plain_interface_set::const_iterator cit = interfaces.begin();
@@ -66,35 +81,82 @@ CONTACT::AUG::STEEPESTASCENT::Strategy::Strategy(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool CONTACT::AUG::STEEPESTASCENT::Strategy::AssembleContactRHS()
+void CONTACT::AUG::STEEPESTASCENT::Strategy::PostSetup(
+    bool redistributed,
+    bool init)
 {
-  if ( not AUG::Strategy::AssembleContactRHS() )
-    return false;
+  AUG::Strategy::PostSetup( redistributed, init );
 
-  for ( plain_interface_set::const_iterator cit=Interfaces().begin();
-        cit!=Interfaces().end(); ++cit )
+  if ( init )
   {
-    const STEEPESTASCENT::Interface& interface =
-        dynamic_cast<STEEPESTASCENT::Interface&>( **cit );
-    interface.AssembleAugAVector( Data().AVec(), Data().KappaVec() );
+    Data().SaData().PenaltyUpdate().Init( this, &Data() );
+
+#ifdef LAGRANGE_FUNC
+    Data().SaData().LagrangeMultiplierFunc().Init( this, Data() );
+    Data().SaData().LagrangeMultiplierFunc().Setup();
+#endif
   }
 
-  return true;
+  if ( redistributed )
+  {
+#ifdef LAGRANGE_FUNC
+    Data().SaData().LagrangeMultiplierFunc().Redistribute();
+#endif
+  }
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void CONTACT::AUG::STEEPESTASCENT::Strategy::AddContributionsToConstrRHS(
     Epetra_Vector& augConstrRhs ) const
 {
   // do nothing
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector>
+CONTACT::AUG::STEEPESTASCENT::Strategy::GetRhsBlockPtrForNormCheck(
+    const enum DRT::UTILS::VecBlockType& bt) const
+{
+  if (!IsInContact() and !WasInContact() and !WasInContactLastTimeStep())
+      return Teuchos::null;
+
+  Teuchos::RCP<Epetra_Vector> rhs_block = Teuchos::null;
+
+  switch (bt)
+  {
+    case DRT::UTILS::block_displ:
+    {
+      dserror( "Unused!" );
+
+      break;
+    }
+    case DRT::UTILS::block_constraint:
+    {
+      rhs_block = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true),true));
+
+      AUG::Strategy::AddContributionsToConstrRHS( *rhs_block );
+      rhs_block->ReplaceMap( LMDoFRowMap( true ) );
+
+      break;
+    }
+    default:
+    {
+      dserror("Unsupported VecBlocktype! (enum=%d)", bt);
+      exit( EXIT_FAILURE );
+    }
+  }
+
+  return rhs_block;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix>
 CONTACT::AUG::STEEPESTASCENT::Strategy::GetMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bt) const
+    const enum DRT::UTILS::MatBlockType& bt,
+    const CONTACT::ParamsInterface* cparams) const
 {
   // if there are no active contact contributions
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
@@ -109,14 +171,16 @@ CONTACT::AUG::STEEPESTASCENT::Strategy::GetMatrixBlockPtr(
           new LINALG::SparseMatrix(SlMaDoFRowMap(true),100,false,true));
 
       // build matrix kdd
-      AddContributionsToMatrixBlockDisplDispl( *mat_ptr );
+      AddContributionsToMatrixBlockDisplDispl( *mat_ptr, cparams );
       mat_ptr->Complete(SlMaDoFRowMap(true),SlMaDoFRowMap(true));
 
-      // transform parallel row/column distribution of matrix kdd
+      // transform parallel row/column distribution
       // (only necessary in the parallel redistribution case)
       if (ParRedist())
-        mat_ptr = MORTAR::MatrixRowColTransform(mat_ptr,
-            SlMaDoFRowMapPtr(false),SlMaDoFRowMapPtr(false));
+      {
+        MORTAR::MatrixRowColTransformer& transformer = Data().MatrixRowColTransformer();
+        mat_ptr =  transformer.RedistributedToUnredistributed( bt, *mat_ptr );
+      }
 
       break;
     }
@@ -148,26 +212,92 @@ CONTACT::AUG::STEEPESTASCENT::Strategy::GetMatrixBlockPtr(
   return mat_ptr;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::AUG::STEEPESTASCENT::Strategy::AddContributionsToMatrixBlockDisplDispl(
+    LINALG::SparseMatrix& kdd,
+    const CONTACT::ParamsInterface* cparams ) const
+{
+//  if ( cparams and cparams->GetPredictorType() != INPAR::STR::pred_tangdis )
+    kdd.Add(*Data().DGGLinMatrixPtr(),false,1.0,1.0);
+
+  /* ignore the Lagrange multiplier dependent contact contributions during the
+   * TangDis predictor */
+//  if ( cparams and cparams->GetPredictorType() != INPAR::STR::pred_tangdis )
+    kdd.Add(*Data().DGLmLinMatrixPtr(),false,-1.0,1.0);
+
+  // add inactive contributions (this is not well tested)
+  if ( Data().AddInactivForceContributions() )
+    kdd.Add(*Data().InactiveDDMatrixPtr(),false,-1.0,1.0);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void CONTACT::AUG::STEEPESTASCENT::Strategy::RunPreComputeX(
     const CONTACT::ParamsInterface& cparams,
     const Epetra_Vector& xold,
     Epetra_Vector& dir_mutable )
 {
-  AugmentDirection( cparams, xold, dir_mutable );
+//  AugmentDirection( cparams, xold, dir_mutable );
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::AUG::STEEPESTASCENT::Strategy::RunPostApplyJacobianInverse(
+    const CONTACT::ParamsInterface& cparams,
+    const Epetra_Vector& rhs,
+    Epetra_Vector& result,
+    const Epetra_Vector& xold,
+    const NOX::NLN::Group& grp )
+{
+  /* Note that the result vector is the result of the linear system and
+   * accordingly, due to the sign convention in NOX, the negative direction
+   * vector of the Newton method. Therefore, the vector is converted before and
+   * after the augmentation, since the used formulas expect a direction vector.
+   *                                                         hiermeier, 12/17 */
+  result.Scale(-1.0);
+  AugmentDirection( cparams, xold, result );
+  result.Scale(-1.0);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void CONTACT::AUG::STEEPESTASCENT::Strategy::RunPostIterate(
     const CONTACT::ParamsInterface& cparams )
 {
   UpdateCn( cparams );
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::AUG::STEEPESTASCENT::Strategy::CorrectParameters(
+    CONTACT::ParamsInterface& cparams,
+    const NOX::NLN::CorrectionType type )
+{
+  switch ( type )
+  {
+    case NOX::NLN::CorrectionType::sufficient_linear_infeasibility_reduction:
+    {
+      Teuchos::RCP<PenaltyUpdate> pu =
+          Teuchos::rcp( PenaltyUpdate::Create(
+              INPAR::CONTACT::PenaltyUpdate::sufficient_lin_reduction,
+              &Data().SaData().PenaltyUpdate() ) );
+      pu->Update( cparams );
+      pu->PrintInfo( IO::cout.os() );
+
+      break;
+    }
+    default:
+    {
+      dserror("Don't know what to do for NOX::NLN::CorrectionType %s|%d",
+          NOX::NLN::CorrectionType2String( type ).c_str(), type );
+      exit(EXIT_FAILURE);
+    }
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void CONTACT::AUG::STEEPESTASCENT::Strategy::AugmentDirection(
     const CONTACT::ParamsInterface& cparams,
     const Epetra_Vector& xold,
@@ -177,14 +307,11 @@ void CONTACT::AUG::STEEPESTASCENT::Strategy::AugmentDirection(
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
     return;
 
-  // just do it for the default step case
-  if ( not cparams.IsDefaultStep() )
-    return;
-
   // extract displ. increment
   Teuchos::RCP<const Epetra_Vector> displ_incr_ptr =
       LINALG::ExtractMyVector( dir_mutable, *ProblemDofs() );
   Teuchos::RCP<const Epetra_Vector> displ_incr_redistributed_ptr = Teuchos::null;
+
   if ( ParRedist() )
   {
     Teuchos::RCP<Epetra_Vector> tmp_exp = Teuchos::rcp( new Epetra_Vector(
@@ -198,12 +325,7 @@ void CONTACT::AUG::STEEPESTASCENT::Strategy::AugmentDirection(
   const Epetra_Vector& displ_incr = *displ_incr_redistributed_ptr;
 
   // --------------------------------------------------------------------------
-  // active lagrange multiplier increment in normal direction
-  Teuchos::RCP<Epetra_Vector> znincr_active =
-      ComputeActiveLagrangeIncrInNormalDirection( displ_incr );
-
-  // --------------------------------------------------------------------------
-  // inactive lagrange multiplier increment in normal direction
+  // extract old Lagrange multiplier from the old solution vector
   Teuchos::RCP<Epetra_Vector> zold_ptr =
       LINALG::ExtractMyVector( xold, LMDoFRowMap( false ) );
   zold_ptr->ReplaceMap( SlDoFRowMap( false ) );
@@ -221,6 +343,13 @@ void CONTACT::AUG::STEEPESTASCENT::Strategy::AugmentDirection(
 
   const Epetra_Vector& zold = *zold_redistributed_ptr;
 
+  // --------------------------------------------------------------------------
+  // active lagrange multiplier increment in normal direction
+  Teuchos::RCP<Epetra_Vector> znincr_active =
+      ComputeActiveLagrangeIncrInNormalDirection( displ_incr );
+
+  // --------------------------------------------------------------------------
+  // inactive lagrange multiplier increment in normal direction
   Teuchos::RCP<Epetra_Vector> zincr_inactive =
       ComputeInactiveLagrangeIncrInNormalDirection( displ_incr, zold );
 
@@ -237,15 +366,15 @@ void CONTACT::AUG::STEEPESTASCENT::Strategy::AugmentDirection(
   LINALG::AssembleMyVector( 0.0, dir_mutable, 1.0, zincr_full );
 
   // run at the very end...
-  PostAugmentDirection();
+  PostAugmentDirection( cparams, xold, dir_mutable );
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> CONTACT::AUG::STEEPESTASCENT::Strategy::
-ComputeActiveLagrangeIncrInNormalDirection( const Epetra_Vector& displ_incr )
+ComputeActiveLagrangeIncrInNormalDirection(
+    const Epetra_Vector& displ_incr )
 {
-
   // active lagrange multiplier increment in normal direction
   Teuchos::RCP<Epetra_Vector> znincr_active_ptr =
       Teuchos::rcp( new Epetra_Vector( Data().GActiveNDofRowMap(), true ) );
@@ -271,7 +400,7 @@ ComputeActiveLagrangeIncrInNormalDirection( const Epetra_Vector& displ_incr )
   if ( err )
     dserror("Multiply error! (err=%d)", err);
 
-  znincr_active.Update( 1.0, Data().WGap(), 1.0 );
+  CATCH_EPETRA_ERROR(znincr_active.Update( 1.0, Data().WGap(), 1.0 ));
 
   // Scaling of the Lagrange multiplier increment
   // --> inverse area scaling
@@ -283,19 +412,14 @@ ComputeActiveLagrangeIncrInNormalDirection( const Epetra_Vector& displ_incr )
   // the recover routine.
   MultiplyElementwise( Data().Cn(), Data().GActiveNodeRowMap(), znincr_active, false );
 
-  /* Step length parameter: Variations are possible, see for example:
-   * "Constrained optimization and Lagrange multiplier methods",
-   * Dimitri P. Bertsekas, 1996, pp.125-133
-   * (interpolation strategy on the pages 132 and 133). -- hiermeier 03/17 */
-  const double beta_zn = 1.0;
   // We correct the increment sign.
-  znincr_active.Scale( -beta_zn );
+  znincr_active.Scale( -1.0 );
 
   return znincr_active_ptr;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> CONTACT::AUG::STEEPESTASCENT::Strategy::
 ComputeInactiveLagrangeIncrInNormalDirection(
     const Epetra_Vector& displ_incr,
@@ -325,85 +449,34 @@ ComputeInactiveLagrangeIncrInNormalDirection(
 
   zincr_inactive.ReciprocalMultiply( -1.0, Data().InactiveDiagMatrix(), zincr_inactive, 0.0 );
 
-  zincr_inactive.Update( -1.0, zold_inactive, 1.0 );
+  CATCH_EPETRA_ERROR(zincr_inactive.Update( -1.0, zold_inactive, 1.0 ));
 
   return zincr_inactive_ptr;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void CONTACT::AUG::STEEPESTASCENT::Strategy::PostAugmentDirection()
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::AUG::STEEPESTASCENT::Strategy::PostAugmentDirection(
+    const CONTACT::ParamsInterface& cparams,
+    const Epetra_Vector& xold,
+    Epetra_Vector& dir )
 {
   Data().Potential().Compute();
 
   const double infeasibility_measure =
       Data().Potential().Get(
-          AUG::Potential::type_infeasibility_measure,
-          AUG::Potential::term_all );
+          AUG::POTENTIAL::Type::infeasibility_measure,
+          AUG::POTENTIAL::SetType::all );
 
   Data().SaData().SetOldInfeasibilityMeasure( infeasibility_measure );
-
-//  Data().Potential().ComputeLin();
-//  const double gndzn = Data().Potential().GetLin(
-//      AUG::Potential::type_augmented_lagrangian, AUG::Potential::lin_active_wrt_z );
-//  const double zndzn = Data().Potential().GetLin(
-//      AUG::Potential::type_augmented_lagrangian, AUG::Potential::lin_inactive_wrt_z );
-//  const double dzndzn = Data().Potential().GetLin(
-//      AUG::Potential::type_augmented_lagrangian, AUG::Potential::lin_inactive_wrt_z_and_z );
-//
-//  std::cout << "\n\n=============================================\n";
-//  std::cout << "( " << gndzn << " + " << zndzn << " ) / " << dzndzn << std::endl;
+  Data().SaData().PenaltyUpdate().SetState( cparams, xold, dir );
+  Data().SaData().PenaltyUpdate().ScaleDirection( dir );
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void CONTACT::AUG::STEEPESTASCENT::Strategy::UpdateCn(
     const CONTACT::ParamsInterface& cparams )
 {
-  Data().Potential().Compute();
-
-  const double infeasibility_measure =
-      Data().Potential().Get(
-          AUG::Potential::type_infeasibility_measure,
-          AUG::Potential::term_all );
-
-  const double old_infeasibility_measure = Data().SaData().GetOldInfeasibilityMeasure();
-
-  const double constr_violation     = std::sqrt( infeasibility_measure );
-  const double old_constr_violation = std::sqrt( old_infeasibility_measure );
-
-  // do nothing if one of the following criteria is fulfilled
-  if ( constr_violation < 1.0e-5 or
-       constr_violation < 0.25 * old_constr_violation )
-    return;
-
-  // get the largest current cn value
-  Epetra_Vector& cn_vec = Data().Cn();
-  double cn_max = 0.0;
-  cn_vec.MaxValue( &cn_max );
-
-  const double cn_upper_bound = Data().SaData().GetCnUpperBound();
-  if ( cn_max >= cn_upper_bound )
-    return;
-
-  const Epetra_Vector& zn_active = Data().Potential().GetZnActive();
-  const Epetra_Vector& aWGap     = Data().AWGap();
-
-  // get norms
-  double zn_active_nrm = 0.0;
-  zn_active.Norm2( &zn_active_nrm );
-
-  double aWGap_nrm = 0.0;
-  aWGap.Norm2( &aWGap_nrm );
-
-  const double cn_new = std::min( std::max( 2.0 * zn_active_nrm/aWGap_nrm, cn_max), cn_upper_bound );
-  cn_vec.PutScalar( cn_new );
-
-  IO::cout << "====================================================================\n";
-  IO::cout << "                      INCREASE OF CN                                \n";
-  IO::cout << "       |constr_violation^(k)| > 0.25 * |constr_violation^(k-1)|     \n"
-           << "                  " << std::setprecision(5) << constr_violation << " > "
-           << std::setprecision(5) << 0.25 * old_constr_violation << "\n";
-  IO::cout << "    ->->-> cN^(k): " << cn_max << ", cN^(k+1): " << cn_new << " <-<-<-" << IO::endl;
-  IO::cout << "====================================================================" << IO::endl;
+  Data().SaData().PenaltyUpdate().Update( cparams );
 }

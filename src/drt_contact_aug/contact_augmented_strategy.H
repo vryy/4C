@@ -19,8 +19,17 @@
 
 #include "../drt_contact/contact_lagrange_strategy.H"
 #include "contact_aug_utils.H"
+#include "contact_aug_enum_lists.H"
+#include "../linalg/linalg_fixedsizematrix.H"
+#include "../drt_lib/drt_singletondestruction.H"
 
 // forward declaration
+namespace DRT {
+  class Node;
+} // namespace DRT
+namespace MORTAR {
+  class MatrixRowColTransformer;
+} // namespace MORTAR
 namespace CONTACT {
 namespace AUG {
 namespace STEEPESTASCENT {
@@ -28,6 +37,10 @@ namespace STEEPESTASCENT {
 } // namespace STEEPESTASCENT
   class Interface;
   class Potential;
+namespace POTENTIAL {
+  enum class Type : int;
+  enum class SetType : int;
+} // namespace POTENTIAL
   class ComboStrategy;
 
   /*--------------------------------------------------------------------------*/
@@ -72,10 +85,6 @@ namespace STEEPESTASCENT {
     //! @name Booleans accessors
     //! @{
 
-    //! Return gFdCheck_ indicator
-    bool& FiniteDifferenceIndicator() { return gFdCheck_; }
-    bool FiniteDifferenceIndicator() const { return gFdCheck_; }
-
     //! Return WasInContactLastIter indicator
     bool& WasInContactLastIter() { return wasincontactlastiter_; }
     bool WasInContactLastIter() const { return wasincontactlastiter_; }
@@ -91,6 +100,9 @@ namespace STEEPESTASCENT {
     //! print the angular conservation check results if TRUE
     bool& PrintAngularMomConservation() { return printangularconservation_; };
     bool PrintAngularMomConservation() const { return printangularconservation_; };
+
+    bool& AddInactivForceContributions() { return add_inactive_force_; };
+    bool AddInactivForceContributions() const { return add_inactive_force_; };
 
     //! set the the semi smooth newton flag
     void SetIsSemiSmoothNewton( bool is_semi_smooth )
@@ -137,12 +149,22 @@ namespace STEEPESTASCENT {
     }
 
     //! access constant semi smooth cn (coming from the Input file)
-    double ConstantdCn() const
+    double ConstantCn() const
     {
       if ( cn_ < 0.0 )
         dserror( "cn was not set correctly! (cn_ = %d)", cn_ );
       return cn_;
     };
+
+    void SetCurrentEvalState( MORTAR::ActionType eval_state )
+    {
+      eval_state_ = eval_state;
+    }
+
+    MORTAR::ActionType GetCurrentEvalState() const
+    {
+      return eval_state_;
+    }
 
     //! get the parallel strategy enumerator
     void SetParallelStrategy( INPAR::MORTAR::ParallelStrategy parallel_strat )
@@ -154,6 +176,28 @@ namespace STEEPESTASCENT {
     INPAR::MORTAR::ParallelStrategy ParallelStrategy() const
     {
       return parallel_strategy_;
+    }
+
+    void SetVariationalApproachType(
+        const enum INPAR::CONTACT::VariationalApproach var_type )
+    {
+      var_type_ = var_type;
+    }
+
+    enum INPAR::CONTACT::VariationalApproach VariationalApproachType() const
+    {
+      return var_type_;
+    }
+
+    void SetFDCheckType(
+        const enum INPAR::CONTACT::FDCheck fd_check_type )
+    {
+      fd_check_type_ = fd_check_type;
+    }
+
+    enum INPAR::CONTACT::FDCheck FDCheckType() const
+    {
+      return fd_check_type_;
     }
 
     void SetPotential( const Teuchos::RCP<Potential>& potential )
@@ -171,47 +215,92 @@ namespace STEEPESTASCENT {
       return *potentialPtr_;
     }
 
+    CONTACT::AUG::Potential& MutablePotential() const
+    {
+      return *potentialPtr_;
+    }
+
+    void SetMatrixRowColTransformer( const Teuchos::RCP<MORTAR::MatrixRowColTransformer>& transformer )
+    {
+      mat_row_col_transformer_ = transformer;
+    }
+
+    void InitMatrixRowColTransformer();
+
+    MORTAR::MatrixRowColTransformer& MatrixRowColTransformer() const
+    {
+      if ( mat_row_col_transformer_.is_null() )
+        dserror( "The mat_row_col_transformer was not initialized correctly!" );
+
+      return *mat_row_col_transformer_;
+    }
+
+    double TotalGradientError() const
+    {
+      return grad_error_.total_;
+    }
+
+    double& TotalGradientError()
+    {
+      return grad_error_.total_;
+    }
+
+    const std::vector<std::pair<int,double> >& NodalGradientError_MaProj() const
+    {
+      return grad_error_.master_;
+    }
+
+    std::vector<std::pair<int,double> >& NodalGradientError_MaProj()
+    {
+      return grad_error_.master_;
+    }
+
+    const std::vector<std::pair<int,double> >& NodalGradientError_Jacobian() const
+    {
+      return grad_error_.jacobian_;
+    }
+
+    std::vector<std::pair<int,double> >& NodalGradientError_Jacobian()
+    {
+      return grad_error_.jacobian_;
+    }
+
     //! @name Matrix accessors
     //! @{
 
-    //! Return dGLmSlLinMatrix
-    Teuchos::RCP<LINALG::SparseMatrix>& DGLmSlLinMatrixPtr() { return dGLmSlLinMatrixPtr_; }
-    Teuchos::RCP<const LINALG::SparseMatrix> DGLmSlLinMatrixPtr() const { return dGLmSlLinMatrixPtr_; }
-    LINALG::SparseMatrix& DGLmSlLinMatrix()
+    /**! \brief Return BMatrix (combination of D and M)
+     *
+     *   For the complete variational approach the B-Matrix represents the
+     *   transpose of the gradient of the weighted gap vector and is
+     *   equal to dLmNWGapLin. In the incomplete case the B-Matrix represents
+     *   an incomplete estimate of the gradient. */
+    Teuchos::RCP<LINALG::SparseMatrix>& BMatrixPtr() { return BMatrixPtr_; }
+    Teuchos::RCP<const LINALG::SparseMatrix> BMatrixPtr() const { return BMatrixPtr_; }
+    LINALG::SparseMatrix& BMatrix()
     {
-      if (dGLmSlLinMatrixPtr_.is_null())
-        dserror("The dGLmSlLinMatrixPtr_ is not initialized!");
-      return *dGLmSlLinMatrixPtr_;
+      if ( BMatrixPtr_.is_null() )
+        dserror( "The BMatrixPtr_ is not initialized!" );
+      return *BMatrixPtr_;
     }
 
-    //! Return dGLmMaLinMatrix
-    Teuchos::RCP<LINALG::SparseMatrix>& DGLmMaLinMatrixPtr() { return dGLmMaLinMatrixPtr_; }
-    Teuchos::RCP<const LINALG::SparseMatrix> DGLmMaLinMatrixPtr() const { return dGLmMaLinMatrixPtr_; }
-    LINALG::SparseMatrix& DGLmMaLinMatrix()
+    //! Return dGLmLinMatrix
+    Teuchos::RCP<LINALG::SparseMatrix>& DGLmLinMatrixPtr() { return dGLmLinMatrixPtr_; }
+    Teuchos::RCP<const LINALG::SparseMatrix> DGLmLinMatrixPtr() const { return dGLmLinMatrixPtr_; }
+    LINALG::SparseMatrix& DGLmLinMatrix()
     {
-      if (dGLmMaLinMatrixPtr_.is_null())
-        dserror("The dGLmMaLinMatrixPtr_ is not initialized!");
-      return *dGLmMaLinMatrixPtr_;
+      if (dGLmLinMatrixPtr_.is_null())
+        dserror("The dGLmLinMatrixPtr_ is not initialized!");
+      return *dGLmLinMatrixPtr_;
     }
 
-    //! Return dGGSlLinMatrix
-    Teuchos::RCP<LINALG::SparseMatrix>& DGGSlLinMatrixPtr() { return dGGSlLinMatrixPtr_;}
-    Teuchos::RCP<const LINALG::SparseMatrix> DGGSlLinMatrixPtr() const { return dGGSlLinMatrixPtr_;}
-    LINALG::SparseMatrix& DGGSlLinMatrix()
+    //! Return dGGLinMatrix
+    Teuchos::RCP<LINALG::SparseMatrix>& DGGLinMatrixPtr() { return dGGLinMatrixPtr_;}
+    Teuchos::RCP<const LINALG::SparseMatrix> DGGLinMatrixPtr() const { return dGGLinMatrixPtr_;}
+    LINALG::SparseMatrix& DGGLinMatrix()
     {
-      if (dGGSlLinMatrixPtr_.is_null())
-        dserror("The dGGSlLinMatrixPtr_ is not initialized!");
-      return*dGGSlLinMatrixPtr_;
-    }
-
-    //! Return dGGMaLinMatrix
-    Teuchos::RCP<LINALG::SparseMatrix>& DGGMaLinMatrixPtr() { return dGGMaLinMatrixPtr_; }
-    Teuchos::RCP<const LINALG::SparseMatrix> DGGMaLinMatrixPtr() const { return dGGMaLinMatrixPtr_; }
-    LINALG::SparseMatrix& DGGMaLinMatrix()
-    {
-      if (dGGMaLinMatrixPtr_.is_null())
-        dserror("The dGGMaLinMatrixPtr_ is not initialized!");
-      return *dGGMaLinMatrixPtr_;
+      if (dGGLinMatrixPtr_.is_null())
+        dserror("The dGGLinMatrixPtr_ is not initialized!");
+      return*dGGLinMatrixPtr_;
     }
 
     //! Return dLmNWGapLinMatrix
@@ -251,6 +340,15 @@ namespace STEEPESTASCENT {
       if (inactiveLinMatrixPtr_.is_null())
         dserror("The augInactiveLinMatrixPtr_ is not initialized!");
       return *inactiveLinMatrixPtr_;
+    }
+
+    Teuchos::RCP<LINALG::SparseMatrix>& InactiveDDMatrixPtr() { return inactive_dd_matrixPtr_; }
+    Teuchos::RCP<const LINALG::SparseMatrix> InactiveDDMatrixPtr() const { return inactive_dd_matrixPtr_; }
+    LINALG::SparseMatrix& InactiveDDMatrix()
+    {
+      if (inactive_dd_matrixPtr_.is_null())
+        dserror("The inactive_dd_matrixPtr_ is not initialized!");
+      return *inactive_dd_matrixPtr_;
     }
     //! @}
 
@@ -311,6 +409,16 @@ namespace STEEPESTASCENT {
       return *aWGapPtr_;
     }
 
+    //! return global weighted gap vector of all slave nodes
+     Teuchos::RCP<Epetra_Vector>& WGapAllSlNodesPtr() { return wGapAllPtr_; };
+     Teuchos::RCP<const Epetra_Vector> WGapAllSlNodesPtr() const { return wGapAllPtr_; };
+     Epetra_Vector& WGapAllSlNodes()
+     {
+       if ( wGapAllPtr_.is_null() )
+         dserror("The wgap_all_ vector is not initialized!");
+       return *wGapAllPtr_;
+     }
+
     /*! \brief Return the tangential Lagrange multiplier right hand side
      *
      *  In the frictionless case this is supposed to do nothing and just keeps
@@ -324,7 +432,7 @@ namespace STEEPESTASCENT {
       return *dLmTLmTRhsPtr_;
     }
 
-    /*! \brief Return the slave force due to Lagrange multiplier values */
+    /*! \brief Return the slave force due to active Lagrange multiplier values */
     Teuchos::RCP<Epetra_Vector>& SlForceLmPtr() { return slForceLmPtr_; }
     Teuchos::RCP<const Epetra_Vector> SlForceLmPtr() const { return slForceLmPtr_.getConst(); }
     Epetra_Vector& SlForceLm()
@@ -332,6 +440,16 @@ namespace STEEPESTASCENT {
       if ( slForceLmPtr_.is_null() )
         dserror( "The slForceLmPtr_ is not initialized!" );
       return *slForceLmPtr_;
+    }
+
+    /*! \brief Return the slave force due to inactive Lagrange multiplier values */
+    Teuchos::RCP<Epetra_Vector>& SlForceLmInactivePtr() { return slForceLmInactivePtr_; }
+    Teuchos::RCP<const Epetra_Vector> SlForceLmInactivePtr() const { return slForceLmInactivePtr_.getConst(); }
+    Epetra_Vector& SlForceLmInactive()
+    {
+      if ( slForceLmInactivePtr_.is_null() )
+        dserror( "The slForceLmInactivePtr_ is not initialized!" );
+      return *slForceLmInactivePtr_;
     }
 
     /*! \brief Return the slave force due to gap values */
@@ -418,9 +536,6 @@ namespace STEEPESTASCENT {
     DataContainer operator =(const DataContainer& old);
     DataContainer(const DataContainer& old);
 
-    //! indicates if the global finite difference check is active
-    bool gFdCheck_;
-
     //! flag indicating global contact status of the last nonlinear iteration step
     bool wasincontactlastiter_;
 
@@ -436,30 +551,40 @@ namespace STEEPESTASCENT {
     //! flag indicating if a semi smooth newton is used
     bool is_semi_smooth_newton_;
 
+    //! consider forces from Lagrange multiplier values of inactive nodes
+    bool add_inactive_force_ = false;
+
     //! flag indicating if the slave and master matrix maps changed ( e.g. due to redistribution )
     bool matrix_maps_valid_;
 
     //! flag indicating if the slave and master vector maps changed ( e.g. due to redistribution )
     bool vector_maps_valid_;
 
+    bool ispredict_ = false;
+
     //! constant cn value from the input file
     double cn_;
 
+    enum MORTAR::ActionType eval_state_;
+
     enum INPAR::MORTAR::ParallelStrategy parallel_strategy_;
+
+    enum INPAR::CONTACT::VariationalApproach var_type_;
+
+    enum INPAR::CONTACT::FDCheck fd_check_type_;
 
     Teuchos::RCP<CONTACT::AUG::Potential> potentialPtr_;
 
-    //! global matrix dGLmSlLin
-    Teuchos::RCP<LINALG::SparseMatrix> dGLmSlLinMatrixPtr_;
+    Teuchos::RCP<MORTAR::MatrixRowColTransformer > mat_row_col_transformer_;
 
-    //! global matrix dGLmMaLin
-    Teuchos::RCP<LINALG::SparseMatrix> dGLmMaLinMatrixPtr_;
+    //! global matrix B-matrix (slave + master)
+    Teuchos::RCP<LINALG::SparseMatrix> BMatrixPtr_;
 
-    //! global matrix dGGSlLin
-    Teuchos::RCP<LINALG::SparseMatrix> dGGSlLinMatrixPtr_;
+    //! global matrix dGLmLin (slave + master)
+    Teuchos::RCP<LINALG::SparseMatrix> dGLmLinMatrixPtr_;
 
-    //! global matrix dGGMaLin
-    Teuchos::RCP<LINALG::SparseMatrix> dGGMaLinMatrixPtr_;
+    //! global matrix dGGLin (slave + master)
+    Teuchos::RCP<LINALG::SparseMatrix> dGGLinMatrixPtr_;
 
     //! global matrix dLmNWGapLin
     Teuchos::RCP<LINALG::SparseMatrix> dLmNWGapLinMatrixPtr_;
@@ -472,6 +597,9 @@ namespace STEEPESTASCENT {
 
     //! global inactive linearization matrix
     Teuchos::RCP<LINALG::SparseMatrix> inactiveLinMatrixPtr_;
+
+    //! global inactive 2-nd order derivative matrix w.r.t. the displacements
+    Teuchos::RCP<LINALG::SparseMatrix> inactive_dd_matrixPtr_;
 
     //! global inactive diagonal matrix ( represented as vector )
     Teuchos::RCP<Epetra_Vector> inactiveDiagMatrixPtr_;
@@ -488,11 +616,17 @@ namespace STEEPESTASCENT {
     //! averaged weighted gap vector
     Teuchos::RCP<Epetra_Vector> aWGapPtr_;
 
+    //! weighted gap vector containing values for all slave nodes
+    Teuchos::RCP<Epetra_Vector> wGapAllPtr_;
+
     //! inactive tangential lagrange multiplier right-hand-side
     Teuchos::RCP<Epetra_Vector> dLmTLmTRhsPtr_;
 
     //! interface force due to Lagrange multiplier values on the slave-side
     Teuchos::RCP<Epetra_Vector> slForceLmPtr_;
+
+    //! interface force due to inactive Lagrange multiplier values on the slave-side
+    Teuchos::RCP<Epetra_Vector> slForceLmInactivePtr_;
 
     //! interface force due to gap values on the slave-side
     Teuchos::RCP<Epetra_Vector> slForceGPtr_;
@@ -512,8 +646,20 @@ namespace STEEPESTASCENT {
     //! global slave dof row map in tangential direction (for all interfaces)
     Teuchos::RCP<Epetra_Map> gstdofrowmapPtr_;
 
-    //! global map of all active slave nodes of the previous Newton step
+    //! global row map of all active slave nodes of the previous Newton step
     Teuchos::RCP<Epetra_Map> gOldActiveSlaveNodesPtr_;
+
+    struct GradError
+    {
+      GradError() = default;
+      ~GradError() = default;
+
+      double total_ = 0.0;
+      std::vector<std::pair<int,double> > master_;
+      std::vector<std::pair<int,double> > jacobian_;
+    };
+
+    GradError grad_error_;
 
     /// @name sub-data container
     /// @{
@@ -524,11 +670,7 @@ namespace STEEPESTASCENT {
   };  // class DataContainer
 
   /*--------------------------------------------------------------------------*/
-  /*! \brief AUGMENTED LAGRANGIAN STRATEGY for a full step non-linear solver method
-   *
-   *  \remark If you are interested in using more sophisticated non-linear solver
-   *  strategies please see the CONTACT::NLN::Augmented, CONTACT::NLN::SteepestAscent
-   *  and CONTACT::NLN::Lagrange classes.
+  /*! \brief Augmented Lagrangian strategy
    *
    *  \author hiermeier
    *  \date 04/15*/
@@ -545,7 +687,7 @@ namespace STEEPESTASCENT {
         const Epetra_Map* DofRowMap,
         const Epetra_Map* NodeRowMap,
         const Teuchos::ParameterList& params,
-        const std::vector<Teuchos::RCP<CONTACT::CoInterface> >& interfaces,
+        const plain_interface_set& interfaces,
         int dim,
         const Teuchos::RCP<const Epetra_Comm>& comm,
         int maxdof);
@@ -553,29 +695,38 @@ namespace STEEPESTASCENT {
     //! Destructor
     virtual ~Strategy() {};
 
-    virtual INPAR::CONTACT::SolvingStrategy Type() const
+    INPAR::CONTACT::SolvingStrategy Type() const override
     {
       return INPAR::CONTACT::solution_augmented;
     }
 
-    virtual bool IsSaddlePointSystem() const;
+    bool IsSaddlePointSystem() const override;
 
     //! reset active set convergence flags
-    virtual void ResetActiveSet()
+    void ResetActiveSet() override
     { Data().IsActiveSetConverged() = false; };
 
     //! Return the L2-norm of the constraint right-hand-side [deprecated]
-    virtual double ConstraintNorm() const;
+    double ConstraintNorm() const override;
 
     //! Save the reference state
-    virtual void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis)
+    void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) override
     { };
 
     //! Read the restart information and adjust the members accordingly
-    virtual void DoReadRestart(
+    void DoReadRestart(
         IO::DiscretizationReader& reader,
         Teuchos::RCP<const Epetra_Vector> dis,
-        Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr );
+        Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr ) override;
+
+    /*! \brief Reset the internal state variables [derived]
+     *
+     *  \date 02/2016
+     *  \author hiermeier */
+    void Reset(
+        const CONTACT::ParamsInterface& cparams,
+        const Epetra_Vector& dispnp,
+        const Epetra_Vector& xnew ) override;
 
     //! @name Accessors
     //! @{
@@ -583,17 +734,17 @@ namespace STEEPESTASCENT {
      *
      *  The augmented Lagrangian strategy supports only the semi-smooth Newton
      *  check at the moment, so no difference is made! */
-    virtual bool ActiveSetSemiSmoothConverged() const
+    bool ActiveSetSemiSmoothConverged() const override
     {
       return Data().IsActiveSetConverged();
     }
 
     //! Return the active node row map of the previous Newton step
-    virtual Teuchos::RCP<const Epetra_Map> GetOldActiveRowNodes() const
+    Teuchos::RCP<const Epetra_Map> GetOldActiveRowNodes() const override
     { return Data().GOldActiveSlaveNodesPtr(); };
 
     //! Return the slip node row map of the previous Newton step
-    virtual Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const
+    Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const override
     { dserror("No frictional contact for the augmented Lagrangian contact formulation!");
       exit(EXIT_FAILURE); };
 
@@ -604,14 +755,15 @@ namespace STEEPESTASCENT {
      *
      *  \date 04/2016
      *  \author hiermeier */
-    virtual Teuchos::RCP<const Epetra_Map> SlNormalDoFRowMapPtr(const bool& redist) const
+    Teuchos::RCP<const Epetra_Map> SlNormalDoFRowMapPtr(
+        const bool& redist) const override
     {
       if ((not redist) and ParRedist())
         dserror("The original / not redistributed slave normal row map is not available!");
 
       return Data().GSlNormalDofRowMapPtr();
     };
-    virtual const Epetra_Map& SlNormalDoFRowMap(const bool& redist) const
+    const Epetra_Map& SlNormalDoFRowMap(const bool& redist) const override
     {
       return *SlNormalDoFRowMapPtr(redist);
     }
@@ -623,33 +775,37 @@ namespace STEEPESTASCENT {
      *
      *  \date 04/2016
      *  \author hiermeier */
-    virtual Teuchos::RCP<const Epetra_Map> SlTangentialDoFRowMapPtr(const bool& redist) const
+    Teuchos::RCP<const Epetra_Map> SlTangentialDoFRowMapPtr(const bool& redist) const override
     {
       if ((not redist) and ParRedist())
         dserror("The original / not redistributed slave tangential row map is not available!");
 
       return Data().GSlTangentialDofRowMapPtr();
     };
-    virtual const Epetra_Map& SlTangentialDoFRowMap(const bool& redist) const
+    const Epetra_Map& SlTangentialDoFRowMap(const bool& redist) const override
     {
       return *SlTangentialDoFRowMapPtr(redist);
     }
 
     //! derived
-    virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
-        const enum DRT::UTILS::VecBlockType& bt) const;
+    Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
+        const enum DRT::UTILS::VecBlockType& bt) const override;
 
     //! Return the condensed right hand side vector (currently unsupported!)
-    virtual Teuchos::RCP<const Epetra_Vector> GetCondensedRhsPtr() const
+    Teuchos::RCP<const Epetra_Vector> GetCondensedRhsPtr(
+        Epetra_Vector& f, const double & timefac_np ) const override
     { dserror("There is no condensed rhs pointer in the augmented Lagrangian case!");
       exit(EXIT_FAILURE); };
 
     //! Return the desired matrix block pointer
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
-        const enum DRT::UTILS::MatBlockType& bt) const;
+    Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
+        const enum DRT::UTILS::MatBlockType& bt,
+        const CONTACT::ParamsInterface* cparams=NULL) const override;
 
     //! Return the condensed matrix block pointer (currently unsupported!)
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetCondensedMatrixBlockPtr() const
+    Teuchos::RCP<LINALG::SparseMatrix> GetCondensedMatrixBlockPtr(
+        Teuchos::RCP<LINALG::SparseMatrix>& kteff,
+        const double & timefac_np ) const override
     { dserror("There is no condensed matrix block in the augmented Lagrangian case!");
       exit(EXIT_FAILURE); };
 
@@ -657,9 +813,62 @@ namespace STEEPESTASCENT {
     bool WasInContactLastIter() const { return Data().WasInContactLastIter(); }
 
     //! Return augmented constraint rhs vector
-    virtual Teuchos::RCP<Epetra_Vector> ConstrRhs() { return Data().ConstrRhsPtr(); }
+    Teuchos::RCP<Epetra_Vector> ConstrRhs()  override { return Data().ConstrRhsPtr(); }
+
+    /*! \brief return the weighted gap vector (slave normal dof row map layout)
+     *
+     *  \param[in] type: Choose the map type. Default is the weighted gap of
+     *                   the active nodes only. Alternatively, the active
+     *                   weighted gap of all slave nodes can be accessed. In
+     *                   the second case non-projectable contributions will
+     *                   be filled with a value of 1.0e+12.
+     *
+     * \author hiermeier \date 10/17 */
+    const Epetra_Vector& GetWeightedGap(
+        const enum MapType type = MapType::active_slave_nodes ) const;
+
+    /*! \brief return the weighted gap gradient
+     *
+     *  \note If map_type == all_slave_nodes: In general, not all contributions
+     *  can be considered, if non-projectable slave elements are involved. Be
+     *  aware of possible consequences in your calculations.
+     *
+     *  \param[in] grad_type  Choose between the gradient of the weighted gap
+     *                        used for the force balance and the always
+     *                        consistently computed gradient used for the
+     *                        constraint linearization.
+     *  \param[in] map_type   Specify the range map of the weighted gap gradient.
+     *                        If the weighted gap gradient is assembled for
+     *                        all slave nodes, non-projectable contributions
+     *                        will contain zero values.
+     *
+     *  \author hiermeier \date 09/17 */
+    Teuchos::RCP<const LINALG::SparseMatrix> GetWeightedGapGradient(
+        const enum WGapGradientType grad_type,
+        const enum MapType map_type ) const;
+
+    void EvalWeightedGapGradientError(
+        CONTACT::ParamsInterface& cparams ) override;
 
     //! @}
+
+    double CharacteristicInterfaceElementLength(
+        const enum CONTACT::AUG::SideType stype ) const;
+
+    inline double GetTotalGradientError() const
+    {
+      return Data().TotalGradientError();
+    }
+
+    const std::vector<std::pair<int,double> >& GetNodalGradientError_Jacobian() const
+    {
+      return Data().NodalGradientError_Jacobian();
+    }
+
+    const std::vector<std::pair<int,double> >& GetNodalGradientError_MaProj() const
+    {
+      return Data().NodalGradientError_MaProj();
+    }
 
     //! @name Evaluate routines
     //! @{
@@ -670,24 +879,106 @@ namespace STEEPESTASCENT {
 
     //! @}
 
+    //! @name merit function methods
+    //! @{
+
+    double GetPotentialValue(
+        const enum NOX::NLN::MeritFunction::MeritFctName mrt_type ) const override;
+
+    double GetLinearizedPotentialValueTerms(
+        const Epetra_Vector& dir,
+        const enum NOX::NLN::MeritFunction::MeritFctName mrt_type,
+        const enum NOX::NLN::MeritFunction::LinOrder linorder,
+        const enum NOX::NLN::MeritFunction::LinType lintype ) const override;
+
+    /** \brief Split state vector (e.g. direction or x) into the displacement
+     *  part as well as into its active and inactive normal Lagrange multiplier
+     *  parts
+     *
+     *  \note If NULL pointers are used as input arguments, the pointers are
+     *  initialized automatically with the correct maps.
+     *
+     *  \author hiermeier \date 08/17 */
+    void SplitStateVector(
+        const Epetra_Vector& full_state,
+        Teuchos::RCP<Epetra_Vector>& displ_state_slma_ptr,
+        Teuchos::RCP<Epetra_Vector>& z_state_active_ptr,
+        Teuchos::RCP<Epetra_Vector>& z_state_inactive_ptr ) const;
+
+    /** \brief Split state vector (e.g. direction or x) into the displacement
+     *  part as well as into its active and inactive normal Lagrange multiplier
+     *  parts
+     *
+     *  \author hiermeier \date 08/17 */
+    void SplitStateVector(
+        const Epetra_Vector& full_state,
+        Epetra_Vector& displ_state_slma,
+        Epetra_Vector& z_state_active,
+        Epetra_Vector& z_state_inactive ) const;
+
+    Teuchos::RCP<Epetra_Vector> EnforceNodalComplementarityCondition(
+        std::vector<double>& interface_cn,
+        const Epetra_Vector& dincr_slma ) const;
 
   protected:
-    //! derived
-    virtual plain_interface_set& Interfaces();
+
+    virtual double InactiveScaleFactor() const
+    {
+      return 0.5;
+    }
+
+    void EvaluateReferenceState(
+        Teuchos::RCP<const Epetra_Vector> vec) override;
+
+    void SetCurrentEvalState( const CONTACT::ParamsInterface& cparams );
+
+    double GetLinearizedPotentialModelTerms(
+        const Epetra_Vector& dir,
+        const enum POTENTIAL::Type pottype,
+        const enum POTENTIAL::SetType potset,
+        const enum NOX::NLN::MeritFunction::LinOrder linorder,
+        const enum NOX::NLN::MeritFunction::LinType lintype ) const;
+
+    void GetLinearizedPotentialModelTerms_1stOrder(
+        const enum POTENTIAL::Type pottype,
+        const enum POTENTIAL::SetType potset,
+        const enum NOX::NLN::MeritFunction::LinType lintype,
+        double& linval ) const;
+
+    void GetLinearizedPotentialModelTerms_2ndOrder(
+        const enum POTENTIAL::Type pottype,
+        const enum POTENTIAL::SetType potset,
+        const enum NOX::NLN::MeritFunction::LinType lintype,
+        double& linval ) const;
+    //! @}
+
+
+    /*! \brief Update routine called at the end of a load/time step [derived]
+     *
+     *  \param[in] dis  Converged displacemnt state.
+     *
+     *  \author hiermeier \date 06/17 */
+    void Update( Teuchos::RCP<const Epetra_Vector> dis) override;
 
     //! derived
-    virtual const plain_interface_set& Interfaces() const;
+    plain_interface_set& Interfaces() override;
+
+    //! derived
+    const plain_interface_set& Interfaces() const override;
 
     /*! \brief  Assemble the global sets gsndofrowmap_ and gstdofrowmap_
      *
-     *   These maps contain all slave dofs in normal and tangential direction, over all
-     *   interfaces, respectively. */
+     *   These maps contain all slave dofs in normal and tangential direction,
+     *   assembled over all interfaces. */
     void AssembleGlobalSlNTDofRowMaps();
 
     /*! \brief Setup the cn-vector
      *
-     *  We allow different cn values for each node in the augmented Lagrangian case. */
-    void InitializeCn(bool redistributed, bool init);
+     *  We allow theoretically different cn values for each node in the
+     *  augmented Lagrangian  case. */
+    void InitializeCn( const double cn_init );
+
+    void RedistributeCn();
 
     /*! \brief Initialize and evaluate augmented Mortar stuff for the next Newton step
      *
@@ -699,10 +990,10 @@ namespace STEEPESTASCENT {
      *  to global matrices. No setup of the global system is to be done here yet,
      *  so there is no need to pass in the effective stiffness K or the effective
      *  load vector f. (-->Evaluate routine) */
-    virtual void InitMortar();
+    void InitMortar() override;
 
     //! Assemble the mortar matrices
-    virtual void AssembleMortar();
+    void AssembleMortar() override;
 
     /*! \brief Split of the Dn and Mn matrices into an active and inactive part
      *
@@ -736,12 +1027,10 @@ namespace STEEPESTASCENT {
      *  another Newton step has to be performed.
      *
      *  \author hiermeier */
-    virtual void UpdateActiveSetSemiSmooth()
-    { UpdateActiveSetSemiSmooth(false); };
-    void UpdateActiveSetSemiSmooth(const bool& correction);
+    void UpdateActiveSetSemiSmooth( const CONTACT::ParamsInterface& cparams );
 
     //! Initialize all matrices
-    virtual void Initialize()
+    void Initialize() override
     {
       Initialize( MORTAR::eval_force_stiff );
     }
@@ -756,14 +1045,19 @@ namespace STEEPESTASCENT {
      *  A better and more realistic visualization is the corresponding contact force.
      *
      *  Function overwrites the basic function in the abstract lagrange strategy. */
-    virtual void OutputStresses();
+    void OutputStresses() override;
+
+    /*! \brief Write contact force output
+     *
+     *  \author hiermeier \date 12/17 */
+    void WriteOutput( IO::DiscretizationWriter& writer ) const override;
 
     /*! @name Auxiliary routines, debugging and visualization methods
      *        (all these methods are defined in the contact_augmented_strategy_tools.cpp) */
     //! @{
 
      //! Check linear and angular momentum conservation
-    void CheckConservationLaws(const Epetra_Vector& augfs, const Epetra_Vector& augfm);
+    void CheckConservationLaws( CONTACT::ParamsInterface& cparams );
 
     //! Finite Difference check of the augmented Lagrange terms at GP level
     void AugFDCheckGP(CONTACT::ParamsInterface& cparams);
@@ -775,10 +1069,46 @@ namespace STEEPESTASCENT {
      *
      *  This function is only suitable for the augmented Lagrange formulation due to
      *  the special structure of the EvaluateContact implementation! */
-    void EvalFDCheckGlobalDispl(
-        LINALG::SparseMatrix derivMatrix,
-        Teuchos::RCP<Epetra_Vector>& rhsVector,
-        CONTACT::ParamsInterface& cparams);
+    class FD_Debug : public DRT::SingletonDestruction
+    {
+    public:
+      static FD_Debug* Instance(
+          Strategy* strat,
+          const double delta = 1.0e-8,
+          const bool delete_me = false );
+
+      virtual void Done();
+
+      void Evaluate(
+          const Teuchos::RCP<LINALG::SparseMatrix>& derivMatrixPtr,
+          Teuchos::RCP<Epetra_Vector>& rhsVector,
+          CONTACT::ParamsInterface& cparams);
+
+    private:
+      FD_Debug()
+        : strat_( NULL ),
+          delta_( 0.0 ),
+          is_fd_check_( false )
+      { /*empty*/ }
+
+      ~FD_Debug() {};
+
+      void Init(
+          Strategy* strat,
+          const double delta = 1.0e-8 );
+
+      void DoPerturbation( const int gid, const int dof );
+
+      void UndoPerturbation( const int gid, const int dof ) const;
+
+      DRT::Node* FindINode( const int gid ) const;
+
+    private:
+      Strategy* strat_;
+      double delta_;
+      bool is_fd_check_;
+      std::map<int,LINALG::Matrix<3,1> > ref_x_;
+    };
     //@}
 
     //! @name (Derived) internal evaluate routines
@@ -789,17 +1119,7 @@ namespace STEEPESTASCENT {
      *  \param init          (in) : initialization is running
      *
      *  \author hiermeier \date 03/2016 */
-    virtual void PostSetup( bool redistributed, bool init );
-
-    /*! \brief Compute force terms
-     *
-     *  \param cparams (in): parameter interface between the contact objects and the structural time integration
-     *
-     *  \date 03/2016
-     *  \author hiermeier */
-    virtual void EvalForce(CONTACT::ParamsInterface& cparams);
-
-    void EvalAugmentedForces();
+    void PostSetup( bool redistributed, bool init ) override;
 
     /*! \brief Run at the beginning of a call to EvalForce
      *
@@ -808,13 +1128,37 @@ namespace STEEPESTASCENT {
      *  \author hiermeier \date 03/17 */
     void PreEvalForce( CONTACT::ParamsInterface& cparams );
 
+    /*! \brief Compute force terms
+     *
+     *  \param cparams (in): parameter interface between the contact objects and
+     *                       the structural time integration
+     *
+     *  \date 03/2016
+     *  \author hiermeier */
+    void EvalForce(CONTACT::ParamsInterface& cparams) override;
+
+    /*! \brief Run in the end of a call to EvalForce
+     *
+     *  Post-process force terms.
+     *
+     *  \author hiermeier \date 04/17 */
+    void PostEvalForce( CONTACT::ParamsInterface& cparams);
+
+    void EvalAugmentedForces();
+
+    void EvalConstraintForces();
+
+    void ZeroizeLMForces();
+
     /*! \brief Compute force and stiffness terms
      *
      * \param cparams (in): parameter interface between the contact objects and the structural time integration
      *
      *  \date 03/2016
      *  \author hiermeier */
-    virtual void EvalForceStiff(CONTACT::ParamsInterface& cparams);
+    void EvalForceStiff(CONTACT::ParamsInterface& cparams) override;
+
+    void EvalStaticConstraintRHS( CONTACT::ParamsInterface& cparams ) override;
 
     /*! \brief Run in the end of a call to EvalForceStiff
      *
@@ -832,11 +1176,11 @@ namespace STEEPESTASCENT {
      *
      * \date 03/2016
      * \author hiermeier */
-    virtual void RecoverState(
+    void RunPostComputeX(
         const CONTACT::ParamsInterface& cparams,
         const Epetra_Vector& xold,
         const Epetra_Vector& dir,
-        const Epetra_Vector& xnew);
+        const Epetra_Vector& xnew) override;
 
     /*! \brief Reset the internal stored Lagrange multipliers
      *
@@ -845,18 +1189,30 @@ namespace STEEPESTASCENT {
      *
      *  \date 07/2016
      *  \author hiermeier */
-    virtual void ResetLagrangeMultipliers(
+    void ResetLagrangeMultipliers(
         const CONTACT::ParamsInterface& cparams,
-        const Epetra_Vector& xnew);
+        const Epetra_Vector& xnew) override;
 
     //! \brief Derived function
-    virtual void InitEvalInterface(Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr);
+    inline void InitEvalInterface( CONTACT::ParamsInterface& cparams )
+    {
+      Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr =
+          Teuchos::rcpFromRef( cparams );
+      InitEvalInterface( cparams_ptr );
+    }
+    void InitEvalInterface(Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr) override;
+
+    //! evaluate interface
+    void EvalInterface(
+        CONTACT::AUG::Interface& interface,
+        const int rriter,
+        const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr );
 
     //! The contributions to the structural right-hand-side block are calculated.
     virtual void EvalStrContactRHS();
 
     //! The entries of the constraint right-hand side are calculated.
-    virtual void EvalConstrRHS();
+    void EvalConstrRHS() override;
 
     //! All necessary contributions are added to the constraint right-hand side.
     virtual void AddContributionsToConstrRHS( Epetra_Vector& augConstrRhs ) const;
@@ -867,54 +1223,60 @@ namespace STEEPESTASCENT {
     void AssembleGap();
 
     //! Assemble contact contributions to the rhs (frictionless)
-    virtual bool AssembleContactRHS();
+    bool AssembleContactRHS();
 
     //! Evaluate contact contributions to stiff matrix (frictionless)
-    virtual void AssembleContactStiff();
+    void AssembleContactStiff();
 
-    /*! \brief Create new state matrices
+    /*! \brief Create new stiffness state
      *
      *  \author hiermeier \date 03/17 */
-    void CreateMatrices( const Epetra_Map & gAugInactiveSlaveDofs );
+    void CreateStiffnessState( const Epetra_Map & gAugInactiveSlaveDofs );
 
-    /*! \brief Create new vectors
+    /*! \brief Create new rhs state
      *
      *  \author hiermeier \date 03/17 */
-    void CreateVectors( const Epetra_Map & gAugInactiveSlaveDofs );
+    void CreateRhsState( const Epetra_Map & gAugInactiveSlaveDofs );
 
-    /*! \brief Zeroize existing state matrices
+    /*! \brief Zeroize existing stiffness state
+     *
+     *  Zeroize all quantities which are directly related to the evaluation
+     *  of the stiffness contributions. This covers matrices as well as
+     *  vectors representing diagonal matrices.
      *
      *  \author hiermeier \date 03/17 */
-    void ZeroizeMatrices();
+    void ZeroizeStiffnessState();
 
-    /*! \brief Zeroize existing state vectors
+    /*! \brief Zeroize existing rhs state
      *
      *  \author hiermeier \date 03/17 */
-    void ZeroizeVectors();
+    void ZeroizeRhsState();
 
     /** \brief All contributions to the final system matrix block:
      *  ROW => Displacement, COLUMN => Displacement
      *
      *  \author hiermeier \date 03/17 */
-    virtual void AddContributionsToMatrixBlockDisplDispl( LINALG::SparseMatrix& kdd ) const;
+    virtual void AddContributionsToMatrixBlockDisplDispl(
+        LINALG::SparseMatrix& kdd,
+        const CONTACT::ParamsInterface* cparams = NULL ) const;
 
     /** \brief All contributions to the final system matrix block:
      *  ROW => Displacement, COLUMN => Lagrange Multiplier
      *
      *  \author hiermeier \date 03/17 */
-    virtual void AddContributionsToMatrixBlockDisplLm( LINALG::SparseMatrix& kdz ) const;
+    void AddContributionsToMatrixBlockDisplLm( LINALG::SparseMatrix& kdz ) const;
 
     /** \brief All contributions to the final system matrix block:
      *  ROW => Lagrange Multiplier, COLUMN => Displacement
      *
      *  \author hiermeier \date 03/17 */
-    virtual void AddContributionsToMatrixBlockLmDispl( LINALG::SparseMatrix& kzd ) const;
+    void AddContributionsToMatrixBlockLmDispl( LINALG::SparseMatrix& kzd ) const;
 
     /** \brief All contributions to the final system matrix block:
      *  ROW => Lagrange Multiplier, COLUMN => Lagrange Multiplier
      *
      *  \author hiermeier \date 03/17 */
-    virtual void AddContributionsToMatrixBlockLmLm( LINALG::SparseMatrix& kzz ) const;
+    void AddContributionsToMatrixBlockLmLm( LINALG::SparseMatrix& kzz ) const;
 
   protected:
     /*! \brief Get access to the internal data container of the strategy (mutable)
@@ -940,42 +1302,45 @@ namespace STEEPESTASCENT {
     //! @{
     //! @name No support for nested active set loops
     //! @{
-    virtual bool ActiveSetConverged() {return true; };
-    virtual int ActiveSetSteps() {return -1; };
-    virtual void UpdateActiveSet()
+    bool ActiveSetConverged() override {return true; };
+    int ActiveSetSteps() override {return -1; };
+    void UpdateActiveSet() override
     { dserror("No support for fixed nested active set strategy!"); };
     //! @}
 
     //! @name Deprecated methods
     //! @{
-    virtual void EvaluateContact(
+    void EvaluateContact(
         Teuchos::RCP<LINALG::SparseOperator>& kteff,
-        Teuchos::RCP<Epetra_Vector>& feff)
+        Teuchos::RCP<Epetra_Vector>& feff) override
     { dserror("Deprecated function call!"); };
-    virtual void EvaluateFriction(
+    void EvaluateFriction(
         Teuchos::RCP<LINALG::SparseOperator>& kteff,
-        Teuchos::RCP<Epetra_Vector>& feff)
+        Teuchos::RCP<Epetra_Vector>& feff) override
     { dserror("Deprecated function call!"); };
-    virtual void BuildSaddlePointSystem(
+    void BuildSaddlePointSystem(
         Teuchos::RCP<LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd,
         Teuchos::RCP<Epetra_Vector> sold,
         Teuchos::RCP<LINALG::MapExtractor> dbcmaps,
         int numiter,Teuchos::RCP<Epetra_Operator>& blockMat,
         Teuchos::RCP<Epetra_Vector>& blocksol,
-        Teuchos::RCP<Epetra_Vector>& blockrhs)
+        Teuchos::RCP<Epetra_Vector>& blockrhs) override
     { dserror("Deprecated function call!"); };
-    virtual void UpdateDisplacementsAndLMincrements(
+    void UpdateDisplacementsAndLMincrements(
         Teuchos::RCP<Epetra_Vector> sold,
-        Teuchos::RCP<Epetra_Vector> blocksol)
+        Teuchos::RCP<Epetra_Vector> blocksol) override
     { dserror("Deprecated function call!"); };
-    virtual void Recover(Teuchos::RCP<Epetra_Vector> disi)
-    { dserror("Deprecated function call! Replaced by RecoverState()."); };
+    void Recover(Teuchos::RCP<Epetra_Vector> disi) override
+    { dserror("Deprecated function call! Replaced by RunPostComputeX()."); };
+    void UpdateActiveSetSemiSmooth() override
+    { dserror("Deprecated function call! Replaced by "
+        "UpdateActiveSetSemiSmooth( const CONTACT::ParamsInterface& )."); };
     //! @}
 
     //! @name No frictional support at the moment
     //! @{
-    virtual void EvaluateRelMovPredict()
+    void EvaluateRelMovPredict() override
     {
       if (Data().IsFriction())
         dserror("No frictional contact support at the moment!");
@@ -989,17 +1354,17 @@ namespace STEEPESTASCENT {
      * Actually it would be a much better idea to cast the object to the right strategy at the
      * place where it is needed.                                            hiermeier 05/16 */
     //! @{
-    virtual double InitialPenalty()
+    double InitialPenalty() override
     { dserror("Wrong strategy!"); exit(EXIT_FAILURE); };
-    virtual void InitializeUzawa(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
+    void InitializeUzawa(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) override
     { dserror("Wrong strategy!"); };
-    virtual void ResetPenalty()
+    void ResetPenalty() override
     { dserror("Wrong strategy!"); };
-    virtual void ModifyPenalty()
+    void ModifyPenalty() override
     { dserror("Wrong strategy!"); };
-    virtual void UpdateUzawaAugmentedLagrange()
+    void UpdateUzawaAugmentedLagrange() override
     { dserror("Wrong strategy!"); };
-    virtual void UpdateConstraintNorm(int uzawaiter = 0)
+    void UpdateConstraintNorm(int uzawaiter = 0) override
     { dserror("Wrong strategy!"); };
     //! @}
     //! @}
@@ -1007,8 +1372,8 @@ namespace STEEPESTASCENT {
 
   protected:
     // Don't want = operator and cctor
-    Strategy operator = (const Strategy& old);
-    Strategy(const Strategy& old);
+    Strategy operator = (const Strategy& old) = delete;
+    Strategy(const Strategy& old) = delete;
 
   private:
     /// augmented contact strategy data container pointer
@@ -1022,11 +1387,34 @@ namespace STEEPESTASCENT {
 
   };  // class Strategy
 
+  void L2ErrorNormPerNode(
+      const std::unordered_map<int,Deriv1stMap>& error_map,
+      std::vector<std::pair<int,double> >& error_norm_per_node );
+
+  double MyTotalSquareError(
+      const std::unordered_map<int,Deriv1stMap>* const * error_map_vec,
+      const unsigned num_vecs );
+
+  /*--------------------------------------------------------------------------*/
+  /** \brief Extract a sub-sparse matrix from a source sparse matrix
+   *
+   *  \param[in] source         Given sparse matrix
+   *  \param[in] target_row_map row/range map of the target matrix
+   *  \param[in] target_col_map column/domain map of the target matrix
+   *
+   *  \return A RCP to the completed sub-sparse matrix will be returned.
+   *
+   *  \author hiermeier \date 06/17 */
+  Teuchos::RCP<LINALG::SparseMatrix> ExtractMatrix(
+      const LINALG::SparseMatrix& source,
+      const Epetra_Map& target_row_map,
+      const Epetra_Map& target_col_map );
+
   /*--------------------------------------------------------------------------*/
   /*! \brief Scale the vector entries of the target vector with the entries of
    *  the source vector
    *
-   *  The length of the source2tragetMap has to be as long as the length
+   *  The length of the source2targetMap has to be as long as the length
    *  of the target vector map (on each processor). The boolean <inverse> gives
    *  the possibility to scale the target vector with the reciprocal values of the
    *  source vector entries.

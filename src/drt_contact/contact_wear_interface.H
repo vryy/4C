@@ -334,7 +334,7 @@ public:
    \brief Evaluate nodal normals
 
    */
-   virtual void ExportNodalNormals();
+   virtual void ExportNodalNormals() const;
 
    /*!
    \brief Update interface Wear variable sets

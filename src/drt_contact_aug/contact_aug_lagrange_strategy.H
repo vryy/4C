@@ -46,19 +46,24 @@ namespace LAGRANGE {
     virtual ~Strategy() {};
 
     /// return the current solving strategy type
-    virtual INPAR::CONTACT::SolvingStrategy Type() const
+    INPAR::CONTACT::SolvingStrategy Type() const override
     {
       return INPAR::CONTACT::solution_std_lagrange;
     }
 
   protected:
+    double InactiveScaleFactor() const override
+    {
+      return 1.0;
+    }
+
     /** \brief Assemble the structural contact rhs [derived]
      *
      *  In contradiction to the base class only the the Lagrange multiplier
      *  forces are considered.
      *
      *  \author hiermeier \date 03/17 */
-    virtual void EvalStrContactRHS();
+    void EvalStrContactRHS() override;
 
   };  // class Strategy
 } // namespace LAGRANGE

@@ -100,7 +100,8 @@ public:
      const enum DRT::UTILS::VecBlockType& bt) const;
 
   virtual Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
-      const enum DRT::UTILS::MatBlockType& bt) const ;
+      const enum DRT::UTILS::MatBlockType& bt,
+      const CONTACT::ParamsInterface* cparams=NULL) const ;
 
   virtual void RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis)
   {

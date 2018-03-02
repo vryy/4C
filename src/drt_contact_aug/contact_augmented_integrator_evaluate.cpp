@@ -24,14 +24,223 @@
 template < unsigned probdim,
            DRT::Element::DiscretizationType slavetype,
            DRT::Element::DiscretizationType mastertype,
-           unsigned slavedim,
-           unsigned slavenumnode,
-           unsigned masterdim,
-           unsigned masternumnode >
-void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode,
-    masterdim,masternumnode>::GP_kappa(
+           class IntPolicy >
+void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,IntPolicy>::
+EvaluatorDeriv1stOnly::Deriv_Jacobian(
+    MORTAR::MortarElement& ele,
+    const double* xi,
+    const LINALG::Matrix<my::SLAVEDIM,my::SLAVENUMNODE>& sderiv,
+    const LINALG::Matrix<3,2>& stau )
+{
+  LINALG::TMatrix<int,probdim,my::SLAVENUMNODE> nodal_dofs;
+
+  // evaluate the non-unit slave element normal and the inverse of its length
+  LINALG::Matrix<probdim,1> unit_normal;
+  double length_n_inv = 0.0;
+
+  Deriv1stVecMap d_non_unit_normal( probdim );
+
+  Deriv1st_Jacobian( ele, xi, sderiv, stau, nodal_dofs, unit_normal,
+      length_n_inv, d_non_unit_normal );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template < unsigned probdim,
+           DRT::Element::DiscretizationType slavetype,
+           DRT::Element::DiscretizationType mastertype,
+           class IntPolicy >
+void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,IntPolicy>::
+EvaluatorDeriv1stOnly::Deriv1st_Jacobian(
+    MORTAR::MortarElement& ele,
+    const double* xi,
+    const LINALG::Matrix<my::SLAVEDIM,my::SLAVENUMNODE>& sderiv,
+    const LINALG::Matrix<3,2>& stau,
+    LINALG::TMatrix<int,probdim,my::SLAVENUMNODE>& nodal_dofs,
+    LINALG::Matrix<probdim,1>& unit_normal,
+    double& length_n_inv,
+    Deriv1stVecMap& d_non_unit_normal )
+{
+  CONTACT::INTEGRATOR::GetElementNodalDofs( ele, nodal_dofs );
+
+  // evaluate the non-unit slave element normal and the inverse of its length
+  length_n_inv = this->parent_.IntPolicy::UnitSlaveElementNormal( ele, stau, unit_normal);
+
+  /*--------------------------------------------------------------------------*/
+  // non-unit normal vector: 1-st order derivative
+  // 1-st int: vector index corresponds to the normal component index
+  // 2-nd int: paired vector key corresponds to varied dof GID
+  this->parent_.IntPolicy::Deriv1st_NonUnitSlaveElementNormal( ele, nodal_dofs, sderiv,
+      stau, d_non_unit_normal );
+
+  /*--------------------------------------------------------------------------*/
+  // jacobian determinant: 1-st order derivative
+  // 1-st int: 1-st paired vector key corresponds to varied dof GID
+  Deriv1stMap& deriv1st_jac = this->parent_.derivjac_;
+  this->parent_.IntPolicy::Deriv1st_Jacobian( unit_normal, d_non_unit_normal, deriv1st_jac );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template < unsigned probdim,
+           DRT::Element::DiscretizationType slavetype,
+           DRT::Element::DiscretizationType mastertype,
+           class IntPolicy >
+void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,IntPolicy>::
+EvaluatorFull::Deriv_Jacobian(
+    MORTAR::MortarElement& ele,
+    const double* xi,
+    const LINALG::Matrix<my::SLAVEDIM,my::SLAVENUMNODE>& sderiv,
+    const LINALG::Matrix<3,2>& stau )
+{
+  LINALG::TMatrix<int,probdim,my::SLAVENUMNODE> nodal_dofs;
+
+  // evaluate the non-unit slave element normal and the inverse of its length
+  LINALG::Matrix<probdim,1> unit_normal;
+  double length_n_inv = 0.0;
+
+  Deriv1stVecMap d_non_unit_normal( probdim );
+
+  base_type::Deriv1st_Jacobian( ele, xi, sderiv, stau, nodal_dofs, unit_normal,
+      length_n_inv, d_non_unit_normal );
+
+  Deriv2ndMap& deriv2nd_jac = this->parent_.deriv2ndjac_;
+  this->parent_.IntPolicy::Get_Deriv2nd_Jacobian( ele, nodal_dofs, sderiv, unit_normal,
+      length_n_inv, d_non_unit_normal, deriv2nd_jac );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template < unsigned probdim,
+           DRT::Element::DiscretizationType slavetype,
+           DRT::Element::DiscretizationType mastertype,
+           class IntPolicy >
+void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,IntPolicy>::
+EvaluatorDeriv1stOnly::Deriv_MXiGP(
     MORTAR::MortarElement& sele,
-    const LINALG::Matrix<slavenumnode,1>& lmval,
+    MORTAR::MortarElement& mele,
+    const double* sxi,
+    const double* mxi,
+    const double  alpha,
+    const LINALG::Matrix<my::SLAVENUMNODE,1>& sval,
+    const LINALG::Matrix<my::MASTERNUMNODE,1>& mval,
+    const LINALG::Matrix<my::MASTERDIM,my::MASTERNUMNODE>& mderiv,
+    const LINALG::Matrix<3,2>& mtau )
+{
+  LINALG::Matrix<probdim,probdim> lmat_inv( false );
+
+  Deriv1st_MXiGP( sele, mele, sxi, mxi, alpha, sval, mval, mderiv, mtau,
+      lmat_inv );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template < unsigned probdim,
+           DRT::Element::DiscretizationType slavetype,
+           DRT::Element::DiscretizationType mastertype,
+           class IntPolicy >
+void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,IntPolicy>::
+EvaluatorDeriv1stOnly::Deriv1st_MXiGP(
+    MORTAR::MortarElement& sele,
+    MORTAR::MortarElement& mele,
+    const double* sxi,
+    const double* mxi,
+    const double  alpha,
+    const LINALG::Matrix<my::SLAVENUMNODE,1>& sval,
+    const LINALG::Matrix<my::MASTERNUMNODE,1>& mval,
+    const LINALG::Matrix<my::MASTERDIM,my::MASTERNUMNODE>& mderiv,
+    const LINALG::Matrix<3,2>& mtau,
+    LINALG::Matrix<probdim,probdim>& lmat_inv )
+{
+  LINALG::Matrix<probdim,1> snormal( false );
+  this->parent_.IntPolicy::AveragedNormalAtXi( sele, sval, snormal );
+
+  this->parent_.IntPolicy::LMatrixInverse( mtau, snormal, lmat_inv );
+
+  Deriv1stVecMap& d_mxigp = this->parent_.dmxigp_;
+  Deriv1stMap& d_alpha = this->parent_.dalpha_;
+  this->parent_.IntPolicy::Deriv1st_MXiGP( lmat_inv, sele, mele, sval,
+      mval, alpha, d_mxigp, d_alpha );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template < unsigned probdim,
+           DRT::Element::DiscretizationType slavetype,
+           DRT::Element::DiscretizationType mastertype,
+           class IntPolicy >
+void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,IntPolicy>::
+EvaluatorFull::Deriv_MXiGP(
+    MORTAR::MortarElement& sele,
+    MORTAR::MortarElement& mele,
+    const double* sxi,
+    const double* mxi,
+    const double  alpha,
+    const LINALG::Matrix<my::SLAVENUMNODE,1>& sval,
+    const LINALG::Matrix<my::MASTERNUMNODE,1>& mval,
+    const LINALG::Matrix<my::MASTERDIM,my::MASTERNUMNODE>& mderiv,
+    const LINALG::Matrix<3,2>& mtau )
+{
+  LINALG::Matrix<probdim,probdim> lmat_inv( false );
+
+  base_type::Deriv1st_MXiGP( sele, mele, sxi, mxi, alpha, sval, mval, mderiv,
+      mtau, lmat_inv );
+
+  Deriv1stVecMap& d_mxigp = this->parent_.dmxigp_;
+  Deriv1stMap& d_alpha = this->parent_.dalpha_;
+
+  const LINALG::Matrix<3,my::MASTERNUMNODE>& mderiv2 = this->parent_.mderiv2nd_;
+  Deriv2ndVecMap& dd_mxigp = this->parent_.ddmxigp_;
+
+  this->parent_.IntPolicy::Get_Deriv2nd_MXiGP( lmat_inv, sele, mele, sval, mval,
+      mderiv, mderiv2, mtau, mxi, alpha, d_mxigp, d_alpha, dd_mxigp );
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template < unsigned probdim,
+           DRT::Element::DiscretizationType slavetype,
+           DRT::Element::DiscretizationType mastertype,
+           class IntPolicy >
+void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,IntPolicy>::
+EvaluatorFull::Get_Deriv2nd_AugA(
+        MORTAR::MortarElement& sele,
+        const LINALG::Matrix<my::SLAVENUMNODE,1>& lmval,
+        const double wgt,
+        const Deriv2ndMap& dd_jac ) const
+{
+  DRT::Node* const * snodes = sele.Nodes();
+
+  for ( unsigned i=0; i<my::SLAVENUMNODE; ++i )
+  {
+    CoNode& cnode = static_cast<CoNode&>( *snodes[i] );
+    Deriv2ndMap& dd_a = cnode.AugData().GetDeriv2nd_A();
+
+    const double tmp = wgt * lmval(i,0);
+
+    for ( auto& dd_jac_var : dd_jac )
+    {
+      Deriv1stMap& dd_a_var = dd_a[ dd_jac_var.first ];
+
+      for ( auto& dd_jac_var_lin : dd_jac_var.second )
+      {
+        dd_a_var( dd_jac_var_lin.first ) += tmp * dd_jac_var_lin.second;
+      }
+    }
+
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template < unsigned probdim,
+           DRT::Element::DiscretizationType slavetype,
+           DRT::Element::DiscretizationType mastertype,
+           class IntPolicy >
+void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,IntPolicy>::GP_kappa(
+    MORTAR::MortarElement& sele,
+    const LINALG::Matrix<my::SLAVENUMNODE,1>& lmval,
     double wgt,
     double jac) const
 {
@@ -43,15 +252,15 @@ void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode
 //  int nrow = sele.NumNode();
 
   // add to node
-  for (unsigned j=0;j<slavenumnode;++j)
+  double val = 0.0;
+  for (unsigned j=0;j<my::SLAVENUMNODE;++j)
   {
     CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(snodes[j]);
 
-    double val = 0.0;
-    val = lmval(j)*jac*wgt;
+    val = lmval(j,0) * jac * wgt;
 
     // add current Gauss point's contribution kappaseg
-    cnode->AddKappaValue(val);
+    cnode->AddKappaValue( val );
   }
 
   return;
@@ -62,145 +271,26 @@ void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode
 template < unsigned probdim,
            DRT::Element::DiscretizationType slavetype,
            DRT::Element::DiscretizationType mastertype,
-           unsigned slavedim,
-           unsigned slavenumnode,
-           unsigned masterdim,
-           unsigned masternumnode >
-void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode,
-    masterdim,masternumnode>::GP_2D_kappa_Lin(
-    unsigned iter,
+           class IntPolicy >
+void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,IntPolicy>::Get_Deriv1st_Kappa(
     MORTAR::MortarElement& sele,
-    const LINALG::Matrix<slavenumnode,1>& lmval,
-    const LINALG::Matrix<slavenumnode,slavedim>& lmderiv,
-    double dsxideta,
-    double dxdsxi,
-    double dxdsxidsxi,
+    const LINALG::Matrix<my::SLAVENUMNODE,1>& lmval,
     double wgt,
-    const GEN::pairedvector<int,double>& dsxigp,
-    const GEN::pairedvector<int,double>& derivjac,
-    const std::vector<GEN::pairedvector<int,double> >& ximaps)
-{
-  // Get slave nodes
-  DRT::Node** snodes = sele.Nodes();
-  dsassert( snodes, "ERROR: AugmentedIntegrator::GP_2D_kappa: Null pointer!" );
-
-  // map iterator
-  typedef GEN::pairedvector<int,double>::const_iterator CI;
-
-  CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(snodes[iter]);
-  std::map<int,double>& kappaLinMap = cnode->AugData().GetKappaLin();
-
-  double fac = 0.0;
-
-  // (0) Lin(LmSlave) - slave GP coordinates
-  fac  = lmderiv(iter,0)*dxdsxi;
-  // (1) Lin(dxdsxi) - slave GP coordinates
-  fac += lmval(iter)*dxdsxidsxi;
-  fac *= wgt*dsxideta;
-  for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
-    kappaLinMap[p->first] += fac*(p->second);
-
-  // (2) Lin(dsxideta) - segment end coordinates
-  fac = wgt*lmval(iter)*dxdsxi;
-  for (CI p=ximaps[0].begin();p!=ximaps[0].end();++p)
-    kappaLinMap[p->first] -= 0.5*fac*(p->second);
-  for (CI p=ximaps[1].begin();p!=ximaps[1].end();++p)
-    kappaLinMap[p->first] += 0.5*fac*(p->second);
-
-  // (3) Lin(dxdsxi) - slave GP Jacobian
-  fac = wgt*lmval(iter)*dsxideta;
-  for (CI p=derivjac.begin();p!=derivjac.end();++p)
-    kappaLinMap[p->first] += fac*(p->second);
-
-
-  return;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-template < unsigned probdim,
-           DRT::Element::DiscretizationType slavetype,
-           DRT::Element::DiscretizationType mastertype,
-           unsigned slavedim,
-           unsigned slavenumnode,
-           unsigned masterdim,
-           unsigned masternumnode >
-void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode,
-    masterdim,masternumnode>::GP_2D_kappa_Ele_Lin(
-    unsigned iter,
-    MORTAR::MortarElement& sele,
-    const LINALG::Matrix<slavenumnode,1>& lmval,
-    const LINALG::Matrix<slavenumnode,slavedim>& lmderiv,
-    double dxdsxi,
-    double wgt,
-    const GEN::pairedvector<int,double>& derivjac)
-{
-  // Get slave nodes
-  DRT::Node** snodes = sele.Nodes();
-  dsassert( snodes, "ERROR: AugmentedIntegrator::GP_2D_kappa: Null pointer!" );
-
-  // map iterator
-  typedef GEN::pairedvector<int,double>::const_iterator CI;
-
-  CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(snodes[iter]);
-  std::map<int,double>& kappaLinMap = cnode->AugData().GetKappaLin();
-
-  // (0) Lin(LmSlave) - slave GP coordinates --> 0
-  // (1) Lin(dxdsxi) - slave GP coordinates --> 0
-  // (2) Lin(dsxideta) - segment end coordinates --> 0
-  // (3) Lin(dxdsxi) - slave GP Jacobian
-  const double fac = wgt*lmval(iter);
-  for (CI p=derivjac.begin();p!=derivjac.end();++p)
-    kappaLinMap[p->first] += fac*(p->second);
-
-  return;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-template < unsigned probdim,
-           DRT::Element::DiscretizationType slavetype,
-           DRT::Element::DiscretizationType mastertype,
-           unsigned slavedim,
-           unsigned slavenumnode,
-           unsigned masterdim,
-           unsigned masternumnode >
-void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode,
-    masterdim,masternumnode>::GP_3D_kappa_Lin(
-    unsigned iter,
-    MORTAR::MortarElement& sele,
-    const LINALG::Matrix<slavenumnode,1>& lmval,
-    const LINALG::Matrix<slavenumnode,slavedim>& lmderiv,
-    double wgt,
-    double jac,
-    const std::vector<GEN::pairedvector<int,double> >& dsxigp,
-    const GEN::pairedvector<int,double>& jacintcellmap)
+    const Deriv1stMap& d_jac )
 {
   // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
+  DRT::Node* const * snodes = sele.Nodes();
 
-  // map iterator
-  typedef GEN::pairedvector<int,double>::const_iterator CI;
-
-  CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(snodes[iter]);
-  std::map<int,double>& kappaLinMap = cnode->AugData().GetKappaLin();
-  double fac = 0.0;
-
-  // (1) Lin(Phi) - dual shape functions
-  // this vanishes here since there are no deformation-dependent dual functions
-
-  // (2) Lin(LmSlave) - slave GP coordinates
-  for ( unsigned i=0; i< dsxigp.size(); ++i )
+  for ( unsigned i=0; i<my::SLAVENUMNODE; ++i )
   {
-    fac = wgt*lmderiv(iter,i)*jac;
-    for ( CI p=dsxigp[i].begin(); p!=dsxigp[i].end(); ++p )
-      kappaLinMap[p->first] += fac*(p->second);
-  }
+    CoNode& cnode = static_cast<CONTACT::CoNode&>( *snodes[i] );
+    Deriv1stMap& d_kappa = cnode.AugData().GetDeriv1st_Kappa();
 
-  // (3) Lin(dsxideta) - intcell GP Jacobian
-  fac = wgt*lmval(iter);
-  for (CI p=jacintcellmap.begin();p!=jacintcellmap.end();++p)
-    kappaLinMap[p->first] += fac*(p->second);
+    for ( auto& d_jac_var : d_jac )
+    {
+      d_kappa( d_jac_var.first ) += d_jac_var.second * wgt * lmval(i,0);
+    }
+  }
 
   return;
 }
@@ -210,188 +300,68 @@ void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode
 template < unsigned probdim,
            DRT::Element::DiscretizationType slavetype,
            DRT::Element::DiscretizationType mastertype,
-           unsigned slavedim,
-           unsigned slavenumnode,
-           unsigned masterdim,
-           unsigned masternumnode >
-void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode,
-    masterdim,masternumnode>::GP_Normal_DerivNormal(
+           class IntPolicy >
+void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,IntPolicy>::GP_Normal_DerivNormal(
     MORTAR::MortarElement& sele,
-    const MORTAR::MortarElement& mele,
-    const LINALG::Matrix<slavenumnode,1>& sval,
-    const LINALG::Matrix<slavenumnode,slavedim>& sderiv,
-    const std::vector<GEN::pairedvector<int,double> >& dsxigp,
+    const LINALG::Matrix<my::SLAVENUMNODE,1>& sval,
     double* gpn,
-    std::vector<GEN::pairedvector<int,double> >& dnmap_unit,
-    int linsize)
+    Deriv1stVecMap& dn_non_unit,
+    Deriv2ndVecMap& ddn_non_unit,
+    Deriv1stVecMap& dn_unit,
+    Deriv2ndVecMap& ddn_unit )
 {
-  // map iterator
-  typedef GEN::pairedvector<int,double>::const_iterator CI;
+  const DRT::Node* const* snodes = sele.Nodes();
 
-  // get slave element nodes
-  DRT::Node** snodes = sele.Nodes();
-  dsassert( snodes, "ERROR: GP_2D_Normal_DerivNormal: Null Pointer!" );
-
-  // number of slave nodes
-//  const unsigned nrow = slavenumnode;
-//  const unsigned ncol = masternumnode;
-//  const unsigned ndof = probdim;
-
-  for (unsigned i=0;i<slavenumnode;++i)
+  for ( unsigned i=0; i<my::SLAVENUMNODE; ++i )
   {
-    MORTAR::MortarNode* mymrtnode = static_cast<MORTAR::MortarNode*> (snodes[i]);
-    gpn[0]+=sval(i)*mymrtnode->MoData().n()[0];
-    gpn[1]+=sval(i)*mymrtnode->MoData().n()[1];
-    gpn[2]+=sval(i)*mymrtnode->MoData().n()[2];
-  }
+    const CoNode& snode = static_cast<const CoNode&>( *snodes[i] );
+    const double* nodal_smooth_unit_normal = snode.MoData().n();
 
-  // normalize interpolated GP normal back to length 1.0 !!!
-  const double lengthn = sqrt(gpn[0]*gpn[0]+gpn[1]*gpn[1]+gpn[2]*gpn[2]);
-  if (lengthn<1.0e-12)
-    dserror("ERROR: IntegrateAndDerivSegment: Divide by zero!");
+    const Deriv1stVecMap& nodal_d_sun = snode.AugData().GetDeriv1st_N();
+    const Deriv2ndVecMap& nodal_dd_sun = snode.AugData().GetDeriv2nd_N();
 
-  for (int i=0;i<3;++i)
-    gpn[i]/=lengthn;
-
-  // ******************************
-  // Linearization of the gp-normal
-  // ******************************
-  switch ( probdim )
-  {
-    // *** 2-D case ***********************************************
-    case 2:
+    for ( unsigned j=0; j<probdim; ++j )
     {
-      // build directional derivative of slave GP normal (non-unit)
-      INTEGRATOR::ResetPairedVector( masternumnode*probdim+linsize, dmap_nxsl_gp_ );
-      INTEGRATOR::ResetPairedVector( masternumnode*probdim+linsize, dmap_nysl_gp_ );
+      gpn[j] += sval(i,0) * nodal_smooth_unit_normal[j];
 
-      for (unsigned i=0;i<slavenumnode;++i)
+      // build 1-st derivative of the non-unit gauss point normal by
+      // interpolating the 1-st derivatives of the unit smooth nodal normals
+      Deriv1stMap& d_nun_j = dn_non_unit[j];
+      for ( auto& nodal_d_sun_var : nodal_d_sun[j] )
+        d_nun_j.repetitive_access( nodal_d_sun_var.first, my::gp_id_ ) +=
+            nodal_d_sun_var.second * sval(i,0);
+
+      // build 2-nd order derivative of the non-unit gauss point normal
+      Deriv2ndMap& dd_nun_j = ddn_non_unit[j];
+      for ( auto& nodal_dd_sun_var : nodal_dd_sun[j] )
       {
-        CoNode* snode = static_cast<CoNode*> (snodes[i]);
+        Deriv1stMap& dd_nun_j_var =
+            dd_nun_j.repetitive_access( nodal_dd_sun_var.first, my::gp_id_ );
 
-        GEN::pairedvector<int,double>& dmap_nxsl_i =
-            static_cast<CoNode*>(snodes[i])->CoData().GetDerivN()[0];
-        GEN::pairedvector<int,double>& dmap_nysl_i =
-            static_cast<CoNode*>(snodes[i])->CoData().GetDerivN()[1];
-
-        for (CI p=dmap_nxsl_i.begin();p!=dmap_nxsl_i.end();++p)
-          dmap_nxsl_gp_[p->first] += sval(i)*(p->second);
-        for (CI p=dmap_nysl_i.begin();p!=dmap_nysl_i.end();++p)
-          dmap_nysl_gp_[p->first] += sval(i)*(p->second);
-
-        for (CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
+        for ( auto& nodal_dd_sun_var_lin : nodal_dd_sun_var.second )
         {
-          const double valx =  sderiv(i,0)*snode->MoData().n()[0];
-          dmap_nxsl_gp_[p->first] += valx*(p->second);
-          const double valy =  sderiv(i,0)*snode->MoData().n()[1];
-          dmap_nysl_gp_[p->first] += valy*(p->second);
+          dd_nun_j_var.repetitive_access( nodal_dd_sun_var_lin.first, my::gp_id_ ) +=
+              nodal_dd_sun_var_lin.second * sval(i,0);
         }
       }
-
-      // build directional derivative of slave GP normal (unit)
-      const double ll = lengthn*lengthn;
-      const double sxsx = gpn[0]*gpn[0]*ll; // gpn is the unit normal --> multiplication with ll
-      const double sxsy = gpn[0]*gpn[1]*ll; // to get the non-unit normal
-      const double sysy = gpn[1]*gpn[1]*ll;
-
-      for (CI p=dmap_nxsl_gp_.begin();p!=dmap_nxsl_gp_.end();++p)
-      {
-        dnmap_unit[0][p->first] += 1/lengthn*(p->second);
-        dnmap_unit[0][p->first] -= 1/(lengthn*lengthn*lengthn)*sxsx*(p->second);
-        dnmap_unit[1][p->first] -= 1/(lengthn*lengthn*lengthn)*sxsy*(p->second);
-      }
-
-      for (CI p=dmap_nysl_gp_.begin();p!=dmap_nysl_gp_.end();++p)
-      {
-        dnmap_unit[1][p->first] += 1/lengthn*(p->second);
-        dnmap_unit[1][p->first] -= 1/(lengthn*lengthn*lengthn)*sysy*(p->second);
-        dnmap_unit[0][p->first] -= 1/(lengthn*lengthn*lengthn)*sxsy*(p->second);
-      }
-      break;
     }
-    // *** 3-D case ***********************************************
-    case 3:
-    {
-      // build directional derivative of slave GP normal (non-unit)
-      INTEGRATOR::ResetPairedVector( linsize, dmap_nxsl_gp_ );
-      INTEGRATOR::ResetPairedVector( linsize, dmap_nysl_gp_ );
-      INTEGRATOR::ResetPairedVector( linsize, dmap_nzsl_gp_ );
-
-      for (unsigned i=0;i<slavenumnode;++i)
-      {
-        CoNode* cnode = static_cast<CoNode*> (snodes[i]);
-
-        GEN::pairedvector<int,double>& dmap_nxsl_i = cnode->CoData().GetDerivN()[0];
-        GEN::pairedvector<int,double>& dmap_nysl_i = cnode->CoData().GetDerivN()[1];
-        GEN::pairedvector<int,double>& dmap_nzsl_i = cnode->CoData().GetDerivN()[2];
-
-        for (CI p=dmap_nxsl_i.begin();p!=dmap_nxsl_i.end();++p)
-          dmap_nxsl_gp_[p->first] += sval(i)*(p->second);
-        for (CI p=dmap_nysl_i.begin();p!=dmap_nysl_i.end();++p)
-          dmap_nysl_gp_[p->first] += sval(i)*(p->second);
-        for (CI p=dmap_nzsl_i.begin();p!=dmap_nzsl_i.end();++p)
-          dmap_nzsl_gp_[p->first] += sval(i)*(p->second);
-
-        for (CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
-        {
-          const double valx =  sderiv(i,0)*cnode->MoData().n()[0];
-          dmap_nxsl_gp_[p->first] += valx*(p->second);
-          const double valy =  sderiv(i,0)*cnode->MoData().n()[1];
-          dmap_nysl_gp_[p->first] += valy*(p->second);
-          const double valz =  sderiv(i,0)*cnode->MoData().n()[2];
-          dmap_nzsl_gp_[p->first] += valz*(p->second);
-        }
-
-        for (CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
-        {
-          const double valx =  sderiv(i,1)*cnode->MoData().n()[0];
-          dmap_nxsl_gp_[p->first] += valx*(p->second);
-          const double valy =  sderiv(i,1)*cnode->MoData().n()[1];
-          dmap_nysl_gp_[p->first] += valy*(p->second);
-          const double valz =  sderiv(i,1)*cnode->MoData().n()[2];
-          dmap_nzsl_gp_[p->first] += valz*(p->second);
-        }
-      }
-
-      double ll = lengthn*lengthn;
-      double sxsx = gpn[0]*gpn[0]*ll;
-      double sxsy = gpn[0]*gpn[1]*ll;
-      double sxsz = gpn[0]*gpn[2]*ll;
-      double sysy = gpn[1]*gpn[1]*ll;
-      double sysz = gpn[1]*gpn[2]*ll;
-      double szsz = gpn[2]*gpn[2]*ll;
-
-      for (CI p=dmap_nxsl_gp_.begin();p!=dmap_nxsl_gp_.end();++p)
-      {
-        dnmap_unit[0][p->first] += 1/lengthn*(p->second);
-        dnmap_unit[0][p->first] -= 1/(lengthn*lengthn*lengthn)*sxsx*(p->second);
-        dnmap_unit[1][p->first] -= 1/(lengthn*lengthn*lengthn)*sxsy*(p->second);
-        dnmap_unit[2][p->first] -= 1/(lengthn*lengthn*lengthn)*sxsz*(p->second);
-      }
-
-      for (CI p=dmap_nysl_gp_.begin();p!=dmap_nysl_gp_.end();++p)
-      {
-        dnmap_unit[1][p->first] += 1/lengthn*(p->second);
-        dnmap_unit[1][p->first] -= 1/(lengthn*lengthn*lengthn)*sysy*(p->second);
-        dnmap_unit[0][p->first] -= 1/(lengthn*lengthn*lengthn)*sxsy*(p->second);
-        dnmap_unit[2][p->first] -= 1/(lengthn*lengthn*lengthn)*sysz*(p->second);
-      }
-
-      for (CI p=dmap_nzsl_gp_.begin();p!=dmap_nzsl_gp_.end();++p)
-      {
-        dnmap_unit[2][p->first] += 1/lengthn*(p->second);
-        dnmap_unit[2][p->first] -= 1/(lengthn*lengthn*lengthn)*szsz*(p->second);
-        dnmap_unit[0][p->first] -= 1/(lengthn*lengthn*lengthn)*sxsz*(p->second);
-        dnmap_unit[1][p->first] -= 1/(lengthn*lengthn*lengthn)*sysz*(p->second);
-      }
-      break;
-    }
-    default:
-      dserror( "Unsupported problem dimension of %d!", probdim );
-      exit( EXIT_FAILURE );
   }
 
-  return;
+  GEN_DATA::complete( dn_non_unit );
+  GEN_DATA::complete( ddn_non_unit );
+
+  // unify the gauss point normal
+  LINALG::Matrix<probdim,1> unit_gp_normal( gpn, true );
+  const double length_n_inv = 1.0 / unit_gp_normal.Norm2();
+  unit_gp_normal.Scale( length_n_inv );
+
+  // calculate the 1-st derivative of the unified smooth gauss point normal
+  IntPolicy::Deriv1st_UnitSlaveElementNormal( unit_gp_normal, length_n_inv,
+      dn_non_unit, dn_unit, false );
+
+  // calculate the 2-nd order derivative of the unified smooth gauss point normal
+  IntPolicy::Deriv2nd_UnitSlaveElementNormal( unit_gp_normal, length_n_inv,
+      dn_non_unit, dn_unit, ddn_non_unit, ddn_unit );
 }
 
 /*----------------------------------------------------------------------------*
@@ -399,448 +369,10 @@ void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode
 template < unsigned probdim,
            DRT::Element::DiscretizationType slavetype,
            DRT::Element::DiscretizationType mastertype,
-           unsigned slavedim,
-           unsigned slavenumnode,
-           unsigned masterdim,
-           unsigned masternumnode >
-void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode,
-    masterdim,masternumnode>::GP_VarWGap(
+           class IntPolicy >
+void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,IntPolicy>::GP_AugA(
     MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele,
-    const LINALG::Matrix<slavenumnode,1>& sval,
-    const LINALG::Matrix<masternumnode,1>& mval,
-    const LINALG::Matrix<slavenumnode,1>& lmval,
-    const double* gpn,
-    double wgt,
-    double jac) const
-{
-  // get slave element nodes
-  DRT::Node** snodes = sele.Nodes();
-  DRT::Node** mnodes = mele.Nodes();
-  dsassert( snodes, "ERROR: IntegrateAndDerivSegment: Null pointer!" );
-  dsassert( mnodes, "ERROR: IntegrateAndDerivSegment: Null pointer!" );
-
-  // number of nodes (slave, master)
-//  const unsigned nrow = slavenumnode;
-//  const unsigned ncol = masternumnode;
-
-  // loop over all possible active slave nodes
-  for (unsigned i=0;i<slavenumnode;++i)
-  {
-    CoNode* cnode = static_cast<CoNode*>(snodes[i]);
-
-    // *** slave node contributions ***
-    // loop over all slave nodes
-    for (unsigned k=0;k<slavenumnode;++k)
-    {
-      CoNode* snode = static_cast<CoNode*>(snodes[k]);
-      for ( unsigned kdof=0;kdof<probdim; ++kdof )
-      {
-        const int sGid   = snode->Id();
-        const int sDofID = snode->Dofs()[kdof];
-        const double val = lmval(i) * sval(k) * gpn[kdof] * wgt * jac;
-        cnode->AddVarWGapSl(sDofID,sGid,val);
-      }
-    }
-
-    // *** master node contributions ***
-    // loop over all master nodes
-    for (unsigned j=0;j<masternumnode;++j)
-    {
-      CoNode* mnode = static_cast<CoNode*>(mnodes[j]);
-      for ( unsigned jdof=0; jdof<probdim; ++jdof )
-      {
-        const int mGid   = mnode->Id();
-        const int mDofID = mnode->Dofs()[jdof];
-        const double val = lmval(i) * mval(j) * gpn[jdof] * wgt * jac;
-        cnode->AddVarWGapMa(mDofID,mGid,val);
-      }
-    }
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-template < unsigned probdim,
-           DRT::Element::DiscretizationType slavetype,
-           DRT::Element::DiscretizationType mastertype,
-           unsigned slavedim,
-           unsigned slavenumnode,
-           unsigned masterdim,
-           unsigned masternumnode >
-void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode,
-    masterdim,masternumnode>::GP_2D_VarWGap_Lin(
-    unsigned iter,
-    MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele,
-    const LINALG::Matrix<slavenumnode,1>& sval,
-    const LINALG::Matrix<masternumnode,1>& mval,
-    const LINALG::Matrix<slavenumnode,1>& lmval,
-    const double* gpn,
-    const LINALG::Matrix<slavenumnode,slavedim>& sderiv,
-    const LINALG::Matrix<masternumnode,masterdim>& mderiv,
-    const LINALG::Matrix<slavenumnode,slavedim>& lmderiv,
-    double dsxideta,
-    double dxdsxi,
-    double dxdsxidsxi,
-    double wgt,
-    const GEN::pairedvector<int,double>& dsxigp,
-    const GEN::pairedvector<int,double>& dmxigp,
-    const GEN::pairedvector<int,double>& derivjac,
-    const std::vector<GEN::pairedvector<int,double> >& dnmap_unit,
-    const std::vector<GEN::pairedvector<int,double> >& ximaps) const
-{
-//  const unsigned nrow = slavenumnode;
-//  const unsigned ncol = masternumnode;
-
-  // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
-  // get master element nodes themselves
-  DRT::Node** mnodes = mele.Nodes();
-
-  // map iterator
-  typedef GEN::pairedvector<int,double>::const_iterator CI;
-
-  CoNode* cnode = static_cast<CoNode*>(snodes[iter]);
-
-  // *** integrate lin varWGapSl ****************************************
-  for (unsigned k=0;k<slavenumnode;++k)
-  {
-    CoNode* snode = static_cast<CoNode*>(snodes[k]);
-
-    double val[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-
-    // (0) Lin(LmSlave) - slave GP coordinates
-    val[0] = wgt*lmderiv(iter,0)*sval(k)*dsxideta*dxdsxi;
-    // (1) Lin(n-Slave) - normal direction
-    val[1] = wgt*lmval(iter)*sval(k)*dsxideta*dxdsxi;
-    // (2) Lin(NSlave) - slave GP coordinates
-    val[2] = wgt*lmval(iter)*sderiv(k,0)*dsxideta*dxdsxi;
-    // (3) Lin(dsxideta) - segment end coordinates
-    val[3] = wgt*lmval(iter)*sval(k)*dxdsxi;
-    // (4) Lin(dxdsxi) - slave GP Jacobian
-    val[4] = wgt*lmval(iter)*sval(k)*dsxideta;
-    // (5) Lin(dxdsxi) - slave GP coordinates
-    val[5] = wgt*lmval(iter)*sval(k)*dsxideta*dxdsxidsxi;
-
-    for (int kdof=0;kdof<snode->NumDof();++kdof)
-    {
-      int sDofId = snode->Dofs()[kdof];
-      std::map<int,double>& varWGapLinSlMap = cnode->AugData().GetVarWGapLinSl()[sDofId];
-
-      // (0,2,5) - slave GP coordinates
-      for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
-        varWGapLinSlMap[p->first] += (val[0]+val[2]+val[5])*p->second*gpn[kdof];
-      // (1) - normal direction
-      for (CI p=dnmap_unit[kdof].begin();p!=dnmap_unit[kdof].end();++p)
-        varWGapLinSlMap[p->first] += val[1]*p->second;
-      // (3) - segment end coordinates
-      for (CI p=ximaps[0].begin();p!=ximaps[0].end();++p)
-        varWGapLinSlMap[p->first] -= 0.5*val[3]*p->second*gpn[kdof];
-      for (CI p=ximaps[1].begin();p!=ximaps[1].end();++p)
-        varWGapLinSlMap[p->first] += 0.5*val[3]*p->second*gpn[kdof];
-      // (4) - Slave GP Jacobian
-      for (CI p=derivjac.begin();p!=derivjac.end();++p)
-        varWGapLinSlMap[p->first] += val[4]*p->second*gpn[kdof];
-    }
-  }
-  // *** integrate lin varWGapMa ****************************************
-  for (unsigned l=0;l<masternumnode;++l)
-  {
-    CoNode* mnode = static_cast<CoNode*>(mnodes[l]);
-
-    double val[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-
-    // (0) Lin(LmSlave) - slave GP coordinates
-    val[0] = wgt*lmderiv(iter,0)*mval(l)*dsxideta*dxdsxi;
-    // (1) Lin(n-Slave) - normal direction
-    val[1] = wgt*lmval(iter)*mval(l)*dsxideta*dxdsxi;
-    // (2) Lin(NMaster) - master GP coordinates
-    val[2] = wgt*lmval(iter)*mderiv(l,0)*dsxideta*dxdsxi;
-    // (3) Lin(dsxideta) - segment end coordinates
-    val[3] = wgt*lmval(iter)*mval(l)*dxdsxi;
-    // (4) Lin(dxdsxi) - slave GP Jacobian
-    val[4] = wgt*lmval(iter)*mval(l)*dsxideta;
-    // (5) Lin(dxdsxi) - slave GP coordinates
-    val[5] = wgt*lmval(iter)*mval(l)*dsxideta*dxdsxidsxi;
-
-    for (int ldof=0;ldof<mnode->NumDof();++ldof)
-    {
-      int mDofId = mnode->Dofs()[ldof];
-      std::map<int,double>& varWGapLinMaMap = cnode->AugData().GetVarWGapLinMa()[mDofId];
-
-      // (0,5) - slave GP coordinates
-      for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
-        varWGapLinMaMap[p->first] += (val[0]+val[5])*p->second*gpn[ldof];
-      // (1) - normal direction
-      for (CI p=dnmap_unit[ldof].begin();p!=dnmap_unit[ldof].end();++p)
-        varWGapLinMaMap[p->first] += val[1]*p->second;
-      // (2) - master GP coordinates
-      for (CI p=dmxigp.begin();p!=dmxigp.end();++p)
-        varWGapLinMaMap[p->first] += val[2]*p->second*gpn[ldof];
-      // (3) - segement end coordinates
-      for (CI p=ximaps[0].begin();p!=ximaps[0].end();++p)
-        varWGapLinMaMap[p->first] -= 0.5*val[3]*p->second*gpn[ldof];
-      for (CI p=ximaps[1].begin();p!=ximaps[1].end();++p)
-        varWGapLinMaMap[p->first] += 0.5*val[3]*p->second*gpn[ldof];
-      // (4) - slave GP Jacobian
-      for (CI p=derivjac.begin();p!=derivjac.end();++p)
-        varWGapLinMaMap[p->first] += val[4]*p->second*gpn[ldof];
-    }
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-template < unsigned probdim,
-           DRT::Element::DiscretizationType slavetype,
-           DRT::Element::DiscretizationType mastertype,
-           unsigned slavedim,
-           unsigned slavenumnode,
-           unsigned masterdim,
-           unsigned masternumnode >
-void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode,
-    masterdim,masternumnode>::GP_2D_VarWGap_Ele_Lin(
-    unsigned iter,
-    MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele,
-    const LINALG::Matrix<slavenumnode,1>& sval,
-    const LINALG::Matrix<masternumnode,1>& mval,
-    const LINALG::Matrix<slavenumnode,1>& lmval,
-    const double* gpn,
-    const LINALG::Matrix<slavenumnode,slavedim>& sderiv,
-    const LINALG::Matrix<masternumnode,masterdim>& mderiv,
-    const LINALG::Matrix<slavenumnode,slavedim>& lmderiv,
-    double dxdsxi,
-    double wgt,
-    const GEN::pairedvector<int,double>& dmxigp,
-    const GEN::pairedvector<int,double>&derivjac,
-    const std::vector<GEN::pairedvector<int,double> >& dnmap_unit) const
-{
-//  int nrow = sele.NumNode();
-//  int ncol = mele.NumNode();
-
-  // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
-  // get master element nodes themselves
-  DRT::Node** mnodes = mele.Nodes();
-
-  // map iterator
-  typedef GEN::pairedvector<int,double>::const_iterator CI;
-
-  CoNode* cnode = static_cast<CoNode*>(snodes[iter]);
-
-  // *** integrate lin varWGapSl ****************************************
-  for (unsigned k=0;k<slavenumnode;++k)
-  {
-    CoNode* snode = static_cast<CoNode*>(snodes[k]);
-
-    double val[2] = {0.0, 0.0};
-
-    // (0) Lin(LmSlave) - slave GP coordinates --> 0
-
-    // (1) Lin(n-Slave) - normal direction
-    val[0] = wgt*lmval(iter)*sval(k)*dxdsxi;
-    // (2) Lin(NSlave) - slave GP coordinates --> 0
-
-    // (3) Lin(dsxideta) - segment end coordinates --> 0
-
-    // (4) Lin(dxdsxi) - slave GP Jacobian
-    val[1] = wgt*lmval(iter)*sval(k);
-    // (5) Lin(dxdsxi) - slave GP coordinates --> 0
-
-    for (int kdof=0;kdof<snode->NumDof();++kdof)
-    {
-      int sDofId = snode->Dofs()[kdof];
-      std::map<int,double>& varWGapLinSlMap = cnode->AugData().GetVarWGapLinSl()[sDofId];
-
-      // (1) - normal direction
-      for (CI p=dnmap_unit[kdof].begin();p!=dnmap_unit[kdof].end();++p)
-        varWGapLinSlMap[p->first] += val[0]*p->second;
-      // (4) - Slave GP Jacobian
-      for (CI p=derivjac.begin();p!=derivjac.end();++p)
-        varWGapLinSlMap[p->first] += val[1]*p->second*gpn[kdof];
-    }
-  }
-  // *** integrate lin varWGapMa ****************************************
-  for (unsigned l=0;l<masternumnode;++l)
-  {
-    CoNode* mnode = static_cast<CoNode*>(mnodes[l]);
-
-    double val[3] = {0.0, 0.0, 0.0};
-
-    // (0) Lin(LmSlave) - slave GP coordinates --> 0
-
-    // (1) Lin(n-Slave) - normal direction
-    val[0] = wgt*lmval(iter)*mval(l)*dxdsxi;
-    // (2) Lin(NMaster) - master GP coordinates
-    val[1] = wgt*lmval(iter)*mderiv(l,0)*dxdsxi;
-    // (3) Lin(dsxideta) - segment end coordinates --> 0
-
-    // (4) Lin(dxdsxi) - slave GP Jacobian
-    val[2] = wgt*lmval(iter)*mval(l);
-    // (5) Lin(dxdsxi) - slave GP coordinates --> 0
-
-    for (int ldof=0;ldof<mnode->NumDof();++ldof)
-    {
-      int mDofId = mnode->Dofs()[ldof];
-      std::map<int,double>& varWGapLinMaMap = cnode->AugData().GetVarWGapLinMa()[mDofId];
-
-      // (1) - normal direction
-      for (CI p=dnmap_unit[ldof].begin();p!=dnmap_unit[ldof].end();++p)
-        varWGapLinMaMap[p->first] += val[0]*p->second;
-      // (2) - master GP coordinates
-      for (CI p=dmxigp.begin();p!=dmxigp.end();++p)
-        varWGapLinMaMap[p->first] += val[1]*p->second*gpn[ldof];
-      // (4) - slave GP Jacobian
-      for (CI p=derivjac.begin();p!=derivjac.end();++p)
-        varWGapLinMaMap[p->first] += val[2]*p->second*gpn[ldof];
-    }
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-template < unsigned probdim,
-           DRT::Element::DiscretizationType slavetype,
-           DRT::Element::DiscretizationType mastertype,
-           unsigned slavedim,
-           unsigned slavenumnode,
-           unsigned masterdim,
-           unsigned masternumnode >
-void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode,
-    masterdim,masternumnode>::GP_3D_VarWGap_Lin(
-    unsigned iter,
-    MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele,
-    const LINALG::Matrix<slavenumnode,1>& sval,
-    const LINALG::Matrix<masternumnode,1>& mval,
-    const LINALG::Matrix<slavenumnode,1>& lmval,
-    const double* gpn,
-    const LINALG::Matrix<slavenumnode,slavedim>& sderiv,
-    const LINALG::Matrix<masternumnode,masterdim>& mderiv,
-    const LINALG::Matrix<slavenumnode,slavedim>& lmderiv,
-    double wgt,
-    double jac,
-    const std::vector<GEN::pairedvector<int,double> >& dsxigp,
-    const std::vector<GEN::pairedvector<int,double> >& dmxigp,
-    const GEN::pairedvector<int,double>& jacintcellmap,
-    const std::vector<GEN::pairedvector<int,double> >& dnmap_unit) const
-{
-//  const unsigned nrow = slavenumnode;
-//  const unsigned ncol = masternumnode;
-
-  // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
-  // get master element nodes themselves
-  DRT::Node** mnodes = mele.Nodes();
-
-  // map iterator
-  typedef GEN::pairedvector<int,double>::const_iterator CI;
-
-  CoNode* cnode = static_cast<CoNode*>(snodes[iter]);
-
-  // *** integrate lin varWGapSl ****************************************
-  for (unsigned k=0;k<slavenumnode;++k)
-  {
-    CoNode* snode = static_cast<CoNode*>(snodes[k]);
-    double val[4] = {0.0,0.0,0.0,0.0};
-
-    // (1) Lin(Phi) - dual shape functions
-    // this vanishes here since there are no deformation-dependent dual functions
-    // (2) Lin(LMShape) & Lin(NSlave) - 1st slave GP coordinate
-    val[0]  = wgt*lmderiv(iter,0)*sval(k)*jac;
-    val[0] += wgt*lmval(iter)*sderiv(k,0)*jac;
-    // (3) Lin(LMShape) & Lin(NSlave) - 2nd slave GP coordinate
-    val[1]  = wgt*lmderiv(iter,1)*sval(k)*jac;
-    val[1] += wgt*lmval(iter)*sderiv(k,1)*jac;
-    // (4) Lin(dsxideta) - intcell GP Jacobian
-    val[2]  = wgt*lmval(iter)*sval(k);
-    // (5) Lin(n-Slave) - normal direction
-    val[3]  = wgt*lmval(iter)*sval(k)*jac;
-
-    for (int kdof=0;kdof<snode->NumDof();++kdof)
-    {
-      int sDofId = snode->Dofs()[kdof];
-      std::map<int,double>& varWGapLinSlMap = cnode->AugData().GetVarWGapLinSl()[sDofId];
-
-      for (int i=0; i<(int) dsxigp.size();++i)
-        for (CI p=dsxigp[i].begin(); p!=dsxigp[i].end(); ++p)
-          varWGapLinSlMap[p->first] += val[i]*(p->second)*gpn[kdof];
-
-      for (CI p=jacintcellmap.begin(); p!=jacintcellmap.end(); ++p)
-        varWGapLinSlMap[p->first] += val[2]*(p->second)*gpn[kdof];
-
-      for (CI p=dnmap_unit[kdof].begin();p!=dnmap_unit[kdof].end();++p)
-        varWGapLinSlMap[p->first] += val[3]*(p->second);
-    }
-  }
-  // *** integrate lin varWGapMa ****************************************
-  for (unsigned l=0;l<masternumnode;++l)
-  {
-    CoNode* mnode = static_cast<CoNode*>(mnodes[l]);
-
-    double val[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-
-    // (1) Lin(Phi) - dual shape functions
-    // this vanishes here since there are no deformation-dependent dual functions
-    // (2) Lin(LMShape) - 1st slave GP coordinate
-    val[0] = wgt*lmderiv(iter,0)*mval(l)*jac;
-    // (3) Lin(LMShape) - 2nd slave GP coordinate
-    val[1] = wgt*lmderiv(iter,1)*mval(l)*jac;
-    // (4) Lin(NMaster) - 1st master GP coordinate
-    val[2] = wgt*lmval(iter)*mderiv(l,0)*jac;
-    // (5) Lin(NMaster) - 1st master GP coordinate
-    val[3] += wgt*lmval(iter)*mderiv(l,1)*jac;
-    // (6) Lin(dsxideta) - intcell GP Jacobian
-    val[4]  = wgt*lmval(iter)*mval(l);
-    // (7) Lin(n-Slave) - normal direction
-    val[5]  = wgt*lmval(iter)*mval(l)*jac;
-
-    for (int ldof=0;ldof<mnode->NumDof();++ldof)
-    {
-      int mDofId = mnode->Dofs()[ldof];
-      std::map<int,double>& varWGapLinMaMap = cnode->AugData().GetVarWGapLinMa()[mDofId];
-
-      for (int i=0;i<(int) dsxigp.size();++i)
-        for (CI p=dsxigp[i].begin(); p!=dsxigp[i].end(); ++p)
-          varWGapLinMaMap[p->first] += val[i]*(p->second)*gpn[ldof];
-
-      for (int i=0;i<(int) dmxigp.size();++i)
-        for (CI p=dmxigp[i].begin(); p!=dmxigp[i].end(); ++p)
-          varWGapLinMaMap[p->first] += val[i+2]*(p->second)*gpn[ldof];
-
-      for (CI p=jacintcellmap.begin(); p!=jacintcellmap.end(); ++p)
-        varWGapLinMaMap[p->first] += val[4]*(p->second)*gpn[ldof];
-
-      for (CI p=dnmap_unit[ldof].begin();p!=dnmap_unit[ldof].end();++p)
-        varWGapLinMaMap[p->first] += val[5]*(p->second);
-    }
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-template < unsigned probdim,
-           DRT::Element::DiscretizationType slavetype,
-           DRT::Element::DiscretizationType mastertype,
-           unsigned slavedim,
-           unsigned slavenumnode,
-           unsigned masterdim,
-           unsigned masternumnode >
-void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode,
-    masterdim,masternumnode>::GP_AugA(
-    int it,
-    MORTAR::MortarElement& sele,
-    const LINALG::Matrix<slavenumnode,1>& lmval,
+    const LINALG::Matrix<my::SLAVENUMNODE,1>& lmval,
     double wgt,
     double jac) const
 {
@@ -848,10 +380,47 @@ void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode
   DRT::Node** snodes = sele.Nodes();
   dsassert( snodes, "ERROR: AugmentedIntegrator::GP_2D_kappa: Null pointer!" );
 
-  CoNode* cnode = static_cast<CoNode*>(snodes[it]);
-  double& augA = cnode->AugData().GetAugA();
+  for ( unsigned it=0; it<my::SLAVENUMNODE; ++it )
+  {
+    CoNode* cnode = static_cast<CoNode*>(snodes[it]);
+    double& augA = cnode->AugData().GetAugA();
 
-  augA += lmval(it)*jac*wgt;
+    augA += lmval(it,0)*jac*wgt;
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template < unsigned probdim,
+           DRT::Element::DiscretizationType slavetype,
+           DRT::Element::DiscretizationType mastertype,
+           class IntPolicy >
+void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,IntPolicy>::Get_Deriv1st_AugA(
+    MORTAR::MortarElement& sele,
+    const LINALG::Matrix<my::SLAVENUMNODE,1>& lmval,
+    double wgt,
+    double jac,
+    const Deriv1stMap& derivjac) const
+{
+  // Get slave nodes
+  DRT::Node** snodes = sele.Nodes();
+  dsassert( snodes, "ERROR: AugmentedIntegrator::GP_2D_kappa: Null pointer!" );
+
+  // map iterator
+  typedef Deriv1stMap::const_iterator CI;
+
+  for ( unsigned i=0; i<my::SLAVENUMNODE; ++i )
+  {
+    CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(snodes[i]);
+    Deriv1stMap& augALinMap = cnode->AugData().GetDeriv1st_A();
+
+    double val = wgt*lmval(i);
+
+    // slave GP Jacobian
+    for (CI p=derivjac.begin();p!=derivjac.end();++p)
+      augALinMap[p->first] += val*p->second;
+  }
 
   return;
 }
@@ -861,37 +430,101 @@ void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode
 template < unsigned probdim,
            DRT::Element::DiscretizationType slavetype,
            DRT::Element::DiscretizationType mastertype,
-           unsigned slavedim,
-           unsigned slavenumnode,
-           unsigned masterdim,
-           unsigned masternumnode >
-void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,slavedim,slavenumnode,
-    masterdim,masternumnode>::GP_AugA_Lin(
-    unsigned iter,
+           class IntPolicy >
+void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,IntPolicy>::Get_Deriv2nd_Kappa(
     MORTAR::MortarElement& sele,
-    const LINALG::Matrix<slavenumnode,1>& lmval,
-    double wgt,
-    double jac,
-    const GEN::pairedvector<int,double>& derivjac) const
+    const LINALG::Matrix<my::SLAVENUMNODE,1>& lmval,
+    const double wgt,
+    const Deriv2ndMap& dd_jac ) const
 {
-  // Get slave nodes
-  DRT::Node** snodes = sele.Nodes();
-  dsassert( snodes, "ERROR: AugmentedIntegrator::GP_2D_kappa: Null pointer!" );
+  DRT::Node* const * snodes = sele.Nodes();
 
-  // map iterator
-  typedef GEN::pairedvector<int,double>::const_iterator CI;
+  for ( unsigned i=0; i<my::SLAVENUMNODE; ++i )
+  {
+    CoNode& cnode = static_cast<CoNode&>( *snodes[i] );
+    Deriv2ndMap& dd_kappa = cnode.AugData().GetDeriv2nd_Kappa();
 
-  CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(snodes[iter]);
-  GEN::pairedvector<int,double>& augALinMap = cnode->AugData().GetAugALin();
+    const double tmp = wgt * lmval(i,0);
 
-  // Lin(dxdsxi) - slave GP Jacobian
-  double val = wgt*lmval(iter);
+    for ( auto& dd_jac_var : dd_jac )
+    {
+      Deriv1stMap& dd_kappa_var = dd_kappa[ dd_jac_var.first ];
 
-  // (2) - slave GP Jacobian
-  for (CI p=derivjac.begin();p!=derivjac.end();++p)
-    augALinMap[p->first] += val*p->second;
+      for ( auto& dd_jac_var_lin : dd_jac_var.second )
+      {
+        dd_kappa_var( dd_jac_var_lin.first ) += tmp * dd_jac_var_lin.second;
+      }
+    }
 
-  return;
+  }
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template < unsigned probdim,
+           DRT::Element::DiscretizationType slavetype,
+           DRT::Element::DiscretizationType mastertype,
+           class IntPolicy >
+void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,IntPolicy>::GapN(
+    MORTAR::MortarElement& sele,
+    MORTAR::MortarElement& mele,
+    const LINALG::Matrix<my::SLAVENUMNODE,1>& sval,
+    const LINALG::Matrix<my::MASTERNUMNODE,1>& mval,
+    const double* gpn,
+    double & gapn_sl,
+    double & gapn_ma ) const
+{
+  const DRT::Node* const * snodes = sele.Nodes();
+  const DRT::Node* const * mnodes = mele.Nodes();
+
+  // slave contribution of the gauss point normal gap
+  gapn_sl = 0.0;
+  for ( unsigned i=0; i<my::SLAVENUMNODE; ++i )
+  {
+    const CoNode& snode = static_cast<const CoNode&>( *snodes[i] );
+    const double* xs = snode.xspatial();
+
+    for ( unsigned k=0; k<probdim; ++k )
+      gapn_sl += sval(i,0) * gpn[k] * xs[k];
+  }
+
+  // master contribution of the gauss point normal gap
+  gapn_ma = 0.0;
+  for ( unsigned i=0; i<my::MASTERNUMNODE; ++i )
+  {
+    const CoNode& mnode = static_cast<const CoNode&>( *mnodes[i] );
+    const double* xm = mnode.xspatial();
+
+    for ( unsigned k=0; k<probdim; ++k )
+      gapn_ma += mval(i,0) * gpn[k] * xm[k];
+  }
+}
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template < unsigned probdim,
+           DRT::Element::DiscretizationType slavetype,
+           DRT::Element::DiscretizationType mastertype,
+           class IntPolicy >
+void CONTACT::AUG::Integrator<probdim,slavetype,mastertype,IntPolicy>::GP_WGap(
+    MORTAR::MortarElement& sele,
+    const LINALG::Matrix<my::SLAVENUMNODE,1>& lmval,
+    const double gapn_sl,
+    const double gapn_ma,
+    const double wg,
+    const double jac ) const
+{
+  DRT::Node* const * snodes = sele.Nodes();
+  const double scale = wg * jac;
+
+  for ( unsigned i=0; i<my::SLAVENUMNODE; ++i )
+  {
+    CoNode& cnode = static_cast<CoNode&>( *snodes[i] );
+
+    const double val = lmval(i,0) * scale * ( gapn_ma - gapn_sl );
+
+    cnode.AddWGapValue( val );
+  }
+}
+
 
 #include "contact_augmented_integrator_list.H"

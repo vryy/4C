@@ -205,7 +205,7 @@ class StrategyBase : public NOX::NLN::CONSTRAINT::Interface::Preconditioner
     { return systype_; };
 
     //! Get problem dimension
-    const int& Dim() { return dim_; }
+    int Dim() const { return dim_; }
 
     //! Get Epetra communicator
     const Epetra_Comm& Comm() const { return *comm_; }

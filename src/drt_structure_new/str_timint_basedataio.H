@@ -21,11 +21,16 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_inpar/inpar_structure.H"
 
-#include <NOX_Abstract_PrePostOperator.H>
+#include "../solver_nonlin_nox/nox_nln_abstract_prepostoperator.H"
 
 namespace Teuchos {
   class ParameterList;
 } // namespace Teuchos
+namespace NOX {
+namespace LineSearch {
+  class Generic;
+} // namespace LineSearch
+} // namespace NOX
 namespace IO {
   class DiscretizationWriter;
   class EveryIterationWriterInterface;
@@ -391,7 +396,7 @@ namespace TIMINT {
    *  NOX::PrePostOperatorVector.
    *
    *  \author Michael Hiermeier \date 03/17 */
-  class WriteOutputEveryIteration : public NOX::Abstract::PrePostOperator
+  class WriteOutputEveryIteration : public NOX::NLN::Abstract::PrePostOperator
   {
   public:
     /// constructor
@@ -405,6 +410,10 @@ namespace TIMINT {
 
     /// called in the end of each Newton step
     virtual void runPostIterate( const NOX::Solver::Generic& solver );
+
+    /// called before the step is reduced in a line search routine
+    virtual void runPreModifyStepLength( const NOX::Solver::Generic& solver,
+        const NOX::LineSearch::Generic& linesearch );
 
   private:
     IO::EveryIterationWriter& every_iter_writer_;

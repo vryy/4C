@@ -20,6 +20,7 @@
 // DEBUG FLAGS
 //#define DEBUG_XCONTACT_INTERSECTION
 
+#include "../headers/pairedvector.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_cut/cut_utils.H"
 

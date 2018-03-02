@@ -20,6 +20,15 @@
 
 #include "../drt_mortar/mortar_paramsinterface.H"
 
+namespace INPAR {
+namespace STR {
+  enum PredEnum : int;
+} // namespace STR
+namespace CONTACT {
+  enum VariationalApproach : int;
+} // namespace CONTACT
+} // namespace INPAR
+
 namespace STR {
 namespace MODELEVALUATOR {
   class Generic;
@@ -34,7 +43,12 @@ namespace CONTACT {
     virtual ~ParamsInterface() {};
 
     //! get the predictor status
-    virtual const bool& IsPredictor() const = 0;
+    virtual bool IsPredictor() const = 0;
+
+    //! \brief get the currently active predictor type
+    /** \note If the execution of the predictor is finished, this
+     *  function will return INPAR::STR::pred_vague. \author hiermeier */
+    virtual enum INPAR::STR::PredEnum GetPredictorType() const = 0;
 
     //! get the current step length
     virtual double GetStepLength() const = 0;
@@ -47,6 +61,17 @@ namespace CONTACT {
 
     //! get a pointer to the contact model evaluator
     virtual const STR::MODELEVALUATOR::Generic& GetModelEvaluator() const = 0;
+
+    //! get the output file path
+    virtual std::string GetOutputFilePath() const = 0;
+
+    //! get the variational approach type
+    virtual enum INPAR::CONTACT::VariationalApproach
+    GetVariationalApproachType() const = 0;
+
+    //! get the variational approach type
+    virtual void SetVariationalApproachType(
+        const enum INPAR::CONTACT::VariationalApproach var_type ) = 0;
   };
 }
 

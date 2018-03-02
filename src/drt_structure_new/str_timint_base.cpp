@@ -57,6 +57,7 @@ STR::TIMINT::Base::Base()
       int_ptr_(Teuchos::null),
       dbc_ptr_(Teuchos::null)
 {
+  Epetra_Object::SetTracebackMode(1);
   // empty constructor
 }
 

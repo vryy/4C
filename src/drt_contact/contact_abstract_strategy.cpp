@@ -34,6 +34,9 @@
 #include "../linalg/linalg_sparsematrix.H"
 #include "../drt_lib/drt_globalproblem.H"
 
+#include "../solver_nonlin_nox/nox_nln_group.H"
+
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CONTACT::AbstractStratDataContainer::AbstractStratDataContainer()
@@ -87,7 +90,6 @@ CONTACT::AbstractStratDataContainer::AbstractStratDataContainer()
       forcetangential_(Teuchos::null),
       stepnp_(-1),
       iter_(-1),
-      iterls_(-1),
       isincontact_(false),
       wasincontact_(false),
       wasincontactlts_(false),
@@ -172,7 +174,6 @@ CONTACT::CoAbstractStrategy::CoAbstractStrategy(
       forcetangential_(data_ptr->ForceTangentialPtr()),
       step_(data_ptr->StepNp()),
       iter_(data_ptr->NlnIter()),
-      iterls_(data_ptr->IterLS()),
       isincontact_(data_ptr->IsInContact()),
       wasincontact_(data_ptr->WasInContact()),
       wasincontactlts_(data_ptr->WasInContactLastTimeStep()),
@@ -471,13 +472,9 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
   {
     // build Lagrange multiplier dof map
     Interfaces()[i]->UpdateLagMultSets(offset_if,redistributed);
-
-    // merge interface Lagrange multiplier dof maps to global LM dof map
-    glmdofrowmap_ = LINALG::MergeMap(LMDoFRowMapPtr(true),
-        Interfaces()[i]->LagMultDofs());
-    offset_if = LMDoFRowMap(true).NumGlobalElements();
-    if (offset_if < 0)
-      offset_if = 0;
+    const int loffset_interface = Interfaces()[i]->LagMultDofs()->NumGlobalElements();
+    if (loffset_interface > 0)
+      offset_if += loffset_interface;
 
     // merge interface master, slave maps to global master, slave map
     gsnoderowmap_ = LINALG::MergeMap(SlRowNodesPtr(),
@@ -534,6 +531,9 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
           Interfaces()[i]->SdofSurfRowmap());
     }
   }
+
+  // create the global Lagrange multiplier DoF row map
+  glmdofrowmap_ = CreateDeterministicLMDofRowMap( *gsdofrowmap_ );
 
   // setup global non-slave-or-master dof map
   // (this is done by splitting from the discretization dof map)
@@ -747,6 +747,53 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
 
   return;
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Map>
+CONTACT::CoAbstractStrategy::CreateDeterministicLMDofRowMap(
+    const Epetra_Map& gsdofrowmap ) const
+{
+  const unsigned num_my_sdofs = gsdofrowmap.NumMyElements();
+  const int* my_sdof_gids = gsdofrowmap.MyGlobalElements();
+
+  std::vector<int> my_lm_gids( num_my_sdofs, -1 );
+
+  for ( unsigned slid = 0; slid < num_my_sdofs; ++slid )
+  {
+    const int sgid = my_sdof_gids[slid];
+
+    // find slid of the interface map
+    unsigned interface_id = 0;
+    int interface_slid = -1;
+    for ( auto cit = Interfaces().begin(); cit != Interfaces().end(); ++cit,
+          ++interface_id )
+    {
+      const CoInterface& interface = **cit;
+      Teuchos::RCP<const Epetra_Map> sdof_map = interface.SlaveRowDofs();
+
+      interface_slid = sdof_map->LID( sgid );
+      if ( interface_slid != -1 )
+        break;
+    }
+
+    if ( interface_slid == -1 )
+      dserror("Couldn't find the global slave dof id #%d in the local interface "
+          "maps on proc #%d!", sgid, Comm().MyPID() );
+
+    // get the corresponding Lagrange Multiplier GID
+    const int interface_lmgid = Interfaces()[interface_id]->LagMultDofs()->GID(interface_slid);
+    if ( interface_lmgid == -1 )
+      dserror( "Couldn't find the corresponding Lagrange multiplier GID! "
+          "Note that the UpdateLagMultSets() must be called on each interface "
+          "beforehand." );
+
+    my_lm_gids[slid] = interface_lmgid;
+  }
+  return Teuchos::rcp( new Epetra_Map( -1, static_cast<int>(my_lm_gids.size()),
+      &my_lm_gids[0], 0, Comm() ) );
+}
+
 
 /*----------------------------------------------------------------------*
  | global evaluation method called from time integrator      popp 06/09 |
@@ -1153,7 +1200,7 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface(
  *----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::CheckParallelDistribution(
     const double& t_start)
-  {
+{
   //**********************************************************************
   // PARALLEL REDISTRIBUTION
   //**********************************************************************
@@ -1364,7 +1411,7 @@ void CONTACT::CoAbstractStrategy::AssembleMortar()
  *----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> vec)
 {
-  // flag for initualization of contact with nodal gaps
+  // flag for initialization of contact with nodal gaps
   bool initcontactbygap = DRT::INPUT::IntegralValue<int>(Params(),"INITCONTACTBYGAP");
 
   // only do something for frictional case
@@ -2024,7 +2071,7 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(
   // read restart information on active set and slip set (leave sets empty
   // if this is a restart with contact of a non-contact simulation run)
   Teuchos::RCP<Epetra_Vector> activetoggle = Teuchos::rcp(
-      new Epetra_Vector(SlRowNodes()));
+      new Epetra_Vector(SlRowNodes(),true));
   if (!restartwithcontact)
     reader.ReadVector(activetoggle, "activetoggle");
 
@@ -2941,6 +2988,9 @@ void CONTACT::CoAbstractStrategy::Evaluate(
   const enum MORTAR::ActionType& act = cparams.GetActionType();
   switch(act)
   {
+    // -------------------------------------------------------------------
+    // evaluate only the weighted gap
+    // -------------------------------------------------------------------
     case MORTAR::eval_weighted_gap:
     {
       EvalWeightedGap(cparams);
@@ -2991,7 +3041,7 @@ void CONTACT::CoAbstractStrategy::Evaluate(
     // -------------------------------------------------------------------
     // recover internal stored solution quantities (e.g. Lagrange multi.)
     // -------------------------------------------------------------------
-    case MORTAR::eval_recover:
+    case MORTAR::eval_run_post_compute_x:
     {
       if ( not eval_vec )
         dserror( "Missing evaluation vectors!" );
@@ -3013,7 +3063,7 @@ void CONTACT::CoAbstractStrategy::Evaluate(
       if (xnew_ptr.is_null() or !xnew_ptr.is_valid_ptr())
         dserror("xnew_ptr is undefined!");
 
-      RecoverState(cparams,*xold_ptr,*dir_ptr,*xnew_ptr);
+      RunPostComputeX(cparams,*xold_ptr,*dir_ptr,*xnew_ptr);
 
       break;
     }
@@ -3050,6 +3100,38 @@ void CONTACT::CoAbstractStrategy::Evaluate(
     case MORTAR::eval_run_post_iterate:
     {
       RunPostIterate( cparams );
+
+      break;
+    }
+    case MORTAR::eval_run_post_apply_jacobian_inverse:
+    {
+      const Epetra_Vector* rhs = cparams.Get<const Epetra_Vector>(0);
+      Epetra_Vector* result = cparams.Get<Epetra_Vector>(1);
+      const Epetra_Vector* xold = cparams.Get<const Epetra_Vector>(2);
+      const NOX::NLN::Group* grp = cparams.Get<const NOX::NLN::Group>(3);
+
+      RunPostApplyJacobianInverse( cparams, *rhs, *result, *xold, *grp );
+
+      break;
+    }
+    case MORTAR::eval_correct_parameters:
+    {
+      const NOX::NLN::CorrectionType* type =
+          cparams.Get<const NOX::NLN::CorrectionType>(0);
+
+      CorrectParameters( cparams, *type );
+
+      break;
+    }
+    case MORTAR::eval_wgap_gradient_error:
+    {
+      EvalWeightedGapGradientError( cparams );
+
+      break;
+    }
+    case MORTAR::eval_static_constraint_rhs:
+    {
+      EvalStaticConstraintRHS( cparams );
 
       break;
     }
@@ -3098,6 +3180,15 @@ void CONTACT::CoAbstractStrategy::EvalForceStiff(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void CONTACT::CoAbstractStrategy::EvalStaticConstraintRHS(
+    CONTACT::ParamsInterface& cparams)
+{
+  dserror("Not yet implemented! See the CONTACT::AUG::Strategy for an "
+      "example.");
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::RunPostEvaluate(
     CONTACT::ParamsInterface& cparams )
 {
@@ -3107,7 +3198,7 @@ void CONTACT::CoAbstractStrategy::RunPostEvaluate(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoAbstractStrategy::RecoverState(
+void CONTACT::CoAbstractStrategy::RunPostComputeX(
     const CONTACT::ParamsInterface& cparams,
     const Epetra_Vector& xold,
     const Epetra_Vector& dir,
@@ -3139,12 +3230,43 @@ void CONTACT::CoAbstractStrategy::RunPostIterate(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void CONTACT::CoAbstractStrategy::RunPostApplyJacobianInverse(
+    const CONTACT::ParamsInterface& cparams,
+    const Epetra_Vector& rhs,
+    Epetra_Vector& result,
+    const Epetra_Vector& xold,
+    const NOX::NLN::Group& grp )
+{
+  // do nothing
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoAbstractStrategy::EvalWeightedGapGradientError(
+    CONTACT::ParamsInterface& cparams )
+{
+  dserror("Not yet implemented! See the CONTACT::AUG::Strategy for an "
+      "example.");
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::ResetLagrangeMultipliers(
     const CONTACT::ParamsInterface& cparams,
     const Epetra_Vector& xnew)
 {
   dserror("Not yet implemented! See the CONTACT::AUG::Strategy for an "
       "example.");
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoAbstractStrategy::CorrectParameters(
+    CONTACT::ParamsInterface& cparams,
+    const NOX::NLN::CorrectionType type )
+{
+  /* do nothing */
 }
 
 /*----------------------------------------------------------------------*
@@ -3188,18 +3310,22 @@ void CONTACT::CoAbstractStrategy::FillMapsForPreconditioner(
    * if parallel redistribution is activated, then use (original) maps
    * before redistribution otherwise we use just the standard master/slave
    * maps */
+
   // (0) masterDofMap
   if (pgmdofrowmap_ != Teuchos::null)
     maps[0] = pgmdofrowmap_;
   else
     maps[0] = gmdofrowmap_;
+
   // (1) slaveDofMap
   if (pgsdofrowmap_ != Teuchos::null)
     maps[1]= pgsdofrowmap_;
   else
     maps[1] = gsdofrowmap_;
+
   // (2) innerDofMap
   maps[2] = gndofrowmap_;
+
   // (3) activeDofMap
   maps[3] = gactivedofs_;
 
@@ -3243,4 +3369,27 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoAbstractStrategy::
       Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(false)));
   LINALG::Export(*zold_,*zold_unredist);
   return zold_unredist;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double CONTACT::CoAbstractStrategy::GetPotentialValue(
+    const enum NOX::NLN::MeritFunction::MeritFctName mrt_type ) const
+{
+  dserror( "The currently active strategy \"%s\" does not support this method!",
+      INPAR::CONTACT::SolvingStrategy2String( Type() ).c_str() );
+  exit( EXIT_FAILURE );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double CONTACT::CoAbstractStrategy::GetLinearizedPotentialValueTerms(
+    const Epetra_Vector& dir,
+    const enum NOX::NLN::MeritFunction::MeritFctName mrt_type,
+    const enum NOX::NLN::MeritFunction::LinOrder linorder,
+    const enum NOX::NLN::MeritFunction::LinType lintype  ) const
+{
+  dserror( "The currently active strategy \"%s\" does not support this method!",
+      INPAR::CONTACT::SolvingStrategy2String( Type() ).c_str() );
+  exit( EXIT_FAILURE );
 }

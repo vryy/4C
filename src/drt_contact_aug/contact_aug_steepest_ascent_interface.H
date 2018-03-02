@@ -54,35 +54,46 @@ namespace STEEPESTASCENT {
     virtual ~Interface() {};
 
   protected:
-    /// derived
-    virtual void AssembleDGGLinMatrixOnSlaveSide(
-        const CoNode& cnode,
-        const GEN::pairedvector<int,std::pair<int,double> >& varWGapSlMap,
-        const std::map<int,double>& aWGapLinMap,
-        double cn,
-        double aWGap,
-        LINALG::SparseMatrix& dGGSlLinMatrix ) const;
-
-    /// derived
-    virtual void AssembleDGGLinMatrixOnMasterSide(
-        const CoNode& cnode,
-        const std::map<int,std::pair<int,double> >& varWGapMaMap,
-        const std::map<int,double>& aWGapLinMap,
-        double cn,
-        double aWGap,
-        LINALG::SparseMatrix& dGGMaLinMatrix ) const;
-
-    /// derived
-    virtual void AddKappaLinToGapLinearization(
-        const std::map<int,double>& kappaLinMap,
-        double x,
-        double kappainv,
-        double varWGap,
-        double scale,
-        std::map<int,double>& aWGapLinMap ) const;
+    virtual Teuchos::RCP<CONTACT::AUG::INTERFACE::AssembleStrategy>
+    CreateNodeBasedAssembleStrategy();
 
   };  // class Interface
 
+namespace INTERFACE {
+
+  /*--------------------------------------------------------------------------*/
+  /** \brief Node based assemble strategy
+   *
+   *  Assembly of nodal stored quantities. This a derived class which overloads
+   *  some few methods of the base class in order to establish the desired
+   *  condensed system contributions.
+   *
+   *  \author hiermeier \date 07/17 */
+  template < typename assemble_policy >
+  class NodeBasedAssembleStrategy
+      : public CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>
+  {
+  public:
+    /// constructor
+    explicit NodeBasedAssembleStrategy( Interface* inter )
+      : CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>( inter )
+    { /* empty */; }
+
+    /// destructor
+    virtual ~NodeBasedAssembleStrategy() {};
+
+    /// derived
+    virtual void Add_Var_A_GG(
+        Epetra_Vector& sl_force_g,
+        const Epetra_Vector& cnVec ) const;
+
+    /// derived
+    virtual void AssembleDGGLinMatrix(
+        LINALG::SparseMatrix& dGGLinMatrix,
+        const Epetra_Vector& cnVec) const;
+  };
+
+} // namespace INTERFACE
 } // namespace STEEPESTASCENT
 } // namespace AUG
 } // namespace CONTACT

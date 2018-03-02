@@ -24,6 +24,11 @@
 #include "../solver_nonlin_nox/nox_nln_statustest_normwrms.H"
 #include "../solver_nonlin_nox/nox_nln_statustest_normupdate.H"
 
+#include "../drt_io/io.H"
+#include "../drt_io/io_control.H"
+
+#include "../drt_lib/data_collector.H"
+
 #include <Epetra_Comm.h>
 
 
@@ -40,7 +45,7 @@ STR::MODELEVALUATOR::Data::Data()
       total_time_(-1.0),
       delta_time_(-1.0),
       step_length_(-1.0),
-      is_default_step_(false),
+      is_default_step_(true),
       timintfactor_disp_(-1.0),
       timintfactor_vel_(-1.0),
       stressdata_ptr_(Teuchos::null),
@@ -190,9 +195,22 @@ void STR::MODELEVALUATOR::Data::FillNormTypeMaps()
       normtype_update_[*qiter] = sdyn_ptr_->GetNoxNormType();
     }
   }
+
   // do it only once!
   isntmaps_filled_ = true;
   return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Data::CollectNormTypesOverAllProcs(
+    const quantity_norm_type_map& normtypes ) const
+{
+  CheckInit();
+
+  const quantity_norm_type_map mynormtypes( normtypes );
+  quantity_norm_type_map& gnormtypes = const_cast<quantity_norm_type_map&>( normtypes );
+  DRT::CollectData( *comm_ptr_, mynormtypes, gnormtypes );
 }
 
 /*----------------------------------------------------------------------------*
@@ -202,14 +220,17 @@ bool STR::MODELEVALUATOR::Data::GetUpdateNormType(
     enum NOX::Abstract::Vector::NormType& normtype)
 {
   FillNormTypeMaps();
+
   // check if there is a normtype for the corresponding quantity type
   std::map<enum NOX::NLN::StatusTest::QuantityType,
       enum NOX::Abstract::Vector::NormType>::const_iterator miter;
   miter = normtype_update_.find(qtype);
   if (miter==normtype_update_.end())
     return false;
+
   // we found the corresponding type
   normtype = miter->second;
+
   return true;
 }
 
@@ -220,14 +241,17 @@ bool STR::MODELEVALUATOR::Data::GetWRMSTolerances(
     double& atol, double& rtol)
 {
   FillNormTypeMaps();
+
   // check if there is a wrms test for the corresponding quantity type
   std::map<enum NOX::NLN::StatusTest::QuantityType,double>::const_iterator iter;
   iter = atol_wrms_.find(qtype);
   if (iter==atol_wrms_.end())
     return false;
+
   // we found the corrsponding type
   atol = iter->second;
   rtol = rtol_wrms_.at(qtype);
+
   return true;
 }
 
@@ -244,8 +268,7 @@ void STR::MODELEVALUATOR::Data::SumIntoMyUpdateNorm(
   if (owner!=comm_ptr_->MyPID())
     return;
   // --- standard update norms
-  enum NOX::Abstract::Vector::NormType normtype =
-      NOX::Abstract::Vector::TwoNorm;
+  enum NOX::Abstract::Vector::NormType normtype = NOX::Abstract::Vector::TwoNorm;
   if (GetUpdateNormType(qtype,normtype))
     SumIntoMyNorm(numentries,my_update_values,normtype,
         step_length,my_update_norm_[qtype]);
@@ -271,8 +294,7 @@ void STR::MODELEVALUATOR::Data::SumIntoMyPreviousSolNorm(
   if (owner!=comm_ptr_->MyPID())
     return;
 
-  enum NOX::Abstract::Vector::NormType normtype =
-      NOX::Abstract::Vector::TwoNorm;
+  enum NOX::Abstract::Vector::NormType normtype = NOX::Abstract::Vector::TwoNorm;
   if (not GetUpdateNormType(qtype,normtype))
     return;
 
@@ -523,7 +545,7 @@ void STR::MODELEVALUATOR::Data::AddContributionToEnergyType(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const bool& STR::MODELEVALUATOR::Data::IsPredictor() const
+bool STR::MODELEVALUATOR::Data::IsPredictor() const
 {
   return GState().IsPredict();
 }
@@ -564,4 +586,19 @@ int STR::MODELEVALUATOR::Data::GetNlnIter() const
 int STR::MODELEVALUATOR::Data::GetStepNp() const
 {
   return GState().GetStepNp();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+std::string STR::MODELEVALUATOR::ContactData::GetOutputFilePath() const
+{
+  CheckInit();
+  return InOutput().GetOutputPtr()->Output()->FileName();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int STR::MODELEVALUATOR::Data::GetRestartStep() const
+{
+  return GState().GetRestartStep();
 }

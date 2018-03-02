@@ -23,6 +23,8 @@
 #include "../drt_io/io_control.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../solver_nonlin_nox/nox_nln_aux.H"
+#include "../solver_nonlin_nox/nox_nln_linesearch_generic.H"
+#include "../solver_nonlin_nox/nox_nln_linesearch_prepostoperator.H"
 
 #include <NOX_Solver_Generic.H>
 
@@ -156,6 +158,7 @@ void STR::TIMINT::BaseDataIO::InitSetupEveryIterationWriter(
   writer_every_iter_->Init( output_.get(), interface, *p_io_every_iteration_ );
   writer_every_iter_->Setup();
 
+  // insert the every_iter output writer as ppo for the solver object
   Teuchos::ParameterList& p_sol_opt = p_nox.sublist("Solver Options");
 
   Teuchos::RCP<NOX::Abstract::PrePostOperator> prepost_solver_ptr =
@@ -163,6 +166,18 @@ void STR::TIMINT::BaseDataIO::InitSetupEveryIterationWriter(
           *writer_every_iter_ ) );
 
   NOX::NLN::AUX::AddToPrePostOpVector( p_sol_opt, prepost_solver_ptr );
+
+  // insert the every_iter output writer as ppo for the linesearch object
+  Teuchos::ParameterList& p_linesearch = p_nox.sublist("Line Search");
+
+  // Get the current map. If there is no map, return a new empty one. (reference)
+  NOX::NLN::LineSearch::PrePostOperator::map& prepostls_map =
+      NOX::NLN::LineSearch::PrePostOperator::GetMutableMap( p_linesearch );
+
+  // insert/replace the old pointer in the map
+  prepostls_map[NOX::NLN::LineSearch::prepost_output_every_iter] =
+      Teuchos::rcp_dynamic_cast<NOX::NLN::Abstract::PrePostOperator>(
+          prepost_solver_ptr );
 }
 
 /*----------------------------------------------------------------------------*
@@ -203,4 +218,16 @@ void NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration::runPostIter
 {
   const int newton_iteration = solver.getNumIterations();
   every_iter_writer_.AddNewtonIteration( newton_iteration );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration::runPreModifyStepLength(
+    const NOX::Solver::Generic& solver,
+    const NOX::LineSearch::Generic& linesearch )
+{
+  const int newton_iteration = solver.getNumIterations();
+  const int ls_iteration = dynamic_cast<const NOX::NLN::LineSearch::Generic&>(
+      linesearch ).GetNumIterations();
+  every_iter_writer_.AddLineSearchIteration( newton_iteration, ls_iteration );
 }

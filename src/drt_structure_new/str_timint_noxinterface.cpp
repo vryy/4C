@@ -27,6 +27,8 @@
 #include "../linalg/linalg_sparseoperator.H"
 #include "../drt_lib/drt_discret.H"
 
+#include "../drt_io/io_pstream.H"
+
 #include <NOX_Epetra_Vector.H>
 
 #include <boost/algorithm/string/predicate.hpp>  // case insensitive string compare
@@ -168,6 +170,37 @@ bool STR::TIMINT::NoxInterface::computeFandJacobian(const Epetra_Vector& x,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+bool STR::TIMINT::NoxInterface::computeCorrectionSystem(
+    const enum NOX::NLN::CorrectionType type,
+    const NOX::Abstract::Group& grp,
+    const Epetra_Vector& x,
+    Epetra_Vector& rhs,
+    Epetra_Operator& jac )
+{
+  CheckInitSetup();
+
+  LINALG::SparseOperator* jac_ptr =
+      dynamic_cast<LINALG::SparseOperator*>(&jac);
+  if (jac_ptr==NULL)
+    dserror("Dynamic cast failed!");
+
+  std::vector<INPAR::STR::ModelType> constraint_models;
+  FindConstraintModels( &grp, constraint_models );
+
+  if ( not implint_ptr_->ApplyCorrectionSystem(type,constraint_models,x,rhs,
+      *jac_ptr) )
+    return false;
+
+  /* Apply the DBC on the right hand side, since we need the Dirchilet free
+   * right hand side inside NOX for the convergence check, etc.               */
+  Teuchos::RCP<Epetra_Vector> rhs_ptr = Teuchos::rcpFromRef(rhs);
+  dbc_ptr_->ApplyDirichletToRhs(rhs_ptr);
+
+   return true;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool STR::TIMINT::NoxInterface::computePreconditioner(
     const Epetra_Vector& x,
     Epetra_Operator& M, Teuchos::ParameterList* precParams)
@@ -277,8 +310,10 @@ double STR::TIMINT::NoxInterface::GetPrimarySolutionUpdateRMS(
           gstate_ptr_->ExtractModelEntries(mt,xnew);
 
       // extract entries specific to element technology
-      gstate_ptr_->ExtractElementTechnologies(NOX::NLN::StatusTest::quantity_pressure,model_incr_ptr);
-      gstate_ptr_->ExtractElementTechnologies(NOX::NLN::StatusTest::quantity_pressure,model_xnew_ptr);
+      gstate_ptr_->ExtractElementTechnologies(
+          NOX::NLN::StatusTest::quantity_pressure,model_incr_ptr);
+      gstate_ptr_->ExtractElementTechnologies(
+          NOX::NLN::StatusTest::quantity_pressure,model_xnew_ptr);
 
       model_incr_ptr->Update(1.0,*model_xnew_ptr,-1.0);
       rms = NOX::NLN::AUX::RootMeanSquareNorm(atol,rtol,model_xnew_ptr,model_incr_ptr,
@@ -346,8 +381,10 @@ double STR::TIMINT::NoxInterface::GetPrimarySolutionUpdateNorms(
           gstate_ptr_->ExtractModelEntries(mt,xnew);
 
       // extract entries specific to element technology
-      gstate_ptr_->ExtractElementTechnologies(NOX::NLN::StatusTest::quantity_pressure,model_incr_ptr);
-      gstate_ptr_->ExtractElementTechnologies(NOX::NLN::StatusTest::quantity_pressure,model_xnew_ptr);
+      gstate_ptr_->ExtractElementTechnologies(
+          NOX::NLN::StatusTest::quantity_pressure,model_incr_ptr);
+      gstate_ptr_->ExtractElementTechnologies(
+          NOX::NLN::StatusTest::quantity_pressure,model_xnew_ptr);
 
       model_incr_ptr->Update(1.0,*model_xnew_ptr,-1.0);
       updatenorm = CalculateNorm(model_incr_ptr,type,isscaled);
@@ -417,7 +454,8 @@ double STR::TIMINT::NoxInterface::GetPreviousPrimarySolutionNorms(
           gstate_ptr_->ExtractModelEntries(mt,xold);
 
       // extract entries specific to element technology
-      gstate_ptr_->ExtractElementTechnologies(NOX::NLN::StatusTest::quantity_pressure,model_xold_ptr);
+      gstate_ptr_->ExtractElementTechnologies(
+          NOX::NLN::StatusTest::quantity_pressure,model_xold_ptr);
 
       xoldnorm = CalculateNorm(model_xold_ptr,type,isscaled);
 
@@ -478,7 +516,9 @@ double STR::TIMINT::NoxInterface::GetModelValue(
 
   switch ( merit_func_type )
   {
+    case NOX::NLN::MeritFunction::mrtfct_lagrangian_active:
     case NOX::NLN::MeritFunction::mrtfct_lagrangian:
+    case NOX::NLN::MeritFunction::mrtfct_energy:
     {
       // get the current displacement vector
       Teuchos::RCP<const Epetra_Vector> disnp =
@@ -501,16 +541,22 @@ double STR::TIMINT::NoxInterface::GetModelValue(
 
       omval = (*energy)(0);
 
+      IO::cout << __LINE__ << " - " << __FUNCTION__ << "\n";
+      IO::cout << "--- Structural energy\n";
+      IO::cout << "energy = " << std::setprecision(15) << std::scientific << omval << "\n";
+
       break;
     }
     case NOX::NLN::MeritFunction::mrtfct_infeasibility_two_norm:
+    case NOX::NLN::MeritFunction::mrtfct_infeasibility_two_norm_active:
     {
       // do nothing in the primary field
       break;
     }
     default:
     {
-      dserror("There is no objective model value with the enum %d.",
+      dserror("There is no objective model value for %s | %d.",
+          NOX::NLN::MeritFunction::MeritFuncName2String( merit_func_type ).c_str(),
           merit_func_type );
       exit( EXIT_FAILURE );
     }
@@ -531,14 +577,17 @@ double STR::TIMINT::NoxInterface::GetLinearizedModelTerms(
   switch ( mf_type )
   {
     case NOX::NLN::MeritFunction::mrtfct_lagrangian:
+    case NOX::NLN::MeritFunction::mrtfct_lagrangian_active:
     {
       return GetLinearizedEnergyModelTerms( group, dir, linorder, lintype );
     }
     case NOX::NLN::MeritFunction::mrtfct_infeasibility_two_norm:
+    case NOX::NLN::MeritFunction::mrtfct_infeasibility_two_norm_active:
       return 0.0;
     default:
     {
-      dserror("There is no linearization of the objective model with the enum %d.",
+      dserror("There is no linearization for the objective model %s | %d.",
+          NOX::NLN::MeritFunction::MeritFuncName2String(mf_type).c_str(),
           mf_type );
       exit( EXIT_FAILURE );
     }
@@ -643,4 +692,21 @@ STR::TIMINT::NoxInterface::CalcJacobianContributionsFromElementLevelForPTC()
   implint_ptr_->ComputeJacobianContributionsFromElementLevelForPTC(scalingMatrixOpPtr);
 
   return scalingMatrixOpPtr;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::NoxInterface::CreateBackupState(
+    const Epetra_Vector& dir )
+{
+  CheckInitSetup();
+  implint_ptr_->CreateBackupState(dir);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::NoxInterface::RecoverFromBackupState()
+{
+  CheckInitSetup();
+  implint_ptr_->RecoverFromBackupState();
 }

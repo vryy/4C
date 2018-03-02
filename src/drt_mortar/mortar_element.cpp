@@ -335,216 +335,239 @@ int MORTAR::MortarElement::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Get local coordinates for local node id                   popp 12/07|
  *----------------------------------------------------------------------*/
-bool MORTAR::MortarElement::LocalCoordinatesOfNode(int& lid, double* xi)
+bool MORTAR::MortarElement::LocalCoordinatesOfNode(int lid, double* xi) const
 {
   // 2D linear case (2noded line element)
   // 2D quadratic case (3noded line element)
-  if (Shape()==line2 || Shape()==line3)
+  switch ( Shape() )
   {
-    if (lid==0)
-      xi[0]=-1.0;
-    else if (lid==1)
-      xi[0]= 1.0;
-    else if (lid==2)
-      xi[0]= 0.0;
-    else
-      dserror("ERROR: LocalCoordinatesOfNode: Node number % in segment % out of range",lid,Id());
+    case line2:
+    case line3:
+    {
+      switch (lid)
+      {
+        case 0:
+          xi[0]=-1.0;
+          break;
+        case 1:
+          xi[0]= 1.0;
+          break;
+        case 2:
+          xi[0]= 0.0;
+          break;
+        default:
+          dserror("ERROR: LocalCoordinatesOfNode: Node number % in segment % out of range",lid,Id());
+      }
+      // we are in the 2D case here!
+      xi[1]=0.0;
 
-    // we are in the 2D case here!
-    xi[1]=0.0;
-  }
+      break;
+    }
 
-  // 3D linear case (2noded triangular element)
-  // 3D quadratic case (3noded triangular element)
-  else if (Shape()==tri3 || Shape()==tri6)
-  {
-    switch(lid)
+    // 3D linear case (2noded triangular element)
+    // 3D quadratic case (3noded triangular element)
+    case tri3:
+    case tri6:
     {
-    case 0:
-    {
-      xi[0]=0.0; xi[1]=0.0;
+      switch(lid)
+      {
+      case 0:
+      {
+        xi[0]=0.0; xi[1]=0.0;
+        break;
+      }
+      case 1:
+      {
+        xi[0]=1.0; xi[1]=0.0;
+        break;
+      }
+      case 2:
+      {
+        xi[0]=0.0; xi[1]=1.0;
+        break;
+      }
+      case 3:
+      {
+        xi[0]=0.5; xi[1]=0.0;
+        break;
+      }
+      case 4:
+      {
+        xi[0]=0.5; xi[1]=0.5;
+        break;
+      }
+      case 5:
+      {
+        xi[0]=0.0; xi[1]=0.5;
+        break;
+      }
+      default:
+        dserror("ERROR: LocCoordsOfNode: Node number % in segment % out of range",lid,Id());
+      }
+
       break;
     }
-    case 1:
+
+    // 3D bilinear case (4noded quadrilateral element)
+    // 3D serendipity case (8noded quadrilateral element)
+    // 3D biquadratic case (9noded quadrilateral element)
+    case quad4:
+    case quad8:
+    case quad9:
     {
-      xi[0]=1.0; xi[1]=0.0;
+      switch(lid)
+      {
+      case 0:
+      {
+        xi[0]=-1.0; xi[1]=-1.0;
+        break;
+      }
+      case 1:
+      {
+        xi[0]=1.0; xi[1]=-1.0;
+        break;
+      }
+      case 2:
+      {
+        xi[0]=1.0; xi[1]=1.0;
+        break;
+      }
+      case 3:
+      {
+        xi[0]=-1.0; xi[1]=1.0;
+        break;
+      }
+      case 4:
+      {
+        xi[0]=0.0; xi[1]=-1.0;
+        break;
+      }
+      case 5:
+      {
+        xi[0]=1.0; xi[1]=0.0;
+        break;
+      }
+      case 6:
+      {
+        xi[0]=0.0; xi[1]=1.0;
+        break;
+      }
+      case 7:
+      {
+        xi[0]=-1.0; xi[1]=0.0;
+        break;
+      }
+      case 8:
+      {
+        xi[0]=0.0; xi[1]=0.0;
+        break;
+      }
+      default:
+        dserror("ERROR: LocCoordsOfNode: Node number % in segment % out of range",lid,Id());
+      }
+
       break;
     }
-    case 2:
+
+    //==================================================
+    //                     NURBS
+    case nurbs2:
     {
-      xi[0]=0.0; xi[1]=1.0;
+      if (lid==0)
+        xi[0]=-1.0;
+      else if (lid==1)
+        xi[0]= 1.0;
+      else
+        dserror("ERROR: LocalCoordinatesOfNode: Node number % in segment % out of range",lid,Id());
+
+      // we are in the 2D case here!
+      xi[1]=0.0;
+
       break;
     }
-    case 3:
+    case nurbs3:
     {
-      xi[0]=0.5; xi[1]=0.0;
+      if (lid==0)
+        xi[0]=-1.0;
+      else if (lid==1)
+        xi[0]= 0.0;
+      else if (lid==2)
+        xi[0]= 1.0;
+      else
+        dserror("ERROR: LocalCoordinatesOfNode: Node number % in segment % out of range",lid,Id());
+
+      // we are in the 2D case here!
+      xi[1]=0.0;
+
       break;
     }
-    case 4:
+    case nurbs9:
     {
-      xi[0]=0.5; xi[1]=0.5;
+      switch(lid)
+      {
+      case 0:
+      {
+        xi[0]=-1.0; xi[1]=-1.0;
+        break;
+      }
+      case 1:
+      {
+        xi[0]=0.0; xi[1]=-1.0;
+        break;
+      }
+      case 2:
+      {
+        xi[0]=1.0; xi[1]=-1.0;
+        break;
+      }
+      case 3:
+      {
+        xi[0]=-1.0; xi[1]=0.0;
+        break;
+      }
+      case 4:
+      {
+        xi[0]=0.0; xi[1]=0.0;
+        break;
+      }
+      case 5:
+      {
+        xi[0]=1.0; xi[1]=0.0;
+        break;
+      }
+      case 6:
+      {
+        xi[0]=-1.0; xi[1]=1.0;
+        break;
+      }
+      case 7:
+      {
+        xi[0]=0.0; xi[1]=1.0;
+        break;
+      }
+      case 8:
+      {
+        xi[0]=1.0; xi[1]=1.0;
+        break;
+      }
+      default:
+        dserror("ERROR: LocCoordsOfNode: Node number % in segment % out of range",lid,Id());
+      }
+
       break;
     }
-    case 5:
-    {
-      xi[0]=0.0; xi[1]=0.5;
-      break;
-    }
+    // unknown case
     default:
-      dserror("ERROR: LocCoordsOfNode: Node number % in segment % out of range",lid,Id());
-    }
+      dserror("ERROR: LocalCoordinatesOfNode called for unknown element type");
+      exit( EXIT_FAILURE );
   }
-
-  // 3D bilinear case (4noded quadrilateral element)
-  // 3D serendipity case (8noded quadrilateral element)
-  // 3D biquadratic case (9noded quadrilateral element)
-  else if (Shape()==quad4 || Shape()==quad8 || Shape()==quad9)
-  {
-    switch(lid)
-    {
-    case 0:
-    {
-      xi[0]=-1.0; xi[1]=-1.0;
-      break;
-    }
-    case 1:
-    {
-      xi[0]=1.0; xi[1]=-1.0;
-      break;
-    }
-    case 2:
-    {
-      xi[0]=1.0; xi[1]=1.0;
-      break;
-    }
-    case 3:
-    {
-      xi[0]=-1.0; xi[1]=1.0;
-      break;
-    }
-    case 4:
-    {
-      xi[0]=0.0; xi[1]=-1.0;
-      break;
-    }
-    case 5:
-    {
-      xi[0]=1.0; xi[1]=0.0;
-      break;
-    }
-    case 6:
-    {
-      xi[0]=0.0; xi[1]=1.0;
-      break;
-    }
-    case 7:
-    {
-      xi[0]=-1.0; xi[1]=0.0;
-      break;
-    }
-    case 8:
-    {
-      xi[0]=0.0; xi[1]=0.0;
-      break;
-    }
-    default:
-      dserror("ERROR: LocCoordsOfNode: Node number % in segment % out of range",lid,Id());
-    }
-  }
-
-  //==================================================
-  //                     NURBS
-  else if (Shape()==nurbs2)
-  {
-    if (lid==0)
-      xi[0]=-1.0;
-    else if (lid==1)
-      xi[0]= 1.0;
-    else
-      dserror("ERROR: LocalCoordinatesOfNode: Node number % in segment % out of range",lid,Id());
-
-    // we are in the 2D case here!
-    xi[1]=0.0;
-  }
-  else if (Shape()==nurbs3)
-  {
-    if (lid==0)
-      xi[0]=-1.0;
-    else if (lid==1)
-      xi[0]= 0.0;
-    else if (lid==2)
-      xi[0]= 1.0;
-    else
-      dserror("ERROR: LocalCoordinatesOfNode: Node number % in segment % out of range",lid,Id());
-
-    // we are in the 2D case here!
-    xi[1]=0.0;
-  }
-  else if (Shape()==nurbs9)
-  {
-    switch(lid)
-    {
-    case 0:
-    {
-      xi[0]=-1.0; xi[1]=-1.0;
-      break;
-    }
-    case 1:
-    {
-      xi[0]=0.0; xi[1]=-1.0;
-      break;
-    }
-    case 2:
-    {
-      xi[0]=1.0; xi[1]=-1.0;
-      break;
-    }
-    case 3:
-    {
-      xi[0]=-1.0; xi[1]=0.0;
-      break;
-    }
-    case 4:
-    {
-      xi[0]=0.0; xi[1]=0.0;
-      break;
-    }
-    case 5:
-    {
-      xi[0]=1.0; xi[1]=0.0;
-      break;
-    }
-    case 6:
-    {
-      xi[0]=-1.0; xi[1]=1.0;
-      break;
-    }
-    case 7:
-    {
-      xi[0]=0.0; xi[1]=1.0;
-      break;
-    }
-    case 8:
-    {
-      xi[0]=1.0; xi[1]=1.0;
-      break;
-    }
-    default:
-      dserror("ERROR: LocCoordsOfNode: Node number % in segment % out of range",lid,Id());
-    }
-  }
-
-  // unknown case
-  else
-    dserror("ERROR: LocalCoordinatesOfNode called for unknown element type");
-
   return true;
 }
 
 /*----------------------------------------------------------------------*
  |  Get local numbering for global node id                    popp 12/07|
  *----------------------------------------------------------------------*/
-int MORTAR::MortarElement::GetLocalNodeId(int& nid)
+int MORTAR::MortarElement::GetLocalNodeId(int nid) const
 {
   int lid = -1;
 
@@ -588,8 +611,8 @@ void MORTAR::MortarElement::ComputeNormalAtXi(double* xi, int& i,
                                           Epetra_SerialDenseMatrix& elens)
 {
   // empty local basis vectors
-  std::vector<double> gxi(3);
-  std::vector<double> geta(3);
+  double gxi[3];
+  double geta[3];
 
   // metrics routine gives local basis vectors
   Metrics(xi,gxi,geta);
@@ -618,8 +641,8 @@ double MORTAR::MortarElement::ComputeUnitNormalAtXi(double* xi, double* n)
   if (!n)  dserror("ERROR: ComputeUnitNormalAtXi called with n=NULL");
 
   // empty local basis vectors
-  std::vector<double> gxi(3);
-  std::vector<double> geta(3);
+  double gxi[3];
+  double geta[3];
 
   // metrics routine gives local basis vectors
   Metrics(xi,gxi,geta);
@@ -685,10 +708,12 @@ void MORTAR::MortarElement::DerivUnitNormalAtXi(double* xi,
   const int nnodes = NumNode();
   DRT::Node** mynodes = Nodes();
   if (!mynodes) dserror("ERROR: DerivUnitNormalAtXi: Null pointer!");
+
   LINALG::SerialDenseVector val(nnodes);
   LINALG::SerialDenseMatrix deriv(nnodes,2,true);
-  std::vector<double> gxi(3);
-  std::vector<double> geta(3);
+
+  double gxi[3];
+  double geta[3];
 
   // get shape function values and derivatives at xi
   EvaluateShape(xi, val, deriv, nnodes);
@@ -803,9 +828,9 @@ void MORTAR::MortarElement::GetNodalCoords(LINALG::SerialDenseMatrix& coord)
     MortarNode* mymrtrnode = dynamic_cast<MortarNode*> (mynodes[i]);
     if (!mymrtrnode)
       dserror("ERROR: GetNodalCoords: Null pointer!");
-    coord(0,i) = mymrtrnode->xspatial()[0];
-    coord(1,i) = mymrtrnode->xspatial()[1];
-    coord(2,i) = mymrtrnode->xspatial()[2];
+
+    const double* x = mymrtrnode->xspatial();
+    std::copy( x, x+3, &coord(0,i) );
   }
 
   return;
@@ -862,17 +887,44 @@ void MORTAR::MortarElement::GetNodalLagMult(LINALG::SerialDenseMatrix& lagmult,
 /*----------------------------------------------------------------------*
  |  Evaluate element metrics (local basis vectors)            popp 08/08|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarElement::Metrics(const double* xi, std::vector<double>& gxi,
-                                    std::vector<double>& geta)
+void MORTAR::MortarElement::Metrics(
+    const double* xi,
+    double* gxi,
+    double* geta)
 {
+  std::fill( gxi, gxi+3, 0.0 );
+  std::fill( geta, geta+3, 0.0 );
+
   int nnodes = NumPoint();
 
   int dim = 0;
   DRT::Element::DiscretizationType dt = Shape();
-  if (dt==line2 || dt==line3 || dt==nurbs2 || dt==nurbs3) dim = 2;
-  else if (dt==tri3   || dt==quad4  || dt==tri6 || dt==quad8 || dt==quad9 ||
-           dt==nurbs4 || dt==nurbs8 || dt==nurbs9) dim = 3;
-  else dserror("ERROR: Metrics called for unknown element type");
+  switch ( dt )
+  {
+    case line2:
+    case line3:
+    case nurbs2:
+    case nurbs3:
+    {
+      dim = 2;
+      break;
+    }
+    case tri3:
+    case quad4:
+    case tri6:
+    case quad8:
+    case quad9:
+    case nurbs4:
+    case nurbs8:
+    case nurbs9:
+    {
+      dim = 3;
+      break;
+    }
+    default:
+      dserror("ERROR: Metrics called for unknown element type");
+      exit(EXIT_FAILURE);
+  }
 
   LINALG::SerialDenseVector val(nnodes);
   LINALG::SerialDenseMatrix deriv(nnodes,2,true);
@@ -915,8 +967,8 @@ void MORTAR::MortarElement::Metrics(const double* xi, std::vector<double>& gxi,
 double MORTAR::MortarElement::Jacobian(const double* xi)
 {
   double jac = 0.0;
-  std::vector<double> gxi(3);
-  std::vector<double> geta(3);
+  double gxi[3];
+  double geta[3];
   DRT::Element::DiscretizationType dt = Shape();
 
   // 2D linear case (2noded line element)
@@ -966,12 +1018,13 @@ void MORTAR::MortarElement::DerivJacobian(const double* xi,
   DRT::Node** mynodes=NULL;//Nodes();
   mynodes = Nodes();
 
-  if (!mynodes) dserror("ERROR: DerivJacobian: Null pointer!");
+  if (!mynodes)
+    dserror("ERROR: DerivJacobian: Null pointer!");
 
   // the inverse Jacobian
   double jacinv = 0.0;
-  std::vector<double> gxi(3);
-  std::vector<double> geta(3);
+  double gxi[3];
+  double geta[3];
 
   // evaluate shape functions
   LINALG::SerialDenseVector val(nnodes);
@@ -990,21 +1043,44 @@ void MORTAR::MortarElement::DerivJacobian(const double* xi,
   DRT::Element::DiscretizationType dt = Shape();
 
   // 2D linear case (2noded line element)
-  if (dt==line2) jacinv = 2.0/MoData().Area();
-
-  // 3D linear case (3noded triangular element)
-  else if (dt==tri3) jacinv = 1.0/(MoData().Area()*2.0);
-
-  // 2D quadratic case (3noded line element)
-  // 3D bilinear case (4noded quadrilateral element)
-  // 3D quadratic case (6noded triangular element)
-  // 3D serendipity case (8noded quadrilateral element)
-  // 3D biquadratic case (9noded quadrilateral element)
-  else if (dt==line3  || dt==quad4  || dt==tri6   || dt==quad8  || dt==quad9  ||
-           dt==nurbs2 || dt==nurbs3 || dt==nurbs4 || dt==nurbs8 || dt==nurbs9)
-    jacinv = 1.0/sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
-  else
-    dserror("ERROR: Jac. derivative not implemented for this type of CoElement");
+  switch (dt)
+  {
+    // 3D linear case (3noded triangular element)
+    case tri3:
+    {
+      jacinv = 1.0/(MoData().Area()*2.0);
+      break;
+    }
+    // default 2-D case
+    case line2:
+    {
+      jacinv = 2.0/MoData().Area();
+      break;
+    }
+    // 2D quadratic case (3noded line element)
+    // 3D bilinear case (4noded quadrilateral element)
+    // 3D quadratic case (6noded triangular element)
+    // 3D serendipity case (8noded quadrilateral element)
+    // 3D biquadratic case (9noded quadrilateral element)
+    /* no break (upper case) */
+    case line3:
+    case quad4:
+    case tri6:
+    case quad8:
+    case quad9:
+    case nurbs2:
+    case nurbs3:
+    case nurbs4:
+    case nurbs8:
+    case nurbs9:
+    {
+      jacinv = 1.0/sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
+      break;
+    }
+    default:
+      dserror("ERROR: Jac. derivative not implemented for this type of CoElement");
+      exit( EXIT_FAILURE );
+  }
 
   // *********************************************************************
   // compute Jacobian derivative

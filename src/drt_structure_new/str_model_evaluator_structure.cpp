@@ -15,7 +15,8 @@
 
 #include "str_model_evaluator_structure.H"
 #include "str_model_evaluator_data.H"
-#include "str_timint_base.H"
+#include "str_timint_implicit.H"
+#include "str_predict_generic.H"
 #include "str_utils.H"
 #include "str_integrator.H"
 #include "str_dbc.H"
@@ -344,6 +345,9 @@ bool STR::MODELEVALUATOR::Structure::ApplyForceStiffExternal()
 {
   CheckInitSetup();
 
+  if ( PreApplyForceStiffExternal( FextNp(), *stiff_ptr_ ) )
+    return true;
+
   // set vector values needed by elements
   Discret().ClearState();
   Discret().SetState(0,"displacement",GState().GetDisN());
@@ -363,6 +367,22 @@ bool STR::MODELEVALUATOR::Structure::ApplyForceStiffExternal()
   }
 
   return EvalErrorCheck();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::MODELEVALUATOR::Structure::PreApplyForceStiffExternal(
+    Epetra_Vector& fextnp,
+    LINALG::SparseMatrix& stiff ) const
+{
+  CheckInitSetup();
+
+  const STR::TIMINT::Implicit* impl_ptr =
+      dynamic_cast<const STR::TIMINT::Implicit*>( &TimInt() );
+  if ( impl_ptr )
+    return impl_ptr->Predictor().PreApplyForceExternal( fextnp );
+
+  return false;
 }
 
 /*----------------------------------------------------------------------------*
@@ -851,7 +871,7 @@ void STR::MODELEVALUATOR::Structure::EvaluateInternal(
         isType< Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> > ("interface"))
     dserror("The given parameter has the wrong type!");
 
-  // write data to the parameter list.
+  // FixMe as soon as possible: write data to the parameter list.
   // this is about to go, once the old time integration is deleted
   ParamsInterface2ParameterList(EvalDataPtr(),p);
 
@@ -964,7 +984,7 @@ void STR::MODELEVALUATOR::Structure::Predict(const INPAR::STR::PredEnum& pred_ty
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::RecoverState(
+void STR::MODELEVALUATOR::Structure::RunPostComputeX(
     const Epetra_Vector& xold,
     const Epetra_Vector& dir,
     const Epetra_Vector& xnew)
@@ -1023,6 +1043,9 @@ void STR::MODELEVALUATOR::Structure::UpdateStepState(
   // new at t_{n+1} -> t_n
   //    A_{n} := A_{n+1}
   GState().GetMutableMultiAcc()->UpdateSteps(*GState().GetAccNp());
+
+  // store the old external force
+  GState().GetMutableFextN()->Scale(1.0, FextNp() );
 
   // new at t_{n+1} -> t_{n+timefac_n}
   //    F^{struct}_{n+timefac_n} := timefac_n * F^{struct}_{n+1}
@@ -1530,4 +1553,49 @@ void STR::MODELEVALUATOR::Structure::ParamsInterface2ParameterList(
   params.set<int>("iostress",   (int)interface_ptr->GetStressOutputType());
   params.set<int>("iostrain",   (int)interface_ptr->GetStrainOutputType());
   params.set<int>("ioplstrain", (int)interface_ptr->GetPlasticStrainOutputType());
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::CreateBackupState(
+    const Epetra_Vector& dir)
+{
+  CheckInitSetup();
+
+  // set all parameters in the evaluation data container
+  EvalData().SetActionType(DRT::ELEMENTS::struct_create_backup);
+
+  // set vector values needed by elements
+  Discret().ClearState();
+  Discret().SetState(0,"displacement",GState().GetDisNp());
+  Discret().SetState(0,"residual displacement", Teuchos::rcpFromRef(dir));
+
+  // set dummy evaluation vectors and matrices
+  Teuchos::RCP<Epetra_Vector> eval_vec [3] =
+      {Teuchos::null,Teuchos::null,Teuchos::null};
+  Teuchos::RCP<LINALG::SparseOperator> eval_mat[2] =
+      {Teuchos::null,Teuchos::null};
+
+  EvaluateInternal(eval_mat,eval_vec);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::RecoverFromBackupState()
+{
+  CheckInitSetup();
+
+  // set all parameters in the evaluation data container
+  EvalData().SetActionType(DRT::ELEMENTS::struct_recover_from_backup);
+
+  // set vector values needed by elements
+  Discret().ClearState();
+
+  // set dummy evaluation vectors and matrices
+  Teuchos::RCP<Epetra_Vector> eval_vec [3] =
+      {Teuchos::null,Teuchos::null,Teuchos::null};
+  Teuchos::RCP<LINALG::SparseOperator> eval_mat[2] =
+      {Teuchos::null,Teuchos::null};
+
+  EvaluateInternal(eval_mat,eval_vec);
 }

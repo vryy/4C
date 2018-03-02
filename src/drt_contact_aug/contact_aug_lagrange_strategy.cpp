@@ -18,6 +18,7 @@
 #include "contact_aug_lagrange_interface.H"
 
 #include "../linalg/linalg_utils.H"
+#include "../drt_lib/epetra_utils.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -71,10 +72,7 @@ void CONTACT::AUG::LAGRANGE::Strategy::EvalStrContactRHS()
   // Master side
   Epetra_Vector augfm_exp( *ProblemDofs() );
   LINALG::Export( Data().MaForceLm(), augfm_exp );
-  Data().StrContactRhs().Update( -1.0, augfm_exp, 1.0 );
-
-  // Check linear and angular momentum conservation
-  CheckConservationLaws( Data().SlForceLm(), Data().MaForceLm() );
+  CATCH_EPETRA_ERROR(Data().StrContactRhs().Update( -1.0, augfm_exp, 1.0 ));
 
   return;
 }

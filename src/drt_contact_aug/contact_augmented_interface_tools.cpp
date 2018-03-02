@@ -13,6 +13,7 @@
 */
 /*---------------------------------------------------------------------*/
 #include "contact_augmented_interface.H"
+#include "contact_integrator_utils.H"
 #include "../drt_contact/contact_integrator.H"
 #include "../drt_contact/contact_defines.H"
 #include "../drt_contact/contact_node.H"
@@ -25,1489 +26,561 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_contact.H"
 
-#include "../headers/pairedvector.H"
+#include "../drt_structure_new/str_model_evaluator_data.H"
 
 
-/*----------------------------------------------------------------------*
- | Finite difference check for KappaLin                  hiermeier 05/14|
- *----------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::FDCheckKappaLin(
-    CONTACT::ParamsInterface& cparams)
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template <typename T0, typename T1, typename T2>
+CONTACT::AUG::Interface::FiniteDifference<T0,T1,T2>::FiniteDifference(
+    Interface& interface, const double delta )
+    : inter_( interface ),
+      stored_actiontype_( MORTAR::eval_none ),
+      ref_x_( true ),
+      delta_( delta )
+{ /* empty */ }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template <typename T0, typename T1, typename T2>
+void CONTACT::AUG::Interface::FiniteDifference<T0,T1,T2>::GPCheck1stOrder(
+    CONTACT::ParamsInterface& cparams )
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-  Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr =
-      Teuchos::rcpFromRef(cparams);
-  // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+  if ( not inter_.lComm() )
+    return;
 
-  std::map<int,double> refKappa;
-  std::map<int,std::map<int,double> > refKappaLin;
+  Epetra_Map& snode_row_map = *(inter_.snoderowmap_);
+  Epetra_Map& mnode_row_map = *(inter_.mnoderowmap_);
 
-  double newKappa = 0.0;
+  std::map<int, T0> ref;
+  T0 new_ref;
+  std::map<int, T1> ref_deriv1st;
 
-  int dim = Dim();
+  std::set<int> empty_node_gids;
+  GetReference( snode_row_map, ref, ref_deriv1st, empty_node_gids );
 
-  // print reference to screen (kappaLin-derivative-maps) and store them for later comparison
-  // loop over proc's slave nodes
-  for (int i=0;i<snoderowmap_->NumMyElements();++i)
+  // nothing to do, if all nodes have no linearization
+  if ( empty_node_gids.size() >= static_cast<unsigned>( snode_row_map.NumMyElements() ) )
+    return;
+
+  RefEvaluate( cparams );
+
+  const unsigned dim = inter_.Dim();
+
+  Teuchos::RCP<Epetra_Map> fullmaps[2] = { Teuchos::null, Teuchos::null };
+
+  fullmaps[0] = GetFullMap( snode_row_map );
+  fullmaps[1] = GetFullMap( mnode_row_map );
+
+  for ( unsigned m=0; m < 2; ++m )
   {
-    int gid = snoderowmap_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
+    for ( unsigned fd=0; fd<dim*fullmaps[m]->NumMyElements(); ++fd )
+    {
+      // store warnings for this finite difference
+      int w=0;
 
-    if ((int) cnode->AugData().GetKappaLin().size()==0)
-      continue;
+      // Initialize
+      inter_.Initialize();
 
-    refKappa[gid]    = cnode->AugData().GetKappa();
-    refKappaLin[gid] = cnode->AugData().GetKappaLin();
+      // now get the node we want to apply the FD scheme to
+      int gid = fullmaps[m]->GID(fd/dim);
+      CoNode* snode = dynamic_cast<CoNode*>(inter_.idiscret_->gNode(gid));
+      if(!snode)
+        dserror("ERROR: Cannot find slave node with gid %",gid);
+
+      const int sdof = snode->Dofs()[fd%dim];
+
+      std::cout << "\nDERIVATIVE FOR "<< (m==0 ? "S" : "M" ) <<
+          "-NODE # " << gid << " DOF: " << sdof << std::endl;
+
+      // do step forward (modify nodal displacement)
+      DoPerturbation( *snode, fd );
+
+      // *******************************************************************
+      // contents of Evaluate()
+      // *******************************************************************
+      PerturbedEvaluate( cparams );
+
+      // compute finite difference derivative
+      for ( int k=0; k<snode_row_map.NumMyElements(); ++k )
+      {
+        const int kgid = snode_row_map.GID(k);
+
+        DRT::Node* knode = inter_.idiscret_->gNode(kgid);
+        if (!knode)
+          dserror("ERROR: Cannot find node with gid %",kgid);
+        CoNode* kcnode = dynamic_cast<CoNode*>(knode);
+
+        if ( GetDeriv1st( kcnode->AugData() ).empty() )
+        {
+          continue;
+        }
+
+        const T0& ref_vals = GetValues( kcnode->AugData() );
+        ResizeValues( new_ref );
+        std::copy( &ref_vals, &ref_vals+GetNumVectors( ref_vals ), &new_ref );
+
+        for ( unsigned v=0; v<GetNumVectors( new_ref ); ++v )
+        {
+          // print results (derivatives) to screen
+          const int dof_gid = AtRef(new_ref,v).first;
+          const double ref_val = AtRef(ref[kgid],v).second;
+
+          const int var_node_gid = sdof/dim;
+          const CoNode& var_node =
+              dynamic_cast<const CoNode&>( *inter_.idiscret_->gNode( var_node_gid ) );
+          const std::string sm( var_node.IsSlave() ? "s" : "m" );
+
+          if (std::abs( AtRef(new_ref,v).second - ref_val ) > 1e-12)
+          {
+            const double fd_approx = ( AtRef(new_ref,v).second - ref_val )/delta_;
+
+            const double ref_d_var = AtDeriv1st( ref_deriv1st[kgid], v, sdof );
+            const double dev = fd_approx - ref_d_var;
+
+            /* output legend:
+             * v    = vector component
+             * kgid = node holding the derivatives
+             * var_gid = global id of the varied dof (row ID in tangential matrix)
+             * var_gid/dim = global id of the node holding the varied dof
+             * s_dof = linearized dof (col ID in the tangential matrix */
+            std::cout << "[" << v << "]" << "{" << dof_gid << "," << kgid << "}" <<
+                "(" << sdof << "(" << sdof/dim << "[" << sm << "]):";
+
+            std::cout << "   fd=" << std::setw(14) << std::setprecision(5) << std::scientific << fd_approx;
+            std::cout << "   lin=" << std::setw(14) << std::setprecision(5) << std::scientific << ref_d_var <<
+                "   DEVIATION= " << std::setw(14) << std::setprecision(5) << std::scientific << dev;
+
+            std::cout << "   REL-ERROR [%]= ";
+            if ( fd_approx != 0.0 )
+              std::cout << std::setw(14) << std::setprecision(5) << std::scientific <<
+                abs(dev/fd_approx)*100;
+            else
+              std::cout << " undef.";
+
+            if( abs(dev) > 1e-4 )
+            {
+              std::cout << " ***** WARNING ***** ";
+              w++;
+            }
+            else if( abs(dev) > 1e-5 )
+            {
+              std::cout << " ***** warning ***** ";
+              w++;
+            }
+
+            std::cout << std::endl;
+          }
+        }
+      }
+
+      // undo finite difference modification
+      UnDoPerturbation( *snode );
+
+      std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
+    }
   }
 
-  // global loop to apply FD scheme to all SLAVE dofs (=dim*nodes)
-  for (int fd=0;fd<dim*snodefullmap->NumMyElements();++fd)
+  FinalEvaluate( cparams );
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template <typename T0, typename T1, typename T2>
+void CONTACT::AUG::Interface::FiniteDifference<T0,T1,T2>::GPCheck2ndOrder(
+    CONTACT::ParamsInterface& cparams )
+{
+  if ( not inter_.lComm() )
+    return;
+
+  Epetra_Map& node_row_map = *(inter_.snoderowmap_);
+
+  std::map<int, T1> ref_deriv1st;
+  T1 new_deriv1st;
+  std::map<int, T2> ref_deriv2nd;
+
+  RefEvaluate( cparams );
+
+  std::set<int> empty_node_gids;
+  GetReference( node_row_map, ref_deriv1st, ref_deriv2nd, empty_node_gids );
+
+  // nothing to do, if all nodes have no linearization
+  if ( empty_node_gids.size() >= static_cast<unsigned>( node_row_map.NumMyElements() ) )
+    return;
+
+  const unsigned dim = inter_.Dim();
+
+  Teuchos::RCP<Epetra_Map> fullmap = GetFullMap( node_row_map );
+
+  for ( unsigned fd=0; fd<dim*fullmap->NumMyElements(); ++fd )
   {
     // store warnings for this finite difference
     int w=0;
 
     // Initialize
-    Initialize();
+    inter_.Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap->GID(fd/dim);
-    CoNode* snode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
+    int gid = fullmap->GID(fd/dim);
+    CoNode* snode = dynamic_cast<CoNode*>(inter_.idiscret_->gNode(gid));
     if(!snode)
       dserror("ERROR: Cannot find slave node with gid %",gid);
 
-    int sdof = snode->Dofs()[fd%dim];
+    const int sdof = snode->Dofs()[fd%dim];
 
     std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
 
     // do step forward (modify nodal displacement)
-    double delta = 1e-8;
-    if (fd%dim==0)
-    {
-      snode->xspatial()[0] += delta;
-    }
-    else if (fd%dim==1)
-    {
-      snode->xspatial()[1] += delta;
-    }
-    else
-    {
-      snode->xspatial()[2] += delta;
-    }
-
-    // compute element areas
-    SetElementAreas();
+    DoPerturbation( *snode, fd );
 
     // *******************************************************************
     // contents of Evaluate()
     // *******************************************************************
-    Evaluate(cparams_ptr);
+    PerturbedEvaluate( cparams );
 
     // compute finite difference derivative
-    for (int k=0; k<snoderowmap_->NumMyElements(); ++k)
+    for ( int k=0; k<node_row_map.NumMyElements(); ++k )
     {
+      const int kgid = node_row_map.GID(k);
+
       // clear the calculated new r.h.s. map
-      newKappa = 0.0;
-      int kgid = snoderowmap_->GID(k);
-      DRT::Node* knode = idiscret_->gNode(kgid);
+      unsigned deriv1st_cap = GetCapacity( ref_deriv1st[kgid] );
+      GEN_DATA::reset( deriv1st_cap, new_deriv1st );
+
+      DRT::Node* knode = inter_.idiscret_->gNode(kgid);
       if (!knode)
         dserror("ERROR: Cannot find node with gid %",kgid);
       CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
-      if ((int) kcnode->AugData().GetKappaLin().size()==0)
+      if ( GetDeriv2nd( kcnode->AugData() ).empty() )
+      {
         continue;
-
-      newKappa = kcnode->AugData().GetKappa();
-
-      // print results (derivatives) to screen
-      if (abs(newKappa-refKappa[kgid]) > 1e-12)
-      {
-        double finit = (newKappa-refKappa[kgid])/delta;
-
-        double analy = refKappaLin[kgid][sdof];
-        double dev = finit - analy;
-
-        // p->first: currently tested dof of slave node p->first/Dim()
-        // (p->first)/Dim(): paired slave
-        // sdof: currently modified slave dof
-        std::cout << "(" << kgid << "," << sdof << ") :"
-            "   fd=" << std::setw(14) << std::setprecision(5) << std::scientific << finit <<
-            "   kappaLin=" << std::setw(14) << std::setprecision(5) << std::scientific << analy <<
-            "   DEVIATION= " << std::setw(14) << std::setprecision(5) << std::scientific << dev <<
-            "   REL-ERROR [%]= " << std::setw(14) << std::setprecision(5) << std::scientific << abs(dev/finit)*100;
-
-        if( abs(dev) > 1e-4 )
-        {
-          std::cout << " ***** WARNING ***** ";
-          w++;
-        }
-        else if( abs(dev) > 1e-5 )
-        {
-          std::cout << " ***** warning ***** ";
-          w++;
-        }
-
-        std::cout << std::endl;
       }
 
+      const T1& deriv1st = GetDeriv1st( kcnode->AugData() );
+      GEN_DATA::copy( deriv1st, new_deriv1st );
+
+      for ( unsigned v=0; v<GetNumVectors( new_deriv1st ); ++v )
+      {
+        for ( auto& new_d_var : AtDeriv1st( new_deriv1st, v ) )
+        {
+          const int var_gid = new_d_var.first;
+          const double ref_d_var = AtDeriv1st( ref_deriv1st[kgid], v, var_gid );
+
+          const int var_node_gid = var_gid/dim;
+          const CoNode& var_node =
+              dynamic_cast<const CoNode&>( *inter_.idiscret_->gNode( var_node_gid ) );
+          const std::string sm( var_node.IsSlave() ? "s" : "m" );
+
+          const std::string ai( kcnode->Active() ? "a" : "i" );
+
+          if (std::abs(new_d_var.second - AtDeriv1st( ref_deriv1st[kgid], v, var_gid ) ) > 1e-12)
+          {
+            const double fd_approx = ( new_d_var.second - ref_d_var )/delta_;
+
+            const double ref_dd_var = AtDeriv2nd( ref_deriv2nd[kgid], v, var_gid, sdof );
+            const double dev = fd_approx - ref_dd_var;
+
+            /* output legend:
+             * v    = vector component
+             * kgid = node holding the derivatives
+             * var_gid = global id of the varied dof (row ID in tangential matrix)
+             * var_gid/dim = global id of the node holding the varied dof
+             * s_dof = linearized dof (col ID in the tangential matrix */
+            std::cout << "[" << v << "]" << "{" << kgid << "[" << ai << "]}" <<
+                "(" << var_gid << "(" << var_gid/dim << "[" << sm << "])" << "," << sdof << ") :"
+                "   fd=" << std::setw(14) << std::setprecision(5) << std::scientific << fd_approx <<
+                "   lin=" << std::setw(14) << std::setprecision(5) << std::scientific << ref_dd_var <<
+                "   DEVIATION= " << std::setw(14) << std::setprecision(5) << std::scientific << dev <<
+                "   REL-ERROR [%]= " << std::setw(14) << std::setprecision(5) << std::scientific << abs(dev/fd_approx)*100;
+
+            if( abs(dev) > 1e-4 )
+            {
+              std::cout << " ***** WARNING ***** ";
+              w++;
+            }
+            else if( abs(dev) > 1e-5 )
+            {
+              std::cout << " ***** warning ***** ";
+              w++;
+            }
+
+            std::cout << std::endl;
+          }
+        }
+      }
     }
 
     // undo finite difference modification
-    if (fd%dim==0)
-    {
-      snode->xspatial()[0] -= delta;
-    }
-    else if (fd%dim==1)
-    {
-      snode->xspatial()[1] -= delta;
-    }
-    else
-    {
-      snode->xspatial()[2] -= delta;
-    }
+    UnDoPerturbation( *snode );
 
     std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
   }
 
-  // global loop to apply FD scheme to all MASTER dofs (=dim*nodes)
-  for (int fd=0; fd<dim*mnodefullmap->NumMyElements(); ++fd)
-  {
-    // store warnings for this finite difference
-    int w=0;
-
-    // Initialize
-    Initialize();
-
-    // now get the node we want to apply the FD scheme to
-    int gid = mnodefullmap->GID(fd/dim);
-    DRT::Node* node = idiscret_->gNode(gid);
-    if (!node)
-      dserror("ERROR: Cannot find slave node with gid %",gid);
-    CoNode* mnode = dynamic_cast<CoNode*>(node);
-
-    int mdof = mnode->Dofs()[fd%dim];
-
-    std::cout << "\nDEVIATION FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
-
-    // do step forward (modify nodal displacement)
-    double delta = 1e-8;
-    if (fd%dim==0)
-    {
-      mnode->xspatial()[0] += delta;
-    }
-    else if (fd%dim==1)
-    {
-      mnode->xspatial()[1] += delta;
-    }
-    else
-    {
-      mnode->xspatial()[2] += delta;
-    }
-
-    // compute element areas
-    SetElementAreas();
-
-    // *******************************************************************
-    // contents of Evaluate()
-    // *******************************************************************
-    Evaluate(cparams_ptr);
-
-    // compute finite difference derivative
-    for (int k=0; k<snoderowmap_->NumMyElements(); ++k)
-    {
-      // clear the calculated new r.h.s. map
-      newKappa = 0.0;
-      int kgid = snoderowmap_->GID(k);
-      DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode)
-        dserror("ERROR: Cannot find node with gid %",kgid);
-      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
-
-      if ((int) kcnode->AugData().GetKappaLin().size()==0)
-              continue;
-
-      newKappa = kcnode->AugData().GetKappa();
-
-      // print results (derivatives) to screen
-
-      if (abs(newKappa-refKappa[kgid]) > 1e-12)
-      {
-        double finit = (newKappa-refKappa[kgid])/delta;
-        double analy = refKappaLin[kgid][mdof];
-        double dev = finit - analy;
-
-        // p->first: currently tested dof of master node p->first/Dim()
-        // (p->first)/Dim(): paired master
-        // mdof: currently modified master dof
-        std::cout << "(" << kgid << "," << mdof << ") :"
-        "   fd=" << std::setw(14) << std::setprecision(5) << std::scientific << finit <<
-        "   kappaLin=" << std::setw(14) << std::setprecision(5) << std::scientific << analy <<
-        "   DEVIATION= " << std::setw(14) << std::setprecision(5) << std::scientific << dev <<
-        "   REL-ERROR [%]= " << std::setw(14) << std::setprecision(5) << std::scientific << abs(dev/finit)*100;
-
-        if( abs(dev) > 1e-4 )
-        {
-          std::cout << " ***** WARNING ***** ";
-          w++;
-        }
-        else if( abs(dev) > 1e-5 )
-        {
-          std::cout << " ***** warning ***** ";
-          w++;
-        }
-
-        std::cout << std::endl;
-      }
-
-    }
-
-    // undo finite difference modification
-    if (fd%dim==0)
-    {
-     mnode->xspatial()[0] -= delta;
-    }
-    else if (fd%dim==1)
-    {
-     mnode->xspatial()[1] -= delta;
-    }
-    else
-    {
-     mnode->xspatial()[2] -= delta;
-    }
-
-    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
-  }
-
-  // back to normal...
-
-  // Initialize
-  Initialize();
-
-  // compute element areas
-  SetElementAreas();
-
-  // *******************************************************************
-  // We have to do both evaluate steps here
-  // *******************************************************************
-  // evaluate averaged weighted gap
-  Evaluate(cparams_ptr);
-  WGap();
-  AWGapLin();
-  // evaluate remaining entities and linearization
-  RedEvaluate(cparams_ptr);
-
-  return;
+  FinalEvaluate( cparams );
 }
 
-/*----------------------------------------------------------------------*
- | Finite difference check for AWGapLin                  hiermeier 05/14|
- *----------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::FDCheckAWGapLin(
-    CONTACT::ParamsInterface& cparams)
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template <typename T0, typename T1, typename T2>
+void CONTACT::AUG::Interface::FiniteDifference<T0,T1,T2>::DoPerturbation(
+    CoNode& snode,
+    const int fd_gid )
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-  Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr =
-      Teuchos::rcpFromRef(cparams);
-  // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+  const int dim = inter_.Dim();
 
-  std::map<int,double> refAWGap;
-  std::map<int,std::map<int,double> > refAWGapLin;
+  std::copy( snode.xspatial(), snode.xspatial()+3, ref_x_.A() );
 
-  double newAWGap = 0.0;
-
-  int dim = Dim();
-
-  // print reference to screen (kappaLin-derivative-maps) and store them for later comparison
-  // loop over proc's slave nodes
-  for (int i=0;i<activenodes_->NumMyElements();++i)
+  if (fd_gid%dim==0)
   {
-    int gid = activenodes_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
-
-    if ((int) cnode->AugData().GetAWGapLin().size()==0)
-      dserror("Linearization map shouldn't be empty for active nodes!");
-
-    double wg = cnode->AugData().GetWGap();
-    double kappa = cnode->AugData().GetKappa();
-    if (wg==1.0e12 or wg==0.0)
-      dserror("The weighted gap is at the active node % equal 0.0 or 1.0e12!",gid);
-    if (kappa==1.0e12 or kappa==0.0)
-      dserror("The scaling factor kappa is at the active node % equal 0.0 or 1.0e12!",gid);
-
-    refAWGap[gid]    = wg/kappa;
-    refAWGapLin[gid] = cnode->AugData().GetAWGapLin();
+    snode.xspatial()[0] += delta_;
   }
-
-  // global loop to apply FD scheme to all SLAVE dofs (=dim*nodes)
-  for (int fd=0;fd<dim*snodefullmap->NumMyElements();++fd)
+  else if (fd_gid%dim==1)
   {
-    // store warnings for this finite difference
-    int w=0;
-
-    // Initialize
-    Initialize();
-
-    // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap->GID(fd/dim);
-    CoNode* snode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
-    if(!snode)
-      dserror("ERROR: Cannot find slave node with gid %",gid);
-
-    int sdof = snode->Dofs()[fd%dim];
-
-    std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
-
-    // do step forward (modify nodal displacement)
-    double delta = 1e-8;
-    if (fd%dim==0)
-    {
-      snode->xspatial()[0] += delta;
-    }
-    else if (fd%dim==1)
-    {
-      snode->xspatial()[1] += delta;
-    }
-    else
-    {
-      snode->xspatial()[2] += delta;
-    }
-
-    // compute element areas
-    SetElementAreas();
-
-    // *******************************************************************
-    // contents of Evaluate()
-    // *******************************************************************
-    Evaluate(cparams_ptr);
-    WGap();
-    AWGapLin();
-
-    // compute finite difference derivative
-    for (int k=0; k<activenodes_->NumMyElements(); ++k)
-    {
-      // clear the calculated new r.h.s. map
-      newAWGap = 0.0;
-      int kgid = activenodes_->GID(k);
-      DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode)
-        dserror("ERROR: Cannot find node with gid %",kgid);
-      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
-
-      if ((int) kcnode->AugData().GetAWGapLin().size()==0)
-        dserror("Linearization map shouldn't be empty for active nodes!");
-
-      double wg = kcnode->AugData().GetWGap();
-      double kappa = kcnode->AugData().GetKappa();
-      if (wg==1.0e12 or wg==0.0)
-        dserror("The weighted gap is at the active node % equal 0.0 or 1.0e12!",kgid);
-      if (kappa==1.0e12 or kappa==0.0)
-        dserror("The scaling factor kappa is at the active node % equal 0.0 or 1.0e12!",kgid);
-
-      newAWGap = wg/kappa;
-
-      // print results (derivatives) to screen
-      if (abs(newAWGap-refAWGap[kgid]) > 1e-12)
-      {
-        double finit = (newAWGap-refAWGap[kgid])/delta;
-
-        double analy = refAWGapLin[kgid][sdof];
-        double dev = finit - analy;
-
-        // p->first: currently tested dof of slave node p->first/Dim()
-        // (p->first)/Dim(): paired slave
-        // sdof: currently modified slave dof
-        std::cout << "(" << kgid << "," << sdof << ") :"
-            "   fd=" << std::setw(14) << std::setprecision(5) << std::scientific << finit <<
-            "   AWGapLin=" << std::setw(14) << std::setprecision(5) << std::scientific << analy <<
-            "   DEVIATION= " << std::setw(14) << std::setprecision(5) << std::scientific << dev <<
-            "   REL-ERROR [%]= " << std::setw(14) << std::setprecision(5) << std::scientific << abs(dev/finit)*100;
-
-        if( abs(dev) > 1e-4 )
-        {
-          std::cout << " ***** WARNING ***** ";
-          w++;
-        }
-        else if( abs(dev) > 1e-5 )
-        {
-          std::cout << " ***** warning ***** ";
-          w++;
-        }
-
-        std::cout << std::endl;
-      }
-
-    }
-
-    // undo finite difference modification
-    if (fd%dim==0)
-    {
-      snode->xspatial()[0] -= delta;
-    }
-    else if (fd%dim==1)
-    {
-      snode->xspatial()[1] -= delta;
-    }
-    else
-    {
-      snode->xspatial()[2] -= delta;
-    }
-
-    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
-  }
-
-  // global loop to apply FD scheme to all MASTER dofs (=dim*nodes)
-  for (int fd=0; fd<dim*mnodefullmap->NumMyElements(); ++fd)
-  {
-    // store warnings for this finite difference
-    int w=0;
-
-    // Initialize
-    Initialize();
-
-    // now get the node we want to apply the FD scheme to
-    int gid = mnodefullmap->GID(fd/dim);
-    DRT::Node* node = idiscret_->gNode(gid);
-    if (!node)
-      dserror("ERROR: Cannot find slave node with gid %",gid);
-    CoNode* mnode = dynamic_cast<CoNode*>(node);
-
-    int mdof = mnode->Dofs()[fd%dim];
-
-    std::cout << "\nDEVIATION FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
-
-    // do step forward (modify nodal displacement)
-    double delta = 1e-8;
-    if (fd%dim==0)
-    {
-      mnode->xspatial()[0] += delta;
-    }
-    else if (fd%dim==1)
-    {
-      mnode->xspatial()[1] += delta;
-    }
-    else
-    {
-      mnode->xspatial()[2] += delta;
-    }
-
-    // compute element areas
-    SetElementAreas();
-
-    // *******************************************************************
-    // contents of Evaluate()
-    // *******************************************************************
-    Evaluate(cparams_ptr);
-    WGap();
-    AWGapLin();
-
-    // compute finite difference derivative
-    for (int k=0; k<activenodes_->NumMyElements(); ++k)
-    {
-      // clear the calculated new r.h.s. map
-      newAWGap = 0.0;
-      int kgid = activenodes_->GID(k);
-      DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode)
-        dserror("ERROR: Cannot find node with gid %",kgid);
-      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
-
-      if ((int) kcnode->AugData().GetAWGapLin().size()==0)
-        dserror("Linearization map shouldn't be empty for active nodes!");
-
-      double wg = kcnode->AugData().GetWGap();
-      double kappa = kcnode->AugData().GetKappa();
-      if (wg==1.0e12 or wg==0.0)
-        dserror("The weighted gap is at the active node % equal 0.0 or 1.0e12!",kgid);
-      if (kappa==1.0e12 or kappa==0.0)
-        dserror("The scaling factor kappa is at the active node % equal 0.0 or 1.0e12!",kgid);
-
-      newAWGap = wg/kappa;
-
-      // print results (derivatives) to screen
-
-      if (abs(newAWGap-refAWGap[kgid]) > 1e-12)
-      {
-        double finit = (newAWGap-refAWGap[kgid])/delta;
-        double analy = refAWGapLin[kgid][mdof];
-        double dev = finit - analy;
-
-        // p->first: currently tested dof of master node p->first/Dim()
-        // (p->first)/Dim(): paired master
-        // mdof: currently modified master dof
-        std::cout << "(" << kgid << "," << mdof << ") :"
-        "   fd=" << std::setw(14) << std::setprecision(5) << std::scientific << finit <<
-        "   AWGapLin=" << std::setw(14) << std::setprecision(5) << std::scientific << analy <<
-        "   DEVIATION= " << std::setw(14) << std::setprecision(5) << std::scientific << dev <<
-        "   REL-ERROR [%]= " << std::setw(14) << std::setprecision(5) << std::scientific << abs(dev/finit)*100;
-
-        if( abs(dev) > 1e-4 )
-        {
-          std::cout << " ***** WARNING ***** ";
-          w++;
-        }
-        else if( abs(dev) > 1e-5 )
-        {
-          std::cout << " ***** warning ***** ";
-          w++;
-        }
-
-        std::cout << std::endl;
-      }
-
-    }
-
-    // undo finite difference modification
-    if (fd%dim==0)
-    {
-     mnode->xspatial()[0] -= delta;
-    }
-    else if (fd%dim==1)
-    {
-     mnode->xspatial()[1] -= delta;
-    }
-    else
-    {
-     mnode->xspatial()[2] -= delta;
-    }
-
-    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
-  }
-
-  // back to normal...
-
-  // Initialize
-  Initialize();
-
-  // compute element areas
-  SetElementAreas();
-
-  // *******************************************************************
-  // We have to do both evaluate steps here
-  // *******************************************************************
-  Evaluate(cparams_ptr);
-  // evaluate remaining entities and linearization
-  RedEvaluate(cparams_ptr);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | Finite difference check for VarWGapLinSl              hiermeier 05/14|
- *----------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::FDCheckVarWGapLinSl(
-    CONTACT::ParamsInterface& cparams)
-{
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-  Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr =
-      Teuchos::rcpFromRef(cparams);
-  // first integration loop has to be activated again
-  IParams().set<int>("AugLagStep",0);
-
-  // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
-
-  // create storage for Dn-Matrix entries
-  // stores the nodal vector:
-  std::map<int,std::map<int,std::pair<int,double> > > refVarWGapSl;
-
-  std::map<int,std::map<int,std::map<int,double> > > refVarWGapLinSl; // stores old derivdn for every node
-  int dim = Dim();
-
-  // store the current values for later comparison
-  // loop over proc's slave nodes
-  for (int i=0; i<snoderowmap_->NumMyElements(); ++i)
-  {
-    int gid = snoderowmap_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
-
-    if ((int) cnode->AugData().GetVarWGapSl().size()==0)
-      continue;
-
-    // get reference values
-    refVarWGapSl[gid].insert(cnode->AugData().GetVarWGapSl().begin(),cnode->AugData().GetVarWGapSl().end());
-
-    refVarWGapLinSl[gid] = cnode->AugData().GetVarWGapLinSl();
-  }
-
-  // global loop to apply FD scheme to all SLAVE dofs (=dim*nodes)
-  for (int fd=0;fd<dim*snodefullmap->NumMyElements();++fd)
-  {
-    // store warnings for this finite difference
-    int w=0;
-
-    // Initialize
-    Initialize();
-
-    // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap->GID(fd/dim);
-    CoNode* snode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
-    if(!snode)
-      dserror("ERROR: Cannot find slave node with gid %",gid);
-
-    int sdof = snode->Dofs()[fd%dim];
-
-    std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
-
-    // do step forward (modify nodal displacement)
-    double delta = 1e-8;
-    if (fd%dim==0)
-    {
-      snode->xspatial()[0] += delta;
-    }
-    else if (fd%dim==1)
-    {
-      snode->xspatial()[1] += delta;
-    }
-    else
-    {
-      snode->xspatial()[2] += delta;
-    }
-
-    // compute element areas
-    SetElementAreas();
-
-    // *******************************************************************
-    // contents of Evaluate()
-    // *******************************************************************
-    Evaluate(cparams_ptr);
-
-    // compute finite difference derivative
-    for (int k=0; k<snoderowmap_->NumMyElements(); ++k)
-    {
-      // clear the calculated new r.h.s. map
-//      newVarWGapSl.clear();
-      int kgid = snoderowmap_->GID(k);
-      DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode)
-        dserror("ERROR: Cannot find node with gid %",kgid);
-      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
-
-      if ((int)(kcnode->AugData().GetVarWGapSl().size())==0)
-        continue;
-
-      typedef GEN::pairedvector<int,std::pair<int,double> >::const_iterator CI;
-
-      GEN::pairedvector<int,std::pair<int,double> >& newVarWGapSl = kcnode->AugData().GetVarWGapSl();
-
-      // print results (derivatives) to screen
-      for (CI p=newVarWGapSl.begin(); p!=newVarWGapSl.end(); ++p)
-      {
-        if (abs(newVarWGapSl[p->first].second-refVarWGapSl[kgid][p->first].second) > 1e-12)
-        {
-          double finit = (newVarWGapSl[p->first].second-refVarWGapSl[kgid][p->first].second)/delta;
-
-          double analy = ((refVarWGapLinSl[kgid])[p->first])[sdof];
-          double dev = finit - analy;
-
-          // p->first: currently tested dof of slave node p->first/Dim()
-          // (p->first)/Dim(): paired slave
-          // sdof: currently modified slave dof
-          std::cout << "(" << p->first << "," << p->first/dim <<
-              "(" << kgid << ")" << "," << sdof << ") :"
-              "   fd=" << std::setw(14) << std::setprecision(5) << std::scientific << finit <<
-              "   varWGapLinSl=" << std::setw(14) << std::setprecision(5) << std::scientific << analy <<
-              "   DEVIATION= " << std::setw(14) << std::setprecision(5) << std::scientific << dev <<
-              "   REL-ERROR [%]= " << std::setw(14) << std::setprecision(5) << std::scientific << abs(dev/finit)*100;
-
-          if( abs(dev) > 1e-4 )
-          {
-            std::cout << " ***** WARNING ***** ";
-            w++;
-          }
-          else if( abs(dev) > 1e-5 )
-          {
-            std::cout << " ***** warning ***** ";
-            w++;
-          }
-
-          std::cout << std::endl;
-        }
-      }
-    }
-
-    // undo finite difference modification
-    if (fd%dim==0)
-    {
-      snode->xspatial()[0] -= delta;
-    }
-    else if (fd%dim==1)
-    {
-      snode->xspatial()[1] -= delta;
-    }
-    else
-    {
-      snode->xspatial()[2] -= delta;
-    }
-
-    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
-  }
-
-  // global loop to apply FD scheme to all MASTER dofs (=dim*nodes)
-  for (int fd=0; fd<dim*mnodefullmap->NumMyElements(); ++fd)
-  {
-    // store warnings for this finite difference
-    int w=0;
-
-    // Initialize
-    Initialize();
-
-    // now get the node we want to apply the FD scheme to
-    int gid = mnodefullmap->GID(fd/dim);
-    DRT::Node* node = idiscret_->gNode(gid);
-    if (!node)
-      dserror("ERROR: Cannot find slave node with gid %",gid);
-    CoNode* mnode = dynamic_cast<CoNode*>(node);
-
-    int mdof = mnode->Dofs()[fd%dim];
-
-    std::cout << "\nDEVIATION FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
-
-    // do step forward (modify nodal displacement)
-    double delta = 1e-8;
-    if (fd%dim==0)
-    {
-      mnode->xspatial()[0] += delta;
-    }
-    else if (fd%dim==1)
-    {
-      mnode->xspatial()[1] += delta;
-    }
-    else
-    {
-      mnode->xspatial()[2] += delta;
-    }
-
-    // compute element areas
-    SetElementAreas();
-
-    // *******************************************************************
-    // contents of Evaluate()
-    // *******************************************************************
-    Evaluate(cparams_ptr);
-
-    // compute finite difference derivative
-    for (int k=0; k<snoderowmap_->NumMyElements(); ++k)
-    {
-      // clear the calculated new r.h.s. map
-//      newVarWGapSl.clear();
-      int kgid = snoderowmap_->GID(k);
-      DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode)
-        dserror("ERROR: Cannot find node with gid %",kgid);
-      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
-
-      int dim = kcnode->NumDof();
-
-      if ((int)(kcnode->AugData().GetVarWGapLinSl().size())==0)
-        continue;
-
-      typedef GEN::pairedvector<int,std::pair<int,double> >::const_iterator CI;
-
-      GEN::pairedvector<int,std::pair<int,double> >& newVarWGapSl = kcnode->AugData().GetVarWGapSl();
-
-      // print results (derivatives) to screen
-      for (CI p=newVarWGapSl.begin(); p!=newVarWGapSl.end(); ++p)
-      {
-        if (abs(newVarWGapSl[p->first].second-refVarWGapSl[kgid][p->first].second) > 1e-12)
-        {
-          double finit = (newVarWGapSl[p->first].second-refVarWGapSl[kgid][p->first].second)/delta;
-          double analy = ((refVarWGapLinSl[kgid])[(p->first)])[mdof];
-          double dev = finit - analy;
-
-          // p->first: currently tested dof of master node p->first/Dim()
-          // (p->first)/Dim(): paired master
-          // mdof: currently modified master dof
-          std::cout << "(" << p->first << "," << p->first/dim <<
-          "(" << kgid << ")" << "," << mdof << ") :"
-          "   fd=" << std::setw(14) << std::setprecision(5) << std::scientific << finit <<
-          "   varWGapLinSl=" << std::setw(14) << std::setprecision(5) << std::scientific << analy <<
-          "   DEVIATION= " << std::setw(14) << std::setprecision(5) << std::scientific << dev <<
-          "   REL-ERROR [%]= " << std::setw(14) << std::setprecision(5) << std::scientific << abs(dev/finit)*100;
-
-          if( abs(dev) > 1e-4 )
-          {
-            std::cout << " ***** WARNING ***** ";
-            w++;
-          }
-          else if( abs(dev) > 1e-5 )
-          {
-            std::cout << " ***** warning ***** ";
-            w++;
-          }
-
-          std::cout << std::endl;
-        }
-      }
-    }
-
-    // undo finite difference modification
-    if (fd%dim==0)
-    {
-     mnode->xspatial()[0] -= delta;
-    }
-    else if (fd%dim==1)
-    {
-     mnode->xspatial()[1] -= delta;
-    }
-    else
-    {
-     mnode->xspatial()[2] -= delta;
-    }
-
-    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
-  }
-
-  // back to normal...
-
-  // Initialize
-  Initialize();
-
-  // compute element areas
-  SetElementAreas();
-
-  // *******************************************************************
-  // We have to do both evaluate steps here
-  // *******************************************************************
-  // evaluate averaged weighted gap
-  Evaluate(cparams_ptr);
-  WGap();
-  AWGapLin();
-  // evaluate remaining entities and linearization
-  RedEvaluate(cparams_ptr);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | Finite difference check for VarWGapLinMa              hiermeier 05/14|
- *----------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::FDCheckVarWGapLinMa(
-    CONTACT::ParamsInterface& cparams)
-{
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-  Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr =
-      Teuchos::rcpFromRef(cparams);
-  // first integration loop has to be activated again
-
-  // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
-
-  // create storage for Dn-Matrix entries
-  // stores the nodal vector:
-  std::map<int,std::map<int,std::pair<int,double> > > refVarWGapMa;
-  std::map<int,std::pair<int,double> > newVarWGapMa;
-
-  std::map<int,std::map<int,std::map<int,double> > > refVarWGapLinMa; // stores old derivdn for every node
-  int dim = Dim();
-
-  // store the current values for later comparison
-  // loop over proc's slave nodes
-  for (int i=0; i<snoderowmap_->NumMyElements(); ++i)
-  {
-    int gid = snoderowmap_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
-
-    if ((int) cnode->AugData().GetVarWGapSl().size()==0)
-      continue;
-
-    // get reference values
-    refVarWGapMa[gid]    = cnode->AugData().GetVarWGapMa();
-
-    refVarWGapLinMa[gid] = cnode->AugData().GetVarWGapLinMa();
-  }
-
-  // global loop to apply FD scheme to all SLAVE dofs (=dim*nodes)
-  for (int fd=0;fd<dim*snodefullmap->NumMyElements();++fd)
-  {
-    // store warnings for this finite difference
-    int w=0;
-
-    // Initialize
-    Initialize();
-
-    // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap->GID(fd/dim);
-    CoNode* snode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
-    if(!snode)
-      dserror("ERROR: Cannot find slave node with gid %",gid);
-
-    int sdof = snode->Dofs()[fd%dim];
-
-    std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
-
-    // do step forward (modify nodal displacement)
-    double delta = 1e-8;
-    if (fd%dim==0)
-    {
-      snode->xspatial()[0] += delta;
-    }
-    else if (fd%dim==1)
-    {
-      snode->xspatial()[1] += delta;
-    }
-    else
-    {
-      snode->xspatial()[2] += delta;
-    }
-
-    // compute element areas
-    SetElementAreas();
-
-    // *******************************************************************
-    // contents of Evaluate()
-    // *******************************************************************
-    Evaluate(cparams_ptr);
-
-    // compute finite difference derivative
-    for (int k=0; k<snoderowmap_->NumMyElements(); ++k)
-    {
-      // clear the calculated new r.h.s. map
-      newVarWGapMa.clear();
-      int kgid = snoderowmap_->GID(k);
-      DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode)
-        dserror("ERROR: Cannot find node with gid %",kgid);
-      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
-
-      if ((int)(kcnode->AugData().GetVarWGapMa().size())==0)
-        continue;
-
-      typedef std::map<int,std::pair<int,double> >::const_iterator CI;
-
-      newVarWGapMa = kcnode->AugData().GetVarWGapMa();
-
-      // print results (derivatives) to screen
-      for (CI p=newVarWGapMa.begin(); p!=newVarWGapMa.end(); ++p)
-      {
-        if (abs(newVarWGapMa[p->first].second-refVarWGapMa[kgid][p->first].second) > 1e-12)
-        {
-          double finit = (newVarWGapMa[p->first].second-refVarWGapMa[kgid][p->first].second)/delta;
-
-          double analy = ((refVarWGapLinMa[kgid])[p->first])[sdof];
-          double dev = finit - analy;
-
-          // p->first: currently tested dof of slave node p->first/Dim()
-          // (p->first)/Dim(): paired slave
-          // sdof: currently modified slave dof
-          std::cout << "(" << p->first << "," << p->first/dim <<
-              "(" << kgid << ")" << "," << sdof << ") :"
-              "   fd=" << std::setw(14) << std::setprecision(5) << std::scientific << finit <<
-              "   varWGapLinMa=" << std::setw(14) << std::setprecision(5) << std::scientific << analy <<
-              "   DEVIATION= " << std::setw(14) << std::setprecision(5) << std::scientific << dev <<
-              "   REL-ERROR [%]= " << std::setw(14) << std::setprecision(5) << std::scientific << abs(dev/finit)*100;
-
-          if( abs(dev) > 1e-4 )
-          {
-            std::cout << " ***** WARNING ***** ";
-            w++;
-          }
-          else if( abs(dev) > 1e-5 )
-          {
-            std::cout << " ***** warning ***** ";
-            w++;
-          }
-
-          std::cout << std::endl;
-        }
-      }
-    }
-
-    // undo finite difference modification
-    if (fd%dim==0)
-    {
-      snode->xspatial()[0] -= delta;
-    }
-    else if (fd%dim==1)
-    {
-      snode->xspatial()[1] -= delta;
-    }
-    else
-    {
-      snode->xspatial()[2] -= delta;
-    }
-
-    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
-  }
-
-  // global loop to apply FD scheme to all MASTER dofs (=dim*nodes)
-  for (int fd=0; fd<dim*mnodefullmap->NumMyElements(); ++fd)
-  {
-    // store warnings for this finite difference
-    int w=0;
-
-    // Initialize
-    Initialize();
-
-    // now get the node we want to apply the FD scheme to
-    int gid = mnodefullmap->GID(fd/dim);
-    DRT::Node* node = idiscret_->gNode(gid);
-    if (!node)
-      dserror("ERROR: Cannot find slave node with gid %",gid);
-    CoNode* mnode = dynamic_cast<CoNode*>(node);
-
-    int mdof = mnode->Dofs()[fd%dim];
-
-    std::cout << "\nDEVIATION FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
-
-    // do step forward (modify nodal displacement)
-    double delta = 1e-8;
-    if (fd%dim==0)
-    {
-      mnode->xspatial()[0] += delta;
-    }
-    else if (fd%dim==1)
-    {
-      mnode->xspatial()[1] += delta;
-    }
-    else
-    {
-      mnode->xspatial()[2] += delta;
-    }
-
-    // compute element areas
-    SetElementAreas();
-
-    // *******************************************************************
-    // contents of Evaluate()
-    // *******************************************************************
-    Evaluate(cparams_ptr);
-
-    // compute finite difference derivative
-    for (int k=0; k<snoderowmap_->NumMyElements(); ++k)
-    {
-      // clear the calculated new r.h.s. map
-      newVarWGapMa.clear();
-      int kgid = snoderowmap_->GID(k);
-      DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode)
-        dserror("ERROR: Cannot find node with gid %",kgid);
-      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
-
-      int dim = kcnode->NumDof();
-
-      if ((int)(kcnode->AugData().GetVarWGapMa().size())==0)
-        continue;
-
-      typedef std::map<int,std::pair<int,double> >::const_iterator CI;
-
-      newVarWGapMa = kcnode->AugData().GetVarWGapMa();
-
-      // print results (derivatives) to screen
-      for (CI p=newVarWGapMa.begin(); p!=newVarWGapMa.end(); ++p)
-      {
-        if (abs(newVarWGapMa[p->first].second-refVarWGapMa[kgid][p->first].second) > 1e-12)
-        {
-          double finit = (newVarWGapMa[p->first].second-refVarWGapMa[kgid][p->first].second)/delta;
-          double analy = ((refVarWGapLinMa[kgid])[(p->first)])[mdof];
-          double dev = finit - analy;
-
-          // p->first: currently tested dof of master node p->first/Dim()
-          // (p->first)/Dim(): paired master
-          // mdof: currently modified master dof
-          std::cout << "(" << p->first << "," << p->first/dim <<
-          "(" << kgid << ")" << "," << mdof << ") :"
-          "   fd=" << std::setw(14) << std::setprecision(5) << std::scientific << finit <<
-          "   varWGapLinMa=" << std::setw(14) << std::setprecision(5) << std::scientific << analy <<
-          "   DEVIATION= " << std::setw(14) << std::setprecision(5) << std::scientific << dev <<
-          "   REL-ERROR [%]= " << std::setw(14) << std::setprecision(5) << std::scientific << abs(dev/finit)*100;
-
-          if( abs(dev) > 1e-4 )
-          {
-            std::cout << " ***** WARNING ***** ";
-            w++;
-          }
-          else if( abs(dev) > 1e-5 )
-          {
-            std::cout << " ***** warning ***** ";
-            w++;
-          }
-
-          std::cout << std::endl;
-        }
-      }
-    }
-
-    // undo finite difference modification
-    if (fd%dim==0)
-    {
-     mnode->xspatial()[0] -= delta;
-    }
-    else if (fd%dim==1)
-    {
-     mnode->xspatial()[1] -= delta;
-    }
-    else
-    {
-     mnode->xspatial()[2] -= delta;
-    }
-
-    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
-  }
-
-  // back to normal...
-
-  // Initialize
-  Initialize();
-
-  // compute element areas
-  SetElementAreas();
-
-  // *******************************************************************
-  // We have to do both evaluate steps here
-  // *******************************************************************
-  // evaluate averaged weighted gap
-  Evaluate(cparams_ptr);
-  WGap();
-  AWGapLin();
-  // evaluate remaining entities and linearization
-  RedEvaluate(cparams_ptr);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | Finite difference check for AugALin                  hiermeier 05/14|
- *----------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::FDCheckAugALin(
-    CONTACT::ParamsInterface& cparams)
-{
-  // get out of here if not participating in interface
-  if (!lComm()) return;
-  Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr =
-      Teuchos::rcpFromRef(cparams);
-  // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
-
-  std::map<int,double> refAugA;
-  std::map<int,std::map<int,double> > refAugALin;
-  double newAugA = 0.0;
-
-  int dim = Dim();
-
-  // print reference to screen (kappaLin-derivative-maps) and store them for later comparison
-  // loop over proc's slave nodes
-  for (int i=0;i<snoderowmap_->NumMyElements();++i)
-  {
-    int gid = snoderowmap_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
-
-    if ((int) cnode->AugData().GetAugALin().size()==0)
-      continue;
-
-    std::map<int,double> augALinMap( cnode->AugData().GetAugALin().begin(),
-        cnode->AugData().GetAugALin().end() );
-    refAugA[gid]    = cnode->AugData().GetAugA();
-    refAugALin[gid] = augALinMap;
-  }
-
-  // global loop to apply FD scheme to all SLAVE dofs (=dim*nodes)
-  for (int fd=0;fd<dim*snodefullmap->NumMyElements();++fd)
-  {
-    // store warnings for this finite difference
-    int w=0;
-
-    // Initialize
-    Initialize();
-
-    // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap->GID(fd/dim);
-    CoNode* snode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
-    if(!snode)
-      dserror("ERROR: Cannot find slave node with gid %",gid);
-
-    int sdof = snode->Dofs()[fd%dim];
-
-    std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
-
-    // do step forward (modify nodal displacement)
-    double delta = 1e-8;
-    if (fd%dim==0)
-    {
-      snode->xspatial()[0] += delta;
-    }
-    else if (fd%dim==1)
-    {
-      snode->xspatial()[1] += delta;
-    }
-    else
-    {
-      snode->xspatial()[2] += delta;
-    }
-
-    // compute element areas
-    SetElementAreas();
-
-    // *******************************************************************
-    // contents of Evaluate()
-    // *******************************************************************
-    RedEvaluate(cparams_ptr);
-
-    // compute finite difference derivative
-    for (int k=0; k<snoderowmap_->NumMyElements(); ++k)
-    {
-      // clear the calculated new r.h.s. map
-      newAugA = 0.0;
-      int kgid = snoderowmap_->GID(k);
-      DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode)
-        dserror("ERROR: Cannot find node with gid %",kgid);
-      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
-
-      if ((int) kcnode->AugData().GetAugALin().size()==0)
-        continue;
-
-      newAugA = kcnode->AugData().GetAugA();
-
-      // print results (derivatives) to screen
-      if (abs(newAugA-refAugA[kgid]) > 1e-12)
-      {
-        double finit = (newAugA-refAugA[kgid])/delta;
-
-        double analy = refAugALin[kgid][sdof];
-        double dev = finit - analy;
-
-        // p->first: currently tested dof of slave node p->first/Dim()
-        // (p->first)/Dim(): paired slave
-        // sdof: currently modified slave dof
-        std::cout << "(" << kgid << "," << sdof << ") :"
-            "   fd=" << std::setw(14) << std::setprecision(5) << std::scientific << finit <<
-            "   augALin=" << std::setw(14) << std::setprecision(5) << std::scientific << analy <<
-            "   DEVIATION= " << std::setw(14) << std::setprecision(5) << std::scientific << dev <<
-            "   REL-ERROR [%]= " << std::setw(14) << std::setprecision(5) << std::scientific << abs(dev/finit)*100;
-
-        if( abs(dev) > 1e-4 )
-        {
-          std::cout << " ***** WARNING ***** ";
-          w++;
-        }
-        else if( abs(dev) > 1e-5 )
-        {
-          std::cout << " ***** warning ***** ";
-          w++;
-        }
-
-        std::cout << std::endl;
-      }
-
-    }
-
-    // undo finite difference modification
-    if (fd%dim==0)
-    {
-      snode->xspatial()[0] -= delta;
-    }
-    else if (fd%dim==1)
-    {
-      snode->xspatial()[1] -= delta;
-    }
-    else
-    {
-      snode->xspatial()[2] -= delta;
-    }
-
-    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
-  }
-
-  // global loop to apply FD scheme to all MASTER dofs (=dim*nodes)
-  for (int fd=0; fd<dim*mnodefullmap->NumMyElements(); ++fd)
-  {
-    // store warnings for this finite difference
-    int w=0;
-
-    // Initialize
-    Initialize();
-
-    // now get the node we want to apply the FD scheme to
-    int gid = mnodefullmap->GID(fd/dim);
-    DRT::Node* node = idiscret_->gNode(gid);
-    if (!node)
-      dserror("ERROR: Cannot find slave node with gid %",gid);
-    CoNode* mnode = dynamic_cast<CoNode*>(node);
-
-    int mdof = mnode->Dofs()[fd%dim];
-
-    std::cout << "\nDEVIATION FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
-
-    // do step forward (modify nodal displacement)
-    double delta = 1e-8;
-    if (fd%dim==0)
-    {
-      mnode->xspatial()[0] += delta;
-    }
-    else if (fd%dim==1)
-    {
-      mnode->xspatial()[1] += delta;
-    }
-    else
-    {
-      mnode->xspatial()[2] += delta;
-    }
-
-    // compute element areas
-    SetElementAreas();
-
-    // *******************************************************************
-    // contents of Evaluate()
-    // *******************************************************************
-    RedEvaluate(cparams_ptr);
-
-    // compute finite difference derivative
-    for (int k=0; k<snoderowmap_->NumMyElements(); ++k)
-    {
-      // clear the calculated new r.h.s. map
-      newAugA = 0.0;
-      int kgid = snoderowmap_->GID(k);
-      DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode)
-        dserror("ERROR: Cannot find node with gid %",kgid);
-      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
-
-      if ((int) kcnode->AugData().GetAugALin().size()==0)
-              continue;
-
-      newAugA = kcnode->AugData().GetAugA();
-
-      // print results (derivatives) to screen
-
-      if (abs(newAugA-refAugA[kgid]) > 1e-12)
-      {
-        double finit = (newAugA-refAugA[kgid])/delta;
-        double analy = refAugALin[kgid][mdof];
-        double dev = finit - analy;
-
-        // p->first: currently tested dof of master node p->first/Dim()
-        // (p->first)/Dim(): paired master
-        // mdof: currently modified master dof
-        std::cout << "(" << kgid << "," << mdof << ") :"
-        "   fd=" << std::setw(14) << std::setprecision(5) << std::scientific << finit <<
-        "   augALin=" << std::setw(14) << std::setprecision(5) << std::scientific << analy <<
-        "   DEVIATION= " << std::setw(14) << std::setprecision(5) << std::scientific << dev <<
-        "   REL-ERROR [%]= " << std::setw(14) << std::setprecision(5) << std::scientific << abs(dev/finit)*100;
-
-        if( abs(dev) > 1e-4 )
-        {
-          std::cout << " ***** WARNING ***** ";
-          w++;
-        }
-        else if( abs(dev) > 1e-5 )
-        {
-          std::cout << " ***** warning ***** ";
-          w++;
-        }
-
-        std::cout << std::endl;
-      }
-
-    }
-
-    // undo finite difference modification
-    if (fd%dim==0)
-    {
-     mnode->xspatial()[0] -= delta;
-    }
-    else if (fd%dim==1)
-    {
-     mnode->xspatial()[1] -= delta;
-    }
-    else
-    {
-     mnode->xspatial()[2] -= delta;
-    }
-
-    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
-  }
-
-  // back to normal...
-
-  // Initialize
-  Initialize();
-
-  // compute element areas
-  SetElementAreas();
-
-  // *******************************************************************
-  // We have to do both evaluate steps here
-  // *******************************************************************
-  // evaluate averaged weighted gap
-  Evaluate(cparams_ptr);
-  WGap();
-  AWGapLin();
-  // evaluate remaining entities and linearization
-  RedEvaluate(cparams_ptr);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | Update of interface related quantities                hiermeier 06/14|
- | during the global FD-check                                           |
- *----------------------------------------------------------------------*/
-bool CONTACT::AUG::Interface::UpdateInterfaces(
-    int gid,
-    int dof,
-    double delta,
-    bool forward,
-    CONTACT::ParamsInterface& cparams)
-{
-  DRT::Node* node = idiscret_->gNode(gid);
-  if (!node) return (false);
-
-  CoNode* cnode = dynamic_cast<CoNode*>(node);
-
-  // change forward step to backward step
-  if (!forward) delta *= (-1);
-  if (dof==0)
-  {
-    cnode->xspatial()[0] += delta;
-  }
-  else if (dof==1)
-  {
-    cnode->xspatial()[1] += delta;
+    snode.xspatial()[1] += delta_;
   }
   else
   {
-    cnode->xspatial()[2] += delta;
+    snode.xspatial()[2] += delta_;
   }
-  Initialize();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template <typename T0, typename T1, typename T2>
+void CONTACT::AUG::Interface::FiniteDifference<T0,T1,T2>::UnDoPerturbation(
+    CoNode& snode )
+{
+  std::copy( ref_x_.A(), ref_x_.A()+3, snode.xspatial() );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template <typename T0, typename T1, typename T2>
+void CONTACT::AUG::Interface::FiniteDifference<T0,T1,T2>::RefEvaluate(
+    CONTACT::ParamsInterface& cparams )
+{
+  stored_actiontype_ = cparams.GetActionType();
+
+  SetActionType( MORTAR::eval_force_stiff, cparams );
+
+  Evaluate( cparams );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template <typename T0, typename T1, typename T2>
+void CONTACT::AUG::Interface::FiniteDifference<T0,T1,T2>::PerturbedEvaluate(
+    CONTACT::ParamsInterface& cparams )
+{
   // compute element areas
-  SetElementAreas();
+  inter_.SetElementAreas();
+
+  Evaluate( cparams );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template <typename T0, typename T1, typename T2>
+void CONTACT::AUG::Interface::FiniteDifference<T0,T1,T2>::FinalEvaluate(
+    CONTACT::ParamsInterface& cparams )
+{
+  SetActionType( stored_actiontype_, cparams );
+
+  Evaluate( cparams );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template <typename T0, typename T1, typename T2>
+void CONTACT::AUG::Interface::FiniteDifference<T0,T1,T2>::GetReference(
+    const Epetra_Map& node_row_map,
+    std::map<int, T0>& ref_map,
+    std::map<int, T1>& ref_deriv1st,
+    std::set<int>& empty_node_gids )
+{
+  int* mygids = node_row_map.MyGlobalElements();
+  for ( int i=0; i<node_row_map.NumMyElements(); ++i )
+  {
+    const int gid = mygids[i];
+    DRT::Node* node = inter_.idiscret_->gNode(gid);
+    if (!node)
+      dserror("ERROR: Cannot find node with gid %",gid);
+
+    CoNode& cnode = static_cast<CoNode&>( *node );
+
+    const T1& deriv1st = GetDeriv1st( cnode.AugData() );
+
+    if ( deriv1st.empty()  )
+    {
+      empty_node_gids.insert( gid );
+      continue;
+    }
+
+    const T0& ref = GetValues( cnode.AugData() );
+    if ( AtRef( ref, 0 ).first == 0 and AtRef( ref, 0 ).second == 0.0 )
+    {
+      empty_node_gids.insert( gid );
+      continue;
+    }
+
+
+    T0& ref_vals = ref_map[ gid ];
+    ResizeValues( ref_vals );
+
+    std::copy( &ref, &ref+GetNumVectors( ref ), &ref_vals );
+
+    T1& ref_vars = ref_deriv1st[gid];
+    GEN_DATA::copy( deriv1st, ref_vars );
+
+    std::cout << "1-st order derivatives for node " << gid << "\n";
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template <typename T0, typename T1, typename T2>
+void CONTACT::AUG::Interface::FiniteDifference<T0,T1,T2>::GetReference(
+    const Epetra_Map& node_row_map,
+    std::map<int, T1>& ref_deriv1st,
+    std::map<int, T2>& ref_deriv2nd,
+    std::set<int>& empty_node_gids )
+{
+  int* mygids = node_row_map.MyGlobalElements();
+  for ( int i=0; i<node_row_map.NumMyElements(); ++i )
+  {
+    const int gid = mygids[i];
+    DRT::Node* node = inter_.idiscret_->gNode(gid);
+    if (!node)
+      dserror("ERROR: Cannot find node with gid %",gid);
+
+    CoNode& cnode = static_cast<CoNode&>( *node );
+
+    const T2& deriv2nd = GetDeriv2nd( cnode.AugData() );
+
+    if ( deriv2nd.empty() )
+    {
+      empty_node_gids.insert( gid );
+      continue;
+    }
+
+    const T1& deriv1st = GetDeriv1st( cnode.AugData() );
+
+    T1& ref_vals = ref_deriv1st[ gid ];
+    GEN_DATA::copy( deriv1st, ref_vals );
+
+    T2& ref_lins = ref_deriv2nd[gid];
+    GEN_DATA::copy( deriv2nd, ref_lins );
+
+    std::cout << "2-nd order derivatives for node " << gid << "\n";
+    bool symm_check = INTEGRATOR::TestForSymmetry( ref_lins );
+    if ( not symm_check )
+    {
+      std::cout << "\nTest symmetry again with acitivated output ...\n";
+      INTEGRATOR::TestForSymmetry( ref_lins, true );
+//      std::cout << "\n\n______________________________________\n";
+//      std::cout << "Print the 2-nd derivatives:\n";
+//      Print( ref_lins );
+//      dserror( "Symmetry check has not been passed!" );
+    }
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template <typename T0, typename T1, typename T2>
+void CONTACT::AUG::Interface::FiniteDifference<T0,T1,T2>::SetActionType(
+    enum MORTAR::ActionType actiontype,
+    CONTACT::ParamsInterface& cparams ) const
+{
+  STR::MODELEVALUATOR::ContactData& cparams_mutable =
+      dynamic_cast<STR::MODELEVALUATOR::ContactData&>( cparams );
+
+  cparams_mutable.SetActionType( actiontype );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template <typename T0, typename T1, typename T2>
+void CONTACT::AUG::Interface::FiniteDifference<T0,T1,T2>::Evaluate(
+    CONTACT::ParamsInterface& cparams )
+{
+  Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr = Teuchos::rcpFromRef( cparams );
+
+  // Initialize
+  inter_.Initialize();
+
+  // compute element areas
+  inter_.SetElementAreas();
 
   // *******************************************************************
   // We have to do both evaluate steps here
   // *******************************************************************
-  Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr =
-      Teuchos::rcpFromRef(cparams);
   // evaluate averaged weighted gap
-  Evaluate(cparams_ptr);
-  WGap();
-  AWGapLin();
+  inter_.Evaluate(cparams_ptr);
   // evaluate remaining entities and linearization
-  RedEvaluate(cparams_ptr);
-
-  return (true);
+  inter_.RedEvaluate(cparams_ptr);
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template < typename T0, typename T1, typename T2 >
+Teuchos::RCP<Epetra_Map>
+CONTACT::AUG::Interface::FiniteDifference<T0,T1,T2>::GetFullMap(
+    const Epetra_Map& rowmap ) const
+{
+  return LINALG::AllreduceEMap( rowmap );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+const std::pair<int,double>& CONTACT::AUG::Interface::FD_Debug::GetValues(
+    const NodeDataContainer& data ) const
+{
+ return data.Get_Debug();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+const CONTACT::AUG::Deriv1stMap& CONTACT::AUG::Interface::FD_Debug::GetDeriv1st(
+    const NodeDataContainer& data ) const
+{
+ return data.GetDeriv1st_Debug();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+const CONTACT::AUG::Deriv2ndMap& CONTACT::AUG::Interface::FD_Debug::GetDeriv2nd(
+    const NodeDataContainer& data ) const
+{
+ return data.GetDeriv2nd_Debug();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+const std::vector<std::pair<int,double> >& CONTACT::AUG::Interface::FD_DebugVec::GetValues(
+    const NodeDataContainer& data ) const
+{
+ return data.Get_DebugVec();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+const CONTACT::AUG::Deriv1stVecMap& CONTACT::AUG::Interface::FD_DebugVec::GetDeriv1st(
+    const NodeDataContainer& data ) const
+{
+ return data.GetDeriv1st_DebugVec();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+const CONTACT::AUG::Deriv2ndVecMap& CONTACT::AUG::Interface::FD_DebugVec::GetDeriv2nd(
+    const NodeDataContainer& data ) const
+{
+  return data.GetDeriv2nd_DebugVec();
+}
+
+template class  CONTACT::AUG::Interface::FiniteDifference<std::pair<int,double>,CONTACT::AUG::Deriv1stMap,CONTACT::AUG::Deriv2ndMap>;
+template class  CONTACT::AUG::Interface::FiniteDifference<std::vector<std::pair<int,double> >,CONTACT::AUG::Deriv1stVecMap,CONTACT::AUG::Deriv2ndVecMap>;
+
