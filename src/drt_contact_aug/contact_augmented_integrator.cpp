@@ -1064,7 +1064,8 @@ ExtractActiveSlaveNodeLIDs(
     std::vector<unsigned>& active_nlids,
     const MORTAR::MortarElement& sele ) const
 {
-  const Epetra_Map* active_snode_row_map = this->CParams().Get<Epetra_Map>(0);
+  const Epetra_Map* active_snode_row_map =
+      this->CParams().template Get<Epetra_Map>(0);
 
   const int* nodeids = sele.NodeIds();
 
