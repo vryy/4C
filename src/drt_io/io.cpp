@@ -131,7 +131,7 @@ void IO::DiscretizationReader::ReadMultiVector(
   if(nv->GlobalLength() > vec->GlobalLength())
     dserror("Reading vector \"%s\": Global length of source exceeds target "
         "(Multi-) Vector length! This case is not supported ! "
-        "Source size: %d Target size: %d", name, nv->GlobalLength(),
+        "Source size: %d Target size: %d", name.c_str(), nv->GlobalLength(),
         vec->GlobalLength());
 
   LINALG::Export(*nv, *vec);
