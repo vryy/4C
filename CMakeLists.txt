@@ -604,7 +604,6 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/viscoelasthyper.cpp
   src/drt_mat/visconeohooke.cpp
   src/drt_mat/yoghurt.cpp
-  src/drt_mat/utils.cpp
   src/drt_matelast/elast_anisoactivestress_evolution.cpp
   src/drt_matelast/elast_coupanisoexpoactive.cpp
   src/drt_matelast/elast_coupanisoexpo.cpp

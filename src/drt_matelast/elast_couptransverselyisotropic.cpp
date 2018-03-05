@@ -19,7 +19,7 @@
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_linedefinition.H"
 
-#include "../drt_mat/utils.H"
+#include "../drt_mat/material_service.H"
 #include "../drt_io/io_pstream.H"
 
 /*----------------------------------------------------------------------------*
