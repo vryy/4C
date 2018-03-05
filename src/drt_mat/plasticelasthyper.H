@@ -447,9 +447,6 @@ private:
 
     virtual double NormStressLike(const LINALG::Matrix<6,1>& stress);
 
-    /// convert non-symmetric 2-tensor to 9x1 vector
-    void Matrix3x3to9x1(LINALG::Matrix<3,3> A, LINALG::Matrix<9,1>& Out);
-
     /// calculates the isotropic stress and elasticity tensor for coupled configuration
     virtual void EvaluateIsotropicPrincPlast(
         LINALG::Matrix<6,9>& dPK2dFpinvIsoprinc,

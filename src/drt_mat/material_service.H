@@ -384,6 +384,42 @@ namespace MAT
                               LINALG::Matrix<3,3> const& A,         ///< Matrix in the above mentioned equation
                               LINALG::Matrix<3,3> const& B,         ///< Matrix in the above mentioned equation
                               LINALG::Matrix<9,9> & out);           ///< Output
+
+  /// Convert matrix to "stress-like" Voigt notation
+  ///          A_00 A_01 A_02
+  /// Matrix   A_10 A_11 A_12   is converted to the (stress-like) vector below:
+  ///          A_20 A_21 A_22
+  ///
+  /// Vector   V_0 = A_00; V_1 = A_11; V_2 = A_22; V_3 = 0.5*(A_01 + A_10); V_4 = 0.5*(A_12 + A_21); V_5 = 0.5*(A_02 + A_20)
+  template< typename T >
+  void MatrixtoStressLikeVoigtNotation(LINALG::TMatrix<T,3,3> const& in,
+                                       LINALG::TMatrix<T,6,1> & out);
+
+  /// Convert matrix to "strain-like" Voigt notation
+  ///          A_00 A_01 A_02
+  /// Matrix   A_10 A_11 A_12   is converted to the (strain-like) vector below:
+  ///          A_20 A_21 A_22
+  ///
+  /// Vector   V_0 = A_00; V_1 = A_11; V_2 = A_22; V_3 = (A_01 + A_10); V_4 = (A_12 + A_21); V_5 = (A_02 + A_20)
+  void MatrixtoStrainLikeVoigtNotation(LINALG::Matrix<3,3> const& in,
+                                       LINALG::Matrix<6,1> & out);
+
+  /// Convert "stress-like" Voigt notation to matrix
+  ///
+  /// Vector   V_0 V_1 V_2 V_3 V_4 V_5   (stress-like) is converted to the matrix below:
+  ///
+  /// Matrix   A_00 = V_0; A_11 = V_1; A_22 = V_2; A_01 = A_10 = V_3; A_21 = A_12 = V_4; A_20 = A_02 = V_5
+  void StressLikeVoigtNotationtoMatrix(LINALG::Matrix<6,1> const& in,
+                                       LINALG::Matrix<3,3> & out);
+
+  /// convert non-symmetric 2-tensor to 9x1 vector
+  ///          A_00 A_01 A_02
+  /// Matrix   A_10 A_11 A_12  is converted to the vector below:
+  ///          A_20 A_21 A_22
+  ///
+  /// Vector   V_0 = A_00; V_1 = A_11; V_2 = A_22; V_3 = A_01; V_4 = A_12; V_5 = A_02; V_6 = A_10; V_7 = A_21; V_8 = A_20
+  void Matrix3x3to9x1(LINALG::Matrix<3,3> const& in,
+                      LINALG::Matrix<9,1> & out);
 }
 
 #endif

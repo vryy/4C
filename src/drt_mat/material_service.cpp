@@ -1063,6 +1063,69 @@ void MAT::AddNonSymmetricProduct(double const& fac,
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+template< typename T >
+void MAT::MatrixtoStressLikeVoigtNotation(LINALG::TMatrix<T,3,3> const& in,
+                                          LINALG::TMatrix<T,6,1> & out)
+{
+  for(int i=0;i<3;++i)
+    out(i) = in(i,i);
+  out(3) = 0.5*(in(0,1)+in(1,0));
+  out(4) = 0.5*(in(1,2)+in(2,1));
+  out(5) = 0.5*(in(0,2)+in(2,0));
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::MatrixtoStrainLikeVoigtNotation(LINALG::Matrix<3,3> const& in,
+                                          LINALG::Matrix<6,1> & out)
+{
+  for(int i=0;i<3;++i)
+    out(i) = in(i,i);
+  out(3) = in(0,1)+in(1,0);
+  out(4) = in(1,2)+in(2,1);
+  out(5) = in(0,2)+in(2,0);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::StressLikeVoigtNotationtoMatrix(LINALG::Matrix<6,1> const& in,
+                                     LINALG::Matrix<3,3> & out)
+{
+  for(int i=0;i<3;++i)
+    out(i,i) = in(i);
+  out(0,1) = out(1,0) = in(3);
+  out(1,2) = out(2,1) = in(4);
+  out(0,2) = out(2,0) = in(5);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::Matrix3x3to9x1(LINALG::Matrix<3,3> const& in,
+                         LINALG::Matrix<9,1> & out)
+{
+  for(int i=0;i<3;++i) out(i) = in(i,i);
+  out(3) = in(0,1);
+  out(4) = in(1,2);
+  out(5) = in(0,2);
+  out(6) = in(1,0);
+  out(7) = in(2,1);
+  out(8) = in(2,0);
+
+  return;
+}
+
+
 // explicit instantiation of template functions
 template void MAT::AddRightNonSymmetricHolzapfelProduct<double>(LINALG::TMatrix<double,6,9> &,
                                                                 LINALG::TMatrix<double,3,3> const&,
@@ -1078,6 +1141,10 @@ template void MAT::AddtoCmatHolzapfelProduct<double>(LINALG::TMatrix<double,6,6>
 template void MAT::AddtoCmatHolzapfelProduct<FAD>(LINALG::TMatrix<FAD,6,6>&,
                                                   const LINALG::TMatrix<FAD,6,1>&,
                                                   const FAD scalar);
+template void MAT::MatrixtoStressLikeVoigtNotation<double>(LINALG::TMatrix<double,3,3> const& in,
+                                                           LINALG::TMatrix<double,6,1> & out);
+template void MAT::MatrixtoStressLikeVoigtNotation<FAD>(LINALG::TMatrix<FAD,3,3> const& in,
+                                                        LINALG::TMatrix<FAD,6,1> & out);
 
 
 

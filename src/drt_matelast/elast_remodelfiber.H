@@ -662,61 +662,6 @@ struct FiberData
 
     /// Initialize all structural tensors necessary in subsequent calculations
     virtual void SetupStructuralTensorsGR();
-
-    /// Converts matrix in "matrix notation" to "stress-like" Voigt notation
-    template< typename T >
-    inline void MatrixtoStressVoigtNotationVector(LINALG::TMatrix<T,3,3> const& in,    ///< Input: 3x3 Matrix
-                                                  LINALG::TMatrix<T,6,1>& out) const   ///< Output: Vector in stress-like Voigt notation
-    {
-      for (int i=0; i<3; i++) out(i) = in(i,i);
-      out(3) = 0.5*(in(0,1) + in(1,0));
-      out(4) = 0.5*(in(1,2) + in(2,1));
-      out(5) = 0.5*(in(0,2) + in(2,0));
-
-      return;
-    };
-
-    /// Converts matrix in "stress-like" Voigt notation to "matrix notation"
-    template< typename T >
-    inline void StressVoigtNotationVectorToMatrix(LINALG::TMatrix<T,6,1> const& in,    ///< Input: Vector in stress-like Voigt notation
-                                                  LINALG::TMatrix<T,3,3>& out) const   ///< Output: 3x3 Matrix
-    {
-      for (int i=0; i<3; ++i) out(i,i) = in(i);
-      out(0,1) = out(1,0) = in(3);
-      out(1,2) = out(2,1) = in(4);
-      out(0,2) = out(2,0) = in(5);
-
-      return;
-    };
-
-    /// Converts matrix in "matrix notation" to "strain-like" Voigt notation
-    template< typename T >
-    inline void MatrixtoStrainVoigtNotationVector(LINALG::TMatrix<T,3,3> const& in,    ///< Input: 3x3 Matrix
-                                                  LINALG::TMatrix<T,6,1>& out) const   ///< Output: Vector in strain-like Voigt notation
-    {
-      for (int i=0; i<3; i++) out(i) = in(i,i);
-      out(3) = in(0,1) + in(1,0);
-      out(4) = in(1,2) + in(2,1);
-      out(5) = in(0,2) + in(2,0);
-
-      return;
-    };
-
-    /// Converts 3x3 matrix to 9x1 vector
-    template< typename T >
-    inline void Matrix3x3toVector9x1(LINALG::TMatrix<T,3,3> const& in,    ///< Input: 3x3 Matrix
-                                     LINALG::TMatrix<T,9,1>& out) const   ///< Output: 9x1 Vector
-    {
-      for (int i=0; i<3; i++) out(i) = in(i,i);
-      out(3) = in(0,1);
-      out(4) = in(1,2);
-      out(5) = in(0,2);
-      out(6) = in(1,0);
-      out(7) = in(2,1);
-      out(8) = in(2,0);
-
-      return;
-    };
     //@}
 
     /// My material parameters

@@ -468,50 +468,6 @@ private:
                                     const int gp,                          ///< Current Gauß-Point
                                     const int eleGID) const;               ///< Element ID
 
-    /// Convert matrix to "stress-like" Voigt notation
-    template< typename T >
-    inline void MatrixtoStressLikeVoigtNotation(LINALG::TMatrix<T,3,3> const& in,
-                                                LINALG::TMatrix<T,6,1> & out) const {
-      for(int i=0;i<3;++i)
-        out(i) = in(i,i);
-      out(3) = 0.5*(in(0,1)+in(1,0));
-      out(4) = 0.5*(in(1,2)+in(2,1));
-      out(5) = 0.5*(in(0,2)+in(2,0));
-    };
-
-    /// Convert matrix to "stress-like" Voigt notation
-    inline void MatrixtoStrainLikeVoigtNotation(LINALG::Matrix<3,3> const& in,
-                                                LINALG::Matrix<6,1> & out) const {
-      for(int i=0;i<3;++i)
-        out(i) = in(i,i);
-      out(3) = in(0,1)+in(1,0);
-      out(4) = in(1,2)+in(2,1);
-      out(5) = in(0,2)+in(2,0);
-    };
-
-    /// Convert "stress-like" Voigt notation to matrix
-    inline void StressLikeVoigtNotationtoMatrix(LINALG::Matrix<6,1> const& in,
-                                                LINALG::Matrix<3,3> & out) const {
-      for(int i=0;i<3;++i)
-        out(i,i) = in(i);
-      out(0,1) = out(1,0) = in(3);
-      out(1,2) = out(2,1) = in(4);
-      out(0,2) = out(2,0) = in(5);
-    };
-
-    /// convert non-symmetric 2-tensor to 9x1 vector
-    inline void Matrix3x3to9x1(LINALG::Matrix<3,3> const& in,
-                               LINALG::Matrix<9,1> & out) const {
-      for(int i=0;i<3;++i) out(i) = in(i,i);
-      out(3) = in(0,1);
-      out(4) = in(1,2);
-      out(5) = in(0,2);
-      out(6) = in(1,0);
-      out(7) = in(2,1);
-      out(8) = in(2,0);
-    };
-
-
     /// My material parameters
     MAT::PAR::GrowthRemodel_ElastHyper* params_;
 
