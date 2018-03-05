@@ -89,7 +89,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle3D(
      MORTAR::MortarElement& sele,
      std::vector<MORTAR::MortarElement*> meles,
      bool *boundary_ele,
-     bool *proj_,
+     bool *proj,
      const Epetra_Comm& comm,
      const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
@@ -124,7 +124,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle3D(
 //  *boundary_ele = BoundarySegmCheck3D(sele,meles);
   *boundary_ele = false;
 
-  *proj_ = INTEGRATOR::FindFeasibleMasterElements( sele, meles, boundary_ele,
+  *proj = INTEGRATOR::FindFeasibleMasterElements( sele, meles, boundary_ele,
       *this, projInfo_ );
 
   for ( auto& info_pair : projInfo_ )

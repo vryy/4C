@@ -128,6 +128,8 @@ void STR::MODELEVALUATOR::Contact::PostSetup(
     plot_params.set<const int*>( "CURRENT_STEP", &GState().GetStepNp() );
     plot_params.set<std::string>( "OUTPUT_FILE_NAME",
         GInOutput().GetOutputPtr()->Output()->FileName() );
+    plot_params.set<std::string>( "INPUT_FILE_NAME",
+        GInOutput().GetOutputPtr()->Output()->InputFileName() );
     plot_params.set<const DRT::DiscretizationInterface*>( "DISCRETIZATION",
         GState().GetDiscret().get() );
     plot_params.set<STR::MODELEVALUATOR::Contact*>( "MODELEVALUATOR",

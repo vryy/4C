@@ -1212,12 +1212,6 @@ void CONTACT::AUG::Strategy::UpdateActiveSetSemiSmooth(
         Data().GActiveTDofRowMapPtr(),interface.ActiveTDofs(),false);
   }
 
-  IO::cout << "Number of active nodes = " <<
-      Data().GActiveNodeRowMap().NumGlobalElements() << IO::endl;
-  IO::cout << "Number of old active nodes = " <<
-      Data().GOldActiveSlaveNodes().NumGlobalElements() << IO::endl;
-
-
   // check the convergence of the active set
   Data().IsActiveSetConverged() =
       Data().GActiveNodeRowMap().SameAs( Data().GOldActiveSlaveNodes() );

@@ -215,6 +215,10 @@ namespace AUG{
       /// call-back
       const Plot& plot_;
 
+      std::string GetFullFilePath(
+          const std::string& input_file,
+          const std::string& dir_file ) const;
+
       void SplitIntoSlaveMasterBody(
           const Epetra_Vector& dir,
           Teuchos::RCP<Epetra_Vector>& x_dir_ptr,
@@ -240,6 +244,8 @@ namespace AUG{
             min_y_(0.0),
             max_y_(0.0)
       {}
+
+      unsigned output_precision_ = 0;
 
       unsigned resolution_x_;
       unsigned resolution_y_;
@@ -296,12 +302,15 @@ namespace AUG{
 
   template< typename T >
   void WriteMatrixToFile(
-      std::ofstream& outputfile, const T& mat );
+      std::ofstream& outputfile,
+      const T& mat,
+      const unsigned precision );
 
   template< typename T >
   void WriteColumnDataToFile(
       std::ofstream& outputfile,
-      const std::vector<const T*>& columndata );
+      const std::vector<const T*>& columndata,
+      const unsigned precision );
 } // namespace AUG
 } // namespace CONTACT
 

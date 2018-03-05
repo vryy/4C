@@ -279,7 +279,7 @@ namespace AUG {
     /** \brief Delete all created instances at the end of a simulation run
      *
      *  \author hiermeier \date 06/17 */
-    virtual void Done();
+    void Done() override;
 
   public:
     //! Default constructor without active set information
@@ -298,27 +298,27 @@ namespace AUG {
     //! @name segment based integration methods
     //! @{
 
-    virtual void IntegrateDerivSegment2D(
+    void IntegrateDerivSegment2D(
        MORTAR::MortarElement& sele,
        double& sxia,
        double& sxib,
        MORTAR::MortarElement& mele,
        double& mxia,
-       double& mxib );
+       double& mxib ) override;
 
     //! [derived]
-    virtual void IntegrateDerivCell3DAuxPlane(
+    void IntegrateDerivCell3DAuxPlane(
          MORTAR::MortarElement& sele,
          MORTAR::MortarElement& mele,
          MORTAR::IntCell& cell,
-         double* auxn );
+         double* auxn ) override;
 
     //! element based evaluation
-    virtual void Evaluate(
+    void Evaluate(
         MORTAR::MortarElement& sele,
         MORTAR::MortarElement& mele,
         bool boundary_ele,
-        const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo );
+        const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo ) override;
 
     //! @}
 
@@ -326,7 +326,7 @@ namespace AUG {
      *          slave interface
      *
      *  \author hiermeier */
-    virtual void IntegrateDerivSlaveElement( MORTAR::MortarElement& sele );
+    void IntegrateDerivSlaveElement( MORTAR::MortarElement& sele ) override;
 
   private:
     class Evaluator;
@@ -585,13 +585,14 @@ namespace AUG {
     virtual ~EvaluatorDeriv1stOnly() {};
 
   protected:
-    virtual typename base_type::Type GetType() const { return base_type::Type::deriv1st_only; };
+    typename base_type::Type GetType() const override
+    { return base_type::Type::deriv1st_only; };
 
-    virtual void Deriv_Jacobian(
-            MORTAR::MortarElement& ele,
-            const double* xi,
-            const LINALG::Matrix<my::SLAVEDIM,my::SLAVENUMNODE>& sderiv,
-            const LINALG::Matrix<3,2>& stau );
+    void Deriv_Jacobian(
+        MORTAR::MortarElement& ele,
+        const double* xi,
+        const LINALG::Matrix<my::SLAVEDIM,my::SLAVENUMNODE>& sderiv,
+        const LINALG::Matrix<3,2>& stau ) override;
 
     void Deriv1st_Jacobian(
         MORTAR::MortarElement& ele,
@@ -603,7 +604,7 @@ namespace AUG {
         double& length_n_inv,
         Deriv1stVecMap& d_non_unit_normal );
 
-    virtual void Deriv_MXiGP(
+    void Deriv_MXiGP(
         MORTAR::MortarElement& sele,
         MORTAR::MortarElement& mele,
         const double* sxi,
@@ -612,7 +613,7 @@ namespace AUG {
         const LINALG::Matrix<my::SLAVENUMNODE,1>& sval,
         const LINALG::Matrix<my::MASTERNUMNODE,1>& mval,
         const LINALG::Matrix<my::MASTERDIM,my::MASTERNUMNODE>& mderiv,
-        const LINALG::Matrix<3,2>& mtau );
+        const LINALG::Matrix<3,2>& mtau ) override;
 
     void Deriv1st_MXiGP(
         MORTAR::MortarElement& sele,
@@ -626,11 +627,11 @@ namespace AUG {
         const LINALG::Matrix<3,2>& mtau,
         LINALG::Matrix<probdim,probdim>& lmat_inv );
 
-    virtual void Get_Deriv2nd_AugA(
+    void Get_Deriv2nd_AugA(
         MORTAR::MortarElement& sele,
         const LINALG::Matrix<my::SLAVENUMNODE,1>& lmval,
         const double wgt,
-        const Deriv2ndMap& dd_jac ) const
+        const Deriv2ndMap& dd_jac ) const override
     { /* do nothing */ };
   };
 
@@ -656,15 +657,16 @@ namespace AUG {
     virtual ~EvaluatorFull() {};
 
   private:
-    virtual typename base_type::Type GetType() const { return base_type::Type::full; };
+    typename base_type::Type GetType() const override
+    { return base_type::Type::full; };
 
-    virtual void Deriv_Jacobian(
+    void Deriv_Jacobian(
         MORTAR::MortarElement& ele,
         const double* xi,
         const LINALG::Matrix<my::SLAVEDIM,my::SLAVENUMNODE>& sderiv,
-        const LINALG::Matrix<3,2>& stau );
+        const LINALG::Matrix<3,2>& stau ) override;
 
-    virtual void Deriv_MXiGP(
+    void Deriv_MXiGP(
         MORTAR::MortarElement& sele,
         MORTAR::MortarElement& mele,
         const double* sxi,
@@ -673,13 +675,13 @@ namespace AUG {
         const LINALG::Matrix<my::SLAVENUMNODE,1>& sval,
         const LINALG::Matrix<my::MASTERNUMNODE,1>& mval,
         const LINALG::Matrix<my::MASTERDIM,my::MASTERNUMNODE>& mderiv,
-        const LINALG::Matrix<3,2>& mtau );
+        const LINALG::Matrix<3,2>& mtau ) override;
 
-    virtual void Get_Deriv2nd_AugA(
+    void Get_Deriv2nd_AugA(
         MORTAR::MortarElement& sele,
         const LINALG::Matrix<my::SLAVENUMNODE,1>& lmval,
         const double wgt,
-        const Deriv2ndMap& dd_jac ) const;
+        const Deriv2ndMap& dd_jac ) const override;
   };
 } // namespace AUG
 } // namespace CONTACT

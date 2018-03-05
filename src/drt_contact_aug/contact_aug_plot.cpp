@@ -56,12 +56,36 @@ void CONTACT::AUG::Plot::Direction::ReadInput(
 
   if ( type_ == INPAR::CONTACT::PlotDirection::read_from_file )
   {
+    const std::string& input_filepath = pp.get<std::string>("INPUT_FILE_NAME");
     const std::string& dir_file = pp.get<std::string>( "DIRECTION_FILE" );
-    from_file_ = ReadSparseVectorFromMatlab( dir_file );
+    const std::string full_dir_file( GetFullFilePath( input_filepath, dir_file ) );
+    from_file_ = ReadSparseVectorFromMatlab( full_dir_file );
   }
 
   split_ = Teuchos::getIntegralValue<INPAR::CONTACT::PlotDirectionSplit>(
       pp, "DIRECTION_SPLIT" );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+std::string CONTACT::AUG::Plot::Direction::GetFullFilePath(
+    const std::string& input_file,
+    const std::string& dir_file ) const
+{
+  std::string full_file_path(dir_file);
+
+  // make path relative to input file path if it is not an absolute path
+  if ( dir_file[0]!='/' )
+  {
+    std::string::size_type pos = input_file.rfind('/');
+    if (pos!=std::string::npos)
+    {
+      std::string tmp = input_file.substr(0,pos+1);
+      full_file_path.insert(full_file_path.begin(), tmp.begin(), tmp.end());
+    }
+  }
+
+  return full_file_path;
 }
 
 /*----------------------------------------------------------------------------*
@@ -90,7 +114,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::Plot::Direction::ReadSparseVectorFromM
 
   FILE* file_ptr =  std::fopen( ext_dir_file.c_str(), "r" );
   if ( not file_ptr )
-    dserror( "The file %s could not be opened!" );
+    dserror( "The file \"%s\" could not be opened!", ext_dir_file.c_str() );
 
   double* dir_vals = direction->Values();
   const int* mygids = direction->Map().MyGlobalElements();
@@ -378,12 +402,18 @@ CONTACT::AUG::Plot::Plot()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Plot::Init( const Teuchos::ParameterList& plot_params,
+void CONTACT::AUG::Plot::Init(
+    const Teuchos::ParameterList& plot_params,
     const CONTACT::CoAbstractStrategy* strat )
 {
   strat_ = dynamic_cast<const CONTACT::AUG::Strategy*>( strat );
   discret_ = plot_params.get<const DRT::DiscretizationInterface*>( "DISCRETIZATION" );
   model_ = plot_params.get<STR::MODELEVALUATOR::Contact*>( "MODELEVALUATOR" );
+
+  const int output_precision = plot_params.get<int>( "OUTPUT_PRECISION" );
+  if ( output_precision < 0 )
+    dserror("The specified output precision must be positive!");
+  opt_.output_precision_ = static_cast<unsigned>( output_precision );
 
   const int res_x = plot_params.get<int>( "RESOLUTION_X" );
   if ( res_x < 0 )
@@ -968,10 +998,10 @@ void CONTACT::AUG::Plot::WriteLineDataToFile() const
     case INPAR::CONTACT::PlotFileFormat::matlab:
     {
       outputfile << "X-DATA:\n";
-      WriteMatrixToFile( outputfile, X_ );
+      WriteMatrixToFile( outputfile, X_, opt_.output_precision_ );
 
       outputfile << "\n\nY-DATA:\n";
-      WriteMatrixToFile( outputfile, Y_ );
+      WriteMatrixToFile( outputfile, Y_, opt_.output_precision_ );
 
       break;
     }
@@ -985,7 +1015,7 @@ void CONTACT::AUG::Plot::WriteLineDataToFile() const
       columndata[0] = &X_;
       columndata[1] = &Y_;
 
-      WriteColumnDataToFile( outputfile, columndata );
+      WriteColumnDataToFile( outputfile, columndata, opt_.output_precision_ );
 
       break;
     }
@@ -1011,16 +1041,16 @@ void CONTACT::AUG::Plot::WriteVectorFieldToFile() const
     case INPAR::CONTACT::PlotFileFormat::matlab:
     {
       outputfile << "X-DATA:\n";
-      WriteMatrixToFile( outputfile, X_ );
+      WriteMatrixToFile( outputfile, X_, opt_.output_precision_ );
 
       outputfile << "\n\nY-DATA:\n";
-      WriteMatrixToFile( outputfile, Y_ );
+      WriteMatrixToFile( outputfile, Y_, opt_.output_precision_ );
 
       outputfile << "\n\nU-DATA:\n";
-      WriteMatrixToFile( outputfile, Z_[0] );
+      WriteMatrixToFile( outputfile, Z_[0], opt_.output_precision_ );
 
       outputfile << "\n\nV-DATA:\n";
-      WriteMatrixToFile( outputfile, Z_[1] );
+      WriteMatrixToFile( outputfile, Z_[1], opt_.output_precision_ );
 
       break;
     }
@@ -1035,7 +1065,7 @@ void CONTACT::AUG::Plot::WriteVectorFieldToFile() const
       columndata[2] = &Z_[0];
       columndata[3] = &Z_[1];
 
-      WriteColumnDataToFile( outputfile, columndata );
+      WriteColumnDataToFile( outputfile, columndata, opt_.output_precision_ );
 
       break;
     }
@@ -1052,7 +1082,8 @@ void CONTACT::AUG::Plot::WriteVectorFieldToFile() const
 template < typename T >
 void CONTACT::AUG::WriteColumnDataToFile(
     std::ofstream& outputfile,
-    const std::vector<const T*>& columndata )
+    const std::vector<const T*>& columndata,
+    const unsigned p )
 {
   if ( not outputfile.is_open() )
     dserror("The file must be open!");
@@ -1060,7 +1091,7 @@ void CONTACT::AUG::WriteColumnDataToFile(
   if ( columndata.size() < 1 or columndata[0] == NULL )
     return;
 
-  outputfile << std::setprecision(16);
+  outputfile << std::setprecision(p);
   for ( unsigned i=0; i<static_cast<unsigned>( columndata[0]->M() ); ++i )
   {
     for ( unsigned j=0; j<static_cast<unsigned>( columndata[0]->N() ); ++j )
@@ -1088,18 +1119,18 @@ void CONTACT::AUG::Plot::WriteSurfaceDataToFile() const
     case INPAR::CONTACT::PlotFileFormat::matlab:
     {
       outputfile << "X-DATA:\n";
-      WriteMatrixToFile( outputfile, X_ );
+      WriteMatrixToFile( outputfile, X_, opt_.output_precision_ );
 
       outputfile << "\n\nY-DATA:\n";
-      WriteMatrixToFile( outputfile, Y_ );
+      WriteMatrixToFile( outputfile, Y_, opt_.output_precision_ );
 
       outputfile << "\n\nZ-DATA:\n";
-      WriteMatrixToFile( outputfile, Z_[0] );
+      WriteMatrixToFile( outputfile, Z_[0], opt_.output_precision_ );
 
       break;
     }
     default:
-      dserror( "The given format is not supported! (enum=%d)", format_ );
+      dserror( "The given format is currently not supported! (enum=%d)", format_ );
       exit(EXIT_FAILURE);
   }
 
@@ -1404,12 +1435,14 @@ double CONTACT::AUG::Plot::CharacteristicInterfaceElementLength(
  *----------------------------------------------------------------------------*/
 template< typename T>
 void CONTACT::AUG::WriteMatrixToFile(
-    std::ofstream& outputfile, const T& mat )
+    std::ofstream& outputfile,
+    const T& mat,
+    const unsigned p )
 {
   if ( not outputfile.is_open() )
     dserror("The file must be open!");
 
-  outputfile << std::setprecision(16);
+  outputfile << std::setprecision(p);
   for ( unsigned i=0; i<static_cast<unsigned>( mat.M() ); ++i )
   {
     for ( unsigned j=0; j<static_cast<unsigned>( mat.N() ); ++j )
@@ -1437,6 +1470,8 @@ void NOX::NLN::Solver::PrePostOp::CONTACT::Plot::runPostIterate(
 }
 
 template void CONTACT::AUG::WriteMatrixToFile<LINALG::SerialDenseMatrix>(
-    std::ofstream& outputfile, const LINALG::SerialDenseMatrix& mat );
+    std::ofstream& outputfile, const LINALG::SerialDenseMatrix& mat,
+    const unsigned precison );
 template void CONTACT::AUG::WriteColumnDataToFile<LINALG::SerialDenseMatrix>(
-    std::ofstream& outputfile, const std::vector<const LINALG::SerialDenseMatrix*>& mat );
+    std::ofstream& outputfile, const std::vector<const LINALG::SerialDenseMatrix*>& mat,
+    const unsigned precision );

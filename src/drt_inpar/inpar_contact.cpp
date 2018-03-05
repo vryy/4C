@@ -347,6 +347,9 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
   IntParameter("STEP",-1,"Plot this step.",&plot_contact);
   IntParameter("ITER",-1,"Plot this iteration of the specified step.", &plot_contact );
 
+
+  IntParameter("OUTPUT_PRECISION",16,"Precision for scientific numbers.",&plot_contact);
+
   setStringToIntegralParameter<PlotSupportType>("X_TYPE","vague","Support type "
       "for the x-direction.",
           tuple<std::string>("vague",
