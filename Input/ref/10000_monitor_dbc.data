@@ -1,0 +1,20 @@
+Condition 10000 Tagged elementsNode Ids : 0 1 2 3 8 9 12 13 16 17 20 21 24 25 28 29 32 33 36 37 40 41 onoff : 1 0 0 
+Elements of this condition:
+      StructuralSurface            1 Owner     0  Nodes          1          0          3          2 
+      StructuralSurface            2 Owner     0  Nodes          8          1          2          9 
+      StructuralSurface            3 Owner     0  Nodes         12          8          9         13 
+      StructuralSurface            4 Owner     0  Nodes         16         12         13         17 
+      StructuralSurface            5 Owner     0  Nodes         20         16         17         21 
+      StructuralSurface            6 Owner     0  Nodes         24         20         21         25 
+      StructuralSurface            7 Owner     0  Nodes         28         24         25         29 
+      StructuralSurface            8 Owner     0  Nodes         32         28         29         33 
+      StructuralSurface            9 Owner     0  Nodes         36         32         33         37 
+      StructuralSurface           10 Owner     0  Nodes         40         36         37         41 
+
+
+                    step                ref_area               curr_area                     f_x                     f_y                    f_z
+                       1  1.9049999999999998e+00  1.8947971893809701e+00  3.3221699097415162e+03  0.0000000000000000e+00  0.0000000000000000e+00
+                       2  1.9049999999999998e+00  1.8847603367238970e+00  6.7361617480587483e+03  0.0000000000000000e+00  0.0000000000000000e+00
+                       3  1.9049999999999998e+00  1.8748858956442211e+00  1.0242995806895002e+04  0.0000000000000000e+00  0.0000000000000000e+00
+                       4  1.9049999999999998e+00  1.8651704292313722e+00  1.3843688716974764e+04  0.0000000000000000e+00  0.0000000000000000e+00
+                       5  1.9049999999999998e+00  1.8556106057192308e+00  1.7539253636199901e+04  0.0000000000000000e+00  0.0000000000000000e+00

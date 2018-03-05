@@ -1,0 +1,243 @@
+// Maintainer: Michael Hiermeier
+==================================================================
+                  General Data File BACI
+==================================================================
+-------------------------------------------------------------TITLE
+Testing the plot functionality of the CONTACT::AUG framework:
+- Write the energy gradient field of the complete variational
+  approach in PGFplot format.
+- Read the necessary direction from a file located in the input
+  folder.
+------------------------------------------------------PROBLEM SIZE
+//ELEMENTS    5
+//NODES       13
+DIM           2
+-----------------------------------------------------DISCRETISATION
+NUMSTRUCDIS                     1
+--------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Structure
+RESTART                         0
+RESTARTTIME                     -1
+SHAPEFCT                        Polynomial
+-----------------------------------------------------------------IO
+OUTPUT_GMSH                     No
+OUTPUT_ROT                      No
+OUTPUT_SPRING                   No
+OUTPUT_BIN                      yes
+OUTPUT_EVERY_ITER               no
+OEI_FILE_COUNTER                0
+STRUCT_DISP                     Yes
+STRUCT_VEL_ACC                  No
+STRUCT_SE                       No
+STRUCT_STRESS                   cauchy
+STRUCT_COUPLING_STRESS          No
+STRUCT_STRAIN                   No
+STRUCT_PLASTIC_STRAIN           No
+STRUCT_SURFACTANT               No
+STRUCT_JACOBIAN_MATLAB          No
+FILESTEPS                       1000
+WRITE_TO_SCREEN                 Yes
+WRITE_TO_FILE                   No
+LIMIT_OUTP_TO_PROC              0
+VERBOSITY                       verbose
+RESTARTWALLTIMEINTERVAL         -1
+RESTARTEVRY                     -1
+-------------------------------------------------IO/EVERY ITERATION
+OUTPUT_EVERY_ITER               no
+RUN_NUMBER                      0
+STEP_NP_NUMBER                  1
+-------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
+DYNAMICTYP                      Statics
+RESULTSEVRY                     1
+RESEVRYERGY                     0
+RESTARTEVRY                     1
+TIMESTEP                        1.0
+NUMSTEP                         100
+TIMEINIT                        0
+MAXTIME                         1.0
+STC_SCALING                     no
+STC_LAYER                       1
+NLNSOL                          fullnewton // noxnln, fullnewton
+MATERIALTANGENT                 analytical // finitedifferences, analytical
+CONTROLNODE                     -1 -1 -1
+LOADLIN                         No
+MASSLIN                         No
+NEGLECTINERTIA                  No
+PREDICT                         TangDis
+LINEAR_SOLVER                   1
+----------------------------------------------------MORTAR COUPLING
+LM_SHAPEFCN                     standard
+SEARCH_ALGORITHM                Binarytree
+SEARCH_PARAM                    2.0
+LM_QUAD                         undefined
+REDUNDANT_STORAGE               Master
+PARALLEL_STRATEGY               redundant_ghosting
+PARALLEL_REDIST                 Static
+ALGORITHM                       Mortar
+MAX_BALANCE                     2
+MIN_ELEPROC                     0
+INTTYPE                         Elements
+NUMGP_PER_DIM                   10
+TRIANGULATION                   Delaunay
+----------------------------------------------------CONTACT DYNAMIC
+LINEAR_SOLVER                   1
+STRATEGY                        StdLagrange // Combo
+SYSTEM                          SaddlePoint
+SEMI_SMOOTH_NEWTON              Yes
+SEMI_SMOOTH_CN                  100
+SEMI_SMOOTH_CT                  100
+CPP_NORMALS                     No
+------------------------------------------CONTACT DYNAMIC/AUGMENTED
+PRINT_LINEAR_CONSERVATION       No // Yes
+PRINT_ANGULAR_CONSERVATION      No // Yes
+VARIATIONAL_APPROACH            complete // complete, incomplete
+ASSEMBLE_STRATEGY               node_based
+---------------------------CONTACT DYNAMIC/AUGMENTED/STEEPESTASCENT
+CN_UPPER_BOUND                  1.79769e+308
+PENALTY_UPDATE                  Complementarity
+------------------------------------CONTACT DYNAMIC/AUGMENTED/COMBO
+STRATEGY_0                      SteepestAscent
+STRATEGY_1                      StdLagrange
+SWITCHING_STRATEGY              PreAsymptotic
+-------------CONTACT DYNAMIC/AUGMENTED/LAGRANGE_MULTIPLIER_FUNCTION
+LINEAR_SOLVER                   1
+-------------------------------------CONTACT DYNAMIC/AUGMENTED/PLOT
+MODE                            write_single_iteration_of_step
+OUTPUT_PRECISION                5
+RESOLUTION_X                    6
+RESOLUTION_Y                    6
+STEP                            1
+ITER                            3
+X_TYPE                          step_length
+Y_TYPE                          step_length
+MIN_X                           -1.0
+MAX_X                           2.0
+MIN_Y                           -1.0
+MAX_Y                           2.0
+FUNC_NAME                       Energy_Gradient
+FILE_FORMAT                     pgfplot
+FILE_OPEN_MODE                  truncate
+TYPE                            vector_field_2d
+REFERENCE_TYPE                  previous_solution
+DIRECTION                       read_from_file
+DIRECTION_FILE                  contact2D_aug_circle_segment_diff_sol_vectors_complete_incomplete.vec
+DIRECTION_SPLIT                 slave_master_displ
+-----------------------------------------------------------SOLVER 1
+SOLVER                          UMFPACK
+---------------------------------------------------------STRUCT NOX
+Nonlinear Solver                = Line Search Based
+-----------------------------------------------STRUCT NOX/Direction
+Method                          = Newton
+----------------------------------------STRUCT NOX/Direction/Newton
+Forcing Term Method             = Constant
+Forcing Term Initial Tolerance  = 0.1
+Forcing Term Minimum Tolerance  = 1e-06
+Forcing Term Maximum Tolerance  = 0.01
+Forcing Term Alpha              = 1.5
+Forcing Term Gamma              = 0.9
+Rescue Bad Newton Solve         = Yes
+--------------------------STRUCT NOX/Direction/Newton/Linear Solver
+Adaptive Control                = No
+Adaptive Control Objective      = 0.1
+Zero Initial Guess              = Yes
+Computing Scaling Manually      = No
+Output Solver Details           = Yes
+---------------------------------------------STRUCT NOX/Line Search
+Method                          = Backtrack // Full Step, Backtrack
+-----------------------------------STRUCT NOX/Line Search/Full Step
+Full Step                       = 1
+-----------------------------------STRUCT NOX/Line Search/Backtrack
+Default Step                    = 1
+Minimum Step                    = 1e-12
+Recovery Step                   = 1
+Max Iters                       = 50
+Reduction Factor                = 0.5
+Allow Exceptions                = No
+------------------------------------------------STRUCT NOX/Printing
+Error                           = No
+Warning                         = Yes
+Outer Iteration                 = Yes
+Inner Iteration                 = Yes
+Parameters                      = No
+Details                         = No
+Outer Iteration StatusTest      = Yes
+Linear Solver Details           = No
+Test Details                    = No
+Debug                           = No
+---------------------------------------------STRUCT NOX/Status Test
+XML File                        = contact.xml
+------------------------------------------STRUCT NOX/Solver Options
+Merit Function                  = Lagrangian // Sum of Squares, Lagrangian
+Status Test Check Type          = Complete
+----------------------------------------------------------MATERIALS
+MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.1
+MAT 2 ELAST_CoupLogNeoHooke MODE YN C1 1000 C2 0.27       // C1 = Young, C2 = nue
+-------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION ramp
+VARIABLE 0 NAME ramp TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 1.0 10.0 VALUES 0 -1.0 -1.0
+-------------------------------------------------------------FUNCT2
+-------------------------------------------------RESULT DESCRIPTION
+
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 0
+NDLINE  4
+NDSURF  0
+NDVOL   0
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
+DLINE  2
+// dbc_indentor
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 1.0 FUNCT 0 1
+// dbc_plate
+E 3 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
+--------------------------DESIGN LINE MORTAR CONTACT CONDITIONS 2D
+DLINE  2
+// contact_indentor
+E 2 - 1 Slave Inactive FrCoeffOrBound 0.0
+// contact_plate
+E 4 - 1 Master Inactive FrCoeffOrBound 0.0
+-----------------------------------------------DNODE-NODE TOPOLOGY
+-----------------------------------------------DLINE-NODE TOPOLOGY
+NODE    1 DLINE 1
+NODE    2 DLINE 1
+NODE    5 DLINE 1
+NODE    7 DLINE 2
+NODE    8 DLINE 2
+NODE    9 DLINE 2
+NODE    11 DLINE 3
+NODE    12 DLINE 3
+NODE    10 DLINE 4
+NODE    13 DLINE 4
+-----------------------------------------------DSURF-NODE TOPOLOGY
+------------------------------------------------DVOL-NODE TOPOLOGY
+-------------------------------------------------------NODE COORDS
+NODE         1 COORD  2.9270509831000000e+00  2.1468304510000000e+00  0.0000000000000000e+00
+NODE         2 COORD  2.0000000000000000e+00  2.1468304510000000e+00  0.0000000000000000e+00
+NODE         3 COORD  1.9999999999999998e+00  1.0734152254999973e+00  0.0000000000000000e+00
+NODE         4 COORD  3.2360679775499999e+00  1.1957739347500000e+00  0.0000000000000000e+00
+NODE         5 COORD  1.0729490169000000e+00  2.1468304510000000e+00  0.0000000000000000e+00
+NODE         6 COORD  7.6393202244999991e-01  1.1957739347500000e+00  0.0000000000000000e+00
+NODE         7 COORD  1.9999999999999996e+00 -5.3845816694320092e-15  0.0000000000000000e+00
+NODE         8 COORD  3.5450849719999997e+00  2.4471741850000001e-01  0.0000000000000000e+00
+NODE         9 COORD  4.5491502800000005e-01  2.4471741850000001e-01  0.0000000000000000e+00
+NODE        10 COORD -5.0000000000000000e+00  0.0000000000000000e+00  0.0000000000000000e+00
+NODE        11 COORD -5.0000000000000000e+00 -2.0000000000000000e+00  0.0000000000000000e+00
+NODE        12 COORD  5.0000000000000000e+00 -2.0000000000000000e+00  0.0000000000000000e+00
+NODE        13 COORD  5.0000000000000000e+00  0.0000000000000000e+00  0.0000000000000000e+00
+------------------------------------------------STRUCTURE ELEMENTS
+   1 WALL QUAD4  1 2 3 4    MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
+   2 WALL QUAD4  2 5 6 3    MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
+   3 WALL QUAD4  4 3 7 8    MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
+   4 WALL QUAD4  3 6 9 7    MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
+   5 WALL QUAD4  10 11 12 13    MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
+----------------------------------------------------FLUID ELEMENTS
+------------------------------------------------------ALE ELEMENTS
+------------------------------------------------LUBRICATION ELEMENTS
+------------------------------------------------TRANSPORT ELEMENTS
+------------------------------------------------TRANSPORT2 ELEMENTS
+---------------------------------------------------THERMO ELEMENTS
+---------------------------------------------------ACOUSTIC ELEMENTS
+---------------------------------------------------CELL ELEMENTS
+---------------------------------------------------CELLSCATRA ELEMENTS
+---------------------------------------------------------------END
+// END
