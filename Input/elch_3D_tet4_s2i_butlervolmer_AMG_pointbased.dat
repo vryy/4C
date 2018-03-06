@@ -70,8 +70,8 @@ SCATRA DIS scatra NODE 452 QUANTITY phi1 VALUE 1.26475796764993085e+01 TOLERANCE
 SCATRA DIS scatra NODE 452 QUANTITY phi2 VALUE 3.77032799556692444e+00 TOLERANCE 1.e-09         // local electric potential at cathode-electrolyte interface (cathode side)
 SCATRA DIS scatra SPECIAL QUANTITY soc1 VALUE 9.44444446841010365e-01 TOLERANCE 1.e-10          // anode state of charge
 SCATRA DIS scatra SPECIAL QUANTITY soc2 VALUE 9.58363912304041721e-01 TOLERANCE 1.e-10          // cathode state of charge
-SCATRA DIS scatra SPECIAL QUANTITY c-rate1 VALUE -9.99999773942423786e+00 TOLERANCE 1.e-09      // anode C rate
-SCATRA DIS scatra SPECIAL QUANTITY c-rate2 VALUE -7.49449873280338963e+00 TOLERANCE 1.e-09      // cathode C rate
+SCATRA DIS scatra SPECIAL QUANTITY c-rate1 VALUE -9.99999840753864611e+00 TOLERANCE 1.e-09      // anode C rate
+SCATRA DIS scatra SPECIAL QUANTITY c-rate2 VALUE -7.49449841288352214e+00 TOLERANCE 1.e-09      // cathode C rate
 SCATRA DIS scatra SPECIAL QUANTITY cellvoltage VALUE 3.77032705693539061e+00 TOLERANCE 1.e-09   // cell voltage
 SCATRA DIS scatra SPECIAL QUANTITY numiterlastnewton VALUE 4.0 TOLERANCE 1.e-20                 // number of Newton-Raphson iterations during last time step
 SCATRA DIS scatra SPECIAL QUANTITY numiterlastsolve VALUE 37.0 TOLERANCE 1.e-20                 // number of iterations performed by linear solver during last Newton-Raphson iteration

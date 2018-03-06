@@ -323,9 +323,6 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   //! flag for (de)activation of double layer capacity
   bool dlcapexists_;
 
-  //! time step when states of charge of resolved electrodes were computed the last time
-  int lastsocstep_;
-
   //! electro-kinetics toggle
   //! Toggle which defines dof's with Nernst-BC or Dirichlet condition
   Teuchos::RCP<Epetra_Vector> ektoggle_;

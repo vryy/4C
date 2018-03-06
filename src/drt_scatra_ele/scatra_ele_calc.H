@@ -343,6 +343,13 @@ namespace ELEMENTS
       const bool                      inverting  //!< bool indicating inversion
     );
 
+    //! calculate scalar time derivative(s) and domain integral
+    void CalculateScalarTimeDerivatives(
+        const DRT::Discretization&   discretization,   //!< discretization
+        const std::vector<int>&      lm,               //!< location vector
+        Epetra_SerialDenseVector&    scalars           //!< result vector for scalar integrals to be computed
+        );
+
     void CalculateMomentumAndVolume(
     const DRT::Element*             ele,                //!< the element we are dealing with
     Epetra_SerialDenseVector&       momandvol,          //!< element (volume) momentum vector and minus domain volume

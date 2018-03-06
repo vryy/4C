@@ -33,7 +33,7 @@ namespace SCATRA
     calc_elch_boundary_kinetics_point,           // evaluate electrode kinetics point conditions
     calc_elch_conductivity,                      // calc_elch_conductivity,
     calc_elch_domain_kinetics,                   // calculate electrode kinetics in domain
-    calc_elch_electrode_soc,                     // calculate electrode state of charge
+    calc_elch_electrode_soc_and_c_rate,          // calculate electrode state of charge and C rate
     calc_error,                                  // calc_error,
     calc_error_reinit,                           // calc_error_reinit,
     calc_flux_domain,                            // calc_condif_flux,
@@ -54,6 +54,7 @@ namespace SCATRA
     calc_mean_Cai,                               // calc_mean_Cai (multifractal subgrid-scales)
     calc_padaptivity,                            // calc error and set p-adativity on element
     calc_total_and_mean_scalars,                 // calculate total and mean values of transported scalars
+    calc_mean_scalar_time_derivatives,           // calculate mean time derivatives of transported scalars
     calc_node_based_reinit_velocity,             // level-set action: compute node-based velocity field for reinitialization equation
     calc_scatra_box_filter,                      // calc_scatra_box_filter,
     calc_scatra_mono_odblock_fluid,              // calculate off diagonal matrix block for coupling with fluid

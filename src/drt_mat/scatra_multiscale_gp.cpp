@@ -304,6 +304,36 @@ double MAT::ScatraMultiScaleGP::EvaluateMeanConcentration() const
 } // MAT::ScatraMultiScaleGP::EvaluateMeanConcentration
 
 
+/*-------------------------------------------------------------------------*
+ | evaluate mean concentration time derivative on micro scale   fang 03/18 |
+ *-------------------------------------------------------------------------*/
+double MAT::ScatraMultiScaleGP::EvaluateMeanConcentrationTimeDerivative() const
+{
+  // extract micro-scale discretization
+  DRT::Discretization& discret = *microdisnum_microtimint_map_[microdisnum_]->Discretization();
+
+  // set micro-scale state vector
+  discret.ClearState();
+  discret.SetState("phidtnp",phidtnp_);
+
+  // set parameters for micro-scale elements
+  Teuchos::ParameterList eleparams;
+  eleparams.set<int>("action",SCATRA::calc_mean_scalar_time_derivatives);
+
+  // initialize result vector: first component = integral of concentration time derivative, second component = integral of domain
+  const Teuchos::RCP<Epetra_SerialDenseVector> integrals = Teuchos::rcp(new Epetra_SerialDenseVector(2));
+
+  // evaluate integrals of domain and time derivative of concentration on micro scale
+  discret.EvaluateScalars(eleparams,integrals);
+
+  // clear discretization
+  discret.ClearState();
+
+  // compute and return mean concentration time derivative on micro scale
+  return (*integrals)[0]/(*integrals)[1];
+} // MAT::ScatraMultiScaleGP::EvaluateMeanConcentrationTimeDerivative
+
+
 /*------------------------------------------------------------------------------*
  | update micro-scale time integrator at the end of each time step   fang 12/15 |
  *------------------------------------------------------------------------------*/

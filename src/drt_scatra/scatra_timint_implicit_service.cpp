@@ -645,6 +645,22 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialTimeDerivative()
   // solve global system of equations for initial time derivative of state variables
   solver_->Solve(sysmat_->EpetraOperator(),phidtnp_,residual_,true,true);
 
+  // ToDo: Impose initial time derivatives resulting from Dirichlet boundary conditions.
+  // At the moment, the initial time derivatives do not take account of time-dependent
+  // Dirichlet boundary conditions. So for example, if you consider a simple setup with
+  // one single finite element exhibiting a zero initial scalar field, and if you then
+  // ramp up the scalar inside the entire element from zero to one linearly in time via
+  // a time-dependent Dirichlet boundary condition, you will currently get zero initial
+  // time derivatives (although they should be positive) and, as a consequence, there will
+  // be unphysical temporal oscillations in the time derivatives from time step to time
+  // step. The following, currently commented line of code would solve this problem, but
+  // also cause many existing test cases to fail. There are intricate cases where the
+  // imposed initial scalar field is not consistent with Dirichlet boundary conditions,
+  // and it is still not clear how to handle these cases. One should have a closer look
+  // at this problem and try to activate the following line of code at some point.
+
+  // ApplyDirichletBC(time_,Teuchos::null,phidtnp_);
+
   // copy solution
   phidtn_->Update(1.0,*phidtnp_,0.0);
 

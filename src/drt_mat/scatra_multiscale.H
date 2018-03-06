@@ -101,6 +101,11 @@ namespace MAT
           const int   gp_id   //!< macro-scale Gauss point ID
           ) const;
 
+      //! evaluate mean concentration time derivative on micro scale
+      double EvaluateMeanConcentrationTimeDerivative(
+          const int   gp_id   //!< macro-scale Gauss point ID
+          ) const;
+
       //! update multi-scale scalar transport material
       void Update(
           const int   gp_id   //!< macro-scale Gauss point ID

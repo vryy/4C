@@ -1553,8 +1553,8 @@ void SSI::SSI_Mono::PrepareTimeStep()
   scatra_->ScaTraField()->PrepareTimeStep();
 
   // pass scalar transport degrees of freedom to structural discretization
-  // has to be called AFTER scatra_->ScaTraField()->PrepareTimeStep(), because in the Timestep 0
-  // the potential field is calculated consistently from defined initial and boundary conditions within this call
+  // has to be called AFTER scatra_->ScaTraField()->PrepareTimeStep() to ensure
+  // consistent scalar transport state vector with valid Dirichlet conditions
   SetScatraSolution(scatra_->ScaTraField()->Phinp());
 
   // prepare time step for structural field

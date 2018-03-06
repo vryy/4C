@@ -117,6 +117,22 @@ double MAT::ScatraMultiScale::EvaluateMeanConcentration(
 }
 
 
+/*-------------------------------------------------------------------------*
+ | evaluate mean concentration time derivative on micro scale   fang 03/18 |
+ *-------------------------------------------------------------------------*/
+double MAT::ScatraMultiScale::EvaluateMeanConcentrationTimeDerivative(
+    const int   gp_id   //!< macro-scale Gauss point ID
+    ) const
+{
+  // safety check
+  if(gp_id < 0)
+    dserror("Invalid macro-scale Gauss point ID!");
+
+  // evaluate mean concentration time derivative on micro scale
+  return matgp_.at(gp_id)->EvaluateMeanConcentrationTimeDerivative();
+}
+
+
 /*--------------------------------------------------------------------*
  | update multi-scale scalar transport material            fang 11/15 |
  *--------------------------------------------------------------------*/

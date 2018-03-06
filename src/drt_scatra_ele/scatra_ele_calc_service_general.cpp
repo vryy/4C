@@ -192,6 +192,12 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
     break;
   }
 
+  case SCATRA::calc_mean_scalar_time_derivatives:
+  {
+    CalculateScalarTimeDerivatives(discretization,lm,elevec1_epetra);
+    break;
+  }
+
   // calculate filtered fields for calculation of turbulent Prandtl number
   // required for dynamic Smagorinsky model in scatra
   case SCATRA::calc_scatra_box_filter:
@@ -2102,6 +2108,49 @@ const bool                      inverting
 
   return;
 } // ScaTraEleCalc::CalculateScalars
+
+
+/*----------------------------------------------------------------------*
+ | calculate scalar time derivative(s) and domain integral   fang 03/18 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalculateScalarTimeDerivatives(
+    const DRT::Discretization&   discretization,   //!< discretization
+    const std::vector<int>&      lm,               //!< location vector
+    Epetra_SerialDenseVector&    scalars           //!< result vector for scalar integrals to be computed
+    )
+{
+  // extract scalar time derivatives from global state vector
+  const Teuchos::RCP<const Epetra_Vector> phidtnp = discretization.GetState("phidtnp");
+  if(phidtnp == Teuchos::null)
+    dserror("Cannot get state vector \"phidtnp\"!");
+  static std::vector<LINALG::Matrix<nen_,1> > ephidtnp(numscal_);
+  DRT::UTILS::ExtractMyValues(*phidtnp,ephidtnp,lm);
+
+  // integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // loop over integration points
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    // evaluate values of shape functions and domain integration factor at current integration point
+    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+
+    // calculate integrals of scalar time derivatives
+    for(unsigned vi=0; vi<nen_; ++vi)
+    {
+      const double fac_funct_vi = fac*funct_(vi);
+
+      for(int k=0; k<numscal_; ++k)
+        scalars(k) += fac_funct_vi*ephidtnp[k](vi);
+    }
+
+    // calculate integral of domain
+    scalars(numscal_) += fac;
+  } // loop over integration points
+
+  return;
+} // DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalculateScalarTimeDerivatives
 
 
 /*----------------------------------------------------------------------*

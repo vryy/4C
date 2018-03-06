@@ -191,14 +191,13 @@ namespace DRT
           bool                             effCond      //!< flag if effective conductivity should be calculated
         );
 
-        //! calculate electrode state of charge
-        virtual void CalculateElectrodeSOC(
-            const DRT::Element*               ele,              //!< the element we are dealing with
-            Teuchos::ParameterList&           params,           //!< parameter list
-            DRT::Discretization&              discretization,   //!< discretization
-            const std::vector<int>&           lm,               //!< location vector
-            Epetra_SerialDenseVector&         scalars           //!< result vector for scalar integrals to be computed
-        );
+        //! calculate electrode state of charge and C rate
+        virtual void CalculateElectrodeSOCAndCRate(
+            const DRT::Element* const&     ele,              //!< the element we are dealing with
+            const DRT::Discretization&     discretization,   //!< discretization
+            DRT::Element::LocationArray&   la,               //!< location array
+            Epetra_SerialDenseVector&      scalars           //!< result vector for scalar integrals to be computed
+            );
 
         //! calculate weighted mass flux (no reactive flux so far)
         virtual void CalculateFlux(

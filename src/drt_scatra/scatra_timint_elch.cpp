@@ -53,7 +53,6 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(
     gstatnumite_    (0),
     gstatincrement_ (0.),
     dlcapexists_    (false),
-    lastsocstep_    (-1),
     ektoggle_       (Teuchos::null),
     dctoggle_       (Teuchos::null),
     electrodeinitvols_(Teuchos::null),
@@ -782,9 +781,6 @@ void SCATRA::ScaTraTimIntElch::ReadRestartProblemSpecific(const int step,IO::Dis
 
     // read states of charge of resolved electrodes
     reader.ReadRedundantDoubleVector(electrodesoc_,"electrodesoc");
-
-    // read time step when states of charge of resolved electrodes were computed the last time
-    lastsocstep_ = reader.ReadInt("lastsocstep");
   }
 
   // extract constant-current constant-voltage (CCCV) cell cycling boundary condition if available
@@ -1259,31 +1255,36 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
       // extract condition ID
       const int condid = conditions[icond]->GetInt("ConditionID");
 
-      // add state vector to discretization
+      // add state vectors to discretization
       discret_->ClearState();
       discret_->SetState("phinp",phinp_);
+      discret_->SetState("phidtnp",phidtnp_);
 
       // create parameter list
       Teuchos::ParameterList condparams;
 
       // action for elements
-      condparams.set<int>("action",SCATRA::calc_elch_electrode_soc);
+      condparams.set<int>("action",SCATRA::calc_elch_electrode_soc_and_c_rate);
 
       // number of dofset associated with displacement-related dofs
       if(isale_)
         condparams.set<int>("ndsdisp",nds_disp_);
 
       // initialize result vector
-      // first component = concentration integral, second component = domain integral
-      Teuchos::RCP<Epetra_SerialDenseVector> scalars = Teuchos::rcp(new Epetra_SerialDenseVector(2));
+      // first component  = integral of concentration
+      // second component = integral of time derivative of concentration
+      // third component  = integral of domain
+      // fourth component = integral of velocity divergence (ALE only)
+      // fifth component  = integral of concentration times velocity divergence (ALE only)
+      // sixth component  = integral of velocity times concentration gradient (ALE only)
+      Teuchos::RCP<Epetra_SerialDenseVector> scalars = Teuchos::rcp(new Epetra_SerialDenseVector(isale_ ? 6 : 3));
 
       // evaluate current condition for electrode state of charge
       discret_->EvaluateScalars(condparams,scalars,"ElectrodeSOC",condid);
       discret_->ClearState();
 
-      // extract concentration and domain integrals
-      double intconcentration = (*scalars)(0);
-      double intdomain = (*scalars)(1);
+      // extract integral of domain
+      const double intdomain = (*scalars)(2);
 
       // store initial volume of current electrode
       if(isale_ and step_ == 0)
@@ -1293,28 +1294,27 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
       const double volratio = isale_ ? (*electrodeinitvols_)[condid]/intdomain : 1.;
       const double c_0 = conditions[icond]->GetDouble("c_0%")*volratio;
       const double c_100 = conditions[icond]->GetDouble("c_100%")*volratio;
+      const double c_delta_inv = 1./(c_100-c_0);
 
-      // compute state of charge for current electrode
-      const double soc = (intconcentration/intdomain-c_0)/(c_100-c_0);
-
-      // compute C rate for current electrode
-      double c_rate(0.);
-      if((*electrodesoc_)[condid] != -1.)
-        c_rate = (soc-(*electrodesoc_)[condid])/((step_-lastsocstep_)*dta_)*3600.;
+      // compute state of charge and C rate for current electrode
+      const double c_avg = (*scalars)(0)/intdomain;
+      const double soc = (c_avg-c_0)*c_delta_inv;
+      double c_rate = (*scalars)(1);
+      if(isale_) // ToDo: The ALE case is still doing some weird stuff (strong temporal oscillations of C rate), so one should have a closer look at that...
+        c_rate += (*scalars)(4) + (*scalars)(5) - c_avg*(*scalars)(3);
+      c_rate *= c_delta_inv*3600./intdomain;
 
       // determine operation mode
       std::string mode;
-      if(c_rate < 0.)
-        mode.assign("discharge");
-      else if(c_rate == 0.)
+      if(std::abs(c_rate) < 1.e-16)
         mode.assign(" at rest ");
+      else if(c_rate < 0.)
+        mode.assign("discharge");
       else
         mode.assign(" charge  ");
 
-      // update state of charge for current electrode
+      // update state of charge and C rate for current electrode
       (*electrodesoc_)[condid] = soc;
-
-      // update C rate for current electrode
       (*electrodecrates_)[condid] = c_rate;
 
       // update cell C rate
@@ -1352,9 +1352,6 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
     // print finish line to screen
     if(myrank_ == 0)
       std::cout << "+----+-----------------+----------------+----------------+" << std::endl;
-
-    // update time step when states of charge of resolved electrodes were computed the last time
-    lastsocstep_ = step_;
   }
 
   return;
@@ -1528,9 +1525,6 @@ void SCATRA::ScaTraTimIntElch::OutputRestart() const
 
     // output states of charge of resolved electrodes
     output_->WriteRedundantDoubleVector("electrodesoc",electrodesoc_);
-
-    // output time step when states of charge of resolved electrodes were computed the last time
-    output_->WriteInt("lastsocstep",lastsocstep_);
   }
 
   // output restart data associated with constant-current constant-voltage (CCCV) cell cycling if applicable

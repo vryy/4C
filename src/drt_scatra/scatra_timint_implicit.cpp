@@ -1087,6 +1087,9 @@ void SCATRA::ScaTraTimIntImpl::PrepareFirstTimeStep()
     if( nds_vel_ != -1 ) //if some velocity field has been set
     {
       // TODO: Restructure enforcement of Dirichlet boundary conditions on phin_
+      // A clean solution would incorporate ApplyDirichletBC(...) into CalcInitialTimeDerivative().
+      // However, this would make a number of test cases fail. We should have a closer look at
+      // this problem and fix it eventually.
       ApplyDirichletBC(time_,phin_,Teuchos::null);
       CalcInitialTimeDerivative();
     }

@@ -66,14 +66,13 @@ namespace DRT
             const double                rhsfac        //!< domain integration factor times time integration factor for right-hand side vector
             );
 
-        //! calculate electrode state of charge
-        void CalculateElectrodeSOC(
-            const DRT::Element*         ele,              //!< element
-            Teuchos::ParameterList&     params,           //!< parameter list
-            DRT::Discretization&        discretization,   //!< discretization
-            const std::vector<int>&     lm,               //!< location vector
-            Epetra_SerialDenseVector&   scalars           //!< result vector for scalar integrals to be computed
-            );
+        //! calculate electrode state of charge and C rate
+        void CalculateElectrodeSOCAndCRate(
+            const DRT::Element* const&     ele,              //!< the element we are dealing with
+            const DRT::Discretization&     discretization,   //!< discretization
+            DRT::Element::LocationArray&   la,               //!< location array
+            Epetra_SerialDenseVector&      scalars           //!< result vector for scalar integrals to be computed
+            ) final;
 
         //! get diffusion manager
         Teuchos::RCP<ScaTraEleDiffManagerElchDiffCondMultiScale> DiffManager() const {return Teuchos::rcp_static_cast<ScaTraEleDiffManagerElchDiffCondMultiScale>(my::diffmanager_);};

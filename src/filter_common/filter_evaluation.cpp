@@ -121,6 +121,19 @@ double MAT::ScatraMultiScale::EvaluateMeanConcentration(
   return NAN;
 }
 
+/*-------------------------------------------------------------------------*
+ | evaluate mean concentration time derivative on micro scale   fang 03/18 |
+ *-------------------------------------------------------------------------*/
+double MAT::ScatraMultiScale::EvaluateMeanConcentrationTimeDerivative(
+    const int   gp_id   //!< macro-scale Gauss point ID
+    ) const
+{
+  // this function should never be called
+  dserror("MAT::ScatraMultiScale::EvaluateMeanConcentrationTimeDerivative not available!");
+
+  return NAN;
+}
+
 /*--------------------------------------------------------------------*
  | update multi-scale scalar transport material            fang 11/15 |
  *--------------------------------------------------------------------*/

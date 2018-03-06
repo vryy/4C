@@ -24,15 +24,14 @@
 #include "../drt_mat/newman_multiscale.H"
 
 /*----------------------------------------------------------------------*
- | calculate electrode state of charge                       fang 08/17 |
+ | calculate electrode state of charge and C rate            fang 08/17 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::CalculateElectrodeSOC(
-    const DRT::Element*         ele,              //!< element
-    Teuchos::ParameterList&     params,           //!< parameter list
-    DRT::Discretization&        discretization,   //!< discretization
-    const std::vector<int>&     lm,               //!< location vector
-    Epetra_SerialDenseVector&   scalars           //!< result vector for scalar integrals to be computed
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::CalculateElectrodeSOCAndCRate(
+    const DRT::Element* const&     ele,              //!< the element we are dealing with
+    const DRT::Discretization&     discretization,   //!< discretization
+    DRT::Element::LocationArray&   la,               //!< location array
+    Epetra_SerialDenseVector&      scalars           //!< result vector for scalar integrals to be computed
     )
 {
   // safety check
@@ -44,8 +43,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::CalculateElect
   const Teuchos::RCP<const MAT::ElchPhase> elchphase = Teuchos::rcp_dynamic_cast<const MAT::ElchPhase>(elchmat->PhaseById(elchmat->PhaseID(0)));
   const Teuchos::RCP<MAT::NewmanMultiScale> newmanmultiscale = Teuchos::rcp_dynamic_cast<MAT::NewmanMultiScale>(elchphase->MatById(elchphase->MatID(0)));
 
-  // initialize variables for concentration and domain integrals
+  // initialize variables for integrals of concentration, its time derivative, and domain
   double intconcentration(0.);
+  double intconcentrationtimederiv(0.);
   double intdomain(0.);
 
   // integration points and weights
@@ -57,23 +57,27 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::CalculateElect
     // evaluate values of shape functions and domain integration factor at current integration point
     const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
 
-    // calculate concentration integral
+    // calculate integral of concentration
     intconcentration += newmanmultiscale->EvaluateMeanConcentration(iquad)*fac;
 
-    // calculate domain integral
+    // calculate integral of time derivative of concentration
+    intconcentrationtimederiv += newmanmultiscale->EvaluateMeanConcentrationTimeDerivative(iquad)*fac;
+
+    // calculate integral of domain
     intdomain += fac;
   } // loop over integration points
 
   // safety check
-  if(scalars.Length() != 2)
+  if(scalars.Length() != 3)
     dserror("Result vector for electrode state of charge computation has invalid length!");
 
   // write results for concentration and domain integrals into result vector
   scalars(0) = intconcentration;
-  scalars(1) = intdomain;
+  scalars(1) = intconcentrationtimederiv;
+  scalars(2) = intdomain;
 
   return;
-} // DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::CalculateElectrodeSOC
+} // DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::CalculateElectrodeSOCAndCRate
 
 
 /*----------------------------------------------------------------------*

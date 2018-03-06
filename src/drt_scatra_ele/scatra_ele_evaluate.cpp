@@ -277,6 +277,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
     case SCATRA:: integrate_weighted_scalar:
     case SCATRA::calc_flux_domain:
     case SCATRA::calc_total_and_mean_scalars:
+    case SCATRA::calc_mean_scalar_time_derivatives:
     case SCATRA::calc_domain_and_bodyforce:
     case SCATRA::calc_scatra_box_filter:
     case SCATRA::calc_turbulent_prandtl_number:
@@ -290,7 +291,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
     case SCATRA::calc_domain_integral:
     case SCATRA::calc_error:
     case SCATRA::calc_elch_conductivity:
-    case SCATRA::calc_elch_electrode_soc:
+    case SCATRA::calc_elch_electrode_soc_and_c_rate:
     case SCATRA::calc_elch_domain_kinetics:
     case SCATRA::calc_integr_grad_reac:
     case SCATRA::calc_integr_grad_diff:

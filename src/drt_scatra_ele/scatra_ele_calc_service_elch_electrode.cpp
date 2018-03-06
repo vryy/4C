@@ -14,14 +14,15 @@
 </pre>
 */
 /*--------------------------------------------------------------------------*/
+#include "scatra_ele_calc_elch_electrode.H"
+
+#include "scatra_ele.H"
+#include "scatra_ele_parameter_std.H"
+
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 
 #include "../drt_mat/material.H"
-
-#include "scatra_ele.H"
-#include "scatra_ele_calc_elch_electrode.H"
-
 
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
@@ -43,9 +44,9 @@ int DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::EvaluateAction(
   // determine and evaluate action
   switch(action)
   {
-  case SCATRA::calc_elch_electrode_soc:
+  case SCATRA::calc_elch_electrode_soc_and_c_rate:
   {
-    CalculateElectrodeSOC(ele,params,discretization,la[0].lm_,elevec1_epetra);
+    CalculateElectrodeSOCAndCRate(ele,discretization,la,elevec1_epetra);
 
     break;
   }
@@ -155,31 +156,36 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalculateCurrent(
 
 
 /*----------------------------------------------------------------------*
- | calculate electrode state of charge                       fang 01/15 |
+ | calculate electrode state of charge and C rate            fang 01/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalculateElectrodeSOC(
-    const DRT::Element*               ele,              //!< the element we are dealing with
-    Teuchos::ParameterList&           params,           //!< parameter list
-    DRT::Discretization&              discretization,   //!< discretization
-    const std::vector<int>&           lm,               //!< location vector
-    Epetra_SerialDenseVector&         scalars           //!< result vector for scalar integrals to be computed
+void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalculateElectrodeSOCAndCRate(
+    const DRT::Element* const&     ele,              //!< the element we are dealing with
+    const DRT::Discretization&     discretization,   //!< discretization
+    DRT::Element::LocationArray&   la,               //!< location array
+    Epetra_SerialDenseVector&      scalars           //!< result vector for scalar integrals to be computed
     )
 {
   // safety check
   if(my::numscal_ != 1)
     dserror("Electrode state of charge can only be computed for one transported scalar!");
 
-  // get global state vector
-  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+  // get global state vectors
+  const Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
   if(phinp == Teuchos::null)
     dserror("Cannot get state vector \"phinp\"!");
+  const Teuchos::RCP<const Epetra_Vector> phidtnp = discretization.GetState("phidtnp");
+  if(phidtnp == Teuchos::null)
+    dserror("Cannot get state vector \"phidtnp\"!");
 
-  // extract local nodal values from global state vector
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*phinp,my::ephinp_,lm);
+  // extract local nodal values from global state vectors
+  DRT::UTILS::ExtractMyValues(*phinp,my::ephinp_,la[0].lm_);
+  static std::vector<LINALG::Matrix<my::nen_,1> > ephidtnp(2);
+  DRT::UTILS::ExtractMyValues(*phidtnp,ephidtnp,la[0].lm_);
 
-  // initialize variables for concentration and domain integrals
+  // initialize variables for integrals of concentration, its time derivative, and domain
   double intconcentration(0.);
+  double intconcentrationtimederiv(0.);
   double intdomain(0.);
 
   // integration points and weights
@@ -191,25 +197,86 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalculateElectrodeSOC(
     // evaluate values of shape functions and domain integration factor at current integration point
     const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
 
-    // calculate concentration and domain integrals
+    // calculate integrals of concentration and its time derivative
     for (unsigned vi=0; vi<my::nen_; ++vi)
-      // concentration integral
-      intconcentration += my::ephinp_[0](vi,0)*my::funct_(vi)*fac;
+    {
+      const double vi_fac = my::funct_(vi)*fac;
+
+      // integral of concentration
+      intconcentration += my::ephinp_[0](vi)*vi_fac;
+
+      // integral of time derivative of concentration
+      intconcentrationtimederiv += ephidtnp[0](vi)*vi_fac;
+    }
 
     // domain integral
     intdomain += fac;
   } // loop over integration points
 
   // safety check
-  if(scalars.Length() != 2)
-    dserror("Result vector for electrode state of charge computation has invalid length!");
+  if(not my::scatrapara_->IsAle() and scalars.Length() != 3)
+    dserror("Result vector for electrode state of charge and C rate computation has invalid length!");
 
-  // write results for concentration and domain integrals into result vector
+  // write results for integrals of concentration, its time derivative, and domain into result vector
   scalars(0) = intconcentration;
-  scalars(1) = intdomain;
+  scalars(1) = intconcentrationtimederiv;
+  scalars(2) = intdomain;
+
+  // additional computations in case of ALE
+  if(my::scatrapara_->IsAle())
+  {
+    // extract velocities
+    const Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(1,"velocity field");
+    if(vel == Teuchos::null)
+      dserror("Cannot get state vector \"velocity field\"!");
+    DRT::UTILS::ExtractMyValues(*vel,my::evelnp_,la[1].lm_);
+
+    // initialize additional variables for integrals related to velocity divergence
+    double intdivv(0.);
+    double intcdivv(0.);
+    double intvgradc(0.);
+
+    // integration points and weights
+    const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+    // loop over integration points
+    for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+    {
+      // evaluate values of shape functions and domain integration factor at current integration point
+      const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+
+      // compute internal variables at current integration point
+      SetInternalVariablesForMatAndRHS();
+
+      // compute velocity and its divergence
+      static LINALG::Matrix<my::nsd_,1> v;
+      v.Multiply(my::evelnp_,my::funct_);
+      double divv(0.);
+      my::GetDivergence(divv,my::evelnp_);
+
+      // integral of velocity divergence
+      const double divv_fac = divv*fac;
+      intdivv += divv_fac;
+
+      // integral of concentration times velocity divergence
+      intcdivv += my::scatravarmanager_->Phinp(0)*divv_fac;
+
+      // integral of velocity times concentration gradient
+      intvgradc += v.Dot(my::scatravarmanager_->GradPhi(0))*fac;
+    } // loop over integration points
+
+    // safety check
+    if(scalars.Length() != 6)
+      dserror("Result vector for electrode state of charge and C rate computation has invalid length!");
+
+    // write results for integrals related to velocity divergence into result vector
+    scalars(3) = intdivv;
+    scalars(4) = intcdivv;
+    scalars(5) = intvgradc;
+  }
 
   return;
-} // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalculateElectrodeSOC
+} // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalculateElectrodeSOCAndCRate
 
 
 /*---------------------------------------------------------------------*

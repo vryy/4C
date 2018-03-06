@@ -12,7 +12,7 @@ Academic test case for multi-scale electrochemistry:
 - based on one-dimensional model in Goldin et al., Electrochimica Acta 64 (2012) 118-129
 - one 1D macro scale representing electrolyte and consisting of 29 line2 elements:
   15 in anode region, 4 in separator region, and 10 in cathode region
-- two 1D micro scales, each representing one of the two electrodes and consisting of 5 line2 elements
+- two 1D micro scales, each representing one of the two electrodes and consisting of 10 line2 elements
 - initial and boundary conditions on macro and micro scales as given by the reference
 - coupling between macro and micro scales based on Butler-Volmer charge transfer kinetics
 - discharge from fully charged state at C rate of 1

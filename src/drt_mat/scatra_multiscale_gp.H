@@ -68,6 +68,9 @@ namespace MAT
       //! evaluate mean concentration on micro scale
       double EvaluateMeanConcentration() const;
 
+      //! evaluate mean concentration time derivative on micro scale
+      double EvaluateMeanConcentrationTimeDerivative() const;
+
       //! update micro-scale time integrator at the end of each time step
       void Update();
 

@@ -75,20 +75,20 @@ COMPONENT 1 FUNCTION -0.0332652803
 COMPONENT 0 FUNCTION 12.89178
 COMPONENT 1 FUNCTION 4.1850999
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 1 QUANTITY phi1 VALUE 1.34416626621157214e+01 TOLERANCE 1.e-08                // local lithium concentration at anode-electrolyte interface (anode side)
-SCATRA DIS scatra NODE 1 QUANTITY phi2 VALUE 4.39079477952423137e-11 TOLERANCE 1.e-20                // local electric potential at anode-electrolyte interface (anode side)
-SCATRA DIS scatra NODE 1 QUANTITY s2ilayerthickness VALUE 1.13490487603871728e-06 TOLERANCE 1.e-15   // local plating film thickness at anode-electrolyte interface (near separator)
-SCATRA DIS scatra NODE 6 QUANTITY phi1 VALUE 1.19999529861030196e+00 TOLERANCE 1.e-09                // local lithium concentration at anode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 6 QUANTITY phi2 VALUE 4.35824337893639877e-02 TOLERANCE 1.e-11                // local electric potential at anode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 5 QUANTITY phi1 VALUE 1.20000470138960003e+00 TOLERANCE 1.e-09                // local lithium concentration at cathode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 5 QUANTITY phi2 VALUE 4.35827567368823193e-02 TOLERANCE 1.e-11                // local electric potential at cathode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 10 QUANTITY phi1 VALUE 8.27847326515929183e+00 TOLERANCE 1.e-09               // local lithium concentration at cathode-electrolyte interface (cathode side)
+SCATRA DIS scatra NODE 1 QUANTITY phi1 VALUE 1.34407900944546128e+01 TOLERANCE 1.e-08                // local lithium concentration at anode-electrolyte interface (anode side)
+SCATRA DIS scatra NODE 1 QUANTITY phi2 VALUE 4.39301266141855522e-11 TOLERANCE 1.e-20                // local electric potential at anode-electrolyte interface (anode side)
+SCATRA DIS scatra NODE 1 QUANTITY s2ilayerthickness VALUE 1.13451448324497106e-06 TOLERANCE 1.e-15   // local plating film thickness at anode-electrolyte interface (near separator)
+SCATRA DIS scatra NODE 6 QUANTITY phi1 VALUE 1.19999530083073958e+00 TOLERANCE 1.e-09                // local lithium concentration at anode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 6 QUANTITY phi2 VALUE 4.35770249338588364e-02 TOLERANCE 1.e-11                // local electric potential at anode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 5 QUANTITY phi1 VALUE 1.20000469916915598e+00 TOLERANCE 1.e-09                // local lithium concentration at cathode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 5 QUANTITY phi2 VALUE 4.35773478239004641e-02 TOLERANCE 1.e-11                // local electric potential at cathode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 10 QUANTITY phi1 VALUE 8.27940677423354288e+00 TOLERANCE 1.e-09               // local lithium concentration at cathode-electrolyte interface (cathode side)
 SCATRA DIS scatra NODE 10 QUANTITY phi2 VALUE 4.19999999845253136e+00 TOLERANCE 1.e-09               // local electric potential at cathode-electrolyte interface (cathode side)
-SCATRA DIS scatra SPECIAL QUANTITY soc1 VALUE 1.10432412179092454e+00 TOLERANCE 1.e-09               // anode state of charge
-SCATRA DIS scatra SPECIAL QUANTITY soc2 VALUE 1.12023594592524911e+00 TOLERANCE 1.e-09               // cathode state of charge
+SCATRA DIS scatra SPECIAL QUANTITY soc1 VALUE 1.10424449197005314e+00 TOLERANCE 1.e-09               // anode state of charge
+SCATRA DIS scatra SPECIAL QUANTITY soc2 VALUE 1.12015084263995357e+00 TOLERANCE 1.e-09               // cathode state of charge
 SCATRA DIS scatra SPECIAL QUANTITY cellvoltage VALUE 4.2e+00 TOLERANCE 1.e-09                        // cell voltage
 SCATRA DIS scatra SPECIAL QUANTITY numiterlastnewton VALUE 3.0 TOLERANCE 1.e-20                      // number of Newton-Raphson iterations during last time step
-SCATRA DIS scatra SPECIAL QUANTITY numstep VALUE 2707.0 TOLERANCE 1.e-20                             // total number of time steps
+SCATRA DIS scatra SPECIAL QUANTITY numstep VALUE 2706.0 TOLERANCE 1.e-20                             // total number of time steps
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  18

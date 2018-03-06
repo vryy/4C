@@ -12,7 +12,7 @@ Academic test case for multi-scale electrochemistry:
 - based on one-dimensional model in Goldin et al., Electrochimica Acta 64 (2012) 118-129
 - one 1D macro scale representing electrolyte and consisting of 29 line2 elements:
   15 in anode region, 4 in separator region, and 10 in cathode region
-- two 1D micro scales, each representing one of the two electrodes and consisting of 5 line2 elements
+- two 1D micro scales, each representing one of the two electrodes and consisting of 10 line2 elements
 - initial and boundary conditions on macro and micro scales as given by the reference
 - coupling between macro and micro scales based on Butler-Volmer charge transfer kinetics
 - discharge from fully charged state at C rate of 1
@@ -70,9 +70,9 @@ SCATRA DIS scatra NODE 25 QUANTITY phi VALUE 1.19689951319247290e+00 TOLERANCE 1
 SCATRA DIS scatra NODE 25 QUANTITY phi2 VALUE -8.20056857188164595e-02 TOLERANCE 1e-11
 SCATRA DIS scatra NODE 25 QUANTITY phi3 VALUE 3.88351956524035158e+00 TOLERANCE 1e-09
 SCATRA DIS scatra SPECIAL QUANTITY soc1 VALUE 9.98746225587120229e-01 TOLERANCE 1.e-10
-SCATRA DIS scatra SPECIAL QUANTITY soc2 VALUE 9.98610381874631137e-01 TOLERANCE 1.e-10
-SCATRA DIS scatra SPECIAL QUANTITY c-rate1 VALUE -9.02677802473661473e-01 TOLERANCE 1.e-10
-SCATRA DIS scatra SPECIAL QUANTITY c-rate2 VALUE -9.95688144577844270e-01 TOLERANCE 1.e-10
+SCATRA DIS scatra SPECIAL QUANTITY soc2 VALUE 9.98610381874631248e-01 TOLERANCE 1.e-10
+SCATRA DIS scatra SPECIAL QUANTITY c-rate1 VALUE -9.02678041237313877e-01 TOLERANCE 1.e-10
+SCATRA DIS scatra SPECIAL QUANTITY c-rate2 VALUE -9.95796469181542188e-01 TOLERANCE 1.e-10
 SCATRA DIS scatra SPECIAL QUANTITY cellvoltage VALUE 3.88351098327706046e+00 TOLERANCE 1.e-09
 SCATRA DIS scatra SPECIAL QUANTITY numiterlastnewton VALUE 6.0 TOLERANCE 1.e-20
 ------------------------------------------------DESIGN DESCRIPTION
