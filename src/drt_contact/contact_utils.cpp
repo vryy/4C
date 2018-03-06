@@ -386,10 +386,12 @@ void CONTACT::UTILS::DbcHandler::DetectDbcSlaveNodes(
     if ( not found )
       continue;
 
-    const DRT::Node* node = str_discret.gNode( snid );
     // skip NULL ptrs
-    if ( node )
+    if ( str_discret.HaveGlobalNode( snid ) )
+    {
+      const DRT::Node* node = str_discret.gNode( snid );
       dbc_slave_node_map.insert( std::make_pair(node, slpair.second ) );
+    }
   }
 }
 

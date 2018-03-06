@@ -181,9 +181,11 @@ void STR::MonitorDbc::CreateReactionMaps(
   const Epetra_Comm& comm = discret.Comm();
   for ( int nid : *nids )
   {
-    const DRT::Node* node = discret.gNode(nid);
-    if ( node == NULL or node->Owner() != comm.MyPID() )
+    const int rlid = discret.NodeRowMap()->LID( nid );
+    if ( rlid == -1 )
       continue;
+
+    const DRT::Node* node = discret.lRowNode( rlid );
 
     for ( unsigned i = 0; i<onoff->size(); ++i )
       if ( (*onoff)[i] == 1 )
