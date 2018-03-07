@@ -344,14 +344,6 @@ namespace PARTICLE
         const double& time
         );
 
-    //! evaluate surface tension interaction potential
-    virtual void SurfTensionInterPot(
-        const double& radius,
-        const double& rRelNorm2,
-        double& lambda,
-        double& potential
-    );
-
     //! return surface tension time fac
     virtual double SurfTensionTimeFac(
         const double& time
@@ -440,15 +432,15 @@ namespace PARTICLE
     const INPAR::PARTICLE::SurfaceTensionType surfaceTensionType_;
 
     /// surface tension value/factor between fluid and void phase/second fluid
-    double surfTens_ff_;
+    double surftensfacff_;
 
     /// surface tension value/factor between fluid and solid phase
-    double surfTens_fs_;
+    double surftensfacfs_;
 
     /// surface tension interaction potential parameters
-    double surfTensPotA_;
-    double surfTensPotB_;
-    double surfTensPotRatio_;
+    double surftenspotAff_;
+    double surftenspotAfs_;
+    double surftenspotratio_;
 
     // minimal distance (over all particles) between two particles
     double min_pvp_dist_;

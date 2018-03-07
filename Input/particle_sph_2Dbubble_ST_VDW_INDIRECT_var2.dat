@@ -39,10 +39,10 @@ BACKGROUND_PRESSURE             0.0
 NO_VELDIFF_TERM                 no
 CALC_ACC_VAR2                   yes
 SURFACE_TENSION_TYPE            ST_VDW_INDIRECT
-SURFACE_TENSION_FF              0.0005
-SURFTENSION_POT_A               2.0
-SURFTENSION_POT_B               1.0
-SURFTENSION_POT_RATIO           0.8
+SURFTENSFAC_FF                  0.0005
+SURFTENSPOT_A_FF                2.0
+SURFTENSPOT_A_FS                2.0
+SURFTENSPOT_RATIO               0.8
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS

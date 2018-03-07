@@ -156,7 +156,6 @@ namespace INPAR
     enum SurfaceTensionType
     {
       ST_NONE,                         ///< no surface tension
-      ST_VDW_DIRECT,                   ///< surface tension via van der Waals forces according to Tartakovsky et al. 2016, direct definition of surface tension and contact angle
       ST_VDW_INDIRECT,                 ///< surface tension via van der Waals forces according to Tartakovsky et al. 2016, definition of surface tension and contact angle via s_ff, s_sf
       ST_CONTI_ADAMI                   ///< surface tension via continuum approach (pressure jump ~ interface curvature) according to Adami et al. 2010
     };

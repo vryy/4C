@@ -37,7 +37,7 @@ FREE_SURFACE_TYPE               TwoPhase
 CONSISTENT_PROBLEM_VOLUME       1.0
 CALC_ACC_VAR2                   yes
 SURFACE_TENSION_TYPE            ST_CONTI_ADAMI
-SURFACE_TENSION_FF              1.0
+SURFTENSFAC_FF                  1.0
 MIN_VOIDPARTICLE_ID             901
 WALL_INTERACTION_TYPE           NoWallInteraction
 TRANSPORT_VELOCITY              yes

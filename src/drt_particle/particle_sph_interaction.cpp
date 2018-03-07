@@ -50,11 +50,11 @@ PARTICLE::ParticleSPHInteractionHandler::ParticleSPHInteractionHandler(
   xsph_dampfac_(particledynparams.get<double>("XSPH_DAMPFAC")),
   xsph_stiffac_(particledynparams.get<double>("XSPH_STIFFAC")),
   surfaceTensionType_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::SurfaceTensionType>(particledynparams,"SURFACE_TENSION_TYPE")),
-  surfTens_ff_(particledynparams.get<double>("SURFACE_TENSION_FF")),
-  surfTens_fs_(particledynparams.get<double>("SURFACE_TENSION_FS")),
-  surfTensPotA_(particledynparams.get<double>("SURFTENSION_POT_A")),
-  surfTensPotB_(particledynparams.get<double>("SURFTENSION_POT_B")),
-  surfTensPotRatio_(particledynparams.get<double>("SURFTENSION_POT_RATIO")),
+  surftensfacff_(particledynparams.get<double>("SURFTENSFAC_FF")),
+  surftensfacfs_(particledynparams.get<double>("SURFTENSFAC_FS")),
+  surftenspotAff_(particledynparams.get<double>("SURFTENSPOT_A_FF")),
+  surftenspotAfs_(particledynparams.get<double>("SURFTENSPOT_A_FS")),
+  surftenspotratio_(particledynparams.get<double>("SURFTENSPOT_RATIO")),
   min_pvp_dist_(1.0e10),
   min_pvw_dist_(1.0e10),
   min_pressure_(1.0e10),
@@ -1089,7 +1089,7 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_pvp_acc(
         Inter_artificialViscosity(&sumj_accn_ij, particle_i, particle_j, interData_ij);
 
       // ********** surface tension **********
-      if(surfTens_ff_>0.0 and (surfaceTensionType_==INPAR::PARTICLE::ST_VDW_DIRECT or surfaceTensionType_==INPAR::PARTICLE::ST_VDW_INDIRECT))
+      if(surftensfacff_>0.0 and surfaceTensionType_==INPAR::PARTICLE::ST_VDW_INDIRECT)
         Inter_surfaceTension(&sumj_accn_ij, particle_i, particle_j, interData_ij, time);
 
     } // loop over j
@@ -1381,7 +1381,7 @@ void PARTICLE::ParticleSPHInteractionHandler::SetTriplePointNormal(
 
           LINALG::Matrix<3,1> normal_tli(true);
           // convert static contact angle in radians
-          double theta_0 = surfTens_fs_*M_PI/180.0;
+          double theta_0 = surftensfacfs_*M_PI/180.0;
           normal_tli.Update(sin(theta_0),normal_ti,1.0);
           normal_tli.Update(-cos(theta_0),normal_wi,1.0);
 
@@ -2457,122 +2457,43 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_surfaceTension(
     const double& time
     )
 {
-  // get states of particle i
-  const double density_i = particle_i.density_;
-  const double radius_i = particle_i.radius_;
-  const double mass_i = particle_i.mass_;
-  // determine phase particle_i belongs to and material (boundary particles have phase color -1 and get the same material as phase 0)
-  const int matID_i = std::max(particle_i.freesurfacedata_.phase_color_,0);
-
   // get states of (boundary) particle j
   bool boundaryParticle_j = particle_j.boundarydata_.boundaryparticle_;
-  const double radius_j = particle_j.radius_;
-  double density_j = 0.0;
-  double mass_j = 0.0;
-  if(!boundaryParticle_j)
-  {
-    density_j = particle_j.density_;
-    mass_j = particle_j.mass_;
-  }
-  else
-  {
-    // According to Adami et al. 2012 Eq (28), the density of boundary particle is determined based on the extrapolated pressure in Eq (27) and
-    // the equation of state based on material data / mass of the interacting particle_i (for multi-phase flows, the material data might strongly differ from particle to particle).
-    double pressure_j = particle_j.boundarydata_.pressureMod_;
-    density_j = equationOfStateHandler_[matID_i]->PressureToDensity(pressure_j,particle_i.density0_); // based on material data of fluid particle_i
-    mass_j = particle_i.mass_;
-  }
 
   // particle averaged radius
-  double radius_ij = 0.5*(radius_i+radius_j);
+  double radius_ij = 0.5*(particle_i.radius_+particle_j.radius_);
 
-  // evaluate pairwise interaction potential
-  double lambda = 0.0;
-  double potential = 0.0;
-  SurfTensionInterPot(radius_ij, interData_ij.rRelNorm2_, lambda, potential);
+  // range of repulsive part
+  double radius0 = surftenspotratio_*radius_ij;
 
-  if(potential != 0.0)
+  // get weight function handle
+  Teuchos::RCP<PARTICLE::WeightFunction_QuinticBspline> weightFunction = Teuchos::rcp(new PARTICLE::WeightFunction_QuinticBspline(WF_DIM_));
+
+  // pairwise interaction potential
+  double potential_ij = 0.0;
+  // pairwise scaling parameter
+  double s_ij = 0.0;
+
+  if (not boundaryParticle_j) // case of fluid-fluid interaction
   {
-    // particle averaged number density (n_i = \rho_i/m_i)
-    double n_ij = 0.5*((density_i/mass_i)+(density_j/mass_j));
+    potential_ij = - surftenspotAff_*weightFunction->W(interData_ij.rRelNorm2_, radius0) + weightFunction->W(interData_ij.rRelNorm2_, radius_ij);
+    s_ij = surftensfacff_;
+  }
+  else // case of fluid-solid interaction
+  {
+    potential_ij = - surftenspotAfs_*weightFunction->W(interData_ij.rRelNorm2_, radius0) + weightFunction->W(interData_ij.rRelNorm2_, radius_ij);
+    s_ij = surftensfacfs_;
+  }
 
+  if (potential_ij != 0.0)
+  {
     double timefac = 1.0;
     if(time >= 0.0)
       timefac = SurfTensionTimeFac(time);
 
-    // pair-wise interaction force scaling parameter
-    double s_ij = 0.0;
-    if (not boundaryParticle_j) // case of fluid-fluid interaction
-    {
-      if(surfaceTensionType_==INPAR::PARTICLE::ST_VDW_DIRECT)
-        s_ij = 0.5*std::pow(n_ij,-2)*(surfTens_ff_/lambda);
-      else
-        s_ij = surfTens_ff_;
-    }
-    else // case of fluid-solid interaction
-    {
-      if(surfaceTensionType_==INPAR::PARTICLE::ST_VDW_DIRECT)
-      {
-        // convert static contact angle in radians
-        double theta_0 = surfTens_fs_*M_PI/180.0;
-        s_ij = 0.5*std::pow(n_ij,-2)*(surfTens_ff_/lambda)*(1+0.5*std::cos(theta_0));
-      }
-      else
-        s_ij = surfTens_fs_;
-    }
-
     // pair-wise interaction force to model surface tension following Kordilla et al. 2013 and Tartakovsky et al. 2016
-    accn_ij->Update(-s_ij*potential*timefac/mass_i, interData_ij.rRelVersor_ij_, 1.0);
+    accn_ij->Update(-s_ij*potential_ij*timefac/particle_i.mass_, interData_ij.rRelVersor_ij_, 1.0);
   }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | evaluate surface tension interaction potential          sfuchs 10/17 |
- *----------------------------------------------------------------------*/
-void PARTICLE::ParticleSPHInteractionHandler::SurfTensionInterPot(
-    const double& radius,
-    const double& rRelNorm2,
-    double& lambda,
-    double& potential
-    )
-{
-  // Note: Following Tartakovsky et al. 2016 the pairwise interaction force F_int_4 is based on a QuinticBspline weight function
-  // and the parameter lambda follows from an integration of F_int_4 (see equations (45) and (46) for lambda in three and two dimensions)
-  // here we use the normalized QuinticBspline (in contrast to Tartakovsky et al. 2016 and in accordance with Kordilla et al. 2013), hence
-  // lambda contains also normalization terms
-
-  Teuchos::RCP<PARTICLE::WeightFunction_QuinticBspline> weightFunction = Teuchos::rcp(new PARTICLE::WeightFunction_QuinticBspline(WF_DIM_));
-
-  // range of repulsive part
-  double radius0 = surfTensPotRatio_*radius;
-
-  if(surfaceTensionType_==INPAR::PARTICLE::ST_VDW_DIRECT)
-  {
-    switch (WF_DIM_)
-    {
-      case INPAR::PARTICLE::WF_3D :
-      {
-        lambda = (7.0*81.0)/(324.0*359.0) * ( -surfTensPotA_*std::pow(radius0, 2) + surfTensPotB_*std::pow(radius, 2) );
-        break;
-      }
-      case INPAR::PARTICLE::WF_2D :
-      {
-        lambda = (2771.0*63.0)/(20412.0*478.0*M_PI) * ( -surfTensPotA_*std::pow(radius0, 2) + surfTensPotB_*std::pow(radius, 2) );
-        break;
-      }
-      default :
-      {
-        dserror("Pairwise interaction force currently just possible for dimension 2 and 3!");
-      }
-    }
-
-    if(lambda <= 0.0)
-      dserror("The parameter lambda in the pairwise interaction force should be positive!");
-  }
-
-  potential = -surfTensPotA_*weightFunction->W(rRelNorm2, radius0) + surfTensPotB_*weightFunction->W(rRelNorm2, radius);
 
   return;
 }
@@ -2601,7 +2522,7 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_fspvp_Adami_1(
     const Teuchos::RCP<Epetra_Vector> curvature,
     double time)
 {
-  if(surfTens_ff_<=0.0)
+  if(surftensfacff_<=0.0)
     return;
 
   if(curvature!=Teuchos::null)
@@ -2679,13 +2600,13 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_fspvp_Adami_1(
 
     LINALG::Matrix<3,1> acc_i(particle_i.freesurfacedata_.CFG_FF_);
 
-    if(surfTens_ff_>0.0)
+    if(surftensfacff_>0.0)
     {
       double timefac = 1.0;
       if(time >= 0.0)
         timefac = SurfTensionTimeFac(time);
 
-      acc_i.Scale(-timefac*kappa_i*surfTens_ff_/particle_i.density_);
+      acc_i.Scale(-timefac*kappa_i*surftensfacff_/particle_i.density_);
 
       LINALG::Assemble(*curvature, kappa_i, particle_i.gid_, particle_i.owner_);
       LINALG::Assemble(*accn, acc_i, particle_i.lm_, particle_i.owner_);
@@ -2704,7 +2625,7 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_fspvp_Adami_2(
     const Teuchos::RCP<Epetra_Vector> curvature,
     double time)
 {
-  if(surfTens_ff_<=0.0)
+  if(surftensfacff_<=0.0)
     return;
 
   if(curvature!=Teuchos::null)
@@ -2781,13 +2702,13 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_fspvp_Adami_2(
     expfac=1.0/std::pow(abs(particle_i.freesurfacedata_.color_field_),PARTICLE_SFEXP);
 #endif
 
-    if(surfTens_ff_>0.0)
+    if(surftensfacff_>0.0)
     {
       double timefac = 1.0;
       if(time >= 0.0)
         timefac = SurfTensionTimeFac(time);
 
-      acc_i.Scale(-expfac*timefac*kappa_i*surfTens_ff_/particle_i.density_);
+      acc_i.Scale(-expfac*timefac*kappa_i*surftensfacff_/particle_i.density_);
 
       LINALG::Assemble(*curvature, kappa_i, particle_i.gid_, particle_i.owner_);
       LINALG::Assemble(*accn, acc_i, particle_i.lm_, particle_i.owner_);
@@ -2805,7 +2726,7 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_fspvp_Adami_ContactAngleVar2
     const Teuchos::RCP<Epetra_Vector> accn,
     double time)
 {
-  if(surfTens_ff_<=0.0)
+  if(surftensfacff_<=0.0)
     return;
 
   // loop over the free surface particles (with superpositions -> pairs ij and ji evaluted seperately!)
@@ -2852,10 +2773,10 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_fspvp_Adami_ContactAngleVar2
       normal_ti.Scale(0.0);
 
     double cosalpha=-normal_wi.Dot(normal1);
-    double cosalpha0=cos(surfTens_fs_*M_PI/180.0);
+    double cosalpha0=cos(surftensfacfs_*M_PI/180.0);
 
     //The factor 2.0 is required since the boundary dirac delta functioin is only evaluated in the fluid and not in the solid phase (integral gives 0.5 and not 1)!
-    double force=surfTens_ff_*(cosalpha-cosalpha0)*particle_i.freesurfacedata_.CFG_FF_.Norm2()*2.0*normal_wi_norm;
+    double force=surftensfacff_*(cosalpha-cosalpha0)*particle_i.freesurfacedata_.CFG_FF_.Norm2()*2.0*normal_wi_norm;
 
     LINALG::Matrix<3,1> acc_i(normal_ti);
 

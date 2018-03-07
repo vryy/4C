@@ -234,13 +234,11 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                "type of surface tension forces for SPH interactions",
                                tuple<std::string>(
                                  "ST_NONE",
-                                 "ST_VDW_DIRECT",
                                  "ST_VDW_INDIRECT",
                                  "ST_CONTI_ADAMI"
                                  ),
                                tuple<int>(
                                  INPAR::PARTICLE::ST_NONE,
-                                 INPAR::PARTICLE::ST_VDW_DIRECT,
                                  INPAR::PARTICLE::ST_VDW_INDIRECT,
                                  INPAR::PARTICLE::ST_CONTI_ADAMI
                                  ),
@@ -302,11 +300,11 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    DoubleParameter("XSPH_DAMPFAC",-1.0,"damping factor of XSPH scheme",&particledyn);
    DoubleParameter("XSPH_STIFFAC",-1.0,"damping factor of XSPH scheme",&particledyn);
    BoolParameter("TRANSPORT_VELOCITY","no","apply particle convection velocity that differs from momentum velocity",&particledyn);
-   DoubleParameter("SURFACE_TENSION_FF",0.0,"surface tension value/factor between fluid and void phase/second fluid",&particledyn);
-   DoubleParameter("SURFACE_TENSION_FS",0.0,"surface tension value/factor between fluid and solid phase",&particledyn);
-   DoubleParameter("SURFTENSION_POT_A",2.0,"Scale factor of repulsive part of pairwise interaction force",&particledyn);
-   DoubleParameter("SURFTENSION_POT_B",1.0,"Scale factor of attractive part of pairwise interaction force",&particledyn);
-   DoubleParameter("SURFTENSION_POT_RATIO",0.5,"Range ratio of repulsive and attractive part of pairwise interaction force",&particledyn);
+   DoubleParameter("SURFTENSFAC_FF",0.0,"surface tension value/factor between fluid and void phase/second fluid",&particledyn);
+   DoubleParameter("SURFTENSFAC_FS",0.0,"surface tension value/factor between fluid and solid phase",&particledyn);
+   DoubleParameter("SURFTENSPOT_A_FF",2.0,"surface tension scale factor of repulsive part of pairwise interaction force fluid-fluid",&particledyn);
+   DoubleParameter("SURFTENSPOT_A_FS",2.0,"surface tension scale factor of repulsive part of pairwise interaction force fluid-solid",&particledyn);
+   DoubleParameter("SURFTENSPOT_RATIO",0.5,"range ratio of repulsive and attractive part of pairwise interaction force",&particledyn);
    IntParameter("MIN_VOIDPARTICLE_ID",-1,"all particles with an ID >= MIN_VOIDPARTICLE_ID are considered as void particles with colorfield = 0",&particledyn);
    BoolParameter("CONTACT_ANGLE_VAR2","no","Apply alternative model to enforce the static contact angle",&particledyn);
 

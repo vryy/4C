@@ -37,8 +37,8 @@ BACKGROUND_PRESSURE             100
 NO_VELDIFF_TERM                 yes
 CALC_ACC_VAR2                   yes
 SURFACE_TENSION_TYPE            ST_CONTI_ADAMI
-SURFACE_TENSION_FF              1.0
-SURFACE_TENSION_FS              150.0
+SURFTENSFAC_FF                  1.0
+SURFTENSFAC_FS                  150.0
 MIN_VOIDPARTICLE_ID             847
 WALL_INTERACTION_TYPE           BoundarParticle_FreeSlip
 EXTENDED_GHOSTING               BdryParticleGhosting
