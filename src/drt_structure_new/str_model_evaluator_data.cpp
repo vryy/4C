@@ -471,6 +471,23 @@ const std::vector<char>& STR::MODELEVALUATOR::Data::CouplingStressData() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+Teuchos::RCP<std::vector<char> >& STR::MODELEVALUATOR::Data::MutableOptQuantityDataPtr()
+{
+  CheckInitSetup();
+  return optquantitydata_ptr_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+const std::vector<char>& STR::MODELEVALUATOR::Data::OptQuantityData() const
+{
+  if (optquantitydata_ptr_.is_null())
+    dserror("Undefined reference to the optional quantity data!");
+  return *optquantitydata_ptr_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 enum INPAR::STR::StressType STR::MODELEVALUATOR::Data::GetStressOutputType() const
 {
   CheckInitSetup();
@@ -499,6 +516,14 @@ enum INPAR::STR::StressType STR::MODELEVALUATOR::Data::GetCouplingStressOutputTy
 {
   CheckInitSetup();
   return io_ptr_->GetCouplingStressOutputType();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+enum INPAR::STR::OptQuantityType STR::MODELEVALUATOR::Data::GetOptQuantityOutputType() const
+{
+  CheckInitSetup();
+  return io_ptr_->GetOptQuantityOutputType();
 }
 
 /*----------------------------------------------------------------------------*

@@ -58,7 +58,8 @@ STR::TIMINT::BaseDataIO::BaseDataIO()
       writestress_(INPAR::STR::stress_none),
       writecouplstress_(INPAR::STR::stress_none),
       writestrain_(INPAR::STR::strain_none),
-      writeplstrain_(INPAR::STR::strain_none)
+      writeplstrain_(INPAR::STR::strain_none),
+      writeoptquantity_(INPAR::STR::optquantity_none)
 {
   // empty constructor
 }
@@ -103,6 +104,7 @@ void STR::TIMINT::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
     writeplstrain_ = DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioparams,"STRUCT_PLASTIC_STRAIN");
     writeenergyevery_ = sdynparams.get<int>("RESEVRYERGY");
     writesurfactant_ = (bool) DRT::INPUT::IntegralValue<int>(ioparams,"STRUCT_SURFACTANT");
+    writeoptquantity_ = DRT::INPUT::IntegralValue<INPAR::STR::OptQuantityType>(ioparams,"STRUCT_OPTIONAL_QUANTITY");
 
     // check whether VTK output at runtime is desired
     if ( ioparams.sublist("RUNTIME VTK OUTPUT").get<int>("INTERVAL_STEPS") != -1 )

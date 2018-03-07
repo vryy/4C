@@ -68,8 +68,10 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList&   params,
     else if (action=="calc_struct_update_istep")                    act = ELEMENTS::struct_calc_update_istep;
     else if (action=="calc_struct_reset_istep")                     act = ELEMENTS::struct_calc_reset_istep;
     else if (action=="calc_struct_stress")                          act = ELEMENTS::struct_calc_stress;
+    else if (action=="calc_struct_thickness")                       act = ELEMENTS::struct_calc_thickness;
     else if (action=="calc_struct_energy")                          act = ELEMENTS::struct_calc_energy;
     else if (action=="postprocess_stress")                          act = ELEMENTS::struct_postprocess_stress;
+    else if (action=="postprocess_thickness")                       act = ELEMENTS::struct_postprocess_thickness;
     else if (action=="calc_fluid_traction")                         act = ELEMENTS::struct_calc_fluid_traction;
     else if (action=="calc_cur_normal_at_point")                    act = ELEMENTS::struct_calc_cur_normal_at_point;
     else {dserror("Unknown type of action for Membrane: %s", action.c_str());}
@@ -172,16 +174,17 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList&   params,
 
         if ( IsParamsInterface() ) // new structural time integration
         {
-          stressdata   = StrParamsInterface().MutableStressDataPtr();
-          straindata   = StrParamsInterface().MutableStrainDataPtr();
+          stressdata = StrParamsInterface().MutableStressDataPtr();
+          straindata = StrParamsInterface().MutableStrainDataPtr();
 
-          iostress   = StrParamsInterface().GetStressOutputType();
-          iostrain   = StrParamsInterface().GetStrainOutputType();
+          iostress = StrParamsInterface().GetStressOutputType();
+          iostrain = StrParamsInterface().GetStrainOutputType();
         }
         else // old structural time integration
         {
           stressdata = params.get<Teuchos::RCP<std::vector<char> > >("stress",Teuchos::null);
           straindata = params.get<Teuchos::RCP<std::vector<char> > >("strain",Teuchos::null);
+
           iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
           iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
         }
@@ -210,6 +213,39 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList&   params,
           data.StartPacking();
           AddtoPack(data, strain);
           std::copy(data().begin(),data().end(),std::back_inserter(*straindata));
+        }
+      }
+    }
+    break;
+
+    /*===============================================================================*
+     | struct_calc_thickness                                                         |
+     *===============================================================================*/
+    case ELEMENTS::struct_calc_thickness:
+    {
+      // nothing to do for ghost elements
+      if (discretization.Comm().MyPID()==Owner())
+      {
+        Teuchos::RCP<std::vector<char> > thickdata = Teuchos::null;
+
+        if ( IsParamsInterface() ) // new structural time integration
+          thickdata = StrParamsInterface().MutableOptQuantityDataPtr();
+        else // old structural time integration
+          thickdata = params.get<Teuchos::RCP<std::vector<char> > >("optquantity",Teuchos::null);
+
+        if (thickdata==Teuchos::null) dserror("Cannot get 'thickness' data");
+
+        LINALG::Matrix<numgpt_post_,1> thickness;
+        for (int i=0; i<numgpt_post_; ++i)
+          thickness(i) = cur_thickness_[i];
+
+        // add data to pack
+        {
+          DRT::PackBuffer data;
+          AddtoPack(data, thickness);
+          data.StartPacking();
+          AddtoPack(data, thickness);
+          std::copy(data().begin(),data().end(),std::back_inserter(*thickdata));
         }
       }
     }
@@ -360,47 +396,8 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList&   params,
 
       if (stresstype=="ndxyz")
       {
-        // extrapolation matrix, static because equal for all elements of the same discretizations type
-        static LINALG::Matrix<numnod_,numgpt_post_> extrapol;
-
-        // fill extrapolation matrix just once, equal for all elements
-        static bool isfilled;
-
-        if (isfilled==false)
-        {
-          // check for correct gaussrule
-          if (intpoints_.nquad!=numgpt_post_)
-            dserror("number of gauss points of gaussrule_ does not match numgpt_post_ used for postprocessing");
-
-          // allocate vector for shape functions and matrix for derivatives at gp
-          LINALG::Matrix<numnod_,1> shapefcts(true);
-
-          // loop over the nodes and gauss points
-          // interpolation matrix, inverted later to be the extrapolation matrix
-          for (int nd=0;nd<numnod_;++nd)
-          {
-            // gaussian coordinates
-            const double e1 = intpoints_.qxg[nd][0];
-            const double e2 = intpoints_.qxg[nd][1];
-
-            // shape functions for the extrapolated coordinates
-            LINALG::Matrix<numgpt_post_,1> funct;
-            DRT::UTILS::shape_function_2D(funct,e1,e2,Shape());
-
-            for (int i=0;i<numgpt_post_;++i)
-              extrapol(nd,i) = funct(i);
-          }
-
-          // fixedsizesolver for inverting extrapol
-          LINALG::FixedSizeSerialDenseSolver<numnod_,numgpt_post_,1> solver;
-          solver.SetMatrix(extrapol);
-          int err = solver.Invert();
-          if (err != 0.)
-          dserror("Matrix extrapol is not invertible");
-
-          // matrix is filled
-          isfilled = true;
-        }
+        // extrapolation matrix: static because equal for all elements of the same discretization type
+        static LINALG::Matrix<numnod_,numgpt_post_> extrapol( mem_extrapolmat() );
 
         // extrapolate the nodal stresses for current element
         LINALG::Matrix<numnod_,6> nodalstresses;
@@ -442,6 +439,51 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList&   params,
       {
         dserror("unknown type of stress/strain output on element level");
       }
+    }
+    break;
+
+    /*===============================================================================*
+     | struct_postprocess_thickness                                                  |
+     *===============================================================================*/
+    case ELEMENTS::struct_postprocess_thickness:
+    {
+      const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > gpthickmap=
+        params.get<Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("gpthickmap",Teuchos::null);
+      if (gpthickmap==Teuchos::null)
+        dserror("no gp thickness map available for postprocessing");
+
+      std::string optquantitytype = params.get<std::string>("optquantitytype","ndxyz");
+
+      int gid = Id();
+      LINALG::Matrix<numgpt_post_,1> gpthick(((*gpthickmap)[gid])->A(),true);
+
+      Teuchos::RCP<Epetra_MultiVector> postthick=params.get<Teuchos::RCP<Epetra_MultiVector> >("postthick",Teuchos::null);
+      if (postthick==Teuchos::null)
+        dserror("No element thickness vector available");
+
+      if (optquantitytype=="ndxyz")
+      {
+        // extrapolation matrix: static because equal for all elements of the same discretization type
+        static LINALG::Matrix<numnod_,numgpt_post_> extrapol( mem_extrapolmat() );
+
+        // extrapolate the nodal thickness for current element
+        LINALG::Matrix<numnod_,1> nodalthickness;
+        nodalthickness.Multiply(1.0,extrapol,gpthick,0.0);
+
+        // "assembly" of extrapolated nodal thickness
+        for (int i=0;i<numnod_;++i)
+        {
+          int gid = NodeIds()[i];
+          if (postthick->Map().MyGID(NodeIds()[i])) // rownode
+          {
+            int lid = postthick->Map().LID(gid);
+            int myadjele = Nodes()[i]->NumElement();
+            (*((*postthick)(0)))[lid] += nodalthickness(i)/myadjele;
+          }
+        }
+      }
+      else
+        dserror("unknown type of thickness output on element level");
     }
     break;
 
@@ -634,8 +676,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList&   params,
       const double target_xi = elevec2_epetra[0];
       const double target_eta = elevec2_epetra[1];
 
-      // allocate vector for shape functions and matrix for derivatives at target point
-      // LINALG::Matrix<numnod_,1> shapefcts(true);
+      // allocate matrix for derivatives at target point
       LINALG::Matrix<numdim_, numnod_> derivs(true);
 
       // get shape functions and derivatives in the plane of the element
@@ -1209,9 +1250,9 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
       mem_localtoglobal(Q_trafo,cauchygreen_loc,cauchygreen_glob);
 
       // eigenvalue decomposition (from elasthyper.cpp)
-      LINALG::Matrix<3,3> prstr2(true);  // squared principal stretches
-      LINALG::Matrix<3,1> prstr(true);   // principal stretch
-      LINALG::Matrix<3,3> prdir(true);   // principal directions
+      LINALG::Matrix<noddof_,noddof_> prstr2(true);  // squared principal stretches
+      LINALG::Matrix<noddof_,1> prstr(true);   // principal stretch
+      LINALG::Matrix<noddof_,noddof_> prdir(true);   // principal directions
       LINALG::SYEV(cauchygreen_glob,prstr2,prdir);
 
       // THE principal stretches
@@ -1338,15 +1379,15 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
       LINALG::Matrix<noddof_,noddof_> pkstress_glob(true);
       mem_localtoglobal(Q_trafo,pkstressM_loc,pkstress_glob);
 
-      LINALG::Matrix<3,3> cauchy(true);
-      mem_PK2toCauchy(pkstress_glob,defgrd_glob,cauchy);
+      LINALG::Matrix<noddof_,noddof_> cauchy_glob(true);
+      mem_PK2toCauchy(pkstress_glob,defgrd_glob,cauchy_glob);
 
-      (*elestress)(gp,0) = cauchy(0,0);
-      (*elestress)(gp,1) = cauchy(1,1);
-      (*elestress)(gp,2) = cauchy(2,2);
-      (*elestress)(gp,3) = cauchy(0,1);
-      (*elestress)(gp,4) = cauchy(1,2);
-      (*elestress)(gp,5) = cauchy(0,2);
+      (*elestress)(gp,0) = cauchy_glob(0,0);
+      (*elestress)(gp,1) = cauchy_glob(1,1);
+      (*elestress)(gp,2) = cauchy_glob(2,2);
+      (*elestress)(gp,3) = cauchy_glob(0,1);
+      (*elestress)(gp,4) = cauchy_glob(1,2);
+      (*elestress)(gp,5) = cauchy_glob(0,2);
     }
     break;
     // no stress output
@@ -1446,7 +1487,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_orthonormalbase(const LINALG::Matrix<
                                                            LINALG::Matrix<noddof_,1>&                                  dXds2,
                                                            LINALG::Matrix<noddof_,1>&                                  dxds1,
                                                            LINALG::Matrix<noddof_,1>&                                  dxds2,
-                                                           LINALG::Matrix<noddof_,noddof_>&                            Q_trafo)
+                                                           LINALG::Matrix<noddof_,noddof_>&                            Q_trafo) const
 {
   /*===============================================================================*
    | introduce an orthonormal base in the undeformed configuration as proposed in: |
@@ -1557,9 +1598,9 @@ void DRT::ELEMENTS::Membrane<distype>::mem_orthonormalbase(const LINALG::Matrix<
  |  pushforward of 2nd PK stresses to Cauchy stresses at gp                           fbraeu 06/16 |
  *-------------------------------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Membrane<distype>::mem_PK2toCauchy(const LINALG::Matrix<3,3>&                      pkstress_glob,
+void DRT::ELEMENTS::Membrane<distype>::mem_PK2toCauchy(const LINALG::Matrix<noddof_,noddof_>&          pkstress_glob,
                                                        const LINALG::Matrix<noddof_,noddof_>&          defgrd_glob,
-                                                       LINALG::Matrix<3,3>&                            cauchy)
+                                                       LINALG::Matrix<noddof_,noddof_>&                cauchy) const
 {
   // calculate the Jacobi-deterinant
   const double detF = defgrd_glob.Determinant();
@@ -1580,9 +1621,9 @@ void DRT::ELEMENTS::Membrane<distype>::mem_PK2toCauchy(const LINALG::Matrix<3,3>
  |  pushforward of Green-Lagrange to Euler-Almansi strains at gp                      fbraeu 06/16 |
  *-------------------------------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Membrane<distype>::mem_GLtoEA(const LINALG::Matrix<3,3>&                      glstrain_glob,
+void DRT::ELEMENTS::Membrane<distype>::mem_GLtoEA(const LINALG::Matrix<noddof_,noddof_>&          glstrain_glob,
                                                   const LINALG::Matrix<noddof_,noddof_>&          defgrd_glob,
-                                                  LINALG::Matrix<3,3>&                            euler_almansi)
+                                                  LINALG::Matrix<noddof_,noddof_>&                euler_almansi) const
 {
   // check determinant of deformation gradient
   if (defgrd_glob.Determinant()==0) dserror("Inverse of Deformation Gradient can not be calcualated due to a zero Determinant.");
@@ -1606,7 +1647,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_GLtoEA(const LINALG::Matrix<3,3>&    
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Membrane<distype>::mem_localtoglobal(const LINALG::Matrix<noddof_,noddof_>&    Q_trafo,
                                                          const LINALG::Matrix<noddof_,noddof_>&    loc,
-                                                         LINALG::Matrix<noddof_,noddof_>&          glob)
+                                                         LINALG::Matrix<noddof_,noddof_>&          glob) const
 {
   LINALG::Matrix<noddof_,noddof_> temp(true);
   temp.MultiplyNN(1.0,Q_trafo,loc,0.0);
@@ -1622,7 +1663,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_localtoglobal(const LINALG::Matrix<no
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Membrane<distype>::mem_globaltolocal(const LINALG::Matrix<noddof_,noddof_>&    Q_trafo,
                                                          const LINALG::Matrix<noddof_,noddof_>&    glob,
-                                                         LINALG::Matrix<noddof_,noddof_>&          loc)
+                                                         LINALG::Matrix<noddof_,noddof_>&          loc) const
 {
   LINALG::Matrix<noddof_,noddof_> temp(true);
   temp.MultiplyTN(1.0,Q_trafo,glob,0.0);
@@ -1637,7 +1678,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_globaltolocal(const LINALG::Matrix<no
  *-------------------------------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Membrane<distype>::mem_cmat_trafo(const LINALG::Matrix<noddof_,noddof_>&    Q_trafo,
-                                                      LINALG::Matrix<6,6>&                      cmat_trafo)
+                                                      LINALG::Matrix<6,6>&                      cmat_trafo) const
 {
   // transformation matrix for the material elasticity matrix (strain like in first two indices)
   cmat_trafo(0,0) = Q_trafo(0,0)*Q_trafo(0,0);
@@ -1692,7 +1733,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_cmat_trafo(const LINALG::Matrix<noddo
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Membrane<distype>::mem_cmat_globaltolocal(const LINALG::Matrix<6,6>&    cmat_trafo,
                                                               const LINALG::Matrix<6,6>&    cmat_glob,
-                                                              LINALG::Matrix<6,6>&          cmat_loc)
+                                                              LINALG::Matrix<6,6>&          cmat_loc) const
 {
   LINALG::Matrix<6,6> temp(true);
   temp.MultiplyTN(1.0,cmat_trafo,cmat_glob,0.0);
@@ -1707,7 +1748,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_cmat_globaltolocal(const LINALG::Matr
  *-------------------------------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Membrane<distype>::mem_matrixtovoigt(const LINALG::Matrix<3,3>&    matrix,
-                                                         LINALG::Matrix<6,1>&          voigt)
+                                                         LINALG::Matrix<6,1>&          voigt) const
 {
   voigt(0) = matrix(0,0);
   voigt(1) = matrix(1,1);
@@ -1725,7 +1766,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_matrixtovoigt(const LINALG::Matrix<3,
  *-------------------------------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Membrane<distype>::mem_voigttomatrix(const LINALG::Matrix<6,1>&    voigt,
-                                                         LINALG::Matrix<3,3>&          matrix)
+                                                         LINALG::Matrix<3,3>&          matrix) const
 {
   matrix(0,0) = voigt(0);
   matrix(1,1) = voigt(1);
@@ -1750,7 +1791,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_defgrd_global(const LINALG::Matrix<no
                                                          const LINALG::Matrix<noddof_,1>&          dxds1,
                                                          const LINALG::Matrix<noddof_,1>&          dxds2,
                                                          const double&                             lambda3,
-                                                         LINALG::Matrix<noddof_,noddof_>&          defgrd_glob)
+                                                         LINALG::Matrix<noddof_,noddof_>&          defgrd_glob) const
 {
   // clear
   defgrd_glob.Clear();
@@ -1778,6 +1819,51 @@ void DRT::ELEMENTS::Membrane<distype>::mem_defgrd_global(const LINALG::Matrix<no
   return;
 
 } // DRT::ELEMENTS::Membrane::mem_defgrd_global
+
+/*-------------------------------------------------------------------------------------------------*
+ |  determine extrapolation matrix                                                    sfuchs 02/18 |
+ *-------------------------------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, THR::DisTypeToNumGaussPoints<distype>::nquad>
+DRT::ELEMENTS::Membrane<distype>::mem_extrapolmat() const
+{
+  // extrapolation matrix
+  // note: equal for all elements of the same discretization type
+  LINALG::Matrix<numnod_,numgpt_post_> extrapol;
+
+  // check for correct gaussrule
+  if (intpoints_.nquad!=numgpt_post_)
+    dserror("number of gauss points of gaussrule_ does not match numgpt_post_ used for postprocessing");
+
+  // allocate vector for shape functions and matrix for derivatives at gp
+  LINALG::Matrix<numnod_,1> shapefcts(true);
+
+  // loop over the nodes and gauss points
+  // interpolation matrix, inverted later to be the extrapolation matrix
+  for (int nd=0;nd<numnod_;++nd)
+  {
+    // gaussian coordinates
+    const double e1 = intpoints_.qxg[nd][0];
+    const double e2 = intpoints_.qxg[nd][1];
+
+    // shape functions for the extrapolated coordinates
+    LINALG::Matrix<numgpt_post_,1> funct;
+    DRT::UTILS::shape_function_2D(funct,e1,e2,Shape());
+
+    for (int i=0;i<numgpt_post_;++i)
+      extrapol(nd,i) = funct(i);
+  }
+
+  // fixedsizesolver for inverting extrapol
+  LINALG::FixedSizeSerialDenseSolver<numnod_,numgpt_post_,1> solver;
+  solver.SetMatrix(extrapol);
+  int err = solver.Invert();
+  if (err != 0.)
+  dserror("Matrix extrapol is not invertible");
+
+  return extrapol;
+
+} // DRT::ELEMENTS::Membrane::mem_extrapolmat
 
 /*---------------------------------------------------------------------------------------------*
  |  Update history variables (e.g. remodeling of fiber directions) (protected)      braeu 07/16|

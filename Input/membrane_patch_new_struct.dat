@@ -19,6 +19,7 @@ STRUCT_DISP                     Yes
 STRUCT_VEL_ACC                  Yes
 STRUCT_STRESS                   Cauchy
 STRUCT_STRAIN                   GL
+STRUCT_OPTIONAL_QUANTITY        membranethickness
 -------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 DYNAMICTYP                      GenAlpha

@@ -133,7 +133,7 @@ void runEnsightVtuFilter(PostProblem    &problem)
     case prb_structure:
     {
         PostField* field = problem.get_discretization(0);
-        StructureFilter writer(field, problem.outname(), problem.stresstype(), problem.straintype());
+        StructureFilter writer(field, problem.outname(), problem.stresstype(), problem.straintype(), problem.optquantitytype());
         writer.WriteFiles();
         break;
     }
@@ -264,7 +264,7 @@ void runEnsightVtuFilter(PostProblem    &problem)
         if(disname == "structure")
         {
           PostField* structure = problem.get_discretization(i);
-          StructureFilter writer(structure, problem.outname(), problem.stresstype(), problem.straintype());
+          StructureFilter writer(structure, problem.outname(), problem.stresstype(), problem.straintype(), problem.optquantitytype());
           writer.WriteFiles();
         }
         else if (disname == "particlewalls")

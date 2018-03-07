@@ -276,6 +276,9 @@ namespace MODELEVALUATOR {
     //! calculation of engery
     void DetermineEnergy();
 
+    //! calculation of an optional quantitiy
+    void DetermineOptionalQuantity();
+
     //! Write the current step state
     void OutputStepState(IO::DiscretizationWriter& iowriter) const;
 

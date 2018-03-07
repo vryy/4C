@@ -157,6 +157,9 @@ namespace MODELEVALUATOR {
     //! mutable access to the stress data vector
     virtual Teuchos::RCP<std::vector<char> >& MutableCouplingStressDataPtr();
 
+    //! mutable access to the optional quantity data vector
+    virtual Teuchos::RCP<std::vector<char> >& MutableOptQuantityDataPtr();
+
     //! get the current stress type [derived]
     virtual enum INPAR::STR::StressType GetStressOutputType() const;
 
@@ -168,6 +171,9 @@ namespace MODELEVALUATOR {
 
     //! get the current coupling stress type [derived]
     virtual enum INPAR::STR::StressType GetCouplingStressOutputType() const;
+
+    //! get the current strain type [derived]
+    virtual enum INPAR::STR::OptQuantityType GetOptQuantityOutputType() const;
 
     //! register energy type to be computed and written to file
     void InsertEnergyTypeToBeConsidered(enum STR::EnergyType type);
@@ -398,6 +404,12 @@ namespace MODELEVALUATOR {
       plastic_straindata_ptr_ = plastic_straindata;
     }
 
+    //! set optional quantity data vector
+    inline void SetOptQuantityData(const Teuchos::RCP<std::vector<char> >& optquantitydata)
+    {
+      optquantitydata_ptr_ = optquantitydata;
+    }
+
     //! set model evaluator ptr
     inline void SetModelEvaluator( Generic* model_ptr )
     {
@@ -418,6 +430,9 @@ namespace MODELEVALUATOR {
 
     //! return the coupling stress data (read-only)
     const std::vector<char>& CouplingStressData() const;
+
+    //! return the optional quantity data (read-only)
+    const std::vector<char>& OptQuantityData() const;
 
     //! @}
 
@@ -647,6 +662,9 @@ namespace MODELEVALUATOR {
     //! coupling stress data vector
     //! e.g. in TSI: couplstress corresponds to thermal stresses
     Teuchos::RCP<std::vector<char> > couplstressdata_ptr_;
+
+    //! optional quantity data vector
+    Teuchos::RCP<std::vector<char> > optquantitydata_ptr_;
 
     //! system energy, stored separately by type
     std::map<enum STR::EnergyType, double> energy_data_;

@@ -546,6 +546,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::strain_ea,INPAR::STR::strain_ea,
                                  INPAR::STR::strain_gl,INPAR::STR::strain_gl),
                                &io);
+  setStringToIntegralParameter<int>("STRUCT_OPTIONAL_QUANTITY","No","Output of an optional quantity",
+                               tuple<std::string>(
+                                 "No", "no", "NO",
+                                 "membranethickness"),
+                               tuple<int>(
+                                 INPAR::STR::optquantity_none, INPAR::STR::optquantity_none, INPAR::STR::optquantity_none,
+                                 INPAR::STR::optquantity_membranethickness),
+                               &io);
   setStringToIntegralParameter<int>("STRUCT_SURFACTANT","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("STRUCT_JACOBIAN_MATLAB","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("FLUID_SOL","Yes","",yesnotuple,yesnovalue,&io);

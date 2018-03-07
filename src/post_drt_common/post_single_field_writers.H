@@ -28,11 +28,13 @@ public:
   StructureFilter(PostField *field,
                   std::string name,
                   std::string stresstype="none",
-                  std::string straintype="none")
+                  std::string straintype="none",
+                  std::string optquantitytype="none")
   :
     PostFilterBase(field, name),
     stresstype_(stresstype),
-    straintype_(straintype)
+    straintype_(straintype),
+    optquantitytype_(optquantitytype)
   {
   }
 
@@ -53,10 +55,10 @@ protected:
   void WriteEigenStress(const std::string groupname,
                         PostResult& result,
                         const ResultType stresskind);
-  void PostRotation();
 
   std::string stresstype_;
   std::string straintype_;
+  std::string optquantitytype_;
 };
 
 /*!

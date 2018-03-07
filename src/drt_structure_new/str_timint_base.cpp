@@ -422,14 +422,15 @@ void STR::TIMINT::Base::GetRestartData(
 void STR::TIMINT::Base::PrepareOutput()
 {
   CheckInitSetup();
-  // --- stress and strain calculation -----------------------------------------
+  // --- stress, strain and optional quantity calculation ---------------------
   if ( dataio_->GetWriteResultsEveryNStep() and
       dataglobalstate_->GetStepNp()%dataio_->GetWriteResultsEveryNStep() == 0 )
   {
     int_ptr_->DetermineStressStrain();
+    int_ptr_->DetermineOptionalQuantity();
   }
 
-  // --- energy calculation -----------------------------------------------------
+  // --- energy calculation ---------------------------------------------------
   if ( dataio_->GetWriteEnergyEveryNStep()
       and (dataglobalstate_->GetStepNp()%dataio_->GetWriteEnergyEveryNStep() == 0) )
   {
@@ -528,7 +529,7 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
     RuntimeOutputState();
   }
 
-  // output stress & strain
+  // output stress, strain and optional quantity
   if ( dataio_->GetWriteResultsEveryNStep()
        and ( (dataio_->GetStressOutputType() != INPAR::STR::stress_none)
        or    (dataio_->GetCouplingStressOutputType() != INPAR::STR::stress_none)
@@ -538,6 +539,7 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
   {
     NewIOStep(datawritten);
     OutputStressStrain();
+    OutputOptionalQuantity();
   }
 
   // output energy
@@ -761,6 +763,40 @@ void STR::TIMINT::Base::OutputEnergy() const
 
     IO::cout(IO::verbose) << "\n\nOutput for energy written to file!" << IO::endl;
   }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Base::OutputOptionalQuantity()
+{
+  CheckInitSetup();
+
+  STR::MODELEVALUATOR::Data& evaldata = int_ptr_->EvalData();
+  Teuchos::RCP<IO::DiscretizationWriter> output_ptr =
+      dataio_->GetMutableOutputPtr();
+
+  // ---------------------------------------------------------------------------
+  // write optional quantity output
+  // ---------------------------------------------------------------------------
+  std::string text = "";
+  if (dataio_->GetOptQuantityOutputType()!=INPAR::STR::optquantity_none)
+  {
+    switch (dataio_->GetOptQuantityOutputType())
+    {
+      case INPAR::STR::optquantity_membranethickness:
+        text = "gauss_membrane_thickness";
+        break;
+      default:
+        dserror("Requested optional quantity type is not supported!");
+        break;
+    }
+    output_ptr->WriteVector(text, evaldata.OptQuantityData(),
+        *(DiscretizationInterface()->ElementRowMap()));
+  }
+  // we don't need this anymore
+  evaldata.MutableOptQuantityDataPtr() = Teuchos::null;
+
+  return;
 }
 
 /*----------------------------------------------------------------------------*

@@ -528,6 +528,14 @@ void STR::MODELEVALUATOR::BrownianDyn::DetermineEnergy()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::BrownianDyn::DetermineOptionalQuantity()
+{
+  // nothing to do
+  return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BrownianDyn::OutputStepState(
     IO::DiscretizationWriter& iowriter) const
 {

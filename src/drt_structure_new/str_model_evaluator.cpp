@@ -771,6 +771,16 @@ void STR::ModelEvaluator::DetermineEnergy()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::ModelEvaluator::DetermineOptionalQuantity()
+{
+  CheckInitSetup();
+  Vector::iterator me_iter;
+  for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
+    (*me_iter)->DetermineOptionalQuantity();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::OutputStepState(IO::DiscretizationWriter& iowriter)
     const
 {

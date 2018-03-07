@@ -155,6 +155,9 @@ namespace TIMINT {
     //! calculate the energy in the different model evaluators
     void DetermineEnergy();
 
+    //! calculate an optional quantity in the different model evaluators
+    void DetermineOptionalQuantity();
+
     /*! \brief Output to file
      *
      *  This routine prints always the last converged state, i.e.

@@ -115,7 +115,6 @@ public:
   static const int numdof_ = noddof_ * numnod_;
 
   //! static const is required for fixedsizematrices
-  //! TODO maybe more beauty is possible
   static const int numgpt_post_ = THR::DisTypeToNumGaussPoints<distype>::nquad;
 
   /*!
@@ -391,15 +390,6 @@ public:
 
   //@}
 
-  //! @name Other
-
-  /*!
-  \brief Get ptr to nodal thicknesses
-  */
-  const std::vector<double>* thickness() { return data_.Get<std::vector<double> >("thick");}
-
-  //@}
-
 protected:
 
   /// Update history variables at the end of time step (fiber direction, inelastic deformation) (braeu 07/16)
@@ -511,44 +501,44 @@ private:
                            LINALG::Matrix<noddof_,1>&                                  dxds1,
                            LINALG::Matrix<noddof_,1>&                                  dxds2,
                            LINALG::Matrix<noddof_,noddof_>&                            Q_trafo
-                           );
+                           ) const;
 
   //! pushforward of 2nd Piola-Kirchhoff stresses to Cauchy stresses at Gauss point
   void mem_PK2toCauchy(const LINALG::Matrix<3,3>&                      pkstress_global,
                        const LINALG::Matrix<noddof_,noddof_>&          defgrd,
-                       LINALG::Matrix<3,3>&                            cauchy);
+                       LINALG::Matrix<3,3>&                            cauchy) const;
 
   // pushforward of Green-Lagrange to Euler-Almansi strains at Gauss point
   void mem_GLtoEA(const LINALG::Matrix<3,3>&                      glstrain_global,
                   const LINALG::Matrix<noddof_,noddof_>&          defgrd,
-                  LINALG::Matrix<3,3>&                            euler_almansi);
+                  LINALG::Matrix<3,3>&                            euler_almansi) const;
 
   // transforms local membrane surface tensor to tensor in global coordinates
   void mem_localtoglobal(const LINALG::Matrix<noddof_,noddof_>&    Q_trafo,
                          const LINALG::Matrix<noddof_,noddof_>&    local,
-                         LINALG::Matrix<noddof_,noddof_>&          global);
+                         LINALG::Matrix<noddof_,noddof_>&          global) const;
 
   // transforms tensor in global coords to local membrane surface tensor
   void mem_globaltolocal(const LINALG::Matrix<noddof_,noddof_>&    Q_trafo,
                          const LINALG::Matrix<noddof_,noddof_>&    global,
-                         LINALG::Matrix<noddof_,noddof_>&          local);
+                         LINALG::Matrix<noddof_,noddof_>&          local) const;
 
   // transformation matrix for material tangent tensor
   void mem_cmat_trafo(const LINALG::Matrix<noddof_,noddof_>&    Q_trafo,
-                      LINALG::Matrix<6,6>&                      cmat_trafo);
+                      LINALG::Matrix<6,6>&                      cmat_trafo) const;
 
   // transforms material tangent tensor from global coordinates to local membrane surface
   void mem_cmat_globaltolocal(const LINALG::Matrix<6,6>&    cmat_trafo,
                               const LINALG::Matrix<6,6>&    cmat_global,
-                              LINALG::Matrix<6,6>&          cmat_local);
+                              LINALG::Matrix<6,6>&          cmat_local) const;
 
   // transforms matrix to vector in stress-like voigt notation
   void mem_matrixtovoigt(const LINALG::Matrix<3,3>&    matrix,
-                         LINALG::Matrix<6,1>&          voigt);
+                         LINALG::Matrix<6,1>&          voigt) const;
 
   // transforms vector in stress-like voigt notation to matrix
   void mem_voigttomatrix(const LINALG::Matrix<6,1>&    voigt,
-                         LINALG::Matrix<3,3>&          matrix);
+                         LINALG::Matrix<3,3>&          matrix) const;
 
   // determine deformation gradient in global frame on membrane surface
   void mem_defgrd_global(const LINALG::Matrix<noddof_,1>&          dXds1,
@@ -556,7 +546,10 @@ private:
                          const LINALG::Matrix<noddof_,1>&          dxds1,
                          const LINALG::Matrix<noddof_,1>&          dxds2,
                          const double&                             lambda3,
-                         LINALG::Matrix<noddof_,noddof_>&          defgrd_global);
+                         LINALG::Matrix<noddof_,noddof_>&          defgrd_global) const;
+
+  // determine extrapolation matrix for postprocessing purposes
+  LINALG::Matrix< DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, THR::DisTypeToNumGaussPoints<distype>::nquad > mem_extrapolmat() const;
 
 }; // class Membrane
 

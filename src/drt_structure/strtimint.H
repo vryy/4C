@@ -391,6 +391,9 @@ namespace STR
     //! Calculate kinetic, internal and external energy
     virtual void DetermineEnergy();
 
+    //! Calculate an optional quantity
+    void DetermineOptionalQuantity();
+
     /// create result test for encapsulated structure algorithm
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
@@ -466,6 +469,13 @@ namespace STR
 
     //! Energy output
     void OutputEnergy();
+
+    //! Optional quantity output
+    void OutputOptQuantity
+    (
+      bool& datawritten  //!< (in/out) read and append if
+                         //!< it was written at this time step
+    );
 
     //! Active set, energy and momentum output for contact
     void OutputContact();
@@ -1110,6 +1120,7 @@ namespace STR
     INPAR::STR::StressType writecouplstress_;  //!< output type of coupling stress
     INPAR::STR::StrainType writestrain_;  //!< strain output type
     INPAR::STR::StrainType writeplstrain_;  //!< plastic strain output type
+    INPAR::STR::OptQuantityType writeoptquantity_;  //!< stress output type
     int writeenergyevery_;  //!< write system energy every given step
     bool writesurfactant_;  //!< write surfactant output
     bool writerotation_;  //!< write strutural rotation tensor output
@@ -1120,6 +1131,7 @@ namespace STR
     Teuchos::RCP<std::vector<char> > straindata_; //!< container for element GP strains
     Teuchos::RCP<std::vector<char> > plstraindata_; //!< container for element GP plastic strains
     Teuchos::RCP<std::vector<char> > rotdata_; //!< container for element rotation tensor
+    Teuchos::RCP<std::vector<char> > optquantitydata_; //!< container for element GP optional quantities
     double kinergy_; //!< kinetic energy
     double intergy_; //!< internal energy
     double extergy_; //!< external energy

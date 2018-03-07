@@ -68,6 +68,8 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
   CLP.setOption("stress",&stresstype_,"stress output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
   CLP.setOption("straintype",&straintype_,"strain output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
   CLP.setOption("strain",&straintype_,"strain output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
+  CLP.setOption("optquantitytype",&optquantitytype_,"optional quantity output type [cxyz, ndxyz, cxyz_ndxyz]");
+  CLP.setOption("optquantity",&optquantitytype_,"optional quantity output type [cxyz, ndxyz, cxyz_ndxyz]");
   CLP.setOption("heatfluxtype",&heatfluxtype_,"heatflux output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
   CLP.setOption("heatflux",&heatfluxtype_,"heatflux output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
   CLP.setOption("tempgradtype",&tempgradtype_,"tempgrad output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
@@ -116,6 +118,11 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
   if (straintype_=="")
   {
     straintype_ = "none";
+  }
+
+  if (optquantitytype_=="")
+  {
+    optquantitytype_ = "none";
   }
 
   if (heatfluxtype_=="")

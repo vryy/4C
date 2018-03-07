@@ -321,6 +321,14 @@ void STR::MODELEVALUATOR::SpringDashpot::DetermineEnergy()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::SpringDashpot::DetermineOptionalQuantity()
+{
+  // nothing to do
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::SpringDashpot::OutputStepState(
     IO::DiscretizationWriter& iowriter) const
 {

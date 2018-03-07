@@ -584,6 +584,14 @@ namespace INPAR
       strain_log      ///< output of Logarithmic (or Hencky) strains
     };
 
+    /// Type of structural optional quantity output
+    /// (this enum represents the input file parameter STRUCT_OPTIONAL_QUANTITY)
+    enum OptQuantityType
+    {
+      optquantity_none,                ///< no optional output
+      optquantity_membranethickness    ///< output of thickness of membrane finite elements
+    };
+
     //@}
 
     /// @name Time adapivity

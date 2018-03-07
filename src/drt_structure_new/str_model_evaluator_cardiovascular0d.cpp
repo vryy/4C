@@ -322,6 +322,14 @@ void STR::MODELEVALUATOR::Cardiovascular0D::DetermineEnergy()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Cardiovascular0D::DetermineOptionalQuantity()
+{
+  // nothing to do
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Cardiovascular0D::OutputStepState(
     IO::DiscretizationWriter& iowriter) const
 {

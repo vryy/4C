@@ -517,6 +517,13 @@ void STR::MODELEVALUATOR::Contact::DetermineEnergy()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Contact::DetermineOptionalQuantity()
+{
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Contact::OutputStepState(
     IO::DiscretizationWriter& iowriter) const
 {

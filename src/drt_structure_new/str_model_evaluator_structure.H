@@ -124,6 +124,9 @@ namespace MODELEVALUATOR{
     void DetermineEnergy();
 
     //! derived
+    void DetermineOptionalQuantity() override;
+
+    //! derived
     virtual void ResetStepState();
 
     //! derived

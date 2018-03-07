@@ -233,6 +233,56 @@ struct WriteElementCenterRotation : public SpecialFieldInterface
 
 
 
+//--------------------------------------------------------------------
+// calculate nodal membrane thickness from gauss point membrane thickness
+//--------------------------------------------------------------------
+struct WriteNodalMembraneThicknessStep : public SpecialFieldInterface
+{
+  WriteNodalMembraneThicknessStep (StructureFilter &filter)
+  :
+    filter_(filter)
+  {}
+
+  virtual std::vector<int> NumDfMap()
+  {
+    return std::vector<int>(1, 1);
+  }
+
+  virtual void operator ()(std::vector<Teuchos::RCP<std::ofstream> >& files,
+                           PostResult& result,
+                           std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+                           const std::string &groupname,
+                           const std::vector<std::string> &name)
+  {
+    dsassert(name.size() == 1, "Unexpected number of names");
+
+    const Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > data =
+      result.read_result_serialdensematrix(groupname);
+
+    const Teuchos::RCP<DRT::Discretization> dis = result.field()->discretization();
+    const Epetra_Map* noderowmap = dis->NodeRowMap();
+
+    Teuchos::ParameterList p;
+    p.set("action","postprocess_thickness");
+    p.set("optquantitytype","ndxyz");
+    p.set("gpthickmap", data);
+    Epetra_MultiVector* tmp = new Epetra_MultiVector(*noderowmap,1,true);
+    Teuchos::RCP<Epetra_MultiVector> nodal_thickness = Teuchos::rcp(tmp);
+    p.set("postthick",nodal_thickness);
+    dis->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+    if (nodal_thickness==Teuchos::null)
+    {
+      dserror("vector containing nodal thickness not available");
+    }
+
+    filter_.GetWriter().WriteNodalResultStep(*files[0], nodal_thickness, resultfilepos, groupname, name[0], 1);
+  }
+
+  StructureFilter &filter_;
+};
+
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void StructureFilter::WriteStress(const std::string groupname,
@@ -287,6 +337,11 @@ void StructureFilter::WriteStress(const std::string groupname,
     name="pl_EA_strains_xyz";
     out="Plastic Euler-Almansi strains";
   }
+  else if (groupname=="gauss_membrane_thickness")
+  {
+    name="membrane_thickness";
+    out="membrane thickness";
+  }
   else if (groupname=="rotation")
   {
     name="rotation";
@@ -304,6 +359,22 @@ void StructureFilter::WriteStress(const std::string groupname,
     WriteElementCenterRotation stresses(*this);
     writer_->WriteSpecialField(stresses, result, elementbased, groupname,
         std::vector<std::string>(1,name), out);
+  }
+  if (groupname=="gauss_membrane_thickness")
+  {
+    if (stresskind == nodebased)
+    {
+      name = "nodal_" + name;
+      WriteNodalMembraneThicknessStep thickness(*this);
+      writer_->WriteSpecialField(thickness, result, nodebased, groupname,
+          std::vector<std::string>(1,name), out);
+    }
+    else if (stresskind == elementbased)
+    {
+      dserror("element based membrane thickness postprocessed anyway!");
+    }
+    else
+      dserror("Unknown stress type");
   }
   else
   {

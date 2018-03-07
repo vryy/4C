@@ -156,6 +156,10 @@ void StructureFilter::WriteAllResults(PostField* field)
     PostStress("gauss_pl_GL_strains_xyz", straintype_);
     PostStress("gauss_pl_EA_strains_xyz", straintype_);
   }
+  if (optquantitytype_!="none")
+  {
+    PostStress("gauss_membrane_thickness", optquantitytype_);
+  }
 
   // write structural rotation tensor R
   if(field->problem()->struct_rot() == "yes")

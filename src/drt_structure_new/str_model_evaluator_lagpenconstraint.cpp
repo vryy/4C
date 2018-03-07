@@ -320,6 +320,14 @@ void STR::MODELEVALUATOR::LagPenConstraint::DetermineEnergy()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::LagPenConstraint::DetermineOptionalQuantity()
+{
+  // nothing to do
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::LagPenConstraint::OutputStepState(
     IO::DiscretizationWriter& iowriter) const
 {

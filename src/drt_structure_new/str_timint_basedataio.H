@@ -267,6 +267,13 @@ namespace TIMINT {
       CheckInitSetup();
       return writeplstrain_;
     };
+
+    /// get optional quantity output type
+    const INPAR::STR::OptQuantityType& GetOptQuantityOutputType() const
+    {
+      CheckInitSetup();
+      return writeoptquantity_;
+    }
     ///@}
 
     /// set the flag indicator firstoutputofrun_
@@ -374,6 +381,9 @@ namespace TIMINT {
 
     /// plastic strain output type
     INPAR::STR::StrainType writeplstrain_;
+
+    /// optional quantity type
+    INPAR::STR::OptQuantityType writeoptquantity_;
 
     Teuchos::RCP<Teuchos::ParameterList> p_io_every_iteration_;
 

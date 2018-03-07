@@ -131,6 +131,7 @@ STR::TimInt::TimInt
   writecouplstress_(DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioparams,"STRUCT_COUPLING_STRESS")),
   writestrain_(DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioparams,"STRUCT_STRAIN")),
   writeplstrain_(DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioparams,"STRUCT_PLASTIC_STRAIN")),
+  writeoptquantity_(DRT::INPUT::IntegralValue<INPAR::STR::OptQuantityType>(ioparams,"STRUCT_OPTIONAL_QUANTITY")),
   writeenergyevery_(sdynparams.get<int>("RESEVRYERGY")),
   writesurfactant_((bool) DRT::INPUT::IntegralValue<int>(ioparams,"STRUCT_SURFACTANT")),
   writerotation_((bool) DRT::INPUT::IntegralValue<int>(ioparams,"OUTPUT_ROT")),
@@ -2061,6 +2062,7 @@ void STR::TimInt::PrepareOutput()
 {
   DetermineStressStrain();
   DetermineEnergy();
+  DetermineOptionalQuantity();
   if (havemicromat_) PrepareOutputMicro();
 }
 
@@ -2181,6 +2183,14 @@ void STR::TimInt::OutputStep(bool forced_writerestart)
   if ( writeenergyevery_ and (step_%writeenergyevery_ == 0) )
   {
     OutputEnergy();
+  }
+
+  // output optional quantity
+  if ( writeresultsevery_
+       and (writeoptquantity_ != INPAR::STR::optquantity_none)
+       and (step_%writeresultsevery_ == 0) )
+  {
+    OutputOptQuantity(datawritten);
   }
 
   // output active set, energies and momentum for contact
@@ -2627,6 +2637,47 @@ void STR::TimInt::DetermineEnergy()
 }
 
 /*----------------------------------------------------------------------*/
+/* Calculation of an optional quantity */
+void STR::TimInt::DetermineOptionalQuantity()
+{
+  if ( writeresultsevery_
+       and (writeoptquantity_ != INPAR::STR::optquantity_none)
+       and (stepn_%writeresultsevery_ == 0) )
+  {
+    //-------------------------------
+    // create the parameters for the discretization
+    Teuchos::ParameterList p;
+
+    // action for elements
+    if (writeoptquantity_ == INPAR::STR::optquantity_membranethickness)
+      p.set("action", "calc_struct_thickness");
+    else
+      dserror("requested optional quantity type not supported");
+
+    // other parameters that might be needed by the elements
+    p.set("total time", timen_);
+    p.set("delta time", (*dt_)[0]);
+
+    optquantitydata_ = Teuchos::rcp(new std::vector<char>());
+    p.set("optquantity", optquantitydata_);
+    p.set<int>("iooptquantity", writeoptquantity_);
+
+    // set vector values needed by elements
+    discret_->ClearState();
+    // extended SetState(0,...) in case of multiple dofsets (e.g. TSI)
+    discret_->SetState(0,"residual displacement", zeros_);
+    discret_->SetState(0,"displacement", disn_);
+
+    if( (dismatn_!=Teuchos::null) )
+      discret_->SetState(0,"material_displacement",dismatn_);
+
+    discret_->Evaluate(p, Teuchos::null, Teuchos::null,
+                       Teuchos::null, Teuchos::null, Teuchos::null);
+    discret_->ClearState();
+  }
+}
+
+/*----------------------------------------------------------------------*/
 /* stress calculation and output */
 void STR::TimInt::OutputStressStrain
 (
@@ -2761,6 +2812,38 @@ void STR::TimInt::OutputEnergy()
   }
 
   // in God we trust
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* stress calculation and output */
+void STR::TimInt::OutputOptQuantity
+(
+  bool& datawritten
+)
+{
+  // Make new step
+  if (not datawritten)
+  {
+    output_->NewStep(step_, (*time_)[0]);
+  }
+  datawritten = true;
+
+  // write optional quantity
+  if (writeoptquantity_ != INPAR::STR::optquantity_none)
+  {
+    std::string optquantitytext = "";
+    if (writeoptquantity_ == INPAR::STR::optquantity_membranethickness)
+      optquantitytext = "gauss_membrane_thickness";
+    else
+      dserror("requested optional quantity type not supported");
+
+    output_->WriteVector(optquantitytext, *optquantitydata_,
+                         *(discret_->ElementRowMap()));
+    // we don't need this anymore
+    optquantitydata_ = Teuchos::null;
+  }
+
   return;
 }
 

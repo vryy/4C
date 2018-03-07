@@ -321,6 +321,14 @@ void STR::Integrator::DetermineEnergy()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::Integrator::DetermineOptionalQuantity()
+{
+  CheckInitSetup();
+  ModelEval().DetermineOptionalQuantity();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::Integrator::OutputStepState(IO::DiscretizationWriter& iowriter) const
 {
   CheckInitSetup();

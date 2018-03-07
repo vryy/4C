@@ -1206,6 +1206,48 @@ void STR::MODELEVALUATOR::Structure::DetermineEnergy()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::DetermineOptionalQuantity()
+{
+  CheckInitSetup();
+
+  switch ( GInOutput().GetOptQuantityOutputType() )
+  {
+  case INPAR::STR::optquantity_none :
+  {
+    // do nothing and return
+    return;
+  }
+  case INPAR::STR::optquantity_membranethickness :
+  {
+    // evaluate thickness of membrane finite elements
+    EvalData().SetActionType(DRT::ELEMENTS::struct_calc_thickness);
+    break;
+  }
+  default:
+    dserror("Type of optional quantity not implemented yet!");
+  }
+
+  // set all parameters in the evaluation data container
+  EvalData().SetTotalTime(GState().GetTimeNp());
+  EvalData().SetDeltaTime((*GState().GetDeltaTime())[0]);
+  EvalData().SetOptQuantityData(Teuchos::rcp(new std::vector<char>()));
+
+  // set vector values needed by elements
+  Discret().ClearState();
+  Discret().SetState(0,"displacement",GState().GetDisNp());
+  Discret().SetState(0,"residual displacement", dis_incr_ptr_);
+
+  // set dummy evaluation vectors and matrices
+  Teuchos::RCP<Epetra_Vector> eval_vec [3] =
+      {Teuchos::null,Teuchos::null,Teuchos::null};
+  Teuchos::RCP<LINALG::SparseOperator> eval_mat[2] =
+      {Teuchos::null,Teuchos::null};
+
+  EvaluateInternal(eval_mat,eval_vec);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::OutputStepState(
     IO::DiscretizationWriter& iowriter) const
 {
@@ -1521,6 +1563,7 @@ void STR::MODELEVALUATOR::Structure::ParamsInterface2ParameterList(
   case  DRT::ELEMENTS::struct_calc_nlnstifflmass             :   action="calc_struct_nlnstifflmass"            ;   break;
   case  DRT::ELEMENTS::struct_calc_nlnstiff_gemm             :   action="calc_struct_nlnstiff_gemm"            ;   break;
   case  DRT::ELEMENTS::struct_calc_stress                    :   action="calc_struct_stress"                   ;   break;
+  case  DRT::ELEMENTS::struct_calc_thickness                 :   action="calc_struct_thickness"                ;   break;
   case  DRT::ELEMENTS::struct_calc_eleload                   :   action="calc_struct_eleload"                  ;   break;
   case  DRT::ELEMENTS::struct_calc_fsiload                   :   action="calc_struct_fsiload"                  ;   break;
   case  DRT::ELEMENTS::struct_calc_update_istep              :   action="calc_struct_update_istep"             ;   break;
@@ -1535,6 +1578,7 @@ void STR::MODELEVALUATOR::Structure::ParamsInterface2ParameterList(
   case  DRT::ELEMENTS::multi_readrestart                     :   action="multi_readrestart"                    ;   break;
   case  DRT::ELEMENTS::multi_calc_dens                       :   action="multi_calc_dens"                      ;   break;
   case  DRT::ELEMENTS::struct_postprocess_stress             :   action="postprocess_stress"                   ;   break;
+  case  DRT::ELEMENTS::struct_postprocess_thickness          :   action="postprocess_thickness"                ;   break;
   case  DRT::ELEMENTS::struct_update_prestress               :   action="calc_struct_prestress_update"         ;   break;
   case  DRT::ELEMENTS::inversedesign_update                  :   action="calc_struct_inversedesign_update"     ;   break;
   case  DRT::ELEMENTS::inversedesign_switch                  :   action="calc_struct_inversedesign_switch"     ;   break;
@@ -1550,9 +1594,11 @@ void STR::MODELEVALUATOR::Structure::ParamsInterface2ParameterList(
   params.set<Teuchos::RCP<std::vector<char> > >("stress",interface_ptr->MutableStressDataPtr());
   params.set<Teuchos::RCP<std::vector<char> > >("strain",interface_ptr->MutableStrainDataPtr());
   params.set<Teuchos::RCP<std::vector<char> > >("plstrain",interface_ptr->MutablePlasticStrainDataPtr());
-  params.set<int>("iostress",   (int)interface_ptr->GetStressOutputType());
-  params.set<int>("iostrain",   (int)interface_ptr->GetStrainOutputType());
-  params.set<int>("ioplstrain", (int)interface_ptr->GetPlasticStrainOutputType());
+  params.set<Teuchos::RCP<std::vector<char> > >("optquantity",interface_ptr->MutableOptQuantityDataPtr());
+  params.set<int>("iostress",      (int)interface_ptr->GetStressOutputType());
+  params.set<int>("iostrain",      (int)interface_ptr->GetStrainOutputType());
+  params.set<int>("ioplstrain",    (int)interface_ptr->GetPlasticStrainOutputType());
+  params.set<int>("iooptquantity", (int)interface_ptr->GetOptQuantityOutputType());
 }
 
 /*----------------------------------------------------------------------------*

@@ -39,6 +39,7 @@ namespace ELEMENTS {
     struct_calc_recover,                    //!< recover elementwise condensed internal variables
     struct_calc_predict,                    //!< predict elementwise condensed internal variables
     struct_calc_stress,
+    struct_calc_thickness,
     struct_calc_eleload,
     struct_calc_fsiload,
     struct_calc_update_istep,
@@ -49,6 +50,7 @@ namespace ELEMENTS {
     struct_calc_energy,                     //!< compute internal energy
     struct_calc_errornorms,                 //!< compute error norms (L2,H1,energy)
     struct_postprocess_stress,              //!< postprocess stresses
+    struct_postprocess_thickness,           //!< postprocess thickness of membrane finite elements
     struct_update_prestress,
     inversedesign_update,
     inversedesign_switch,
@@ -104,6 +106,8 @@ namespace ELEMENTS {
         return "struct_calc_recover";
       case struct_calc_stress:
         return "struct_calc_stress";
+      case struct_calc_thickness:
+        return "struct_calc_thickness";
       case struct_calc_eleload:
         return "struct_calc_eleload";
       case struct_calc_fsiload:
@@ -124,6 +128,8 @@ namespace ELEMENTS {
         return "struct_calc_errornorms";
       case struct_postprocess_stress:
         return "struct_postprocess_stress";
+      case struct_postprocess_thickness:
+        return "struct_postprocess_thickness";
       case struct_update_prestress:
         return "struct_update_prestress";
       case inversedesign_update:

@@ -135,6 +135,8 @@ namespace ELEMENTS {
 
     virtual Teuchos::RCP<std::vector<char> >& MutableCouplingStressDataPtr() = 0;
 
+    virtual Teuchos::RCP<std::vector<char> >& MutableOptQuantityDataPtr() = 0;
+
     //! get the current stress type
     virtual enum INPAR::STR::StressType GetStressOutputType() const = 0;
 

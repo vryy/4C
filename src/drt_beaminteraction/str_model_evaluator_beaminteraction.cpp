@@ -919,6 +919,13 @@ void STR::MODELEVALUATOR::BeamInteraction::DetermineEnergy()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::BeamInteraction::DetermineOptionalQuantity()
+{
+  // empty
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteraction::OutputStepState(
     IO::DiscretizationWriter& iowriter) const
 {

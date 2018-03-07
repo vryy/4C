@@ -139,6 +139,10 @@ public:
   {return;};
 
   //! [derived]
+  virtual void DetermineOptionalQuantity() override
+  {return;};
+
+  //! [derived]
   virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const
   {return;};
 

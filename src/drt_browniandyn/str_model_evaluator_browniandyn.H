@@ -116,6 +116,9 @@ namespace MODELEVALUATOR{
     void DetermineEnergy();
 
     //! derived
+    void DetermineOptionalQuantity() override;
+
+    //! derived
     virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const;
 
     //! derived

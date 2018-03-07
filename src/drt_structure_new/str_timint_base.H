@@ -838,6 +838,9 @@ namespace TIMINT {
     /// output energy
     void OutputEnergy() const;
 
+    /// output optional quantity
+    void OutputOptionalQuantity();
+
     /// write restart information
     void OutputRestart(bool& datawritten);
 

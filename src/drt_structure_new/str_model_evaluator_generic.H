@@ -284,6 +284,16 @@ namespace MODELEVALUATOR {
      *  \author hiermeier*/
     virtual void DetermineEnergy() = 0;
 
+    /*! \brief calculate optional quantity contribution of each model evaluator
+     *
+     *  \remark This function is called from STR::TIMINT::Base::PrepareOutput() and calculates
+     *  missing quantities, which were not evaluated during the standard evaluate call and are
+     *  only calculated once per load/time step. You can not do the calculations during the
+     *  OutputStepState() routine, because of the const status of the named function!
+     *
+     *  \author hiermeier*/
+    virtual void DetermineOptionalQuantity() = 0;
+
     //! output routine for model evaluator
     virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const = 0;
 

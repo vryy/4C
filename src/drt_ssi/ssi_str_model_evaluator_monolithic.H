@@ -55,6 +55,9 @@ namespace STR
         // calculate stresses and strains
         void DetermineStressStrain();
 
+        // calculate an optional quantity
+        void DetermineOptionalQuantity() override {return;};
+
         //! evaluate current right-hand side vector
         bool EvaluateForce(){return true;};
 
