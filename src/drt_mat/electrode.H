@@ -29,9 +29,10 @@ namespace MAT
     enum OCPModels
     {
       ocp_undefined,
+      ocp_csv,
+      ocp_polynomial,
       ocp_redlichkister,
-      ocp_taralov,
-      ocp_polynomial
+      ocp_taralov
     };
 
     //! parameters for electrode material
@@ -63,6 +64,18 @@ namespace MAT
 
         //! parameters underlying half cell open circuit potential model
         const std::vector<double> ocppara_;
+
+        //! sampling points for cubic spline interpolation
+        std::vector<double> X_;
+
+        //! zeroth-order coefficients for cubic spline interpolation
+        std::vector<double> b_;
+
+        //! first-order coefficients for cubic spline interpolation
+        std::vector<double> a_;
+
+        //! third-order coefficients for cubic spline interpolation
+        std::vector<double> m_;
 
         //! lower bound of validity (as a fraction of c_max) for prescribed open circuit potential calculation model
         const double xmin_;

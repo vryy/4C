@@ -661,10 +661,13 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(matelectrode,"X_MAX","upper bound of range of validity as a fraction of C_MAX for ocp calculation model",2.0,false);
 
     // number of parameters underlying half cell open circuit potential model
-    AddNamedInt(matelectrode,"OCP_PARA_NUM","number of parameters underlying half cell open circuit potential model");
+    AddNamedInt(matelectrode,"OCP_PARA_NUM","number of parameters underlying half cell open circuit potential model",0,true);
 
     // parameters underlying half cell open circuit potential model
-    AddNamedRealVector(matelectrode,"OCP_PARA","parameters underlying half cell open circuit potential model","OCP_PARA_NUM");
+    AddNamedRealVector(matelectrode,"OCP_PARA","parameters underlying half cell open circuit potential model","OCP_PARA_NUM",0.,true);
+
+    // *.csv file with data points for half cell open circuit potential
+    AddNamedString(matelectrode,"OCP_CSV","*.csv file with data points for half cell open circuit potential","",true);
 
     // end of input line
     AddNamedSeparator(matelectrode,"END","indicating end of line");

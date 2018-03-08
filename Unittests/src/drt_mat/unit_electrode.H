@@ -49,6 +49,32 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
       container->Add("COND_PARA_NUM",0);
       container->Add("COND_PARA",std::vector<double>(0,0.));
 
+      // obtain half-cell open-circuit equilibrium potential from cubic spline interpolation of *.csv data points
+      container->Add("OCP_MODEL","csv");
+
+      // add cathode parameters to container according to master thesis by Alexander Rupp (2017)
+      container->Add("C_MAX",4793.3);
+      container->Add("OCP_PARA_NUM",0);
+      container->Add("OCP_PARA",std::vector<double>(0,0.));
+      std::string ocpcsv(__FILE__);
+      ocpcsv.replace(ocpcsv.end()-1,ocpcsv.end(),"csv");
+      container->Add("OCP_CSV",ocpcsv);
+      container->Add("X_MIN",-1.);
+      container->Add("X_MAX",-1.);
+
+      // initialize parameter class for cathode material
+      parameters_cathode_csv_ = Teuchos::rcp(new MAT::PAR::Electrode(container));
+
+      // initialize cathode material
+      cathode_csv_ = Teuchos::rcp(new MAT::Electrode(parameters_cathode_csv_.get()));
+
+      // define sample concentration values for cathode material
+      // cf. master thesis by Alexander Rupp (2017)
+      concentrations_cathode_csv_.resize(3,0.);
+      concentrations_cathode_csv_[0] = 1677.6;   // cathode concentration at 100% state of charge
+      concentrations_cathode_csv_[1] = 3115.6;   // cathode concentration at 50% intercalation fraction
+      concentrations_cathode_csv_[2] = 4553.6;   // cathode concentration at 0% state of charge
+
       // choose semi-empirical Redlich-Kister expansion to model half-cell open-circuit equilibrium potential
       container->Add("OCP_MODEL","Redlich-Kister");
 
@@ -73,6 +99,7 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
       ocp_para[14] = 9.302e4;
       ocp_para[15] = -3.280e4;
       container->Add("OCP_PARA",ocp_para);
+      container->Add("OCP_CSV","");
       container->Add("X_MIN",-1.);
       container->Add("X_MAX",-1.);
 
@@ -115,6 +142,7 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
       ocp_para[19] = 6.658e5;
       ocp_para[20] = -1.084e6;
       container->Add("OCP_PARA",ocp_para);
+      container->Add("OCP_CSV","");
       container->Add("X_MIN",-1.);
       container->Add("X_MAX",-1.);
 
@@ -143,6 +171,7 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
       ocp_para[10] = 1.41;
       ocp_para[11] = -3.52;
       container->Add("OCP_PARA",ocp_para);
+      container->Add("OCP_CSV","");
       container->Add("X_MIN",-1.);
       container->Add("X_MAX",-1.);
 
@@ -175,6 +204,7 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
       ocp_para[11] = -200.;
       ocp_para[12] = -0.19;
       container->Add("OCP_PARA",ocp_para);
+      container->Add("OCP_CSV","");
       container->Add("X_MIN",-1.);
       container->Add("X_MAX",-1.);
 
@@ -200,6 +230,7 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
       ocp_para.resize(1,0.);
       ocp_para[0] = 0.;
       container->Add("OCP_PARA",ocp_para);
+      container->Add("OCP_CSV","");
       container->Add("X_MIN",-1.);
       container->Add("X_MAX",-1.);
 
@@ -225,6 +256,7 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
       ocp_para[3] = 23.88;
       ocp_para[4] = -10.72;
       container->Add("OCP_PARA",ocp_para);
+      container->Add("OCP_CSV","");
       container->Add("X_MIN",0.3);
       container->Add("X_MAX",1.0);
 
@@ -294,6 +326,8 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
         TS_ASSERT_DELTA(anode_polynomial_->ComputeOpenCircuitPotential(concentrations_anode_polynomial_[i],INPAR::ELCH::faraday_const,frt_),results_anode_polynomial[i],tolerances_anode_polynomial[i]);
 
       // define results and tolerances for cathode materials
+      const double results_cathode_csv[] = {4.26568197738244947459e+00,3.85982096426498033637e+00,3.49646582304368758187e+00};
+      const double tolerances_cathode_csv[] = {1.e-16,1.e-16,1.e-16};
       const double results_cathode_redlichkister[] = {3.97322289583641552468e+00,3.90180104449214848472e+00,3.55923291247763096123e+00};
       const double tolerances_cathode_redlichkister[] = {1.e-16,1.e-16,1.e-16};
       const double results_cathode_taralov[] = {4.68476462172226959524e+00,4.12283197556701885844e+00,3.90987668507063856893e+00};
@@ -302,6 +336,8 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
       const double tolerances_cathode_polynomial[] = {1.e-16,1.e-16,1.e-16};
 
       // test member function using sample concentration values for cathode materials
+      for(unsigned i=0; i<concentrations_cathode_csv_.size(); ++i)
+        TS_ASSERT_DELTA(cathode_csv_->ComputeOpenCircuitPotential(concentrations_cathode_csv_[i],INPAR::ELCH::faraday_const,frt_),results_cathode_csv[i],tolerances_cathode_csv[i]);
       for(unsigned i=0; i<concentrations_cathode_redlichkister_.size(); ++i)
         TS_ASSERT_DELTA(cathode_redlichkister_->ComputeOpenCircuitPotential(concentrations_cathode_redlichkister_[i],INPAR::ELCH::faraday_const,frt_),results_cathode_redlichkister[i],tolerances_cathode_redlichkister[i]);
       for(unsigned i=0; i<concentrations_cathode_taralov_.size(); ++i)
@@ -316,7 +352,7 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
     void test_ComputeFirstDerivOpenCircuitPotential()
     {
       // define results and tolerances for anode materials
-      const double results_anode_redlichkister[] = {-4.67265915814377499893e-02,-4.69987444027383099998e-03,-8.94809228199507609991e-03};
+      const double results_anode_redlichkister[] = {-4.67265915814377499893e-02,-4.69987444027383099998e-03,-8.94809228199507436519e-03};
       const double tolerances_anode_redlichkister[] = {1.e-18,1.e-19,1.e-19};
       const double results_anode_taralov[] = {-1.41425383954984579260e-01,-3.45971827773009360518e-02,-8.46358003529945959742e-03};
       const double tolerances_anode_taralov[] = {1.e-17,1.e-18,1.e-19};
@@ -332,14 +368,18 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
         TS_ASSERT_DELTA(anode_polynomial_->ComputeFirstDerivOpenCircuitPotential(concentrations_anode_polynomial_[i],INPAR::ELCH::faraday_const,frt_),results_anode_polynomial[i],tolerances_anode_polynomial[i]);
 
       // define results and tolerances for cathode materials
-      const double results_cathode_redlichkister [] = {-5.87374545823974442138e-02,-4.59544093325152322449e-02,-2.40034452721541308184e-02};
+      const double results_cathode_csv[] = {-3.97916196311376825587e-04,-1.82254204470957764054e-04,-1.19179495232888516508e-03};
+      const double tolerances_cathode_csv[] = {1.e-20,1.e-20,1.e-19};
+      const double results_cathode_redlichkister[] = {-5.87374545823974372749e-02,-4.59544093325152322449e-02,-2.40034452721541273490e-02};
       const double tolerances_cathode_redlichkister[] = {1.e-18,1.e-18,1.e-18};
-      const double results_cathode_taralov [] = {-4.61526542535566619563e+00,-3.29033139167962890639e-03,-3.97138702703261764482e-02};
+      const double results_cathode_taralov[] = {-4.61526542535566619563e+00,-3.29033139167962890639e-03,-3.97138702703261764482e-02};
       const double tolerances_cathode_taralov[] = {1.e-16,1.e-19,1.e-18};
-      const double results_cathode_polynomial [] = {-4.60348767050483748987e-04,-1.48972359281208444927e-04,-2.87284599311867232425e-04};
+      const double results_cathode_polynomial[] = {-4.60348767050483748987e-04,-1.48972359281208444927e-04,-2.87284599311867232425e-04};
       const double tolerances_cathode_polynomial[] = {1.e-20,1.e-20,1.e-20};
 
       // test member function using sample concentration values for cathode materials
+      for(unsigned i=0; i<concentrations_cathode_csv_.size(); ++i)
+        TS_ASSERT_DELTA(cathode_csv_->ComputeFirstDerivOpenCircuitPotential(concentrations_cathode_csv_[i],INPAR::ELCH::faraday_const,frt_),results_cathode_csv[i],tolerances_cathode_csv[i]);
       for(unsigned i=0; i<concentrations_cathode_redlichkister_.size(); ++i)
         TS_ASSERT_DELTA(cathode_redlichkister_->ComputeFirstDerivOpenCircuitPotential(concentrations_cathode_redlichkister_[i],INPAR::ELCH::faraday_const,frt_),results_cathode_redlichkister[i],tolerances_cathode_redlichkister[i]);
       for(unsigned i=0; i<concentrations_cathode_taralov_.size(); ++i)
@@ -354,7 +394,7 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
     void test_ComputeSecondDerivOpenCircuitPotential()
     {
       // define results and tolerances for anode materials
-      const double results_anode_redlichkister[] = {3.04927774052812655681e-02,-1.05174077799887171619e-03,-7.35165984480485820186e-04};
+      const double results_anode_redlichkister[] = {3.04927774052812586292e-02,-1.05174077799887128251e-03,-7.35165984480485711766e-04};
       const double tolerances_anode_redlichkister[] = {1.e-18,1.e-19,1.e-20};
       const double results_anode_taralov[] = {2.01700640785035384406e-02,4.93424429221260389677e-03,1.20707433751687906627e-03};
       const double tolerances_anode_taralov[] = {1.e-18,1.e-19,1.e-19};
@@ -370,14 +410,18 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
         TS_ASSERT_DELTA(anode_polynomial_->ComputeSecondDerivOpenCircuitPotential(concentrations_anode_polynomial_[i],INPAR::ELCH::faraday_const,frt_),results_anode_polynomial[i],tolerances_anode_polynomial[i]);
 
       // define results and tolerances for cathode materials
-      const double results_cathode_redlichkister [] = {1.41256487214221713306e-02,5.72637600860917590773e-03,-7.56499159049272597299e-03};
+      const double results_cathode_csv[] = {1.63562986543888766237e-06,1.43228888999912318160e-07,-1.10872570647637550212e-05};
+      const double tolerances_cathode_csv[] = {1.e-22,1.e-23,1.e-21};
+      const double results_cathode_redlichkister[] = {1.41256487214221678611e-02,5.72637600860917590773e-03,-7.56499159049272597299e-03};
       const double tolerances_cathode_redlichkister[] = {1.e-18,1.e-19,1.e-19};
-      const double results_cathode_taralov [] = {3.89765224056106092121e+01,-7.34373323389212427637e-03,-2.27647861985425976894e-02};
+      const double results_cathode_taralov[] = {3.89765224056106092121e+01,-7.34373323389212427637e-03,-2.27647861985425976894e-02};
       const double tolerances_cathode_taralov[] = {1.e-15,1.e-19,1.e-18};
-      const double results_cathode_polynomial [] = {3.69515732169165666976e-08,2.28146222921396267486e-07,-5.88484654599405069383e-07};
+      const double results_cathode_polynomial[] = {3.69515732169165666976e-08,2.28146222921396267486e-07,-5.88484654599405069383e-07};
       const double tolerances_cathode_polynomial[] = {1.e-24,1.e-23,1.e-23};
 
       // test member function using sample concentration values for cathode materials
+      for(unsigned i=0; i<concentrations_cathode_csv_.size(); ++i)
+        TS_ASSERT_DELTA(cathode_csv_->ComputeSecondDerivOpenCircuitPotential(concentrations_cathode_csv_[i],INPAR::ELCH::faraday_const,frt_),results_cathode_csv[i],tolerances_cathode_csv[i]);
       for(unsigned i=0; i<concentrations_cathode_redlichkister_.size(); ++i)
         TS_ASSERT_DELTA(cathode_redlichkister_->ComputeSecondDerivOpenCircuitPotential(concentrations_cathode_redlichkister_[i],INPAR::ELCH::faraday_const,frt_),results_cathode_redlichkister[i],tolerances_cathode_redlichkister[i]);
       for(unsigned i=0; i<concentrations_cathode_taralov_.size(); ++i)
@@ -389,6 +433,9 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
     }
 
   private:
+
+    //! cathode material based on half cell open circuit potential obtained from cubic spline interpolation of *.csv data points
+    Teuchos::RCP<const MAT::Electrode> cathode_csv_;
 
     //! anode material based on half cell open circuit potential according to Redlich-Kister expansion
     Teuchos::RCP<const MAT::Electrode> anode_redlichkister_;
@@ -408,6 +455,9 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
     //! cathode material based on polynomial half cell open circuit potential
     Teuchos::RCP<const MAT::Electrode> cathode_polynomial_;
 
+    //! parameters for cathode material based on half cell open circuit potential obtained from cubic spline interpolation of *.csv data points
+    Teuchos::RCP<MAT::PAR::Electrode> parameters_cathode_csv_;
+
     //! parameters for anode material based on half cell open circuit potential according to Redlich-Kister expansion
     Teuchos::RCP<MAT::PAR::Electrode> parameters_anode_redlichkister_;
 
@@ -425,6 +475,9 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
 
     //! parameters for cathode material based on polynomial half cell open circuit potential
     Teuchos::RCP<MAT::PAR::Electrode> parameters_cathode_polynomial_;
+
+    //! sample concentration values for cathode material based on half cell open circuit potential obtained from cubic spline interpolation of *.csv data points
+    std::vector<double> concentrations_cathode_csv_;
 
     //! sample concentration values for anode material based on half cell open circuit potential according to Redlich-Kister expansion
     std::vector<double> concentrations_anode_redlichkister_;
