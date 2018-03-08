@@ -364,8 +364,8 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   //! flag indicating whether cell is currently being charged or discharged
   bool charging_;
 
-  //! flag indicating whether cell is currently being operated in constant-current (CC) or constant-voltage (CV) mode
-  bool cc_;
+  //! flag indicating whether cell is currently being operated in constant-current (CC), constant-voltage (CV), or relaxation (RX) mode
+  INPAR::ELCH::CCCVCyclingMode mode_cccv_;
 
   //! ID of constant-current constant-voltage (CCCV) half-cycle condition currently in effect
   int condid_cccv_;
@@ -378,6 +378,9 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
 
   //! time step at the start of current charge or discharge half-cycle
   int ihalfcycle_startstep_;
+
+  //! end time of current relaxation phase
+  double relax_endtime_;
 
   //! modified time step size for CCCV cell cycling
   const double cycling_timestep_;

@@ -78,6 +78,14 @@ namespace INPAR
       approxelctresist_efflenintegcond
     };
 
+    enum CCCVCyclingMode
+    {
+      cccv_undefined,   //!< undefined mode
+      cccv_cc,          //!< constant-current (CC) mode
+      cccv_cv,          //!< constant-voltage (CV) mode
+      cccv_rx           //!< relaxation (RX) mode
+    };
+
     // faraday constant (general definition)
     const double faraday_const = 96485.3399;
 

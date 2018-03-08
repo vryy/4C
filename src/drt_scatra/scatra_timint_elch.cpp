@@ -66,11 +66,12 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(
     cutoff_voltage_ (0.),
     cellcrate_      (0.),
     charging_       (false),
-    cc_             (false),
+    mode_cccv_      (INPAR::ELCH::cccv_undefined),
     condid_cccv_    (-1),
     nhalfcycles_    (-1),
     ihalfcycle_     (-1),
     ihalfcycle_startstep_(-1),
+    relax_endtime_  (-1.),
     cycling_timestep_(elchparams_->get<double>("CYCLING_TIMESTEP")),
     cycling_timestep_active_(false),
     splitter_macro_ (Teuchos::null)
@@ -221,9 +222,6 @@ void SCATRA::ScaTraTimIntElch::Setup()
       for(unsigned icccvhalfcyclecondition=0; icccvhalfcyclecondition<cccvhalfcycleconditions.size(); ++icccvhalfcyclecondition)
         if(cccvhalfcycleconditions[icccvhalfcyclecondition]->GetInt("ConditionID") < 0)
           dserror("Constant-current constant-voltage (CCCV) half-cycle boundary condition has invalid condition ID!");
-
-      // start constant-current constant-voltage (CCCV) cell cycling with constant-current (CC) operating mode
-      cc_ = true;
 
       // set number of first charge or discharge half-cycle
       ihalfcycle_ = 1;
@@ -2714,7 +2712,7 @@ void SCATRA::ScaTraTimIntElch::ApplyDirichletBC(
   ScaTraTimIntImpl::ApplyDirichletBC(time,phinp,phidt);
 
   // evaluate Dirichlet boundary condition on electric potential arising from constant-current constant-voltage (CCCV) cell cycling boundary condition during constant-voltage (CV) phase
-  if(discret_->GetCondition("CCCVCycling") and not cc_)
+  if(discret_->GetCondition("CCCVCycling") and mode_cccv_ == INPAR::ELCH::cccv_cv)
   {
     // initialize set for global IDs of electric potential degrees of freedom affected by constant-current constant-voltage (CCCV) cell cycling boundary condition
     std::set<int> dbcgids;
@@ -2797,7 +2795,7 @@ void SCATRA::ScaTraTimIntElch::ApplyNeumannBC(
   ScaTraTimIntImpl::ApplyNeumannBC(neumann_loads);
 
   // evaluate Neumann boundary condition on electric potential arising from constant-current constant-voltage (CCCV) cell cycling boundary condition during constant-current (CC) phase
-  if(discret_->GetCondition("CCCVCycling") and cc_)
+  if(discret_->GetCondition("CCCVCycling") and mode_cccv_ == INPAR::ELCH::cccv_cc)
   {
     // extract constant-current constant-voltage (CCCV) half-cycle boundary conditions
     std::vector<DRT::Condition*> cccvhalfcycleconditions;
@@ -2887,8 +2885,8 @@ bool SCATRA::ScaTraTimIntElch::NotFinished()
     std::vector<DRT::Condition*> cccvhalfcycleconditions;
     discret_->GetCondition("CCCVHalfCycle",cccvhalfcycleconditions);
 
-    // initialize variables for cutoff C rate and cutoff voltage
-    double cutoff_c_rate(0.);
+    // initialize variables for cutoff C rate and relaxation time
+    double cutoff_c_rate(0.), relax_time(0.);
 
     // loop over all conditions
     for(unsigned icond=0; icond<cccvhalfcycleconditions.size(); ++icond)
@@ -2901,17 +2899,27 @@ bool SCATRA::ScaTraTimIntElch::NotFinished()
       {
         cutoff_c_rate = condition.GetDouble("CutoffCRate");
         cutoff_voltage_ = condition.GetDouble("CutoffVoltage");
+        relax_time = condition.GetDouble("RelaxTime");
 
         // leave loop after relevant condition has been processed
         break;
       }
     }
 
-    // check whether cell is currently being operated in constant-current (CC) or constant-voltage (CV) mode
-    cc_ = (charging_ and cellvoltage_ < cutoff_voltage_) or (!charging_ and cellvoltage_ > cutoff_voltage_);
+    // check whether cell is currently being operated in constant-current (CC), constant-voltage (CV), or relaxation (RX) mode
+    if(((charging_ and cellvoltage_ < cutoff_voltage_) or (!charging_ and cellvoltage_ > cutoff_voltage_)) and relax_endtime_ < 0.)
+      mode_cccv_ = INPAR::ELCH::cccv_cc;
+    else if(cellcrate_ > cutoff_c_rate and relax_endtime_ < 0.)
+      mode_cccv_ = INPAR::ELCH::cccv_cv;
+    else
+      mode_cccv_ = INPAR::ELCH::cccv_rx;
+
+    // set end time of relaxation phase if applicable
+    if(mode_cccv_ == INPAR::ELCH::cccv_rx and relax_time > 0. and relax_endtime_ < 0.)
+      relax_endtime_ = time_ + relax_time;
 
     // current charge or discharge half-cycle is not yet over
-    if(cc_ == true or (cc_ == false and cellcrate_ > cutoff_c_rate))
+    if(mode_cccv_ != INPAR::ELCH::cccv_rx or time_ < relax_endtime_)
       notfinished = true;
 
     // end of current charge or discharge half-cycle has been reached, but there are still half-cycles left
@@ -2922,7 +2930,7 @@ bool SCATRA::ScaTraTimIntElch::NotFinished()
       charging_ = !charging_;
 
       // reset flag to constant-current (CC) operating mode
-      cc_ = true;
+      mode_cccv_ = INPAR::ELCH::cccv_cc;
 
       // change ID of constant-current constant-voltage (CCCV) half-cycle condition in effect
       if(charging_)
@@ -2935,6 +2943,9 @@ bool SCATRA::ScaTraTimIntElch::NotFinished()
 
       // store time step at the start of current charge or discharge half-cycle
       ihalfcycle_startstep_ = step_;
+
+      // reset end time of relaxation phase
+      relax_endtime_ = -1.;
 
       // set outcome
       notfinished = true;

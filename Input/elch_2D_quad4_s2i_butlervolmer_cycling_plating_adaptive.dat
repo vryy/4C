@@ -123,8 +123,8 @@ DLINE  1
 E 6 - NumberOfHalfCycles 3 BeginWithCharging 1 ConditionIDForCharge 1 ConditionIDForDischarge 2
 ----------------------------DESIGN CCCV HALF-CYCLE LINE CONDITIONS
 DLINE  2
-E 6 - ID 1 Current 1.52425e-06 CutoffVoltage 4.2 CutoffCRate 0.8
-E 6 - ID 2 Current -1.52425e-06 CutoffVoltage 3.8 CutoffCRate 100.0
+E 6 - ID 1 Current 1.52425e-06 CutoffVoltage 4.2 CutoffCRate 0.8 RelaxTime -1.0
+E 6 - ID 2 Current -1.52425e-06 CutoffVoltage 3.8 CutoffCRate 100.0 RelaxTime -1.0
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    2 DLINE 1
 NODE    3 DLINE 1

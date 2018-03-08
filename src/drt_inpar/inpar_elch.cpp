@@ -638,6 +638,8 @@ void INPAR::ELCH::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condit
       cccvhalfcyclecomponents.push_back(Teuchos::rcp(new RealConditionComponent("CutoffVoltage")));
       cccvhalfcyclecomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("CutoffCRate")));
       cccvhalfcyclecomponents.push_back(Teuchos::rcp(new RealConditionComponent("CutoffCRate")));
+      cccvhalfcyclecomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("RelaxTime")));
+      cccvhalfcyclecomponents.push_back(Teuchos::rcp(new RealConditionComponent("RelaxTime")));
     }
 
     // insert input file line components into condition definitions
