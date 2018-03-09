@@ -2907,7 +2907,7 @@ bool SCATRA::ScaTraTimIntElch::NotFinished()
     }
 
     // check whether cell is currently being operated in constant-current (CC), constant-voltage (CV), or relaxation (RX) mode
-    if(((charging_ and cellvoltage_ < cutoff_voltage_) or (!charging_ and cellvoltage_ > cutoff_voltage_)) and relax_endtime_ < 0.)
+    if(((charging_ and cellvoltage_ < cutoff_voltage_-1.e-14) or (!charging_ and cellvoltage_ > cutoff_voltage_+1.e-14)) and relax_endtime_ < 0.)
       mode_cccv_ = INPAR::ELCH::cccv_cc;
     else if(cellcrate_ > cutoff_c_rate and relax_endtime_ < 0.)
       mode_cccv_ = INPAR::ELCH::cccv_cv;
