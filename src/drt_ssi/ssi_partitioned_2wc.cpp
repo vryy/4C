@@ -21,6 +21,8 @@
 #include "../drt_scatra_ele/scatra_ele.H"
 #include "../drt_scatra/scatra_timint_implicit.H"
 
+#include <Teuchos_Time.hpp>
+
 /*----------------------------------------------------------------------*
  | constructor                                               Thon 12/14 |
  *----------------------------------------------------------------------*/
@@ -139,7 +141,18 @@ void SSI::SSI_Part2WC::Timeloop()
   {
     PrepareTimeStep();
 
+    // store time before calling nonlinear solver
+    double time = Teuchos::Time::wallTime();
+
     OuterLoop();
+
+    // determine time spent by nonlinear solver and take maximum over all processors via communication
+    double mydtnonlinsolve(Teuchos::Time::wallTime()-time), dtnonlinsolve(0.);
+    Comm().MaxAll(&mydtnonlinsolve,&dtnonlinsolve,1);
+
+    // output performance statistics associated with nonlinear solver into *.csv file if applicable
+    if(DRT::INPUT::IntegralValue<int>(*scatra_->ScaTraField()->ScatraParameterList(),"OUTPUTNONLINSOLVERSTATS"))
+      scatra_->ScaTraField()->OutputNonlinSolverStats(iter_,dtnonlinsolve,Step(),Comm());
 
     UpdateAndOutput();
   }

@@ -1422,9 +1422,20 @@ void SCATRA::ScaTraTimIntImpl::TimeLoop()
     // -------------------------------------------------------------------
     //                  solve nonlinear / linear equation
     // -------------------------------------------------------------------
+    // store time before calling nonlinear solver
+    double time = Teuchos::Time::wallTime();
+
     PreSolve();
     Solve();
     PostSolve();
+
+    // determine time spent by nonlinear solver and take maximum over all processors via communication
+    double mydtnonlinsolve(Teuchos::Time::wallTime()-time), dtnonlinsolve(0.);
+    discret_->Comm().MaxAll(&mydtnonlinsolve,&dtnonlinsolve,1);
+
+    // output performance statistics associated with nonlinear solver into *.csv file if applicable
+    if(DRT::INPUT::IntegralValue<int>(*params_,"OUTPUTNONLINSOLVERSTATS"))
+      OutputNonlinSolverStats(iternum_,dtnonlinsolve,Step(),discret_->Comm());
 
     // -------------------------------------------------------------------
     //                         update solution
@@ -1480,20 +1491,7 @@ void SCATRA::ScaTraTimIntImpl::Solve()
 
     case INPAR::SCATRA::solvertype_nonlinear:
     {
-      // store time before calling nonlinear solver
-      double time = Teuchos::Time::wallTime();
-
-      // call nonlinear solver
       NonlinearSolve();
-
-      // determine time spent by nonlinear solver and take maximum over all processors via communication
-      double mydtnonlinsolve(Teuchos::Time::wallTime()-time), dtnonlinsolve(0.);
-      discret_->Comm().MaxAll(&mydtnonlinsolve,&dtnonlinsolve,1);
-
-      // output performance statistics associated with nonlinear solver into *.csv file if applicable
-      if(DRT::INPUT::IntegralValue<int>(*params_,"OUTPUTNONLINSOLVERSTATS"))
-        OutputNonlinSolverStats(iternum_,dtnonlinsolve,Step(),discret_->Comm());
-
       break;
     }
 
