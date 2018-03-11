@@ -137,7 +137,7 @@ void SSI::SSI_Part2WC::Timeloop()
   PrepareTimeLoop();
 
   //time loop
-  while (NotFinished())
+  while (NotFinished() and scatra_->ScaTraField()->NotFinished())
   {
     PrepareTimeStep();
 

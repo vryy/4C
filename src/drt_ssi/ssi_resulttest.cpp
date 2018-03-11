@@ -114,6 +114,10 @@ double SSI::SSIResultTest::ResultSpecial(
     result = (double) SSI_Mono().Solver().getNumIters();
   }
 
+  // test total number of time steps
+  else if(!quantity.compare(0,7,"numstep"))
+    result = (double) ssi_base_->Step();
+
   // catch unknown quantity strings
   else
     dserror("Quantity '%s' not supported by result testing functionality for scalar-structure interaction!",quantity.c_str());

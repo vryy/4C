@@ -8,7 +8,7 @@
                   General Data File BACI
 ==================================================================
 -------------------------------------------------------------TITLE
-simple, academic test case for monolithic scalar-structure interaction:
+simple, academic test case for partitioned scalar-structure interaction:
 - three-dimensional problem involving standard scalar transport
 - cubic domain discretized by 1 hex8 element
 - constant initial value 0.0 of transported scalar

@@ -8,7 +8,7 @@
                   General Data File BACI
 ==================================================================
 -------------------------------------------------------------TITLE
-simple, academic test case for monolithic scalar-structure interaction involving scatra-scatra interface coupling:
+simple, academic test case for partitioned scalar-structure interaction involving scatra-scatra interface coupling:
 - three-dimensional problem involving standard scalar transport and two-dimensional scatra-scatra interface
 - box-shaped domain discretized by 2 hex8 elements, representing tanks with constant initial concentrations
 - membrane with constant permeability and matching interface nodes in between both tanks
