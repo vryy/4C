@@ -187,6 +187,14 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   .AddNamedInt("ISSTOKES")
   ;
 
+  DRT::INPUT::LineDefinition kimmoinstress;
+  kimmoinstress
+    .AddTag("KIMMOIN-STRESS")
+    .AddNamedInt("MAT")
+    .AddNamedInt("ISSTAT")
+    .AddNamedDouble("AMPLITUDE")
+    ;
+
   DRT::INPUT::LineDefinition turbboulayer;
   turbboulayer
   .AddTag("TURBBOULAYER")
@@ -421,6 +429,21 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         if(mat_id<=0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-GRADU");
 
         functions_.push_back(Teuchos::rcp(new FLD::KimMoinRHS(mat_id, (bool)is_stationary, (bool)is_stokes)));
+      }
+      else if (function->HaveNamed("KIMMOIN-STRESS"))
+      {
+        // read material
+        int mat_id = -1;
+        int is_stationary = 0;
+        double amplitude = 1.0;
+        function->ExtractDouble("AMPLITUDE",amplitude);
+
+        function->ExtractInt("MAT",mat_id);
+        function->ExtractInt("ISSTAT",is_stationary);
+
+        if(mat_id<=0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-STRESS");
+
+        functions_.push_back(Teuchos::rcp(new FLD::KimMoinStress(mat_id, (bool)is_stationary,amplitude)));
       }
       else if (function->HaveNamed("TURBBOULAYER"))
       {

@@ -1255,6 +1255,89 @@ std::vector<double> FLD::KimMoinRHS::EvaluateTimeDerivative(const int      index
 
 return res;
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+FLD::KimMoinStress::KimMoinStress(int mat_id, bool is_stationary, double amplitude) :
+Function(),
+kinviscosity_(-999.0e99),
+is_stationary_(is_stationary),
+amplitude_(amplitude)
+{
+
+  if (amplitude_ != 1.0)
+    dserror("At the moment other implementation of Kimmoin Functions do not include the amplitude functionality!");
+
+  // get material parameters for fluid
+  Teuchos::RCP<MAT::PAR::Material > mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
+  if (mat->Type() != INPAR::MAT::m_fluid)
+    dserror("Material %d is not a fluid",mat_id);
+  MAT::PAR::Parameter* params = mat->Parameter();
+  MAT::PAR::NewtonianFluid* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
+  if (!fparams)
+    dserror("Material does not cast to Newtonian fluid");
+
+  // get density
+  density_ = fparams->density_;
+
+  // get kinematic viscosity
+  kinviscosity_ = fparams->viscosity_ / density_;
+
+
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double FLD::KimMoinStress::Evaluate(int index, const double* xp, double t)
+{
+  //double visc = 1.0;
+
+  double x = xp[0];
+  double y = xp[1];
+  //double z = xp[2];
+
+  const double a = 2;// in general does not need to be equal ... PARAM_A;
+  const double b = 2;// in general does not need to be equal ... PARAM_B;
+
+  double a_pi_x = a*PI*x;
+  double a_pi_y = a*PI*y;
+
+  // time factors
+  double gu = 1.0;
+  double gp = 1.0;
+
+  if(!is_stationary_)
+  {
+    gu = exp(-2.0*b*b*PI*PI*t*kinviscosity_);
+    gp = exp(-4.0*b*b*PI*PI*t*kinviscosity_);
+  }
+
+  double fac = 2*kinviscosity_*density_*gu*PI*a*sin(a_pi_x)*sin(a_pi_y)*amplitude_;
+  double p = -1./4. * ( cos(2.0*a_pi_x) + cos(2.0*a_pi_y) ) * gp * density_;
+
+
+  switch (index)
+  {
+  case 0: // sigma_xx
+    return  (fac - p);
+  case 1: // sigma_yy
+    return (-fac - p);
+  case 2: // sigma_zz
+    return (-p);
+  case 3: // sigma_xy
+    return  0.0;
+  case 4: // sigma_yz
+    return 0.0;
+  case 5: // sigma_zx
+    return 0.0;
+  default:
+    dserror("wrong index %d", index);
+    break;
+  }
+
+  return 1.0;
+}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::TurbBouLayerFunction::Evaluate(const int index, const double* xp,
