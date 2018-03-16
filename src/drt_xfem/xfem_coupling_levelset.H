@@ -320,9 +320,18 @@ public:
 
 public:
 
+  //! Evaluate Neumann traction 3 components
   void EvaluateCouplingConditions(
       LINALG::Matrix<3,1>& ivel,
       LINALG::Matrix<3,1>& itraction,
+      const LINALG::Matrix<3,1>& x,
+      const DRT::Condition* cond
+  );
+
+  //! Evaluate Neumann traction 6 components
+  void EvaluateCouplingConditions(
+      LINALG::Matrix<3,1>& ivel,
+      LINALG::Matrix<6,1>& itraction,
       const LINALG::Matrix<3,1>& x,
       const DRT::Condition* cond
   );

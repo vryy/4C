@@ -236,6 +236,13 @@ public:
       const DRT::Condition* cond
   ){dserror("EvaluateCouplingConditions should be implemented by derived class");};
 
+  virtual void EvaluateCouplingConditions(
+      LINALG::Matrix<3,1>& ivel,
+      LINALG::Matrix<6,1>& itraction,
+      const LINALG::Matrix<3,1>& x,
+      const DRT::Condition* cond
+  ){dserror("EvaluateCouplingConditions should be implemented by derived class");};
+
   virtual void EvaluateCouplingConditionsOldState(
       LINALG::Matrix<3,1>& ivel,
       LINALG::Matrix<3,1>& itraction,
@@ -425,6 +432,13 @@ protected:
 
   void EvaluateNeumannFunction(
       LINALG::Matrix<3,1>& itraction,
+      const LINALG::Matrix<3,1>& x,
+      const DRT::Condition* cond,
+      double time
+  );
+
+  void EvaluateNeumannFunction(
+      LINALG::Matrix<6,1>& itraction,
       const LINALG::Matrix<3,1>& x,
       const DRT::Condition* cond,
       double time

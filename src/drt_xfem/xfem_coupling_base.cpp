@@ -493,6 +493,29 @@ void XFEM::CouplingBase::EvaluateNeumannFunction(
   itraction(2,0) = final_values[2];
 }
 
+void XFEM::CouplingBase::EvaluateNeumannFunction(
+    LINALG::Matrix<6,1>& itraction,
+    const LINALG::Matrix<3,1>& x,
+    const DRT::Condition* cond,
+    double time
+)
+{
+  std::vector<double> final_values(6,0.0);
+
+  //---------------------------------------
+  const std::string* condtype = cond->Get<std::string>("type");
+
+  // get usual body force
+  if (!(*condtype == "neum_dead" or *condtype == "neum_live"))
+    dserror("Unknown Neumann condition");
+  //---------------------------------------
+
+  EvaluateFunction(final_values, x.A(), cond, time);
+
+  for (uint i = 0; i < 6; ++i)
+    itraction(i,0) = final_values[i];
+}
+
 void XFEM::CouplingBase::EvaluateFunction(
     std::vector<double>& final_values,
     const double* x,

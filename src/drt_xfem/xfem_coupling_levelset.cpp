@@ -1120,6 +1120,22 @@ void XFEM::LevelSetCouplingNeumann::EvaluateCouplingConditions(
   EvaluateNeumannFunction(itraction, x, cond, time_);
 }
 
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::LevelSetCouplingNeumann::EvaluateCouplingConditions(
+    LINALG::Matrix<3,1>& ivel,
+    LINALG::Matrix<6,1>& itraction,
+    const LINALG::Matrix<3,1>& x,
+    const DRT::Condition* cond
+)
+{
+  // no interface velocity to be evaluated
+  ivel.Clear();
+
+  // evaluate interface traction (given by Neumann condition)
+  EvaluateNeumannFunction(itraction, x, cond, time_);
+}
+
 //TODO: combine it with the function before with optional time parameter?!
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/

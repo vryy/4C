@@ -3908,12 +3908,28 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectors(
 
     break;
   }
-  case INPAR::XFEM::CouplingCond_SURF_NEUMANN:
   case INPAR::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET:
-  case INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN:
   {
     // evaluate condition function at Gaussian point
     coupling->EvaluateCouplingConditions(ivelint_jump,itraction_jump,x,cond);
+    break;
+  }
+  case INPAR::XFEM::CouplingCond_SURF_NEUMANN:
+  case INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN:
+  {
+    // evaluate condition function at Gaussian point
+    if (cond->GetInt("numdof") == 6)
+    {
+      LINALG::Matrix<6,1> fulltraction(true); //sigma_xx, sigma_yy, sigma_zz, sigma_xy, sigma_yz, sigma_zx
+      coupling->EvaluateCouplingConditions(ivelint_jump,fulltraction,x,cond);
+      itraction_jump(0,0) = fulltraction(0,0)*normal(0,0) + fulltraction(3,0)*normal(1,0) + fulltraction(5,0)*normal(2,0);
+      itraction_jump(1,0) = fulltraction(3,0)*normal(0,0) + fulltraction(1,0)*normal(1,0) + fulltraction(4,0)*normal(2,0);
+      itraction_jump(2,0) = fulltraction(5,0)*normal(0,0) + fulltraction(4,0)*normal(1,0) + fulltraction(2,0)*normal(2,0);
+    }
+    else
+    {
+      coupling->EvaluateCouplingConditions(ivelint_jump,itraction_jump,x,cond);
+    }
     break;
   }
   case INPAR::XFEM::CouplingCond_SURF_FSI_PART:
