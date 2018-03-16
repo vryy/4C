@@ -189,11 +189,11 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
 
   DRT::INPUT::LineDefinition kimmoinstress;
   kimmoinstress
-    .AddTag("KIMMOIN-STRESS")
-    .AddNamedInt("MAT")
-    .AddNamedInt("ISSTAT")
-    .AddNamedDouble("AMPLITUDE")
-    ;
+  .AddTag("KIMMOIN-STRESS")
+  .AddNamedInt("MAT")
+  .AddNamedInt("ISSTAT")
+  .AddNamedDouble("AMPLITUDE")
+  ;
 
   DRT::INPUT::LineDefinition turbboulayer;
   turbboulayer
@@ -294,6 +294,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(kimmoinup);
   lines->Add(kimmoingradu);
   lines->Add(kimmoinrhs);
+  lines->Add(kimmoinstress);
   lines->Add(turbboulayer);
   lines->Add(turbboulayerbfs);
   lines->Add(turbboulayeroracles);
@@ -436,10 +437,10 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         int mat_id = -1;
         int is_stationary = 0;
         double amplitude = 1.0;
-        function->ExtractDouble("AMPLITUDE",amplitude);
 
         function->ExtractInt("MAT",mat_id);
         function->ExtractInt("ISSTAT",is_stationary);
+        function->ExtractDouble("AMPLITUDE",amplitude);
 
         if(mat_id<=0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-STRESS");
 
