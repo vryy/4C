@@ -49,6 +49,15 @@ namespace INPAR
       invalid
     };
 
+    /// how to define the average, coupling with respect to which side?
+    enum InterfaceLaw
+    {
+      noslip,     /// no slip in tangential direction
+      noslip_splitpen,     /// no slip in tangential direction with splitted normal and tangential penalty
+      slip,       /// full slip in tangential direction
+      navierslip  /// general navier boundary condition
+    };
+
     /// L2 stress projection on whole fluid element or on partial fluid element
     enum Hybrid_LM_L2_Proj
     {
@@ -207,9 +216,12 @@ namespace INPAR
       F_Adj_Row,
       F_Adj_n_Row,
       F_Adj_t_Row,
-      X_Adj_Row,
-      X_Adj_n_Row,
-      X_Adj_t_Row,
+      XF_Adj_Row, //specific row scalings for fluid stress slave
+      XF_Adj_n_Row,
+      XF_Adj_t_Row,
+      XS_Adj_Row, //specific col scalings for structural stress slave
+      XS_Adj_n_Row,
+      XS_Adj_t_Row,
       F_Pen_Row,
       F_Pen_n_Row,
       F_Pen_t_Row,
@@ -220,9 +232,12 @@ namespace INPAR
       F_Con_Col,
       F_Con_n_Col,
       F_Con_t_Col,
-      X_Con_Col,
-      X_Con_n_Col,
-      X_Con_t_Col,
+      XF_Con_Col, //specific col scalings for fluid stress slave
+      XF_Con_n_Col,
+      XF_Con_t_Col,
+      XS_Con_Col, //specific col scalings for structural stress slave
+      XS_Con_n_Col,
+      XS_Con_t_Col,
       F_Adj_Col,
       F_Adj_n_Col,
       F_Adj_t_Col,

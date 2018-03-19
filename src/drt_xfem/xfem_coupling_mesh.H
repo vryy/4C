@@ -688,6 +688,21 @@ public:
   // for assembly of fluid interface forces
   Teuchos::RCP<Epetra_Vector> IForcecol(){ return iforcecol_; }
 
+  void SetTimeFac(double timefac){ timefac_ = timefac; }
+
+  double GetTimeFac(){return timefac_;}
+
+  void GetStressTangentSlave(
+      DRT::Element * coup_ele,                   ///< solid ele
+      double& e_s);                              ///< stress tangent slavesided
+
+  /// get scaling of the master side for penalty (viscosity, E-modulus for solids)
+  virtual void GetPenaltyScalingSlave(
+      DRT::Element * coup_ele,                      ///< xfluid ele
+      double& penscaling_s)                         ///< penalty scaling slavesided
+  {
+    GetStressTangentSlave(coup_ele,penscaling_s);
+  }
 
 //private:
 
@@ -697,15 +712,20 @@ public:
       const bool write_restart_data
   );
 
+  double timefac_;
+
+  // prepare solve
+  virtual void PrepareSolve();
+
+  virtual INPAR::XFEM::InterfaceLaw GetInterfaceLaw(){return interfacelaw_;}
+
 protected:
 
   virtual void InitStateVectors();
 
   virtual bool HasMovingInterface(){ return true; }
 
-  void SetConditionSpecificParameters(
-      const std::string &                 cond_name ///< name of the condition, by which the derived cutter discretization is identified
-  );
+  virtual void SetConditionSpecificParameters();
 
   //! Initializes configurationmap
   virtual void SetupConfigurationMap();
@@ -736,6 +756,8 @@ protected:
   //! @name parameters
   //       Coupling Surface (E 1)          slip length    is slip length constant?
   std::map<        int       ,   std::pair<    double  ,          bool       > > sliplength_map_;
+
+  INPAR::XFEM::InterfaceLaw interfacelaw_;
   //@}
 
 };

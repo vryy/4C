@@ -638,6 +638,23 @@ void INPAR::XFEM::SetValidConditions(const std::vector<Teuchos::RCP<DRT::INPUT::
   xfem_surf_fsi_part->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("COUPLINGID")));
   xfem_surf_fsi_part->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("label", 1, false, false, false)));
 
+  //COUPSTRATEGY IS FLUID SIDED
+
+  xfem_surf_fsi_part->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("INTLAW",true)));
+  xfem_surf_fsi_part->AddComponent(
+      Teuchos::rcp(
+           new StringConditionComponent(
+             "INTLAW",
+             "noslip",
+             Teuchos::tuple<std::string>("noslip","noslip_splitpen","slip","navslip"),
+             Teuchos::tuple<int>(
+                 INPAR::XFEM::noslip,
+                 INPAR::XFEM::noslip_splitpen,
+                 INPAR::XFEM::slip,
+                 INPAR::XFEM::navierslip),
+                 true
+             )));
+
   xfem_surf_fsi_part->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("SLIPCOEFFICIENT",true)));
   xfem_surf_fsi_part->AddComponent(Teuchos::rcp(new RealVectorConditionComponent("slipcoeff",1,true)));
 
@@ -660,6 +677,36 @@ void INPAR::XFEM::SetValidConditions(const std::vector<Teuchos::RCP<DRT::INPUT::
 
   xfem_surf_fsi_mono->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("COUPLINGID")));
   xfem_surf_fsi_mono->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("label", 1, false, false, false)));
+
+  xfem_surf_fsi_mono->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("COUPSTRATEGY",true)));
+  xfem_surf_fsi_mono->AddComponent(
+      Teuchos::rcp(
+           new StringConditionComponent(
+             "COUPSTRATEGY",
+             "xfluid",
+             Teuchos::tuple<std::string>("xfluid","solid","mean","harmonic"),
+             Teuchos::tuple<int>(
+                 INPAR::XFEM::Xfluid_Sided,
+                 INPAR::XFEM::Embedded_Sided,
+                 INPAR::XFEM::Mean,
+                 INPAR::XFEM::Harmonic),
+                 true
+             )));
+
+  xfem_surf_fsi_mono->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("INTLAW",true)));
+  xfem_surf_fsi_mono->AddComponent(
+      Teuchos::rcp(
+           new StringConditionComponent(
+             "INTLAW",
+             "noslip",
+             Teuchos::tuple<std::string>("noslip","noslip_splitpen","slip","navslip"),
+             Teuchos::tuple<int>(
+                 INPAR::XFEM::noslip,
+                 INPAR::XFEM::noslip_splitpen,
+                 INPAR::XFEM::slip,
+                 INPAR::XFEM::navierslip),
+                 true
+             )));
 
   xfem_surf_fsi_mono->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("SLIPCOEFFICIENT",true)));
   xfem_surf_fsi_mono->AddComponent(Teuchos::rcp(new RealVectorConditionComponent("slipcoeff",1,true)));

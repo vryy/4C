@@ -179,36 +179,42 @@ void XFEM::CouplingBase::InitConfigurationMap()
   configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool,double>(false,0.0);
   configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool,double>(false,0.0);
   configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool,double>(false,0.0);
-  configuration_map_[INPAR::XFEM::X_Con_Col] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::XF_Con_Col] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::XS_Con_Col] = std::pair<bool,double>(false,0.0);
   //normal terms:
   configuration_map_[INPAR::XFEM::F_Con_n_Row] = std::pair<bool,double>(false,0.0);
   configuration_map_[INPAR::XFEM::X_Con_n_Row] = std::pair<bool,double>(false,0.0);
   configuration_map_[INPAR::XFEM::F_Con_n_Col] = std::pair<bool,double>(false,0.0);
-  configuration_map_[INPAR::XFEM::X_Con_n_Col] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::XF_Con_n_Col] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::XS_Con_n_Col] = std::pair<bool,double>(false,0.0);
   //tangential terms:
   configuration_map_[INPAR::XFEM::F_Con_t_Row] = std::pair<bool,double>(false,0.0);
   configuration_map_[INPAR::XFEM::X_Con_t_Row] = std::pair<bool,double>(false,0.0);
   configuration_map_[INPAR::XFEM::F_Con_t_Col] = std::pair<bool,double>(false,0.0);
-  configuration_map_[INPAR::XFEM::X_Con_t_Col] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::XF_Con_t_Col] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::XS_Con_t_Col] = std::pair<bool,double>(false,0.0);
 
   //Configuration of Adjoint Consistency Terms
   //all components:
   configuration_map_[INPAR::XFEM::F_Adj_Row] = std::pair<bool,double>(false,0.0);
-  configuration_map_[INPAR::XFEM::X_Adj_Row] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::XF_Adj_Row] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::XS_Adj_Row] = std::pair<bool,double>(false,0.0);
   configuration_map_[INPAR::XFEM::F_Adj_Col] = std::pair<bool,double>(false,0.0);
   configuration_map_[INPAR::XFEM::X_Adj_Col] = std::pair<bool,double>(false,0.0);
   configuration_map_[INPAR::XFEM::FStr_Adj_Col] = std::pair<bool,double>(false,0.0);
   configuration_map_[INPAR::XFEM::XStr_Adj_Col] = std::pair<bool,double>(false,0.0);
   //normal terms:
   configuration_map_[INPAR::XFEM::F_Adj_n_Row] = std::pair<bool,double>(false,0.0);
-  configuration_map_[INPAR::XFEM::X_Adj_n_Row] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::XF_Adj_n_Row] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::XS_Adj_n_Row] = std::pair<bool,double>(false,0.0);
   configuration_map_[INPAR::XFEM::F_Adj_n_Col] = std::pair<bool,double>(false,0.0);
   configuration_map_[INPAR::XFEM::X_Adj_n_Col] = std::pair<bool,double>(false,0.0);
   configuration_map_[INPAR::XFEM::FStr_Adj_n_Col] = std::pair<bool,double>(false,0.0);
   configuration_map_[INPAR::XFEM::XStr_Adj_n_Col] = std::pair<bool,double>(false,0.0);
   //tangential terms:
   configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool,double>(false,0.0);
-  configuration_map_[INPAR::XFEM::X_Adj_t_Row] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::XF_Adj_t_Row] = std::pair<bool,double>(false,0.0);
+  configuration_map_[INPAR::XFEM::XS_Adj_t_Row] = std::pair<bool,double>(false,0.0);
   configuration_map_[INPAR::XFEM::F_Adj_t_Col] = std::pair<bool,double>(false,0.0);
   configuration_map_[INPAR::XFEM::X_Adj_t_Col] = std::pair<bool,double>(false,0.0);
   configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool,double>(false,0.0);
@@ -364,6 +370,16 @@ void XFEM::CouplingBase::SetAveragingStrategy()
   switch(cond_type)
   {
   case INPAR::XFEM::CouplingCond_SURF_FSI_MONO:
+  {
+    // ask the first cutter element
+    const int lid=0;
+    const int val = cutterele_conds_[lid].second->GetInt("COUPSTRATEGY");
+    averaging_strategy_ = static_cast<INPAR::XFEM::AveragingStrategy>(val);
+    //check unhandled cased
+    if (averaging_strategy_ == INPAR::XFEM::Mean || averaging_strategy_ == INPAR::XFEM::Harmonic)
+      dserror("XFEM::CouplingBase::SetAveragingStrategy(): Strategy Mean/Harmoninc not available for FSI monolithic, ... coming soon!");
+    break;
+  }
   case INPAR::XFEM::CouplingCond_SURF_FPI_MONO:
   {
     averaging_strategy_ = INPAR::XFEM::Xfluid_Sided;
@@ -406,12 +422,12 @@ void XFEM::CouplingBase::SetCouplingDiscretization()
 
   switch(cond_type)
   {
-  case INPAR::XFEM::CouplingCond_SURF_FSI_MONO:
   case INPAR::XFEM::CouplingCond_SURF_FPI_MONO:
   {
     coupl_dis_ = cutter_dis_;
     break;
   }
+  case INPAR::XFEM::CouplingCond_SURF_FSI_MONO:
   case INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID:
   {
     // depending on the weighting strategy
@@ -424,7 +440,7 @@ void XFEM::CouplingBase::SetCouplingDiscretization()
     {
       coupl_dis_ = cond_dis_;
     }
-    else dserror("invalid coupling strategy for fluid-fluid application");
+    else dserror("Invalid coupling strategy for XFF or XFSI application");
     break;
   }
   case INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE:

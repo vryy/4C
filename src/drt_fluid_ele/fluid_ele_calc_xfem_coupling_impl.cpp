@@ -798,7 +798,8 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
     this->GetInterfaceVelnp(velint_s_);
 
   //Calc full veldiff
-  if (configmap.at(INPAR::XFEM::F_Adj_Row).first || configmap.at(INPAR::XFEM::X_Adj_Row).first || configmap.at(INPAR::XFEM::F_Pen_Row).first || configmap.at(INPAR::XFEM::X_Pen_Row).first)
+  if (configmap.at(INPAR::XFEM::F_Adj_Row).first || configmap.at(INPAR::XFEM::XF_Adj_Row).first || configmap.at(INPAR::XFEM::XS_Adj_Row).first
+      || configmap.at(INPAR::XFEM::F_Pen_Row).first || configmap.at(INPAR::XFEM::X_Pen_Row).first)
   {
     velint_diff_.Update(configmap.at(INPAR::XFEM::F_Adj_Col).second, velint_m, -configmap.at(INPAR::XFEM::X_Adj_Col).second, velint_s_, 0.0);
     // add the prescribed interface velocity for weak Dirichlet boundary conditions or the jump height for coupled problems
@@ -816,7 +817,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   }
 
   //Calc normal-veldiff
-  if (configmap.at(INPAR::XFEM::F_Adj_n_Row).first || configmap.at(INPAR::XFEM::X_Adj_n_Row).first || configmap.at(INPAR::XFEM::F_Pen_n_Row).first || configmap.at(INPAR::XFEM::X_Pen_n_Row).first)
+  if (configmap.at(INPAR::XFEM::F_Adj_n_Row).first || configmap.at(INPAR::XFEM::XF_Adj_n_Row).first|| configmap.at(INPAR::XFEM::XS_Adj_n_Row).first || configmap.at(INPAR::XFEM::F_Pen_n_Row).first || configmap.at(INPAR::XFEM::X_Pen_n_Row).first)
   {
     // velint_diff_proj_normal_ = (u^m_k - u^s_k - u^{jump}_k) P^n_{kj}
     // (([|u|]-u_0)*P^n) Apply from right for consistency
@@ -837,7 +838,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   }
 
   //Calc tangential-veldiff
-  if (configmap.at(INPAR::XFEM::F_Adj_t_Row).first || configmap.at(INPAR::XFEM::X_Adj_t_Row).first || configmap.at(INPAR::XFEM::F_Pen_t_Row).first || configmap.at(INPAR::XFEM::X_Pen_t_Row).first)
+  if (configmap.at(INPAR::XFEM::F_Adj_t_Row).first || configmap.at(INPAR::XFEM::XF_Adj_t_Row).first || configmap.at(INPAR::XFEM::XS_Adj_t_Row).first || configmap.at(INPAR::XFEM::F_Pen_t_Row).first || configmap.at(INPAR::XFEM::X_Pen_t_Row).first)
   {
     // velint_diff_proj_tangential_ = (u^m_k - u^s_k - u^{jump}_k) P^t_{kj}
     // (([|u|]-u_0)*P^t) Apply from right for consistency
@@ -1102,8 +1103,8 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
       dserror("visc Adjoint Stress Term without projection not implemented - feel free!");
    }
 
-   if ((configmap.at(INPAR::XFEM::X_Con_Col).first || configmap.at(INPAR::XFEM::X_Con_n_Col).first || configmap.at(INPAR::XFEM::X_Con_t_Col).first ||
-       configmap.at(INPAR::XFEM::X_Adj_Row).first || configmap.at(INPAR::XFEM::X_Adj_n_Row).first || configmap.at(INPAR::XFEM::X_Adj_t_Row).first))
+   if ((configmap.at(INPAR::XFEM::XF_Con_Col).first || configmap.at(INPAR::XFEM::XF_Con_n_Col).first || configmap.at(INPAR::XFEM::XF_Con_t_Col).first ||
+       configmap.at(INPAR::XFEM::XF_Adj_Row).first || configmap.at(INPAR::XFEM::XF_Adj_n_Row).first || configmap.at(INPAR::XFEM::XF_Adj_t_Row).first))
    {
 
     //TODO: @Christoph:
@@ -1124,7 +1125,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
     // must use this-pointer because of two-stage lookup!
     this->GetInterfacePresnp(pres_s);
 
-    if(configmap.at(INPAR::XFEM::X_Con_Col).first)
+    if(configmap.at(INPAR::XFEM::XF_Con_Col).first)
     {
       NIT_p_Consistency_SlaveTerms(
           pres_s,
@@ -1132,10 +1133,10 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
           normal_pres_timefacfac_,
           configmap.at(INPAR::XFEM::F_Con_Row),
           configmap.at(INPAR::XFEM::X_Con_Row),
-          configmap.at(INPAR::XFEM::X_Con_Col));
+          configmap.at(INPAR::XFEM::XF_Con_Col));
     }
 
-    if(configmap.at(INPAR::XFEM::X_Con_n_Col).first) //(COMMENT: evaluating this seperatly seems to be more efficient for our cases)
+    if(configmap.at(INPAR::XFEM::XF_Con_n_Col).first) //(COMMENT: evaluating this seperatly seems to be more efficient for our cases)
     {
       NIT_p_Consistency_SlaveTerms(
           pres_s,
@@ -1143,27 +1144,27 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
           normal_pres_timefacfac_,
           configmap.at(INPAR::XFEM::F_Con_n_Row),
           configmap.at(INPAR::XFEM::X_Con_n_Row),
-          configmap.at(INPAR::XFEM::X_Con_n_Col));
+          configmap.at(INPAR::XFEM::XF_Con_n_Col));
     }
 
     //-----------------------------------------------------------------
     // pressure adjoint consistency term
     // HAS PROJECTION FOR VELOCITY IMPLEMENTED!!!
-    if(configmap.at(INPAR::XFEM::X_Adj_Row).first)
+    if(configmap.at(INPAR::XFEM::XF_Adj_Row).first)
     {
       NIT_p_AdjointConsistency_SlaveTerms(
           normal_pres_timefacfac_,
           velint_diff_pres_timefacfac_,
-          configmap.at(INPAR::XFEM::X_Adj_Row),
+          configmap.at(INPAR::XFEM::XF_Adj_Row),
           configmap.at(INPAR::XFEM::F_Adj_Col),
           configmap.at(INPAR::XFEM::X_Adj_Col));
     }
-    if(configmap.at(INPAR::XFEM::X_Adj_n_Row).first) //(COMMENT: evaluating this seperatly seems to be more efficient for our cases)
+    if(configmap.at(INPAR::XFEM::XF_Adj_n_Row).first) //(COMMENT: evaluating this seperatly seems to be more efficient for our cases)
     {
       NIT_p_AdjointConsistency_SlaveTerms(
           normal_pres_timefacfac_,
           velint_diff_normal_pres_timefacfac_,
-          configmap.at(INPAR::XFEM::X_Adj_n_Row),
+          configmap.at(INPAR::XFEM::XF_Adj_n_Row),
           configmap.at(INPAR::XFEM::F_Adj_n_Col),
           configmap.at(INPAR::XFEM::X_Adj_n_Col));
     }
@@ -1189,16 +1190,16 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
     vderxy_s_normal_transposed_viscs_timefacfac_ks_.Update(1.0,vderxy_s_normal_,1.0);
     vderxy_s_normal_transposed_viscs_timefacfac_ks_.Scale(ks_viscs_fac);
 
-    if(configmap.at(INPAR::XFEM::X_Con_Col).first)
+    if(configmap.at(INPAR::XFEM::XF_Con_Col).first)
     {
       NIT_visc_Consistency_SlaveTerms(
           derxy_s,
           funct_m,
           configmap.at(INPAR::XFEM::F_Con_Row),
           configmap.at(INPAR::XFEM::X_Con_Row),
-          configmap.at(INPAR::XFEM::X_Con_Col));
+          configmap.at(INPAR::XFEM::XF_Con_Col));
     }
-    if(configmap.at(INPAR::XFEM::X_Con_n_Col).first || configmap.at(INPAR::XFEM::X_Con_t_Col).first)
+    if(configmap.at(INPAR::XFEM::XF_Con_n_Col).first || configmap.at(INPAR::XFEM::XF_Con_t_Col).first)
       dserror("Want to implement projected slave consistency?");
 
     //-----------------------------------------------------------------
@@ -1208,18 +1209,18 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
     derxy_s_viscs_timefacfac_ks.Scale(adj_visc_scale_*ks_viscs_fac);
 
     //TODO: Needs added Projection. (If deemed necessary!)
-    if(configmap.at(INPAR::XFEM::X_Adj_Row).first)
+    if(configmap.at(INPAR::XFEM::XF_Adj_Row).first)
     {
       NIT_visc_AdjointConsistency_SlaveTerms(
           funct_m,
           derxy_s_viscs_timefacfac_ks,
           normal,
-          configmap.at(INPAR::XFEM::X_Adj_Row),
+          configmap.at(INPAR::XFEM::XF_Adj_Row),
           configmap.at(INPAR::XFEM::F_Adj_Col),
           configmap.at(INPAR::XFEM::X_Adj_Col)
       );
     }
-    if(configmap.at(INPAR::XFEM::X_Adj_n_Row).first || configmap.at(INPAR::XFEM::X_Adj_t_Row).first)
+    if(configmap.at(INPAR::XFEM::XF_Adj_n_Row).first || configmap.at(INPAR::XFEM::XF_Adj_t_Row).first)
       dserror("Want to  implement projected slave adjoint consistency?");
 
     //-----------------------------------------------------------------
@@ -1318,7 +1319,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
     this->GetInterfaceVeln(velint_s_);
 
   //Calc full veldiff
-  if (configmap.at(INPAR::XFEM::F_Adj_Row).first || configmap.at(INPAR::XFEM::X_Adj_Row).first || configmap.at(INPAR::XFEM::F_Pen_Row).first || configmap.at(INPAR::XFEM::X_Pen_Row).first)
+  if (configmap.at(INPAR::XFEM::F_Adj_Row).first || configmap.at(INPAR::XFEM::XF_Adj_Row).first|| configmap.at(INPAR::XFEM::XS_Adj_Row).first || configmap.at(INPAR::XFEM::F_Pen_Row).first || configmap.at(INPAR::XFEM::X_Pen_Row).first)
   {
     velint_diff_.Update(configmap.at(INPAR::XFEM::F_Adj_Col).second, velint_m, -configmap.at(INPAR::XFEM::X_Adj_Col).second, velint_s_, 0.0);
     // add the prescribed interface velocity for weak Dirichlet boundary conditions or the jump height for coupled problems
@@ -1336,7 +1337,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
   }
 
   //Calc normal-veldiff
-  if (configmap.at(INPAR::XFEM::F_Adj_n_Row).first || configmap.at(INPAR::XFEM::X_Adj_n_Row).first || configmap.at(INPAR::XFEM::F_Pen_n_Row).first || configmap.at(INPAR::XFEM::X_Pen_n_Row).first)
+  if (configmap.at(INPAR::XFEM::F_Adj_n_Row).first || configmap.at(INPAR::XFEM::XF_Adj_n_Row).first || configmap.at(INPAR::XFEM::XS_Adj_n_Row).first || configmap.at(INPAR::XFEM::F_Pen_n_Row).first || configmap.at(INPAR::XFEM::X_Pen_n_Row).first)
   {
     // velint_diff_proj_normal_ = (u^m_k - u^s_k - u^{jump}_k) P^n_{kj}
     // (([|u|]-u_0)*P^n) Apply from right for consistency
@@ -1357,7 +1358,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
   }
 
   //Calc tangential-veldiff
-  if (configmap.at(INPAR::XFEM::F_Adj_t_Row).first || configmap.at(INPAR::XFEM::X_Adj_t_Row).first || configmap.at(INPAR::XFEM::F_Pen_t_Row).first || configmap.at(INPAR::XFEM::X_Pen_t_Row).first)
+  if (configmap.at(INPAR::XFEM::F_Adj_t_Row).first || configmap.at(INPAR::XFEM::XF_Adj_t_Row).first || configmap.at(INPAR::XFEM::F_Pen_t_Row).first || configmap.at(INPAR::XFEM::X_Pen_t_Row).first)
   {
     // velint_diff_proj_tangential_ = (u^m_k - u^s_k - u^{jump}_k) P^t_{kj}
     // (([|u|]-u_0)*P^t) Apply from right for consistency
@@ -1550,12 +1551,12 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
   //-----------------------------------------------------------------
   // the following quantities are only required for two-sided coupling
   // kappa_s > 0.0
-  if ((configmap.at(INPAR::XFEM::X_Con_Col).first || configmap.at(INPAR::XFEM::X_Con_n_Col).first || configmap.at(INPAR::XFEM::X_Con_t_Col).first ||
-      configmap.at(INPAR::XFEM::X_Adj_Row).first || configmap.at(INPAR::XFEM::X_Adj_n_Row).first || configmap.at(INPAR::XFEM::X_Adj_t_Row).first))
+  if ((configmap.at(INPAR::XFEM::XF_Con_Col).first || configmap.at(INPAR::XFEM::XF_Con_n_Col).first || configmap.at(INPAR::XFEM::XF_Con_t_Col).first ||
+      configmap.at(INPAR::XFEM::XF_Adj_Row).first || configmap.at(INPAR::XFEM::XF_Adj_n_Row).first || configmap.at(INPAR::XFEM::XF_Adj_t_Row).first))
   {
     //-----------------------------------------------------------------
     // pressure consistency term
-    if(configmap.at(INPAR::XFEM::X_Con_Col).first || configmap.at(INPAR::XFEM::X_Con_n_Col).first)
+    if(configmap.at(INPAR::XFEM::XF_Con_Col).first || configmap.at(INPAR::XFEM::XF_Con_n_Col).first)
     {
       if (not isImplPressure)
       {
@@ -1563,7 +1564,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
         // must use this-pointer because of two-stage lookup!
         this->GetInterfacePresn(presn_s);
 
-        if(configmap.at(INPAR::XFEM::X_Con_Col).first)
+        if(configmap.at(INPAR::XFEM::XF_Con_Col).first)
         {
           NIT_p_Consistency_SlaveTerms(
               presn_s,
@@ -1571,11 +1572,11 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
               normal_pres_timefacfac_,
               configmap.at(INPAR::XFEM::F_Con_Row),
               configmap.at(INPAR::XFEM::X_Con_Row),
-              configmap.at(INPAR::XFEM::X_Con_Col),
+              configmap.at(INPAR::XFEM::XF_Con_Col),
               true);
         }
 
-        if(configmap.at(INPAR::XFEM::X_Con_n_Col).first) //(COMMENT: evaluating this seperatly seems to be more efficient for our cases)
+        if(configmap.at(INPAR::XFEM::XF_Con_n_Col).first) //(COMMENT: evaluating this seperatly seems to be more efficient for our cases)
         {
           NIT_p_Consistency_SlaveTerms(
               presn_s,
@@ -1583,7 +1584,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
               normal_pres_timefacfac_,
               configmap.at(INPAR::XFEM::F_Con_n_Row),
               configmap.at(INPAR::XFEM::X_Con_n_Row),
-              configmap.at(INPAR::XFEM::X_Con_n_Col),
+              configmap.at(INPAR::XFEM::XF_Con_n_Col),
               true);
         }
       }
@@ -1604,7 +1605,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
     vderxy_s_normal_transposed_viscs_timefacfac_ks_.Update(1.0,vderxy_s_normal_,1.0);
     vderxy_s_normal_transposed_viscs_timefacfac_ks_.Scale(ks_viscs_fac);
 
-    if(configmap.at(INPAR::XFEM::X_Con_Col).first)
+    if(configmap.at(INPAR::XFEM::XF_Con_Col).first)
     {
       const LINALG::Matrix<nsd_,slave_nen_> dummy; //as for the evaluation of the rhs this parameter is not used!
       NIT_visc_Consistency_SlaveTerms(
@@ -1612,10 +1613,10 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
           funct_m,
           configmap.at(INPAR::XFEM::F_Con_Row),
           configmap.at(INPAR::XFEM::X_Con_Row),
-          configmap.at(INPAR::XFEM::X_Con_Col),
+          configmap.at(INPAR::XFEM::XF_Con_Col),
           true);
     }
-    if(configmap.at(INPAR::XFEM::X_Con_n_Col).first || configmap.at(INPAR::XFEM::X_Con_t_Col).first)
+    if(configmap.at(INPAR::XFEM::XF_Con_n_Col).first || configmap.at(INPAR::XFEM::XF_Con_t_Col).first)
       dserror("Want to implement projected slave consistency?");
 
     // consistency terms evaluated
@@ -1626,22 +1627,22 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
         //-----------------------------------------------------------------
         // pressure adjoint consistency term
         // HAS PROJECTION FOR VELOCITY IMPLEMENTED!!!
-        if(configmap.at(INPAR::XFEM::X_Adj_Row).first)
+        if(configmap.at(INPAR::XFEM::XF_Adj_Row).first)
         {
           NIT_p_AdjointConsistency_SlaveTerms(
               normal_pres_timefacfac_,
               velint_diff_pres_timefacfac_,
-              configmap.at(INPAR::XFEM::X_Adj_Row),
+              configmap.at(INPAR::XFEM::XF_Adj_Row),
               configmap.at(INPAR::XFEM::F_Adj_Col),
               configmap.at(INPAR::XFEM::X_Adj_Col),
               true);
         }
-        if(configmap.at(INPAR::XFEM::X_Adj_n_Row).first) //(COMMENT: evaluating this seperatly seems to be more efficient for our cases)
+        if(configmap.at(INPAR::XFEM::XF_Adj_n_Row).first) //(COMMENT: evaluating this seperatly seems to be more efficient for our cases)
         {
           NIT_p_AdjointConsistency_SlaveTerms(
               normal_pres_timefacfac_,
               velint_diff_normal_pres_timefacfac_,
-              configmap.at(INPAR::XFEM::X_Adj_n_Row),
+              configmap.at(INPAR::XFEM::XF_Adj_n_Row),
               configmap.at(INPAR::XFEM::F_Adj_n_Col),
               configmap.at(INPAR::XFEM::X_Adj_n_Col),
               true);
@@ -1658,19 +1659,19 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
       derxy_s_viscs_timefacfac_ks.Scale(adj_visc_scale_*ks_viscs_fac);
 
       //TODO: Needs added Projection. (If deemed necessary!)
-      if(configmap.at(INPAR::XFEM::X_Adj_Row).first)
+      if(configmap.at(INPAR::XFEM::XF_Adj_Row).first)
       {
         NIT_visc_AdjointConsistency_SlaveTerms(
             funct_m,
             derxy_s_viscs_timefacfac_ks,
             normal,
-            configmap.at(INPAR::XFEM::X_Adj_Row),
+            configmap.at(INPAR::XFEM::XF_Adj_Row),
             configmap.at(INPAR::XFEM::F_Adj_Col),
             configmap.at(INPAR::XFEM::X_Adj_Col),
             true
         );
       }
-      if(configmap.at(INPAR::XFEM::X_Adj_n_Row).first || configmap.at(INPAR::XFEM::X_Adj_t_Row).first)
+      if(configmap.at(INPAR::XFEM::XF_Adj_n_Row).first || configmap.at(INPAR::XFEM::XF_Adj_t_Row).first)
         dserror("Want to  implement projected slave adjoint consistency?");
     }
   }

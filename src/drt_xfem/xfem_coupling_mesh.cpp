@@ -41,6 +41,11 @@ xfluid class and the cut-library
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
 
+//Needed for Slave Solid XFSI --> should go to xfem_coulpling_mesh_fsi
+#include "../drt_so3/so_hex8.H"
+#include "../drt_so3/so_surface.H"
+#include "../drt_mat/elasthyper.H"
+
 //Needed for Slave Fluid XFF --> should go to xfem_coulpling_mesh_ff
 #include "../drt_mat/newtonianfluid.H"
 
@@ -1525,7 +1530,9 @@ XFEM::MeshCouplingFSI::MeshCouplingFSI(
     const int                           coupling_id,///< id of composite of coupling conditions
     const double                        time,      ///< time
     const int                           step       ///< time step
-) : MeshVolCoupling(bg_dis,cond_name,cond_dis,coupling_id, time, step)
+) : timefac_(-1.0),
+    interfacelaw_(INPAR::XFEM::noslip),
+    MeshVolCoupling(bg_dis,cond_name,cond_dis,coupling_id, time, step)
 {
 }
 
@@ -1730,11 +1737,11 @@ void XFEM::MeshCouplingFSI::Output(
   }
 }
 
-void XFEM::MeshCouplingFSI::SetConditionSpecificParameters(  const std::string &  cond_name)
+void XFEM::MeshCouplingFSI::SetConditionSpecificParameters()
 {
 
   std::vector< DRT::Condition* >  conditions_XFSI;
-  cutter_dis_->GetCondition(cond_name, conditions_XFSI);
+  cutter_dis_->GetCondition(cond_name_, conditions_XFSI);
 
   // Create maps for easy extraction at gausspoint level
   for(std::vector<DRT::Condition*>::iterator i=conditions_XFSI.begin();
@@ -1752,7 +1759,43 @@ void XFEM::MeshCouplingFSI::SetConditionSpecificParameters(  const std::string &
     if(!sliplength_map_.insert( std::make_pair( cond_int, std::make_pair(sliplength,slip_bool) ) ).second)
       dserror("ID already existing! For sliplength_map_.");
 
+    INPAR::XFEM::InterfaceLaw interfacelaw = static_cast<INPAR::XFEM::InterfaceLaw>((*i)->GetInt("INTLAW"));
+    if (i!=conditions_XFSI.begin())
+    {
+      if (interfacelaw_ != interfacelaw)
+        dserror("XFEM::MeshCouplingFSI::SetConditionSpecificParameters: You defined two different FSI INTLAWS, not supported yet!");
+    }
+    interfacelaw_ = interfacelaw;
   }
+
+  std::cout << "==| XFEM::MeshCouplingFSI: Applied interface law is";
+  switch (interfacelaw_)
+  {
+    case INPAR::XFEM::noslip:
+    {
+      std::cout << " no-slip! |==" << std::endl;
+      break;
+    }
+    case INPAR::XFEM::noslip_splitpen:
+    {
+      std::cout << " no-slip with splitted normal and tangential penalty contribution! |==" << std::endl;
+      break;
+    }
+    case INPAR::XFEM::slip:
+    {
+      std::cout << " slip! |==" << std::endl;
+      break;
+    }
+    case INPAR::XFEM::navierslip:
+    {
+      std::cout << " Navier-slip! |==" << std::endl;
+      break;
+    }
+  }
+
+  //Checks
+  //if (interfacelaw_ != INPAR::XFEM::slip && interfacelaw_ != INPAR::XFEM::noslip && interfacelaw_ != INPAR::XFEM::noslip_splitpen)
+    //dserror("Interface law not implemented!");
 }
 
 //----------------------------------------------------------------------
@@ -1831,26 +1874,97 @@ void XFEM::MeshCouplingFSI::SetupConfigurationMap()
 {
   if (GetAveragingStrategy() == INPAR::XFEM::Xfluid_Sided)
   {
-    //Configuration of Consistency Terms
-    configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool,double>(true,1.0);
-    configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool,double>(true,1.0);
-    configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool,double>(true,1.0);
+    if (GetInterfaceLaw() == INPAR::XFEM::slip)
+    {
+      //Configuration of Consistency Terms
+      configuration_map_[INPAR::XFEM::F_Con_n_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::F_Con_n_Col] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::X_Con_n_Row] = std::pair<bool,double>(true,1.0);
 
-    //Configuration of Adjount Consistency Terms
-    configuration_map_[INPAR::XFEM::F_Adj_Row] = std::pair<bool,double>(true,1.0);
-    configuration_map_[INPAR::XFEM::F_Adj_Col] = std::pair<bool,double>(true,1.0);
-    configuration_map_[INPAR::XFEM::X_Adj_Col] = std::pair<bool,double>(true,1.0);
+      //Configuration of Adjount Consistency Terms
+      configuration_map_[INPAR::XFEM::F_Adj_n_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::F_Adj_n_Col] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::X_Adj_n_Col] = std::pair<bool,double>(true,1.0);
 
-    //Configuration of Penalty Terms
-    configuration_map_[INPAR::XFEM::F_Pen_Row] = std::pair<bool,double>(true,1.0);
-    configuration_map_[INPAR::XFEM::F_Pen_Col] = std::pair<bool,double>(true,1.0);
-    configuration_map_[INPAR::XFEM::X_Pen_Row] = std::pair<bool,double>(true,1.0);
-    configuration_map_[INPAR::XFEM::X_Pen_Col] = std::pair<bool,double>(true,1.0);
-  }
-    else if (GetAveragingStrategy() == INPAR::XFEM::invalid)
-      dserror("XFEM::MeshCouplingFSI: Averaging Strategy not set!");
+      //Configuration of Penalty Terms
+      configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::F_Pen_n_Col] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::X_Pen_n_Col] = std::pair<bool,double>(true,1.0);
+    }
+    else if (GetInterfaceLaw() == INPAR::XFEM::noslip || GetInterfaceLaw() == INPAR::XFEM::noslip_splitpen)
+    {
+      //Configuration of Consistency Terms
+      configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool,double>(true,1.0);
+
+      //Configuration of Adjount Consistency Terms
+      configuration_map_[INPAR::XFEM::F_Adj_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::F_Adj_Col] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::X_Adj_Col] = std::pair<bool,double>(true,1.0);
+
+      if (GetInterfaceLaw() == INPAR::XFEM::noslip)
+      {
+        //Configuration of Penalty Terms
+        configuration_map_[INPAR::XFEM::F_Pen_Row] = std::pair<bool,double>(true,1.0);
+        configuration_map_[INPAR::XFEM::F_Pen_Col] = std::pair<bool,double>(true,1.0);
+        configuration_map_[INPAR::XFEM::X_Pen_Row] = std::pair<bool,double>(true,1.0);
+        configuration_map_[INPAR::XFEM::X_Pen_Col] = std::pair<bool,double>(true,1.0);
+      }
+      else
+      {
+        //Configuration of Penalty Terms
+        configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool,double>(true,1.0);
+        configuration_map_[INPAR::XFEM::F_Pen_n_Col] = std::pair<bool,double>(true,1.0);
+        configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool,double>(true,1.0);
+        configuration_map_[INPAR::XFEM::X_Pen_n_Col] = std::pair<bool,double>(true,1.0);
+        configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool,double>(true,1.0);
+        configuration_map_[INPAR::XFEM::F_Pen_t_Col] = std::pair<bool,double>(true,1.0);
+        configuration_map_[INPAR::XFEM::X_Pen_t_Row] = std::pair<bool,double>(true,1.0);
+        configuration_map_[INPAR::XFEM::X_Pen_t_Col] = std::pair<bool,double>(true,1.0);
+      }
+    }
+    else if (GetInterfaceLaw() == INPAR::XFEM::navierslip)
+    {
+      //Configuration of Consistency Terms
+      configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::F_Con_t_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::F_Con_t_Col] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::X_Con_t_Row] = std::pair<bool,double>(true,1.0);
+
+      //Configuration of Adjount Consistency Terms
+      configuration_map_[INPAR::XFEM::F_Adj_n_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::F_Adj_n_Col] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::X_Adj_n_Col] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::F_Adj_t_Col] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::X_Adj_t_Col] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool,double>(true,1.0);
+
+      //Configuration of Penalty Terms
+      configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::F_Pen_n_Col] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::X_Pen_n_Col] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::F_Pen_t_Col] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::X_Pen_t_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::X_Pen_t_Col] = std::pair<bool,double>(true,1.0);
+    }
     else
-      dserror("XFEM::MeshCouplingFSI: You want to initialize another strategy than Xfluid_Sided?");
+      dserror("Intlaw not slip!");
+  }
+  else if(GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided)
+  {
+    dserror("Solid Sided FSI not yet available!");
+  }
+  else if (GetAveragingStrategy() == INPAR::XFEM::invalid)
+    dserror("XFEM::MeshCouplingFSI: Averaging Strategy not set!");
+  else
+    dserror("XFEM::MeshCouplingFSI: You want to initialize another strategy than Xfluid_Sided?");
   return;
 }
 
@@ -1875,12 +1989,85 @@ void XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP(
 #ifdef DEBUG
   if (kappa_m != 1) dserror("XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP: kappa_m == %d",kappa_m);
 #endif
-  //Configuration of Penalty Terms
-  configuration_map_[INPAR::XFEM::F_Pen_Row].second = full_stab;
-  configuration_map_[INPAR::XFEM::X_Pen_Row].second = full_stab;
+
+  if (GetAveragingStrategy() == INPAR::XFEM::Xfluid_Sided)
+  {
+    if (GetInterfaceLaw() == INPAR::XFEM::slip)
+    {
+      //Configuration of Penalty Terms
+        configuration_map_[INPAR::XFEM::X_Con_n_Row] = std::pair<bool,double>(true,1.0);
+        configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool,double>(true,full_stab);
+        configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool,double>(true,full_stab);
+    }
+    else if (GetInterfaceLaw() == INPAR::XFEM::noslip)
+    {
+        configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool,double>(true,1.0);
+        configuration_map_[INPAR::XFEM::F_Pen_Row].second = full_stab;
+        configuration_map_[INPAR::XFEM::X_Pen_Row] = std::pair<bool,double>(true,full_stab);
+    }
+    else if (GetInterfaceLaw() == INPAR::XFEM::noslip_splitpen)
+    {
+      configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::F_Pen_n_Row].second = full_stab;
+      configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool,double>(true,full_stab);
+      configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = visc_stab_tang;
+      configuration_map_[INPAR::XFEM::X_Pen_t_Row] = std::pair<bool,double>(true,visc_stab_tang);
+    }
+    else if (GetInterfaceLaw() == INPAR::XFEM::navierslip)
+    {
+      double sliplength = 0.0;
+      GetSlipCoefficient(sliplength,x,cond);
+
+      if(sliplength < 0.0)
+        dserror("The slip should not be negative!");
+
+      double dynvisc   = (kappa_m*visc_m + (1.0-kappa_m)*visc_s);
+      double stabnit = 0.0;
+      double stabadj = 0.0;
+      XFEM::UTILS::GetNavierSlipStabilizationParameters(visc_stab_tang,dynvisc,sliplength,stabnit,stabadj);
+
+      configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = stabnit;
+      configuration_map_[INPAR::XFEM::X_Pen_t_Row].second = stabnit;
+      configuration_map_[INPAR::XFEM::F_Con_t_Col] = std::pair<bool,double>(true,sliplength/dynvisc);
+      configuration_map_[INPAR::XFEM::F_Con_t_Row] = std::pair<bool,double>(true,-stabnit); //+sign for penalty!
+      configuration_map_[INPAR::XFEM::X_Con_t_Row] = std::pair<bool,double>(true,-stabnit); //+sign for penalty!
+      configuration_map_[INPAR::XFEM::F_Adj_t_Row].second = stabadj;
+      configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool,double>(true,sliplength);
+
+      //Configuration of Penalty Terms
+      configuration_map_[INPAR::XFEM::F_Pen_n_Row].second = full_stab; //full_stab <-- to keep results!
+      configuration_map_[INPAR::XFEM::X_Pen_n_Row].second = full_stab; //full_stab <-- to keep results!
+    }
+    else
+      dserror("Intlaw not slip!");
+  }
+  else if(GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided)
+  {
+    dserror("Solid Sided FSI not yet available!");
+  }
   return;
 }
 
+/*--------------------------------------------------------------------------*
+* get stress tangent of the slave solid
+*--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingFSI::GetStressTangentSlave(
+    DRT::Element * coup_ele,                   ///< solid ele
+    double& e_s)                               ///< stress tangent slavesided
+{
+  //we calculate "E/h" directely with the generalized eigenvalue problem
+  e_s = timefac_;
+
+  return;
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingFSI::PrepareSolve()
+{
+  //Call Base Class
+  XFEM::MeshCoupling::PrepareSolve();
+}
 
 XFEM::MeshCouplingFluidFluid::MeshCouplingFluidFluid(
     Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
@@ -1949,20 +2136,20 @@ void XFEM::MeshCouplingFluidFluid::SetupConfigurationMap()
   else if (GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided)
   {
     //Configuration of Consistency Terms
-    configuration_map_[INPAR::XFEM::X_Con_Col] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::XF_Con_Col] = std::pair<bool,double>(true,1.0);
 
     //Configuration of Adjount Consistency Terms
-    configuration_map_[INPAR::XFEM::X_Adj_Row] = std::pair<bool,double>(true,1.0);
+    configuration_map_[INPAR::XFEM::XF_Adj_Row] = std::pair<bool,double>(true,1.0);
   }
   else if (GetAveragingStrategy() == INPAR::XFEM::Mean)
   {
     //Configuration of Consistency Terms
     configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool,double>(true,0.5);
-    configuration_map_[INPAR::XFEM::X_Con_Col] = std::pair<bool,double>(true,0.5);
+    configuration_map_[INPAR::XFEM::XF_Con_Col] = std::pair<bool,double>(true,0.5);
 
     //Configuration of Adjount Consistency Terms
     configuration_map_[INPAR::XFEM::F_Adj_Row] = std::pair<bool,double>(true,0.5);
-    configuration_map_[INPAR::XFEM::X_Adj_Row] = std::pair<bool,double>(true,0.5);
+    configuration_map_[INPAR::XFEM::XF_Adj_Row] = std::pair<bool,double>(true,0.5);
   }
   else if (GetAveragingStrategy() == INPAR::XFEM::invalid)
     dserror("XFEM::MeshCouplingFluidFluid: Averaging Strategy not set!");
