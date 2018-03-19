@@ -34,6 +34,7 @@ MAT::PAR::FluidPoroMultiPhase::FluidPoroMultiPhase(
 : MatList(matdata),
   permeability_(matdata->GetDouble("PERMEABILITY")),
   numfluidphases_(matdata->GetInt("NUMFLUIDPHASES")),
+  numvolfrac_(-1),
   dof2pres_(Teuchos::null),
   constraintphaseID_(-1),
   isinit_(false)
@@ -60,17 +61,38 @@ void MAT::PAR::FluidPoroMultiPhase::Initialize()
   // reset
   dof2pres_->Scale(0.0);
 
+  // get number of volume fractions
+  numvolfrac_ = (int)(((int)matids_->size() - numfluidphases_)/2);
+
+  // safety check
+  if((int)matids_->size()!=(int)(numvolfrac_*2+numfluidphases_))
+    dserror("You have chosen %i materials, %i fluidphases and %f volume fractions, check your input definition\n"
+        "Your Input should always look like (for example: 4 fluid phases, 2 volume fractions):\n"
+                    "MAT 0 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 8 MATIDS    1 2 3 4 5 6 7 8 NUMFLUIDPHASES 4 END\n"
+                    "with: 4 fluid phases: materials have to be MAT_FluidPoroSinglePhase        ^^^^^^^\n"
+                    "      2 volume fractions: materials have to be MAT_FluidPoroSingleVolFrac          ^^^\n"
+                    "      2 volume fraction pressures: materials have to be MAT_FluidPoroVolFracPressure   ^^^",
+                    (int)matids_->size(), numfluidphases_, (double)(((double)matids_->size() - (double)numfluidphases_)/2.0));
+
   for(int iphase=0;iphase<(int)matids_->size();iphase++)
   {
     // get the single phase material by its ID
     const int matid = (*matids_)[iphase];
     Teuchos::RCP< MAT::Material> singlemat = MaterialById(matid);
 
+    // fluidphases at [0...numfluidphases-1]
     if(iphase < numfluidphases_)
     {
       // safety check and cast
       if(singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlephase)
-        dserror("You have chosen %d fluidphases, however your material number %d is no poro singlephase material", numfluidphases_, iphase+1);
+        dserror("You have chosen %i fluidphases, however your material number %i is no poro singlephase material\n"
+            "Your Input should always look like (for example: 4 fluid phases, 2 volume fractions):\n"
+            "MAT 0 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 8 MATIDS    1 2 3 4 5 6 7 8 NUMFLUIDPHASES 4 END\n"
+            "with: 4 fluid phases: materials have to be MAT_FluidPoroSinglePhase        ^^^^^^^\n"
+            "      2 volume fractions: materials have to be MAT_FluidPoroSingleVolFrac          ^^^\n"
+            "      2 volume fraction pressures: materials have to be MAT_FluidPoroVolFracPressure   ^^^",
+            numfluidphases_, iphase+1);
+
       const MAT::FluidPoroSinglePhase& singlephase = static_cast<const MAT::FluidPoroSinglePhase&>(*singlemat);
 
       if(singlephase.PoroPhaseLawType() == INPAR::MAT::m_fluidporo_phaselaw_constraint)
@@ -83,12 +105,34 @@ void MAT::PAR::FluidPoroMultiPhase::Initialize()
       // fill the coefficients into matrix
       singlephase.FillDoFMatrix(*dof2pres_,iphase);
     }
-    else
+    // volume fractions at [numfluidphases-1...numfluidphases-1+numvolfrac]
+    else if(iphase < numfluidphases_ + numvolfrac_)
     {
-      // safety check and cast
+      // safety check
       if(singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlevolfrac)
-        dserror("You have chosen %d volume fractions, however your material number %d is no poro volume fraction material");
+        dserror("You have chosen %i fluid phases and %i volume fractions, however your material number %i is no poro volume fraction material\n"
+            "Your Input should always look like (for example: 4 fluid phases, 2 volume fractions):\n"
+            "MAT 0 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 8 MATIDS    1 2 3 4 5 6 7 8 NUMFLUIDPHASES 4 END\n"
+            "with: 4 fluid phases: materials have to be MAT_FluidPoroSinglePhase        ^^^^^^^\n"
+            "      2 volume fractions: materials have to be MAT_FluidPoroSingleVolFrac          ^^^\n"
+            "      2 volume fraction pressures: materials have to be MAT_FluidPoroVolFracPressure   ^^^",
+            numfluidphases_,(int)matids_->size()-numfluidphases_, iphase+1);
     }
+    // volume fraction pressures at [numfluidphases-1+numvolfrac...numfluidphases-1+2*numvolfrac]
+    else if(iphase < numfluidphases_ + 2*numvolfrac_)
+    {
+      // safety check
+      if(singlemat->MaterialType() != INPAR::MAT::m_fluidporo_volfracpressure)
+        dserror("You have chosen %i fluid phases and %i volume fractions, however your material number %i is no poro volume fraction pressure material\n"
+            "Your Input should always look like (for example: 4 fluid phases, 2 volume fractions):\n"
+            "MAT 0 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 8 MATIDS    1 2 3 4 5 6 7 8 NUMFLUIDPHASES 4 END\n"
+            "with: 4 fluid phases: materials have to be MAT_FluidPoroSinglePhase        ^^^^^^^\n"
+            "      2 volume fractions: materials have to be MAT_FluidPoroSingleVolFrac          ^^^\n"
+            "      2 volume fraction pressures: materials have to be MAT_FluidPoroVolFracPressure   ^^^",
+            numfluidphases_,(int)matids_->size()-numfluidphases_, iphase+1);
+    }
+    else
+      dserror("something went wrong here, why is iphase = %i", iphase);
   }
 
   // check
@@ -260,25 +304,6 @@ void MAT::FluidPoroMultiPhase::EvaluateGenPressure(
 
     // evaluate generalized pressure (i.e. some kind of linear combination of the true pressures)
     genpressure[iphase] = singlephasemat.EvaluateGenPressure(iphase,phinp);
-  }
-  return;
-}
-
-/*----------------------------------------------------------------------*
- *  Evaluate generalized pressure of all phases            vuong 08/16 |
-*----------------------------------------------------------------------*/
-void MAT::FluidPoroMultiPhase::GetVolFracPressure(
-    std::vector<double>& volfracpress) const
-{
-  // evaluate the pressures
-  for(int ivolfrac=0; ivolfrac<NumMat()-NumFluidPhases(); ivolfrac++)
-  {
-    //get the single phase material
-    const MAT::FluidPoroSingleVolFrac& singlevolfracmat =
-        POROFLUIDMULTIPHASE::ELEUTILS::GetSingleVolFracMatFromMaterial(*this,ivolfrac+NumFluidPhases());
-
-    // evaluate volume fraction pressure
-    volfracpress[ivolfrac] = singlevolfracmat.Pressure();
   }
   return;
 }

@@ -151,8 +151,8 @@ MAT 20 MAT_Struct_StVenantKirchhoff YOUNG 10 NUE 0.35 DENS 0.1
 MAT 21 MAT_PoroLawConstant
 
 MAT 5 MAT_matlist_reactions LOCAL No NUMMAT 2 MATIDS 301 302 NUMREAC 2 REACIDS 401 402 END
-MAT 301 MAT_scatra_multiporo PHASEID 2 DIFFUSIVITY 0.1
-MAT 302 MAT_scatra_multiporo PHASEID 3 DIFFUSIVITY 0.1
+MAT 301 MAT_scatra_multiporo_fluid PHASEID 2 DIFFUSIVITY 0.1
+MAT 302 MAT_scatra_multiporo_fluid PHASEID 3 DIFFUSIVITY 0.1
 MAT 401 MAT_scatra_reaction NUMSCAL 2 STOICH -1 0 REACCOEFF 1.0 COUPLING by_function ROLE 5 0
 MAT 402 MAT_scatra_reaction NUMSCAL 2 STOICH  0 1 REACCOEFF 1.0 COUPLING by_function ROLE 0 6
 --------------------------------------------------------CLONING MATERIAL MAP

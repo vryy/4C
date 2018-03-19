@@ -136,14 +136,17 @@ class PhaseManagerInterface
     //! get the number of phases
     virtual int NumFluidPhases() const=0;
 
-    //! get the total number of dofs (number of phases + number of volume fractions)
+    //! get the total number of dofs (number of phases + 2*number of volume fractions)
     virtual int TotalNumDof() const=0;
+
+    //! get the total number of volume fractions
+    virtual int NumVolFrac() const=0;
 
     //! get solid pressure
     virtual double SolidPressure() const=0;
 
     //! recalculate solid pressure
-    virtual void RecalculateSolidPressure(const double porosity, const std::vector<double>& volfracpressure)=0;
+    virtual void RecalculateSolidPressure(const double porosity)=0;
 
     //! get saturation of phase 'phasenum'
     virtual double Saturation(int phasenum) const=0;
@@ -159,6 +162,12 @@ class PhaseManagerInterface
 
     //! get volfrac of volfrac 'volfracnum'
     virtual double VolFrac(int volfracnum) const =0;
+
+    //! get volfrac pressures of all phases
+    virtual const std::vector<double>& VolFracPressure() const =0;
+
+    //! get volfrac pressure of volfrac 'volfracnum'
+    virtual double VolFracPressure(int volfracnum) const =0;
 
     //! get sum of additional volume fractions
     virtual double SumAddVolFrac() const=0;
@@ -183,6 +192,10 @@ class PhaseManagerInterface
     //! get density of phase 'phasenum'
     virtual double Density(
         int phasenum) const=0;
+
+    //! get density of phase 'phasenum'
+    virtual double VolFracDensity(
+        int volfracnum) const=0;
 
     //! get the current element the manager was set up with
     virtual const DRT::Element* Element() const = 0;
@@ -276,6 +289,20 @@ class PhaseManagerInterface
     //! get derivative dynamic viscosity of phase
     virtual double DynViscosityDeriv(const MAT::Material& material, int phasenum, double abspressgrad) const=0;
 
+    //! check for constant dynamic viscosity of volume fraction pressure
+    virtual bool HasConstantDynViscosityVolFracPressure(int volfracpressnum) const=0;
+
+    //! get dynamic viscosity of volume fraction (matnum is the material number of the porofluid-material on the current element)
+    //! default is set to zero, if called from a porofluidmultiphase-element
+    //! otherwise it has to be explicitly passed from the caller
+    virtual double DynViscosityVolFracPressure(int volfracpressnum, double abspressgrad, int matnum = 0) const=0;
+    //! get dynamic viscosity of volume fraction pressure
+    virtual double DynViscosityVolFracPressure(const MAT::Material& material, int volfracpressnum, double abspressgrad) const=0;
+    //! get derivative of dynamic viscosity of volume fraction pressure
+    virtual double DynViscosityDerivVolFracPressure(int volfracpressnum, double abspressgrad) const=0;
+    //! get derivative dynamic viscosity of volume fraction pressure
+    virtual double DynViscosityDerivVolFracPressure(const MAT::Material& material, int volfracpressnum, double abspressgrad) const=0;
+
     //! get the diffusion tensor
     virtual void DiffTensorVolFrac(int volfracnum,  LINALG::Matrix<3,3>& difftensorvolfrac) const=0;
     //! get the diffusion tensor
@@ -283,11 +310,12 @@ class PhaseManagerInterface
     //! get the diffusion tensor
     virtual void DiffTensorVolFrac(int volfracnum,  LINALG::Matrix<1,1>& difftensorvolfrac) const=0;
 
-    //! get density of volume frac 'volfracnum'
-    virtual double VolFracDensity(int volfracnum) const=0;
-
-    //! get pressure of volume frac 'volfracnum'
-    virtual double VolFracPressure(int volfracnum) const=0;
+    //! get the permeability tensor for volume fraction pressures
+    virtual void PermeabilityTensorVolFracPressure(int volfracpressnum, LINALG::Matrix<3,3>& permeabilitytensorvolfracpressure) const=0;
+    //! get the permeability tensor for volume fraction pressures
+    virtual void PermeabilityTensorVolFracPressure(int volfracpressnum, LINALG::Matrix<2,2>& permeabilitytensorvolfracpressure) const=0;
+    //! get the permeability tensor for volume fraction pressures
+    virtual void PermeabilityTensorVolFracPressure(int volfracpressnum, LINALG::Matrix<1,1>& permeabilitytensorvolfracpressure) const=0;
 
     //! check if volume frac 'volfracnum' has additional scalar dependent flux
     virtual bool HasAddScalarDependentFlux(int volfracnum) const=0;
@@ -361,14 +389,17 @@ class PhaseManagerCore : public PhaseManagerInterface
     //! get the number of phases
     int NumFluidPhases() const {return numfluidphases_;};
 
-    //! get the total number of dofs (number of phases + number of volume fractions)
+    //! get the total number of dofs (number of phases + 2*number of volume fractions)
     int TotalNumDof() const {return totalnumdofpernode_;};
+
+    //! get the number of volume fractions
+    int NumVolFrac() const {return numvolfrac_;};
 
     //! get solid pressure
     double SolidPressure() const;
 
     //! recalculate solid pressure
-    void RecalculateSolidPressure(const double porosity, const std::vector<double>& volfracpressure);
+    void RecalculateSolidPressure(const double porosity);
 
     //! get saturation of phase 'phasenum'
     double Saturation(int phasenum) const;
@@ -384,6 +415,12 @@ class PhaseManagerCore : public PhaseManagerInterface
 
     //! get volfrac of volfrac 'volfracnum'
     double VolFrac(int volfracnum) const;
+
+    //! get volfrac pressures of all volfracs
+    const std::vector<double>& VolFracPressure() const;
+
+    //! get volfrac pressure of volfrac 'volfracnum'
+    double VolFracPressure(int volfracnum) const;
 
     //! get sum of additional volume fractions
     double SumAddVolFrac() const;
@@ -408,6 +445,10 @@ class PhaseManagerCore : public PhaseManagerInterface
     //! get density of phase 'phasenum'
     double Density(
         int phasenum) const;
+
+    //! get density of phase 'phasenum'
+    double VolFracDensity(
+        int volfracnum) const;
 
     //! get the current element the manager was set up with
     virtual const DRT::Element* Element() const {return ele_;};
@@ -541,6 +582,22 @@ class PhaseManagerCore : public PhaseManagerInterface
     double DynViscosityDeriv(const MAT::Material& material, int phasenum, double abspressgrad) const
         {dserror("Derivative of dynamic Viscosity not available for this phase manager!");return 0.0;};
 
+    //! check for constant dynamic viscosity of volume fraction pressure
+    virtual bool HasConstantDynViscosityVolFracPressure(int volfracpressnum) const
+        {dserror("Check for Constant Dynamic Viscosity (VolFracPressure) not available for this phase manager!");return false;};
+    //! get relative diffusivity of volume fraction pressure
+    virtual double DynViscosityVolFracPressure(int volfracpressnum, double abspressgrad, int matnum = 0) const
+        {dserror("Dynamic Viscosity (VolFracPressure) not available for this phase manager!");return 0.0;};
+    //! get dynamic viscosity of volume fraction pressure
+    virtual double DynViscosityVolFracPressure(const MAT::Material& material, int volfracpressnum, double abspressgrad) const
+        {dserror("Dynamic Viscosity (VolFracPressure) not available for this phase manager!");return 0.0;};
+    //! get derivative of dynamic viscosity of volume fraction pressure
+    virtual double DynViscosityDerivVolFracPressure(int volfracpressnum, double abspressgrad) const
+        {dserror("Derivative of dynamic Viscosity (VolFracPressure) not available for this phase manager!");return 0.0;};
+    //! get derivative dynamic viscosity of volume fraction pressure
+    double DynViscosityDerivVolFracPressure(const MAT::Material& material, int volfracpressnum, double abspressgrad) const
+        {dserror("Derivative of dynamic Viscosity (VolFracPressure) not available for this phase manager!");return 0.0;};
+
     //! get the diffusion tensor
     virtual void DiffTensorVolFrac(int volfracnum,  LINALG::Matrix<3,3>& difftensorvolfrac) const
     {dserror("Diffusion tensor for volume fractions (3D) not available for this phase manager!");};
@@ -551,13 +608,15 @@ class PhaseManagerCore : public PhaseManagerInterface
     virtual void DiffTensorVolFrac(int volfracnum,  LINALG::Matrix<1,1>& difftensorvolfrac) const
     {dserror("Diffusion tensor for volume fractions (1D) not available for this phase manager!");};
 
-    //! get density of volume frac 'volfracnum'
-    virtual double VolFracDensity(int volfracnum) const
-    {dserror("VolFracDensity not available for this phase manager!");return 0.0;};
-
-    //! get pressure of volume frac 'volfracnum'
-    virtual double VolFracPressure(int volfracnum) const
-    {dserror("VolFracPressure not available for this phase manager!");return 0.0;};
+    //! get the permeabilty tensor for volume fraction pressures
+    virtual void PermeabilityTensorVolFracPressure(int volfracpressnum,  LINALG::Matrix<3,3>& permeabilitytensorvolfracpressure) const
+    {dserror("Permeability tensor for volume fraction pressures (3D) not available for this phase manager!");};
+    //! get the permeabilty tensor for volume fraction pressures
+    virtual void PermeabilityTensorVolFracPressure(int volfracpressnum,  LINALG::Matrix<2,2>& permeabilitytensorvolfracpressure) const
+    {dserror("Permeability tensor for volume fraction pressures (2D) not available for this phase manager!");};
+    //! get the permeabilty tensor for volume fraction pressures
+    virtual void PermeabilityTensorVolFracPressure(int volfracpressnum,  LINALG::Matrix<1,1>& permeabilitytensorvolfracpressure) const
+    {dserror("Permeability tensor for volume fraction pressures (1D) not available for this phase manager!");};
 
     //! check if volume frac 'volfracnum' has additional scalar dependent flux
     virtual bool HasAddScalarDependentFlux(int volfracnum) const
@@ -590,13 +649,17 @@ class PhaseManagerCore : public PhaseManagerInterface
   private:
     //! total number of dofs per node (numfluidphases + numvolfrac)
     const int totalnumdofpernode_;
-    //! number of phases
+    //! number of fluid phases
     const int numfluidphases_;
+    //! number of phases
+    const int numvolfrac_;
 
     //! generalized pressure
     std::vector<double> genpressure_;
     //! additional volume fraction
     std::vector<double> volfrac_;
+    //! additional volume fraction pressures
+    std::vector<double> volfracpressure_;
     //! sum of additional volume fractions
     double sumaddvolfrac_;
     //! true pressure
@@ -605,6 +668,8 @@ class PhaseManagerCore : public PhaseManagerInterface
     std::vector<double> saturation_;
     //! densities
     std::vector<double> density_;
+    //! densities of volume fractions
+    std::vector<double> volfracdensity_;
     //! solid pressure
     double solidpressure_;
     //! inverse bulk moduli of the fluid phases
@@ -722,17 +787,21 @@ class PhaseManagerDecorator : public PhaseManagerInterface
     virtual int NumFluidPhases() const
     {return phasemanager_->NumFluidPhases();};
 
-    //! get the number of dofs (number of phases + number of volfracs)
+    //! get the number of dofs (number of phases + 2*number of volfracs)
     virtual int TotalNumDof() const
     {return phasemanager_->TotalNumDof();};
+
+    //! get the number of volume fractions
+    virtual int NumVolFrac() const
+    {return phasemanager_->NumVolFrac();};
 
     //! get solid pressure
     virtual double SolidPressure() const
     {return phasemanager_->SolidPressure();};
 
     //! recalculate solid pressure
-    virtual void RecalculateSolidPressure(const double porosity, const std::vector<double>& volfracpressure)
-    {return phasemanager_->RecalculateSolidPressure(porosity,volfracpressure);};
+    virtual void RecalculateSolidPressure(const double porosity)
+    {return phasemanager_->RecalculateSolidPressure(porosity);};
 
     //! get saturation of phase 'phasenum'
     virtual double Saturation(int phasenum) const
@@ -753,6 +822,14 @@ class PhaseManagerDecorator : public PhaseManagerInterface
     //! get volfrac of volfrac 'volfracnum'
     virtual double VolFrac(int volfracnum) const
     {return phasemanager_->VolFrac(volfracnum);};
+
+    //! get volfrac pressures of all phases
+    virtual const std::vector<double>& VolFracPressure() const
+    {return phasemanager_->VolFracPressure();};
+
+    //! get volfrac pressure of volfrac 'volfracnum'
+    virtual double VolFracPressure(int volfracnum) const
+    {return phasemanager_->VolFracPressure(volfracnum);};
 
     //! get solid pressure
     virtual double SumAddVolFrac() const
@@ -796,6 +873,11 @@ class PhaseManagerDecorator : public PhaseManagerInterface
     virtual double Density(
         int phasenum) const
     {return phasemanager_->Density(phasenum);};
+
+    //! get density of volume fraction 'volfracnum'
+    virtual double VolFracDensity(
+        int volfracnum) const
+    {return phasemanager_->VolFracDensity(volfracnum);};
 
     //! get the current element the manager was set up with
     virtual const DRT::Element* Element() const
@@ -859,6 +941,22 @@ class PhaseManagerDecorator : public PhaseManagerInterface
     double DynViscosityDeriv(const MAT::Material& material, int phasenum, double abspressgrad) const
     {return phasemanager_->DynViscosityDeriv(material, phasenum, abspressgrad);};
 
+    //! check for constant dynamic visosity of volume fraction pressure
+    virtual bool HasConstantDynViscosityVolFracPressure(int volfracpressnum) const
+    {return phasemanager_->HasConstantDynViscosityVolFracPressure(volfracpressnum);};
+    //! get dynamic viscosity of volume fraction pressure
+    virtual double DynViscosityVolFracPressure(int volfracpressnum, double abspressgrad, int matnum = 0) const
+    {return phasemanager_->DynViscosityVolFracPressure(volfracpressnum, abspressgrad, matnum = 0);};
+    //! get dynamic viscosity of volume fraction pressure
+    virtual double DynViscosityVolFracPressure(const MAT::Material& material, int volfracpressnum, double abspressgrad) const
+    {return phasemanager_->DynViscosityVolFracPressure(material, volfracpressnum, abspressgrad);};
+    //! get derivative of dynamic viscosity of volume fraction pressure
+    virtual double DynViscosityDerivVolFracPressure(int volfracpressnum, double abspressgrad) const
+    {return phasemanager_->DynViscosityDerivVolFracPressure(volfracpressnum, abspressgrad);};
+    //! get derivative dynamic viscosity of volume fraction pressure
+    double DynViscosityDerivVolFracPressure(const MAT::Material& material, int volfracpressnum, double abspressgrad) const
+    {return phasemanager_->DynViscosityDerivVolFracPressure(material, volfracpressnum, abspressgrad);};
+
     //! get the diffusion tensor
     virtual void DiffTensorVolFrac(int volfracnum,  LINALG::Matrix<3,3>& difftensorvolfrac) const
     {phasemanager_->DiffTensorVolFrac(volfracnum,difftensorvolfrac);};
@@ -869,14 +967,15 @@ class PhaseManagerDecorator : public PhaseManagerInterface
     virtual void DiffTensorVolFrac(int volfracnum,  LINALG::Matrix<1,1>& difftensorvolfrac) const
     {phasemanager_->DiffTensorVolFrac(volfracnum,difftensorvolfrac);};
 
-
-    //! get density of volume frac 'volfracnum'
-    virtual double VolFracDensity(int volfracnum) const
-    {return phasemanager_->VolFracDensity(volfracnum);};
-
-    //! get pressure of volume frac 'volfracnum'
-    virtual double VolFracPressure(int volfracnum) const
-    {return phasemanager_->VolFracPressure(volfracnum);};
+    //! get the permeability tensor for volume fraction pressures
+    virtual void PermeabilityTensorVolFracPressure(int volfracpressnum,  LINALG::Matrix<3,3>& permeabilitytensorvolfracpressure) const
+    {phasemanager_->PermeabilityTensorVolFracPressure(volfracpressnum,permeabilitytensorvolfracpressure);};
+    //! get the permeability tensor for volume fraction pressures
+    virtual void PermeabilityTensorVolFracPressure(int volfracpressnum,  LINALG::Matrix<2,2>& permeabilitytensorvolfracpressure) const
+    {phasemanager_->PermeabilityTensorVolFracPressure(volfracpressnum,permeabilitytensorvolfracpressure);};
+    //! get the permeability tensor for volume fraction pressures
+    virtual void PermeabilityTensorVolFracPressure(int volfracpressnum,  LINALG::Matrix<1,1>& permeabilitytensorvolfracpressure) const
+    {phasemanager_->PermeabilityTensorVolFracPressure(volfracpressnum,permeabilitytensorvolfracpressure);};
 
     //! check if volume frac 'volfracnum' has additional scalar dependent flux
     virtual bool HasAddScalarDependentFlux(int volfracnum) const
@@ -1144,6 +1243,8 @@ class PhaseManagerReaction : public PhaseManagerDecorator
     std::vector<std::vector<double> > reactermsderivsscalar_;
     //! derivatives of reaction terms w.r.t. volume fraction
     std::vector<std::vector<double> > reactermsderivsvolfrac_;
+    //! derivatives of reaction terms w.r.t. volume fraction pressures
+    std::vector<std::vector<double> > reactermsderivsvolfracpressure_;
 
     //! flags indicating whether the phase is involved in a reaction
     std::vector<bool> isreactive_;
@@ -1218,6 +1319,23 @@ class PhaseManagerDiffusion : public PhaseManagerDecorator
     //! get derivative dynamic viscosity of phase
     double DynViscosityDeriv(const MAT::Material& material, int phasenum, double abspressgrad) const;
 
+    //! get the permeability tensor for volume fraction pressures
+    void PermeabilityTensorVolFracPressure(int volfracnum, LINALG::Matrix<nsd,nsd>& permeabilitytensorvolfracpressure) const;
+
+    //! check for constant dynamic viscosity of volume fraction pressure
+    virtual bool HasConstantDynViscosityVolFracPressure(int volfracpressnum) const;
+
+    //! get dynamic viscosity of volume fraction (matnum is the material number of the porofluid-material on the current element)
+    //! default is set to zero, if called from a porofluidmultiphase-element
+    //! otherwise it has to be explicitly passed from the caller
+    virtual double DynViscosityVolFracPressure(int volfracpressnum, double abspressgrad, int matnum = 0) const;
+    //! get dynamic viscosity of volume fraction pressure
+    virtual double DynViscosityVolFracPressure(const MAT::Material& material, int volfracpressnum, double abspressgrad) const;
+    //! get derivative of dynamic viscosity of volume fraction pressure
+    virtual double DynViscosityDerivVolFracPressure(int volfracpressnum, double abspressgrad) const;
+    //! get derivative dynamic viscosity of volume fraction pressure
+    virtual double DynViscosityDerivVolFracPressure(const MAT::Material& material, int volfracpressnum, double abspressgrad) const;
+
     //@}
 
   private:
@@ -1231,6 +1349,10 @@ class PhaseManagerDiffusion : public PhaseManagerDecorator
     std::vector<bool> constrelpermeability_;
     //! check for constant dynamic viscosities of phase
     std::vector<bool> constdynviscosity_;
+    //! permeability tensors
+    std::vector<LINALG::Matrix<nsd,nsd> > permeabilitytensorsvolfracpress_;
+    //! check for constant dynamic viscosities of volume fraction pressure
+    std::vector<bool> constdynviscosityvolfracpress_;
 
   };
 
@@ -1277,12 +1399,6 @@ class PhaseManagerVolFrac : public PhaseManagerDecorator
     //! get the diffusion tensor
     void DiffTensorVolFrac(int volfracnum, LINALG::Matrix<nsd,nsd>& difftensorvolfrac) const;
 
-    //! get density of volume frac 'volfracnum'
-    virtual double VolFracDensity(int volfracnum) const;
-
-    //! get pressure of volume frac 'volfracnum'
-    virtual double VolFracPressure(int volfracnum) const;
-
     //! check if volume frac 'volfracnum' has additional scalar dependent flux
     virtual bool HasAddScalarDependentFlux(int volfracnum) const;
 
@@ -1307,10 +1423,6 @@ class PhaseManagerVolFrac : public PhaseManagerDecorator
   private:
     //! diffusion tensors
     std::vector<LINALG::Matrix<nsd,nsd> > difftensorsvolfrac_;
-    //! densities of volume fractions
-    std::vector<double> volfracdensity_;
-    //! pressure of volume fractions
-    std::vector<double> volfracpressure_;
     //! does the material have additional scalar dependent flux
     std::vector<bool> hasaddscalardpendentflux_;
     //! matrix for scalar diffusivities

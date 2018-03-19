@@ -937,6 +937,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoop_presbased(
   // Initialize
   const int totalnumdofpernode = fluidmultimat_->NumMat();
   const int numfluidphases = fluidmultimat_->NumFluidPhases();
+  const int numvolfrac = fluidmultimat_->NumVolFrac();
   const bool hasvolfracs = (totalnumdofpernode > numfluidphases);
   std::vector<double> phiAtGP(totalnumdofpernode);
 
@@ -994,8 +995,8 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoop_presbased(
       ComputePorosityAndLinearization(params,press,volchange,gp,shapefct,NULL,dvolchange_dus,porosity,dphi_dus);
       // save the pressure coming from the fluid S_i*p_i
       const double fluidpress = press;
-      press = RecalculateSolPressureAtGP(fluidpress,porosity,totalnumdofpernode,numfluidphases,phiAtGP);
-      ComputeLinearizationOfSolPressWrtDisp(fluidpress,porosity,totalnumdofpernode,numfluidphases,phiAtGP,dphi_dus,dps_dus);
+      press = RecalculateSolPressureAtGP(fluidpress,porosity,totalnumdofpernode,numfluidphases,numvolfrac,phiAtGP);
+      ComputeLinearizationOfSolPressWrtDisp(fluidpress,porosity,totalnumdofpernode,numfluidphases,numvolfrac,phiAtGP,dphi_dus,dps_dus);
     }
 
     // Right Cauchy-Green tensor = F^T * F
@@ -1302,6 +1303,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoopOD_presbased(
   // Initialize
   const int numfluidphases = fluidmultimat_->NumFluidPhases();
   const int totalnumdofpernode = fluidmultimat_->NumMat();
+  const int numvolfrac = fluidmultimat_->NumVolFrac();
   const bool hasvolfracs = (totalnumdofpernode - numfluidphases);
   std::vector<double> phiAtGP(totalnumdofpernode);
   std::vector<double> solpressderiv(totalnumdofpernode);
@@ -1352,7 +1354,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoopOD_presbased(
 
       ComputePorosityAndLinearizationOD(params,press,volchange,gp,shapefct,NULL,porosity,dphi_dp);
 
-      RecalculateSolPressureDeriv(phiAtGP,totalnumdofpernode,numfluidphases,press,porosity,solpressderiv);
+      RecalculateSolPressureDeriv(phiAtGP,totalnumdofpernode,numfluidphases,numvolfrac,press,porosity,solpressderiv);
     }
 
     // **********************evaluate stiffness matrix and force vector+++++++++++++++++++++++++
@@ -1834,6 +1836,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeLinearizationOfSolPressWrt
     const double                                 porosity,
     const int                                    totalnumdofpernode,
     const int                                    numfluidphases,
+    const int                                    numvolfrac,
     const std::vector<double>&                   phiAtGP,
     const LINALG::Matrix<1,numdof_>&             dphi_dus,
     LINALG::Matrix<1,numdof_>&                   dps_dus
@@ -1841,22 +1844,21 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeLinearizationOfSolPressWrt
 {
 
   // get volume fraction primary variables
-  std::vector<double> volfracphi(&phiAtGP[numfluidphases],&phiAtGP[totalnumdofpernode]);
+  std::vector<double> volfracphi(&phiAtGP[numfluidphases],&phiAtGP[numfluidphases+numvolfrac]);
   double sumaddvolfrac = 0.0;
-  for (int ivolfrac = 0; ivolfrac < totalnumdofpernode-numfluidphases; ivolfrac++)
+  for (int ivolfrac = 0; ivolfrac < numvolfrac; ivolfrac++)
     sumaddvolfrac += volfracphi[ivolfrac];
 
-  // get volume fraction pressure
-  std::vector<double> volfracpressure(totalnumdofpernode-numfluidphases);
-  fluidmultimat_->GetVolFracPressure(volfracpressure);
+  // get volume fraction pressure at [numfluidphases+numvolfrac...totalnumdofpernode-1]
+  std::vector<double> volfracpressure(&phiAtGP[numfluidphases+numvolfrac],&phiAtGP[totalnumdofpernode]);
 
   // p_s = (porosity - sumaddvolfrac)/porosity * fluidpress
-  //      + 1.0 / porosity sum_i=1^numvolfrac (volfrac_i*pressure_i)
+  //       + 1.0 / porosity sum_i=1^numvolfrac (volfrac_i*pressure_i)
   // d (p_s) / d porosity = + sumaddvolfrac/porosity/porosity * fluidpress
   double dps_dphi = sumaddvolfrac/(porosity*porosity)*fluidpress;
 
   // ... + 1.0 / porosity / porosity sum_i=1^numvolfrac (volfrac_i*pressure_i)
-  for (int ivolfrac = 0; ivolfrac < totalnumdofpernode-numfluidphases; ivolfrac++)
+  for (int ivolfrac = 0; ivolfrac < numvolfrac; ivolfrac++)
     dps_dphi -= volfracphi[ivolfrac]*volfracpressure[ivolfrac]/(porosity*porosity);
 
   // d (p_s) / d u_s = d (p_s) / d porosity * d porosity / d u_s
@@ -1873,15 +1875,16 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::RecalculateSolPressureDeriv(
     const std::vector<double>&                phiAtGP,
     const int                                 totalnumdofpernode,
     const int                                 numfluidphases,
+    const int                                 numvolfrac,
     const double                              press,
     const double                              porosity,
     std::vector<double>&                      solidpressderiv
 )
 {
   // get volume fraction primary variables
-  std::vector<double> volfracphi(&phiAtGP[numfluidphases],&phiAtGP[totalnumdofpernode]);
+  std::vector<double> volfracphi(&phiAtGP[numfluidphases],&phiAtGP[numfluidphases+numvolfrac]);
   double sumaddvolfrac = 0.0;
-  for (int ivolfrac = 0; ivolfrac < totalnumdofpernode-numfluidphases; ivolfrac++)
+  for (int ivolfrac = 0; ivolfrac < numvolfrac; ivolfrac++)
     sumaddvolfrac += volfracphi[ivolfrac];
 
   // p_s = (porosity - sumaddvolfrac)/porosity * fluidpress
@@ -1892,14 +1895,17 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::RecalculateSolPressureDeriv(
   for (int iphase = 0; iphase < numfluidphases; iphase++)
     solidpressderiv[iphase] *= scale;
 
-  // get volfrac pressures
-  std::vector<double> volfracpressure(totalnumdofpernode-numfluidphases);
-  fluidmultimat_->GetVolFracPressure(volfracpressure);
+  // get volfrac pressures at [numfluidphases+numvolfrac...totalnumdofpernode-1]
+  std::vector<double> volfracpressure(&phiAtGP[numfluidphases+numvolfrac],&phiAtGP[totalnumdofpernode]);
 
-  // d p_s / d volfrac = - fluidpress/porosity + volfracpressure/porosity
-  for (int ivolfrac = 0; ivolfrac < totalnumdofpernode-numfluidphases; ivolfrac++)
-    solidpressderiv[ivolfrac+numfluidphases] = - 1.0/porosity*press
-                                          + 1.0/porosity*volfracpressure[ivolfrac];
+  for (int ivolfrac = 0; ivolfrac < numvolfrac; ivolfrac++)
+  {
+    // d p_s / d volfrac = - fluidpress/porosity + volfracpressure/porosity
+    solidpressderiv[ivolfrac+numfluidphases           ] = - 1.0/porosity*press
+                                                          + 1.0/porosity*volfracpressure[ivolfrac];
+    // d p_s / d volfracpress = + volfracphi/porosity
+    solidpressderiv[ivolfrac+numfluidphases+numvolfrac] = volfracphi[ivolfrac]/porosity;
+  }
 
   return;
 }
@@ -1944,27 +1950,30 @@ double DRT::ELEMENTS::So3_Poro<so3_ele,distype>::RecalculateSolPressureAtGP(
     const double                                 porosity,
     const int                                    totalnumdofpernode,
     const int                                    numfluidphases,
+    const int                                    numvolfrac,
     const std::vector<double>&                   phiAtGP
 )
 {
-  // get volume fraction primary variables
-  std::vector<double> volfracphi(&phiAtGP[numfluidphases],&phiAtGP[totalnumdofpernode]);
+  // get volume fraction primary variables at [numfluidphases-1...numfluidphase-1+numvolfrac]
+  std::vector<double> volfracphi(&phiAtGP[numfluidphases],&phiAtGP[numfluidphases+numvolfrac]);
   double sumaddvolfrac = 0.0;
-  for (int ivolfrac = 0; ivolfrac < totalnumdofpernode-numfluidphases; ivolfrac++)
+  for (int ivolfrac = 0; ivolfrac < numvolfrac; ivolfrac++)
     sumaddvolfrac += volfracphi[ivolfrac];
 
   // p_s = (porosity - sumaddvolfrac)/porosity * fluidpress
-  //      + 1.0 / porosity sum_i=1^numvolfrac (volfrac_i*pressure_i)
+  //      + 1.0 / porosity * sum_i=1^numvolfrac (volfrac_i*pressure_i)
   // first part
   press *= (porosity-sumaddvolfrac)/porosity;
 
-  // get volfrac pressures
-  std::vector<double> volfracpressure(totalnumdofpernode-numfluidphases);
-  fluidmultimat_->GetVolFracPressure(volfracpressure);
+  // get volfrac pressures at [numfluidphases+numvolfrac...totalnumdofpernode-1]
+  std::vector<double> volfracpressure(&phiAtGP[numfluidphases+numvolfrac],&phiAtGP[totalnumdofpernode]);
 
   // second part
-  for(int ivolfrac = 0; ivolfrac < totalnumdofpernode-numfluidphases; ivolfrac++)
+  for(int ivolfrac = 0; ivolfrac < numvolfrac; ivolfrac++)
     press += volfracphi[ivolfrac]/porosity*volfracpressure[ivolfrac];
+
+  // note: in RecalculateSolidPressure in porofluid_phasemanager calculation is performed a bit
+  //       differently since we already pass porosity = porosity - sumaddvolfrac, but result is equivalent
 
   return press;
 }

@@ -11,6 +11,8 @@
 -------------------------------------------------------------TITLE
 Framework test for multiphase flow through deformable porous medium with scalar transport.
 4 fluid phases, 2 volume fraction phases, 2 scalars
+volume fraction pressures are prescribed through Dirichlet boundary condition throughout the
+domain
 Minimal test for monolithic framework also testing finite difference check
 of monolithic system matrix
 ------------------------------------------------------PROBLEM SIZE
@@ -83,9 +85,9 @@ CONVTOL                         1e-8
 NAME                            Solver
 SOLVER                          UMFPACK                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_FluidPoroMultiPhaseReactions LOCAL No PERMEABILITY 1.0 NUMMAT 6 MATIDS 10 11 12 13 14 16 NUMFLUIDPHASES 4 NUMREAC 1 REACIDS 15 END
+MAT 1 MAT_FluidPoroMultiPhaseReactions LOCAL No PERMEABILITY 1.0 NUMMAT 8 MATIDS 10 11 12 13 14 15 16 17 NUMFLUIDPHASES 4 NUMREAC 1 REACIDS 50 END
 
-MAT 15 MAT_FluidPoroSingleReaction NUMSCAL 2 TOTALNUMDOF 6 NUMVOLFRAC 2 SCALE 0 1 -1 0 1 0 COUPLING scalar_by_function FUNCTID 3
+MAT 50 MAT_FluidPoroSingleReaction NUMSCAL 2 TOTALNUMDOF 8 NUMVOLFRAC 2 SCALE 0 1 -1 0 1 0 0 0 COUPLING scalar_by_function FUNCTID 3
 
 MAT 10 MAT_FluidPoroSinglePhase DOFTYPEID 101 VISCOSITYLAWID 104 DENSITYLAWID 103 DENSITY 1.0 RELPERMEABILITYLAWID 105
 MAT 101 MAT_FluidPoroSinglePhaseDofSaturation PHASELAWID 102
@@ -109,8 +111,14 @@ MAT 131 MAT_FluidPoroSinglePhaseDofPressure PHASELAWID 133
 MAT 132 MAT_PoroDensityLawExp BULKMODULUS 1e3
 MAT 133 MAT_PhaseLawConstraint
 
-MAT 14 MAT_FluidPoroSingleVolFrac DENSITY 1.0 DIFFUSIVITY 1.0 Pressure 0.1 AddScalarDependentFlux YES NUMSCAL 2 SCALARDIFFS -500.0 0.3 OMEGA_HALF 10.0 1000.0
-MAT 16 MAT_FluidPoroSingleVolFrac DENSITY 3.0 DIFFUSIVITY 0.5 Pressure 0.3 AddScalarDependentFlux YES NUMSCAL 2 SCALARDIFFS 0.1 0.0
+MAT 14 MAT_FluidPoroSingleVolFrac DENSITY 1.0 DIFFUSIVITY 1.0 AddScalarDependentFlux YES NUMSCAL 2 SCALARDIFFS -500.0 0.3 OMEGA_HALF 10.0 1000.0
+MAT 15 MAT_FluidPoroSingleVolFrac DENSITY 3.0 DIFFUSIVITY 0.5 AddScalarDependentFlux YES NUMSCAL 2 SCALARDIFFS 0.1 0.0
+
+MAT 16 MAT_FluidPoroVolFracPressure PERMEABILITY 0.8 VISCOSITYLAWID 601
+MAT 17 MAT_FluidPoroVolFracPressure PERMEABILITY 0.3 VISCOSITYLAWID 602
+
+MAT 601 MAT_FluidPoroViscosityLawConstant VALUE 0.5
+MAT 602 MAT_FluidPoroViscosityLawConstant VALUE 1.3
 
 
 MAT 2 MAT_StructPoro MATID 20 POROLAWID 21 INITPOROSITY 0.4
@@ -120,8 +128,8 @@ MAT 21 MAT_PoroLawDensityDependent DENSITYLAWID 22
 MAT 22 MAT_PoroDensityLawExp BULKMODULUS 1e15
 
 MAT 5 MAT_matlist_reactions LOCAL No NUMMAT 2 MATIDS 301 302 NUMREAC 3 REACIDS 401 402 403 END
-MAT 301 MAT_scatra_multiporo PHASEID 2 DIFFUSIVITY 0.1
-MAT 302 MAT_scatra_multiporo PHASEID 3 DIFFUSIVITY 0.1 DELTA 1.0
+MAT 301 MAT_scatra_multiporo_fluid PHASEID 2 DIFFUSIVITY 0.1
+MAT 302 MAT_scatra_multiporo_fluid PHASEID 3 DIFFUSIVITY 0.1 DELTA 1.0
 MAT 401 MAT_scatra_reaction NUMSCAL 2 STOICH -1 0 REACCOEFF 1.0 COUPLING by_function ROLE 5 0
 MAT 402 MAT_scatra_reaction NUMSCAL 2 STOICH 1 0 REACCOEFF 1.0 COUPLING by_function ROLE 6 0
 MAT 403 MAT_scatra_reaction NUMSCAL 2 STOICH 0 1 REACCOEFF 1.0 COUPLING by_function ROLE 0 7
@@ -135,6 +143,8 @@ COMPONENT 2 FUNCTION 0.0
 COMPONENT 3 FUNCTION 0.0
 COMPONENT 4 FUNCTION 0.0
 COMPONENT 5 FUNCTION 0.0
+COMPONENT 6 FUNCTION 0.1
+COMPONENT 7 FUNCTION 0.3
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION 0.5*x+1
 COMPONENT 1 FUNCTION 1.0*x+1.0
@@ -173,7 +183,7 @@ NDVOL   0
 -------------------------------DESIGN LINE PORO NEUMANN CONDITIONS
 DLINE  1
 // curve_left
-E 1 - NUMDOF 6 ONOFF 1 1 1 1 1 1 VAL 0.1 0.2 0.3 0.7 0.1 0.1 FUNCT 4 4 4 4 4 4
+E 1 - NUMDOF 8 ONOFF 1 1 1 1 1 1 0 0 VAL 0.1 0.2 0.3 0.7 0.1 0.1 0.0 0.0 FUNCT 4 4 4 4 4 4 0 0
 //-------------------------------------DESIGN SURF DIRICH CONDITIONS
 //DSURF  1
 // curve_left
@@ -189,7 +199,11 @@ E 1 - NUMDOF 2 ONOFF 1 1  VAL 0.75 0.5 FUNCT 0 0
 --------------------------------DESIGN LINE PORO DIRICH CONDITIONS
 DLINE  1
 // curve_right
-E 2 - NUMDOF 6 ONOFF 1 1 1 1 1 1 VAL 0.1 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 8 ONOFF 1 1 1 1 1 1 1 1 VAL 0.1 0.0 0.0 0.0 0.0 0.0 0.1 0.3 FUNCT 0 0 0 0 0 0 0 0
+--------------------------------DESIGN SURF PORO DIRICH CONDITIONS
+DSURF  1
+// curve_right
+E 1 - NUMDOF 8 ONOFF 0 0 0 0 0 0 1 1 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.1 0.3 FUNCT 0 0 0 0 0 0 0 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    5 DLINE 1

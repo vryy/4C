@@ -78,7 +78,7 @@ ML_DAMPFINE                     0.89                          // damping fine gr
 ML_DAMPMED                      1.0                           // damping med grids
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 5 MATIDS 10 11 12 13 14 NUMFLUIDPHASES 4 END
+MAT 1 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 6 MATIDS 10 11 12 13 14 15 NUMFLUIDPHASES 4 END
 
 MAT 10 MAT_FluidPoroSinglePhase DOFTYPEID 101 VISCOSITYLAWID 104 DENSITYLAWID 103 DENSITY 1.0 RELPERMEABILITYLAWID 105
 MAT 101 MAT_FluidPoroSinglePhaseDofSaturation PHASELAWID 102
@@ -103,7 +103,11 @@ MAT 402 MAT_FluidPoroSinglePhaseDofPressure PHASELAWID 404
 MAT 403 MAT_PoroDensityLawExp BULKMODULUS 100.0
 MAT 404 MAT_PhaseLawConstraint
 
-MAT 14 MAT_FluidPoroSingleVolFrac DENSITY 1.0 DIFFUSIVITY 1.0 Pressure 0.1 AddScalarDependentFlux NO
+MAT 14 MAT_FluidPoroSingleVolFrac DENSITY 1.0 DIFFUSIVITY 1.0 AddScalarDependentFlux NO
+
+MAT 15 MAT_FluidPoroVolFracPressure PERMEABILITY 1.0 VISCOSITYLAWID 151
+MAT 151 MAT_FluidPoroViscosityLawConstant VALUE 1.0
+
 
 MAT 2 MAT_StructPoro MATID 501 POROLAWID 502 INITPOROSITY 0.6
 MAT 501 MAT_Struct_StVenantKirchhoff YOUNG 10 NUE 0.35 DENS 0.1
@@ -117,6 +121,7 @@ COMPONENT 1 FUNCTION 0.0
 COMPONENT 2 FUNCTION 0.0
 COMPONENT 3 FUNCTION 0.0
 COMPONENT 4 FUNCTION 0.0
+COMPONENT 5 FUNCTION 0.2
 ----------------------------------------------------------------------FUNCT2
 VARFUNCTION 1.0/0.01*tan(0.5*pi*(0.3-S))
 ----------------------------------------------------------------------FUNCT3
@@ -130,6 +135,7 @@ COMPONENT 1 FUNCTION 0.0
 COMPONENT 2 FUNCTION 0.0
 COMPONENT 3 FUNCTION 0.0
 COMPONENT 4 FUNCTION 0.3
+COMPONENT 5 FUNCTION 0.2
 -------------------------------------------------RESULT DESCRIPTION
 POROFLUIDMULTIPHASE DIS porofluid NODE 281 QUANTITY phi1 VALUE 6.81940687913783761e-02 TOLERANCE 1e-10
 POROFLUIDMULTIPHASE DIS porofluid NODE 281 QUANTITY saturation3 VALUE 2.68198785534917217e-01 TOLERANCE 1e-10
@@ -151,11 +157,15 @@ NDVOL   0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE  1
 // curve_left
-E 1 - NUMDOF 5 ONOFF 1 1 1 1 0 VAL 0.1 0.2 0.3 0.7 0.0 FUNCT 4 4 4 4 0
+E 1 - NUMDOF 6 ONOFF 1 1 1 1 0 0 VAL 0.1 0.2 0.3 0.7 0.0 0.0 FUNCT 4 4 4 4 0 0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  1
 // curve_right
-E 2 - NUMDOF 5 ONOFF 1 1 1 1 1 VAL 0.1 0.0 0.0 0.0 0.3 FUNCT 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 1 1 1 1 1 1 VAL 0.1 0.0 0.0 0.0 0.3 0.2 FUNCT 0 0 0 0 0 0
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
+DSURF  1
+// curve_right
+E 1 - NUMDOF 6 ONOFF 0 0 0 0 0 1 VAL 0.0 0.0 0.0 0.0 0.0 0.2 FUNCT 0 0 0 0 0 0
 ------------------------------DESIGN SURF INITIAL FIELD CONDITIONS
 DSURF  1
 // all_nodes

@@ -128,8 +128,8 @@ MAT 300 MAT_Struct_StVenantKirchhoff YOUNG 200 NUE 0.4 DENS 0.0
 MAT 301 MAT_PoroLawConstant
 
 MAT 5 MAT_matlist_reactions LOCAL No NUMMAT 2 MATIDS 501 502 NUMREAC 4 REACIDS 503 504 505 506 END
-MAT 501 MAT_scatra_multiporo PHASEID 2 DIFFUSIVITY 3.2e-3 DELTA 2.0 // oxygen --> belongs to IF
-MAT 502 MAT_scatra_multiporo PHASEID 1 DIFFUSIVITY 0.0 DELTA 0.0 // necrotic tumor cells --> belong to tumor cells
+MAT 501 MAT_scatra_multiporo_fluid PHASEID 2 DIFFUSIVITY 3.2e-3 DELTA 2.0 // oxygen --> belongs to IF
+MAT 502 MAT_scatra_multiporo_fluid PHASEID 1 DIFFUSIVITY 0.0 DELTA 0.0 // necrotic tumor cells --> belong to tumor cells
 MAT 503 MAT_scatra_reaction NUMSCAL 2 STOICH 0 1 REACCOEFF 1.0 COUPLING by_function ROLE 0 11
 //equivalent with: MAT 503 MAT_scatra_reaction NUMSCAL 2 STOICH 0 1 REACCOEFF 1.0 COUPLING by_function ROLE 0 5
 MAT 504 MAT_scatra_reaction NUMSCAL 2 STOICH -1 0 REACCOEFF 1.0 COUPLING by_function ROLE 12 0

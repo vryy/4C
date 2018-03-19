@@ -20,20 +20,37 @@
 namespace MAT
 {
 
+namespace ScatraMatMultiPoro
+{
+/*--------------------------------------------------------------------------*/
+/*!
+ * \brief enum that provides all possible MatScatraMultiPoro species types
+ *///                                                        kremheller 03/18
+/*--------------------------------------------------------------------------*/
+enum SpeciesType {
+  // species type
+  species_in_fluid,       // species in fluid
+  species_in_volfrac,     // species in volume fraction
+  species_undefined
+}; // enum SpeciesType
+
+}
+
+
 namespace PAR
 {
 
 /*----------------------------------------------------------------------*/
-/// parameters for scalar transport material
-class ScatraMatMultiPoro: public ScatraMat
+/// parameters for scalar transport material (species in fluid)
+class ScatraMatMultiPoroFluid: public ScatraMat
 {
 public:
 
   /// standard constructor
-  ScatraMatMultiPoro(Teuchos::RCP<MAT::PAR::Material> matdata);
+  ScatraMatMultiPoroFluid(Teuchos::RCP<MAT::PAR::Material> matdata);
 
   /// destructor
-  virtual ~ScatraMatMultiPoro()
+  virtual ~ScatraMatMultiPoroFluid()
   {
     ;
   }
@@ -54,18 +71,42 @@ public:
 };
 // class Scatra
 
+/*----------------------------------------------------------------------*/
+/// parameters for scalar transport material (species in volume fraction)
+class ScatraMatMultiPoroVolFrac: public ScatraMat
+{
+public:
+
+  /// standard constructor
+  ScatraMatMultiPoroVolFrac(Teuchos::RCP<MAT::PAR::Material> matdata);
+
+  /// destructor
+  virtual ~ScatraMatMultiPoroVolFrac()
+  {
+    ;
+  }
+
+  /// create material instance of matching type with my parameters
+  virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
+  /// ID of fluid phase the scalar is associated with
+  const int phaseID_;
+
+};
+// class Scatra
+
 }// namespace PAR
 
-class ScatraMatMultiPoroType: public ScatraMatType
+class ScatraMatMultiPoroFluidType: public ScatraMatType
 {
 public:
 
   std::string Name() const
   {
-    return "ScatraMatMultiPoroType";
+    return "ScatraMatMultiPoroFluidType";
   }
 
-  static ScatraMatMultiPoroType & Instance()
+  static ScatraMatMultiPoroFluidType & Instance()
   {
     return instance_;
   }
@@ -75,20 +116,42 @@ public:
 
 private:
 
-  static ScatraMatMultiPoroType instance_;
+  static ScatraMatMultiPoroFluidType instance_;
+};
+
+class ScatraMatMultiPoroVolFracType: public ScatraMatType
+{
+public:
+
+  std::string Name() const
+  {
+    return "ScatraMatMultiPoroVolFracType";
+  }
+
+  static ScatraMatMultiPoroVolFracType & Instance()
+  {
+    return instance_;
+  }
+  ;
+
+  virtual DRT::ParObject* Create(const std::vector<char> & data);
+
+private:
+
+  static ScatraMatMultiPoroVolFracType instance_;
 };
 
 /*----------------------------------------------------------------------*/
-/// wrapper for scalar transport material
-class ScatraMatMultiPoro: public ScatraMat
+/// wrapper for scalar transport material (species in fluid)
+class ScatraMatMultiPoroFluid: public ScatraMat
 {
 public:
 
   /// construct empty material object
-  ScatraMatMultiPoro();
+  ScatraMatMultiPoroFluid();
 
   /// construct the material object given material parameters
-  explicit ScatraMatMultiPoro(MAT::PAR::ScatraMatMultiPoro* params);
+  explicit ScatraMatMultiPoroFluid(MAT::PAR::ScatraMatMultiPoroFluid* params);
 
   //! @name Packing and Unpacking
 
@@ -100,7 +163,7 @@ public:
    */
   virtual int UniqueParObjectId() const
   {
-    return ScatraMatMultiPoroType::Instance().UniqueParObjectId();
+    return ScatraMatMultiPoroFluidType::Instance().UniqueParObjectId();
   }
 
   /*!
@@ -134,13 +197,13 @@ public:
   /// material type
   virtual INPAR::MAT::MaterialType MaterialType() const
   {
-    return INPAR::MAT::m_scatra_multiporo;
+    return INPAR::MAT::m_scatra_multiporo_fluid;
   }
 
   /// return copy of this material object
   virtual Teuchos::RCP<Material> Clone() const
   {
-    return Teuchos::rcp(new ScatraMatMultiPoro(*this));
+    return Teuchos::rcp(new ScatraMatMultiPoroFluid(*this));
   }
 
   /// Return quick accessible material parameter data
@@ -170,7 +233,91 @@ public:
 private:
 
   /// my material parameters
-  MAT::PAR::ScatraMatMultiPoro* params_;
+  MAT::PAR::ScatraMatMultiPoroFluid* params_;
+
+};
+
+/*----------------------------------------------------------------------*/
+/// wrapper for scalar transport material (species in volfrac)
+class ScatraMatMultiPoroVolFrac: public ScatraMat
+{
+public:
+
+  /// construct empty material object
+  ScatraMatMultiPoroVolFrac();
+
+  /// construct the material object given material parameters
+  explicit ScatraMatMultiPoroVolFrac(MAT::PAR::ScatraMatMultiPoroVolFrac* params);
+
+  //! @name Packing and Unpacking
+
+  /*!
+   \brief Return unique ParObject id
+
+   every class implementing ParObject needs a unique id defined at the
+   top of drt_parobject.H (this file) and should return it in this method.
+   */
+  virtual int UniqueParObjectId() const
+  {
+    return ScatraMatMultiPoroVolFracType::Instance().UniqueParObjectId();
+  }
+
+  /*!
+   \brief Pack this class so it can be communicated
+
+   Resizes the vector data and stores all information of a class in it.
+   The first information to be stored in data has to be the
+   unique parobject id delivered by UniqueParObjectId() which will then
+   identify the exact class on the receiving processor.
+
+   \param data (in/out): char vector to store class information
+   */
+  virtual void Pack(DRT::PackBuffer& data) const;
+
+  /*!
+   \brief Unpack data from a char vector into this class
+
+   The vector data contains all information to rebuild the
+   exact copy of an instance of a class on a different processor.
+   The first entry in data has to be an integer which is the unique
+   parobject id defined at the top of this file and delivered by
+   UniqueParObjectId().
+
+   \param data (in) : vector storing all data to be unpacked into this
+   instance.
+   */
+  virtual void Unpack(const std::vector<char>& data);
+
+  //@}
+
+  /// material type
+  virtual INPAR::MAT::MaterialType MaterialType() const
+  {
+    return INPAR::MAT::m_scatra_multiporo_volfrac;
+  }
+
+  /// return copy of this material object
+  virtual Teuchos::RCP<Material> Clone() const
+  {
+    return Teuchos::rcp(new ScatraMatMultiPoroVolFrac(*this));
+  }
+
+  /// Return quick accessible material parameter data
+  virtual MAT::PAR::Parameter* Parameter() const
+  {
+    return params_;
+  }
+
+  /// return phase ID
+  virtual int PhaseID() const
+  {
+    return params_->phaseID_;
+  }
+
+private:
+
+  /// my material parameters
+  MAT::PAR::ScatraMatMultiPoroVolFrac* params_;
 
 };
 

@@ -186,7 +186,7 @@ public:
 
   //! Return MapExtractor for Dirichlet boundary conditions
   const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() const
-  { return dbcmaps_; }
+  { return dbcmaps_with_volfracpress_; }
 
   //! right-hand side alias the dynamic force residual
   Teuchos::RCP<const Epetra_Vector> RHS() const { return residual_; }
@@ -555,6 +555,13 @@ protected:
   //! porosity at time n+1
   Teuchos::RCP<Epetra_Vector> porosity_;
 
+  //! vector with valid volume fraction pressure dofs, this vector identifies volume fraction pressure DOFs,
+  //  which actually have to be evaluated with a double >= 1.0, see also EvaluatorValidVolFracPressures:
+  //  if at least one nodal volume fraction value of an element is bigger than a threshold (min volfrac),
+  //  the volume fraction pressure is a valid (physically meaningful) quantity in this element
+  //  and the respective Darcy equation has to be solved
+  Teuchos::RCP<Epetra_Vector> valid_volfracpress_dofs_;
+
   //! velocity of each phase at time n+1 (post-processed from pressure solution)
   Teuchos::RCP<Epetra_MultiVector> flux_;
 
@@ -588,6 +595,11 @@ protected:
 
   //! maps for extracting Dirichlet and free DOF sets
   Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
+
+  //! maps for extracting Dirichlet and free DOF sets, here the additional dofs which have to be zeroed out for
+  //  the volume fraction pressure since it is not defined if the corresponding volume fraction is
+  //  equal to zero ( or smaller than minvolfrac) have been added
+  Teuchos::RCP<LINALG::MapExtractor> dbcmaps_with_volfracpress_;
 
   //! the vector containing body and surface forces
   Teuchos::RCP<Epetra_Vector> neumann_loads_;

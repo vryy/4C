@@ -628,7 +628,7 @@ namespace ELEMENTS
     //! Compute Solid-pressure derivative w.r.t. primary variable at GP
     void ComputeSolPressureDeriv(
       const std::vector<double>&       phiAtGP,            ///<< primary variable
-      const int                        numfluidphases,          ///<< number of fluid phases
+      const int                        numfluidphases,     ///<< number of fluid phases
       std::vector<double>&             solidpressderiv     ///<< solid pressure derivative at GP
       );
 
@@ -645,6 +645,7 @@ namespace ELEMENTS
         const double                                 porosity,
         const int                                    totalnumdofpernode,
         const int                                    numfluidphases,
+        const int                                    numvolfrac,
         const std::vector<double>&                   phiAtGP
     );
 
@@ -653,6 +654,7 @@ namespace ELEMENTS
         const std::vector<double>&                phiAtGP,
         const int                                 totalnumdofpernode,
         const int                                 numfluidphases,
+        const int                                 numvolfrac,
         const double                              press,
         const double                              porosity,
         std::vector<double>&                      solidpressderiv
@@ -674,6 +676,7 @@ namespace ELEMENTS
         const double                                 porosity,
         const int                                    totalnumdofpernode,
         const int                                    numfluidphases,
+        const int                                    numvolfrac,
         const std::vector<double>&                   phiAtGP,
         const LINALG::Matrix<1,numdof_>&             dphi_dus,
         LINALG::Matrix<1,numdof_>&                   dps_dus

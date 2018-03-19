@@ -15,6 +15,8 @@
 #include "porofluid_variablemanager.H"
 
 #include "porofluidmultiphase_ele_parameter.H"
+#include "porofluidmultiphase_ele_calc_utils.H"
+#include "../drt_mat/fluidporo_singlephase.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
@@ -28,9 +30,15 @@ Teuchos::RCP< DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>
 DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>::CreateVariableManager(
     const DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter& para,
     const POROFLUIDMULTIPHASE::Action&     action,
-    int numdofpernode)
+    Teuchos::RCP<MAT::Material> mat,
+    int numdofpernode,
+    int numfluidphases)
 {
   Teuchos::RCP< VariableManagerInterface<nsd,nen> > varmanager = Teuchos::null;
+
+  // get the number of volume fractions
+  // the check for correct input definition is performed in MAT::PAR::FluidPoroMultiPhase::Initialize()
+  const int numvolfrac = (int)((numdofpernode - numfluidphases)/2);
 
   // determine action
   switch(action)
@@ -45,6 +53,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>::CreateVariab
   }
   // calculate solid pressure
   case POROFLUIDMULTIPHASE::calc_solidpressure:
+  case POROFLUIDMULTIPHASE::calc_porosity:
   {
     // only phi values are needed
     varmanager = Teuchos::rcp(new VariableManagerPhi<nsd,nen>(numdofpernode));
@@ -74,6 +83,10 @@ DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>::CreateVariab
     //       needs phi and gradphi
     //       Also, the scatra discretization already has all necessary data for moving meshes such as displacements
     varmanager = Teuchos::rcp(new VariableManagerPhiGradPhi<nsd,nen>(numdofpernode));
+
+    if(numvolfrac > 0)
+      varmanager = Teuchos::rcp(new VariableManagerMaximumNodalVolFracValue<nsd,nen>(numvolfrac,varmanager,mat));
+
     break;
   }
   default:
@@ -86,6 +99,9 @@ DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>::CreateVariab
 
     if(para.IsAle())
       varmanager = Teuchos::rcp(new VariableManagerStruct<nsd,nen>(para.NdsVel(),para.NdsDisp(),varmanager));
+
+    if(numvolfrac > 0)
+      varmanager = Teuchos::rcp(new VariableManagerMaximumNodalVolFracValue<nsd,nen>(numvolfrac,varmanager,mat));
 
     break;
   }
@@ -387,6 +403,54 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerScalar<nsd,nen>::EvaluateGP
       gradscalarnp_[k].Multiply(derxy,escalarnp_[k]);
     }
   }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ * **********************************************************************
+ *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | extract node values related to the state vector 'phinp'   vuong 09/16 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerMaximumNodalVolFracValue<nsd,nen>::ExtractElementAndNodeValues(
+    const DRT::Element& ele,
+    const DRT::Discretization& discretization,
+    DRT::Element::LocationArray& la,
+    LINALG::Matrix<nsd, nen>& xyze,
+    const int dofsetnum)
+{
+  // call internal class
+  this->varmanager_->ExtractElementAndNodeValues(ele,discretization,la,xyze,dofsetnum);
+
+  const int numfluidphases = (int)(this->NumDofPerNode() - 2*numvolfrac_);
+
+  // loop over DOFs
+  for (int k = 0; k < numvolfrac_; ++k)
+  {
+    //get the volfrac pressure material
+    const MAT::FluidPoroVolFracPressure& volfracpressmat =
+        POROFLUIDMULTIPHASE::ELEUTILS::GetVolFracPressureMatFromMaterial(*multiphasemat_,k+numvolfrac_+numfluidphases);
+
+    ele_has_valid_volfrac_press_[k] = (*this->ElementPhinp(k+numfluidphases)).MaxValue() > volfracpressmat.MinVolFrac();
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate state vector at gauss point                      vuong 09/16 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerMaximumNodalVolFracValue<nsd,nen>::EvaluateGPVariables(
+    const LINALG::Matrix<nen,1>&   funct,     //! array for shape functions
+    const LINALG::Matrix<nsd,nen>& derxy      //! array for shape function derivatives w.r.t x,y,z
+    )
+{
+
+  // call wrapped class
+  this->varmanager_->EvaluateGPVariables(funct,derxy);
 
   return;
 }

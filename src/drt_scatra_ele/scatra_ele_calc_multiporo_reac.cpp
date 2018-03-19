@@ -24,6 +24,7 @@
 #include "../drt_lib/drt_utils.H"
 
 #include "../drt_mat/scatra_mat_multiporo.H"
+#include "../drt_mat/fluidporo_multiphase.H"
 #include "../drt_mat/scatra_mat.H"
 #include "../drt_mat/structporo.H"
 #include "../drt_mat/matlist.H"
@@ -101,6 +102,9 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
   // get the material
   Teuchos::RCP<MAT::Material> material = ele->Material();
 
+  // set the fluid material in the element
+  VarManager()->SetFluidPoromultiphaseMaterial(ele);
+
   if (material->MaterialType() == INPAR::MAT::m_matlist or
       material->MaterialType() == INPAR::MAT::m_matlist_reactions)
   {
@@ -115,16 +119,48 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
 
       switch(singlemat->MaterialType())
       {
-        case INPAR::MAT::m_scatra_multiporo:
+        case INPAR::MAT::m_scatra_multiporo_fluid:
         {
-          const Teuchos::RCP<const MAT::ScatraMatMultiPoro>& poromat
-            = Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoro>(singlemat);
+          const Teuchos::RCP<const MAT::ScatraMatMultiPoroFluid>& poromat
+            = Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroFluid>(singlemat);
 
-          VarManager()->SetPhaseID(k,poromat->PhaseID());
+          // smaller zero or greater equal numfluidphases
+          if(poromat->PhaseID() < 0 or
+              poromat->PhaseID() >= VarManager()->MultiphaseMat()->NumFluidPhases() )
+            dserror("Invalid phase ID %i for scalar %i (species in fluid = MAT_scatra_multiporo_fluid)",poromat->PhaseID(), k);
+
+          const int singlephasematid = VarManager()->MultiphaseMat()->MatID(poromat->PhaseID());
+          Teuchos::RCP< MAT::Material> singlemat = VarManager()->MultiphaseMat()->MaterialById(singlephasematid);
+
+          if(singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlephase)
+            dserror("Invalid phase ID for scalar %i (species in fluid = MAT_scatra_multiporo_fluid)", k);
+
+          VarManager()->SetPhaseIDAndSpeciesType(k,poromat->PhaseID(),MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid);
           // set delta in the variablemanager
           VarManager()->SetDelta(poromat->Delta(), k);
           // set minimum saturation in the variablemanager
-          VarManager()->SetMinSat(poromat->MinSat(), k);
+          VarManager()->SetMinValOfPhase(poromat->MinSat(), k);
+          break;
+        }
+        case INPAR::MAT::m_scatra_multiporo_volfrac:
+        {
+          const Teuchos::RCP<const MAT::ScatraMatMultiPoroVolFrac>& poromat
+            = Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroVolFrac>(singlemat);
+
+          // smaller zero or greater equal numfluidphases
+          if(poromat->PhaseID() < VarManager()->MultiphaseMat()->NumFluidPhases() or
+              poromat->PhaseID() >= VarManager()->MultiphaseMat()->NumFluidPhases()  +
+                                    VarManager()->MultiphaseMat()->NumVolFrac() )
+            dserror("Invalid phase ID %i for scalar %i (species in volume fraction = MAT_scatra_multiporo_volfrac)",poromat->PhaseID(), k);
+
+          const int singlephasematid = VarManager()->MultiphaseMat()->MatID(poromat->PhaseID());
+          Teuchos::RCP< MAT::Material> singlemat = VarManager()->MultiphaseMat()->MaterialById(singlephasematid);
+
+          if(singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlevolfrac)
+            dserror("Invalid phase ID for scalar %i (species in volume fraction = MAT_scatra_multiporo_volfrac)", k);
+
+          VarManager()->SetPhaseIDAndSpeciesType(k,poromat->PhaseID(),MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac);
+
           break;
         }
 
@@ -140,16 +176,48 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
   {
     switch(material->MaterialType())
     {
-      case INPAR::MAT::m_scatra_multiporo:
+      case INPAR::MAT::m_scatra_multiporo_fluid:
       {
-        const Teuchos::RCP<const MAT::ScatraMatMultiPoro>& poromat
-          = Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoro>(material);
+        const Teuchos::RCP<const MAT::ScatraMatMultiPoroFluid>& poromat
+          = Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroFluid>(material);
 
-        VarManager()->SetPhaseID(0,poromat->PhaseID());
+        // smaller zero or greater equal numfluidphases
+        if(poromat->PhaseID() < 0 or
+            poromat->PhaseID() >= VarManager()->MultiphaseMat()->NumFluidPhases() )
+          dserror("Invalid phase ID %i for scalar %i (species in fluid = MAT_scatra_multiporo_fluid)",poromat->PhaseID(), 0);
+
+        const int singlephasematid = VarManager()->MultiphaseMat()->MatID(poromat->PhaseID());
+        Teuchos::RCP< MAT::Material> singlemat = VarManager()->MultiphaseMat()->MaterialById(singlephasematid);
+
+        if(singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlephase)
+          dserror("Invalid phase ID for scalar %i (species in fluid = MAT_scatra_multiporo_fluid)", 0);
+
+        VarManager()->SetPhaseIDAndSpeciesType(0,poromat->PhaseID(),MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid);
         // set delta in the variablemanager
         VarManager()->SetDelta(poromat->Delta(), 0);
         // set minimum saturation in the variablemanager
-        VarManager()->SetMinSat(poromat->MinSat(), 0);
+        VarManager()->SetMinValOfPhase(poromat->MinSat(), 0);
+        break;
+      }
+      case INPAR::MAT::m_scatra_multiporo_volfrac:
+      {
+        const Teuchos::RCP<const MAT::ScatraMatMultiPoroVolFrac>& poromat
+          = Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroVolFrac>(material);
+
+        // smaller zero or greater equal numfluidphases
+        if(poromat->PhaseID() < 0 or
+            poromat->PhaseID() >= VarManager()->MultiphaseMat()->NumFluidPhases() +
+                                  VarManager()->MultiphaseMat()->NumVolFrac() )
+          dserror("Invalid phase ID %i for scalar %i (species in volume fraction = MAT_scatra_multiporo_volfrac)",poromat->PhaseID(), 0);
+
+        const int singlephasematid = VarManager()->MultiphaseMat()->MatID(poromat->PhaseID());
+        Teuchos::RCP< MAT::Material> singlemat = VarManager()->MultiphaseMat()->MaterialById(singlephasematid);
+
+        if(singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlevolfrac)
+          dserror("Invalid phase ID for scalar %i (species in volume fraction = MAT_scatra_multiporo_volfrac)", 0);
+
+        VarManager()->SetPhaseIDAndSpeciesType(0,poromat->PhaseID(),MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac);
+
         break;
       }
 
@@ -160,9 +228,6 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
       }
     }
   }
-
-  // set the fluid material in the element
-  VarManager()->SetFluidPoromultiphaseMaterial(ele);
 
   return 0;
 }
@@ -343,9 +408,14 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::Materials(
 {
   switch(material->MaterialType())
   {
-    case INPAR::MAT::m_scatra_multiporo:
+    case INPAR::MAT::m_scatra_multiporo_fluid:
     {
-      MatMultiPoro(material,k,densn,densnp,densam,visc,iquad);
+      MatMultiPoroFluid(material,k,densn,densnp,densam,visc,iquad);
+      break;
+    }
+    case INPAR::MAT::m_scatra_multiporo_volfrac:
+    {
+      MatMultiPoroVolFrac(material,k,densn,densnp,densam,visc,iquad);
       break;
     }
 
@@ -363,7 +433,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::Materials(
  |                                                           vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoro(
+void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoroFluid(
   const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
   const int                               k,        //!< id of current scalar
   double&                                 densn,    //!< density at t_(n)
@@ -376,17 +446,59 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoro(
   if(iquad==-1)
     dserror("no gauss point given for evaluation of MatMultiPoro material. Check your input file.");
 
-  const Teuchos::RCP<const MAT::ScatraMatMultiPoro>& actmat
-    = Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoro>(material);
+  const Teuchos::RCP<const MAT::ScatraMatMultiPoroFluid>& actmat
+    = Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroFluid>(material);
 
   //read the porosity from the diffusion manager and scale it with the saturation and the density
   double porosity = 0.0;
   // d_eff = d_0 * (porosity * saturation(k))^delta
   double d_eff = 0.0;
-  if(fabs(VarManager()->Saturation(k)) > VarManager()->GetMinSat(k))
+  if(VarManager()->EvaluateScalar(k))
   {
     porosity = VarManager()->FluidPhaseManager()->Porosity()*VarManager()->Saturation(k)*VarManager()->Density(k);
     d_eff = std::pow(VarManager()->FluidPhaseManager()->Porosity()*VarManager()->Saturation(k),actmat->Delta());
+  }
+
+  {
+    // set diffusivity (scaled with porosity)
+    poro::SetDiffusivity(actmat,k,porosity*d_eff);
+
+    // set densities (scaled with porosity)
+    poro::SetDensities(porosity,densn,densnp,densam);
+  }
+
+  return;
+} // ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoroFluid
+
+
+/*----------------------------------------------------------------------*
+ |                                                     kremheller 02/18 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoroVolFrac(
+  const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
+  const int                               k,        //!< id of current scalar
+  double&                                 densn,    //!< density at t_(n)
+  double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
+  double&                                 densam,   //!< density at t_(n+alpha_M)
+  double&                                 visc,     //!< fluid viscosity
+  const int                               iquad     //!< id of current gauss point
+  )
+{
+  if(iquad==-1)
+    dserror("no gauss point given for evaluation of MatMultiPoro material. Check your input file.");
+
+  const Teuchos::RCP<const MAT::ScatraMatMultiPoroVolFrac>& actmat
+    = Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroVolFrac>(material);
+
+  //read the porosity from the diffusion manager and scale it with the saturation and the density
+  double porosity = 0.0;
+  // d_eff = d_0 * (porosity * saturation(k))^delta
+  double d_eff = 0.0;
+  if(VarManager()->EvaluateScalar(k))
+  {
+    porosity = VarManager()->VolFrac(k)*VarManager()->Density(k);
+    d_eff = 1.0;
   }
 
   {
@@ -452,8 +564,10 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetAdvancedReactionTerm
 
   std::vector<std::pair<std::string,double> > emptyconstants;
 
-  if(act == SCATRA::Action::calc_mat_and_rhs ||
-     act == SCATRA::Action::calc_initial_time_deriv)
+  switch(act)
+  {
+  case SCATRA::Action::calc_mat_and_rhs:
+  case SCATRA::Action::calc_initial_time_deriv:
   {
     matreaclist->CalcReaBodyForceDerivMatrix(
         k,
@@ -461,8 +575,10 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetAdvancedReactionTerm
         my::scatravarmanager_->Phinp(),
         couplingvalues_,
         gpcoord);
+
+    break;
   }
-  else if(act == SCATRA::Action::calc_scatra_mono_odblock_fluid)
+  case SCATRA::Action::calc_scatra_mono_odblock_fluid:
   {
     matreaclist->CalcReaBodyForceDerivMatrixAddVariables(
         k,
@@ -471,8 +587,10 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetAdvancedReactionTerm
         couplingvalues_,
         emptyconstants,
         gpcoord);
+
+    break;
   }
-  else if(act == SCATRA::Action::calc_scatra_mono_odblock_mesh)
+  case SCATRA::Action::calc_scatra_mono_odblock_mesh:
   {
     if(VarManager()->FluidPhaseManager()->PorosityDependsOnStruct())
     {
@@ -484,9 +602,15 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetAdvancedReactionTerm
           emptyconstants,
           gpcoord);
     }
+    break;
   }
-  else
+  default:
+  {
     dserror("Wrong action type in VarManager(), action type is %d", act);
+    break;
+  }
+  }  // switch(act)
+
 
 }
 
@@ -558,14 +682,23 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::FillCouplingVectorAndAd
     //porosity
     couplingvalues_.push_back(std::pair<std::string,double>("porosity",VarManager()->FluidPhaseManager()->Porosity()));
     // additional volume fractions
-    const int numvolfrac = VarManager()->MultiphaseMat()->NumMat()-VarManager()->MultiphaseMat()->NumFluidPhases();
     const std::vector<double>& volfracs = VarManager()->VolFrac();
+    const int numvolfrac = VarManager()->FluidPhaseManager()->NumVolFrac();
     for(int i =0;i<numvolfrac;i++)
     {
       std::ostringstream temp;
       temp << i+1;
 
       couplingvalues_.push_back(std::pair<std::string,double>("VF"+temp.str(),volfracs[i]));
+    }
+    //additional volume fraction pressures
+    const std::vector<double>& volfracpressures = VarManager()->VolFracPressure();
+    for(int i =0;i<numvolfrac;i++)
+    {
+      std::ostringstream temp;
+      temp << i+1;
+
+      couplingvalues_.push_back(std::pair<std::string,double>("VFP"+temp.str(),volfracpressures[i]));
     }
 
     // initialize and add the variables to the reaction manager --> has to be done only once
@@ -595,11 +728,13 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::FillCouplingVectorAndAd
     //porosity
     couplingvalues_[2*numfluidphases].second=VarManager()->FluidPhaseManager()->Porosity();
     // additional volume fractions
-    const int numvolfrac = VarManager()->MultiphaseMat()->NumMat()-VarManager()->MultiphaseMat()->NumFluidPhases();
     const std::vector<double>& volfracs = VarManager()->VolFrac();
+    const std::vector<double>& volfracpressures = VarManager()->VolFracPressure();
+    const int numvolfrac = VarManager()->FluidPhaseManager()->NumVolFrac();
     for(int i =0;i<numvolfrac;i++)
     {
-      couplingvalues_[2*numfluidphases+1+i].second=volfracs[i];
+      couplingvalues_[2*numfluidphases+           1+i].second=volfracs[i];
+      couplingvalues_[2*numfluidphases+numvolfrac+1+i].second=volfracpressures[i];
     }
   }
 }
@@ -616,8 +751,8 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConv(
   const LINALG::Matrix<my::nen_,1>& sgconv
   )
 {
-  // case of zero saturation
-  if(fabs(VarManager()->Saturation(k)) > VarManager()->GetMinSat(k))
+  // case of zero saturation/volfrac
+  if(VarManager()->EvaluateScalar(k))
   {
     //the only difference to the base class version is, that there is no scaling with the density
     pororeac::CalcMatConv(emat,k,timefacfac,1.0,sgconv);
@@ -637,7 +772,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatMass(
     const double &                 densam
   )
 {
-  if(fabs(VarManager()->Saturation(k)) > VarManager()->GetMinSat(k))
+  if(VarManager()->EvaluateScalar(k))
   {
     //the only difference to the base class version is, that there is no scaling with the density
     pororeac::CalcMatMass(emat,k,fac,densam);
@@ -709,23 +844,12 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcConvODMesh(
   const LINALG::Matrix<my::nsd_,1>&   convelint
   )
 {
-  // case of zero saturation
-  if(fabs(VarManager()->Saturation(k)) > VarManager()->GetMinSat(k))
+  // case of zero saturation/volfrac
+  if(VarManager()->EvaluateScalar(k))
   {
-    const int curphase = VarManager()->GetPhaseID(k);
-    const int numfluidphases = VarManager()->FluidPhaseManager()->NumFluidPhases();
 
-    const std::vector<LINALG::Matrix<my::nsd_,1> >& fluidgradphi = *(VarManager()->FluidVarManager()->GradPhinp());
-
-    // current pressure gradient
-    const LINALG::Matrix<my::nsd_,1> gradpres = VarManager()->PressureGradient(curphase);
-    const double abspressgrad = VarManager()->AbsPressureGradient(curphase);
-
-    // diffusion tensor
-    LINALG::Matrix<my::nsd_,my::nsd_> difftensor(true);
-    VarManager()->FluidPhaseManager()->PermeabilityTensor(curphase,difftensor);
-    difftensor.Scale(VarManager()->FluidPhaseManager()->RelPermeability(curphase)/
-        VarManager()->FluidPhaseManager()->DynViscosity(curphase, abspressgrad,2));
+    static LINALG::Matrix<my::nsd_,my::nsd_> difftensor(true);
+    VarManager()->GetDiffTensorFluid(k, difftensor);
 
     // linearization of mesh motion
     //------------------------------------------------dJ/dd = dJ/dF : dF/dd = J * F^-T . N_{\psi} = J * N_x
@@ -751,17 +875,8 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcConvODMesh(
     //----------------------------------------------------------------
 
     //gradient of pressure w.r.t. reference coordinates
-    LINALG::Matrix<my::nsd_,1> refgradpres(true);
-    refgradpres.Clear();
-
-      //gradient of phi w.r.t. reference coordinates
-    std::vector<LINALG::Matrix<my::nsd_,1> > reffluidgradphi(numfluidphases,LINALG::Matrix<my::nsd_,1>(true));
-    for (int idof=0; idof<numfluidphases; ++idof)
-      reffluidgradphi[idof].Multiply(my::xjm_,fluidgradphi[idof]);
-
-    // compute the pressure gradient from the phi gradients
-    for (int idof=0; idof<numfluidphases; ++idof)
-      refgradpres.Update(VarManager()->FluidPhaseManager()->PressureDeriv(curphase,idof),reffluidgradphi[idof],1.0);
+    static LINALG::Matrix<my::nsd_,1> refgradpres(true);
+    VarManager()->GetRefGradPres(k, my::xjm_, refgradpres);
 
     if(my::nsd_==3)
     {
@@ -897,35 +1012,27 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcLinMassODMesh(
   const LINALG::Matrix<1,my::nsd_*my::nen_>& dJ_dmesh
 )
 {
-  // case of zero saturation
-  if(fabs(VarManager()->Saturation(k)) > VarManager()->GetMinSat(k))
+  // case of zero saturation/volfrac
+  if(VarManager()->EvaluateScalar(k))
   {
+
+    // get pre-factor for this scalar
+    const double myfac = VarManager()->GetPreFactorForMassMatrixODMesh(k, fac);
+
     // call base class
     my::CalcLinMassODMesh(emat,
         k,
         ndofpernodemesh,
         rhsfac,
-        fac,
+        myfac,
         densam,
         densnp,
         phinp,
         hist,
         J,
-        dJ_dmesh);
+        dJ_dmesh
+        );
 
-    double vtrans = 0.0;
-
-    if (my::scatraparatimint_->IsGenAlpha())
-      vtrans = rhsfac*densam*hist;
-    else
-    {
-      // compute scalar at integration point
-      vtrans = fac*densnp*phinp;
-    }
-
-    // linearization of porosity only if porosity is 'structure'-dependent
-    if(VarManager()->FluidPhaseManager()->PorosityDependsOnStruct())
-      PorosityLinearizationStruct(emat, k, vtrans);
   }
 
   return;
@@ -946,25 +1053,20 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcHistAndSourceODMesh
   const double                               densnp
 )
 {
-  // case of zero saturation
-  if(fabs(VarManager()->Saturation(k)) > VarManager()->GetMinSat(k))
+  // case of zero saturation/volfrac
+  if(VarManager()->EvaluateScalar(k))
   {
     //const int curphase = VarManager()->GetPhaseID(k);
     const int numfluidphases = VarManager()->FluidPhaseManager()->NumFluidPhases();
 
+    // get pre-factor for this scalar
+    const double myfac = VarManager()->GetPreFactorForHistAndSourceODMesh(k, fac, densnp, my::scatravarmanager_->Hist(k), rhsint);
+
     // 1) linearization of mesh motion:
-    //    call base class with rhsint
-    my::CalcHistAndSourceODMesh(emat,k,ndofpernodemesh,fac,rhsint,J,dJ_dmesh,densnp);
+    //    call base class with correct factor
+    my::CalcHistAndSourceODMesh(emat,k,ndofpernodemesh,myfac,1.0,J,dJ_dmesh,densnp);
 
-    // 2) linearization of history:
-    //    prefactor is densnp = porosity * rho * S
-    //    --> porosity has to be linearized
-    double vrhs = -1.0*fac*my::scatravarmanager_->Hist(k)*densnp;
-    // linearization of porosity only if porosity is 'structure'-dependent
-    if(VarManager()->FluidPhaseManager()->PorosityDependsOnStruct())
-      PorosityLinearizationStruct(emat, k, vrhs);
-
-    // 3) linearization of advanced reaction terms
+    // 2) linearization of advanced reaction terms
     const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = advreac::ReaManager();
     if(remanager->Active() && VarManager()->FluidPhaseManager()->PorosityDependsOnStruct())
     {
@@ -1018,35 +1120,24 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcDiffODMesh(
       const LINALG::Matrix<1,my::nsd_*my::nen_>&  dJ_dmesh
   )
 {
-  // case of zero saturation
-  if(fabs(VarManager()->Saturation(k)) > VarManager()->GetMinSat(k))
+  // case of zero saturation/volfrac
+  if(VarManager()->EvaluateScalar(k))
   {
     // call base class
     my::CalcDiffODMesh(emat,k,ndofpernodemesh,diffcoeff,fac,rhsfac,J,gradphi,convelint,dJ_dmesh);
 
-    // linearization of porosity only if it depends on deformation
-    if(VarManager()->FluidPhaseManager()->PorosityDependsOnStruct())
+    // get pre-factor for this scalar
+    const double myfac = VarManager()->GetPreFactorForDiffMatrixODMesh(k, rhsfac, diffcoeff);
+
+    if(myfac > 1.0e-12)
     {
-      const double delta = VarManager()->GetDelta(k);
-
-      // linearization of porosity
-      //------------------------------------------------dporosity/dd = dporosity/dJ * dJ/dd = dporosity/dJ * J * N_x
-      // J denotes the determinant of the deformation gradient, i.e. det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
-      // in our case: diffusivity is scaled with porosity^(delta + 1) --> scale it with 1.0/porosity^(delta + 1) here
-      //              and build derivative d diff/d porosity = (delta + 1) * porosity^delta
-      const double vrhs = rhsfac*diffcoeff
-                         /std::pow(VarManager()->FluidPhaseManager()->Porosity(), delta + 1.0)
-                         * (delta + 1.0) * std::pow(VarManager()->FluidPhaseManager()->Porosity(), delta )
-                         *VarManager()->FluidPhaseManager()->JacobianDefGrad()
-                         *VarManager()->FluidPhaseManager()->PorosityDerivWrtJacobianDefGrad();
-
       for (unsigned vi=0; vi<my::nen_; ++vi)
       {
         const int fvi = vi*my::numdofpernode_+k;
 
         double laplawf(0.0);
         my::GetLaplacianWeakFormRHS(laplawf,gradphi,vi);
-        const double v = vrhs * laplawf;
+        const double v = myfac * laplawf;
         for (unsigned ui=0; ui<my::nen_; ++ui)
         {
           for (unsigned idim=0; idim<my::nsd_; ++idim)
@@ -1076,98 +1167,15 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcReactODMesh(
       const LINALG::Matrix<1,my::nsd_*my::nen_>&  dJ_dmesh
   )
 {
-  // case of zero saturation
-  if(fabs(VarManager()->Saturation(k)) > VarManager()->GetMinSat(k))
+  // case of zero saturation/volfrac
+  if(VarManager()->EvaluateScalar(k))
   {
+
+    // get pre-factor for this scalar
+    const double myfac = VarManager()->GetPreFactorForMassMatrixODMesh(k, rhsfac);
     // call base class
-    my::CalcReactODMesh(emat,k,ndofpernodemesh,rhsfac,rea_phi,J,dJ_dmesh);
+    my::CalcReactODMesh(emat,k,ndofpernodemesh,myfac,rea_phi,J,dJ_dmesh);
 
-    if (my::reamanager_->Active())
-    {
-      // standard Galerkin term
-      double vrhs = rhsfac*rea_phi;
-
-      // linearization of porosity only if porosity is 'structure'-dependent
-      if(VarManager()->FluidPhaseManager()->PorosityDependsOnStruct())
-        PorosityLinearizationStruct(emat, k, vrhs);
-    }
-  }
-
-  return;
-}
-
-/*--------------------------------------------------------------------------------- *
- | generic linearization of term scaled with porosity (OD struct)  kremheller 07/17 |
- *----------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::PorosityLinearizationStruct(
-    Epetra_SerialDenseMatrix&                   emat,
-    const int                                   k,
-    double                                      prefac
-)
-{
-  // linearization of porosity
-  //------------------------------------------------dporosity/dd = dporosity/dJ * dJ/dd = dporosity/dJ * J * N_x
-  // J denotes the determinant of the deformation gradient, i.e. det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
-  // in our case: prefac is scaled with density, i.e. porosity --> scale it with 1.0/porosity here
-
-  prefac *= 1.0/(VarManager()->FluidPhaseManager()->Porosity())
-              *VarManager()->FluidPhaseManager()->JacobianDefGrad()
-              *VarManager()->FluidPhaseManager()->PorosityDerivWrtJacobianDefGrad();
-
-  for (unsigned vi=0; vi<my::nen_; ++vi)
-  {
-    const int fvi = vi*my::numdofpernode_+k;
-    const double v = my::funct_(vi)*prefac;
-
-    for (unsigned ui=0; ui<my::nen_; ++ui)
-    {
-      for (unsigned idim=0; idim<my::nsd_; ++idim)
-      {
-        const int fui = ui*my::nsd_+idim;
-
-        emat(fvi,fui) += v*my::derxy_(idim,ui);
-      }
-    }
-  }
-
-  return;
-}
-
-/*--------------------------------------------------------------------------------- *
- | generic linearization of term scaled with porosity (OD fluid)   kremheller 07/17 |
- *----------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::PorosityLinearizationFluid(
-    Epetra_SerialDenseMatrix&                   emat,
-    const int                                   k,
-    const int                                   curphase,
-    const int                                   numfluidphases,
-    const int                                   totalnummultiphasedofpernode,
-    double                                      prefac
-)
-{
-
-  // linearization of porosity wrt fluid primary variables
-  // in our case: prefac is scaled with density, i.e. porosity --> scale it with 1.0/porosity here
-
-  prefac /= (VarManager()->FluidPhaseManager()->Porosity());
-
-  for (unsigned vi=0; vi<my::nen_; ++vi)
-  {
-    const int fvi = vi*my::numdofpernode_+k;
-    const double v = my::funct_(vi)*prefac;
-
-    for (unsigned ui=0; ui<my::nen_; ++ui)
-    {
-      const double vfunct = v * my::funct_(ui);
-      for (int idof=0; idof<totalnummultiphasedofpernode; ++idof)
-      {
-        const int fui = ui*totalnummultiphasedofpernode+idof;
-
-        emat(fvi,fui) += vfunct*VarManager()->FluidPhaseManager()->PorosityDeriv(idof);
-      }
-    }
   }
 
   return;
@@ -1186,25 +1194,17 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConvODFluid(
   const LINALG::Matrix<my::nsd_,1>& gradphi           //!< scalar gradient
 )
 {
-  // case of zero saturation
-  if(fabs(VarManager()->Saturation(k)) > VarManager()->GetMinSat(k))
+  // case of zero saturation/volfrac
+  if(VarManager()->EvaluateScalar(k))
   {
-    const int curphase = VarManager()->GetPhaseID(k);
-    const int numfluidphases = VarManager()->FluidPhaseManager()->NumFluidPhases();
     const int totalnummultiphasedofpernode = VarManager()->MultiphaseMat()->NumMat();
 
-    // current pressure gradient
-    const LINALG::Matrix<my::nsd_,1> gradpres = VarManager()->PressureGradient(curphase);
-    const double abspressgrad = VarManager()->AbsPressureGradient(curphase);
-
-    // diffusion tensor
-    LINALG::Matrix<my::nsd_,my::nsd_> difftensor(true);
-    VarManager()->FluidPhaseManager()->PermeabilityTensor(curphase,difftensor);
-    difftensor.Scale(VarManager()->FluidPhaseManager()->RelPermeability(curphase)/
-        VarManager()->FluidPhaseManager()->DynViscosity(curphase, abspressgrad,2));
+    static LINALG::Matrix<my::nsd_,my::nsd_> difftensor(true);
+    VarManager()->GetDiffTensorFluid(k, difftensor);
 
     // gradphi^T * difftensor
-    LINALG::Matrix<1,my::nsd_> gradphiTdifftensor(true);
+    // TODO: not sure if this works for anisotropic fluid difftensor
+    static LINALG::Matrix<1,my::nsd_> gradphiTdifftensor(true);
     gradphiTdifftensor.MultiplyTN(gradphi, difftensor);
 
     for (unsigned vi=0; vi<my::nen_; ++vi)
@@ -1214,51 +1214,18 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConvODFluid(
 
       for (unsigned ui=0; ui<my::nen_; ++ui)
       {
-        double laplawf(0.0);
-        for (unsigned j = 0; j<my::nsd_; j++)
-          laplawf += v*my::derxy_(j, ui)*gradphiTdifftensor(0, j);
-        for (int idof=0; idof<numfluidphases; ++idof)
+        // get pre-fac vector for this scalar
+        static std::vector<double> prefaclinconvodfluid(totalnummultiphasedofpernode,0.0);
+        VarManager()->GetPreFacLinConvODFluid(k, ui, &prefaclinconvodfluid, gradphi, gradphiTdifftensor, my::funct_, my::derxy_);
+
+        for (int idof=0; idof<totalnummultiphasedofpernode; ++idof)
         {
           const int fui = ui*totalnummultiphasedofpernode+idof;
-          emat(fvi,fui) += laplawf*VarManager()->FluidPhaseManager()->PressureDeriv(curphase, idof);
+          emat(fvi,fui) += v*prefaclinconvodfluid[idof];
         }
       }
     }
 
-    //----------------------------------------------------------------
-    // linearization of relative permeability w.r.t. dof
-    //----------------------------------------------------------------
-    if(not VarManager()->FluidPhaseManager()->HasConstantRelPermeability(curphase))
-    {
-      // diffusion tensor
-      LINALG::Matrix<my::nsd_,my::nsd_> difftensor(true);
-      VarManager()->FluidPhaseManager()->PermeabilityTensor(curphase,difftensor);
-      difftensor.Scale(VarManager()->FluidPhaseManager()->RelPermeabilityDeriv(curphase)/
-          VarManager()->FluidPhaseManager()->DynViscosity(curphase, abspressgrad,2));
-
-      LINALG::Matrix<1,my::nsd_> gradphiTdifftensor(true);
-      gradphiTdifftensor.MultiplyTN(gradphi, difftensor);
-
-      for (unsigned vi=0; vi<my::nen_; ++vi)
-      {
-        const int fvi = vi*my::numdofpernode_+k;
-        const double v =  rhsfac*my::funct_(vi)*(-1.0)*VarManager()->Density(k);
-
-
-        for (unsigned ui=0; ui<my::nen_; ++ui)
-        {
-          double laplawf(0.0);
-          for (unsigned j = 0; j<my::nsd_; j++)
-            laplawf += v*gradpres(j)*gradphiTdifftensor(0, j);
-          for (int idof=0; idof<numfluidphases; ++idof)
-          {
-            const int fui = ui*totalnummultiphasedofpernode+idof;
-            emat(fvi,fui) += laplawf*my::funct_(ui)*VarManager()->FluidPhaseManager()->SaturationDeriv(curphase, idof);
-          }
-        }
-
-      }
-    }
     //----------------------------------------------------------------
     // linearization of dynamic viscosity w.r.t. dof --> TODO
     // however, I believe this is not necessary: FD-check does not fail
@@ -1301,11 +1268,9 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcLinMassODFluid(
     const double                       hist               //!< history of time integartion
   )
 {
-  // case of zero saturation
-  if(fabs(VarManager()->Saturation(k)) > VarManager()->GetMinSat(k))
+  // case of zero saturation/volfrac
+  if(VarManager()->EvaluateScalar(k))
   {
-    const int curphase = VarManager()->GetPhaseID(k);
-    const int numfluidphases = VarManager()->FluidPhaseManager()->NumFluidPhases();
     const int totalnummultiphasedofpernode = VarManager()->MultiphaseMat()->NumMat();
 
     double vtrans = 0.0;
@@ -1318,34 +1283,31 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcLinMassODFluid(
       vtrans = fac*densnp*phinp;
     }
 
-    // linearization of saturation
-    SaturationLinearization(emat, k, curphase, numfluidphases, totalnummultiphasedofpernode, vtrans);
+    // get pre-fac vector for this scalar
+    static std::vector<double> prefaclinmassodfluid(totalnummultiphasedofpernode,0.0);
+    VarManager()->GetPreFacLinMassODFluid(k, &prefaclinmassodfluid);
 
-    // linearization of porosity only if porosity is pressure-dependent
-    if(VarManager()->FluidPhaseManager()->PorosityDependsOnFluid())
-      PorosityLinearizationFluid(emat, k, curphase, numfluidphases, totalnummultiphasedofpernode, vtrans);
+    CalcLinMassMatrixTypeODFluid(emat, k, &prefaclinmassodfluid, totalnummultiphasedofpernode, vtrans);
+
   }
 
   return;
 }
 
-/*--------------------------------------------------------------------------------- *
- | generic linearization of term scaled with saturation (OD fluid) kremheller 07/17 |
- *----------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------- *
+ | generic linearization of mass matrix type (OD fluid) kremheller 03/18 |
+ | correct pre-factor has to be passed                                   |
+ *-----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SaturationLinearization(
+void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcLinMassMatrixTypeODFluid(
     Epetra_SerialDenseMatrix&                   emat,
     const int                                   k,
-    const int                                   curphase,
-    const int                                   numfluidphases,
+    const std::vector<double>*                  prefaclinmassodfluid,
     const int                                   totalnummultiphasedofpernode,
     double                                      prefac
 )
 {
-  // prefac is scaled with density, i.e. saturation, scale it with 1.0/saturation here
-  prefac /= VarManager()->FluidPhaseManager()->Saturation(curphase);
 
-  // dprefac / dphi_j = dprefac / dS_curphase * dS_curphase * d_phi_j = 1.0 * dS_curphase * d_phi_j
   for (unsigned vi=0; vi<my::nen_; ++vi)
   {
     const double v = prefac * my::funct_(vi);
@@ -1354,11 +1316,11 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SaturationLinearization
     for (unsigned ui=0; ui<my::nen_; ++ui)
     {
       const double vfunct = v*my::funct_(ui);
-      for (int idof = 0; idof < numfluidphases; ++idof)
+      for (int idof = 0; idof < totalnummultiphasedofpernode; ++idof)
       {
         const int fui = ui * totalnummultiphasedofpernode + idof;
 
-        emat(fvi,fui) += vfunct*VarManager()->FluidPhaseManager()->SaturationDeriv(curphase, idof);
+        emat(fvi,fui) += vfunct*(*prefaclinmassodfluid)[idof];
       }
     }
   }
@@ -1380,24 +1342,23 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcHistAndSourceODFlui
     const double                       densnp
   )
 {
-  // case of zero saturation
-  if(fabs(VarManager()->Saturation(k)) > VarManager()->GetMinSat(k))
+  // case of zero saturation/volfrac
+  if(VarManager()->EvaluateScalar(k))
   {
-    const int curphase = VarManager()->GetPhaseID(k);
     const int numfluidphases = VarManager()->FluidPhaseManager()->NumFluidPhases();
     const int totalnummultiphasedofpernode = VarManager()->MultiphaseMat()->NumMat();
+    const int numvolfrac = VarManager()->FluidPhaseManager()->NumVolFrac();
 
     // 1) linearization of history:
     //    prefactor is densnp = porosity * rho * S
     //    --> porosity and saturation have to be linearized
     double vrhs = -1.0*fac*my::scatravarmanager_->Hist(k)*densnp;
 
-    // 1a) linearization of saturation
-    SaturationLinearization(emat, k, curphase, numfluidphases, totalnummultiphasedofpernode, vrhs);
+    // get pre-fac vector for this scalar
+    static std::vector<double> prefaclinmassodfluid(totalnummultiphasedofpernode,0.0);
+    VarManager()->GetPreFacLinMassODFluid(k, &prefaclinmassodfluid);
 
-    // 1b) linearization of porosity only if porosity is pressure-dependent
-    if(VarManager()->FluidPhaseManager()->PorosityDependsOnFluid())
-      PorosityLinearizationFluid(emat, k, curphase, numfluidphases, totalnummultiphasedofpernode, vrhs);
+    CalcLinMassMatrixTypeODFluid(emat, k, &prefaclinmassodfluid, totalnummultiphasedofpernode, vrhs);
 
     // 2) linearization of advanced reaction terms
     const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = advreac::ReaManager();
@@ -1420,11 +1381,15 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcHistAndSourceODFlui
                         + myderivs[j               ]*VarManager()->FluidPhaseManager()->PressureDeriv(j, i);
         }
       }
-      // derivatives after volume fractions at [2*numfluidphases+1+ivolfrac]
-      for(int ivolfrac = 0; ivolfrac < totalnummultiphasedofpernode-numfluidphases; ivolfrac++)
+
+      for(int ivolfrac = 0; ivolfrac < numvolfrac; ivolfrac++)
       {
-        phiderivs[ivolfrac+numfluidphases] += myderivs[2*numfluidphases+1+ivolfrac]
-                                       + myderivs[2*numfluidphases]*VarManager()->FluidPhaseManager()->PorosityDeriv(ivolfrac+numfluidphases);
+        // derivatives after volume fractions at [2*numfluidphases+1+ivolfrac]
+        phiderivs[ivolfrac+numfluidphases           ] += myderivs[2*numfluidphases+1+ivolfrac]
+                                                      +  myderivs[2*numfluidphases]
+                                                         *VarManager()->FluidPhaseManager()->PorosityDeriv(ivolfrac+numfluidphases);
+        // derivatives after volume fraction pressures at [2*numfluidphases+numvolfrac+1+ivolfrac]
+        phiderivs[ivolfrac+numfluidphases+numvolfrac] += myderivs[2*numfluidphases+numvolfrac+1+ivolfrac];
       }
 
       // fill matrix
@@ -1464,20 +1429,17 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcReactODFluid(
     const double                       rea_phi
   )
 {
-  if (my::reamanager_->Active() && fabs(VarManager()->Saturation(k)) > VarManager()->GetMinSat(k))
+  if (my::reamanager_->Active() && VarManager()->EvaluateScalar(k))
   {
-    const int curphase = VarManager()->GetPhaseID(k);
-    const int numfluidphases = VarManager()->FluidPhaseManager()->NumFluidPhases();
     const int totalnummultiphasedofpernode = VarManager()->MultiphaseMat()->NumMat();
 
     double vrhs = rhsfac*rea_phi;
 
-    // linearization of saturation
-    SaturationLinearization(emat, k, curphase, numfluidphases, totalnummultiphasedofpernode, vrhs);
+    // get pre-fac vector for this scalar
+    static std::vector<double> prefaclinmassodfluid(totalnummultiphasedofpernode,0.0);
+    VarManager()->GetPreFacLinMassODFluid(k, &prefaclinmassodfluid);
 
-    // linearization of porosity only if porosity is pressure-dependent
-    if(VarManager()->FluidPhaseManager()->PorosityDependsOnFluid())
-      PorosityLinearizationFluid(emat, k, curphase, numfluidphases, totalnummultiphasedofpernode, vrhs);
+    CalcLinMassMatrixTypeODFluid(emat, k, &prefaclinmassodfluid, totalnummultiphasedofpernode, vrhs);
   }
 
   return;
@@ -1495,29 +1457,16 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcDiffODFluid(
     const LINALG::Matrix<my::nsd_,1>&   gradphi           //!< scalar gradient at Gauss point
   )
 {
-  // case of zero saturation
-  if(fabs(VarManager()->Saturation(k)) > VarManager()->GetMinSat(k))
+  // case of zero saturation/volfrac
+  if(VarManager()->EvaluateScalar(k))
   {
-    const int curphase = VarManager()->GetPhaseID(k);
-    const int numfluidphases = VarManager()->FluidPhaseManager()->NumFluidPhases();
+
     const int totalnummultiphasedofpernode = VarManager()->MultiphaseMat()->NumMat();
-    const double delta = VarManager()->GetDelta(k);
 
-    // linearization of saturation*porosity*d_eff = (saturation * porosity)^(delta+1) w.r.t saturation
-    //-------------------------------------------------------------------------------------------------------------
-    // in our case: diffusivity is scaled with saturation^(delta + 1) --> scale it with 1.0/saturation^(delta + 1) here
-    //              and build derivative d diff/d saturation = (delta + 1) * saturation^delta
-    const double vrhs_sat = rhsfac*my::diffmanager_->GetIsotropicDiff(k)
-        /std::pow(VarManager()->FluidPhaseManager()->Saturation(curphase), delta + 1.0)
-    * (delta + 1.0) * std::pow(VarManager()->FluidPhaseManager()->Saturation(curphase), delta );
+    // get pre-fac vector for this scalar
+    static std::vector<double> prefacdiffodfluid(totalnummultiphasedofpernode,0.0);
+    VarManager()->GetPreFacDiffODFluid(k, rhsfac, my::diffmanager_->GetIsotropicDiff(k), &prefacdiffodfluid);
 
-    // linearization of saturation*porosity*d_eff = (saturation * porosity)^(delta+1) w.r.t porosity
-    //-------------------------------------------------------------------------------------------------------------
-    // in our case: diffusivity is scaled with porosity^(delta + 1) --> scale it with 1.0/porosity^(delta + 1) here
-    //              and build derivative d diff/d porosity = (delta + 1) * porosity^delta
-    const double vrhs_poro = rhsfac*my::diffmanager_->GetIsotropicDiff(k)
-        /std::pow(VarManager()->FluidPhaseManager()->Porosity(), delta + 1.0)
-    * (delta + 1.0) * std::pow(VarManager()->FluidPhaseManager()->Porosity(), delta );
 
     for (unsigned vi=0; vi<my::nen_; ++vi)
     {
@@ -1525,27 +1474,17 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcDiffODFluid(
 
       double laplawf(0.0);
       my::GetLaplacianWeakFormRHS(laplawf,gradphi,vi);
-      const double vsat = vrhs_sat * laplawf;
-      const double vporo = vrhs_poro * laplawf;
 
       for (unsigned ui=0; ui<my::nen_; ++ui)
       {
-        const double vfunctsat = vsat * my::funct_(ui);
-        const double vfunctporo = vporo * my::funct_(ui);
+        const double functlaplawf = laplawf * my::funct_(ui);
 
         // derivative w.r.t. fluid phases
-        for (int idof=0; idof<numfluidphases; ++idof)
+        for (int idof=0; idof<totalnummultiphasedofpernode; ++idof)
         {
           const int fui = ui*totalnummultiphasedofpernode+idof;
 
-          emat(fvi,fui) += vfunctsat*VarManager()->FluidPhaseManager()->SaturationDeriv(curphase,idof)
-                         + vfunctporo*VarManager()->FluidPhaseManager()->PorosityDeriv(idof);
-        }
-        // derivative w.r.t. volume fractions
-        for (int idof=numfluidphases; idof<totalnummultiphasedofpernode; ++idof)
-        {
-          const int fui = ui*totalnummultiphasedofpernode+idof;
-          emat(fvi,fui) += vfunctporo*VarManager()->FluidPhaseManager()->PorosityDeriv(idof);
+          emat(fvi,fui) += functlaplawf*prefacdiffodfluid[idof];
         }
       }
     }

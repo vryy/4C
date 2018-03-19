@@ -52,7 +52,7 @@ POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMultiMaterial(
 
   // safety check and cast
   if(singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlephase)
-    dserror("only poro singlephase material valid");
+    dserror("check at position %i/%i failed, only poro singlephase material valid", phasenum+1,multiphasemat.NumMat());
 
   return static_cast<const MAT::FluidPoroSinglePhase&>(*singlemat);
 }
@@ -91,7 +91,7 @@ POROFLUIDMULTIPHASE::ELEUTILS::GetSingleVolFracMatFromMultiMaterial(
 
   // safety check and cast
   if(singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlevolfrac)
-    dserror("only poro single vol fraction material valid");
+    dserror("check at position %i/%i failed, only poro single vol fraction material valid", volfracnum+1,multiphasemat.NumMat());
 
   return static_cast<const MAT::FluidPoroSingleVolFrac&>(*singlemat);
 }
@@ -114,4 +114,43 @@ POROFLUIDMULTIPHASE::ELEUTILS::GetSingleVolFracMatFromMaterial(
       static_cast<const MAT::FluidPoroMultiPhase&>(material);
 
   return GetSingleVolFracMatFromMultiMaterial(multiphasemat,volfracnum);
+}
+
+/*-------------------------------------------------------------------------------------------------*
+ * get the volume fraction pressure material from the element multiphase material kremheller 02/18 |
+*--------------------------------------------------------------------------------------------------*/
+const MAT::FluidPoroVolFracPressure&
+POROFLUIDMULTIPHASE::ELEUTILS::GetVolFracPressureMatFromMultiMaterial(
+    const MAT::FluidPoroMultiPhase& multiphasemat,
+    int volfracnum)
+{
+  // get the single phase material by its ID
+  const int matid = multiphasemat.MatID(volfracnum);
+  Teuchos::RCP< MAT::Material> singlemat = multiphasemat.MaterialById(matid);
+
+  // safety check and cast
+  if(singlemat->MaterialType() != INPAR::MAT::m_fluidporo_volfracpressure)
+    dserror("check at position %i/%i failed, only poro single vol fraction material valid", volfracnum+1,multiphasemat.NumMat());
+
+  return static_cast<const MAT::FluidPoroVolFracPressure&>(*singlemat);
+}
+
+/*-----------------------------------------------------------------------------------------*
+ *  get the volume fraction pressure material from the element material   kremheller 02/18 |
+*------------------------------------------------------------------------------------------*/
+const MAT::FluidPoroVolFracPressure&
+POROFLUIDMULTIPHASE::ELEUTILS::GetVolFracPressureMatFromMaterial(
+    const MAT::Material& material,
+    int volfracnum)
+{
+  //safety check
+  if(material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
+     material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
+    dserror("only poro multiphase material valid");
+
+  //cast
+  const MAT::FluidPoroMultiPhase& multiphasemat =
+      static_cast<const MAT::FluidPoroMultiPhase&>(material);
+
+  return GetVolFracPressureMatFromMultiMaterial(multiphasemat,volfracnum);
 }

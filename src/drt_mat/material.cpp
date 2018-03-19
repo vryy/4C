@@ -307,11 +307,18 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::ScatraReactionMat* params = static_cast<MAT::PAR::ScatraReactionMat*>(curmat->Parameter());
     return params->CreateMaterial();
   }
-  case INPAR::MAT::m_scatra_multiporo:
+  case INPAR::MAT::m_scatra_multiporo_fluid:
   {
     if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::ScatraMatMultiPoro(curmat));
-    MAT::PAR::ScatraMatMultiPoro* params = static_cast<MAT::PAR::ScatraMatMultiPoro*>(curmat->Parameter());
+      curmat->SetParameter(new MAT::PAR::ScatraMatMultiPoroFluid(curmat));
+    MAT::PAR::ScatraMatMultiPoroFluid* params = static_cast<MAT::PAR::ScatraMatMultiPoroFluid*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_scatra_multiporo_volfrac:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::ScatraMatMultiPoroVolFrac(curmat));
+    MAT::PAR::ScatraMatMultiPoroVolFrac* params = static_cast<MAT::PAR::ScatraMatMultiPoroVolFrac*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_scatra_bondreac:
@@ -473,6 +480,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::FluidPoroSingleVolFrac(curmat));
     MAT::PAR::FluidPoroSingleVolFrac* params = static_cast<MAT::PAR::FluidPoroSingleVolFrac*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_fluidporo_volfracpressure:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::FluidPoroVolFracPressure(curmat));
+    MAT::PAR::FluidPoroVolFracPressure* params = static_cast<MAT::PAR::FluidPoroVolFracPressure*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_poro_law_linear:

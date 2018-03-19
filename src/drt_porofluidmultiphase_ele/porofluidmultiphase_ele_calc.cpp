@@ -588,16 +588,14 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::SetupCalc(
   ele_ = ele;
 
   Teuchos::RCP<MAT::Material> mat = ele->Material();
-  if(mat->MaterialType() == INPAR::MAT::m_fluidporo_multiphase or
-     mat->MaterialType() == INPAR::MAT::m_fluidporo_multiphase_reactions)
-  {
-    const MAT::FluidPoroMultiPhase* actmat = dynamic_cast<const MAT::FluidPoroMultiPhase*>(mat.get());
-    if(actmat==NULL)
-      dserror("cast failed");
-    numfluidphases_ = actmat->NumFluidPhases();
-  }
-  else
+  if(mat->MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
+     mat->MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
     dserror("PoroFluidMultiPhase element got unsupported material type %d", mat->MaterialType());
+
+  Teuchos::RCP<MAT::FluidPoroMultiPhase> actmat = Teuchos::rcp_static_cast<MAT::FluidPoroMultiPhase>(mat);
+  if(actmat==Teuchos::null)
+    dserror("cast failed");
+  numfluidphases_ = actmat->NumFluidPhases();
 
   //Note:
   // here the phase manager, the variable manager and the evaluator classes are
@@ -622,7 +620,9 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::SetupCalc(
       DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<nsd_,nen_>::CreateVariableManager(
           *para_,
           action,
-          totalnumdofpernode_);
+          actmat,
+          totalnumdofpernode_,
+          numfluidphases_);
 
   // build the evaluator
   evaluator_ = DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<nsd_,nen_>::CreateEvaluator(

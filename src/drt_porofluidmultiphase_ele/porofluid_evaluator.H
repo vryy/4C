@@ -603,6 +603,68 @@ protected:
       double                                                      fac             //!< domain-integration factor times time-integration factor
       )=0;
 
+  // OD-mesh linearization of diffusive term
+  void CalcDiffODMesh(
+      Epetra_SerialDenseMatrix&                     mymat,         //!< element matrix to be filled
+      const LINALG::Matrix<nsd,nen>&                deriv,
+      const LINALG::Matrix<nsd,nen>&                derxy,
+      const LINALG::Matrix<nsd,nsd>&                xjm,
+      const LINALG::Matrix<nsd,1>&                  diffflux,
+      const LINALG::Matrix<nsd,1>&                  refgrad,
+      const LINALG::Matrix<nsd,1>&                  grad,
+      const double                                  timefacfac,
+      const double                                  difffac,
+      const int                                     numdofpernode,
+      const int                                     phasetoadd
+      );
+
+  // OD-mesh linearization of fac (Jacobian)
+  void CalcLinFacODMesh(
+      Epetra_SerialDenseMatrix&                     mymat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                  funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                derxy,
+      const double                                  vrhs,
+      const int                                     numdofpernode,
+      const int                                     phasetoadd
+      );
+
+  // OD-mesh linearization of divergence term
+  void CalcDivVelODMesh(
+      Epetra_SerialDenseMatrix&                     mymat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                  funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                deriv,
+      const LINALG::Matrix<nsd,nen>&                derxy,
+      const LINALG::Matrix<nsd,nsd>&                xjm,
+      const LINALG::Matrix<nsd,nsd>&                gridvelderiv,
+      const double                                  timefacfac,
+      const double                                  fac,
+      const double                                  det,
+      const int                                     numdofpernode,
+      const int                                     phasetoadd
+      );
+
+  // linearization of a term scaled with saturation after fluid dofs
+  void SaturationLinearizationFluid(
+      Epetra_SerialDenseMatrix&                      mymat,
+      const LINALG::Matrix<nen,1>&                   funct,
+      const double                                   prefac,
+      const int                                      numdofpernode,
+      const int                                      numfluidphases,
+      const int                                      curphase,
+      const int                                      phasetoadd,
+      const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager
+      );
+
+  // linearization of a term scaled with porosity after fluid dofs
+  void PorosityLinearizationFluid(
+      Epetra_SerialDenseMatrix&                      mymat,
+      const LINALG::Matrix<nen,1>&                   funct,
+      const double                                   prefac,
+      const int                                      numdofpernode,
+      const int                                      phasetoadd,
+      const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager
+      );
+
 private:
   //! assemble strategy
   Teuchos::RCP<AssembleInterface> assembler_;
@@ -1696,6 +1758,96 @@ protected:
  * **********************************************************************
  *----------------------------------------------------------------------*/
 /*!
+\brief helper class for finding the volume fraction pressure dofs which
+       do not have to be evaluated
+
+The DOFs where the volume fraction pressure is valid, i.e. has a physical meaning
+are those where the respective volume fraction is greater than a threshold (MIN_VOLFRAC)
+These are identified here be setting ones into the valid_volfracpress_dofs_-vector
+
+\author kremheller
+*/
+template<int nsd, int nen>
+class EvaluatorValidVolFracPressures : public EvaluatorBase<nsd,nen>
+{
+public:
+  //! constructor
+  EvaluatorValidVolFracPressures(Teuchos::RCP<AssembleInterface> assembler,int curphase)
+  : EvaluatorBase<nsd,nen>(assembler,curphase)
+    {};
+
+  //! destructor
+  virtual ~EvaluatorValidVolFracPressures(){};
+
+protected:
+
+  //! evaluate element matrix
+  void EvaluateMatrixAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
+    );
+
+  //! evaluate element RHS vector
+  void EvaluateVectorAndAssemble(
+      std::vector<Epetra_SerialDenseVector*>&                     elevec,           //!< element vector to be filled
+      const LINALG::Matrix<nen,1>&                                funct,           //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,           //! array for shape function derivatives w.r.t x,y,z
+      int                                                         curphase,        //!< index of current phase
+      int                                                         phasetoadd,      //!< index of current phase
+      int                                                         numdofpernode,   //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,    //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager, //!< variable manager
+      double                                                      rhsfac,          //!< time-integration factor for rhs times domain-integration factor
+      double                                                      fac,             //!< domain-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODStructAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      const LINALG::Matrix<nsd,nsd>&                              xjm,
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      double                                                      det
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODScatraAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac             //!< domain-integration factor times time-integration factor
+      );
+
+};
+
+/*----------------------------------------------------------------------*
+ * **********************************************************************
+ *----------------------------------------------------------------------*/
+/*!
 \brief helper class for evaluation of porosity
 
 This class implements the post processing of the porosity at the nodes.
@@ -2324,6 +2476,7 @@ protected:
 \brief class for evaluation of instationary term for volume fractions
 
 This class implements the term $( w, rho \frac{\partial volfrac^i}{\partial t} )$.
+It is assembled into the equation for volume fractions and for volume fraction pressures
 
 \author kremheller
 */
@@ -2410,6 +2563,7 @@ protected:
 \brief class for evaluation of divergence of the (mesh) velocity field for volume fractions
 
 This class implements the term $(w, rho volfrac \nabla \cdot v^s )$.
+It is assembled into the equation for volume fractions and for volume fraction pressures
 
 \author kremheller
 */
@@ -2682,6 +2836,179 @@ public:
 
   //! destructor
   virtual ~EvaluatorVolFracAddFlux(){};
+
+protected:
+
+  //! evaluate element matrix
+  void EvaluateMatrixAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
+    );
+
+  //! evaluate element RHS vector
+  void EvaluateVectorAndAssemble(
+      std::vector<Epetra_SerialDenseVector*>&                     elevec,           //!< element vector to be filled
+      const LINALG::Matrix<nen,1>&                                funct,           //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,           //! array for shape function derivatives w.r.t x,y,z
+      int                                                         curphase,        //!< index of current phase
+      int                                                         phasetoadd,      //!< index of current phase
+      int                                                         numdofpernode,   //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,    //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager, //!< variable manager
+      double                                                      rhsfac,          //!< time-integration factor for rhs times domain-integration factor
+      double                                                      fac,             //!< domain-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODStructAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      const LINALG::Matrix<nsd,nsd>&                              xjm,
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      double                                                      det
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODScatraAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac             //!< domain-integration factor times time-integration factor
+      );
+};
+
+/*----------------------------------------------------------------------*
+ * **********************************************************************
+ *----------------------------------------------------------------------*/
+/*!
+\brief class for evaluation of diffusive volfrac pressure term into the element matrix
+
+This class implements the term $( \nabla w, k/\mu \nabla volfrac_pressure )$.
+
+\author kremheller
+*/
+template<int nsd, int nen>
+class EvaluatorVolFracPressureDiff : public EvaluatorBase<nsd,nen>
+{
+public:
+  //! constructor
+  EvaluatorVolFracPressureDiff(Teuchos::RCP<AssembleInterface> assembler,int curphase)
+  : EvaluatorBase<nsd,nen>(assembler,curphase)
+    {};
+
+  //! destructor
+  virtual ~EvaluatorVolFracPressureDiff(){};
+
+protected:
+
+  //! evaluate element matrix
+  void EvaluateMatrixAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
+    );
+
+  //! evaluate element RHS vector
+  void EvaluateVectorAndAssemble(
+      std::vector<Epetra_SerialDenseVector*>&                     elevec,           //!< element vector to be filled
+      const LINALG::Matrix<nen,1>&                                funct,           //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,           //! array for shape function derivatives w.r.t x,y,z
+      int                                                         curphase,        //!< index of current phase
+      int                                                         phasetoadd,      //!< index of current phase
+      int                                                         numdofpernode,   //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,    //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager, //!< variable manager
+      double                                                      rhsfac,          //!< time-integration factor for rhs times domain-integration factor
+      double                                                      fac,             //!< domain-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODStructAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      const LINALG::Matrix<nsd,nsd>&                              xjm,
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      double                                                      det
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODScatraAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac             //!< domain-integration factor times time-integration factor
+      );
+};
+
+/*----------------------------------------------------------------------*
+ * **********************************************************************
+ *----------------------------------------------------------------------*/
+/*!
+\brief class for evaluation of reactive term of volume fraction pressures
+       into the element matrix
+
+This class implements the term $(  w, reac )$.
+
+\author kremheller
+*/
+template<int nsd, int nen>
+class EvaluatorVolFracPressureReac : public EvaluatorBase<nsd,nen>
+{
+public:
+  //! constructor
+  EvaluatorVolFracPressureReac(Teuchos::RCP<AssembleInterface> assembler,int curphase)
+  : EvaluatorBase<nsd,nen>(assembler,curphase)
+    {};
+
+  //! destructor
+  virtual ~EvaluatorVolFracPressureReac(){};
 
 protected:
 

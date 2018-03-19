@@ -70,11 +70,13 @@ class FluidPoroSingleReaction: public Parameter
         std::vector<std::vector<double> >&       reacderivssaturation,
         std::vector<double>&                     reacderivsporosity,
         std::vector<std::vector<double> >&       reacderivsvolfrac,
+        std::vector<std::vector<double> >&       reacderivsvolfracpressure,
         std::vector<std::vector<double> >&       reacderivsscalar,
         const std::vector<double>&               pressure,
         const std::vector<double>&               saturation,
         const double&                            porosity,
         const std::vector<double>&               volfracs,
+        const std::vector<double>&               volfracpressures,
         const std::vector<double>&               scalar);
 
     /// Check sizes of vectors
@@ -84,11 +86,13 @@ class FluidPoroSingleReaction: public Parameter
         std::vector<std::vector<double> >&       reacderivssaturation,
         std::vector<double>&                     reacderivsporosity,
         std::vector<std::vector<double> >&       reacderivsvolfrac,
+        std::vector<std::vector<double> >&       reacderivsvolfracpressure,
         std::vector<std::vector<double> >&       reacderivsscalar,
         const std::vector<double>&               pressure,
         const std::vector<double>&               saturation,
         const double&                            porosity,
         const std::vector<double>&               volfracs,
+        const std::vector<double>&               volfracpressures,
         const std::vector<double>&               scalar);
 
     /// @name material parameters
@@ -137,6 +141,8 @@ class FluidPoroSingleReaction: public Parameter
     const std::string porosityname_;
     /// string name used for volume fractions in function parser
     std::vector<std::string> volfracnames_;
+    /// string name used for volume fraction pressures in function parser
+    std::vector<std::string> volfracpressurenames_;
 
 }; // class FluidPoroSinglePhaseReaction
 
@@ -249,16 +255,22 @@ public:
       std::vector<std::vector<double> >&       reacderivssaturation,
       std::vector<double>&                     reacderivsporosity,
       std::vector<std::vector<double> >&       reacderivsvolfrac,
+      std::vector<std::vector<double> >&       reacderivsvolfracpressure,
       std::vector<std::vector<double> >&       reacderivsscalar,
       const std::vector<double>&               pressure,
       const std::vector<double>&               saturation,
       const double&                            porosity,
       const std::vector<double>&               volfracs,
+      const std::vector<double>&               volfracpressures,
       const std::vector<double>&               scalar);
 
   /// return whether phase 'phasenum' is involved in this reaction
   bool IsReactive(int phasenum) const
   {return params_->scale_->at(phasenum)!=0;};
+
+  /// Check sizes of vectors
+  int TotalNumDof()
+  { return params_->totalnummultiphasedof_;}
 
 private:
 

@@ -26,6 +26,10 @@
 
 
 //forward declarations
+namespace MAT
+{
+class Material;
+}
 namespace DRT
 {
 class Discretization;
@@ -109,7 +113,9 @@ class VariableManagerInterface : public VariableManagerMinAccess
     static Teuchos::RCP< VariableManagerInterface<nsd,nen> > CreateVariableManager(
         const DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter& para,
         const POROFLUIDMULTIPHASE::Action&     action,
-        int numdofpernode);
+        Teuchos::RCP<MAT::Material> mat,
+        const int numdofpernode,
+        const int numfluidphases);
 
     //! extract element and node values from the discretization
     //! dofsetnum is the number of the porofluid-dofset on the current element
@@ -131,11 +137,15 @@ class VariableManagerInterface : public VariableManagerMinAccess
 
     //! check if EvaluateGPVariables was called
     virtual void CheckIsEvaluated() const = 0;
+    //! check if ExtractElementAndNodeValues was called
+    virtual void CheckIsExtracted() const = 0;
     //! return number of DOFs pre node
     virtual int NumDofPerNode() const = 0;
 
     //! @name Access methods
     virtual const std::vector<double>* Phinp() const=0;
+    virtual const LINALG::Matrix<nen,1>* ElementPhinp(const int k) const=0;
+    virtual bool ElementHasValidVolFracPressure(const int ivolfrac) const=0;
     virtual const std::vector<LINALG::Matrix<nsd,1> >* GradPhinp() const=0;
     virtual const std::vector<double>* Phidtnp() const=0;
     virtual const std::vector<double>* Hist() const=0;
@@ -183,6 +193,13 @@ class VariableManagerBase : public VariableManagerInterface<nsd,nen>
       dserror("EvaluateGPVariables has not been called on variable manager!");
   };
 
+  //! check if ExtractElementAndNodeValues has been called
+  void CheckIsExtracted() const
+  {
+    if(not isextracted_)
+      dserror("ExtractElementAndNodeValues has not been called on variable manager!");
+  };
+
   //! return number of DOFs per node
   int NumDofPerNode() const
   {
@@ -194,6 +211,16 @@ class VariableManagerBase : public VariableManagerInterface<nsd,nen>
     {
       dserror("Access method Phinp() not implemented! Wrong VariableManager?");
       return NULL;
+    };
+  virtual const LINALG::Matrix<nen,1>* ElementPhinp(const int k) const
+    {
+      dserror("Access method ElementPhinp() not implemented! Wrong VariableManager?");
+      return NULL;
+    };
+  virtual bool ElementHasValidVolFracPressure(const int ivolfrac) const
+    {
+      dserror("Access method ElementHasValidVolFracPressure() not implemented! Wrong VariableManager?");
+      return 0.0;
     };
    virtual const std::vector<LINALG::Matrix<nsd,1> >* GradPhinp() const
    {
@@ -305,6 +332,9 @@ public:
 
 protected:
 
+  virtual const LINALG::Matrix<nen,1>* ElementPhinp(const int k) const
+   {this->CheckIsExtracted(); return &ephinp_[k];}
+
   //! state variables at t_(n+1) or t_(n+alpha_F)
   std::vector<LINALG::Matrix<nen,1> > ephinp_;
 
@@ -388,6 +418,14 @@ class VariableManagerDecorator : public VariableManagerInterface<nsd,nen>
    {
     return varmanager_->Phinp();
    };
+  virtual const LINALG::Matrix<nen,1>* ElementPhinp(const int k) const
+   {
+    return varmanager_->ElementPhinp(k);
+   };
+   virtual double DivConVelnp() const
+    {
+     return varmanager_->DivConVelnp();
+    };
   virtual const std::vector<LINALG::Matrix<nsd,1> >* GradPhinp() const
   {
     return varmanager_->GradPhinp();
@@ -405,9 +443,9 @@ class VariableManagerDecorator : public VariableManagerInterface<nsd,nen>
    {
     return varmanager_->ConVelnp();
    };
-  virtual double DivConVelnp() const
+  virtual bool ElementHasValidVolFracPressure(const int ivolfrac) const
    {
-    return varmanager_->DivConVelnp();
+    return varmanager_->ElementHasValidVolFracPressure(ivolfrac);
    };
   virtual const LINALG::Matrix<nsd,nen>* EConVelnp() const
    {
@@ -432,6 +470,12 @@ class VariableManagerDecorator : public VariableManagerInterface<nsd,nen>
   void CheckIsEvaluated() const
   {
     varmanager_->CheckIsEvaluated();
+  }
+
+  //! check if ExtractElementAndNodeValues was called
+  void CheckIsExtracted() const
+  {
+    varmanager_->CheckIsExtracted();
   }
 
   //! return number of DOFs per node
@@ -685,6 +729,81 @@ class VariableManagerScalar : public VariableManagerDecorator<nsd,nen>
 
     //! spatial gradient of current scalar value
     std::vector<LINALG::Matrix<nsd,1> > gradscalarnp_;
+
+  };
+
+/*----------------------------------------------------------------------*
+ * **********************************************************************
+ *----------------------------------------------------------------------*/
+
+/*!
+\brief  decorator/wrapper class for variable manager, extension to maximum nodal volume fraction
+
+This class evaluates for each element the maximum value of a specific volume fraction at its nodes.
+This is necessary to decide if the calculation of volume fraction pressures inside an element makes sense
+returns a bool in ElementHasValidVolFracPressure to decide if volume fraction pressure has to be evaluated
+
+\author kremheller
+*/
+template <int nsd, int nen>
+class VariableManagerMaximumNodalVolFracValue : public VariableManagerDecorator<nsd,nen>
+  {
+  public:
+    //! constructor
+  VariableManagerMaximumNodalVolFracValue(
+      const int numvolfrac,
+      Teuchos::RCP<VariableManagerInterface<nsd,nen> > varmanager,
+      Teuchos::RCP<MAT::Material> multiphasemat
+      ) :
+        VariableManagerDecorator<nsd,nen>(varmanager),
+        numvolfrac_(numvolfrac),
+        ele_has_valid_volfrac_press_(numvolfrac_,false),
+        multiphasemat_(multiphasemat)
+          {};
+
+  //! destructor
+  virtual ~VariableManagerMaximumNodalVolFracValue(){};
+
+  //! extract node values related to time derivatives
+  //! dofsetnum is the number of the porofluid-dofset on the current element
+  //! default is set to zero, if called from a porofluidmultiphase-element
+  //! otherwise it has to be explicitly passed from the caller
+  void ExtractElementAndNodeValues(
+      const DRT::Element&                 ele,
+      const DRT::Discretization&          discretization,
+      DRT::Element::LocationArray&  la,
+      LINALG::Matrix<nsd,nen>& xyze,
+      const int dofsetnum = 0
+      );
+
+  //! evaluate variables at gauss point
+  void EvaluateGPVariables(
+      const LINALG::Matrix<nen,1>&   funct,     //! array for shape functions
+      const LINALG::Matrix<nsd,nen>& derxy      //! array for shape function derivatives w.r.t x,y,z
+      );
+
+  //! @name Access methods
+  bool ElementHasValidVolFracPressure(
+      const int ivolfrac
+      ) const
+  {
+    this->varmanager_->CheckIsExtracted();
+    if(ivolfrac > numvolfrac_)
+      dserror("%i is bigger than the number of volume fractions %i in the VariableManager", ivolfrac+1,numvolfrac_);
+
+    return ele_has_valid_volfrac_press_[ivolfrac];
+
+  }
+  //@}
+
+  private:
+
+  const int numvolfrac_;
+
+  //! state variables at t_(n+1) or t_(n+alpha_F)
+  std::vector<bool> ele_has_valid_volfrac_press_;
+
+  Teuchos::RCP<MAT::Material> multiphasemat_;
 
   };
 

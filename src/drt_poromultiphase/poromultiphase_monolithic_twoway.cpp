@@ -1460,8 +1460,8 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroFDCheck()
     std::cout << "******************finite difference check done***************\n\n"
         << std::endl;
   }
-  //else
-  //  dserror("PoroFDCheck failed in step: %d, iter: %d", Step(), itnum_);
+  else
+    dserror("PoroFDCheck failed in step: %d, iter: %d", Step(), itnum_);
 
   return;
 }

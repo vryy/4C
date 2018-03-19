@@ -14,6 +14,7 @@
 
 #include <vector>
 #include "fluidporo_multiphase_reactions.H"
+#include "fluidporo_multiphase_singlereaction.H"
 #include "matpar_bundle.H"
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -29,8 +30,6 @@ MAT::PAR::FluidPoroMultiPhaseReactions::FluidPoroMultiPhaseReactions(
 {
   // check if sizes fit
   if (numreac_ != (int)reacids_->size())
-
-
       dserror("number of materials %d does not fit to size of material vector %d", nummat_, reacids_->size());
 
   if (numreac_< 1)
@@ -44,6 +43,14 @@ MAT::PAR::FluidPoroMultiPhaseReactions::FluidPoroMultiPhaseReactions(
     {
       const int reacid = *m;
       Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(reacid);
+
+      // safety check and cast
+      if(mat->MaterialType() != INPAR::MAT::m_fluidporo_singlereaction)
+        dserror("only MAT_FluidPoroSingleReaction material valid");
+      MAT::FluidPoroSingleReaction singlereacmat = static_cast<MAT::FluidPoroSingleReaction&>(*mat);
+      if(singlereacmat.TotalNumDof()!=this->nummat_)
+        dserror("TOTALNUMDOF in MAT_FluidPoroSingleReaction does not correspond to NUMMAT in MAT_FluidPoroMultiPhaseReactions");
+
       MaterialMapWrite()->insert(std::pair<int,Teuchos::RCP<MAT::Material> >(reacid,mat));
     }
   }

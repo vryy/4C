@@ -336,12 +336,12 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
-  // scalar transport reaction material
+  // scalar transport reaction material (species in fluid)
   {
     Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("MAT_scatra_multiporo",
-                                            "advanced reaction material for multiphase porous flow",
-                                            INPAR::MAT::m_scatra_multiporo));
+      = Teuchos::rcp(new MaterialDefinition("MAT_scatra_multiporo_fluid",
+                                            "advanced reaction material for multiphase porous flow (species in fluid)",
+                                            INPAR::MAT::m_scatra_multiporo_fluid));
 
     AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
     AddNamedInt(m,"PHASEID","ID of fluid phase the scalar is associated with");
@@ -350,6 +350,24 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"DENSIFICATION","densification coefficient",0.0,true);
     AddNamedReal(m,"DELTA","delta",0.0,true);
     AddNamedReal(m,"MIN_SAT","minimum saturation under which also corresponding mass fraction is equal to zero",1.0e-9,true);
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // scalar transport reaction material (species in volume fraction)
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_scatra_multiporo_volfrac",
+                                            "advanced reaction material for multiphase porous flow (species in volfrac)",
+                                            INPAR::MAT::m_scatra_multiporo_volfrac));
+
+    AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
+    AddNamedInt(m,"PHASEID","ID of fluid phase the scalar is associated with");
+    AddNamedReal(m,"REACOEFF","reaction coefficient",0.0,true);
+    AddNamedReal(m,"SCNUM","schmidt number",0.0,true);
+    AddNamedReal(m,"DENSIFICATION","densification coefficient",0.0,true);
+    AddNamedReal(m,"DELTA","delta",0.0,true);
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -2717,11 +2735,25 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AddNamedReal(m,"DENSITY","reference/initial density");
     AddNamedReal(m,"DIFFUSIVITY","diffusivity of phase");
-    AddNamedReal(m,"Pressure","pressure of phase");
     AddNamedBool(m,"AddScalarDependentFlux","Is there additional scalar dependent flux (yes) or (no)");
     AddNamedInt(m,"NUMSCAL","Number of scalars",0,true);
     AddNamedRealVector(m,"SCALARDIFFS","Diffusivities for additional scalar-dependent flux","NUMSCAL",0.0,true);
     AddNamedRealVector(m,"OMEGA_HALF","Constant for receptor kinetic law","NUMSCAL",1.0e13,true);
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // one volume fraction pressure for multiphase flow in a poroelastic material
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroVolFracPressure",
+                                            "one volume fraction pressure for multiphase flow in deformable porous media",
+                                            INPAR::MAT::m_fluidporo_volfracpressure));
+
+    AddNamedReal(m,"PERMEABILITY","permeability of phase");
+    AddNamedInt(m,"VISCOSITYLAWID","ID of viscosity law");
+    AddNamedReal(m,"MIN_VOLFRAC", "Minimum volume fraction under which we assume that VolfracPressure is zero", 1.0e-3,true);
 
     AppendMaterialDefinition(matlist,m);
   }

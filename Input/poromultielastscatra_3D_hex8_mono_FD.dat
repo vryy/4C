@@ -104,8 +104,8 @@ MAT 211 MAT_PoroLawDensityDependent DENSITYLAWID 212
 MAT 212 MAT_PoroDensityLawExp BULKMODULUS 0.1
 
 MAT 5 MAT_matlist_reactions LOCAL No NUMMAT 2 MATIDS 501 502 NUMREAC 1 REACIDS 601 END
-MAT 501 MAT_scatra_multiporo PHASEID 1 DIFFUSIVITY 0.1
-MAT 502 MAT_scatra_multiporo PHASEID 2 DIFFUSIVITY 0.1 DELTA 1.0
+MAT 501 MAT_scatra_multiporo_fluid PHASEID 1 DIFFUSIVITY 0.1
+MAT 502 MAT_scatra_multiporo_fluid PHASEID 2 DIFFUSIVITY 0.1 DELTA 1.0
 MAT 601 MAT_scatra_reaction NUMSCAL 2 STOICH 0 1 REACCOEFF 1.0 COUPLING by_function ROLE 0 5
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD porofluid TAR_MAT 1

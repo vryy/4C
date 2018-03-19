@@ -113,8 +113,6 @@ namespace MAT
         const double density_;
         /// bulk diffusivity
         const double diffusivity_;
-        /// pressure
-        const double pressure_;
         /// do we have additional scalar dependent flux
         const bool scalardependentflux_;
         /// number of scalars
@@ -130,6 +128,49 @@ namespace MAT
         bool isinit_;
 
     }; // class FluidPoroSingleVolFrac
+
+    /*----------------------------------------------------------------------*/
+    /// material parameters for a single volfrac pressure of porous multiphase fluid
+    ///
+    /// This object exists only once for each read fluid.
+    class FluidPoroVolFracPressure: public Parameter
+    {
+
+      public:
+
+        /// standard constructor
+      FluidPoroVolFracPressure(Teuchos::RCP<MAT::PAR::Material> matdata);
+
+        /// destructor
+        virtual ~FluidPoroVolFracPressure()
+        {
+          ;
+        }
+
+        /// create material instance of matching type with my parameters
+        virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
+        /// initialize
+        void Initialize();
+
+        /// @name material parameters
+        //@{
+
+        /// permeability
+        const double permeability_;
+
+        /// minimum volume fraction
+        const double min_volfrac_;
+
+        /// viscosity law
+        FluidPoroViscosityLaw* viscositylaw_;
+
+        //@}
+
+      private:
+        bool isinit_;
+
+    }; // class FluidPoroVolFracPressure
 
 
 
@@ -181,6 +222,30 @@ namespace MAT
     private:
 
       static FluidPoroSingleVolFracType instance_;
+  };
+
+  /*----------------------------------------------------------------------*
+   | instance access method                              kremheller 02/18 |
+   *----------------------------------------------------------------------*/
+  class FluidPoroVolFracPressureType: public DRT::ParObjectType
+  {
+    public:
+      std::string Name() const
+      {
+        return "FluidPoroVolFracPressureType";
+      }
+
+      static FluidPoroVolFracPressureType & Instance()
+      {
+        return instance_;
+      }
+      ;
+
+      virtual DRT::ParObject* Create(const std::vector<char> & data);
+
+    private:
+
+      static FluidPoroVolFracPressureType instance_;
   };
 
   /*----------------------------------------------------------------------*/
@@ -457,12 +522,6 @@ namespace MAT
         return params_->diffusivity_;
       }
 
-      /// return pressure
-      double Pressure() const
-      {
-        return params_->pressure_;
-      }
-
       /// return number of scalars
       int NumScal() const
       {
@@ -491,6 +550,119 @@ namespace MAT
 
       /// my material parameters
       MAT::PAR::FluidPoroSingleVolFrac* params_;
+
+  };
+
+  /*----------------------------------------------------------------------*/
+  /// Wrapper for a single volfrac pressure within multiphase porous flow
+  ///
+  /// This object exists (several times) at every element
+  class FluidPoroVolFracPressure: public FluidPoroSinglePhaseBase
+  {
+    public:
+
+      /// construct empty material object
+    FluidPoroVolFracPressure();
+
+      /// construct the material object given material parameters
+      explicit FluidPoroVolFracPressure(MAT::PAR::FluidPoroVolFracPressure* params);
+
+      //! @name Packing and Unpacking
+
+      /*!
+       \brief Return unique ParObject id
+
+       every class implementing ParObject needs a unique id defined at the
+       top of drt_parobject.H (this file) and should return it in this method.
+       */
+      virtual int UniqueParObjectId() const
+      {
+        return FluidPoroVolFracPressureType::Instance().UniqueParObjectId();
+      }
+
+      /*!
+       \brief Pack this class so it can be communicated
+
+       Resizes the vector data and stores all information of a class in it.
+       The first information to be stored in data has to be the
+       unique parobject id delivered by UniqueParObjectId() which will then
+       identify the exact class on the receiving processor.
+
+       \param data (in/out): char vector to store class information
+       */
+      virtual void Pack(DRT::PackBuffer& data) const;
+
+      /*!
+       \brief Unpack data from a char vector into this class
+
+       The vector data contains all information to rebuild the
+       exact copy of an instance of a class on a different processor.
+       The first entry in data has to be an integer which is the unique
+       parobject id defined at the top of this file and delivered by
+       UniqueParObjectId().
+
+       \param data (in) : vector storing all data to be unpacked into this
+       instance.
+       */
+      virtual void Unpack(const std::vector<char>& data);
+
+      //@}
+
+      /// initialize
+      void Initialize();
+
+      /// material type
+      virtual INPAR::MAT::MaterialType MaterialType() const
+      {
+        return INPAR::MAT::m_fluidporo_volfracpressure;
+      }
+
+      /// return copy of this material object
+      virtual Teuchos::RCP<Material> Clone() const
+      {
+        return Teuchos::rcp(new FluidPoroVolFracPressure(*this));
+      }
+
+      /// Return quick accessible material parameter data
+      virtual MAT::PAR::Parameter* Parameter() const
+      {
+        return params_;
+      }
+
+      /// return permeability
+      double Permeability() const
+      {
+        return params_->permeability_;
+      }
+
+      /// return minimum volume fraction
+      double MinVolFrac() const
+      {
+        return params_->min_volfrac_;
+      }
+
+      // check for constant viscosity
+      bool HasConstantViscosity() const
+      {
+        return params_->viscositylaw_->HasConstantViscosity();
+      }
+
+      /// return viscosity
+      double Viscosity(const double abspressgrad) const
+      {
+        return params_->viscositylaw_->GetViscosity(abspressgrad);
+      }
+
+      /// return derivative of viscosity w.r.t. to absolute value of pressure gradient
+      double ViscosityDeriv(const double abspressgrad) const
+      {
+        return params_->viscositylaw_->GetDerivOfViscosityWrtAbsPressGrad(abspressgrad);
+      }
+
+    private:
+
+      /// my material parameters
+      MAT::PAR::FluidPoroVolFracPressure* params_;
 
   };
 

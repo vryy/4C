@@ -69,6 +69,7 @@ namespace INPAR
       m_fluidporo,                             ///< darcy fluid for poroelasticity problems
       m_fluidporo_singlephase,                 ///< single phase material for multiphase flow through porous medium
       m_fluidporo_singlevolfrac,               ///< single volume fraction material for multiphase flow through porous medium
+      m_fluidporo_volfracpressure,             ///< volume fraction pressure material for multiphase flow through porous medium
       m_fluidporo_singlereaction,              ///< single phase material for multiphase flow through porous medium
       m_fluidporo_multiphase,                  ///< collection of single phase materials for multiphase flow through porous medium
       m_fluidporo_multiphase_reactions,        ///< collection of single phase materials for reavcitve multiphase flow through porous medium
@@ -133,7 +134,8 @@ namespace INPAR
       m_poro_densitylaw_constant,              ///< density law for constant density in porous multiphase medium
       m_poro_densitylaw_exp,                   ///< density law for pressure dependent exponential function
       m_scatra,                                ///< scalar transport material
-      m_scatra_multiporo,                      ///< scalar transport material for multiphase porous flow
+      m_scatra_multiporo_fluid,                ///< scalar transport material for multiphase porous flow (species in fluid)
+      m_scatra_multiporo_volfrac,              ///< scalar transport material for multiphase porous flow (species in volume fraction)
       m_scatra_aniso,                          ///< anisotropic scalar transport material
       m_scatra_multiscale,                     ///< scalar transport material for multi-scale approach
       m_scatra_reaction_poroECM,               ///< reaction definition and parameters for reaction model in porous ECM

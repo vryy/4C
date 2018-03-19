@@ -242,6 +242,7 @@ DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<nsd,nen>::CreateEvaluator(
       Teuchos::RCP<EvaluatorInterface<nsd, nen> > tmpevaluator = Teuchos::null;
       Teuchos::RCP<AssembleInterface> assembler = Teuchos::null;
 
+      // 1) volume fraction terms -----------------------------------------------------------------
       // add evaluators for the instationary terms
       if (not para.IsStationary())
       {
@@ -271,6 +272,22 @@ DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<nsd,nen>::CreateEvaluator(
       // additional flux term
       assembler = Teuchos::rcp(new AssembleStandard(-1,inittimederiv));
       tmpevaluator = Teuchos::rcp(new EvaluatorVolFracAddFlux<nsd, nen>(assembler,-1));
+      evaluator_volfrac->AddEvaluator(tmpevaluator);
+
+      // 2) volume fraction pressure terms --------------------------------------------------------
+      // diffusive term
+      assembler = Teuchos::rcp(new AssembleStandard(-1,inittimederiv));
+      tmpevaluator = Teuchos::rcp(new EvaluatorVolFracPressureDiff<nsd, nen>(assembler,-1));
+      evaluator_volfrac->AddEvaluator(tmpevaluator);
+
+      // reactive term
+      assembler = Teuchos::rcp(new AssembleStandard(-1,inittimederiv));
+      tmpevaluator = Teuchos::rcp(new EvaluatorVolFracPressureReac<nsd, nen>(assembler,-1));
+      evaluator_volfrac->AddEvaluator(tmpevaluator);
+
+      // identify DOFs with valid volume fraction pressures
+      assembler = Teuchos::rcp(new AssembleStandard(-1, inittimederiv));
+      tmpevaluator = Teuchos::rcp(new EvaluatorValidVolFracPressures<nsd, nen>(assembler,-1));
       evaluator_volfrac->AddEvaluator(tmpevaluator);
 
       // add the evaluator of the volfractions to the multiphase evaluator
@@ -357,6 +374,482 @@ DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<nsd,nen>::CreateEvaluator(
   return evaluator;
 }
 
+/*-----------------------------------------------------------------------------------*
+ | linearization of a term scaled with saturation after fluid dofs  kremheller 03/18 |
+ *-----------------------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBase<nsd,nen>::SaturationLinearizationFluid(
+    Epetra_SerialDenseMatrix&                      mymat,
+    const LINALG::Matrix<nen,1>&                   funct,
+    const double                                   prefac,
+    const int                                      numdofpernode,
+    const int                                      numfluidphases,
+    const int                                      curphase,
+    const int                                      phasetoadd,
+    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager
+    )
+{
+
+  for (int vi=0; vi<nen; ++vi)
+  {
+    const double v = prefac*funct(vi);
+    const int fvi = vi*numdofpernode+phasetoadd;
+
+    for (int ui=0; ui<nen; ++ui)
+    {
+      const double vfunct = v*funct(ui);
+      for (int idof=0; idof<numfluidphases; ++idof)
+      {
+        const int fui = ui*numdofpernode+idof;
+
+        mymat(fvi,fui) += vfunct*phasemanager.SaturationDeriv(curphase,idof);
+      }
+    }
+  }
+
+  return;
+}
+/*-----------------------------------------------------------------------------------*
+ | linearization of a term scaled with porosity after fluid dofs    kremheller 03/18 |
+ *-----------------------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBase<nsd,nen>::PorosityLinearizationFluid(
+    Epetra_SerialDenseMatrix&                      mymat,
+    const LINALG::Matrix<nen,1>&                   funct,
+    const double                                   prefac,
+    const int                                      numdofpernode,
+    const int                                      phasetoadd,
+    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager
+    )
+{
+
+  for (int vi=0; vi<nen; ++vi)
+  {
+    const double v = prefac*funct(vi);
+    const int fvi = vi*numdofpernode+phasetoadd;
+
+    for (int ui=0; ui<nen; ++ui)
+    {
+      const double vfunct = v*funct(ui);
+      for (int idof=0; idof<numdofpernode; ++idof)
+      {
+        const int fui = ui*numdofpernode+idof;
+
+        mymat(fvi,fui) += vfunct*phasemanager.PorosityDeriv(idof);
+      }
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate off-diagonal coupling matrix with structure                 |
+ | of a term scaled with div (v^s)                     kremheller 03/18 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBase<nsd,nen>::CalcDivVelODMesh(
+    Epetra_SerialDenseMatrix&                     mymat,
+    const LINALG::Matrix<nen,1>&                  funct,
+    const LINALG::Matrix<nsd,nen>&                deriv,
+    const LINALG::Matrix<nsd,nen>&                derxy,
+    const LINALG::Matrix<nsd,nsd>&                xjm,
+    const LINALG::Matrix<nsd,nsd>&                gridvelderiv,
+    const double                                  timefacfac,
+    const double                                  fac,
+    const double                                  det,
+    const int                                     numdofpernode,
+    const int                                     phasetoadd
+    )
+{
+  // d (div v_s)/d d_n+1 = derxy * 1.0/theta/dt * d_n+1
+  // prefactor is fac since timefacfac/theta/dt = fac
+  CalcLinFacODMesh(mymat,funct,derxy,fac,numdofpernode,phasetoadd);
+
+  // shapederivatives see fluid_ele_calc_poro.cpp
+  if(nsd == 3)
+  {
+
+    const double gridvelderiv_0_0   = gridvelderiv(0, 0);
+    const double gridvelderiv_0_1   = gridvelderiv(0, 1);
+    const double gridvelderiv_0_2   = gridvelderiv(0, 2);
+    const double gridvelderiv_1_0   = gridvelderiv(1, 0);
+    const double gridvelderiv_1_1   = gridvelderiv(1, 1);
+    const double gridvelderiv_1_2   = gridvelderiv(1, 2);
+    const double gridvelderiv_2_0   = gridvelderiv(2, 0);
+    const double gridvelderiv_2_1   = gridvelderiv(2, 1);
+    const double gridvelderiv_2_2   = gridvelderiv(2, 2);
+
+    const double xjm_0_0   = xjm(0, 0);
+    const double xjm_0_1   = xjm(0, 1);
+    const double xjm_0_2   = xjm(0, 2);
+    const double xjm_1_0   = xjm(1, 0);
+    const double xjm_1_1   = xjm(1, 1);
+    const double xjm_1_2   = xjm(1, 2);
+    const double xjm_2_0   = xjm(2, 0);
+    const double xjm_2_1   = xjm(2, 1);
+    const double xjm_2_2   = xjm(2, 2);
+
+  #define derxjm_(r,c,d,i) derxjm_ ## r ## c ## d (i)
+
+  #define derxjm_001(ui) (deriv(2, ui)*xjm_1_2 - deriv(1, ui)*xjm_2_2)
+  #define derxjm_002(ui) (deriv(1, ui)*xjm_2_1 - deriv(2, ui)*xjm_1_1)
+
+  #define derxjm_100(ui) (deriv(1, ui)*xjm_2_2 - deriv(2, ui)*xjm_1_2)
+  #define derxjm_102(ui) (deriv(2, ui)*xjm_1_0 - deriv(1, ui)*xjm_2_0)
+
+  #define derxjm_200(ui) (deriv(2, ui)*xjm_1_1 - deriv(1, ui)*xjm_2_1)
+  #define derxjm_201(ui) (deriv(1, ui)*xjm_2_0 - deriv(2, ui)*xjm_1_0)
+
+  #define derxjm_011(ui) (deriv(0, ui)*xjm_2_2 - deriv(2, ui)*xjm_0_2)
+  #define derxjm_012(ui) (deriv(2, ui)*xjm_0_1 - deriv(0, ui)*xjm_2_1)
+
+  #define derxjm_110(ui) (deriv(2, ui)*xjm_0_2 - deriv(0, ui)*xjm_2_2)
+  #define derxjm_112(ui) (deriv(0, ui)*xjm_2_0 - deriv(2, ui)*xjm_0_0)
+
+  #define derxjm_210(ui) (deriv(0, ui)*xjm_2_1 - deriv(2, ui)*xjm_0_1)
+  #define derxjm_211(ui) (deriv(2, ui)*xjm_0_0 - deriv(0, ui)*xjm_2_0)
+
+  #define derxjm_021(ui) (deriv(1, ui)*xjm_0_2 - deriv(0, ui)*xjm_1_2)
+  #define derxjm_022(ui) (deriv(0, ui)*xjm_1_1 - deriv(1, ui)*xjm_0_1)
+
+  #define derxjm_120(ui) (deriv(0, ui)*xjm_1_2 - deriv(1, ui)*xjm_0_2)
+  #define derxjm_122(ui) (deriv(1, ui)*xjm_0_0 - deriv(0, ui)*xjm_1_0)
+
+  #define derxjm_220(ui) (deriv(1, ui)*xjm_0_1 - deriv(0, ui)*xjm_1_1)
+  #define derxjm_221(ui) (deriv(0, ui)*xjm_1_0 - deriv(1, ui)*xjm_0_0)
+
+    for (int ui = 0; ui < nen; ++ui)
+    {
+
+      const double v0 =    gridvelderiv_1_0 * derxjm_(0,0,1,ui)
+                         + gridvelderiv_1_1 * derxjm_(0,1,1,ui)
+                         + gridvelderiv_1_2 * derxjm_(0,2,1,ui)
+                         + gridvelderiv_2_0 * derxjm_(0,0,2,ui)
+                         + gridvelderiv_2_1 * derxjm_(0,1,2,ui)
+                         + gridvelderiv_2_2 * derxjm_(0,2,2,ui);
+
+      const double v1 =    gridvelderiv_0_0 * derxjm_(1,0,0,ui)
+                         + gridvelderiv_0_1 * derxjm_(1,1,0,ui)
+                         + gridvelderiv_0_2 * derxjm_(1,2,0,ui)
+                         + gridvelderiv_2_0 * derxjm_(1,0,2,ui)
+                         + gridvelderiv_2_1 * derxjm_(1,1,2,ui)
+                         + gridvelderiv_2_2 * derxjm_(1,2,2,ui);
+
+      const double v2 =    gridvelderiv_0_0 * derxjm_(2,0,0,ui)
+                         + gridvelderiv_0_1 * derxjm_(2,1,0,ui)
+                         + gridvelderiv_0_2 * derxjm_(2,2,0,ui)
+                         + gridvelderiv_1_0 * derxjm_(2,0,1,ui)
+                         + gridvelderiv_1_1 * derxjm_(2,1,1,ui)
+                         + gridvelderiv_1_2 * derxjm_(2,2,1,ui);
+
+      for (int vi = 0; vi < nen; ++vi)
+      {
+        const int fvi = vi*numdofpernode+phasetoadd;
+        const double v = timefacfac / det * funct(vi);
+
+        mymat(fvi, ui * 3 + 0) += v * v0;
+
+        mymat(fvi, ui * 3 + 1) += v * v1;
+
+        mymat(fvi, ui * 3 + 2) += v * v2;
+      }
+    }
+
+  }
+  else if(nsd == 2)
+  {
+    const double gridvelderiv_0_0   = gridvelderiv(0, 0);
+    const double gridvelderiv_0_1   = gridvelderiv(0, 1);
+    const double gridvelderiv_1_0   = gridvelderiv(1, 0);
+    const double gridvelderiv_1_1   = gridvelderiv(1, 1);
+
+    for (int vi = 0; vi < nen; ++vi)
+    {
+      const int fvi = vi*numdofpernode+phasetoadd;
+      const double v = timefacfac / det * funct(vi);
+      for (int ui = 0; ui < nen; ++ui)
+      {
+        mymat(fvi, ui * 2    ) += v * (- gridvelderiv_1_0 * deriv(1,ui)
+                                       + gridvelderiv_1_1 * deriv(0,ui));
+
+        mymat(fvi, ui * 2 + 1) += v * (+ gridvelderiv_0_0 * deriv(1,ui)
+                                       - gridvelderiv_0_1 * deriv(0,ui));
+      }
+    }
+  }
+  else
+    dserror("shapederivatives not implemented for 1D!");
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate off-diagonal coupling matrix with structure                 |
+ | (Fac = Jacobian determinant)                        kremheller 03/17 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBase<nsd,nen>::CalcLinFacODMesh(
+    Epetra_SerialDenseMatrix&                     mymat,
+    const LINALG::Matrix<nen,1>&                  funct,
+    const LINALG::Matrix<nsd,nen>&                derxy,
+    const double                                  vrhs,
+    const int                                     numdofpernode,
+    const int                                     phasetoadd
+    )
+{
+
+  // linearization of mesh motion
+  //------------------------------------------------dJ/dd = dJ/dF : dF/dd = J * F^-T . N_{\psi} = J * N_x
+  // J denotes the determinant of the Jacobian of the mapping between current and parameter space, i.e. det(dx/ds)
+  // in our case: timefacfac = J * dt * theta --> d(timefacfac)/dd = timefacfac * N_x
+  //              fac        = J              --> d(fac)/dd        = fac * N_x
+
+  for (int vi=0; vi<nen; ++vi)
+  {
+    const int fvi = vi*numdofpernode+phasetoadd;
+    const double v = vrhs*funct(vi);
+
+    for (int ui=0; ui<nen; ++ui)
+    {
+      for (int idim=0; idim<nsd; ++idim)
+      {
+        const int fui = ui*nsd+idim;
+        mymat(fvi,fui) += v*derxy(idim,ui);
+      }
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate off-diagonal coupling matrix with structure                 |
+ | (diffusive term)                                    kremheller 03/17 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBase<nsd,nen>::CalcDiffODMesh(
+    Epetra_SerialDenseMatrix&                     mymat,
+    const LINALG::Matrix<nsd,nen>&                deriv,
+    const LINALG::Matrix<nsd,nen>&                derxy,
+    const LINALG::Matrix<nsd,nsd>&                xjm,
+    const LINALG::Matrix<nsd,1>&                  diffflux,
+    const LINALG::Matrix<nsd,1>&                  refgrad,
+    const LINALG::Matrix<nsd,1>&                  grad,
+    const double                                  timefacfac,
+    const double                                  difffac,
+    const int                                     numdofpernode,
+    const int                                     phasetoadd
+    )
+{
+
+  // linearization of mesh motion
+  //------------------------------------------------dJ/dd = dJ/dF : dF/dd = J * F^-T . N_{\psi} = J * N_x
+  // J denotes the determinant of the Jacobian of the mapping between current and parameter space, i.e. det(dx/ds)
+  // in our case: timefacfac = J * dt * theta --> d(timefacfac)/dd = timefacfac * N_x
+  for (int vi=0; vi<nen; ++vi)
+  {
+    const int fvi = vi*numdofpernode+phasetoadd;
+
+    // laplacian in weak form
+    double laplawf(0.0);
+    for (int j = 0; j<nsd; j++)
+      laplawf += derxy(j,vi)*diffflux(j);
+    double v = - laplawf*timefacfac;
+
+    for (int ui=0; ui<nen; ++ui)
+    {
+      for (int idim=0; idim<nsd; ++idim)
+      {
+        const int fui = ui*nsd+idim;
+        mymat(fvi,fui) += v*derxy(idim,ui);
+      }
+    }
+
+  }
+
+  //----------------------------------------------------------------
+  // standard Galerkin terms  -- "shapederivatives" diffusive term
+  //----------------------------------------------------------------
+  // see scatra_ele_calc_OD.cpp
+
+  if(nsd == 3)
+    {
+      const double xjm_0_0   = xjm(0, 0);
+      const double xjm_0_1   = xjm(0, 1);
+      const double xjm_0_2   = xjm(0, 2);
+      const double xjm_1_0   = xjm(1, 0);
+      const double xjm_1_1   = xjm(1, 1);
+      const double xjm_1_2   = xjm(1, 2);
+      const double xjm_2_0   = xjm(2, 0);
+      const double xjm_2_1   = xjm(2, 1);
+      const double xjm_2_2   = xjm(2, 2);
+
+      const double grad_0   = grad(0);
+      const double grad_1   = grad(1);
+      const double grad_2   = grad(2);
+
+      for (unsigned vi = 0; vi < nen; ++vi)
+      {
+        const double deriv_vi_0   = deriv(0,vi);
+        const double deriv_vi_1   = deriv(1,vi);
+        const double deriv_vi_2   = deriv(2,vi);
+
+        const int fvi = vi*numdofpernode+phasetoadd;
+
+        for (unsigned ui = 0; ui < nen; ++ui)
+        {
+          const double v00 = + grad_1 * (
+                                            deriv_vi_0 * (deriv(2, ui)*xjm_1_2 - deriv(1, ui)*xjm_2_2)
+                                          + deriv_vi_1 * (deriv(0, ui)*xjm_2_2 - deriv(2, ui)*xjm_0_2)
+                                          + deriv_vi_2 * (deriv(1, ui)*xjm_0_2 - deriv(0, ui)*xjm_1_2)
+                                       )
+                             + grad_2 * (
+                                            deriv_vi_0 * (deriv(1, ui)*xjm_2_1 - deriv(2, ui)*xjm_1_1)
+                                          + deriv_vi_1 * (deriv(2, ui)*xjm_0_1 - deriv(0, ui)*xjm_2_1)
+                                          + deriv_vi_2 * (deriv(0, ui)*xjm_1_1 - deriv(1, ui)*xjm_0_1)
+                                       );
+          const double v01 = + grad_0 * (
+                                            deriv_vi_0 * (deriv(1, ui)*xjm_2_2 - deriv(2, ui)*xjm_1_2)
+                                          + deriv_vi_1 * (deriv(2, ui)*xjm_0_2 - deriv(0, ui)*xjm_2_2)
+                                          + deriv_vi_2 * (deriv(0, ui)*xjm_1_2 - deriv(1, ui)*xjm_0_2)
+                                       )
+                             + grad_2 * (
+                                            deriv_vi_0 * (deriv(2, ui)*xjm_1_0 - deriv(1, ui)*xjm_2_0)
+                                          + deriv_vi_1 * (deriv(0, ui)*xjm_2_0 - deriv(2, ui)*xjm_0_0)
+                                          + deriv_vi_2 * (deriv(1, ui)*xjm_0_0 - deriv(0, ui)*xjm_1_0)
+          );
+          const double v02 = + grad_0 * (
+                                            deriv_vi_0 * (deriv(2, ui)*xjm_1_1 - deriv(1, ui)*xjm_2_1)
+                                          + deriv_vi_1 * (deriv(0, ui)*xjm_2_1 - deriv(2, ui)*xjm_0_1)
+                                          + deriv_vi_2 * (deriv(1, ui)*xjm_0_1 - deriv(0, ui)*xjm_1_1)
+                                       )
+                             + grad_1 * (
+                                            deriv_vi_0 * (deriv(1, ui)*xjm_2_0 - deriv(2, ui)*xjm_1_0)
+                                          + deriv_vi_1 * (deriv(2, ui)*xjm_0_0 - deriv(0, ui)*xjm_2_0)
+                                          + deriv_vi_2 * (deriv(0, ui)*xjm_1_0 - deriv(1, ui)*xjm_0_0)
+                                       );
+
+          mymat(fvi, ui * nsd + 0) += difffac * v00;
+          mymat(fvi, ui * nsd + 1) += difffac * v01;
+          mymat(fvi, ui * nsd + 2) += difffac * v02;
+        }
+      }
+
+      const double refgrad_0   = refgrad(0);
+      const double refgrad_1   = refgrad(1);
+      const double refgrad_2   = refgrad(2);
+
+      for (unsigned vi = 0; vi < nen; ++vi)
+      {
+        const double derxy_vi_0   = derxy(0,vi);
+        const double derxy_vi_1   = derxy(1,vi);
+        const double derxy_vi_2   = derxy(2,vi);
+
+        const int fvi = vi*numdofpernode+phasetoadd;
+
+        for (unsigned ui = 0; ui < nen; ++ui)
+        {
+          const double v00 = + derxy_vi_1  * (
+                                                  refgrad_0 * (deriv(2, ui)*xjm_1_2 - deriv(1, ui)*xjm_2_2)
+                                                + refgrad_1 * (deriv(0, ui)*xjm_2_2 - deriv(2, ui)*xjm_0_2)
+                                                + refgrad_2 * (deriv(1, ui)*xjm_0_2 - deriv(0, ui)*xjm_1_2)
+                                             )
+                             + derxy_vi_2  * (
+                                                  refgrad_0 * (deriv(1, ui)*xjm_2_1 - deriv(2, ui)*xjm_1_1)
+                                                + refgrad_1 * (deriv(2, ui)*xjm_0_1 - deriv(0, ui)*xjm_2_1)
+                                                + refgrad_2 * (deriv(0, ui)*xjm_1_1 - deriv(1, ui)*xjm_0_1)
+                                             );
+          const double v01 = + derxy_vi_0  * (
+                                                  refgrad_0 * (deriv(1, ui)*xjm_2_2 - deriv(2, ui)*xjm_1_2)
+                                                + refgrad_1 * (deriv(2, ui)*xjm_0_2 - deriv(0, ui)*xjm_2_2)
+                                                + refgrad_2 * (deriv(0, ui)*xjm_1_2 - deriv(1, ui)*xjm_0_2)
+                                             )
+                             + derxy_vi_2  * (
+                                                  refgrad_0 * (deriv(2, ui)*xjm_1_0 - deriv(1, ui)*xjm_2_0)
+                                                + refgrad_1 * (deriv(0, ui)*xjm_2_0 - deriv(2, ui)*xjm_0_0)
+                                                + refgrad_2 * (deriv(1, ui)*xjm_0_0 - deriv(0, ui)*xjm_1_0)
+                                             );
+          const double v02 = + derxy_vi_0  * (
+                                                  refgrad_0 * (deriv(2, ui)*xjm_1_1 - deriv(1, ui)*xjm_2_1)
+                                                + refgrad_1 * (deriv(0, ui)*xjm_2_1 - deriv(2, ui)*xjm_0_1)
+                                                + refgrad_2 * (deriv(1, ui)*xjm_0_1 - deriv(0, ui)*xjm_1_1)
+                                             )
+                             + derxy_vi_1  * (
+                                                  refgrad_0 * (deriv(1, ui)*xjm_2_0 - deriv(2, ui)*xjm_1_0)
+                                                + refgrad_1 * (deriv(2, ui)*xjm_0_0 - deriv(0, ui)*xjm_2_0)
+                                                + refgrad_2 * (deriv(0, ui)*xjm_1_0 - deriv(1, ui)*xjm_0_0)
+                                             );
+
+          mymat(fvi, ui * nsd + 0) += difffac * v00;
+          mymat(fvi, ui * nsd + 1) += difffac * v01;
+          mymat(fvi, ui * nsd + 2) += difffac * v02;
+        }
+      }
+    }
+    else if(nsd == 2)
+    {
+      {
+
+        const double grad_0   = grad(0);
+        const double grad_1   = grad(1);
+
+        for (int vi = 0; vi < nen; ++vi)
+        {
+          const double deriv_vi_0   = deriv(0,vi);
+          const double deriv_vi_1   = deriv(1,vi);
+
+          const int fvi = vi*numdofpernode+phasetoadd;
+
+          for (int ui = 0; ui < nen; ++ui)
+          {
+            const double v00 = + grad_1 * (
+                                            - deriv_vi_0 * deriv(1, ui)
+                                            + deriv_vi_1 * deriv(0, ui)
+                                         );
+            const double v01 = + grad_0 * (
+                                              deriv_vi_0 * deriv(1, ui)
+                                            - deriv_vi_1 * deriv(0, ui)
+                                         );
+
+            mymat(fvi, ui * nsd + 0) += difffac * v00;
+            mymat(fvi, ui * nsd + 1) += difffac * v01;
+          }
+        }
+      }
+
+        const double refgrad_0   = refgrad(0);
+        const double refgrad_1   = refgrad(1);
+
+        for (unsigned vi = 0; vi < nen; ++vi)
+        {
+          const double derxy_vi_0   = derxy(0,vi);
+          const double derxy_vi_1   = derxy(1,vi);
+
+          const int fvi = vi*numdofpernode+phasetoadd;
+
+          for (unsigned ui = 0; ui < nen; ++ui)
+          {
+            const double v00 = + derxy_vi_1  * (
+                                                  - refgrad_0 * deriv(1, ui)
+                                                  + refgrad_1 * deriv(0, ui)
+                                               );
+            const double v01 = + derxy_vi_0  * (
+                                                    refgrad_0 * deriv(1, ui)
+                                                  - refgrad_1 * deriv(0, ui)
+                                               );
+
+            mymat(fvi, ui * nsd + 0) += difffac * v00;
+            mymat(fvi, ui * nsd + 1) += difffac * v01;
+          }
+        }
+      }
+      else
+        dserror("shapederivatives not implemented for 1D!");
+
+  return;
+}
+
 /*----------------------------------------------------------------------*
  * **********************************************************************
  *----------------------------------------------------------------------*/
@@ -393,7 +886,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorConv<nsd,nen>::EvaluateMatrixAn
    */
    const double prefac = timefacfac;
 
-   LINALG::Matrix<nen,1>    conv;
+   static LINALG::Matrix<nen,1>    conv;
    // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
    conv.MultiplyTN(derxy,*variablemanager.ConVelnp());
 
@@ -578,141 +1071,11 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDivVel<nsd,nen>::EvaluateMatrix
   // get matrix to fill
   Epetra_SerialDenseMatrix& mymat = *elemat[0];
 
-  // d (div v_s)/d d_n+1 = derxy * 1.0/theta/dt * d_n+1
-  // prefactor is fac since timefacfac/theta/dt = fac
-  for (int vi=0; vi<nen; ++vi)
-  {
-    const int fvi = vi*numdofpernode+phasetoadd;
-    const double v = fac*funct(vi);
-
-    for (int ui=0; ui<nen; ++ui)
-    {
-      for (int idim=0; idim<nsd; ++idim)
-      {
-        const int fui = ui*nsd+idim;
-
-        mymat(fvi,fui) += v*derxy(idim,ui);
-      }
-    }
-  }
-
-  // shapederivatives see fluid_ele_calc_poro.cpp
-  LINALG::Matrix<nsd,nsd> gridvelderiv(true);
+  static LINALG::Matrix<nsd,nsd> gridvelderiv(true);
   gridvelderiv.MultiplyNT(*(variablemanager.EConVelnp()),deriv);
 
-  if(nsd == 3)
-  {
-    const double gridvelderiv_0_0   = gridvelderiv(0, 0);
-    const double gridvelderiv_0_1   = gridvelderiv(0, 1);
-    const double gridvelderiv_0_2   = gridvelderiv(0, 2);
-    const double gridvelderiv_1_0   = gridvelderiv(1, 0);
-    const double gridvelderiv_1_1   = gridvelderiv(1, 1);
-    const double gridvelderiv_1_2   = gridvelderiv(1, 2);
-    const double gridvelderiv_2_0   = gridvelderiv(2, 0);
-    const double gridvelderiv_2_1   = gridvelderiv(2, 1);
-    const double gridvelderiv_2_2   = gridvelderiv(2, 2);
-
-    const double xjm_0_0   = xjm(0, 0);
-    const double xjm_0_1   = xjm(0, 1);
-    const double xjm_0_2   = xjm(0, 2);
-    const double xjm_1_0   = xjm(1, 0);
-    const double xjm_1_1   = xjm(1, 1);
-    const double xjm_1_2   = xjm(1, 2);
-    const double xjm_2_0   = xjm(2, 0);
-    const double xjm_2_1   = xjm(2, 1);
-    const double xjm_2_2   = xjm(2, 2);
-
-#define derxjm_(r,c,d,i) derxjm_ ## r ## c ## d (i)
-
-#define derxjm_001(ui) (deriv(2, ui)*xjm_1_2 - deriv(1, ui)*xjm_2_2)
-#define derxjm_002(ui) (deriv(1, ui)*xjm_2_1 - deriv(2, ui)*xjm_1_1)
-
-#define derxjm_100(ui) (deriv(1, ui)*xjm_2_2 - deriv(2, ui)*xjm_1_2)
-#define derxjm_102(ui) (deriv(2, ui)*xjm_1_0 - deriv(1, ui)*xjm_2_0)
-
-#define derxjm_200(ui) (deriv(2, ui)*xjm_1_1 - deriv(1, ui)*xjm_2_1)
-#define derxjm_201(ui) (deriv(1, ui)*xjm_2_0 - deriv(2, ui)*xjm_1_0)
-
-#define derxjm_011(ui) (deriv(0, ui)*xjm_2_2 - deriv(2, ui)*xjm_0_2)
-#define derxjm_012(ui) (deriv(2, ui)*xjm_0_1 - deriv(0, ui)*xjm_2_1)
-
-#define derxjm_110(ui) (deriv(2, ui)*xjm_0_2 - deriv(0, ui)*xjm_2_2)
-#define derxjm_112(ui) (deriv(0, ui)*xjm_2_0 - deriv(2, ui)*xjm_0_0)
-
-#define derxjm_210(ui) (deriv(0, ui)*xjm_2_1 - deriv(2, ui)*xjm_0_1)
-#define derxjm_211(ui) (deriv(2, ui)*xjm_0_0 - deriv(0, ui)*xjm_2_0)
-
-#define derxjm_021(ui) (deriv(1, ui)*xjm_0_2 - deriv(0, ui)*xjm_1_2)
-#define derxjm_022(ui) (deriv(0, ui)*xjm_1_1 - deriv(1, ui)*xjm_0_1)
-
-#define derxjm_120(ui) (deriv(0, ui)*xjm_1_2 - deriv(1, ui)*xjm_0_2)
-#define derxjm_122(ui) (deriv(1, ui)*xjm_0_0 - deriv(0, ui)*xjm_1_0)
-
-#define derxjm_220(ui) (deriv(1, ui)*xjm_0_1 - deriv(0, ui)*xjm_1_1)
-#define derxjm_221(ui) (deriv(0, ui)*xjm_1_0 - deriv(1, ui)*xjm_0_0)
-
-    for (int ui = 0; ui < nen; ++ui)
-    {
-
-      const double v0 =    gridvelderiv_1_0 * derxjm_(0,0,1,ui)
-                         + gridvelderiv_1_1 * derxjm_(0,1,1,ui)
-                         + gridvelderiv_1_2 * derxjm_(0,2,1,ui)
-                         + gridvelderiv_2_0 * derxjm_(0,0,2,ui)
-                         + gridvelderiv_2_1 * derxjm_(0,1,2,ui)
-                         + gridvelderiv_2_2 * derxjm_(0,2,2,ui);
-
-      const double v1 =    gridvelderiv_0_0 * derxjm_(1,0,0,ui)
-                         + gridvelderiv_0_1 * derxjm_(1,1,0,ui)
-                         + gridvelderiv_0_2 * derxjm_(1,2,0,ui)
-                         + gridvelderiv_2_0 * derxjm_(1,0,2,ui)
-                         + gridvelderiv_2_1 * derxjm_(1,1,2,ui)
-                         + gridvelderiv_2_2 * derxjm_(1,2,2,ui);
-
-      const double v2 =    gridvelderiv_0_0 * derxjm_(2,0,0,ui)
-                         + gridvelderiv_0_1 * derxjm_(2,1,0,ui)
-                         + gridvelderiv_0_2 * derxjm_(2,2,0,ui)
-                         + gridvelderiv_1_0 * derxjm_(2,0,1,ui)
-                         + gridvelderiv_1_1 * derxjm_(2,1,1,ui)
-                         + gridvelderiv_1_2 * derxjm_(2,2,1,ui);
-
-      for (int vi = 0; vi < nen; ++vi)
-      {
-        const int fvi = vi*numdofpernode+phasetoadd;
-        const double v = timefacfac / det * funct(vi);
-
-        mymat(fvi, ui * 3 + 0) += v * v0;
-
-        mymat(fvi, ui * 3 + 1) += v * v1;
-
-        mymat(fvi, ui * 3 + 2) += v * v2;
-      }
-    }
-
-  }
-  else if(nsd == 2)
-  {
-
-    const double gridvelderiv_0_0   = gridvelderiv(0, 0);
-    const double gridvelderiv_0_1   = gridvelderiv(0, 1);
-    const double gridvelderiv_1_0   = gridvelderiv(1, 0);
-    const double gridvelderiv_1_1   = gridvelderiv(1, 1);
-
-    for (int vi = 0; vi < nen; ++vi)
-    {
-      const int fvi = vi*numdofpernode+phasetoadd;
-      const double v = timefacfac / det * funct(vi);
-      for (int ui = 0; ui < nen; ++ui)
-      {
-        mymat(fvi, ui * 2    ) += v * (- gridvelderiv_1_0 * deriv(1,ui)
-                                       + gridvelderiv_1_1 * deriv(0,ui));
-
-        mymat(fvi, ui * 2 + 1) += v * (+ gridvelderiv_0_0 * deriv(1,ui)
-                                       - gridvelderiv_0_1 * deriv(0,ui));
-      }
-    }
-  }
-  else
-    dserror("shapederivatives not implemented for 1D!");
+  // OD mesh - div vel term
+  EvaluatorBase<nsd,nen>::CalcDivVelODMesh(mymat,funct,deriv,derxy,xjm,gridvelderiv,timefacfac,fac,det,numdofpernode,phasetoadd);
 
   return;
 }
@@ -782,19 +1145,10 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSatDivVel<nsd,nen>::EvaluateMat
     Epetra_SerialDenseMatrix& mymat = *elemat[0];
 
     const double consfac = timefacfac*variablemanager.DivConVelnp();
-    for (int vi=0; vi<nen; ++vi)
-    {
-      const double v = consfac*funct(vi);
-      const int fvi = vi*numdofpernode+phasetoadd;
 
-      for (int ui=0; ui<nen; ++ui)
-        for (int idof=0; idof<numfluidphases; ++idof)
-        {
-          const int fui = ui*numdofpernode+idof;
+    // call base class for saturation linearization
+    EvaluatorBase<nsd,nen>::SaturationLinearizationFluid(mymat,funct,consfac,numdofpernode,numfluidphases,curphase,phasetoadd,phasemanager);
 
-          mymat(fvi,fui) += v*phasemanager.SaturationDeriv(curphase,idof)*funct(ui);
-        }
-    }
   }
 
   return;
@@ -1022,7 +1376,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd,nen>::EvaluateMatrixAn
     const std::vector<LINALG::Matrix<nsd,1> >& gradphi = *variablemanager.GradPhinp();
 
     // current pressure gradient
-    LINALG::Matrix<nsd,1> gradpres(true);
+    static LINALG::Matrix<nsd,1> gradpres(true);
     gradpres.Clear();
 
     // compute the pressure gradient from the phi gradients
@@ -1035,55 +1389,53 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd,nen>::EvaluateMatrixAn
     abspressgrad=sqrt(abspressgrad);
 
     // permeability tensor
-    LINALG::Matrix<nsd,nsd> permeabilitytensor(true);
+    static LINALG::Matrix<nsd,nsd> permeabilitytensor(true);
     phasemanager.PermeabilityTensor(curphase,permeabilitytensor);
 
     static LINALG::Matrix<nsd,nen> diffflux(true);
     diffflux.Multiply(permeabilitytensor,derxy);
     diffflux.Scale(phasemanager.RelPermeability(curphase)/phasemanager.DynViscosity(curphase, abspressgrad));
 
-    // diffusive term
+    // helper variable for linearization
+    static LINALG::Matrix<nsd,1> diffflux_relpermeability(true);
+
+    if(not phasemanager.HasConstantRelPermeability(curphase))
+    {
+      diffflux_relpermeability.Multiply(permeabilitytensor,gradpres);
+      diffflux_relpermeability.Scale(phasemanager.RelPermeabilityDeriv(curphase)/phasemanager.DynViscosity(curphase, abspressgrad));
+    }
+    else
+      diffflux_relpermeability.Scale(0.0);
+
+    //----------------------------------------------------------------
+    // diffusive term and linearization of relative permeability w.r.t. dof
+    //----------------------------------------------------------------
     for (int vi=0; vi<nen; ++vi)
     {
       const int fvi = vi*numdofpernode+phasetoadd;
+      double laplawf_relpermeability(0.0);
+
+      // helper variable for linearization
+      for (int j = 0; j<nsd; j++)
+        laplawf_relpermeability += derxy(j, vi)*diffflux_relpermeability(j);
 
       for (int ui=0; ui<nen; ++ui)
       {
         double laplawf(0.0);
         for (int j = 0; j<nsd; j++)
           laplawf += derxy(j, vi)*diffflux(j, ui);
+
         for (int idof=0; idof<numfluidphases; ++idof)
         {
           const int fui = ui*numdofpernode+idof;
-          mymat(fvi,fui) += timefacfac*laplawf*phasemanager.PressureDeriv(curphase,idof);
+          mymat(fvi,fui) += timefacfac*
+                            (  laplawf*phasemanager.PressureDeriv(curphase,idof)
+                             + funct(ui)*laplawf_relpermeability*phasemanager.SaturationDeriv(curphase,idof)
+                            );
         }
       }
     }
-    //----------------------------------------------------------------
-    // linearization of relative permeability w.r.t. dof
-    //----------------------------------------------------------------
-    if(not phasemanager.HasConstantRelPermeability(curphase))
-    {
-      static LINALG::Matrix<nsd,1> diffflux2(true);
-      diffflux2.Multiply(permeabilitytensor,gradpres);
-      diffflux2.Scale(phasemanager.RelPermeabilityDeriv(curphase)/phasemanager.DynViscosity(curphase, abspressgrad));
 
-      for (int vi=0; vi<nen; ++vi)
-      {
-        const int fvi = vi*numdofpernode+phasetoadd;
-        double laplawf = 0.0;
-        for (int j = 0; j<nsd; j++)
-          laplawf += derxy(j, vi)*diffflux2(j);
-        for (int ui=0; ui<nen; ++ui)
-        {
-          for (int idof=0; idof<numfluidphases; ++idof)
-          {
-            const int fui = ui*numdofpernode+idof;
-            mymat(fvi,fui) += timefacfac*funct(ui)*laplawf*phasemanager.SaturationDeriv(curphase,idof);
-          }
-        }
-      }
-    }
     //----------------------------------------------------------------
     // linearization of dynamic viscosity w.r.t. dof
     //----------------------------------------------------------------
@@ -1091,6 +1443,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd,nen>::EvaluateMatrixAn
     {
       // derivative of abspressgrad w.r.t. pressure gradient
       static LINALG::Matrix<nsd,1> dabspressgraddpresgradp(true);
+      dabspressgraddpresgradp.Scale(0.0);
       // avoid division by zero
       if(abspressgrad > 1.0e-12)
         for (int i = 0; i < nsd; i++)
@@ -1156,7 +1509,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd,nen>::EvaluateVectorAn
   const std::vector<LINALG::Matrix<nsd,1> >& gradphi = *variablemanager.GradPhinp();
 
   // current pressure gradient
-  LINALG::Matrix<nsd,1> gradpres(true);
+  static LINALG::Matrix<nsd,1> gradpres(true);
   gradpres.Clear();
 
   // compute the pressure gradient from the phi gradients
@@ -1169,7 +1522,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd,nen>::EvaluateVectorAn
   abspressgrad=sqrt(abspressgrad);
 
   // diffusion tensor
-  LINALG::Matrix<nsd,nsd> difftensor(true);
+  static LINALG::Matrix<nsd,nsd> difftensor(true);
   phasemanager.PermeabilityTensor(curphase,difftensor);
   difftensor.Scale(phasemanager.RelPermeability(curphase)/phasemanager.DynViscosity(curphase, abspressgrad));
 
@@ -1218,7 +1571,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd,nen>::EvaluateMatrixOD
   const std::vector<LINALG::Matrix<nsd,1> >& gradphi = *variablemanager.GradPhinp();
 
   // current pressure gradient
-  LINALG::Matrix<nsd,1> gradpres(true);
+  static LINALG::Matrix<nsd,1> gradpres(true);
   gradpres.Clear();
 
   // compute the pressure gradient from the phi gradients
@@ -1231,49 +1584,20 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd,nen>::EvaluateMatrixOD
   abspressgrad=sqrt(abspressgrad);
 
   // diffusion tensor
-  LINALG::Matrix<nsd,nsd> difftensor(true);
+  static LINALG::Matrix<nsd,nsd> difftensor(true);
   phasemanager.PermeabilityTensor(curphase,difftensor);
   difftensor.Scale(phasemanager.RelPermeability(curphase)/phasemanager.DynViscosity(curphase, abspressgrad));
 
+  // TODO: anisotropic difftensor and
+  //       non-constant viscosity (because of pressure gradient, probably not really necessary)
   static LINALG::Matrix<nsd,1> diffflux(true);
   diffflux.Multiply(difftensor,gradpres);
 
-  // linearization of mesh motion
-  //------------------------------------------------dJ/dd = dJ/dF : dF/dd = J * F^-T . N_{\psi} = J * N_x
-  // J denotes the determinant of the Jacobian of the mapping between current and parameter space, i.e. det(dx/ds)
-  // in our case: timefacfac = J * dt * theta --> d(timefacfac)/dd = timefacfac * N_x
-  for (int vi=0; vi<nen; ++vi)
-  {
-    const int fvi = vi*numdofpernode+phasetoadd;
-
-    // laplacian in weak form
-    double laplawf(0.0);
-    for (int j = 0; j<nsd; j++)
-      laplawf += derxy(j,vi)*diffflux(j);
-    double v = - laplawf*timefacfac;
-
-    for (int ui=0; ui<nen; ++ui)
-    {
-      for (int idim=0; idim<nsd; ++idim)
-      {
-        const int fui = ui*nsd+idim;
-        mymat(fvi,fui) += v*derxy(idim,ui);
-      }
-    }
-
-  }
-
-  //----------------------------------------------------------------
-  // standard Galerkin terms  -- "shapederivatives" diffusive term
-  //----------------------------------------------------------------
-  // see scatra_ele_calc_OD.cpp
-
-  // TODO: anisotropic difftensor and
-  //       non-constant viscosity (because of pressure gradient, probably not really necessary)
+  // diffusive pre-factor for linearization
   const double v = difftensor(0,0)*timefacfac/det;
 
   //gradient of pressure w.r.t. reference coordinates
-  LINALG::Matrix<nsd,1> refgradpres(true);
+  static LINALG::Matrix<nsd,1> refgradpres(true);
   refgradpres.Clear();
 
     //gradient of phi w.r.t. reference coordinates
@@ -1285,179 +1609,8 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd,nen>::EvaluateMatrixOD
   for (int idof=0; idof<numfluidphases; ++idof)
     refgradpres.Update(phasemanager.PressureDeriv(curphase,idof),refgradphi[idof],1.0);
 
-  if(nsd == 3)
-  {
-    const double xjm_0_0   = xjm(0, 0);
-    const double xjm_0_1   = xjm(0, 1);
-    const double xjm_0_2   = xjm(0, 2);
-    const double xjm_1_0   = xjm(1, 0);
-    const double xjm_1_1   = xjm(1, 1);
-    const double xjm_1_2   = xjm(1, 2);
-    const double xjm_2_0   = xjm(2, 0);
-    const double xjm_2_1   = xjm(2, 1);
-    const double xjm_2_2   = xjm(2, 2);
-
-    const double gradpres_0   = gradpres(0);
-    const double gradpres_1   = gradpres(1);
-    const double gradpres_2   = gradpres(2);
-
-    for (unsigned vi = 0; vi < nen; ++vi)
-    {
-      const double deriv_vi_0   = deriv(0,vi);
-      const double deriv_vi_1   = deriv(1,vi);
-      const double deriv_vi_2   = deriv(2,vi);
-
-      const int fvi = vi*numdofpernode+phasetoadd;
-
-      for (unsigned ui = 0; ui < nen; ++ui)
-      {
-        const double v00 = + gradpres_1 * (
-                                              deriv_vi_0 * (deriv(2, ui)*xjm_1_2 - deriv(1, ui)*xjm_2_2)
-                                            + deriv_vi_1 * (deriv(0, ui)*xjm_2_2 - deriv(2, ui)*xjm_0_2)
-                                            + deriv_vi_2 * (deriv(1, ui)*xjm_0_2 - deriv(0, ui)*xjm_1_2)
-                                         )
-                           + gradpres_2 * (
-                                              deriv_vi_0 * (deriv(1, ui)*xjm_2_1 - deriv(2, ui)*xjm_1_1)
-                                            + deriv_vi_1 * (deriv(2, ui)*xjm_0_1 - deriv(0, ui)*xjm_2_1)
-                                            + deriv_vi_2 * (deriv(0, ui)*xjm_1_1 - deriv(1, ui)*xjm_0_1)
-                                         );
-        const double v01 = + gradpres_0 * (
-                                              deriv_vi_0 * (deriv(1, ui)*xjm_2_2 - deriv(2, ui)*xjm_1_2)
-                                            + deriv_vi_1 * (deriv(2, ui)*xjm_0_2 - deriv(0, ui)*xjm_2_2)
-                                            + deriv_vi_2 * (deriv(0, ui)*xjm_1_2 - deriv(1, ui)*xjm_0_2)
-                                         )
-                           + gradpres_2 * (
-                                              deriv_vi_0 * (deriv(2, ui)*xjm_1_0 - deriv(1, ui)*xjm_2_0)
-                                            + deriv_vi_1 * (deriv(0, ui)*xjm_2_0 - deriv(2, ui)*xjm_0_0)
-                                            + deriv_vi_2 * (deriv(1, ui)*xjm_0_0 - deriv(0, ui)*xjm_1_0)
-        );
-        const double v02 = + gradpres_0 * (
-                                              deriv_vi_0 * (deriv(2, ui)*xjm_1_1 - deriv(1, ui)*xjm_2_1)
-                                            + deriv_vi_1 * (deriv(0, ui)*xjm_2_1 - deriv(2, ui)*xjm_0_1)
-                                            + deriv_vi_2 * (deriv(1, ui)*xjm_0_1 - deriv(0, ui)*xjm_1_1)
-                                         )
-                           + gradpres_1 * (
-                                              deriv_vi_0 * (deriv(1, ui)*xjm_2_0 - deriv(2, ui)*xjm_1_0)
-                                            + deriv_vi_1 * (deriv(2, ui)*xjm_0_0 - deriv(0, ui)*xjm_2_0)
-                                            + deriv_vi_2 * (deriv(0, ui)*xjm_1_0 - deriv(1, ui)*xjm_0_0)
-                                         );
-
-        mymat(fvi, ui * nsd + 0) += v * v00;
-        mymat(fvi, ui * nsd + 1) += v * v01;
-        mymat(fvi, ui * nsd + 2) += v * v02;
-      }
-    }
-
-    const double refgradpres_0   = refgradpres(0);
-    const double refgradpres_1   = refgradpres(1);
-    const double refgradpres_2   = refgradpres(2);
-
-    for (unsigned vi = 0; vi < nen; ++vi)
-    {
-      const double derxy_vi_0   = derxy(0,vi);
-      const double derxy_vi_1   = derxy(1,vi);
-      const double derxy_vi_2   = derxy(2,vi);
-
-      const int fvi = vi*numdofpernode+phasetoadd;
-
-      for (unsigned ui = 0; ui < nen; ++ui)
-      {
-        const double v00 = + derxy_vi_1  * (
-                                                refgradpres_0 * (deriv(2, ui)*xjm_1_2 - deriv(1, ui)*xjm_2_2)
-                                              + refgradpres_1 * (deriv(0, ui)*xjm_2_2 - deriv(2, ui)*xjm_0_2)
-                                              + refgradpres_2 * (deriv(1, ui)*xjm_0_2 - deriv(0, ui)*xjm_1_2)
-                                           )
-                           + derxy_vi_2  * (
-                                                refgradpres_0 * (deriv(1, ui)*xjm_2_1 - deriv(2, ui)*xjm_1_1)
-                                              + refgradpres_1 * (deriv(2, ui)*xjm_0_1 - deriv(0, ui)*xjm_2_1)
-                                              + refgradpres_2 * (deriv(0, ui)*xjm_1_1 - deriv(1, ui)*xjm_0_1)
-                                           );
-        const double v01 = + derxy_vi_0  * (
-                                                refgradpres_0 * (deriv(1, ui)*xjm_2_2 - deriv(2, ui)*xjm_1_2)
-                                              + refgradpres_1 * (deriv(2, ui)*xjm_0_2 - deriv(0, ui)*xjm_2_2)
-                                              + refgradpres_2 * (deriv(0, ui)*xjm_1_2 - deriv(1, ui)*xjm_0_2)
-                                           )
-                           + derxy_vi_2  * (
-                                                refgradpres_0 * (deriv(2, ui)*xjm_1_0 - deriv(1, ui)*xjm_2_0)
-                                              + refgradpres_1 * (deriv(0, ui)*xjm_2_0 - deriv(2, ui)*xjm_0_0)
-                                              + refgradpres_2 * (deriv(1, ui)*xjm_0_0 - deriv(0, ui)*xjm_1_0)
-                                           );
-        const double v02 = + derxy_vi_0  * (
-                                                refgradpres_0 * (deriv(2, ui)*xjm_1_1 - deriv(1, ui)*xjm_2_1)
-                                              + refgradpres_1 * (deriv(0, ui)*xjm_2_1 - deriv(2, ui)*xjm_0_1)
-                                              + refgradpres_2 * (deriv(1, ui)*xjm_0_1 - deriv(0, ui)*xjm_1_1)
-                                           )
-                           + derxy_vi_1  * (
-                                                refgradpres_0 * (deriv(1, ui)*xjm_2_0 - deriv(2, ui)*xjm_1_0)
-                                              + refgradpres_1 * (deriv(2, ui)*xjm_0_0 - deriv(0, ui)*xjm_2_0)
-                                              + refgradpres_2 * (deriv(0, ui)*xjm_1_0 - deriv(1, ui)*xjm_0_0)
-                                           );
-
-        mymat(fvi, ui * nsd + 0) += v * v00;
-        mymat(fvi, ui * nsd + 1) += v * v01;
-        mymat(fvi, ui * nsd + 2) += v * v02;
-      }
-    }
-  }
-  else if(nsd == 2)
-  {
-    {
-
-      const double gradpres_0   = gradpres(0);
-      const double gradpres_1   = gradpres(1);
-
-      for (int vi = 0; vi < nen; ++vi)
-      {
-        const double deriv_vi_0   = deriv(0,vi);
-        const double deriv_vi_1   = deriv(1,vi);
-
-        const int fvi = vi*numdofpernode+phasetoadd;
-
-        for (int ui = 0; ui < nen; ++ui)
-        {
-          const double v00 = + gradpres_1 * (
-                                              - deriv_vi_0 * deriv(1, ui)
-                                              + deriv_vi_1 * deriv(0, ui)
-                                           );
-          const double v01 = + gradpres_0 * (
-                                                deriv_vi_0 * deriv(1, ui)
-                                              - deriv_vi_1 * deriv(0, ui)
-                                           );
-
-          mymat(fvi, ui * nsd + 0) += v * v00;
-          mymat(fvi, ui * nsd + 1) += v * v01;
-        }
-      }
-    }
-
-      const double refgradpres_0   = refgradpres(0);
-      const double refgradpres_1   = refgradpres(1);
-
-      for (unsigned vi = 0; vi < nen; ++vi)
-      {
-        const double derxy_vi_0   = derxy(0,vi);
-        const double derxy_vi_1   = derxy(1,vi);
-
-        const int fvi = vi*numdofpernode+phasetoadd;
-
-        for (unsigned ui = 0; ui < nen; ++ui)
-        {
-          const double v00 = + derxy_vi_1  * (
-                                                - refgradpres_0 * deriv(1, ui)
-                                                + refgradpres_1 * deriv(0, ui)
-                                             );
-          const double v01 = + derxy_vi_0  * (
-                                                  refgradpres_0 * deriv(1, ui)
-                                                - refgradpres_1 * deriv(0, ui)
-                                             );
-
-          mymat(fvi, ui * nsd + 0) += v * v00;
-          mymat(fvi, ui * nsd + 1) += v * v01;
-        }
-      }
-    }
-    else
-      dserror("shapederivatives not implemented for 1D!");
+  // OD mesh - diffusive term
+  EvaluatorBase<nsd,nen>::CalcDiffODMesh(mymat,deriv,derxy,xjm,diffflux,refgradpres,gradpres,timefacfac,v,numdofpernode,phasetoadd);
 
   return;
 }
@@ -1600,8 +1753,9 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorReac<nsd,nen>::EvaluateMatrixOD
   if(not phasemanager.IsReactive(curphase))
     return;
 
+  // TODO a constant density is assumed here
   double scale = 1.0/phasemanager.Density(curphase);
-  double vrhs = 0.0;
+  double vrhs = scale*timefacfac*phasemanager.ReacTerm(curphase);
 
   // linearization of porosity (may appear in reaction term)
   //-------------dreac/dd = dreac/dporosity * dporosity/dd = dreac/dporosity * dporosity/dJ * dJ/dd = dreac/dporosity * dporosity/dJ * J * N_x
@@ -1609,48 +1763,14 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorReac<nsd,nen>::EvaluateMatrixOD
 
   if(phasemanager.PorosityDependsOnStruct())
   {
-    vrhs = timefacfac*scale*phasemanager.ReacDerivPorosity(curphase)*phasemanager.JacobianDefGrad()
+    vrhs += timefacfac*scale*phasemanager.ReacDerivPorosity(curphase)*phasemanager.JacobianDefGrad()
         *phasemanager.PorosityDerivWrtJacobianDefGrad();
-
-    for (int vi=0; vi<nen; ++vi)
-    {
-      const int fvi = vi*numdofpernode+phasetoadd;
-      const double v = funct(vi)*vrhs;
-
-      for (int ui=0; ui<nen; ++ui)
-      {
-        for (int idim=0; idim<nsd; ++idim)
-        {
-          const int fui = ui*nsd+idim;
-
-          mymat(fvi,fui) += v*derxy(idim,ui);
-        }
-      }
-    }
   }
 
-  // linearization of mesh motion
-  //------------------------------------------------dJ/dd = dJ/dF : dF/dd = J * F^-T . N_{\psi} = J * N_x
-  // J denotes the determinant of the Jacobian of the mapping between current and parameter space, i.e. det(dx/ds)
-  // in our case: timefacfac = J * dt * theta --> d(timefacfac)/dd = timefacfac * N_x
-  // TODO a constant density is assumed here
-
-  vrhs = scale*timefacfac*phasemanager.ReacTerm(curphase);
-
-  for (int vi=0; vi<nen; ++vi)
-  {
-    const int fvi = vi*numdofpernode+phasetoadd;
-    const double v = vrhs*funct(vi);
-
-    for (int ui=0; ui<nen; ++ui)
-    {
-      for (int idim=0; idim<nsd; ++idim)
-      {
-        const int fui = ui*nsd+idim;
-        mymat(fvi,fui) += v*derxy(idim,ui);
-      }
-    }
-  }
+  // linearization of mesh motion (Jacobian)
+  // 1) linearization of fac +
+  // 2) possible linearization w.r.t porosity
+  EvaluatorBase<nsd,nen>::CalcLinFacODMesh(mymat,funct,derxy,vrhs,numdofpernode,phasetoadd);
 
   return;
 }
@@ -1783,23 +1903,9 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd,nen>::Evaluate
 
       facfacmass2 *= phasemanager.Porosity()*invbulkmodulus;
 
-      for (int vi=0; vi<nen; ++vi)
-      {
-        const double v = facfacmass2*funct(vi);
-        const int fvi = vi*numdofpernode+phasetoadd;
+      // call base class for saturation linearization
+      EvaluatorBase<nsd,nen>::SaturationLinearizationFluid(mymat,funct,facfacmass2,numdofpernode,numfluidphases,curphase,phasetoadd,phasemanager);
 
-        for (int ui=0; ui<nen; ++ui)
-        {
-          const double vfunct = v*funct(ui);
-          for (int idof=0; idof<numfluidphases; ++idof)
-          {
-            const int fui = ui*numdofpernode+idof;
-
-            mymat(fvi,fui) +=
-                vfunct*phasemanager.SaturationDeriv(curphase,idof);
-          }
-        }
-      }
     }
 
     //----------------------------------------------------------------
@@ -1822,23 +1928,8 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd,nen>::Evaluate
 
       facfacmass *= saturation*invbulkmodulus;
 
-      for (int vi=0; vi<nen; ++vi)
-      {
-        const double v = facfacmass*funct(vi);
-        const int fvi = vi*numdofpernode+phasetoadd;
-
-        for (int ui=0; ui<nen; ++ui)
-        {
-          const double vfunct = v*funct(ui);
-          for (int idof=0; idof<numdofpernode; ++idof)
-          {
-            const int fui = ui*numdofpernode+idof;
-
-            mymat(fvi,fui) +=
-                vfunct*phasemanager.PorosityDeriv(idof);
-          }
-        }
-      }
+      // call base class:
+      EvaluatorBase<nsd,nen>::PorosityLinearizationFluid(mymat,funct,facfacmass,numdofpernode,phasetoadd,phasemanager);
     }
   } // !inittimederiv
 
@@ -1932,52 +2023,18 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd,nen>::Evaluate
       fac
     );
 
-  // linearization of mesh motion
-  //------------------------------------------------dJ/dd = dJ/dF : dF/dd = J * F^-T . N_{\psi} = J * N_x
-  // J denotes the determinant of the Jacobian of the mapping between current and parameter space, i.e. det(dx/ds)
-  // in our case: timefacfac = J * dt * theta --> d(timefacfac)/dd = timefacfac * N_x
-  //              fac        = J              --> d(fac)/dd        = fac * N_x
-  for (int vi=0; vi<nen; ++vi)
-  {
-    const int fvi = vi*numdofpernode+phasetoadd;
-    const double v = funct(vi)*vtrans;
-
-    for (int ui=0; ui<nen; ++ui)
-    {
-      for (int idim=0; idim<nsd; ++idim)
-      {
-        const int fui = ui*nsd+idim;
-
-        mymat(fvi,fui) += v*derxy(idim,ui);
-      }
-    }
-  }
-
   // linearization of porosity
   //------------------------------------------------dporosity/dd = dporosity/dJ * dJ/dd = dporosity/dJ * J * N_x
   // J denotes the determinant of the deformation gradient, i.e. det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
   // in our case: vtrans is scaled with porosity in GetRhsTrans --> scale it with 1.0/porosity here
 
   if(phasemanager.PorosityDependsOnStruct())
-  {
-    vtrans *= 1.0/phasemanager.Porosity()*phasemanager.JacobianDefGrad()*phasemanager.PorosityDerivWrtJacobianDefGrad();
+    vtrans += vtrans*1.0/phasemanager.Porosity()*phasemanager.JacobianDefGrad()*phasemanager.PorosityDerivWrtJacobianDefGrad();
 
-    for (int vi=0; vi<nen; ++vi)
-    {
-      const int fvi = vi*numdofpernode+phasetoadd;
-      const double v = funct(vi)*vtrans;
-
-      for (int ui=0; ui<nen; ++ui)
-      {
-        for (int idim=0; idim<nsd; ++idim)
-        {
-          const int fui = ui*nsd+idim;
-
-          mymat(fvi,fui) += v*derxy(idim,ui);
-        }
-      }
-    }
-  }
+  // linearization of mesh motion (Jacobian)
+  // 1) linearization of fac +
+  // 2) possible linearization w.r.t porosity
+  EvaluatorBase<nsd,nen>::CalcLinFacODMesh(mymat,funct,derxy,vtrans,numdofpernode,phasetoadd);
 
   return;
 }
@@ -2285,52 +2342,18 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressure<nsd,nen>::Eva
       fac
     );
 
-  // linearization of mesh motion
-  //------------------------------------------------dJ/dd = dJ/dF : dF/dd = J * F^-T . N_{\psi} = J * N_x
-  // J denotes the determinant of the Jacobian of the mapping between current and parameter space, i.e. det(dx/ds)
-  // in our case: timefacfac = J * dt * theta --> d(timefacfac)/dd = timefacfac * N_x
-  //              fac        = J              --> d(fac)/dd        = fac * N_x
-  for (int vi=0; vi<nen; ++vi)
-  {
-    const int fvi = vi*numdofpernode+phasetoadd;
-    const double v = funct(vi)*vtrans;
-
-    for (int ui=0; ui<nen; ++ui)
-    {
-      for (int idim=0; idim<nsd; ++idim)
-      {
-        const int fui = ui*nsd+idim;
-
-        mymat(fvi,fui) += v*derxy(idim,ui);
-      }
-    }
-  }
-
   // linearization of porosity
   //------------------------------------------------dporosity/dd = dporosity/dJ * dJ/dd = dporosity/dJ * J * N_x
   // J denotes the determinant of the deformation gradient, i.e. det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
   // in our case: vtrans is scaled with (1.0-porosity) in GetRhsTrans --> scale it with 1.0/(1.0-porosity) here
 
   if(phasemanager.PorosityDependsOnStruct())
-  {
-    vtrans *= -1.0/(1.0-phasemanager.Porosity())*phasemanager.JacobianDefGrad()*phasemanager.PorosityDerivWrtJacobianDefGrad();
+    vtrans += vtrans*(-1.0)/(1.0-phasemanager.Porosity())*phasemanager.JacobianDefGrad()*phasemanager.PorosityDerivWrtJacobianDefGrad();
 
-    for (int vi=0; vi<nen; ++vi)
-    {
-      const int fvi = vi*numdofpernode+phasetoadd;
-      const double v = funct(vi)*vtrans;
-
-      for (int ui=0; ui<nen; ++ui)
-      {
-        for (int idim=0; idim<nsd; ++idim)
-        {
-          const int fui = ui*nsd+idim;
-
-          mymat(fvi,fui) += v*derxy(idim,ui);
-        }
-      }
-    }
-  }
+  // linearization of mesh motion (Jacobian)
+  // 1) linearization of fac +
+  // 2) possible linearization w.r.t porosity
+  EvaluatorBase<nsd,nen>::CalcLinFacODMesh(mymat,funct,derxy,vtrans,numdofpernode,phasetoadd);
 
   return;
 }
@@ -2468,23 +2491,9 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressureSat<nsd,nen>::
 
       facfacmass *= (1.0-phasemanager.Porosity())*invsolidbulkmodulus;
 
-      for (int vi=0; vi<nen; ++vi)
-      {
-        const double v = facfacmass*funct(vi);
-        const int fvi = vi*numdofpernode+phasetoadd;
+      // call base class for saturation linearization
+      EvaluatorBase<nsd,nen>::SaturationLinearizationFluid(mymat,funct,facfacmass,numdofpernode,numfluidphases,curphase,phasetoadd,phasemanager);
 
-        for (int ui=0; ui<nen; ++ui)
-        {
-          const double vfunct = v*funct(ui);
-          for (int idof=0; idof<numfluidphases; ++idof)
-          {
-            const int fui = ui*numdofpernode+idof;
-
-            mymat(fvi,fui) +=
-                vfunct*phasemanager.SaturationDeriv(curphase,idof);
-          }
-        }
-      }
     }
   }// !inittimederiv
 
@@ -2617,22 +2626,9 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSaturation<nsd,nen>::Evalua
   //----------------------------------------------------------------
   {
     const double facfacmass = fac*phasemanager.Porosity();
-    for (int vi=0; vi<nen; ++vi)
-    {
-      const double v = facfacmass*funct(vi);
-      const int fvi = vi*numdofpernode+phasetoadd;
+    // call base class for saturation linearization
+    EvaluatorBase<nsd,nen>::SaturationLinearizationFluid(mymat,funct,facfacmass,numdofpernode,numfluidphases,curphase,phasetoadd,phasemanager);
 
-      for (int ui=0; ui<nen; ++ui)
-      {
-        const double vfunct = v*funct(ui);
-        for (int idof=0; idof<numfluidphases; ++idof)
-        {
-          const int fui = ui*numdofpernode+idof;
-
-          mymat(fvi,fui) += vfunct*phasemanager.SaturationDeriv(curphase,idof);
-        }
-      }
-    }
   }
 
   // for the initial time derivative calculation we only need the standard Galerkin transient term
@@ -2659,22 +2655,8 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSaturation<nsd,nen>::Evalua
         if(phasetoadd!=idof)
           facfacmass += timefacfac*phasemanager.SaturationDeriv(curphase,idof)*phidtnp[idof];
 
-      for (int vi=0; vi<nen; ++vi)
-      {
-        const double v = facfacmass*funct(vi);
-        const int fvi = vi*numdofpernode+phasetoadd;
-
-        for (int ui=0; ui<nen; ++ui)
-        {
-          const double vfunct = v*funct(ui);
-          for (int idof=0; idof<numdofpernode; ++idof)
-          {
-            const int fui = ui*numdofpernode+idof;
-
-            mymat(fvi,fui) += vfunct*phasemanager.PorosityDeriv(idof);
-          }
-        }
-      }
+      // call base class:
+      EvaluatorBase<nsd,nen>::PorosityLinearizationFluid(mymat,funct,facfacmass,numdofpernode,phasetoadd,phasemanager);
     }
 
     //----------------------------------------------------------------
@@ -2815,52 +2797,18 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSaturation<nsd,nen>::Evalua
       fac
     );
 
-  // linearization of mesh motion
-  //------------------------------------------------dJ/dd = dJ/dF : dF/dd = J * F^-T . N_{\psi} = J * N_x
-  // J denotes the determinant of the Jacobian of the mapping between current and parameter space, i.e. det(dx/ds)
-  // in our case: timefacfac = J * dt * theta --> d(timefacfac)/dd = timefacfac * N_x
-  //              fac        = J              --> d(fac)/dd        = fac * N_x
-  for (int vi=0; vi<nen; ++vi)
-  {
-    const int fvi = vi*numdofpernode+phasetoadd;
-    const double v = funct(vi)*vtrans;
-
-    for (int ui=0; ui<nen; ++ui)
-    {
-      for (int idim=0; idim<nsd; ++idim)
-      {
-        const int fui = ui*nsd+idim;
-
-        mymat(fvi,fui) += v*derxy(idim,ui);
-      }
-    }
-  }
-
   // linearization of porosity
   //------------------------------------------------dporosity/dd = dporosity/dJ * dJ/dd = dporosity/dJ * J * N_x
   // J denotes the determinant of the deformation gradient, i.e. det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
   // in our case: vtrans is scaled with porosity in GetRhsTrans --> scale it with 1.0/porosity here
 
   if(phasemanager.PorosityDependsOnStruct())
-  {
-    vtrans *= 1.0/phasemanager.Porosity()*phasemanager.JacobianDefGrad()*phasemanager.PorosityDerivWrtJacobianDefGrad();
+    vtrans += vtrans*1.0/phasemanager.Porosity()*phasemanager.JacobianDefGrad()*phasemanager.PorosityDerivWrtJacobianDefGrad();
 
-    for (int vi=0; vi<nen; ++vi)
-    {
-      const int fvi = vi*numdofpernode+phasetoadd;
-      const double v = funct(vi)*vtrans;
-
-      for (int ui=0; ui<nen; ++ui)
-      {
-        for (int idim=0; idim<nsd; ++idim)
-        {
-          const int fui = ui*nsd+idim;
-
-          mymat(fvi,fui) += v*derxy(idim,ui);
-        }
-      }
-    }
-  }
+  // linearization of mesh motion (Jacobian)
+  // 1) linearization of fac +
+  // 2) possible linearization w.r.t porosity
+  EvaluatorBase<nsd,nen>::CalcLinFacODMesh(mymat,funct,derxy,vtrans,numdofpernode,phasetoadd);
 
   return;
 }
@@ -2917,8 +2865,8 @@ double DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSaturation<nsd,nen>::GetR
   for (int idof=0; idof<numfluidphases; ++idof)
     if(phasetoadd!=idof)
       vtrans += rhsfac*phasemanager.SaturationDeriv(curphase,idof)*phidtnp[idof];
-  //double vtrans = fac*(phasemanager.Saturation(phasetoadd)-phasemanager.SaturationHist(phasetoadd,histvec));
-
+  // note: for one-step theta: rhsfac*phidtnp = theta*dt*(phinp-phin)/theta/dt+(1-theta)*phidtn
+  //                                          = phinp - hist
   vtrans *= porosity;
 
   return vtrans;
@@ -2977,6 +2925,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPressureAndSaturation<nsd,nen>:
   Epetra_SerialDenseVector&     counter = *elevec[2];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numvolfrac = phasemanager.NumVolFrac();
 
   // FLUID Phases:
   if(curphase < numfluidphases)
@@ -2992,7 +2941,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPressureAndSaturation<nsd,nen>:
     }
   }
   // VOLFRAC Phases:
-  else
+  else if(curphase < numfluidphases + numvolfrac)
   {
     // dummy way: set pressures and saturations to -1
     // TODO: is there a better way to do it ??
@@ -3006,6 +2955,23 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPressureAndSaturation<nsd,nen>:
       counter[inode*numdofpernode+curphase] += fac*funct(inode);
     }
   }
+  // VOLFRAC PRESSURE Phases:
+  else if(curphase < numdofpernode)
+  {
+    // dummy way: set saturations to -1
+    // TODO: is there a better way to do it ??
+    for(int inode=0;inode<nen;inode++)
+    {
+      // save the pressure value
+      pressure[inode*numdofpernode+curphase] += fac*funct(inode)*phasemanager.VolFracPressure(curphase-numfluidphases-numvolfrac);
+      // save the saturation value
+      saturation[inode*numdofpernode+curphase] += fac*funct(inode)*(-1.0);
+      // mark the evaluated node
+      counter[inode*numdofpernode+curphase] += fac*funct(inode);
+    }
+  }
+  else
+    dserror("wrong value for curphase: %i", curphase);
 };
 
 /*----------------------------------------------------------------------*
@@ -3138,6 +3104,115 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSolidPressure<nsd,nen>::Evaluat
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
 void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSolidPressure<nsd,nen>::EvaluateMatrixODScatraAndAssemble(
+    std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
+    const LINALG::Matrix<nen,1>&                                funct,
+    const LINALG::Matrix<nsd,nen>&                              derxy,
+    int                                                         curphase,
+    int                                                         phasetoadd,
+    int                                                         numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,
+    double                                                      timefacfac,
+    double                                                      fac
+  )
+{
+  //nothing to do
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ * **********************************************************************
+ *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | evaluate element matrix                             kremheller 03/18 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorValidVolFracPressures<nsd,nen>::EvaluateMatrixAndAssemble(
+    std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
+    const LINALG::Matrix<nen,1>&                                funct,
+    const LINALG::Matrix<nsd,nen>&                              derxy,
+    int                                                         curphase,
+    int                                                         phasetoadd,
+    int                                                         numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,
+    double                                                      timefacfac,
+    double                                                      fac,
+    bool                                                        inittimederiv
+  )
+{
+  // do nothing
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate RHS vector                                 kremheller 03/18 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorValidVolFracPressures<nsd,nen>::EvaluateVectorAndAssemble(
+    std::vector<Epetra_SerialDenseVector*>&                     elevec,
+    const LINALG::Matrix<nen,1>&                                funct,
+    const LINALG::Matrix<nsd,nen>&                              derxy,
+    int                                                         curphase,
+    int                                                         phasetoadd,
+    int                                                         numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,
+    double                                                      rhsfac,
+    double                                                      fac,
+    bool                                                        inittimederiv
+    )
+{
+  const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numvolfrac = phasemanager.NumVolFrac();
+
+  Epetra_SerialDenseVector&     valid_volfracpress = *elevec[1];
+
+  for(int inode = 0; inode < nen; inode++)
+  {
+    for(int idof = numfluidphases + numvolfrac; idof < numdofpernode; idof++)
+    {
+
+      const int fvi = inode*numdofpernode + idof;
+
+      bool evaluatevolfracpress = variablemanager.ElementHasValidVolFracPressure(idof-numfluidphases-numvolfrac);
+
+      if(evaluatevolfracpress)
+        valid_volfracpress[fvi] = 1.0;
+
+    }
+  }
+};
+
+/*----------------------------------------------------------------------*
+ | evaluate off-diagonal coupling matrix with structure kremheller 03/18 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorValidVolFracPressures<nsd,nen>::EvaluateMatrixODStructAndAssemble(
+    std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
+    const LINALG::Matrix<nen,1>&                                funct,
+    const LINALG::Matrix<nsd,nen>&                              deriv,
+    const LINALG::Matrix<nsd,nen>&                              derxy,
+    const LINALG::Matrix<nsd,nsd>&                              xjm,
+    int                                                         curphase,
+    int                                                         phasetoadd,
+    int                                                         numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,
+    double                                                      timefacfac,
+    double                                                      fac,
+    double                                                      det
+  )
+{
+  //nothing to do
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorValidVolFracPressures<nsd,nen>::EvaluateMatrixODScatraAndAssemble(
     std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
     const LINALG::Matrix<nen,1>&                                funct,
     const LINALG::Matrix<nsd,nen>&                              derxy,
@@ -3509,6 +3584,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddInstatTerms<nsd,nen>:
   // get matrix to fill
   Epetra_SerialDenseMatrix& mymat = *elemat[0];
   const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numvolfrac = phasemanager.NumVolFrac();
 
   //----------------------------------------------------------------
   // 1) standard Galerkin transient term
@@ -3523,7 +3599,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddInstatTerms<nsd,nen>:
       for (int ui=0; ui<nen; ++ui)
       {
         const double vfunct = v*funct(ui);
-        for (int ivolfrac=numfluidphases; ivolfrac<numdofpernode; ++ivolfrac)
+        for (int ivolfrac=numfluidphases; ivolfrac<numfluidphases+numvolfrac; ++ivolfrac)
         {
           const int fui = ui*numdofpernode+ivolfrac;
 
@@ -3638,7 +3714,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddInstatTerms<nsd,nen>:
         for (int ui=0; ui<nen; ++ui)
         {
           const double vfunct = v*funct(ui);
-          for (int ivolfrac=numfluidphases; ivolfrac<numdofpernode; ++ivolfrac)
+          for (int ivolfrac=numfluidphases; ivolfrac<numfluidphases+numvolfrac; ++ivolfrac)
           {
             const int fui = ui*numdofpernode+ivolfrac;
 
@@ -3730,26 +3806,8 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddInstatTerms<nsd,nen>:
                         fac
                         );
 
-  // linearization of mesh motion
-  //------------------------------------------------dJ/dd = dJ/dF : dF/dd = J * F^-T . N_{\psi} = J * N_x
-  // J denotes the determinant of the Jacobian of the mapping between current and parameter space, i.e. det(dx/ds)
-  // in our case: timefacfac = J * dt * theta --> d(timefacfac)/dd = timefacfac * N_x
-  //              fac        = J              --> d(fac)/dd        = fac * N_x
-  for (int vi=0; vi<nen; ++vi)
-  {
-    const int fvi = vi*numdofpernode+phasetoadd;
-    const double v = funct(vi)*vrhs;
-
-    for (int ui=0; ui<nen; ++ui)
-    {
-      for (int idim=0; idim<nsd; ++idim)
-      {
-        const int fui = ui*nsd+idim;
-
-        mymat(fvi,fui) += v*derxy(idim,ui);
-      }
-    }
-  }
+  // linearization of mesh motion (Jacobian)
+  EvaluatorBase<nsd,nen>::CalcLinFacODMesh(mymat,funct,derxy,vrhs,numdofpernode,phasetoadd);
 
   return;
 }
@@ -3791,13 +3849,14 @@ double DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddInstatTerms<nsd,nen
 {
 
   const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numvolfrac = phasemanager.NumVolFrac();
 
   const std::vector<double>&  phidtnp = *variablemanager.Phidtnp();
 
   double vrhs = 0.0;
 
   // sum^volfrac \frac{\partial phi_volfrac}{\partial t}
-  for (int ivolfrac = numfluidphases; ivolfrac < numdofpernode; ivolfrac++)
+  for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases+numvolfrac; ivolfrac++)
     vrhs -= rhsfac*phidtnp[ivolfrac];
 
   // \frac{-\sum^volfrac \phi_volfrac) }{K_s} \frac{\partial p^s}{\partial t}
@@ -3858,6 +3917,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddDivVelTerm<nsd,nen>::
     // get matrix to fill
     Epetra_SerialDenseMatrix& mymat = *elemat[0];
     const int numfluidphases = phasemanager.NumFluidPhases();
+    const int numvolfrac = phasemanager.NumVolFrac();
 
     //----------------------------------------------------------------
     // - sum_volfrac porosity_volfrac * div v_s
@@ -3872,7 +3932,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddDivVelTerm<nsd,nen>::
         for (int ui=0; ui<nen; ++ui)
         {
           const double vfunct = v*funct(ui);
-          for (int ivolfrac=numfluidphases; ivolfrac<numdofpernode; ++ivolfrac)
+          for (int ivolfrac=numfluidphases; ivolfrac<numfluidphases+numvolfrac; ++ivolfrac)
           {
             const int fui = ui*numdofpernode+ivolfrac;
 
@@ -3940,118 +4000,16 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddDivVelTerm<nsd,nen>::
   )
 {
 
-  const double sumaddvolfrac = phasemanager.SumAddVolFrac();
-
   // get matrix to fill
   Epetra_SerialDenseMatrix& mymat = *elemat[0];
 
-  // d (div v_s)/d d_n+1 = derxy * 1.0/theta/dt * d_n+1
-  // prefactor is fac since timefacfac/theta/dt = fac
-  for (int vi=0; vi<nen; ++vi)
-  {
-    const int fvi = vi*numdofpernode+phasetoadd;
-    const double v = fac*funct(vi)*sumaddvolfrac*(-1.0);
+  const double sumaddvolfrac = phasemanager.SumAddVolFrac();
 
-    for (int ui=0; ui<nen; ++ui)
-    {
-      for (int idim=0; idim<nsd; ++idim)
-      {
-        const int fui = ui*nsd+idim;
-
-        mymat(fvi,fui) += v*derxy(idim,ui);
-      }
-    }
-  }
-
-  // shapederivatives see fluid_ele_calc_poro.cpp
   LINALG::Matrix<nsd,nsd> gridvelderiv(true);
   gridvelderiv.MultiplyNT(*(variablemanager.EConVelnp()),deriv);
 
-  if(nsd == 3)
-  {
-    const double gridvelderiv_0_0   = gridvelderiv(0, 0);
-    const double gridvelderiv_0_1   = gridvelderiv(0, 1);
-    const double gridvelderiv_0_2   = gridvelderiv(0, 2);
-    const double gridvelderiv_1_0   = gridvelderiv(1, 0);
-    const double gridvelderiv_1_1   = gridvelderiv(1, 1);
-    const double gridvelderiv_1_2   = gridvelderiv(1, 2);
-    const double gridvelderiv_2_0   = gridvelderiv(2, 0);
-    const double gridvelderiv_2_1   = gridvelderiv(2, 1);
-    const double gridvelderiv_2_2   = gridvelderiv(2, 2);
-
-    const double xjm_0_0   = xjm(0, 0);
-    const double xjm_0_1   = xjm(0, 1);
-    const double xjm_0_2   = xjm(0, 2);
-    const double xjm_1_0   = xjm(1, 0);
-    const double xjm_1_1   = xjm(1, 1);
-    const double xjm_1_2   = xjm(1, 2);
-    const double xjm_2_0   = xjm(2, 0);
-    const double xjm_2_1   = xjm(2, 1);
-    const double xjm_2_2   = xjm(2, 2);
-
-    for (int ui = 0; ui < nen; ++ui)
-    {
-
-      const double v0 =    gridvelderiv_1_0 * derxjm_(0,0,1,ui)
-                         + gridvelderiv_1_1 * derxjm_(0,1,1,ui)
-                         + gridvelderiv_1_2 * derxjm_(0,2,1,ui)
-                         + gridvelderiv_2_0 * derxjm_(0,0,2,ui)
-                         + gridvelderiv_2_1 * derxjm_(0,1,2,ui)
-                         + gridvelderiv_2_2 * derxjm_(0,2,2,ui);
-
-      const double v1 =    gridvelderiv_0_0 * derxjm_(1,0,0,ui)
-                         + gridvelderiv_0_1 * derxjm_(1,1,0,ui)
-                         + gridvelderiv_0_2 * derxjm_(1,2,0,ui)
-                         + gridvelderiv_2_0 * derxjm_(1,0,2,ui)
-                         + gridvelderiv_2_1 * derxjm_(1,1,2,ui)
-                         + gridvelderiv_2_2 * derxjm_(1,2,2,ui);
-
-      const double v2 =    gridvelderiv_0_0 * derxjm_(2,0,0,ui)
-                         + gridvelderiv_0_1 * derxjm_(2,1,0,ui)
-                         + gridvelderiv_0_2 * derxjm_(2,2,0,ui)
-                         + gridvelderiv_1_0 * derxjm_(2,0,1,ui)
-                         + gridvelderiv_1_1 * derxjm_(2,1,1,ui)
-                         + gridvelderiv_1_2 * derxjm_(2,2,1,ui);
-
-      for (int vi = 0; vi < nen; ++vi)
-      {
-        const int fvi = vi*numdofpernode+phasetoadd;
-        const double v = timefacfac / det * funct(vi)*sumaddvolfrac*(-1.0);
-
-        mymat(fvi, ui * 3 + 0) += v * v0;
-
-        mymat(fvi, ui * 3 + 1) += v * v1;
-
-        mymat(fvi, ui * 3 + 2) += v * v2;
-      }
-    }
-
-  }
-  else if(nsd == 2)
-  {
-
-    const double gridvelderiv_0_0   = gridvelderiv(0, 0);
-    const double gridvelderiv_0_1   = gridvelderiv(0, 1);
-    const double gridvelderiv_1_0   = gridvelderiv(1, 0);
-    const double gridvelderiv_1_1   = gridvelderiv(1, 1);
-
-    for (int vi = 0; vi < nen; ++vi)
-    {
-      const int fvi = vi*numdofpernode+phasetoadd;
-      const double v = timefacfac / det * funct(vi)*sumaddvolfrac*(-1.0);
-      for (int ui = 0; ui < nen; ++ui)
-      {
-        mymat(fvi, ui * 2    ) += v * (- gridvelderiv_1_0 * deriv(1,ui)
-                                       + gridvelderiv_1_1 * deriv(0,ui));
-
-        mymat(fvi, ui * 2 + 1) += v * (+ gridvelderiv_0_0 * deriv(1,ui)
-                                       - gridvelderiv_0_1 * deriv(0,ui));
-      }
-    }
-  }
-  else
-    dserror("shapederivatives not implemented for 1D!");
-
+  // OD mesh - div vel term
+  EvaluatorBase<nsd,nen>::CalcDivVelODMesh(mymat,funct,deriv,derxy,xjm,gridvelderiv,timefacfac*sumaddvolfrac*(-1.0),fac*sumaddvolfrac*(-1.0),det,numdofpernode,phasetoadd);
 
   return;
 }
@@ -4135,22 +4093,9 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddInstatTermsSat<nsd,ne
                           fac
                           );
 
-    for (int vi=0; vi<nen; ++vi)
-    {
-      const double v = vrhs*funct(vi);
-      const int fvi = vi*numdofpernode+phasetoadd;
+    // call base class for saturation linearization
+    EvaluatorBase<nsd,nen>::SaturationLinearizationFluid(mymat,funct,vrhs,numdofpernode,numfluidphases,curphase,phasetoadd,phasemanager);
 
-      for (int ui=0; ui<nen; ++ui)
-      {
-        const double vfunct = v*funct(ui);
-        for (int idof=0; idof<numfluidphases; ++idof)
-        {
-          const int fui = ui*numdofpernode+idof;
-
-          mymat(fvi,fui) += vfunct*phasemanager.SaturationDeriv(curphase,idof);
-        }
-      }
-    }
   }
 
    return;
@@ -4298,22 +4243,9 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddDivVelTermSat<nsd,nen
 
     const double vrhs = - timefacfac * phasemanager.SumAddVolFrac()*variablemanager.DivConVelnp();
 
-    for (int vi=0; vi<nen; ++vi)
-    {
-      const double v = vrhs*funct(vi);
-      const int fvi = vi*numdofpernode+phasetoadd;
+    // call base class for saturation linearization
+    EvaluatorBase<nsd,nen>::SaturationLinearizationFluid(mymat,funct,vrhs,numdofpernode,numfluidphases,curphase,phasetoadd,phasemanager);
 
-      for (int ui=0; ui<nen; ++ui)
-      {
-        const double vfunct = v*funct(ui);
-        for (int idof=0; idof<numfluidphases; ++idof)
-        {
-          const int fui = ui*numdofpernode+idof;
-
-          mymat(fvi,fui) += vfunct*phasemanager.SaturationDeriv(curphase,idof);
-        }
-      }
-    }
   }
 
    return;
@@ -4440,23 +4372,29 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracInstat<nsd,nen>::Evaluat
   Epetra_SerialDenseMatrix& mymat = *elemat[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numvolfrac = phasemanager.NumVolFrac();
 
   // loop over all volume fractions
-  for (int ivolfrac = numfluidphases; ivolfrac < numdofpernode; ivolfrac++)
+  for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
   {
+    const bool evaluatevolfracpress = variablemanager.ElementHasValidVolFracPressure(ivolfrac-numfluidphases);
+
     //----------------------------------------------------------------
     // standard Galerkin transient term
     //----------------------------------------------------------------
     for (int vi=0; vi<nen; ++vi)
     {
       const double v = funct( vi )*fac;
-      const int fvi = vi * numdofpernode + ivolfrac;
+      const int fvi_volfrac      = vi * numdofpernode              + ivolfrac;
+      const int fvi_volfracpress = vi * numdofpernode + numvolfrac + ivolfrac;
 
       for (int ui=0; ui<nen; ++ui)
       {
         const int fui = ui * numdofpernode + ivolfrac;
 
-        mymat(fvi,fui) += v * funct( ui );
+        mymat(fvi_volfrac,     fui) += v * funct( ui );
+        if(evaluatevolfracpress)
+          mymat(fvi_volfracpress,fui) += v * funct( ui );
       }
     }
   }
@@ -4490,19 +4428,25 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracInstat<nsd,nen>::Evaluat
     Epetra_SerialDenseVector& myvec = *elevec[0];
 
     const int numfluidphases = phasemanager.NumFluidPhases();
+    const int numvolfrac = phasemanager.NumVolFrac();
 
     // loop over all volume fractions
-    for (int ivolfrac = numfluidphases; ivolfrac < numdofpernode; ivolfrac++)
+    for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
     {
       const double hist   = (*variablemanager.Hist())[ivolfrac];
       const double phinp = phasemanager.VolFrac(ivolfrac-numfluidphases);
       const double vtrans = fac*(phinp - hist);
 
+      const bool evaluatevolfracpress = variablemanager.ElementHasValidVolFracPressure(ivolfrac-numfluidphases);
+
       for (int vi=0; vi<nen; ++vi)
       {
-        const int fvi = vi*numdofpernode+ivolfrac;
+        const int fvi_volfrac      = vi * numdofpernode              + ivolfrac;
+        const int fvi_volfracpress = vi * numdofpernode + numvolfrac + ivolfrac;
 
-        myvec[fvi] -= vtrans*funct(vi);
+        myvec[fvi_volfrac     ] -= vtrans*funct(vi);
+        if(evaluatevolfracpress)
+          myvec[fvi_volfracpress] -= vtrans*funct(vi);
       }
     }
   }
@@ -4535,13 +4479,16 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracInstat<nsd,nen>::Evaluat
   Epetra_SerialDenseMatrix& mymat = *elemat[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numvolfrac = phasemanager.NumVolFrac();
 
   // loop over all volume fractions
-  for (int ivolfrac = numfluidphases; ivolfrac < numdofpernode; ivolfrac++)
+  for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
   {
     const double hist   = (*variablemanager.Hist())[ivolfrac];
     const double phinp = phasemanager.VolFrac(ivolfrac-numfluidphases);
     const double vtrans = fac*(phinp - hist);
+
+    const bool evaluatevolfracpress = variablemanager.ElementHasValidVolFracPressure(ivolfrac-numfluidphases);
 
     // linearization of mesh motion
     //------------------------------------------------dJ/dd = dJ/dF : dF/dd = J * F^-T . N_{\psi} = J * N_x
@@ -4550,7 +4497,9 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracInstat<nsd,nen>::Evaluat
     //              fac        = J              --> d(fac)/dd        = fac * N_x
     for (int vi=0; vi<nen; ++vi)
     {
-      const int fvi = vi*numdofpernode+ivolfrac;
+      const int fvi_volfrac      = vi * numdofpernode              + ivolfrac;
+      const int fvi_volfracpress = vi * numdofpernode + numvolfrac + ivolfrac;
+
       const double v = funct(vi)*vtrans;
 
       for (int ui=0; ui<nen; ++ui)
@@ -4559,7 +4508,9 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracInstat<nsd,nen>::Evaluat
         {
           const int fui = ui*nsd+idim;
 
-          mymat(fvi,fui) += v*derxy(idim,ui);
+          mymat(fvi_volfrac     ,fui) += v*derxy(idim,ui);
+          if(evaluatevolfracpress)
+            mymat(fvi_volfracpress,fui) += v*derxy(idim,ui);
         }
       }
     }
@@ -4614,23 +4565,29 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDivVel<nsd,nen>::Evaluat
   if(!inittimederiv)
   {
     const int numfluidphases = phasemanager.NumFluidPhases();
+    const int numvolfrac = phasemanager.NumVolFrac();
   // get matrix to fill
     Epetra_SerialDenseMatrix& mymat = *elemat[0];
 
     const double consfac = timefacfac*variablemanager.DivConVelnp();
 
     // loop over all volume fractions
-    for (int ivolfrac = numfluidphases; ivolfrac < numdofpernode; ivolfrac++)
+    for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
     {
+      const bool evaluatevolfracpress = variablemanager.ElementHasValidVolFracPressure(ivolfrac-numfluidphases);
+
       for (int vi=0; vi<nen; ++vi)
       {
         const double v = consfac*funct(vi);
-        const int fvi = vi*numdofpernode+ivolfrac;
+        const int fvi_volfrac      = vi * numdofpernode              + ivolfrac;
+        const int fvi_volfracpress = vi * numdofpernode + numvolfrac + ivolfrac;
 
         for (int ui=0; ui<nen; ++ui)
         {
           const int fui = ui*numdofpernode+ivolfrac;
-          mymat(fvi,fui) += v*funct(ui);
+          mymat(fvi_volfrac,     fui) += v*funct(ui);
+          if(evaluatevolfracpress)
+            mymat(fvi_volfracpress,fui) += v*funct(ui);
         }
       }
     }
@@ -4662,19 +4619,25 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDivVel<nsd,nen>::Evaluat
   Epetra_SerialDenseVector& myvec = *elevec[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numvolfrac = phasemanager.NumVolFrac();
 
   double vrhs = rhsfac*variablemanager.DivConVelnp();
 
   // loop over all volume fractions
-  for (int ivolfrac = numfluidphases; ivolfrac < numdofpernode; ivolfrac++)
+  for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
   {
     const double v = vrhs*phasemanager.VolFrac(ivolfrac-numfluidphases);
+    const bool evaluatevolfracpress = variablemanager.ElementHasValidVolFracPressure(ivolfrac-numfluidphases);
+
 
     for (int vi=0; vi<nen; ++vi)
     {
-      const int fvi = vi*numdofpernode+ivolfrac;
+      const int fvi_volfrac      = vi * numdofpernode              + ivolfrac;
+      const int fvi_volfracpress = vi * numdofpernode + numvolfrac + ivolfrac;
 
-      myvec[fvi] -= v*funct(vi);
+      myvec[fvi_volfrac     ] -= v*funct(vi);
+      if(evaluatevolfracpress)
+        myvec[fvi_volfracpress] -= v*funct(vi);
     }
   }
   return;
@@ -4704,16 +4667,20 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDivVel<nsd,nen>::Evaluat
   Epetra_SerialDenseMatrix& mymat = *elemat[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numvolfrac = phasemanager.NumVolFrac();
 
   // loop over all volume fractions
-  for (int ivolfrac = numfluidphases; ivolfrac < numdofpernode; ivolfrac++)
+  for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
   {
+    const bool evaluatevolfracpress = variablemanager.ElementHasValidVolFracPressure(ivolfrac-numfluidphases);
+
     const double vrhs = fac*phasemanager.VolFrac(ivolfrac-numfluidphases);
     // d (div v_s)/d d_n+1 = derxy * 1.0/theta/dt * d_n+1
     // prefactor is fac since timefacfac/theta/dt = fac
     for (int vi=0; vi<nen; ++vi)
     {
-      const int fvi = vi*numdofpernode+ivolfrac;
+      const int fvi_volfrac      = vi * numdofpernode              + ivolfrac;
+      const int fvi_volfracpress = vi * numdofpernode + numvolfrac + ivolfrac;
       const double v = vrhs*funct(vi);
 
       for (int ui=0; ui<nen; ++ui)
@@ -4722,7 +4689,9 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDivVel<nsd,nen>::Evaluat
         {
           const int fui = ui*nsd+idim;
 
-          mymat(fvi,fui) += v*derxy(idim,ui);
+          mymat(fvi_volfrac,     fui) += v*derxy(idim,ui);
+          if(evaluatevolfracpress)
+            mymat(fvi_volfracpress,fui) += v*derxy(idim,ui);
         }
       }
     }
@@ -4779,14 +4748,22 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDivVel<nsd,nen>::Evaluat
 
         for (int vi = 0; vi < nen; ++vi)
         {
-          const int fvi = vi*numdofpernode+ivolfrac;
+          const int fvi_volfrac      = vi * numdofpernode              + ivolfrac;
+          const int fvi_volfracpress = vi * numdofpernode + numvolfrac + ivolfrac;
+
           const double v = timefacfac / det * funct(vi)*phasemanager.VolFrac(ivolfrac-numfluidphases);
 
-          mymat(fvi, ui * 3 + 0) += v * v0;
+          mymat(fvi_volfrac     , ui * 3 + 0) += v * v0;
+          if(evaluatevolfracpress)
+            mymat(fvi_volfracpress, ui * 3 + 0) += v * v0;
 
-          mymat(fvi, ui * 3 + 1) += v * v1;
+          mymat(fvi_volfrac     , ui * 3 + 1) += v * v1;
+          if(evaluatevolfracpress)
+            mymat(fvi_volfracpress, ui * 3 + 1) += v * v1;
 
-          mymat(fvi, ui * 3 + 2) += v * v2;
+          mymat(fvi_volfrac,      ui * 3 + 2) += v * v2;
+          if(evaluatevolfracpress)
+            mymat(fvi_volfracpress, ui * 3 + 2) += v * v2;
         }
       }
 
@@ -4801,15 +4778,24 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDivVel<nsd,nen>::Evaluat
 
       for (int vi = 0; vi < nen; ++vi)
       {
-        const int fvi = vi*numdofpernode+ivolfrac;
+        const int fvi_volfrac      = vi * numdofpernode              + ivolfrac;
+        const int fvi_volfracpress = vi * numdofpernode + numvolfrac + ivolfrac;
+
         const double v = timefacfac / det * funct(vi)*phasemanager.VolFrac(ivolfrac-numfluidphases);
+
         for (int ui = 0; ui < nen; ++ui)
         {
-          mymat(fvi, ui * 2    ) += v * (- gridvelderiv_1_0 * deriv(1,ui)
-                                         + gridvelderiv_1_1 * deriv(0,ui));
+          mymat(fvi_volfrac     , ui * 2    ) += v * (- gridvelderiv_1_0 * deriv(1,ui)
+                                                      + gridvelderiv_1_1 * deriv(0,ui));
+          if(evaluatevolfracpress)
+            mymat(fvi_volfracpress, ui * 2    ) += v * (- gridvelderiv_1_0 * deriv(1,ui)
+                                                      + gridvelderiv_1_1 * deriv(0,ui));
 
-          mymat(fvi, ui * 2 + 1) += v * (+ gridvelderiv_0_0 * deriv(1,ui)
-                                         - gridvelderiv_0_1 * deriv(0,ui));
+          mymat(fvi_volfrac     , ui * 2 + 1) += v * (+ gridvelderiv_0_0 * deriv(1,ui)
+                                                      - gridvelderiv_0_1 * deriv(0,ui));
+          if(evaluatevolfracpress)
+            mymat(fvi_volfracpress, ui * 2 + 1) += v * (+ gridvelderiv_0_0 * deriv(1,ui)
+                                                      - gridvelderiv_0_1 * deriv(0,ui));
         }
       }
     }
@@ -4868,9 +4854,10 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDiff<nsd,nen>::EvaluateM
     Epetra_SerialDenseMatrix& mymat = *elemat[0];
 
     const int numfluidphases = phasemanager.NumFluidPhases();
+    const int numvolfrac = phasemanager.NumVolFrac();
 
     // loop over all volume fractions
-    for (int ivolfrac = numfluidphases; ivolfrac < numdofpernode; ivolfrac++)
+    for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
     {
 
       // get difftensor and diffusive flux
@@ -4925,11 +4912,12 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDiff<nsd,nen>::EvaluateV
   Epetra_SerialDenseVector& myvec = *elevec[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numvolfrac = phasemanager.NumVolFrac();
 
   const std::vector<LINALG::Matrix<nsd,1> >& gradphi = *variablemanager.GradPhinp();
 
   // loop over all volume fractions
-  for (int ivolfrac = numfluidphases; ivolfrac < numdofpernode; ivolfrac++)
+  for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
   {
     // diffusion tensor
     LINALG::Matrix<nsd,nsd> difftensor(true);
@@ -4978,11 +4966,12 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDiff<nsd,nen>::EvaluateM
   Epetra_SerialDenseMatrix& mymat = *elemat[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numvolfrac = phasemanager.NumVolFrac();
 
   const std::vector<LINALG::Matrix<nsd,1> >& gradphi = *variablemanager.GradPhinp();
 
   // loop over all volume fractions
-  for (int ivolfrac = numfluidphases; ivolfrac < numdofpernode; ivolfrac++)
+  for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
   {
     // diffusion tensor
     LINALG::Matrix<nsd,nsd> difftensor(true);
@@ -4990,35 +4979,6 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDiff<nsd,nen>::EvaluateM
 
     static LINALG::Matrix<nsd,1> diffflux(true);
     diffflux.Multiply(difftensor,gradphi[ivolfrac]);
-    // linearization of mesh motion
-    //------------------------------------------------dJ/dd = dJ/dF : dF/dd = J * F^-T . N_{\psi} = J * N_x
-    // J denotes the determinant of the Jacobian of the mapping between current and parameter space, i.e. det(dx/ds)
-    // in our case: timefacfac = J * dt * theta --> d(timefacfac)/dd = timefacfac * N_x
-    for (int vi=0; vi<nen; ++vi)
-    {
-      const int fvi = vi*numdofpernode+ivolfrac;
-
-      // laplacian in weak form
-      double laplawf(0.0);
-      for (int j = 0; j<nsd; j++)
-        laplawf += derxy(j,vi)*diffflux(j);
-      double v = - laplawf*timefacfac;
-
-      for (int ui=0; ui<nen; ++ui)
-      {
-        for (int idim=0; idim<nsd; ++idim)
-        {
-          const int fui = ui*nsd+idim;
-          mymat(fvi,fui) += v*derxy(idim,ui);
-        }
-      }
-
-    }
-
-    //----------------------------------------------------------------
-    // standard Galerkin terms  -- "shapederivatives" diffusive term
-    //----------------------------------------------------------------
-    // see scatra_ele_calc_OD.cpp
 
     // TODO: anisotropic difftensor
     const double v = difftensor(0,0)*timefacfac/det;
@@ -5027,179 +4987,8 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDiff<nsd,nen>::EvaluateM
     LINALG::Matrix<nsd,1> refgradphi(true);
     refgradphi.Multiply(xjm,gradphi[ivolfrac]);
 
-    if(nsd == 3)
-    {
-      const double xjm_0_0   = xjm(0, 0);
-      const double xjm_0_1   = xjm(0, 1);
-      const double xjm_0_2   = xjm(0, 2);
-      const double xjm_1_0   = xjm(1, 0);
-      const double xjm_1_1   = xjm(1, 1);
-      const double xjm_1_2   = xjm(1, 2);
-      const double xjm_2_0   = xjm(2, 0);
-      const double xjm_2_1   = xjm(2, 1);
-      const double xjm_2_2   = xjm(2, 2);
-
-      const double gradphi_0   = gradphi[ivolfrac](0);
-      const double gradphi_1   = gradphi[ivolfrac](1);
-      const double gradphi_2   = gradphi[ivolfrac](2);
-
-      for (unsigned vi = 0; vi < nen; ++vi)
-      {
-        const double deriv_vi_0   = deriv(0,vi);
-        const double deriv_vi_1   = deriv(1,vi);
-        const double deriv_vi_2   = deriv(2,vi);
-
-        const int fvi = vi*numdofpernode+ivolfrac;
-
-        for (unsigned ui = 0; ui < nen; ++ui)
-        {
-          const double v00 = + gradphi_1 * (
-                                                deriv_vi_0 * (deriv(2, ui)*xjm_1_2 - deriv(1, ui)*xjm_2_2)
-                                              + deriv_vi_1 * (deriv(0, ui)*xjm_2_2 - deriv(2, ui)*xjm_0_2)
-                                              + deriv_vi_2 * (deriv(1, ui)*xjm_0_2 - deriv(0, ui)*xjm_1_2)
-                                           )
-                             + gradphi_2 * (
-                                                deriv_vi_0 * (deriv(1, ui)*xjm_2_1 - deriv(2, ui)*xjm_1_1)
-                                              + deriv_vi_1 * (deriv(2, ui)*xjm_0_1 - deriv(0, ui)*xjm_2_1)
-                                              + deriv_vi_2 * (deriv(0, ui)*xjm_1_1 - deriv(1, ui)*xjm_0_1)
-                                           );
-          const double v01 = + gradphi_0 * (
-                                                deriv_vi_0 * (deriv(1, ui)*xjm_2_2 - deriv(2, ui)*xjm_1_2)
-                                              + deriv_vi_1 * (deriv(2, ui)*xjm_0_2 - deriv(0, ui)*xjm_2_2)
-                                              + deriv_vi_2 * (deriv(0, ui)*xjm_1_2 - deriv(1, ui)*xjm_0_2)
-                                           )
-                             + gradphi_2 * (
-                                                deriv_vi_0 * (deriv(2, ui)*xjm_1_0 - deriv(1, ui)*xjm_2_0)
-                                              + deriv_vi_1 * (deriv(0, ui)*xjm_2_0 - deriv(2, ui)*xjm_0_0)
-                                              + deriv_vi_2 * (deriv(1, ui)*xjm_0_0 - deriv(0, ui)*xjm_1_0)
-          );
-          const double v02 = + gradphi_0 * (
-                                                deriv_vi_0 * (deriv(2, ui)*xjm_1_1 - deriv(1, ui)*xjm_2_1)
-                                              + deriv_vi_1 * (deriv(0, ui)*xjm_2_1 - deriv(2, ui)*xjm_0_1)
-                                              + deriv_vi_2 * (deriv(1, ui)*xjm_0_1 - deriv(0, ui)*xjm_1_1)
-                                           )
-                             + gradphi_1 * (
-                                                deriv_vi_0 * (deriv(1, ui)*xjm_2_0 - deriv(2, ui)*xjm_1_0)
-                                              + deriv_vi_1 * (deriv(2, ui)*xjm_0_0 - deriv(0, ui)*xjm_2_0)
-                                              + deriv_vi_2 * (deriv(0, ui)*xjm_1_0 - deriv(1, ui)*xjm_0_0)
-                                           );
-
-          mymat(fvi, ui * nsd + 0) += v * v00;
-          mymat(fvi, ui * nsd + 1) += v * v01;
-          mymat(fvi, ui * nsd + 2) += v * v02;
-        }
-      }
-
-      const double refgradphi_0   = refgradphi(0);
-      const double refgradphi_1   = refgradphi(1);
-      const double refgradphi_2   = refgradphi(2);
-
-      for (unsigned vi = 0; vi < nen; ++vi)
-      {
-        const double derxy_vi_0   = derxy(0,vi);
-        const double derxy_vi_1   = derxy(1,vi);
-        const double derxy_vi_2   = derxy(2,vi);
-
-        const int fvi = vi*numdofpernode+ivolfrac;
-
-        for (unsigned ui = 0; ui < nen; ++ui)
-        {
-          const double v00 = + derxy_vi_1  * (
-                                                  refgradphi_0 * (deriv(2, ui)*xjm_1_2 - deriv(1, ui)*xjm_2_2)
-                                                + refgradphi_1 * (deriv(0, ui)*xjm_2_2 - deriv(2, ui)*xjm_0_2)
-                                                + refgradphi_2 * (deriv(1, ui)*xjm_0_2 - deriv(0, ui)*xjm_1_2)
-                                             )
-                             + derxy_vi_2  * (
-                                                  refgradphi_0 * (deriv(1, ui)*xjm_2_1 - deriv(2, ui)*xjm_1_1)
-                                                + refgradphi_1 * (deriv(2, ui)*xjm_0_1 - deriv(0, ui)*xjm_2_1)
-                                                + refgradphi_2 * (deriv(0, ui)*xjm_1_1 - deriv(1, ui)*xjm_0_1)
-                                             );
-          const double v01 = + derxy_vi_0  * (
-                                                  refgradphi_0 * (deriv(1, ui)*xjm_2_2 - deriv(2, ui)*xjm_1_2)
-                                                + refgradphi_1 * (deriv(2, ui)*xjm_0_2 - deriv(0, ui)*xjm_2_2)
-                                                + refgradphi_2 * (deriv(0, ui)*xjm_1_2 - deriv(1, ui)*xjm_0_2)
-                                             )
-                             + derxy_vi_2  * (
-                                                  refgradphi_0 * (deriv(2, ui)*xjm_1_0 - deriv(1, ui)*xjm_2_0)
-                                                + refgradphi_1 * (deriv(0, ui)*xjm_2_0 - deriv(2, ui)*xjm_0_0)
-                                                + refgradphi_2 * (deriv(1, ui)*xjm_0_0 - deriv(0, ui)*xjm_1_0)
-                                             );
-          const double v02 = + derxy_vi_0  * (
-                                                  refgradphi_0 * (deriv(2, ui)*xjm_1_1 - deriv(1, ui)*xjm_2_1)
-                                                + refgradphi_1 * (deriv(0, ui)*xjm_2_1 - deriv(2, ui)*xjm_0_1)
-                                                + refgradphi_2 * (deriv(1, ui)*xjm_0_1 - deriv(0, ui)*xjm_1_1)
-                                             )
-                             + derxy_vi_1  * (
-                                                  refgradphi_0 * (deriv(1, ui)*xjm_2_0 - deriv(2, ui)*xjm_1_0)
-                                                + refgradphi_1 * (deriv(2, ui)*xjm_0_0 - deriv(0, ui)*xjm_2_0)
-                                                + refgradphi_2 * (deriv(0, ui)*xjm_1_0 - deriv(1, ui)*xjm_0_0)
-                                             );
-
-          mymat(fvi, ui * nsd + 0) += v * v00;
-          mymat(fvi, ui * nsd + 1) += v * v01;
-          mymat(fvi, ui * nsd + 2) += v * v02;
-        }
-      }
-    }
-    else if(nsd == 2)
-    {
-      {
-
-        const double gradphi_0   = gradphi[ivolfrac](0);
-        const double gradphi_1   = gradphi[ivolfrac](1);
-
-        for (int vi = 0; vi < nen; ++vi)
-        {
-          const double deriv_vi_0   = deriv(0,vi);
-          const double deriv_vi_1   = deriv(1,vi);
-
-          const int fvi = vi*numdofpernode+ivolfrac;
-
-          for (int ui = 0; ui < nen; ++ui)
-          {
-            const double v00 = + gradphi_1 * (
-                                                - deriv_vi_0 * deriv(1, ui)
-                                                + deriv_vi_1 * deriv(0, ui)
-                                             );
-            const double v01 = + gradphi_0 * (
-                                                  deriv_vi_0 * deriv(1, ui)
-                                                - deriv_vi_1 * deriv(0, ui)
-                                             );
-
-            mymat(fvi, ui * nsd + 0) += v * v00;
-            mymat(fvi, ui * nsd + 1) += v * v01;
-          }
-        }
-      }
-
-      const double refgradphi_0   = refgradphi(0);
-      const double refgradphi_1   = refgradphi(1);
-
-      for (unsigned vi = 0; vi < nen; ++vi)
-      {
-        const double derxy_vi_0   = derxy(0,vi);
-        const double derxy_vi_1   = derxy(1,vi);
-
-        const int fvi = vi*numdofpernode+ivolfrac;
-
-        for (unsigned ui = 0; ui < nen; ++ui)
-        {
-          const double v00 = + derxy_vi_1  * (
-                                                - refgradphi_0 * deriv(1, ui)
-                                                + refgradphi_1 * deriv(0, ui)
-                                             );
-          const double v01 = + derxy_vi_0  * (
-                                                  refgradphi_0 * deriv(1, ui)
-                                                - refgradphi_1 * deriv(0, ui)
-                                             );
-
-          mymat(fvi, ui * nsd + 0) += v * v00;
-          mymat(fvi, ui * nsd + 1) += v * v01;
-        }
-      }
-    }
-    else
-      dserror("shapederivatives not implemented for 1D!");
+    // OD mesh - diffusive term
+    EvaluatorBase<nsd,nen>::CalcDiffODMesh(mymat,deriv,derxy,xjm,diffflux,refgradphi,gradphi[ivolfrac],timefacfac,v,numdofpernode,ivolfrac);
   }
   return;
 }
@@ -5253,9 +5042,10 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracReac<nsd,nen>::EvaluateM
     Epetra_SerialDenseMatrix& mymat = *elemat[0];
 
     const int numfluidphases = phasemanager.NumFluidPhases();
+    const int numvolfrac = phasemanager.NumVolFrac();
 
     // loop over all volume fractions
-    for (int ivolfrac = numfluidphases; ivolfrac < numdofpernode; ivolfrac++)
+    for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
     {
       if(phasemanager.IsReactive(ivolfrac))
       {
@@ -5308,9 +5098,10 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracReac<nsd,nen>::EvaluateV
   Epetra_SerialDenseVector& myvec = *elevec[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numvolfrac = phasemanager.NumVolFrac();
 
   // loop over all volume fractions
-  for (int ivolfrac = numfluidphases; ivolfrac < numdofpernode; ivolfrac++)
+  for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
   {
     if(phasemanager.IsReactive(ivolfrac))
     {
@@ -5354,13 +5145,17 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracReac<nsd,nen>::EvaluateM
   Epetra_SerialDenseMatrix& mymat = *elemat[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numvolfrac = phasemanager.NumVolFrac();
 
   // loop over all volume fractions
-  for (int ivolfrac = numfluidphases; ivolfrac < numdofpernode; ivolfrac++)
+  for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
   {
     if(phasemanager.IsReactive(ivolfrac))
     {
+      // TODO a constant density is assumed here
       double scale = 1.0/phasemanager.VolFracDensity(ivolfrac-numfluidphases);
+
+      double vrhs = scale*timefacfac*phasemanager.ReacTerm(ivolfrac);
 
       // linearization of porosity (may appear in reaction term)
       //-------------dreac/dd = dreac/dporosity * dporosity/dd = dreac/dporosity * dporosity/dJ * dJ/dd = dreac/dporosity * dporosity/dJ * J * N_x
@@ -5368,47 +5163,15 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracReac<nsd,nen>::EvaluateM
 
       if(phasemanager.PorosityDependsOnStruct())
       {
-        double vrhs = timefacfac*scale*phasemanager.ReacDerivPorosity(ivolfrac)*phasemanager.JacobianDefGrad()
-            *phasemanager.PorosityDerivWrtJacobianDefGrad();
-
-        for (int vi=0; vi<nen; ++vi)
-        {
-          const int fvi = vi*numdofpernode+ivolfrac;
-          const double v = funct(vi)*vrhs;
-
-          for (int ui=0; ui<nen; ++ui)
-          {
-            for (int idim=0; idim<nsd; ++idim)
-            {
-              const int fui = ui*nsd+idim;
-
-              mymat(fvi,fui) += v*derxy(idim,ui);
-            }
-          }
-        }
+        vrhs += timefacfac*scale*phasemanager.ReacDerivPorosity(ivolfrac)*phasemanager.JacobianDefGrad()
+                  *phasemanager.PorosityDerivWrtJacobianDefGrad();
       }
 
-      double vrhs = scale*timefacfac*phasemanager.ReacTerm(ivolfrac);
+      // linearization of mesh motion (Jacobian)
+      // 1) linearization of fac +
+      // 2) possible linearization w.r.t porosity
+      EvaluatorBase<nsd,nen>::CalcLinFacODMesh(mymat,funct,derxy,vrhs,numdofpernode,ivolfrac);
 
-      // linearization of mesh motion
-      //------------------------------------------------dJ/dd = dJ/dF : dF/dd = J * F^-T . N_{\psi} = J * N_x
-      // J denotes the determinant of the Jacobian of the mapping between current and parameter space, i.e. det(dx/ds)
-      // in our case: timefacfac = J * dt * theta --> d(timefacfac)/dd = timefacfac * N_x
-      // TODO a constant density is assumed here
-      for (int vi=0; vi<nen; ++vi)
-      {
-        const int fvi = vi*numdofpernode+ivolfrac;
-        const double v = vrhs*funct(vi);
-
-        for (int ui=0; ui<nen; ++ui)
-        {
-          for (int idim=0; idim<nsd; ++idim)
-          {
-            const int fui = ui*nsd+idim;
-            mymat(fvi,fui) += v*derxy(idim,ui);
-          }
-        }
-      }
     }
   }
   return;
@@ -5435,10 +5198,11 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracReac<nsd,nen>::EvaluateM
   Epetra_SerialDenseMatrix& mymat = *elemat[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numvolfrac = phasemanager.NumVolFrac();
   const int numscal = phasemanager.NumScal();
 
   // loop over all volume fractions
-  for (int ivolfrac = numfluidphases; ivolfrac < numdofpernode; ivolfrac++)
+  for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
   {
     if(phasemanager.IsReactive(ivolfrac))
     {
@@ -5494,9 +5258,10 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,nen>::Evalua
     Epetra_SerialDenseMatrix& mymat = *elemat[0];
 
     const int numfluidphases = phasemanager.NumFluidPhases();
+    const int numvolfrac = phasemanager.NumVolFrac();
 
     // loop over all volume fractions
-    for (int ivolfrac = numfluidphases; ivolfrac < numdofpernode; ivolfrac++)
+    for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
     {
       if(phasemanager.HasAddScalarDependentFlux(ivolfrac-numfluidphases))
       {
@@ -5581,9 +5346,10 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,nen>::Evalua
   Epetra_SerialDenseVector& myvec = *elevec[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numvolfrac = phasemanager.NumVolFrac();
 
   // loop over all volume fractions
-  for (int ivolfrac = numfluidphases; ivolfrac < numdofpernode; ivolfrac++)
+  for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
   {
     if(phasemanager.HasAddScalarDependentFlux(ivolfrac-numfluidphases))
     {
@@ -5646,9 +5412,10 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,nen>::Evalua
   Epetra_SerialDenseMatrix& mymat = *elemat[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numvolfrac = phasemanager.NumVolFrac();
 
   // loop over all volume fractions
-  for (int ivolfrac = numfluidphases; ivolfrac < numdofpernode; ivolfrac++)
+  for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
   {
     if(phasemanager.HasAddScalarDependentFlux(ivolfrac-numfluidphases))
     {
@@ -5665,40 +5432,10 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,nen>::Evalua
           LINALG::Matrix<nsd,nsd> difftensoraddflux(true);
           for (int i = 0; i < nsd; i++)
             difftensoraddflux(i, i) = phasemanager.ScalarDiff(ivolfrac-numfluidphases,iscal);
-          //difftensoraddflux.Scale(phasemanager.VolFrac(ivolfrac-numfluidphases)*phasemanager.Porosity()*phasemanager.Saturation(phasemanager.ScalarToPhaseID(iscal)));
 
           static LINALG::Matrix<nsd,1> diffflux(true);
           diffflux.Multiply(phasemanager.VolFrac(ivolfrac-numfluidphases)*phasemanager.Porosity()*phasemanager.Saturation(phasemanager.ScalarToPhaseID(iscal)),
               difftensoraddflux,gradscalarnp[iscal]);
-
-          // linearization of mesh motion
-          //------------------------------------------------dJ/dd = dJ/dF : dF/dd = J * F^-T . N_{\psi} = J * N_x
-          // J denotes the determinant of the Jacobian of the mapping between current and parameter space, i.e. det(dx/ds)
-          // in our case: timefacfac = J * dt * theta --> d(timefacfac)/dd = timefacfac * N_x
-          for (int vi=0; vi<nen; ++vi)
-          {
-            const int fvi = vi*numdofpernode+ivolfrac;
-
-            // laplacian in weak form
-            double laplawf(0.0);
-            for (int j = 0; j<nsd; j++)
-              laplawf += derxy(j,vi)*diffflux(j);
-            double v = - laplawf*timefacfac;
-
-            for (int ui=0; ui<nen; ++ui)
-            {
-              for (int idim=0; idim<nsd; ++idim)
-              {
-                const int fui = ui*nsd+idim;
-                mymat(fvi,fui) += v*derxy(idim,ui);
-              }
-            }
-          }
-
-          //----------------------------------------------------------------
-          // standard Galerkin terms  -- "shapederivatives" diffusive term
-          //----------------------------------------------------------------
-          // see scatra_ele_calc_OD.cpp
 
           // TODO: anisotropic difftensor
           const double v = difftensoraddflux(0,0)*timefacfac/det
@@ -5708,178 +5445,11 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,nen>::Evalua
           LINALG::Matrix<nsd,1> refgradscalarnp(true);
           refgradscalarnp.Multiply(xjm,gradscalarnp[iscal]);
 
-          if(nsd == 3)
-          {
-            const double xjm_0_0   = xjm(0, 0);
-            const double xjm_0_1   = xjm(0, 1);
-            const double xjm_0_2   = xjm(0, 2);
-            const double xjm_1_0   = xjm(1, 0);
-            const double xjm_1_1   = xjm(1, 1);
-            const double xjm_1_2   = xjm(1, 2);
-            const double xjm_2_0   = xjm(2, 0);
-            const double xjm_2_1   = xjm(2, 1);
-            const double xjm_2_2   = xjm(2, 2);
+          // 1) -----------------------------------------------------------------------------------------------------------------------------------------
+          // OD mesh - diffusive term
+          EvaluatorBase<nsd,nen>::CalcDiffODMesh(mymat,deriv,derxy,xjm,diffflux,refgradscalarnp,gradscalarnp[iscal],timefacfac,v,numdofpernode,ivolfrac);
 
-            const double gradscal_0   = gradscalarnp[iscal](0);
-            const double gradscal_1   = gradscalarnp[iscal](1);
-            const double gradscal_2   = gradscalarnp[iscal](2);
-
-            for (unsigned vi = 0; vi < nen; ++vi)
-            {
-              const double deriv_vi_0   = deriv(0,vi);
-              const double deriv_vi_1   = deriv(1,vi);
-              const double deriv_vi_2   = deriv(2,vi);
-
-              const int fvi = vi*numdofpernode+ivolfrac;
-
-              for (unsigned ui = 0; ui < nen; ++ui)
-              {
-                const double v00 = + gradscal_1 * (
-                                                      deriv_vi_0 * (deriv(2, ui)*xjm_1_2 - deriv(1, ui)*xjm_2_2)
-                                                    + deriv_vi_1 * (deriv(0, ui)*xjm_2_2 - deriv(2, ui)*xjm_0_2)
-                                                    + deriv_vi_2 * (deriv(1, ui)*xjm_0_2 - deriv(0, ui)*xjm_1_2)
-                                                 )
-                                   + gradscal_2 * (
-                                                      deriv_vi_0 * (deriv(1, ui)*xjm_2_1 - deriv(2, ui)*xjm_1_1)
-                                                    + deriv_vi_1 * (deriv(2, ui)*xjm_0_1 - deriv(0, ui)*xjm_2_1)
-                                                    + deriv_vi_2 * (deriv(0, ui)*xjm_1_1 - deriv(1, ui)*xjm_0_1)
-                                                 );
-                const double v01 = + gradscal_0 * (
-                                                      deriv_vi_0 * (deriv(1, ui)*xjm_2_2 - deriv(2, ui)*xjm_1_2)
-                                                    + deriv_vi_1 * (deriv(2, ui)*xjm_0_2 - deriv(0, ui)*xjm_2_2)
-                                                    + deriv_vi_2 * (deriv(0, ui)*xjm_1_2 - deriv(1, ui)*xjm_0_2)
-                                                 )
-                                   + gradscal_2 * (
-                                                      deriv_vi_0 * (deriv(2, ui)*xjm_1_0 - deriv(1, ui)*xjm_2_0)
-                                                    + deriv_vi_1 * (deriv(0, ui)*xjm_2_0 - deriv(2, ui)*xjm_0_0)
-                                                    + deriv_vi_2 * (deriv(1, ui)*xjm_0_0 - deriv(0, ui)*xjm_1_0)
-                );
-                const double v02 = + gradscal_0 * (
-                                                      deriv_vi_0 * (deriv(2, ui)*xjm_1_1 - deriv(1, ui)*xjm_2_1)
-                                                    + deriv_vi_1 * (deriv(0, ui)*xjm_2_1 - deriv(2, ui)*xjm_0_1)
-                                                    + deriv_vi_2 * (deriv(1, ui)*xjm_0_1 - deriv(0, ui)*xjm_1_1)
-                                                 )
-                                   + gradscal_1 * (
-                                                      deriv_vi_0 * (deriv(1, ui)*xjm_2_0 - deriv(2, ui)*xjm_1_0)
-                                                    + deriv_vi_1 * (deriv(2, ui)*xjm_0_0 - deriv(0, ui)*xjm_2_0)
-                                                    + deriv_vi_2 * (deriv(0, ui)*xjm_1_0 - deriv(1, ui)*xjm_0_0)
-                                                 );
-
-                mymat(fvi, ui * nsd + 0) += v * v00;
-                mymat(fvi, ui * nsd + 1) += v * v01;
-                mymat(fvi, ui * nsd + 2) += v * v02;
-              }
-            }
-
-            const double refgradscal_0   = refgradscalarnp(0);
-            const double refgradscal_1   = refgradscalarnp(1);
-            const double refgradscal_2   = refgradscalarnp(2);
-
-            for (unsigned vi = 0; vi < nen; ++vi)
-            {
-              const double derxy_vi_0   = derxy(0,vi);
-              const double derxy_vi_1   = derxy(1,vi);
-              const double derxy_vi_2   = derxy(2,vi);
-
-              const int fvi = vi*numdofpernode+ivolfrac;
-
-              for (unsigned ui = 0; ui < nen; ++ui)
-              {
-                const double v00 = + derxy_vi_1  * (
-                                                        refgradscal_0 * (deriv(2, ui)*xjm_1_2 - deriv(1, ui)*xjm_2_2)
-                                                      + refgradscal_1 * (deriv(0, ui)*xjm_2_2 - deriv(2, ui)*xjm_0_2)
-                                                      + refgradscal_2 * (deriv(1, ui)*xjm_0_2 - deriv(0, ui)*xjm_1_2)
-                                                   )
-                                   + derxy_vi_2  * (
-                                                        refgradscal_0 * (deriv(1, ui)*xjm_2_1 - deriv(2, ui)*xjm_1_1)
-                                                      + refgradscal_1 * (deriv(2, ui)*xjm_0_1 - deriv(0, ui)*xjm_2_1)
-                                                      + refgradscal_2 * (deriv(0, ui)*xjm_1_1 - deriv(1, ui)*xjm_0_1)
-                                                   );
-                const double v01 = + derxy_vi_0  * (
-                                                        refgradscal_0 * (deriv(1, ui)*xjm_2_2 - deriv(2, ui)*xjm_1_2)
-                                                      + refgradscal_1 * (deriv(2, ui)*xjm_0_2 - deriv(0, ui)*xjm_2_2)
-                                                      + refgradscal_2 * (deriv(0, ui)*xjm_1_2 - deriv(1, ui)*xjm_0_2)
-                                                   )
-                                   + derxy_vi_2  * (
-                                                        refgradscal_0 * (deriv(2, ui)*xjm_1_0 - deriv(1, ui)*xjm_2_0)
-                                                      + refgradscal_1 * (deriv(0, ui)*xjm_2_0 - deriv(2, ui)*xjm_0_0)
-                                                      + refgradscal_2 * (deriv(1, ui)*xjm_0_0 - deriv(0, ui)*xjm_1_0)
-                                                   );
-                const double v02 = + derxy_vi_0  * (
-                                                        refgradscal_0 * (deriv(2, ui)*xjm_1_1 - deriv(1, ui)*xjm_2_1)
-                                                      + refgradscal_1 * (deriv(0, ui)*xjm_2_1 - deriv(2, ui)*xjm_0_1)
-                                                      + refgradscal_2 * (deriv(1, ui)*xjm_0_1 - deriv(0, ui)*xjm_1_1)
-                                                   )
-                                   + derxy_vi_1  * (
-                                                        refgradscal_0 * (deriv(1, ui)*xjm_2_0 - deriv(2, ui)*xjm_1_0)
-                                                      + refgradscal_1 * (deriv(2, ui)*xjm_0_0 - deriv(0, ui)*xjm_2_0)
-                                                      + refgradscal_2 * (deriv(0, ui)*xjm_1_0 - deriv(1, ui)*xjm_0_0)
-                                                   );
-
-                mymat(fvi, ui * nsd + 0) += v * v00;
-                mymat(fvi, ui * nsd + 1) += v * v01;
-                mymat(fvi, ui * nsd + 2) += v * v02;
-              }
-            }
-          }
-          else if(nsd == 2)
-          {
-
-            const double gradscal_0   = gradscalarnp[iscal](0);
-            const double gradscal_1   = gradscalarnp[iscal](1);
-
-            for (int vi = 0; vi < nen; ++vi)
-            {
-              const double deriv_vi_0   = deriv(0,vi);
-              const double deriv_vi_1   = deriv(1,vi);
-
-              const int fvi = vi*numdofpernode+ivolfrac;
-
-              for (int ui = 0; ui < nen; ++ui)
-              {
-                const double v00 = + gradscal_1 * (
-                                                    - deriv_vi_0 * deriv(1, ui)
-                                                    + deriv_vi_1 * deriv(0, ui)
-                                                 );
-                const double v01 = + gradscal_0 * (
-                                                      deriv_vi_0 * deriv(1, ui)
-                                                    - deriv_vi_1 * deriv(0, ui)
-                                                 );
-
-                mymat(fvi, ui * nsd + 0) += v * v00;
-                mymat(fvi, ui * nsd + 1) += v * v01;
-              }
-            }
-
-            const double refgradscal_0   = refgradscalarnp(0);
-            const double refgradscal_1   = refgradscalarnp(1);
-
-            for (unsigned vi = 0; vi < nen; ++vi)
-            {
-              const double derxy_vi_0   = derxy(0,vi);
-              const double derxy_vi_1   = derxy(1,vi);
-
-              const int fvi = vi*numdofpernode+ivolfrac;
-
-              for (unsigned ui = 0; ui < nen; ++ui)
-              {
-                const double v00 = + derxy_vi_1  * (
-                                                      - refgradscal_0 * deriv(1, ui)
-                                                      + refgradscal_1 * deriv(0, ui)
-                                                   );
-                const double v01 = + derxy_vi_0  * (
-                                                        refgradscal_0 * deriv(1, ui)
-                                                      - refgradscal_1 * deriv(0, ui)
-                                                   );
-
-                mymat(fvi, ui * nsd + 0) += v * v00;
-                mymat(fvi, ui * nsd + 1) += v * v01;
-              }
-            }
-          }
-          else
-            dserror("shapederivatives not implemented for 1D!");
-
+          // 2) -----------------------------------------------------------------------------------------------------------------------------------------
           // linearization of porosity
           //-------------dreac/dd = dreac/dporosity * dporosity/dd = dreac/dporosity * dporosity/dJ * dJ/dd = dreac/dporosity * dporosity/dJ * J * N_x
           // J denotes the determinant of the deformation gradient, i.e. det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
@@ -5937,9 +5507,10 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,nen>::Evalua
   Epetra_SerialDenseMatrix& mymat = *elemat[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numvolfrac = phasemanager.NumVolFrac();
 
   // loop over all volume fractions
-  for (int ivolfrac = numfluidphases; ivolfrac < numdofpernode; ivolfrac++)
+  for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
   {
     if(phasemanager.HasAddScalarDependentFlux(ivolfrac-numfluidphases))
     {
@@ -6011,6 +5582,449 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,nen>::Evalua
       }
     }
   }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ * **********************************************************************
+ *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | evaluate element matrix                             kremheller 02/18 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureDiff<nsd,nen>::EvaluateMatrixAndAssemble(
+    std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
+    const LINALG::Matrix<nen,1>&                                funct,
+    const LINALG::Matrix<nsd,nen>&                              derxy,
+    int                                                         curphase,
+    int                                                         phasetoadd,
+    int                                                         numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,
+    double                                                      timefacfac,
+    double                                                      fac,
+    bool                                                        inittimederiv
+  )
+{
+  // we do not need the matrix if we calculate the initial time derivative
+  if(!inittimederiv)
+  {
+    // get matrix to fill
+    Epetra_SerialDenseMatrix& mymat = *elemat[0];
+
+    const int numfluidphases = phasemanager.NumFluidPhases();
+    const int numvolfrac = phasemanager.NumVolFrac();
+
+    // loop over all volume fraction pressures
+    for (int ivolfracpress = numfluidphases + numvolfrac; ivolfracpress < numdofpernode; ivolfracpress++)
+    {
+      const bool evaluatevolfracpress = variablemanager.ElementHasValidVolFracPressure(ivolfracpress-numvolfrac-numfluidphases);
+
+      if(evaluatevolfracpress)
+      {
+        // get permeability tensor and diffusive flux
+        LINALG::Matrix<nsd,nsd> permeabilitytensorvolfracpress(true);
+        phasemanager.PermeabilityTensorVolFracPressure(ivolfracpress-numfluidphases-numvolfrac, permeabilitytensorvolfracpress);
+        permeabilitytensorvolfracpress.Scale(
+            1.0/phasemanager.DynViscosityVolFracPressure(ivolfracpress-numfluidphases-numvolfrac, -1.0)); //TODO: change -1.0
+
+        static LINALG::Matrix<nsd,nen> diffflux(true);
+        diffflux.Multiply(permeabilitytensorvolfracpress,derxy);
+
+        // diffusive term
+        for (int vi=0; vi<nen; ++vi)
+        {
+          const int fvi = vi*numdofpernode+ivolfracpress;
+
+          for (int ui=0; ui<nen; ++ui)
+          {
+            double laplawf(0.0);
+            for (int j = 0; j<nsd; j++)
+              laplawf += derxy(j, vi)*diffflux(j, ui);
+
+            const int fui = ui*numdofpernode+ivolfracpress;
+            mymat(fvi,fui) += timefacfac*laplawf;
+
+          }
+        }
+
+        if(not phasemanager.HasConstantDynViscosityVolFracPressure(ivolfracpress-numfluidphases-numvolfrac))
+          dserror("only constant dynamic viscosities possible for volume fraction pressures so far");
+      }
+    }
+  }
+
+
+   return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate RHS vector                                 kremheller 02/18 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureDiff<nsd,nen>::EvaluateVectorAndAssemble(
+    std::vector<Epetra_SerialDenseVector*>&                     elevec,
+    const LINALG::Matrix<nen,1>&                                funct,
+    const LINALG::Matrix<nsd,nen>&                              derxy,
+    int                                                         curphase,
+    int                                                         phasetoadd,
+    int                                                         numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,
+    double                                                      rhsfac,
+    double                                                      fac,
+    bool                                                        inittimederiv
+    )
+{
+  // get matrix to fill
+  Epetra_SerialDenseVector& myvec = *elevec[0];
+
+  const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numvolfrac = phasemanager.NumVolFrac();
+
+  const std::vector<LINALG::Matrix<nsd,1> >& gradphi = *variablemanager.GradPhinp();
+
+  // loop over all volume fractions
+  for (int ivolfracpress = numfluidphases + numvolfrac; ivolfracpress < numdofpernode; ivolfracpress++)
+  {
+    double absgradphi = 0.0;
+    for (int idim = 0; idim<nsd; idim++)
+    {
+      absgradphi += gradphi[ivolfracpress](idim,0)*gradphi[ivolfracpress](idim,0);
+    }
+    const bool evaluatevolfracpress = variablemanager.ElementHasValidVolFracPressure(ivolfracpress-numvolfrac-numfluidphases);
+
+    if(evaluatevolfracpress)
+    {
+      // get permeability tensor
+      LINALG::Matrix<nsd,nsd> permeabilitytensorvolfracpress(true);
+      phasemanager.PermeabilityTensorVolFracPressure(ivolfracpress-numfluidphases-numvolfrac, permeabilitytensorvolfracpress);
+      permeabilitytensorvolfracpress.Scale(1.0/phasemanager.DynViscosityVolFracPressure(ivolfracpress-numfluidphases-numvolfrac, -1.0));
+
+      static LINALG::Matrix<nsd,1> diffflux(true);
+      diffflux.Multiply(permeabilitytensorvolfracpress,gradphi[ivolfracpress]);
+
+      for (int vi=0; vi<nen; ++vi)
+      {
+        const int fvi = vi*numdofpernode+ivolfracpress;
+
+        // laplacian in weak form
+        double laplawf(0.0);
+        for (int j = 0; j<nsd; j++)
+          laplawf += derxy(j,vi)*diffflux(j);
+        myvec[fvi] -= rhsfac*laplawf;
+      }
+    }
+  }
+
+  return;
+};
+
+/*----------------------------------------------------------------------*
+ | evaluate off-diagonal coupling matrix with structure kremheller 02/18 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureDiff<nsd,nen>::EvaluateMatrixODStructAndAssemble(
+    std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
+    const LINALG::Matrix<nen,1>&                                funct,
+    const LINALG::Matrix<nsd,nen>&                              deriv,
+    const LINALG::Matrix<nsd,nen>&                              derxy,
+    const LINALG::Matrix<nsd,nsd>&                              xjm,
+    int                                                         curphase,
+    int                                                         phasetoadd,
+    int                                                         numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,
+    double                                                      timefacfac,
+    double                                                      fac,
+    double                                                      det
+  )
+{
+
+  // get matrix to fill
+  Epetra_SerialDenseMatrix& mymat = *elemat[0];
+
+  const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numvolfrac = phasemanager.NumVolFrac();
+
+  const std::vector<LINALG::Matrix<nsd,1> >& gradphi = *variablemanager.GradPhinp();
+
+  // loop over all volume fractions
+  for (int ivolfracpress = numfluidphases + numvolfrac; ivolfracpress < numdofpernode; ivolfracpress++)
+  {
+    const bool evaluatevolfracpress = variablemanager.ElementHasValidVolFracPressure(ivolfracpress-numvolfrac-numfluidphases);
+
+    if(evaluatevolfracpress)
+    {
+      // get permeability tensor
+      LINALG::Matrix<nsd,nsd> permeabilitytensorvolfracpress(true);
+      phasemanager.PermeabilityTensorVolFracPressure(ivolfracpress-numfluidphases-numvolfrac, permeabilitytensorvolfracpress);
+      permeabilitytensorvolfracpress.Scale(1.0/phasemanager.DynViscosityVolFracPressure(ivolfracpress-numfluidphases-numvolfrac, -1.0));
+
+      static LINALG::Matrix<nsd,1> diffflux(true);
+      diffflux.Multiply(permeabilitytensorvolfracpress,gradphi[ivolfracpress]);
+
+      // TODO: anisotropic difftensor
+      const double v = permeabilitytensorvolfracpress(0,0)*timefacfac/det;
+
+      //gradient of phi w.r.t. reference coordinates
+      LINALG::Matrix<nsd,1> refgradphi(true);
+      refgradphi.Multiply(xjm,gradphi[ivolfracpress]);
+
+      // OD mesh - diffusive term
+      EvaluatorBase<nsd,nen>::CalcDiffODMesh(mymat,deriv,derxy,xjm,diffflux,refgradphi,gradphi[ivolfracpress],timefacfac,v,numdofpernode,ivolfracpress);
+
+    }
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate off-diagonal coupling matrix with scatra   kremheller 02/18 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureDiff<nsd,nen>::EvaluateMatrixODScatraAndAssemble(
+    std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
+    const LINALG::Matrix<nen,1>&                                funct,
+    const LINALG::Matrix<nsd,nen>&                              derxy,
+    int                                                         curphase,
+    int                                                         phasetoadd,
+    int                                                         numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,
+    double                                                      timefacfac,
+    double                                                      fac
+  )
+{
+  //nothing to do
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ * **********************************************************************
+ *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | evaluate element matrix                             kremheller 02/18 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureReac<nsd,nen>::EvaluateMatrixAndAssemble(
+    std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
+    const LINALG::Matrix<nen,1>&                                funct,
+    const LINALG::Matrix<nsd,nen>&                              derxy,
+    int                                                         curphase,
+    int                                                         phasetoadd,
+    int                                                         numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,
+    double                                                      timefacfac,
+    double                                                      fac,
+    bool                                                        inittimederiv
+  )
+{
+  // we do not need the matrix if we calculate the initial time derivative
+  if(!inittimederiv)
+  {
+    // get matrix to fill
+    Epetra_SerialDenseMatrix& mymat = *elemat[0];
+
+    const int numfluidphases = phasemanager.NumFluidPhases();
+    const int numvolfrac = phasemanager.NumVolFrac();
+
+    // loop over all volume fractions
+    for (int ivolfracpress = numfluidphases+numvolfrac; ivolfracpress < numdofpernode; ivolfracpress++)
+    {
+
+      const bool evaluatevolfracpress = variablemanager.ElementHasValidVolFracPressure(ivolfracpress-numvolfrac-numfluidphases);
+
+
+      if(phasemanager.IsReactive(ivolfracpress) && evaluatevolfracpress)
+      {
+        double scaledtimefacfac =timefacfac/phasemanager.VolFracDensity(ivolfracpress-numfluidphases-numvolfrac);
+        //----------------------------------------------------------------
+        // reaction terms
+        //----------------------------------------------------------------
+        for (int vi=0; vi<nen; ++vi)
+        {
+          const double v = scaledtimefacfac*funct(vi);
+          const int fvi = vi*numdofpernode+ivolfracpress;
+
+          for (int ui=0; ui<nen; ++ui)
+          {
+            const double vfunct = v*funct(ui);
+            for (int idof=0; idof<numdofpernode; ++idof)
+            {
+              const int fui = ui*numdofpernode+idof;
+
+              mymat(fvi,fui) += vfunct*phasemanager.ReacDeriv(ivolfracpress,idof);
+            }
+          }
+        }
+      }
+    }
+  }
+
+   return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate RHS vector                                 kremheller 02/18 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureReac<nsd,nen>::EvaluateVectorAndAssemble(
+    std::vector<Epetra_SerialDenseVector*>&                     elevec,
+    const LINALG::Matrix<nen,1>&                                funct,
+    const LINALG::Matrix<nsd,nen>&                              derxy,
+    int                                                         curphase,
+    int                                                         phasetoadd,
+    int                                                         numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,
+    double                                                      rhsfac,
+    double                                                      fac,
+    bool                                                        inittimederiv
+    )
+{
+  // get matrix to fill
+  Epetra_SerialDenseVector& myvec = *elevec[0];
+
+  const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numvolfrac = phasemanager.NumVolFrac();
+
+  // loop over all volume fractions
+  for (int ivolfracpress = numfluidphases+numvolfrac; ivolfracpress < numdofpernode; ivolfracpress++)
+  {
+    const bool evaluatevolfracpress = variablemanager.ElementHasValidVolFracPressure(ivolfracpress-numvolfrac-numfluidphases);
+
+
+    if(phasemanager.IsReactive(ivolfracpress) && evaluatevolfracpress)
+    {
+      double scale = 1.0/phasemanager.VolFracDensity(ivolfracpress-numfluidphases-numvolfrac);
+
+      double vrhs = scale*rhsfac*phasemanager.ReacTerm(ivolfracpress);
+
+      for (int vi=0; vi<nen; ++vi)
+      {
+        const int fvi = vi*numdofpernode+ivolfracpress;
+        myvec[fvi] -= vrhs*funct(vi);
+      }
+    }
+  }
+
+  return;
+};
+
+/*----------------------------------------------------------------------*
+ | evaluate off-diagonal coupling matrix with structure kremheller 02/18 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureReac<nsd,nen>::EvaluateMatrixODStructAndAssemble(
+    std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
+    const LINALG::Matrix<nen,1>&                                funct,
+    const LINALG::Matrix<nsd,nen>&                              deriv,
+    const LINALG::Matrix<nsd,nen>&                              derxy,
+    const LINALG::Matrix<nsd,nsd>&                              xjm,
+    int                                                         curphase,
+    int                                                         phasetoadd,
+    int                                                         numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,
+    double                                                      timefacfac,
+    double                                                      fac,
+    double                                                      det
+  )
+{
+
+  // get matrix to fill
+  Epetra_SerialDenseMatrix& mymat = *elemat[0];
+
+  const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numvolfrac = phasemanager.NumVolFrac();
+
+  // loop over all volume fractions
+  for (int ivolfracpress = numfluidphases+numvolfrac; ivolfracpress < numdofpernode; ivolfracpress++)
+  {
+    const bool evaluatevolfracpress = variablemanager.ElementHasValidVolFracPressure(ivolfracpress-numvolfrac-numfluidphases);
+
+
+    if(phasemanager.IsReactive(ivolfracpress) && evaluatevolfracpress)
+    {
+      // TODO a constant density is assumed here
+      double scale = 1.0/phasemanager.VolFracDensity(ivolfracpress-numfluidphases-numvolfrac);
+
+      double vrhs = scale*timefacfac*phasemanager.ReacTerm(ivolfracpress);
+
+      // linearization of porosity (may appear in reaction term)
+      //-------------dreac/dd = dreac/dporosity * dporosity/dd = dreac/dporosity * dporosity/dJ * dJ/dd = dreac/dporosity * dporosity/dJ * J * N_x
+      // J denotes the determinant of the deformation gradient, i.e. det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
+
+      if(phasemanager.PorosityDependsOnStruct())
+      {
+        vrhs += timefacfac*scale*phasemanager.ReacDerivPorosity(ivolfracpress)*phasemanager.JacobianDefGrad()
+            *phasemanager.PorosityDerivWrtJacobianDefGrad();
+      }
+
+      // linearization of mesh motion (Jacobian)
+      // 1) linearization of fac +
+      // 2) possible linearization w.r.t porosity
+      EvaluatorBase<nsd,nen>::CalcLinFacODMesh(mymat,funct,derxy,vrhs,numdofpernode,ivolfracpress);
+
+    }
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate off-diagonal coupling matrix with scatra   kremheller 02/18 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureReac<nsd,nen>::EvaluateMatrixODScatraAndAssemble(
+    std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
+    const LINALG::Matrix<nen,1>&                                funct,
+    const LINALG::Matrix<nsd,nen>&                              derxy,
+    int                                                         curphase,
+    int                                                         phasetoadd,
+    int                                                         numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,
+    double                                                      timefacfac,
+    double                                                      fac
+  )
+{
+  // get matrix to fill
+  Epetra_SerialDenseMatrix& mymat = *elemat[0];
+
+  const int numfluidphases = phasemanager.NumFluidPhases();
+  const int numvolfrac = phasemanager.NumVolFrac();
+  const int numscal = phasemanager.NumScal();
+
+  // loop over all volume fractions
+  for (int ivolfracpress = numfluidphases+numvolfrac; ivolfracpress < numdofpernode; ivolfracpress++)
+  {
+    const bool evaluatevolfracpress = variablemanager.ElementHasValidVolFracPressure(ivolfracpress-numvolfrac-numfluidphases);
+
+    if(phasemanager.IsReactive(ivolfracpress) && evaluatevolfracpress)
+    {
+      double vrhs = 1.0/phasemanager.VolFracDensity(ivolfracpress-numfluidphases-numvolfrac)*timefacfac;
+
+      // linearization of reaction term w.r.t scalars
+      for (int vi=0; vi<nen; ++vi)
+      {
+        const int fvi = vi*numdofpernode+ivolfracpress;
+        const double v = vrhs*funct(vi);
+
+        for (int ui=0; ui<nen; ++ui)
+        {
+          const double vfunct = v*funct(ui);
+          for (int iscal=0; iscal<numscal; ++iscal)
+          {
+            const int fui = ui*numscal+iscal;
+            mymat(fvi,fui) += vfunct*phasemanager.ReacDerivScalar(ivolfracpress,iscal);
+          }
+        }
+      }
+    }
+  }
+
   return;
 }
 

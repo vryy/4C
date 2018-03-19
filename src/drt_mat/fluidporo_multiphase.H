@@ -4,6 +4,13 @@
 
  \brief porous fluid multiphase material. Contains and defines the single phases.
 
+        The input line should read (for example: 4 fluid phases, 2 volume fractions)
+
+        MAT 0 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 8 MATIDS    1 2 3 4 5 6 7 8 NUMFLUIDPHASES 4 END
+        with: 4 fluid phases: materials have to be MAT_FluidPoroSinglePhase        ^^^^^^^
+              2 volume fractions: materials have to be MAT_FluidPoroSingleVolFrac          ^^^
+              2 volume fraction pressures: materials have to be MAT_FluidPoroVolFracPressure   ^^^
+
    \level 3
 
    \maintainer  Lena Yoshihara
@@ -52,6 +59,9 @@ namespace MAT
 
       /// number of fluid phases of the nummat
       const int numfluidphases_;
+
+      /// number of volume fractions of the nummat
+      int numvolfrac_;
 
       //@}
 
@@ -151,6 +161,12 @@ private:
       return paramsporo_->numfluidphases_;
     }
 
+    /// return number of volume fractions
+    int NumVolFrac() const
+    {
+      return paramsporo_->numvolfrac_;
+    }
+
     /// Return quick accessible material parameter data
     virtual MAT::PAR::FluidPoroMultiPhase* Parameter() const { return paramsporo_; }
 
@@ -169,10 +185,6 @@ private:
     void EvaluateGenPressure(
         std::vector<double>& genpressure,
         const std::vector<double>& phinp) const;
-
-    /// evaluate the pressure of all 'volfrac' phases
-    void GetVolFracPressure(
-        std::vector<double>& volfracpress) const;
 
     /// evaluate saturation of all phases
     void EvaluateSaturation(
