@@ -740,6 +740,12 @@ void INPAR::XFEM::SetValidConditions(const std::vector<Teuchos::RCP<DRT::INPUT::
         Teuchos::tuple<std::string>("BJ","BJS"),
         true)));
 
+  xfem_surf_fpi_mono->AddComponent( Teuchos::rcp( new StringConditionComponent(
+        "Method","NIT",
+        Teuchos::tuple<std::string>("NIT","SUB"),
+        Teuchos::tuple<std::string>("NIT","SUB"),
+        true)));
+
   condlist.push_back(xfem_surf_fpi_mono);
 
 

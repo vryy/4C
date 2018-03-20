@@ -123,10 +123,106 @@ void XFEM::MeshCouplingFPI::CompleteStateVectors()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFPI::InitConfigurationMap()
+void XFEM::MeshCouplingFPI::SetupConfigurationMap()
 {
+  switch(coupled_field_)
+  {
+    case MeshCouplingFPI::ps_ps:
+    {
+      //Configuration of Consistency Terms
 
-  //for the first tests not done ...
+      if (!Sub_tang_)
+      {
+        configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool,double>(true,1.0);
+        configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool,double>(true,1.0);
+        configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool,double>(true,1.0);
+      }
+      else
+      {
+        configuration_map_[INPAR::XFEM::F_Con_n_Row] = std::pair<bool,double>(true,1.0);
+        configuration_map_[INPAR::XFEM::F_Con_n_Col] = std::pair<bool,double>(true,1.0);
+        configuration_map_[INPAR::XFEM::X_Con_n_Row] = std::pair<bool,double>(true,1.0);
+      }
+      //configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool,double>(true,1.0-porosity);
+      //Configuration of Adjount Consistency Terms
+      configuration_map_[INPAR::XFEM::F_Adj_n_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::F_Adj_n_Col] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::X_Adj_n_Col] = std::pair<bool,double>(true,1.0);
+
+      if (!Sub_tang_)
+      {
+        configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool,double>(true,1.0);
+        configuration_map_[INPAR::XFEM::F_Adj_t_Col] = std::pair<bool,double>(true,1.0);
+        configuration_map_[INPAR::XFEM::X_Adj_t_Col] = std::pair<bool,double>(true,1.0);
+        configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool,double>(true, 1.0); //Here we need alpha BJ finally!!! Todo
+      }
+
+      //Configuration of Penalty Terms
+      configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::F_Pen_n_Col] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::X_Pen_n_Col] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::F_Pen_t_Col] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::X_Pen_t_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::X_Pen_t_Col] = std::pair<bool,double>(true,1.0);
+
+      if (!Sub_tang_)
+      {
+        configuration_map_[INPAR::XFEM::F_Con_t_Row] = std::pair<bool,double>(true,1.0); //+sign for penalty!
+        configuration_map_[INPAR::XFEM::F_Con_t_Col] = std::pair<bool,double>(true,1.0);
+        configuration_map_[INPAR::XFEM::X_Con_t_Row] = std::pair<bool,double>(true,1.0); //+sign for penalty!
+      }
+
+#ifdef INFLOW_STAB
+        configuration_map_[INPAR::XFEM::F_Pen_Col] = std::pair<bool,double>(true,1.0);
+        configuration_map_[INPAR::XFEM::F_Pen_Row] = std::pair<bool,double>(true,1.0);
+        configuration_map_[INPAR::XFEM::F_Pen_Row_linF1] = std::pair<bool,double>(true,1.0);
+        configuration_map_[INPAR::XFEM::F_Pen_Row_linF2] = std::pair<bool,double>(true,1.0);
+        configuration_map_[INPAR::XFEM::F_Pen_Row_linF3] = std::pair<bool,double>(true,1.0);
+#endif
+      break;
+    }
+    case MeshCouplingFPI::ps_pf:
+    {
+      //Configuration of Adjount Consistency Terms
+      configuration_map_[INPAR::XFEM::F_Adj_n_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::X_Adj_n_Col] = std::pair<bool,double>(true,1.0);
+
+      if (!Sub_tang_)
+      {
+        configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool,double>(true,1.0);
+        if (full_BJ_) configuration_map_[INPAR::XFEM::X_Adj_t_Col] = std::pair<bool,double>(true,1.0);
+      }
+
+  //    //Configuration of Penalty Terms
+      configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::X_Pen_n_Col] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::X_Pen_t_Row] = std::pair<bool,double>(true,1.0);
+      if (full_BJ_) configuration_map_[INPAR::XFEM::X_Pen_t_Col] = std::pair<bool,double>(true,1.0);
+      break;
+    }
+    case MeshCouplingFPI::pf_ps:
+    {
+      //Configuration of Consistency Terms
+     configuration_map_[INPAR::XFEM::X_Con_n_Row] = std::pair<bool,double>(true,1.0);
+     configuration_map_[INPAR::XFEM::F_Con_n_Col] = std::pair<bool,double>(true,1.0);
+     //Configuration of Penalty Terms
+      configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::F_Pen_n_Col] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::X_Pen_n_Col] = std::pair<bool,double>(true,1.0);
+      break;
+    }
+    case MeshCouplingFPI::pf_pf:
+    {
+      //Configuration of Penalty Terms
+       configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool,double>(true,1.0);
+       configuration_map_[INPAR::XFEM::X_Pen_n_Col] = std::pair<bool,double>(true,1.0);
+      break;
+    }
+  }
   return;
 }
 
@@ -147,7 +243,6 @@ void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP(
     LINALG::Matrix<3,1>& rst_slave      //< local coord of gp on slave boundary element
     )
 {
-  // Calculation on Porosity will follow soon ... todo
   double J = 0;
   double porosity = CalcPorosity(bele,rst_slave,J);
 
@@ -163,87 +258,87 @@ void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP(
 
   XFEM::UTILS::GetNavierSlipStabilizationParameters(visc_stab_tang,dynvisc,sliplength,stabnit,stabadj);
 
- // std::cout << "sliplength: " << sliplength << " stabnit: " << stabnit << "full_stab: " << full_stab
- //     << "stabadj: " << stabadj << std::endl;
-
-
   //Overall there are 9 coupling blocks to evaluate for fpi:
   // 1 - ps_ps --> ff,fps,psf,psps
   // 2 - ps_pf --> fpf,pspf
   // 3 - pf_ps --> pff, pfps
   // 4 - pf_pf --> pfpf
-switch(coupled_field_)
-{
-  case MeshCouplingFPI::ps_ps:
+  switch(coupled_field_)
   {
-    //Configuration of Consistency Terms
-    configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool,double>(true,1.0);
-    configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool,double>(true,1.0);
-    configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool,double>(true,1.0);
-    //Configuration of Adjount Consistency Terms
-    configuration_map_[INPAR::XFEM::F_Adj_n_Row] = std::pair<bool,double>(true,1.0);
-    configuration_map_[INPAR::XFEM::F_Adj_n_Col] = std::pair<bool,double>(true,1.0);
-    configuration_map_[INPAR::XFEM::X_Adj_n_Col] = std::pair<bool,double>(true,1-porosity);
-    configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool,double>(true,stabadj);
-    configuration_map_[INPAR::XFEM::F_Adj_t_Col] = std::pair<bool,double>(true,1.0);
-    configuration_map_[INPAR::XFEM::X_Adj_t_Col] = std::pair<bool,double>(true,1-full_BJ_*porosity);
-    configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool,double>(true, sliplength); //Here we need alpha BJ finally!!! Todo
-    //Configuration of Penalty Terms
-    configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool,double>(true,visc_stab_tang);
-    configuration_map_[INPAR::XFEM::F_Pen_n_Col] = std::pair<bool,double>(true,1);
-    configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool,double>(true,visc_stab_tang);
-    configuration_map_[INPAR::XFEM::X_Pen_n_Col] = std::pair<bool,double>(true,1-porosity);
-    configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool,double>(true,stabnit);
-    configuration_map_[INPAR::XFEM::F_Pen_t_Col] = std::pair<bool,double>(true,1);
-    configuration_map_[INPAR::XFEM::X_Pen_t_Row] = std::pair<bool,double>(true,stabnit);
-    configuration_map_[INPAR::XFEM::X_Pen_t_Col] = std::pair<bool,double>(true,1-full_BJ_*porosity);
-    configuration_map_[INPAR::XFEM::F_Con_t_Row] = std::pair<bool,double>(true,-stabnit); //+sign for penalty!
-    configuration_map_[INPAR::XFEM::F_Con_t_Col] = std::pair<bool,double>(true,sliplength/dynvisc);
-    configuration_map_[INPAR::XFEM::X_Con_t_Row] = std::pair<bool,double>(true,-stabnit); //+sign for penalty!
-    break;
-  }
-  case MeshCouplingFPI::ps_pf:
-  {
-    //Configuration of Adjount Consistency Terms
-    configuration_map_[INPAR::XFEM::F_Adj_n_Row] = std::pair<bool,double>(true,1.0);
-    configuration_map_[INPAR::XFEM::X_Adj_n_Col] = std::pair<bool,double>(true,porosity);
-    configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool,double>(true,stabadj);
-    configuration_map_[INPAR::XFEM::X_Adj_t_Col] = std::pair<bool,double>(full_BJ_,full_BJ_*porosity);
-//    //Configuration of Penalty Terms
-    configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool,double>(true,visc_stab_tang);
-    configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool,double>(true,visc_stab_tang);
-    configuration_map_[INPAR::XFEM::X_Pen_n_Col] = std::pair<bool,double>(true,porosity);
-    configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool,double>(true,stabnit);
-    configuration_map_[INPAR::XFEM::X_Pen_t_Row] = std::pair<bool,double>(true,stabnit);
-    configuration_map_[INPAR::XFEM::X_Pen_t_Col] = std::pair<bool,double>(full_BJ_,full_BJ_*porosity);
-    break;
-  }
-  case MeshCouplingFPI::pf_ps:
-  {
-    //Configuration of Consistency Terms
-   configuration_map_[INPAR::XFEM::X_Con_n_Row] = std::pair<bool,double>(true,1.0);
-   configuration_map_[INPAR::XFEM::F_Con_n_Col] = std::pair<bool,double>(true,1.0);
-   //Configuration of Penalty Terms
-    configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool,double>(true,visc_stab_tang);
-    configuration_map_[INPAR::XFEM::F_Pen_n_Col] = std::pair<bool,double>(true,1.0);
-    configuration_map_[INPAR::XFEM::X_Pen_n_Col] = std::pair<bool,double>(true,1-porosity);
+    case MeshCouplingFPI::ps_ps:
+    {
+      configuration_map_[INPAR::XFEM::X_Adj_n_Col].second = 1.0-porosity;
+      if (!Sub_tang_)
+      {
+        configuration_map_[INPAR::XFEM::F_Adj_t_Row].second = stabadj;
+        configuration_map_[INPAR::XFEM::X_Adj_t_Col].second = 1.0-full_BJ_*porosity;
+        configuration_map_[INPAR::XFEM::FStr_Adj_t_Col].second =  sliplength;
+      }
+      configuration_map_[INPAR::XFEM::F_Pen_n_Row].second = full_stab;
+      configuration_map_[INPAR::XFEM::X_Pen_n_Row].second = full_stab;
+      configuration_map_[INPAR::XFEM::X_Pen_n_Col].second = 1.0-porosity;
+      if (!Sub_tang_)
+      {
+        configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = stabnit;
+        configuration_map_[INPAR::XFEM::X_Pen_t_Row].second = stabnit;
+        configuration_map_[INPAR::XFEM::F_Con_t_Row].second = -stabnit; //+sign for penalty!
+        configuration_map_[INPAR::XFEM::F_Con_t_Col].second = sliplength/dynvisc;
+        configuration_map_[INPAR::XFEM::X_Con_t_Row].second = -stabnit; //+sign for penalty!
+      }
+      else
+      {
+      configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = 1./sliplength;
+      configuration_map_[INPAR::XFEM::X_Pen_t_Row].second = 1./sliplength;
+      }
 
-    //does nothing but should just be done in case we don't use the adjoint
-    configuration_map_[INPAR::XFEM::F_Adj_n_Col].second = configuration_map_[INPAR::XFEM::F_Pen_n_Col].second;
-    configuration_map_[INPAR::XFEM::X_Adj_n_Col].second = configuration_map_[INPAR::XFEM::X_Pen_n_Col].second;
-    break;
-  }
-  case MeshCouplingFPI::pf_pf:
-  {
-    //Configuration of Penalty Terms
-     configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool,double>(true,visc_stab_tang);
-     configuration_map_[INPAR::XFEM::X_Pen_n_Col] = std::pair<bool,double>(true,porosity);
+      configuration_map_[INPAR::XFEM::X_Pen_t_Col].second = 1.0-full_BJ_*porosity;
+      break;
+    }
+    case MeshCouplingFPI::ps_pf:
+    {
+      configuration_map_[INPAR::XFEM::X_Adj_n_Col].second = porosity;
+      if (!Sub_tang_)
+      {
+        configuration_map_[INPAR::XFEM::F_Adj_t_Row].second = stabadj;
+        configuration_map_[INPAR::XFEM::X_Adj_t_Col].second = full_BJ_*porosity;
+      }
+      configuration_map_[INPAR::XFEM::F_Pen_n_Row].second = full_stab;
+      configuration_map_[INPAR::XFEM::X_Pen_n_Row].second = full_stab;
+      configuration_map_[INPAR::XFEM::X_Pen_n_Col].second = porosity;
+      if (!Sub_tang_)
+      {
+        configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = stabnit;
+        configuration_map_[INPAR::XFEM::X_Pen_t_Row].second = stabnit;
+      }
+      else
+      {
+        configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = 1./sliplength;
+        configuration_map_[INPAR::XFEM::X_Pen_t_Row].second = 1./sliplength;
+      }
+      configuration_map_[INPAR::XFEM::X_Pen_t_Col].second = full_BJ_*porosity;
+      break;
+    }
+    case MeshCouplingFPI::pf_ps:
+    {
+      configuration_map_[INPAR::XFEM::X_Pen_n_Row].second = full_stab;
+      configuration_map_[INPAR::XFEM::X_Pen_n_Col].second = 1.0-porosity;
 
-     //does nothing but should just be done in case we don't use the adjoint
-     configuration_map_[INPAR::XFEM::X_Adj_n_Col].second = configuration_map_[INPAR::XFEM::X_Pen_n_Col].second;
-    break;
+      //does nothing but should just be done in case we don't use the adjoint
+      configuration_map_[INPAR::XFEM::F_Adj_n_Col].second = configuration_map_[INPAR::XFEM::F_Pen_n_Col].second;
+      configuration_map_[INPAR::XFEM::X_Adj_n_Col].second = configuration_map_[INPAR::XFEM::X_Pen_n_Col].second;
+      break;
+    }
+    case MeshCouplingFPI::pf_pf:
+    {
+      //Configuration of Penalty Terms
+       configuration_map_[INPAR::XFEM::X_Pen_n_Row].second = full_stab;
+       configuration_map_[INPAR::XFEM::X_Pen_n_Col].second = porosity;
+
+       //does nothing but should just be done in case we don't use the adjoint
+       configuration_map_[INPAR::XFEM::X_Adj_n_Col].second = configuration_map_[INPAR::XFEM::X_Pen_n_Col].second;
+      break;
+    }
   }
-}
 
   return;
 }
@@ -414,27 +509,39 @@ void XFEM::MeshCouplingFPI::SetConditionSpecificParameters()
       ++i)
   {
     const bool full_BJ = (*(*i)->Get<std::string>("Variant") == "BJ");
+    const bool Sub_tang = (*(*i)->Get<std::string>("Method") == "SUB");
     if (i!=conditions_XFPI.begin())
     {
       if (fabs(BJ_coeff_-(*i)->GetDouble("bj_coeff")) > 1e-16)
         dserror("XFEM::MeshCouplingFPI::SetConditionSpecificParameters: You defined two FPI conditions, with different BJ_coeff!");
 
       if (full_BJ_!= full_BJ)
-        dserror("XFEM::MeshCouplingFPI::SetConditionSpecificParameters: You defined two FPI conditions, with different BJ_coeff!");
+        dserror("XFEM::MeshCouplingFPI::SetConditionSpecificParameters: You defined two FPI conditions, with different BJ Variant!");
+
+      if (Sub_tang_!= Sub_tang)
+        dserror("XFEM::MeshCouplingFPI::SetConditionSpecificParameters: You defined two FPI conditions, with different BJ Method!");
     }
 
     BJ_coeff_ = (*i)->GetDouble("bj_coeff");
     full_BJ_ = full_BJ;
-
+    Sub_tang_ = Sub_tang;
   }
 
     if (!full_BJ_)
     {
-      if (coupled_field_ == XFEM::MeshCouplingFPI::ps_ps) std::cout << "==| XFEM::MeshCouplingFPI: Actual FPI Formulation is Beavers Joseph Saffmann! |==" << std::endl;
+      if (coupled_field_ == XFEM::MeshCouplingFPI::ps_ps) std::cout << "==| XFEM::MeshCouplingFPI: Actual FPI Formulation is Beavers Joseph Saffmann" << std::flush;
     }
     else
     {
-      if (coupled_field_ == XFEM::MeshCouplingFPI::ps_ps) std::cout << "==| XFEM::MeshCouplingFPI: Actual FPI Formulation is Beavers Joseph! |==" << std::endl;
+      if (coupled_field_ == XFEM::MeshCouplingFPI::ps_ps) std::cout << "==| XFEM::MeshCouplingFPI: Actual FPI Formulation is Beavers Joseph" << std::flush;
+    }
+    if (!Sub_tang_)
+    {
+      if (coupled_field_ == XFEM::MeshCouplingFPI::ps_ps) std::cout << " -- by tangential Nitsche formulation! |==" << std::endl;
+    }
+    else
+    {
+      if (coupled_field_ == XFEM::MeshCouplingFPI::ps_ps) std::cout << " -- by tangential Substitution formulation! |==" << std::endl;
     }
 }
 

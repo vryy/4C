@@ -162,7 +162,7 @@ private:
 protected:
 
   //! Initializes configurationmap
-  virtual void InitConfigurationMap();
+  virtual void SetupConfigurationMap();
 
   //! set the name of the coupling object based on the field coupling
   virtual void SetCouplingName();
@@ -212,6 +212,7 @@ protected:
 
   //! Full BJ Variant or BJSaffmann?
   bool full_BJ_;
+  bool Sub_tang_;
 
   Teuchos::RCP<const Epetra_Vector> fulldispnp_;
   Teuchos::RCP<const Epetra_Vector> fullpres_;
