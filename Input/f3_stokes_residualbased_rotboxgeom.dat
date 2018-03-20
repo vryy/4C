@@ -1,0 +1,87 @@
+//
+// Maintainer: Ager Christoph
+// ager@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15249
+//
+==================================================================
+General Data File C_CARAT
+==================================================================
+-----------------------------------------------------------------------TITLE
+// 3d Stokes Flow, to test rotation of box geometry
+----------------------------------------------------------------PROBLEM SIZE
+//ELEMENTS                      100
+//NODES                         121
+DIM                             3
+MATERIALS                       1
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Fluid
+RESTART                         0
+--------------------------------------------------------------DISCRETISATION
+NUMAIRWAYSDIS                   0
+NUMALEDIS                       0
+NUMARTNETDIS                    0
+NUMFLUIDDIS                     1
+NUMSTRUCDIS                     0
+NUMTHERMDIS                     0
+---------------------------------------------------------------FLUID DYNAMIC
+LINEAR_SOLVER                   1
+TIMEINTEGR                      Stationary
+PHYSICAL_TYPE                   Stokes                       // !!!!!!!!
+RESULTSEVRY                           1
+MAXTIME                         1000.0
+NUMSTEP                         1
+NONLINITER                      fixed_point_like
+ITEMAX                          2
+CONVCHECK                       L_2_norm
+CONVTOL                         1.0E-9
+NUMSTASTEPS                     0
+INITIALFIELD                    zero_field
+GEOMETRY                        box
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+STABTYPE                        residual_based
+TRANSIENT                       no_transient
+SUPG                            no
+GRAD_DIV                        no
+DEFINITION_TAU                  Hughes_Franca_Balestra_wo_dt
+--------------------------------------------------------------------SOLVER 1
+NAME                            Fluid_Solver
+SOLVER                          UMFPACK                       // Aztec_MSR SPOOLES_nonsym Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0
+----------------------------------------------------------------------FUNCT1
+----------------------------------------------------------RESULT DESCRIPTION
+//point in x-, y-, z-
+FLUID DIS fluid NODE 1 QUANTITY velx     VALUE  1 TOLERANCE 1e-12
+FLUID DIS fluid NODE 1 QUANTITY vely     VALUE 0 TOLERANCE 1e-12
+FLUID DIS fluid NODE 1 QUANTITY vely     VALUE 0 TOLERANCE 1e-12
+FLUID DIS fluid NODE 1 QUANTITY pressure VALUE 2.10793909344451746e+00 TOLERANCE 1e-12
+----------------------------------------------------------DESIGN DESCRIPTION
+NDPOINT                         0
+NDLINE                          0
+NDSURF                          6
+NDVOL                           0
+----------------------------------------------DESIGN SURF DIRICH CONDITIONS
+DSURF                           2
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+---------------------------------------------------------DNODE-NODE TOPOLOGY
+---------------------------------------------------------DLINE-NODE TOPOLOGY
+---------------------------------------------------------DSURF-NODE TOPOLOGY
+SIDE fluid x- DSURFACE 1
+SIDE fluid x+ DSURFACE 2
+SIDE fluid y- DSURFACE 3
+SIDE fluid y+ DSURFACE 4
+SIDE fluid z- DSURFACE 5
+SIDE fluid z+ DSURFACE 6
+-----------------------------------------------------------------NODE COORDS
+----------------------------------------------------------FLUID ELEMENTS
+----------------------------------------------------FLUID DOMAIN
+LOWER_BOUND  -1 -1 -1
+UPPER_BOUND  1 1 1
+INTERVALS   5 5 5
+ROTATION 10 20 30
+ELEMENTS FLUID HEX8 MAT 1 NA Euler GP 3 3 3
+PARTITION structured
+-------------------------------------------------------------------------END
+//                              END

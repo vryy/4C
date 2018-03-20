@@ -58,6 +58,7 @@ DomainReader::DomainReader(Teuchos::RCP<Discretization> dis,
     lower_bound_[i] = 0.0;
     upper_bound_[i] = 0.0;
     interval_[i] = 0;
+    rotation_angle_[i] = 0.0;
   }
 }
 
@@ -83,6 +84,7 @@ DomainReader::DomainReader(Teuchos::RCP<Discretization> dis,
     lower_bound_[i] = 0.0;
     upper_bound_[i] = 0.0;
     interval_[i] = 0;
+    rotation_angle_[i] = 0.0;
   }
 }
 
@@ -109,6 +111,7 @@ DomainReader::DomainReader(Teuchos::RCP<Discretization> dis,
     lower_bound_[i] = 0.0;
     upper_bound_[i] = 0.0;
     interval_[i] = 0;
+    rotation_angle_[i] = 0.0;
   }
 }
 
@@ -173,6 +176,8 @@ void DomainReader::Partition(int* nodeoffset)
             t >> upper_bound_[0] >> upper_bound_[1] >> upper_bound_[2];
           else if (key == "INTERVALS")
             t >> interval_[0] >> interval_[1] >> interval_[2];
+          else if (key == "ROTATION")
+            t >> rotation_angle_[0] >> rotation_angle_[1] >> rotation_angle_[2];
           else if (key == "ELEMENTS")
           {
             t >> elementtype_ >> distype_;
@@ -208,7 +213,8 @@ void DomainReader::Partition(int* nodeoffset)
   {
     comm_->Broadcast(lower_bound_, sizeof(lower_bound_)/sizeof(lower_bound_[0]), 0);
     comm_->Broadcast(upper_bound_, sizeof(upper_bound_)/sizeof(upper_bound_[0]), 0);
-    comm_->Broadcast(   interval_,       sizeof(interval_)/sizeof(interval_[0]), 0);
+    comm_->Broadcast(interval_, sizeof(interval_)/sizeof(interval_[0]), 0);
+    comm_->Broadcast(rotation_angle_, sizeof(rotation_angle_)/sizeof(rotation_angle_[0]), 0);
     {
       int tmp = autopartition;
       comm_->Broadcast(&tmp, 1, 0);
@@ -421,6 +427,16 @@ void DomainReader::Partition(int* nodeoffset)
 
   // as we are using the redistributed row node map, the nodes are directly created on the
   // correct processors
+
+  //Compute midpoint for rotations of the box geometry
+  double coordm[3];
+  if (rotation_angle_[0] != 0.0 || rotation_angle_[1] != 0.0 || rotation_angle_[2] != 0.0 )
+  {
+    coordm[0] = (upper_bound_[0]+lower_bound_[0])/2.;
+    coordm[1] = (upper_bound_[1]+lower_bound_[1])/2.;
+    coordm[2] = (upper_bound_[2]+lower_bound_[2])/2.;
+  }
+
   for (int lid = 0; lid < rownodes_->NumMyElements(); ++lid)
   {
     const int gid = rownodes_->GID(lid);
@@ -436,6 +452,30 @@ void DomainReader::Partition(int* nodeoffset)
     coords[0] = static_cast<double>(i)/(2*interval_[0])*(upper_bound_[0]-lower_bound_[0])+lower_bound_[0];
     coords[1] = static_cast<double>(j)/(2*interval_[1])*(upper_bound_[1]-lower_bound_[1])+lower_bound_[1];
     coords[2] = static_cast<double>(k)/(2*interval_[2])*(upper_bound_[2]-lower_bound_[2])+lower_bound_[2];
+
+    //If set perform rotations, applied in the order, x,y,z-axis
+    for (int rotaxis = 0; rotaxis < 3; ++rotaxis)
+    {
+      if (rotation_angle_[rotaxis] != 0.0)
+      {
+        //add rotation around mitpoint here.
+        double dx[3];
+        dx[0] = coords[0] - coordm[0];
+        dx[1] = coords[1] - coordm[1];
+        dx[2] = coords[2] - coordm[2];
+
+        double calpha = cos(rotation_angle_[rotaxis]*PI/180);
+        double salpha = sin(rotation_angle_[rotaxis]*PI/180);
+
+        coords[0] = coordm[0]; //+ calpha*dx[0] + salpha*dx[1];
+        coords[1] = coordm[1]; //+ -salpha*dx[0] + calpha*dx[1];
+        coords[2] = coordm[2];
+
+        coords[(rotaxis+1)%3] += calpha*dx[(rotaxis+1)%3] + salpha*dx[(rotaxis+2)%3];
+        coords[(rotaxis+2)%3] += calpha*dx[(rotaxis+2)%3] - salpha*dx[(rotaxis+1)%3];
+        coords[rotaxis] += dx[rotaxis];
+      }
+    }
 
     Teuchos::RCP<DRT::Node> node = Teuchos::rcp(new DRT::Node(gid,coords,myrank));
     dis_->AddNode(node);

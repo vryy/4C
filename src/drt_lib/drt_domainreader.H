@@ -172,6 +172,9 @@ protected:
   /// intervals of the domain to be created
   int interval_[3];
 
+  /// rotation angles of the box geometry
+  double rotation_angle_[3];
+
   /// element type of the domain to be created
   std::string elementtype_;
 

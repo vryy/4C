@@ -323,33 +323,70 @@ void DatFileReader::ReadDesign(
 
         Teuchos::RCP<DRT::Discretization> actdis = DRT::Problem::Instance()->GetDis(disname);
 
-        // determine the active discretizations bounding box
-        double bbox[6];
-        std::map<std::string,std::vector<double> >::const_iterator foundit = cached_bounding_boxes_.find(disname);
-        if (foundit != cached_bounding_boxes_.end())
+        std::vector<double> box_specifications;
+        if (cached_box_specifications_.find(disname) != cached_box_specifications_.end())
         {
-          for (size_t i = 0; i < sizeof(bbox)/sizeof(bbox[0]); ++i)
-            bbox[i] = foundit->second[i];
+            box_specifications = cached_box_specifications_[disname];
         }
         else
         {
-          double lbbox[] = { std::numeric_limits<double>::max(),  std::numeric_limits<double>::max(),
-                             std::numeric_limits<double>::max(), -std::numeric_limits<double>::max(),
-                            -std::numeric_limits<double>::max(), -std::numeric_limits<double>::max()};
-          for (int lid = 0; lid < actdis->NumMyRowNodes(); ++lid)
+          for (int init = 0; init < 9; ++init)
+            box_specifications.push_back(0.0);
+          if (comm_->MyPID() == 0 )//Reading is done by proc 0
           {
-            const Node*   node  = actdis->lRowNode(lid);
-            const double* coord = node->X();
-            for (size_t i = 0; i < 3; ++i)
+
+            //get original domain section from the *.dat-file
+            std::string dommarker = "--" + disname + " DOMAIN";
+            std::transform(dommarker.begin(), dommarker.end(), dommarker.begin(), ::toupper);
+            std::map<std::string,std::pair<std::ifstream::pos_type,unsigned int> >::const_iterator di = excludepositions_.find(dommarker);
+            if (di!=excludepositions_.end())
             {
-              lbbox[i+0] = std::min(lbbox[i+0], coord[i]);
-              lbbox[i+3] = std::max(lbbox[i+3], coord[i]);
+
+              std::ifstream tmpfile(filename_.c_str());
+              tmpfile.seekg(di->second.first);
+              std::string line;
+              for (int ii=0; getline(tmpfile, line); ++ii)
+              {
+                // remove comments, trailing and leading whitespaces
+                // compact internal whitespaces
+                line = DRT::UTILS::strip_comment(line);
+
+                // line is now empty
+                if(line.size() == 0)
+                  continue;
+
+                if (line.find("--")==0)
+                {
+                  break;
+                }
+                else
+                {
+                  std::istringstream t;
+                  t.str(line);
+                  std::string key;
+                  t >> key;
+
+                  if (key == "LOWER_BOUND")
+                    t >> box_specifications[0] >> box_specifications[1] >> box_specifications[2];
+                  else if (key == "UPPER_BOUND")
+                    t >> box_specifications[3] >> box_specifications[4] >> box_specifications[5];
+                  else if (key == "ROTATION")
+                    t >> box_specifications[6] >> box_specifications[7] >> box_specifications[8];
+                }
+              }
             }
+            else
+              dserror("Inputreader: Couldn't find domain section for discretization %s !", disname.c_str());
           }
-          comm_->MinAll(lbbox, bbox, 3);
-          comm_->MaxAll(&(lbbox[3]), &(bbox[3]), 3);
-          cached_bounding_boxes_[disname].assign(bbox,bbox+6);
+          //All other processors get this info broadcasted
+          comm_->Broadcast(&box_specifications[0], box_specifications.size(), 0);
+          cached_box_specifications_[disname] = box_specifications;
         }
+
+        // determine the active discretizations bounding box
+        double bbox[6];
+        for (size_t i = 0; i < sizeof(bbox)/sizeof(bbox[0]); ++i)
+          bbox[i] = box_specifications[i];
 
         // manipulate the bounding box according to the specified condition
         for (size_t i = 0; i < 3; ++i)
@@ -379,9 +416,42 @@ void DatFileReader::ReadDesign(
         {
           const Node*   node  = actdis->lRowNode(lid);
           const double* coord = node->X();
-          if (!((coord[0] > bbox[0] && coord[0] < bbox[3]) ||
-                (coord[1] > bbox[1] && coord[1] < bbox[4]) ||
-                (coord[2] > bbox[2] && coord[2] < bbox[5])))
+          double coords[3];
+          coords[0] = coord[0];
+          coords[1] = coord[1];
+          coords[2] = coord[2];
+          //rotate back to identify condition, if a rotation is defined
+          static const int rotoffset = 6;
+          for (int rotaxis = 2; rotaxis > -1; --rotaxis)
+          {
+            if (box_specifications[rotaxis+rotoffset] != 0.0)
+            {
+              double coordm[3];
+              coordm[0] = (box_specifications[0] + box_specifications[3])/2.;
+              coordm[1] = (box_specifications[1] + box_specifications[4])/2.;
+              coordm[2] = (box_specifications[2] + box_specifications[5])/2.;
+              //add rotation around mitpoint here.
+              double dx[3];
+              dx[0] = coords[0] - coordm[0];
+              dx[1] = coords[1] - coordm[1];
+              dx[2] = coords[2] - coordm[2];
+
+              double calpha = cos(-box_specifications[rotaxis+rotoffset]*PI/180);
+              double salpha = sin(-box_specifications[rotaxis+rotoffset]*PI/180);
+
+              coords[0] = coordm[0]; //+ calpha*dx[0] + salpha*dx[1];
+              coords[1] = coordm[1]; //+ -salpha*dx[0] + calpha*dx[1];
+              coords[2] = coordm[2];
+
+              coords[(rotaxis+1)%3] += calpha*dx[(rotaxis+1)%3] + salpha*dx[(rotaxis+2)%3];
+              coords[(rotaxis+2)%3] += calpha*dx[(rotaxis+2)%3] - salpha*dx[(rotaxis+1)%3];
+              coords[rotaxis] += dx[rotaxis];
+            }
+          }
+
+          if (!((coords[0] > bbox[0] && coords[0] < bbox[3]) ||
+                (coords[1] > bbox[1] && coords[1] < bbox[4]) ||
+                (coords[2] > bbox[2] && coords[2] < bbox[5])))
             dnodes.insert(node->Id());
         }
         LINALG::GatherAll(dnodes, *comm_);
