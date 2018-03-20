@@ -1482,7 +1482,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::PrepareSystemForNewtonSolve()
 
         if(nodes[inode]->Owner()==myrank_)
         {
-          std::vector<int> dofs = discret_->Dof(nodes[inode]);
+          std::vector<int> dofs = discret_->Dof(0, nodes[inode]);
 
           for (int idof = numfluidphases+numvolfrac; idof < nummat; ++idof)
           {
