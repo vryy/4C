@@ -1923,6 +1923,14 @@ void XFEM::MeshCouplingFSI::SetupConfigurationMap()
         configuration_map_[INPAR::XFEM::F_Pen_t_Col] = std::pair<bool,double>(true,1.0);
         configuration_map_[INPAR::XFEM::X_Pen_t_Row] = std::pair<bool,double>(true,1.0);
         configuration_map_[INPAR::XFEM::X_Pen_t_Col] = std::pair<bool,double>(true,1.0);
+
+        //to guarantee correct scaling, terms are not evaluted
+        configuration_map_[INPAR::XFEM::F_Pen_Col] = std::pair<bool,double>(false,1.0);
+        configuration_map_[INPAR::XFEM::X_Pen_Col] = std::pair<bool,double>(false,1.0);
+        configuration_map_[INPAR::XFEM::F_Adj_n_Col] = std::pair<bool,double>(false,1.0);
+        configuration_map_[INPAR::XFEM::X_Adj_n_Col] = std::pair<bool,double>(false,1.0);
+        configuration_map_[INPAR::XFEM::F_Adj_t_Col] = std::pair<bool,double>(false,1.0);
+        configuration_map_[INPAR::XFEM::X_Adj_t_Col] = std::pair<bool,double>(false,1.0);
       }
     }
     else if (GetInterfaceLaw() == INPAR::XFEM::navierslip)
