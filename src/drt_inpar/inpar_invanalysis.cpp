@@ -51,8 +51,8 @@ void INPAR::INVANA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
                                "types of special inverse analysis",
                                tuple<std::string>(
                                  "none",
-                                 "coup",
-                                 "mult"),
+                                 "coupled",
+                                 "multiple"),
                                tuple<int>(
                                  INPAR::STR::spec_inv_none,
                                  INPAR::STR::spec_inv_coup,

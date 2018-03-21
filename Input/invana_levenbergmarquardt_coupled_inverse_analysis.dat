@@ -29,7 +29,7 @@ FLUID_STRESS                    No
 FLUID_VIS                       No
 ---------------------------------------------------INVERSE ANALYSIS
 INV_ANALYSIS                    gen
-SPECIAL_INV_ANALYSIS            coup
+SPECIAL_INV_ANALYSIS            coupled
 INV_ANA_TOL                     1e-7
 INV_ANA_MAX_RUN                 20
 INV_ALPHA                       0.0
