@@ -44,13 +44,15 @@ XFEM::XFSCoupling_Manager::XFSCoupling_Manager(Teuchos::RCP<ConditionManager> co
   mcfsi_ = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSI>(condmanager->GetMeshCoupling(cond_name_));
   if (mcfsi_ == Teuchos::null) dserror(" Failed to get MeshCouplingFSI for Structure!");
 
+  mcfsi_->SetTimeFac(1./GetInterfaceTimefac());
+
   //safety check
   if (!mcfsi_->IDispnp()->Map().SameAs(*GetMapExtractor(0)->Map(1)))
     dserror("XFSCoupling_Manager: Maps of Condition and Mesh Coupling do not fit!");
 
   // storage of the resulting Robin-type structural forces from the old timestep
   // Recovering of Lagrange multiplier happens on fluid field
-  lambda_ = Teuchos::rcp(new Epetra_Vector(*GetMapExtractor(0)->Map(1),true));
+  lambda_ = Teuchos::rcp(new Epetra_Vector(*mcfsi_->GetCouplingDis()->DofRowMap(),true));
 }
 
 /*-----------------------------------------------------------------------------------------*
@@ -58,6 +60,13 @@ XFEM::XFSCoupling_Manager::XFSCoupling_Manager(Teuchos::RCP<ConditionManager> co
 *-----------------------------------------------------------------------------------------*/
 void XFEM::XFSCoupling_Manager::InitCouplingStates()
 {
+  //1 Set Displacement on both mesh couplings ... we get them from the structure field!
+  InsertVector(0,struct_->Dispn(),0,mcfsi_->IDispn(),Coupling_Comm_Manager::full_to_partial);
+  InsertVector(0,struct_->Dispn(),0,mcfsi_->IDispnp(),Coupling_Comm_Manager::full_to_partial);
+
+  //2 Set Displacement on both mesh couplings ... we get them from the structure field!
+  InsertVector(0,struct_->Veln(),0,mcfsi_->IVeln(),Coupling_Comm_Manager::full_to_partial);
+  InsertVector(0,struct_->Veln(),0,mcfsi_->IVelnp(),Coupling_Comm_Manager::full_to_partial);
 }
 
 /*-----------------------------------------------------------------------------------------*
@@ -84,6 +93,18 @@ void XFEM::XFSCoupling_Manager::SetCouplingStates()
 
   //3 Set Structural Velocity onto ps mesh coupling
   InsertVector(0,velnp,0,mcfsi_->IVelnp(),Coupling_Comm_Manager::partial_to_partial);
+
+  //4 Set Structural Velocity onto the structural discretization
+  if (mcfsi_->GetAveragingStrategy() != INPAR::XFEM::Xfluid_Sided)
+  {
+    //Set Dispnp (used to calc local coord of gausspoints)
+    struct_->Discretization()->SetState("dispnp",struct_->Dispnp());
+    //Set Velnp (used for interface integration)
+    Teuchos::RCP<Epetra_Vector> fullvelnp = Teuchos::rcp(new Epetra_Vector(struct_->Velnp()->Map(),true));
+    fullvelnp->Update(1.0,*struct_->Dispnp(),-1.0,*struct_->Dispn(),0.0);
+    fullvelnp->Update(-(dt-1/scaling_FSI)*scaling_FSI,*struct_->Veln(),scaling_FSI);
+    struct_->Discretization()->SetState("velaf",fullvelnp);
+  }
 }
 
 /*-----------------------------------------------------------------------------------------*
@@ -164,7 +185,8 @@ void XFEM::XFSCoupling_Manager::AddCouplingRHS(Teuchos::RCP<Epetra_Vector> rhs,
     // scale factor for the structure system matrix w.r.t the new time step
     const double scaling_S = 1.0/(1.0-stiparam);  // 1/(1-alpha_F) = 1/weight^S_np
     // add Lagrange multiplier (structural forces from t^n)
-    coup_rhs_sum->Update(stiparam*scaling_S, *lambda_, scaling);
+    int err = coup_rhs_sum->Update(stiparam*scaling_S, *lambda_, scaling);
+    if (err) dserror("Update of Nit_Struct_FSI RHS failed with errcode = %d!", err);
   }
   else
   {

@@ -1963,11 +1963,48 @@ void XFEM::MeshCouplingFSI::SetupConfigurationMap()
       configuration_map_[INPAR::XFEM::X_Pen_t_Col] = std::pair<bool,double>(true,1.0);
     }
     else
-      dserror("Intlaw not slip!");
+      dserror("Intlaw not available!");
   }
   else if(GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided)
   {
-    dserror("Solid Sided FSI not yet available!");
+    if (GetInterfaceLaw() == INPAR::XFEM::slip)
+    {
+      //Configuration of Consistency Terms
+      configuration_map_[INPAR::XFEM::F_Con_n_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::XS_Con_n_Col] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::X_Con_n_Row] = std::pair<bool,double>(true,1.0);
+
+      //Configuration of Adjount Consistency Terms
+      configuration_map_[INPAR::XFEM::XS_Adj_n_Row] = std::pair<bool,double>(true,-1.0);
+      configuration_map_[INPAR::XFEM::F_Adj_n_Col] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::X_Adj_n_Col] = std::pair<bool,double>(true,1.0);
+
+      //Configuration of Penalty Terms
+      configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::F_Pen_n_Col] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::X_Pen_n_Col] = std::pair<bool,double>(true,1.0);
+    }
+    else if (GetInterfaceLaw() == INPAR::XFEM::noslip)
+      {
+        //Configuration of Consistency Terms
+        configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool,double>(true,1.0);
+        configuration_map_[INPAR::XFEM::XS_Con_Col] = std::pair<bool,double>(true,1.0);
+        configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool,double>(true,1.0);
+
+        //Configuration of Adjount Consistency Terms
+        configuration_map_[INPAR::XFEM::XS_Adj_Row] = std::pair<bool,double>(true,-1.0);
+        configuration_map_[INPAR::XFEM::F_Adj_Col] = std::pair<bool,double>(true,1.0);
+        configuration_map_[INPAR::XFEM::X_Adj_Col] = std::pair<bool,double>(true,1.0);
+
+        //Configuration of Penalty Terms
+        configuration_map_[INPAR::XFEM::F_Pen_Row] = std::pair<bool,double>(true,1.0);
+        configuration_map_[INPAR::XFEM::F_Pen_Col] = std::pair<bool,double>(true,1.0);
+        configuration_map_[INPAR::XFEM::X_Pen_Row] = std::pair<bool,double>(true,1.0);
+        configuration_map_[INPAR::XFEM::X_Pen_Col] = std::pair<bool,double>(true,1.0);
+      }
+    else
+      dserror("Intlaw not available!");
   }
   else if (GetAveragingStrategy() == INPAR::XFEM::invalid)
     dserror("XFEM::MeshCouplingFSI: Averaging Strategy not set!");
@@ -2003,19 +2040,19 @@ void XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP(
     if (GetInterfaceLaw() == INPAR::XFEM::slip)
     {
       //Configuration of Penalty Terms
-        configuration_map_[INPAR::XFEM::X_Con_n_Row] = std::pair<bool,double>(true,1.0);
+        //configuration_map_[INPAR::XFEM::X_Con_n_Row] = std::pair<bool,double>(true,1.0);
         configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool,double>(true,full_stab);
         configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool,double>(true,full_stab);
     }
     else if (GetInterfaceLaw() == INPAR::XFEM::noslip)
     {
-        configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool,double>(true,1.0);
+        //configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool,double>(true,1.0);
         configuration_map_[INPAR::XFEM::F_Pen_Row].second = full_stab;
         configuration_map_[INPAR::XFEM::X_Pen_Row] = std::pair<bool,double>(true,full_stab);
     }
     else if (GetInterfaceLaw() == INPAR::XFEM::noslip_splitpen)
     {
-      configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool,double>(true,1.0);
+      //configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool,double>(true,1.0);
       configuration_map_[INPAR::XFEM::F_Pen_n_Row].second = full_stab;
       configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool,double>(true,full_stab);
       configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = visc_stab_tang;
@@ -2047,12 +2084,81 @@ void XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP(
       configuration_map_[INPAR::XFEM::X_Pen_n_Row].second = full_stab; //full_stab <-- to keep results!
     }
     else
-      dserror("Intlaw not slip!");
+      dserror("Intlaw not available!");
   }
   else if(GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided)
   {
-    dserror("Solid Sided FSI not yet available!");
+    if (GetInterfaceLaw() == INPAR::XFEM::slip)
+    {
+      configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool,double>(true,visc_stab_tang);
+      //configuration_map_[INPAR::XFEM::X_Con_n_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool,double>(true,visc_stab_tang);
+      //configuration_map_[INPAR::XFEM::XS_Adj_n_Row] = std::pair<bool,double>(true,-1.0);
+    }
+    else if (GetInterfaceLaw() == INPAR::XFEM::noslip)
+    {
+      configuration_map_[INPAR::XFEM::F_Pen_Row] = std::pair<bool,double>(true,visc_stab_tang);
+      //configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[INPAR::XFEM::X_Pen_Row] = std::pair<bool,double>(true,visc_stab_tang);
+      //configuration_map_[INPAR::XFEM::XS_Adj_Row] = std::pair<bool,double>(true,-1.0);
+    }
+    else
+      dserror("Intlaw not available!");
   }
+  return;
+}
+
+/*--------------------------------------------------------------------------*
+ * Evaluate the Structural Cauchy Stress Matrix and it's linearization with respect to the displacements
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress(
+    DRT::Element* coupl_ele,
+    LINALG::Matrix<3,1>& rst_slave,
+    std::vector<double>& eledisp,
+    const LINALG::Matrix<3,1>& normal,
+    std::vector<Epetra_SerialDenseMatrix>& solid_stress)
+{
+  if (GetAveragingStrategy() == INPAR::XFEM::Xfluid_Sided)
+    return;
+
+  if (coupl_ele->Shape() == DRT::Element::hex8)
+  {
+    DRT::ELEMENTS::So_hex8* solid_ele = dynamic_cast<DRT::ELEMENTS::So_hex8*>(coupl_ele);
+    if (solid_ele == NULL)
+      dserror("XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress: Cast of coupl_ele to solid_ele failed!");
+
+    solid_stress.resize(5); //traction,dtdd,d2dddx,d2dddy,d2dddz
+    solid_stress[0].Reshape(NUMDIM_SOH8,1);
+    LINALG::Matrix<NUMDIM_SOH8,1> traction(solid_stress[0].A(),true);
+
+    solid_stress[1].Reshape(NUMDOF_SOH8,NUMDIM_SOH8);
+    LINALG::Matrix<NUMDOF_SOH8,NUMDIM_SOH8> dtraction_dd_l(solid_stress[1].A(),true);
+
+    traction.Clear();
+
+    static Epetra_SerialDenseMatrix dtraction_dd_i;
+    for (int i = 0; i < NUMDIM_SOH8; ++i)
+    {
+      LINALG::Matrix<NUMDIM_SOH8,1> ei(true);
+      ei(i,0) = 1.;
+      solid_ele->GetCauchyAtXi(rst_slave,eledisp,normal,ei,traction(i,0),&dtraction_dd_i,&solid_stress[2+i] ,NULL,NULL,NULL,NULL,NULL,NULL);
+      LINALG::Matrix<NUMDOF_SOH8,1> dtraction_dd_i_l(dtraction_dd_i.A(),true);
+      for (int col = 0; col < NUMDOF_SOH8; ++col)
+        dtraction_dd_l(col,i) = dtraction_dd_i_l(col,0);
+    }
+    if (timefac_ > 0)
+    {
+      //Change from linearization w.r.t. displacements to linearization w.r.t. velocities
+      // (All other linearizations on the Nitsche Interface are evaluated like this)
+      solid_stress[1].Scale(timefac_);
+      for (int idx = 2; idx < 5; ++idx)
+        solid_stress[idx].Scale(timefac_*timefac_);
+    }
+    else
+      dserror("XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress: timefac = %f, not set!",timefac_);
+  }
+  else
+    dserror("XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress:: Element type not implemented yet!");
   return;
 }
 
@@ -2063,9 +2169,38 @@ void XFEM::MeshCouplingFSI::GetStressTangentSlave(
     DRT::Element * coup_ele,                   ///< solid ele
     double& e_s)                               ///< stress tangent slavesided
 {
-  //we calculate "E/h" directely with the generalized eigenvalue problem
+//  if (coup_ele->Material()->MaterialType() == INPAR::MAT::m_elasthyper)
+//    e_s = Teuchos::rcp_dynamic_cast<MAT::ElastHyper>(coup_ele->Material())->GetYoung();
+//  else
+//    dserror("GetCouplingSpecificAverageWeights: Slave Material not a Elasthyper material?");
+
+  //this is a temporal hack as we calculate "E/h" directely with the generalized eigenvalue problem ... need to work on the input section to clarify this ...
   e_s = timefac_;
 
+  return;
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingFSI::EstimateNitscheTraceMaxEigenvalue(
+    DRT::Element* ele)
+{
+  DRT::ELEMENTS::StructuralSurface* solidfaceele = dynamic_cast<DRT::ELEMENTS::StructuralSurface*>(ele);
+  dsassert(solidfaceele != NULL,"Cast to StructuralSurface failed!");
+
+  solidfaceele->SetParentMasterElement(coupl_dis_->gElement(solidfaceele->ParentElementId()), solidfaceele->FaceParentNumber());
+
+  DRT::Element::LocationArray la(1);
+  solidfaceele->ParentElement()->LocationVector(*coupl_dis_,la,false);
+
+  //extract eledisp here
+  // parent and boundary displacement at n+1
+  std::vector<double> eledisp((la[0].lm_).size());
+  Teuchos::RCP<const Epetra_Vector> dispnp = coupl_dis_->GetState("dispnp");
+  if (dispnp==Teuchos::null) dserror("Cannot get state vector 'dispnp'");
+
+  DRT::UTILS::ExtractMyValues(*dispnp,eledisp,la[0].lm_);
+  (*ele_to_max_eigenvalue_)[ele->Id()] = solidfaceele->EstimateNitscheTraceMaxEigenvalueCombined(eledisp); //this is (E/h) ...basically :-)
   return;
 }
 
@@ -2075,6 +2210,10 @@ void XFEM::MeshCouplingFSI::PrepareSolve()
 {
   //Call Base Class
   XFEM::MeshCoupling::PrepareSolve();
+
+  //Estimate Nitsche Trace Max Eigenvalue
+  if (GetAveragingStrategy() != INPAR::XFEM::Xfluid_Sided)
+    ResetEvaluatedTraceEstimates();
 }
 
 XFEM::MeshCouplingFluidFluid::MeshCouplingFluidFluid(

@@ -688,6 +688,14 @@ public:
   // for assembly of fluid interface forces
   Teuchos::RCP<Epetra_Vector> IForcecol(){ return iforcecol_; }
 
+  // evaluate structural cauchy stress and linearization in case we don't have xfluid sided weighting
+  void EvaluateStructuralCauchyStress(
+      DRT::Element* coupl_ele,
+      LINALG::Matrix<3,1>& rst_slave,
+      std::vector<double>& eledisp,
+      const LINALG::Matrix<3,1>& normal,
+      std::vector<Epetra_SerialDenseMatrix>& solid_stress);
+
   void SetTimeFac(double timefac){ timefac_ = timefac; }
 
   double GetTimeFac(){return timefac_;}
@@ -720,6 +728,10 @@ public:
   virtual INPAR::XFEM::InterfaceLaw GetInterfaceLaw(){return interfacelaw_;}
 
 protected:
+
+  //! estimate the penalty scaling in Nitsche's method from the trace inequality for a specific face element
+  //! via solving a local eigenvalue problem
+  virtual void EstimateNitscheTraceMaxEigenvalue(DRT::Element* ele);
 
   virtual void InitStateVectors();
 

@@ -87,6 +87,13 @@ namespace DRT
         //! add slave element's displacements and set current element's nodal coordinates
         virtual void AddSlaveEleDisp(
           const DRT::Discretization &  slavedis,     ///< coupling slave discretization
+          const std::vector<int>&      lm,           ///< local map
+          std::vector<double>&         mymatrix      ///< slave element displacement vector
+        )
+        { dserror("There is no concrete slave element available."); };
+
+        virtual void AddSlaveEleDisp(
+          const DRT::Discretization &  slavedis,     ///< coupling slave discretization
           const std::vector<int>&      lm            ///< local map
         )
         { dserror("There is no concrete slave element available."); };
@@ -305,6 +312,7 @@ namespace DRT
             const LINALG::Matrix<nsd_,1> &    itraction_jump,         ///< prescribed interface traction, jump height for coupled problems
             const LINALG::Matrix<nsd_,nsd_>&  proj_tangential,        ///< tangential projection matrix
             const LINALG::Matrix<nsd_,nsd_>&  LB_proj_matrix,  ///< prescribed projection matrix for laplace-beltrami problems
+            const std::vector<Epetra_SerialDenseMatrix>& solid_stress, ///< structural cauchy stress and linearization
             std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap ///< Interface Terms configuration map
         ) = 0;
 

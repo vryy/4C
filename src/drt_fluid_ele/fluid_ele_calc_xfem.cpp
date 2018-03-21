@@ -1901,6 +1901,9 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
           dserror("ElementXfemInterfaceHybridLM with Navier Slip, what to do with kappa_m/kappa_s for the dyn_visc in the traction_jump?");
 #endif
 
+        LINALG::Matrix<3,1> dummy1;
+        std::vector<double> dummy2;
+
         GetInterfaceJumpVectors(
             coupcond,
             coupling,
@@ -1914,7 +1917,9 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
             rst,
             kappa_m,
             kappa_s,
-            visc_m
+            visc_m,
+            dummy1,
+            dummy2
         );
 
         if(cond_type == INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN or
@@ -3355,6 +3360,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
 
     //-----------------------------------------------------------------------------------
     Teuchos::RCP<XFEM::MeshCouplingFSI> mc_fsi = Teuchos::null;
+    Teuchos::RCP<XFEM::MeshCouplingFPI> mc_fpi = Teuchos::null;
     bool assemble_iforce = false;
 
     //---------------------------------------------------------------------------------
@@ -3362,7 +3368,22 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
     if(is_mesh_coupling_side)
     {
       mc_fsi = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSI>(coupling);
-      if(mc_fsi != Teuchos::null) assemble_iforce = true;
+      mc_fpi = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(coupling);
+
+      if(mc_fsi != Teuchos::null || mc_fpi != Teuchos::null)
+      {
+        if (coupling->GetAveragingStrategy() == INPAR::XFEM::Xfluid_Sided && mc_fsi != Teuchos::null)
+          assemble_iforce = true;
+        else
+        {
+          static bool flipflop = false;
+          if (!flipflop)
+          {
+            std::cout << "==| WARNING We do not assemble ifore (problem in case  theta != 1!!!) |==" << std::endl;
+            flipflop = !flipflop;
+          }
+        }
+      }
 
       // get the side element and its coordinates for projection of Gaussian points
       side = cond_manager->GetSide( coup_sid );
@@ -3451,14 +3472,15 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
         ci->SetSlaveStaten(*coupl_dis_,coupl_lm);
     }
 
-
+    std::vector<double> eledisp;
     if(!(is_ls_coupling_side and !cond_manager->IsCoupling( coup_sid, my::eid_ ))) // not level-set-WDBC case
     {
       std::map<int, std::vector<int> >::const_iterator k = patchcouplm.find( coup_sid );
       const std::vector<int> & coupl_lm = k->second;
 
       // add displacement of coupling element at current time step
-      ci->AddSlaveEleDisp(*coupl_dis_,coupl_lm);
+      eledisp = std::vector<double>(coupl_lm.size());
+      ci->AddSlaveEleDisp(*coupl_dis_,coupl_lm,eledisp);
     }
 
 
@@ -3641,7 +3663,10 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
             rst_,
             kappa_m,
             viscaf_master_,
-            viscaf_slave_
+            viscaf_slave_,
+            rst_slave,
+            eledisp,
+            coupl_ele
         );
 
         if(cond_type == INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN or
@@ -3705,6 +3730,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
             itraction_jump_,             // traction jump at interface (i.e. [| -pI + \mu*[\nabla u + (\nabla u)^T]  |] \cdot n)
             proj_tangential_,            // tangential projection matrix
             LB_proj_matrix_,             // prescribed projection matrix for laplace-beltrami problems
+            solid_stress_,               // hold information about solid stress ([0]...traction, [1]...dtraction_dv, [2-4]...d2traction_dv2)
             configmap                    // Configuration Map
           );
 
@@ -3879,7 +3905,10 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectors(
     LINALG::Matrix<3,1>& rst,                                                ///< local coordinates of GP for bg element
     double& kappa_m,                                                         ///< fluid sided weighting
     double& visc_m,                                                          ///< fluid sided weighting
-    double& visc_s                                                           ///< slave sided dynamic viscosity
+    double& visc_s,                                                          ///< slave sided dynamic viscosity
+    LINALG::Matrix<3,1>& rst_slave,                                          ///< local coord of gp in slave element
+    std::vector<double>& eledisp,                                            ///< slave element displacement vector
+    DRT::Element* coupl_ele                                                  ///< slave coupling element
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::GetInterfaceJumpVectors");
@@ -3939,9 +3968,14 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectors(
     break;
   }
   case INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID:
-  case INPAR::XFEM::CouplingCond_SURF_FSI_MONO:
   {
     // nothing to evaluate as continuity coupling conditions have to be evaluated
+    break;
+  }
+  case INPAR::XFEM::CouplingCond_SURF_FSI_MONO:
+  {
+    Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSI>(coupling)->EvaluateStructuralCauchyStress(coupl_ele,rst_slave,
+     eledisp,normal,solid_stress_);
     break;
   }
   case INPAR::XFEM::CouplingCond_SURF_FPI_MONO:

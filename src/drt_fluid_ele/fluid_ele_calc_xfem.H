@@ -259,7 +259,10 @@ private:
       LINALG::Matrix<3,1>& rst,                                                 ///< local coordinates of GP for bg element
       double& kappa_m,                                                          ///< fluid sided weighting
       double& visc_m,                                                           ///< fluid sided weighting
-      double& visc_s                                                            ///< slave sided dynamic viscosity
+      double& visc_s,                                                           ///< slave sided dynamic viscosity
+      LINALG::Matrix<3,1>& rst_slave,                                           ///< local coord of gp in slave element
+      std::vector<double>& eledisp,                                             ///< slave element displacement vector
+      DRT::Element* coupl_ele = NULL                                            ///< slave coupling element
   );
 
   //! get the interface jump vectors for velocity and traction at the Gaussian point for previous time step
@@ -419,6 +422,8 @@ private:
   LINALG::Matrix<my::nsd_,1> itraction_jump_;                ///< interface traction jump at t^n+1
   LINALG::Matrix<my::nsd_,my::nsd_> proj_tangential_;        ///< tangential projection matrix at t^n+1
   LINALG::Matrix<my::nsd_,my::nsd_> LB_proj_matrix_;         ///< interface matrix jump (for Laplace-Beltrami) at t^n+1
+
+  std::vector<Epetra_SerialDenseMatrix> solid_stress_;       ///< hold information about solid stress ([0]...traction, [1]...dtraction_dv, [2-4]...d2traction_dv2)
 
   LINALG::Matrix<my::nsd_,1> ivelintn_jump_;     ///< interface velocity jump at t^n
   LINALG::Matrix<my::nsd_,1> itractionn_jump_;   ///< interface traction jump at t^n

@@ -411,47 +411,58 @@ Teuchos::RCP<NitscheInterface<distype> > NitscheInterface<distype>::CreateNitsch
   // get number of dofs for the embedded element
   const unsigned numdofpernode = vele->NumDofPerNode(*vele->Nodes()[0]);
 
-  // expecting 4 dofs per slave element node as this is fluid-fluid coupling
-  if (numdofpernode != 4)
+  if (numdofpernode == 4)
   {
-    dserror("Unsupported number of %d nodes for fluid-fluid coupling of slave element.", numdofpernode);
-    return Teuchos::null;
+    switch ( vele->Shape() )
+    {
+  //    case DRT::Element::tet4:
+  //    {
+  //      typedef NitscheCoupling<distype,DRT::Element::tet4,4> NitscheCouplType;
+  //      nit = new NitscheCouplType(vele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
+  //      break;
+  //    }
+  //    case DRT::Element::tet10:
+  //    {
+  //      typedef NitscheCoupling<distype,DRT::Element::tet10,4> NitscheCouplType;
+  //      nit = new NitscheCouplType(vele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
+  //      break;
+  //    }
+      case DRT::Element::hex8:
+      {
+        typedef NitscheCoupling<distype,DRT::Element::hex8,4> NitscheCouplType;
+        nit = new NitscheCouplType(vele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,fldparaxfem);
+        break;
+      }
+      case DRT::Element::hex20:
+      {
+        typedef NitscheCoupling<distype,DRT::Element::hex20,4> NitscheCouplType;
+        nit = new NitscheCouplType(vele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,fldparaxfem);
+        break;
+      }
+      case DRT::Element::hex27:
+      {
+        typedef NitscheCoupling<distype,DRT::Element::hex27,4> NitscheCouplType;
+        nit = new NitscheCouplType(vele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,fldparaxfem);
+        break;
+      }
+      default:
+        dserror( "Unsupported volume element shape %d.", vele->Shape() ); break;
+    }
   }
-
-  switch ( vele->Shape() )
+  else if (numdofpernode == 3 )
   {
-//    case DRT::Element::tet4:
-//    {
-//      typedef NitscheCoupling<distype,DRT::Element::tet4,4> NitscheCouplType;
-//      nit = new NitscheCouplType(vele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
-//      break;
-//    }
-//    case DRT::Element::tet10:
-//    {
-//      typedef NitscheCoupling<distype,DRT::Element::tet10,4> NitscheCouplType;
-//      nit = new NitscheCouplType(vele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
-//      break;
-//    }
-    case DRT::Element::hex8:
+    switch ( vele->Shape() )
     {
-      typedef NitscheCoupling<distype,DRT::Element::hex8,4> NitscheCouplType;
-      nit = new NitscheCouplType(vele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,fldparaxfem);
-      break;
+      case DRT::Element::hex8:
+      {
+        typedef NitscheCoupling<distype,DRT::Element::hex8,3> NitscheCouplType;
+        nit = new NitscheCouplType(vele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,fldparaxfem);
+        break;
+      }
+      default:
+        // expecting 3 dofs per slave element node as this is fluid-solid coupling
+        dserror( "Unsupported volume element shape %d.", vele->Shape() ); break;
     }
-    case DRT::Element::hex20:
-    {
-      typedef NitscheCoupling<distype,DRT::Element::hex20,4> NitscheCouplType;
-      nit = new NitscheCouplType(vele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,fldparaxfem);
-      break;
-    }
-    case DRT::Element::hex27:
-    {
-      typedef NitscheCoupling<distype,DRT::Element::hex27,4> NitscheCouplType;
-      nit = new NitscheCouplType(vele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,fldparaxfem);
-      break;
-    }
-    default:
-      dserror( "Unsupported volume element shape %d.", vele->Shape() ); break;
   }
 
   return Teuchos::rcp(nit);

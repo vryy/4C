@@ -67,6 +67,11 @@ namespace DRT
           const DRT::Discretization &  slavedis,     ///< coupling slave discretization
           const std::vector<int>&      lm            ///< local map
           );
+        void AddSlaveEleDisp(
+          const DRT::Discretization &  slavedis,     ///< coupling slave discretization
+          const std::vector<int>&      lm,           ///< local map
+          std::vector<double>&         mymatrix      ///< slave element displacement vector
+          );
 
         //! set slave element's interface velocity & pressure for current time step
         void SetSlaveState(
@@ -347,6 +352,7 @@ namespace DRT
           const LINALG::Matrix<nsd_,1> &    itraction_jump,         ///< prescribed interface traction, jump height for coupled problems
           const LINALG::Matrix<nsd_,nsd_>&  proj_tangential,        ///< tangential projection matrix
           const LINALG::Matrix<nsd_,nsd_>&  LB_proj_matrix,  ///< prescribed projection matrix for laplace-beltrami problems
+          const std::vector<Epetra_SerialDenseMatrix>& solid_stress, ///< structural cauchy stress and linearization
           std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap ///< Interface Terms configuration map
         );
 
@@ -457,6 +463,52 @@ namespace DRT
           const std::pair<bool,double>& s_row,                                    ///< scaling for slave row
           const std::pair<bool,double>& s_col,                                    ///< scaling for slave col
           bool only_rhs = false                                                   ///< evaluat only rhs
+        );
+
+        //! evaluate solid-consistency term for Nitsche's method (scaled with slave side's weighting factor)
+        void NIT_solid_Consistency_SlaveTerms(
+          const LINALG::Matrix<nen_,1> &     funct_m,                                ///< funct_m
+          const double &                     timefacfac,                             ///< theta*dt*fac
+          const std::pair<bool,double>&      m_row,                                  ///< scaling for master row
+          const std::pair<bool,double>&      s_row,                                  ///< scaling for slave row
+          const std::pair<bool,double>&      s_col,                                  ///< scaling for slave col
+          bool only_rhs = false                                                      ///< evaluat only rhs
+        );
+
+        //! evaluate projected solid-consistency term for Nitsche's method (scaled with slave side's weighting factor)
+        void NIT_solid_Consistency_SlaveTerms_Projected(
+          const LINALG::Matrix<nen_,1> &        funct_m,                   ///< funct_m
+          const LINALG::Matrix<nsd_,nsd_>&      proj_matrix,               ///< projection matrix
+          const double &                        timefacfac,                ///< theta*dt*fac
+          const std::pair<bool,double>&         m_row,                     ///< scaling for master row
+          const std::pair<bool,double>&         s_row,                     ///< scaling for slave row
+          const std::pair<bool,double>&         s_col,                     ///< scaling for slave col
+          bool only_rhs = false                                            ///< evaluat only rhs
+        );
+
+        //! evaluate solid-adjoint-consistency term for Nitsche's method (scaled with slave side's weighting factor)
+        void NIT_solid_AdjointConsistency_SlaveTerms(
+          const LINALG::Matrix<nen_,1> &              funct_m,                   ///< funct_m
+          const double&                               timefacfac,                ///< theta*dt*fac
+          const LINALG::Matrix<nsd_,1>&               velint_diff,               ///< (velint_m - velint_s)
+          const LINALG::Matrix<nsd_*slave_nen_,nsd_>& dtraction_vel,             ///< derivative of solid traction w.r.t. velocities
+          const std::pair<bool,double>&               s_row,                     ///< scaling for slave row
+          const std::pair<bool,double>&               m_col,                     ///< scaling for master col
+          const std::pair<bool,double>&               s_col,                     ///< scaling for slave col
+          bool                                        only_rhs = false           ///< evaluat only rhs
+        );
+
+        //! evaluate projected solid-adjoint-consistency term for Nitsche's method (scaled with slave side's weighting factor)
+        void NIT_solid_AdjointConsistency_SlaveTerms_Projected(
+          const LINALG::Matrix<nen_,1> &              funct_m,             ///< funct_m
+          const double&                               timefacfac,          ///< theta*dt*fac
+          const LINALG::Matrix<nsd_,nsd_>&            proj_matrix,         ///< projection matrix
+          const LINALG::Matrix<nsd_,1>&               proj_velint_diff,    ///< P^T*(velint_m - velint_s)
+          const LINALG::Matrix<nsd_*slave_nen_,nsd_>& dtraction_vel,       ///< derivative of solid traction w.r.t. velocities
+          const std::pair<bool,double>&               s_row,               ///< scaling for slave row
+          const std::pair<bool,double>&               m_col,               ///< scaling for master col
+          const std::pair<bool,double>&               s_col,               ///< scaling for slave col
+          bool                                        only_rhs = false     ///< evaluat only rhs
         );
 
         //! evaluate viscous-adjoint-consistency term for Nitsche's method (scaled with master side's weighting factor)
@@ -689,6 +741,11 @@ namespace DRT
         LINALG::Matrix<nsd_,nsd_> proj_tangential_;
         LINALG::Matrix<nsd_,nsd_> proj_normal_;
         LINALG::Matrix<nsd_,nsd_> proj_matrix_;
+
+        //Needed members for solid sided fsi
+        LINALG::Matrix<nsd_,1> traction_;
+        LINALG::Matrix<nsd_*slave_nen_,nsd_> dtraction_vel_;
+        LINALG::Matrix<nsd_*slave_nen_,nsd_*slave_nen_> d2traction_vel_[3];
 
         //Projected
         LINALG::Matrix<nsd_,1> vderxy_x_normal_transposed_viscx_timefacfac_kx_pmatrix_;

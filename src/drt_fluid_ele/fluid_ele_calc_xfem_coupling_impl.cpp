@@ -46,6 +46,20 @@ void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::AddSlaveEle
   const std::vector<int>&      lm            ///< local map
 )
 {
+  std::vector<double> mymatrix(lm.size());
+  AddSlaveEleDisp(slavedis,lm,mymatrix);
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::AddSlaveEleDisp(
+  const DRT::Discretization &  slavedis,     ///< coupling slave discretization
+  const std::vector<int>&      lm,           ///< local map
+  std::vector<double>&         mymatrix      ///< slave element displacement vector
+)
+{
   // leave, if displacements are not set
   if (!slavedis.HasState(disp_statename_))
     return;
@@ -55,14 +69,13 @@ void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::AddSlaveEle
     dserror("Cannot get state vector %s", disp_statename_.c_str());
 
   // extract local values of the global vector
-  std::vector<double> mymatrix(lm.size());
   DRT::UTILS::ExtractMyValues(*matrix_state,mymatrix,lm);
 
   for (unsigned inode=0; inode<slave_nen_; ++inode)  // number of nodes
   {
     for (unsigned idim=0; idim<nsd_; ++idim) // number of dimensions
     {
-      (slave_disp_)(idim,inode) = mymatrix[idim+(inode*slave_numdof)]; // attention! disp state vector has 3+1 dofs for displacement (the same as for (u,p))
+      (slave_disp_)(idim,inode) = mymatrix[idim+(inode*slave_numdof)]; // attention! for fluidfluid disp state vector has 3+1 dofs for displacement (the same as for (u,p))
     }
   }
 
@@ -760,6 +773,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   const LINALG::Matrix<nsd_,1> &    itraction_jump,         ///< prescribed interface traction, jump height for coupled problems
   const LINALG::Matrix<nsd_,nsd_>&  proj_tangential,        ///< tangential projection matrix
   const LINALG::Matrix<nsd_,nsd_>&  LB_proj_matrix,  ///< prescribed projection matrix for laplace-beltrami problems
+  const std::vector<Epetra_SerialDenseMatrix>& solid_stress, ///< structural cauchy stress and linearization
   std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap ///< Interface Terms configuration map
 )
 {
@@ -1258,6 +1272,327 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
     }
     //-------------------------------------------- Traction-Jump added (XTPF)
   }
+
+   //Structural Stress Terms (e.g. non xfluid sided FSI)
+   if (configmap.at(INPAR::XFEM::XS_Con_Col).first || configmap.at(INPAR::XFEM::XS_Con_n_Col).first ||
+       configmap.at(INPAR::XFEM::XS_Con_t_Col).first || configmap.at(INPAR::XFEM::XS_Adj_Row).first ||
+       configmap.at(INPAR::XFEM::XS_Adj_n_Row).first || configmap.at(INPAR::XFEM::XS_Adj_t_Row).first )
+   {
+     traction_ = LINALG::Matrix<nsd_,1>(solid_stress[0].A(),true);
+     dtraction_vel_ = LINALG::Matrix<nsd_*slave_nen_,nsd_>(solid_stress[1].A(),true);
+
+     d2traction_vel_[0] = LINALG::Matrix<nsd_*slave_nen_,nsd_*slave_nen_>(solid_stress[2].A(),true);
+     d2traction_vel_[1] = LINALG::Matrix<nsd_*slave_nen_,nsd_*slave_nen_>(solid_stress[3].A(),true);
+     d2traction_vel_[2] = LINALG::Matrix<nsd_*slave_nen_,nsd_*slave_nen_>(solid_stress[4].A(),true);
+
+     if (configmap.at(INPAR::XFEM::XS_Con_Col).first)
+     {
+       NIT_solid_Consistency_SlaveTerms(
+           funct_m,
+           timefacfac,
+           configmap.at(INPAR::XFEM::F_Con_Row), configmap.at(INPAR::XFEM::X_Con_Row), configmap.at(INPAR::XFEM::XS_Con_Col));
+     }
+
+     if (configmap.at(INPAR::XFEM::XS_Con_n_Col).first)
+     {
+       NIT_solid_Consistency_SlaveTerms_Projected(
+           funct_m,
+           proj_normal_,
+           timefacfac,
+           configmap.at(INPAR::XFEM::F_Con_n_Row), configmap.at(INPAR::XFEM::X_Con_n_Row), configmap.at(INPAR::XFEM::XS_Con_n_Col));
+     }
+
+     if (configmap.at(INPAR::XFEM::XS_Con_t_Col).first)
+     {
+       NIT_solid_Consistency_SlaveTerms_Projected(
+           funct_m,
+           proj_tangential_,
+           timefacfac,
+           configmap.at(INPAR::XFEM::F_Con_t_Row), configmap.at(INPAR::XFEM::X_Con_t_Row), configmap.at(INPAR::XFEM::XS_Con_t_Col));
+     }
+
+     if (configmap.at(INPAR::XFEM::XS_Adj_Row).first)
+     {
+       NIT_solid_AdjointConsistency_SlaveTerms(
+           funct_m,
+           timefacfac,
+           velint_diff_,
+           dtraction_vel_,
+           configmap.at(INPAR::XFEM::XS_Adj_Row), configmap.at(INPAR::XFEM::F_Adj_Col), configmap.at(INPAR::XFEM::X_Adj_Col));
+     }
+
+     if (configmap.at(INPAR::XFEM::XS_Adj_n_Row).first)
+     {
+       NIT_solid_AdjointConsistency_SlaveTerms_Projected(
+           funct_m,
+           timefacfac,
+           proj_normal_,
+           velint_diff_proj_normal_,
+           dtraction_vel_,
+           configmap.at(INPAR::XFEM::XS_Adj_n_Row), configmap.at(INPAR::XFEM::F_Adj_n_Col), configmap.at(INPAR::XFEM::X_Adj_n_Col));
+     }
+
+     if (configmap.at(INPAR::XFEM::XS_Adj_t_Row).first)
+     {
+       NIT_solid_AdjointConsistency_SlaveTerms_Projected(
+           funct_m,
+           timefacfac,
+           proj_tangential_,
+           velint_diff_proj_tangential_,
+           dtraction_vel_,
+           configmap.at(INPAR::XFEM::XS_Adj_t_Row), configmap.at(INPAR::XFEM::F_Adj_t_Col), configmap.at(INPAR::XFEM::X_Adj_t_Col));
+     }
+   }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_solid_Consistency_SlaveTerms(
+  const LINALG::Matrix<nen_,1> &   funct_m,                   ///< funct_m
+  const double &                   timefacfac,                ///< theta*dt*fac
+  const std::pair<bool,double>&    m_row,                     ///< scaling for master row
+  const std::pair<bool,double>&    s_row,                     ///< scaling for slave row
+  const std::pair<bool,double>&    s_col,                     ///< scaling for slave col
+  bool only_rhs
+)
+{
+  const double facms = m_row.second*s_col.second;
+  const double facss = s_row.second*s_col.second;
+
+  for (unsigned ir = 0; ir<nen_; ++ir)
+  {
+    const double tmp_val = funct_m(ir)*facms*timefacfac;
+    for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
+    {
+      // rhs
+      rhC_um_(mIndex(ir,ivel),0) += tmp_val*traction_(ivel);
+    }
+  }
+
+  for (unsigned ir = 0; ir<slave_nen_; ++ir)
+  {
+    const double tmp_val = funct_s_(ir)*facss*timefacfac;
+    for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
+    {
+      // rhs
+      rhC_us_(sIndex(ir,ivel),0) -= tmp_val*traction_(ivel);
+    }
+  }
+
+  if (only_rhs) return;
+
+  for (unsigned ic =0; ic<slave_nen_; ++ic)
+  {
+    for (unsigned jvel = 0; jvel < nsd_; ++ jvel)
+    {
+      for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
+      {
+        const unsigned col = sIndex(ic,jvel);
+        for (unsigned ir = 0; ir<nen_; ++ir)
+        {
+          //-----------------------------------------------
+          //    - (vm,
+          //-----------------------------------------------
+          C_umus_(mIndex(ir,ivel), col) -= funct_m(ir) * dtraction_vel_(col,ivel) * facms * timefacfac;
+        }
+
+        for (unsigned ir = 0; ir<slave_nen_; ++ir)
+        {
+        //-----------------------------------------------
+        //    + (vs,
+        //-----------------------------------------------
+          // diagonal block
+          C_usus_(sIndex(ir,ivel),col) += funct_s_(ir) * dtraction_vel_(col,ivel) * facss * timefacfac;
+        }
+      }
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_solid_Consistency_SlaveTerms_Projected(
+  const LINALG::Matrix<nen_,1> &   funct_m,                   ///< funct_m
+  const LINALG::Matrix<nsd_,nsd_>& proj_matrix,               ///< projection matrix
+  const double &                   timefacfac,                ///< theta*dt*fac
+  const std::pair<bool,double>&    m_row,                     ///< scaling for master row
+  const std::pair<bool,double>&    s_row,                     ///< scaling for slave row
+  const std::pair<bool,double>&    s_col,                     ///< scaling for slave col
+  bool only_rhs
+)
+{
+  static LINALG::Matrix<nsd_,1> proj_traction;
+  proj_traction.MultiplyTN(proj_matrix,traction_);
+
+  const double facms = m_row.second*s_col.second;
+  const double facss = s_row.second*s_col.second;
+
+  for (unsigned ir = 0; ir<nen_; ++ir)
+  {
+    const double tmp_val = funct_m(ir)*facms*timefacfac;
+    for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
+    {
+      // rhs
+      rhC_um_(mIndex(ir,ivel),0) += tmp_val*proj_traction(ivel);
+    }
+  }
+
+  for (unsigned ir = 0; ir<slave_nen_; ++ir)
+  {
+    const double tmp_val = funct_s_(ir)*facss*timefacfac;
+    for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
+    {
+      // rhs
+      rhC_us_(sIndex(ir,ivel),0) -= tmp_val*proj_traction(ivel);
+    }
+  }
+
+  if (only_rhs) return;
+
+  static LINALG::Matrix<nsd_*slave_nen_,nsd_> proj_dtraction_vel(true);
+  proj_dtraction_vel.Clear();
+  for (unsigned col = 0; col < nsd_*slave_nen_; ++col)
+  {
+    for (unsigned j = 0; j < nsd_; ++j)
+    {
+      for (unsigned i = 0; i < nsd_; ++i)
+        proj_dtraction_vel(col,j) += dtraction_vel_(col,i)*proj_matrix(i,j);
+    }
+  }
+
+  for (unsigned ic =0; ic<slave_nen_; ++ic)
+  {
+    for (unsigned jvel = 0; jvel < nsd_; ++ jvel)
+    {
+      for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
+      {
+        const unsigned col = sIndex(ic,jvel);
+        for (unsigned ir = 0; ir<nen_; ++ir)
+        {
+          //-----------------------------------------------
+          //    - (vm,
+          //-----------------------------------------------
+          C_umus_(mIndex(ir,ivel), col) -= funct_m(ir) * proj_dtraction_vel(col,ivel) * facms * timefacfac;
+        }
+
+        for (unsigned ir = 0; ir<slave_nen_; ++ir)
+        {
+        //-----------------------------------------------
+        //    + (vs,
+        //-----------------------------------------------
+          // diagonal block
+          C_usus_(sIndex(ir,ivel),col) += funct_s_(ir) * proj_dtraction_vel(col,ivel) * facss * timefacfac;
+        }
+      }
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_solid_AdjointConsistency_SlaveTerms(
+  const LINALG::Matrix<nen_,1> &              funct_m,              ///< funct_m
+  const double&                               timefacfac,           ///< theta*dt*fac
+  const LINALG::Matrix<nsd_,1>&               velint_diff,          ///< (velint_m - velint_s)
+  const LINALG::Matrix<nsd_*slave_nen_,nsd_>& dtraction_vel,        ///< derivative of solid traction w.r.t. velocities
+  const std::pair<bool,double>&               s_row,                ///< scaling for slave row
+  const std::pair<bool,double>&               m_col,                ///< scaling for master col
+  const std::pair<bool,double>&               s_col,                ///< scaling for slave col
+  bool                                        only_rhs
+)
+{
+  //
+  //RHS: dv<d(sigma)/dv|u*n,uF-uS>
+  //Lin: dv<d(sigma)/dv|u*n>duF-dv<d(sigma)/dv|u*n>duS+dv<d(sigma)/dv|du/dus*n,uF-uS>duS
+
+  const double facs = s_row.second*timefacfac;
+  for (unsigned ir = 0; ir<nen_; ++ir)
+  {
+    for (unsigned jvel = 0; jvel < nsd_; ++ jvel)
+    {
+      for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
+      {
+        const unsigned row = sIndex(ir,ivel);
+        // rhs
+        rhC_us_(row,0) += dtraction_vel(row,jvel)*velint_diff(jvel,0)*facs;
+      }
+    }
+  }
+
+  if (only_rhs) return;
+
+  const double facsm = s_row.second*m_col.second*timefacfac;
+  const double facss = s_row.second*s_col.second*timefacfac;
+
+  for (unsigned ir =0; ir<slave_nen_; ++ir)
+  {
+    for (unsigned jvel = 0; jvel < nsd_; ++ jvel)
+    {
+      for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
+      {
+        const unsigned row = sIndex(ir,ivel);
+        for (unsigned ic = 0; ic<nen_; ++ic)
+        {
+          const unsigned col = mIndex(ic,jvel);
+          C_usum_(row, col) -= funct_m(ic) * dtraction_vel(row,jvel) * facsm;
+        }
+
+        for (unsigned ic = 0; ic<slave_nen_; ++ic)
+        {
+          const unsigned col = sIndex(ic,jvel);
+          C_usus_(row, col) += funct_s_(ic) * dtraction_vel(row,jvel) * facss;
+          for (unsigned k = 0; k < nsd_; ++k)
+          {
+            C_usus_(row, col) -= d2traction_vel_[k](row,col)*velint_diff(k,0)*facs;
+          }
+        }
+      }
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_solid_AdjointConsistency_SlaveTerms_Projected(
+  const LINALG::Matrix<nen_,1> &              funct_m,             ///< funct_m
+  const double&                               timefacfac,          ///< theta*dt*fac
+  const LINALG::Matrix<nsd_,nsd_>&            proj_matrix,         ///< projection matrix
+  const LINALG::Matrix<nsd_,1>&               proj_velint_diff,    ///< P^T*(velint_m - velint_s)
+  const LINALG::Matrix<nsd_*slave_nen_,nsd_>& dtraction_vel,       ///< derivative of solid traction w.r.t. velocities
+  const std::pair<bool,double>&               s_row,               ///< scaling for slave row
+  const std::pair<bool,double>&               m_col,               ///< scaling for master col
+  const std::pair<bool,double>&               s_col,               ///< scaling for slave col
+  bool                                        only_rhs
+)
+{
+  static LINALG::Matrix<nsd_*slave_nen_,nsd_> proj_dtraction_vel(true);
+  if (!only_rhs)
+  {
+    proj_dtraction_vel.Clear();
+    for (unsigned col = 0; col < nsd_*slave_nen_; ++col)
+    {
+      for (unsigned j = 0; j < nsd_; ++j)
+      {
+        for (unsigned i = 0; i < nsd_; ++i)
+          proj_dtraction_vel(col,j) += dtraction_vel(col,i)*proj_matrix(i,j);
+      }
+    }
+  }
+
+  //Call Std Version with the projected quantities!
+  NIT_solid_AdjointConsistency_SlaveTerms(funct_m,timefacfac,proj_velint_diff,proj_dtraction_vel,s_row,m_col,s_col,only_rhs);
 
   return;
 }
@@ -3854,6 +4189,14 @@ template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6,DRT::Element::dis_none,3>;
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15,DRT::Element::dis_none,3>;
 
+// volume coupled with numdof = 3, FSI Slavesided, FPI
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8,  DRT::Element::hex8,3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20,  DRT::Element::hex8,3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27,  DRT::Element::hex8,3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4,  DRT::Element::hex8,3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10,  DRT::Element::hex8,3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6,  DRT::Element::hex8,3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15,  DRT::Element::hex8,3>;
 
 // pairs with numdof=4
 //template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8,  DRT::Element::tri3,4>;
@@ -4065,6 +4408,15 @@ template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::w
 template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15, DRT::Element::quad4,3>;
 template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15, DRT::Element::quad8,3>;
 template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15, DRT::Element::quad9,3>;
+
+// volume coupled with numdof = 3, FSI Slavesided, FPI
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,  DRT::Element::hex8,3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20,  DRT::Element::hex8,3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27,  DRT::Element::hex8,3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,  DRT::Element::hex8,3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10,  DRT::Element::hex8,3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6,  DRT::Element::hex8,3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15,  DRT::Element::hex8,3>;
 
 // pairs with numdof=4
 //template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,  DRT::Element::tri3,4>;
