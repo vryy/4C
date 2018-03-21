@@ -287,8 +287,12 @@ void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP(
       }
       else
       {
-      configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = 1./sliplength;
-      configuration_map_[INPAR::XFEM::X_Pen_t_Row].second = 1./sliplength;
+        configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = 1./sliplength;
+        configuration_map_[INPAR::XFEM::X_Pen_t_Row].second = 1./sliplength;
+
+        //does nothing but should just be done in case we don't use the adjoint
+        configuration_map_[INPAR::XFEM::F_Adj_t_Col].second = 1.0;
+        configuration_map_[INPAR::XFEM::X_Adj_t_Col].second = 1.0-full_BJ_*porosity;
       }
 
       configuration_map_[INPAR::XFEM::X_Pen_t_Col].second = 1.0-full_BJ_*porosity;
@@ -314,6 +318,9 @@ void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP(
       {
         configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = 1./sliplength;
         configuration_map_[INPAR::XFEM::X_Pen_t_Row].second = 1./sliplength;
+
+        //does nothing but should just be done in case we don't use the adjoint
+        configuration_map_[INPAR::XFEM::X_Adj_t_Col].second = full_BJ_*porosity;
       }
       configuration_map_[INPAR::XFEM::X_Pen_t_Col].second = full_BJ_*porosity;
       break;

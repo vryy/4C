@@ -323,7 +323,15 @@ public:
         fabs(configuration_map_.at(INPAR::XFEM::X_Adj_Col).second - configuration_map_.at(INPAR::XFEM::X_Pen_Col).second) > 1e-16 ||
         fabs(configuration_map_.at(INPAR::XFEM::X_Adj_n_Col).second - configuration_map_.at(INPAR::XFEM::X_Pen_n_Col).second) > 1e-16 ||
         fabs(configuration_map_.at(INPAR::XFEM::X_Adj_t_Col).second - configuration_map_.at(INPAR::XFEM::X_Pen_t_Col).second) > 1e-16)
+    {
+      std::cout << "F_Adj_Col/F_Pen_Col: " << configuration_map_.at(INPAR::XFEM::F_Adj_Col).second << "/" << configuration_map_.at(INPAR::XFEM::F_Pen_Col).second << std::endl;
+      std::cout << "F_Adj_n_Col/F_Pen_n_Col: " << configuration_map_.at(INPAR::XFEM::F_Adj_n_Col).second << "/" << configuration_map_.at(INPAR::XFEM::F_Pen_n_Col).second << std::endl;
+      std::cout << "F_Adj_t_Col/F_Pen_t_Col: " << configuration_map_.at(INPAR::XFEM::F_Adj_t_Col).second << "/" << configuration_map_.at(INPAR::XFEM::F_Pen_t_Col).second << std::endl;
+      std::cout << "X_Adj_Col/X_Pen_Col: " << configuration_map_.at(INPAR::XFEM::X_Adj_Col).second << "/" << configuration_map_.at(INPAR::XFEM::X_Pen_Col).second << std::endl;
+      std::cout << "X_Adj_n_Col/X_Pen_n_Col: " << configuration_map_.at(INPAR::XFEM::X_Adj_n_Col).second << "/" << configuration_map_.at(INPAR::XFEM::X_Pen_n_Col).second << std::endl;
+      std::cout << "X_Adj_t_Col/X_Pen_t_Col: " << configuration_map_.at(INPAR::XFEM::X_Adj_t_Col).second << "/" << configuration_map_.at(INPAR::XFEM::X_Pen_t_Col).second << std::endl;
       dserror("%s: Your consistent constraint for Penalty and Adjoint term is not equal, go to element level and split up velint_diff_ for penalty and adjoint!",cond_name_.c_str());
+    }
 
     #endif
     return configuration_map_;
