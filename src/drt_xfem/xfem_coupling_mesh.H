@@ -712,15 +712,11 @@ public:
     GetStressTangentSlave(coup_ele,penscaling_s);
   }
 
-//private:
-
   virtual void Output(
       const int step,
       const double time,
       const bool write_restart_data
   );
-
-  double timefac_;
 
   // prepare solve
   virtual void PrepareSolve();
@@ -769,6 +765,10 @@ protected:
   //       Coupling Surface (E 1)          slip length    is slip length constant?
   std::map<        int       ,   std::pair<    double  ,          bool       > > sliplength_map_;
 
+  //! theta*timestep
+  double timefac_;
+
+  //! applied interface law
   INPAR::XFEM::InterfaceLaw interfacelaw_;
   //@}
 

@@ -1530,9 +1530,9 @@ XFEM::MeshCouplingFSI::MeshCouplingFSI(
     const int                           coupling_id,///< id of composite of coupling conditions
     const double                        time,      ///< time
     const int                           step       ///< time step
-) : timefac_(-1.0),
-    interfacelaw_(INPAR::XFEM::noslip),
-    MeshVolCoupling(bg_dis,cond_name,cond_dis,coupling_id, time, step)
+) : MeshVolCoupling(bg_dis,cond_name,cond_dis,coupling_id, time, step),
+    timefac_(-1.0),
+    interfacelaw_(INPAR::XFEM::noslip)
 {
 }
 
