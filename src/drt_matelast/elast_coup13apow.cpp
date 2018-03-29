@@ -11,8 +11,8 @@ The input line should read
 \level 1
 
 <pre>
-\maintainer Anna Birzle
-            birzle@lnm.mw.tum.de
+\maintainer Lena Yoshihara
+            yoshihara@lnm.mw.tum.de
             089/289 15255
 </pre>
 */

@@ -6,7 +6,10 @@
 
 \level 1
 
-\maintainer Anna Birzle
+\maintainer Harald Willmann
+            willmann@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15255
 */
 /*----------------------------------------------------------------------*/
 #ifndef GEN_INV_ANALYSIS_H

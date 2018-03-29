@@ -6,7 +6,7 @@
 
 \level 1
 
-\maintainer Anna Birzle
+\maintainer Harald Willmann
  */
 /*----------------------------------------------------------------------*/
 

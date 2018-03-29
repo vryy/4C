@@ -7,8 +7,8 @@
 \level 2
 
 <pre>
-\maintainer Anna Birzle
-            birzle@lnm.mw.tum.de
+\maintainer Harald Willmann
+            willmann@lnm.mw.tum.de
             089-289-15255
 </pre>
 */

@@ -1,8 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file timint_adjoint.cpp
-\brief Time integration for a hyperleastic quasi static adjoint problem
-\maintainer Anna Birzle
+\brief Time integration for a hyperelastic quasi static adjoint problem
+\maintainer Sebastian Brandstäter
 \level 3
 !*/
 #include "timint_adjoint.H"

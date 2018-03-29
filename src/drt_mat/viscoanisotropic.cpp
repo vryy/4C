@@ -9,8 +9,8 @@ MAT 1 MAT_VISCOANISO KAPPA 1.6667E04 MUE 33.3556 DENS 0.0000000001 K1 100.0 K2 1
 \level 2
 
 <pre>
-\maintainer Anna Birzle
-            birzle@lnm.mw.tum.de
+\maintainer Lena Yoshihara
+            yoshihara@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15255
 </pre>
