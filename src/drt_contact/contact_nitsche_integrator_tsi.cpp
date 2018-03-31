@@ -334,6 +334,11 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
 
   if (frtype_)
   {
+    IntegrateTest<dim>(-1.+theta_2_,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,cauchy_nt1_weighted_average,cauchy_nt1_weighted_average_deriv,cauchy_nt1_weighted_average_deriv_T,t1,dt1);
+    IntegrateTest<dim>(-1.+theta_2_,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,cauchy_nt2_weighted_average,cauchy_nt2_weighted_average_deriv,cauchy_nt2_weighted_average_deriv_T,t2,dt2);
+    IntegrateTest<dim>(+1.-theta_2_,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,cauchy_nt1_weighted_average,cauchy_nt1_weighted_average_deriv,cauchy_nt1_weighted_average_deriv_T,t1,dt1);
+    IntegrateTest<dim>(+1.-theta_2_,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,cauchy_nt2_weighted_average,cauchy_nt2_weighted_average_deriv,cauchy_nt2_weighted_average_deriv_T,t2,dt2);
+
     IntegrateAdjointTest<dim>(-theta_/pet,jac,jacintcellmap,wgt,
         cauchy_nt1_weighted_average,cauchy_nt1_weighted_average_deriv,cauchy_nt1_weighted_average_deriv_T,
         sele,t1_adjoint_test_slave,deriv_t1_adjoint_test_slave,deriv_t1_adjoint_test_slave_T);
@@ -351,6 +356,9 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
 
   if (snn_av_pen_gap>=0.)
   {
+    IntegrateTest<dim>(-1.+theta_2_,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,cauchy_nn_weighted_average_deriv_T,normal,dnmap_unit);
+    IntegrateTest<dim>(+1.-theta_2_,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,cauchy_nn_weighted_average_deriv_T,normal,dnmap_unit);
+
     IntegrateAdjointTest<dim>(-theta_/pen,jac,jacintcellmap,wgt,
         cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,cauchy_nn_weighted_average_deriv_T,
         sele,normal_adjoint_test_slave ,deriv_normal_adjoint_test_slave,deriv_normal_adjoint_test_slave_T );
@@ -361,8 +369,11 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
   else
   {
     // test in normal contact direction
-    IntegrateTest<dim>(-1.,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,snn_av_pen_gap,d_snn_av_pen_gap,cauchy_nn_weighted_average_deriv_T,normal,dnmap_unit);
-    IntegrateTest<dim>(+1.,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,snn_av_pen_gap,d_snn_av_pen_gap,cauchy_nn_weighted_average_deriv_T,normal,dnmap_unit);
+    IntegrateTest<dim>(-1.,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,cauchy_nn_weighted_average_deriv_T,normal,dnmap_unit);
+    IntegrateTest<dim>(+1.,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,cauchy_nn_weighted_average_deriv_T,normal,dnmap_unit);
+
+    IntegrateTest<dim>(-theta_2_*pen,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,gap,dgapgp,empty,normal,dnmap_unit);
+    IntegrateTest<dim>(+theta_2_*pen,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,gap,dgapgp,empty,normal,dnmap_unit);
 
     IntegrateAdjointTest<dim>(theta_,jac,jacintcellmap,wgt,gap,dgapgp,empty,sele,normal_adjoint_test_slave ,deriv_normal_adjoint_test_slave,deriv_normal_adjoint_test_slave_T );
     IntegrateAdjointTest<dim>(theta_,jac,jacintcellmap,wgt,gap,dgapgp,empty,mele,normal_adjoint_test_master,deriv_normal_adjoint_test_master,deriv_normal_adjoint_test_master_T);
@@ -477,10 +488,10 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
         for(_CI p=cauchy_nt2_weighted_average_deriv_T.begin();p!=cauchy_nt2_weighted_average_deriv_T.end();++p)
           d_sigma_nt2_pen_vt2_T[p->first]+=fr/tan_tr*p->second;
       }
-      IntegrateTest<dim>(-1.,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,sigma_nt1_pen_vt1,d_sigma_nt1_pen_vt1,d_sigma_nt1_pen_vt1_T,t1,dt1);
-      IntegrateTest<dim>(+1.,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,sigma_nt1_pen_vt1,d_sigma_nt1_pen_vt1,d_sigma_nt1_pen_vt1_T,t1,dt1);
-      IntegrateTest<dim>(-1.,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,sigma_nt2_pen_vt2,d_sigma_nt2_pen_vt2,d_sigma_nt2_pen_vt2_T,t2,dt2);
-      IntegrateTest<dim>(+1.,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,sigma_nt2_pen_vt2,d_sigma_nt2_pen_vt2,d_sigma_nt2_pen_vt2_T,t2,dt2);
+      IntegrateTest<dim>(-theta_2_,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,sigma_nt1_pen_vt1,d_sigma_nt1_pen_vt1,d_sigma_nt1_pen_vt1_T,t1,dt1);
+      IntegrateTest<dim>(+theta_2_,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,sigma_nt1_pen_vt1,d_sigma_nt1_pen_vt1,d_sigma_nt1_pen_vt1_T,t1,dt1);
+      IntegrateTest<dim>(-theta_2_,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,sigma_nt2_pen_vt2,d_sigma_nt2_pen_vt2,d_sigma_nt2_pen_vt2_T,t2,dt2);
+      IntegrateTest<dim>(+theta_2_,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,sigma_nt2_pen_vt2,d_sigma_nt2_pen_vt2,d_sigma_nt2_pen_vt2_T,t2,dt2);
 
 
       IntegrateAdjointTest<dim>(theta_/pet,jac,jacintcellmap,wgt,sigma_nt1_pen_vt1,d_sigma_nt1_pen_vt1,d_sigma_nt1_pen_vt1_T,sele,t1_adjoint_test_slave ,deriv_t1_adjoint_test_slave ,deriv_t1_adjoint_test_slave_T );

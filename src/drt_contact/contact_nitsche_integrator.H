@@ -51,6 +51,7 @@ public:
       DRT::Element::DiscretizationType eletype, const Epetra_Comm& comm):
         CoIntegrator(params,eletype,comm),
         theta_(params.get<double>("NITSCHE_THETA")),
+        theta_2_(params.get<double>("NITSCHE_THETA_2")),
         nit_wgt_(DRT::INPUT::IntegralValue<INPAR::CONTACT::NitscheWeighting>(params,"NITSCHE_WEIGHTING")),
         ppn_(imortar_.get<double>("PENALTYPARAM")),
         ppt_(imortar_.get<double>("PENALTYPARAMTAN")),
@@ -207,6 +208,7 @@ protected:
 
 
     double theta_;
+    double theta_2_;
     INPAR::CONTACT::NitscheWeighting nit_wgt_;
     double ppn_;
     double ppt_;

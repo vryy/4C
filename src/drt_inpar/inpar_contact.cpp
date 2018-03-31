@@ -519,6 +519,7 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
 
   // --------------------------------------------------------------------------
   DoubleParameter("NITSCHE_THETA",0.0,"+1: symmetric, 0: non-symmetric, -1: skew-symmetric",&scontact);
+  DoubleParameter("NITSCHE_THETA_2",1.0,"+1: Chouly-type, 0: Burman penalty-free (only with theta=-1)",&scontact);
 
   setStringToIntegralParameter<int>("NITSCHE_WEIGHTING","harmonic",
       "how to weight consistency terms in Nitsche contact formulation",
