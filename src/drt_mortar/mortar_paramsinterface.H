@@ -28,7 +28,10 @@ namespace MORTAR {
                                     is negligible. */
     eval_force,                 /*!< Evaluation of the contact/meshtying right-hand-side only. Necessary
                                      and meaningful for line search strategies for example. */
-    eval_run_post_evaluate,     /*!< Run in the end of a call to STR::ModelEvaluator::EvaluteForce/Stiff/ForceStiff */
+    eval_run_pre_evaluate,      /*!< Run at the very beginning of a call to
+                                     STR::ModelEvaluator::EvaluteForce/Stiff/ForceStiff */
+    eval_run_post_evaluate,     /*!< Run in the end of a call to
+                                     STR::ModelEvaluator::EvaluteForce/Stiff/ForceStiff */
     eval_weighted_gap,          /*!< Evaluate the weighted gap only. */
     eval_run_post_compute_x,    /*!< recover internal quantities, e.g. Lagrange multipliers */
     eval_reset,                 /*!< reset internal quantities, e.g. displacement state and/or Lagrange multipliers */
@@ -40,7 +43,8 @@ namespace MORTAR {
                                      The active set is not updated during the evaluation. */
     eval_run_post_apply_jacobian_inverse, /*!< run in the end of a
                                      NOX::NLN::LinearSystem::applyJacobianInverse call */
-    eval_correct_parameters
+    eval_correct_parameters,    /*!< correct or adapt contact parameters */
+    remove_condensed_contributions_from_str_rhs ///< remove any condensed contact contributions from the structural rhs
   };
 
   static inline const std::string ActionType2String(const enum ActionType& act)
@@ -53,6 +57,8 @@ namespace MORTAR {
         return "eval_force_stiff";
       case eval_force:
         return "eval_force";
+      case eval_run_pre_evaluate:
+        return "eval_run_pre_evaluate";
       case eval_run_post_evaluate:
         return "eval_run_post_evaluate";
       case eval_weighted_gap:
@@ -75,6 +81,8 @@ namespace MORTAR {
         return "eval_run_post_apply_jacobian_inverse";
       case MORTAR::eval_correct_parameters:
         return "eval_correct_parameters";
+      case remove_condensed_contributions_from_str_rhs:
+        return "remove_condensed_contributions_from_str_rhs";
       default:
         return "unknown";
     }

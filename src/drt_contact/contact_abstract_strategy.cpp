@@ -735,7 +735,7 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
     if (ParRedist())
     {
       for (std::size_t i = 0; i < Interfaces().size(); ++i)
-        Interfaces()[i]->StoreUnredistributedDofRowMaps();
+        Interfaces()[i]->StoreUnredistributedMaps();
       pglmdofrowmap_ = Teuchos::rcp(new Epetra_Map(LMDoFRowMap(true)));
       pgsdofrowmap_  = Teuchos::rcp(new Epetra_Map(SlDoFRowMap(true)));
       pgmdofrowmap_  = Teuchos::rcp(new Epetra_Map(*gmdofrowmap_));
@@ -3013,6 +3013,14 @@ void CONTACT::CoAbstractStrategy::Evaluate(
       break;
     }
     // -------------------------------------------------------------------
+    // run before an evaluate call in the STR::ModelEvaluator class
+    // -------------------------------------------------------------------
+    case MORTAR::eval_run_pre_evaluate:
+    {
+      RunPreEvaluate( cparams );
+      break;
+    }
+    // -------------------------------------------------------------------
     // run after an evaluate call in the STR::ModelEvaluator class
     // -------------------------------------------------------------------
     case MORTAR::eval_run_post_evaluate:
@@ -3135,6 +3143,19 @@ void CONTACT::CoAbstractStrategy::Evaluate(
 
       break;
     }
+    case MORTAR::remove_condensed_contributions_from_str_rhs:
+    {
+      if ( not eval_vec_mutable )
+        dserror( "The mutable evaluation vector is expected!" );
+      if ( eval_vec_mutable->size() < 1 )
+        dserror( "The eval_vec_mutable is supposed to have at least a length"
+            " of 1!" );
+
+      Epetra_Vector& str_rhs = *eval_vec_mutable->front();
+      RemoveCondensedContributionsFromRhs( str_rhs );
+
+      break;
+    }
     // -------------------------------------------------------------------
     // no suitable action could be found
     // -------------------------------------------------------------------
@@ -3185,6 +3206,23 @@ void CONTACT::CoAbstractStrategy::EvalStaticConstraintRHS(
 {
   dserror("Not yet implemented! See the CONTACT::AUG::Strategy for an "
       "example.");
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoAbstractStrategy::RemoveCondensedContributionsFromRhs(
+    Epetra_Vector& str_rhs ) const
+{
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoAbstractStrategy::RunPreEvaluate(
+    CONTACT::ParamsInterface& cparams )
+{
+  /* Not yet implemented! See the CONTACT::AUG framework for an
+   * example. */
 }
 
 /*----------------------------------------------------------------------*

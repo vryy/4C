@@ -145,6 +145,9 @@ namespace MODELEVALUATOR {
       return predict_type_;
     }
 
+    //! is the current state the predictor state?
+    bool IsPredictorState() const;
+
     //! mutable access to the stress data vector
     virtual Teuchos::RCP<std::vector<char> >& MutableStressDataPtr();
 
@@ -838,6 +841,7 @@ namespace MODELEVALUATOR {
   }; // class BeamData
 
 
+  /*--------------------------------------------------------------------------*/
   /*! Contact data container for the contact model evaluation procedure.
    *
    * \author Michael Hiermeier
@@ -906,6 +910,13 @@ namespace MODELEVALUATOR {
       CheckInit();
       return str_data_ptr_->IsDefaultStep();
     };
+
+    //! is the current state the predictor state?
+    inline bool IsPredictorState() const override
+    {
+      CheckInit();
+      return str_data_ptr_->IsPredictorState();
+    }
 
     //! get the current time step [derived]
     virtual inline double GetDeltaTime() const

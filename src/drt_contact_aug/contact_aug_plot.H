@@ -78,6 +78,9 @@ namespace AUG{
 
     void Do( const NOX::Solver::Generic& solver );
 
+    /// extra wrapper function to enable the plot of the predictor state as well
+    void DoPredictor( const NOX::Solver::Generic& solver );
+
     ~Plot() {};
 
   private:
@@ -326,6 +329,7 @@ namespace CONTACT {
 
     virtual ~Plot() {};
 
+    virtual void runPreIterate( const NOX::Solver::Generic& solver );
     virtual void runPostIterate( const NOX::Solver::Generic& solver );
 
   private:

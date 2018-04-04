@@ -319,6 +319,26 @@ public:
     return mnoderowmap_;
   }
 
+  inline Teuchos::RCP<Epetra_Map>& PSNodeRowMap()
+  {
+    return psnoderowmap_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> PSNodeRowMap() const
+  {
+    return psnoderowmap_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& PMNodeRowMap()
+  {
+    return pmnoderowmap_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> PMNodeRowMap() const
+  {
+    return pmnoderowmap_;
+  }
+
   inline Teuchos::RCP<Epetra_Map>& MNodeColMap()
   {
     return mnodecolmap_;
@@ -453,6 +473,16 @@ public:
   inline Teuchos::RCP<Epetra_Map>& PSDofRowMap()
   {
     return psdofrowmap_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& PMDofRowMap()
+  {
+    return pmdofrowmap_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> PMDofRowMap() const
+  {
+    return pmdofrowmap_;
   }
 
   inline Teuchos::RCP<const Epetra_Map> PSDofRowMap() const
@@ -658,7 +688,10 @@ private:
   Teuchos::RCP<Epetra_Map>           mdofcolmap_;    ///< column map of all master dofs
 
   Teuchos::RCP<Epetra_Map>           psdofrowmap_;   ///< row map of all slave dofs before any redistribution took place
+  Teuchos::RCP<Epetra_Map>           pmdofrowmap_;
   Teuchos::RCP<Epetra_Map>           plmdofmap_;     ///< row map of all lm dofs before any redistribution took place
+  Teuchos::RCP<Epetra_Map>           psnoderowmap_;
+  Teuchos::RCP<Epetra_Map>           pmnoderowmap_;
 
   Teuchos::RCP<Epetra_Map>           lmdofmap_;      ///< row map of all Lagrange multiplier dofs
   int                                maxdofglobal_;  ///< maximum dof ID in global discretization
@@ -829,7 +862,7 @@ public:
   /*!
   \brief Get column map of all interface nodes (Filled()==true is prerequisite)
   */
-  virtual const Teuchos::RCP<Epetra_Map> OldColNodes() const
+  const Teuchos::RCP<Epetra_Map>& OldColNodes() const
   {
     if (Filled()) return oldnodecolmap_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -839,7 +872,7 @@ public:
   /*!
   \brief Get column map of all interface elements (Filled()==true is prerequisite)
   */
-  virtual const Teuchos::RCP<Epetra_Map> OldColElements() const
+  const Teuchos::RCP<Epetra_Map>& OldColElements() const
   {
     if (Filled()) return oldelecolmap_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -849,7 +882,7 @@ public:
   /*!
   \brief Get row map of slave nodes (Filled()==true is prerequisite)
   */
-  virtual const Teuchos::RCP<Epetra_Map> SlaveRowNodes() const
+  const Teuchos::RCP<Epetra_Map>& SlaveRowNodes() const
   {
     if (Filled()) return snoderowmap_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -857,9 +890,22 @@ public:
   }
 
   /*!
+  \brief Get row map of slave nodes (Filled()==true is prerequisite)
+
+  \note This is the slave row map before any parallel redistribution took place.
+  */
+  const Teuchos::RCP<Epetra_Map>& PSlaveRowNodes() const
+  {
+    if (not Filled())
+      dserror("MORTAR::MortarInterface::FillComplete was not called");
+
+    return idata_.PSNodeRowMap();
+  }
+
+  /*!
   \brief Get row map of master nodes (Filled()==true is prerequisite)
   */
-  virtual const Teuchos::RCP<Epetra_Map> MasterRowNodes() const
+  const Teuchos::RCP<Epetra_Map>& MasterRowNodes() const
   {
     if (Filled()) return mnoderowmap_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -867,9 +913,22 @@ public:
   }
 
   /*!
+  \brief Get row map of master nodes (Filled()==true is prerequisite)
+
+  \note This is the master row map before any parallel redistribution took place.
+  */
+  const Teuchos::RCP<Epetra_Map>& PMasterRowNodes() const
+  {
+    if (not Filled())
+      dserror("MORTAR::MortarInterface::FillComplete was not called");
+
+    return idata_.PMNodeRowMap();
+  }
+
+  /*!
   \brief Get column map of slave nodes (Filled()==true is prerequisite)
   */
-  virtual const Teuchos::RCP<Epetra_Map> SlaveColNodes() const
+  const Teuchos::RCP<Epetra_Map>& SlaveColNodes() const
   {
     if (Filled()) return snodecolmap_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -879,7 +938,7 @@ public:
   /*!
   \brief Get column map of master nodes (Filled()==true is prerequisite)
   */
-  virtual const Teuchos::RCP<Epetra_Map> MasterColNodes() const
+  const Teuchos::RCP<Epetra_Map>& MasterColNodes() const
   {
     if (Filled()) return mnodecolmap_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -889,7 +948,7 @@ public:
   /*!
   \brief Get row map of slave nodes + boundary nodes (Filled()==true is prerequisite)
   */
-  virtual const Teuchos::RCP<Epetra_Map> SlaveRowNodesBound() const
+  const Teuchos::RCP<Epetra_Map>& SlaveRowNodesBound() const
   {
     if (Filled()) return snoderowmapbound_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -899,7 +958,7 @@ public:
   /*!
   \brief Get column map of slave nodes + boundary nodes (Filled()==true is prerequisite)
   */
-  virtual const Teuchos::RCP<Epetra_Map> SlaveColNodesBound() const
+  const Teuchos::RCP<Epetra_Map>& SlaveColNodesBound() const
   {
     if (Filled()) return snodecolmapbound_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -909,7 +968,7 @@ public:
   /*!
   \brief Get row map of master nodes - boundary nodes (Filled()==true is prerequisite)
   */
-  virtual const Teuchos::RCP<Epetra_Map> MasterRowNodesNoBound() const
+  const Teuchos::RCP<Epetra_Map>& MasterRowNodesNoBound() const
   {
     if (Filled()) return mnoderowmapnobound_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -919,7 +978,7 @@ public:
   /*!
   \brief Get column map of master nodes - boundary nodes (Filled()==true is prerequisite)
   */
-  virtual const Teuchos::RCP<Epetra_Map> MasterColNodesNoBound() const
+  const Teuchos::RCP<Epetra_Map>& MasterColNodesNoBound() const
   {
     if (Filled()) return mnodecolmapnobound_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -929,7 +988,7 @@ public:
   /*!
   \brief Get row map of slave elements (Filled()==true is prerequisite)
   */
-  virtual const Teuchos::RCP<Epetra_Map> SlaveRowElements() const
+  const Teuchos::RCP<Epetra_Map>& SlaveRowElements() const
   {
     if (Filled()) return selerowmap_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -939,7 +998,7 @@ public:
   /*!
   \brief Get row map of master elements (Filled()==true is prerequisite)
   */
-  virtual const Teuchos::RCP<Epetra_Map> MasterRowElements() const
+  const Teuchos::RCP<Epetra_Map>& MasterRowElements() const
   {
     if (Filled()) return melerowmap_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -949,7 +1008,7 @@ public:
   /*!
   \brief Get column map of slave elements (Filled()==true is prerequisite)
   */
-  virtual const Teuchos::RCP<Epetra_Map> SlaveColElements() const
+  const Teuchos::RCP<Epetra_Map>& SlaveColElements() const
   {
     if (Filled()) return selecolmap_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -959,7 +1018,7 @@ public:
   /*!
   \brief Get column map of master elements (Filled()==true is prerequisite)
   */
-  virtual const Teuchos::RCP<Epetra_Map> MasterColElements() const
+  const Teuchos::RCP<Epetra_Map>& MasterColElements() const
   {
     if (Filled()) return melecolmap_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -969,7 +1028,7 @@ public:
   /*!
   \brief Get row map of slave dofs (Filled()==true is prerequisite)
   */
-  virtual const Teuchos::RCP<Epetra_Map> SlaveRowDofs() const
+  const Teuchos::RCP<Epetra_Map>& SlaveRowDofs() const
   {
     if (Filled()) return sdofrowmap_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -979,7 +1038,7 @@ public:
   /*!
   \brief Get column map of slave dofs (Filled()==true is prerequisite)
   */
-  virtual const Teuchos::RCP<Epetra_Map> SlaveColDofs() const
+  const Teuchos::RCP<Epetra_Map>& SlaveColDofs() const
   {
     if (Filled()) return sdofcolmap_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -987,9 +1046,22 @@ public:
   }
 
   /*!
+  \brief Get row map of slave dofs (Filled()==true is prerequisite)
+
+  \note This is the slave dof map before any parallel redistribution took place.
+  */
+  const Teuchos::RCP<Epetra_Map>& PSlaveRowDofs() const
+  {
+    if (not Filled())
+      dserror("MORTAR::MortarInterface::FillComplete was not called");
+
+    return idata_.PSDofRowMap();
+  }
+
+  /*!
   \brief Get row map of master dofs (Filled()==true is prerequisite)
   */
-  virtual const Teuchos::RCP<Epetra_Map> MasterRowDofs() const
+  const Teuchos::RCP<Epetra_Map>& MasterRowDofs() const
   {
     if (Filled()) return mdofrowmap_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -999,7 +1071,7 @@ public:
   /*!
   \brief Get column map of master dofs (Filled()==true is prerequisite)
   */
-  virtual const Teuchos::RCP<Epetra_Map> MasterColDofs() const
+  const Teuchos::RCP<Epetra_Map>& MasterColDofs() const
   {
     if (Filled()) return mdofcolmap_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -1007,9 +1079,22 @@ public:
   }
 
   /*!
+  \brief Get row map of master dofs (Filled()==true is prerequisite)
+
+  \note This is the master dof map before any parallel redistribution took place.
+  */
+  const Teuchos::RCP<Epetra_Map>& PMasterRowDofs() const
+  {
+    if (not Filled())
+      dserror("MORTAR::MortarInterface::FillComplete was not called");
+
+    return idata_.PMDofRowMap();
+  }
+
+  /*!
   \brief Get map of Lagrange multiplier dofs (Filled()==true is prerequisite)
   */
-  virtual const Teuchos::RCP<Epetra_Map> LagMultDofs() const
+  const Teuchos::RCP<Epetra_Map>& LagMultDofs() const
   {
     if (Filled()) return lmdofmap_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
@@ -1019,7 +1104,7 @@ public:
   /*!
   \brief Get maximum dof ID in global discretization
   */
-  virtual const int& MaxDofGlobal()
+  const int& MaxDofGlobal()
   {
     if (maxdofglobal_ < 0) dserror("MaxDofGlobal not yet initialized");
     return maxdofglobal_;
@@ -1130,12 +1215,11 @@ public:
   { UpdateLagMultSets(offset_if,false); };
   void UpdateLagMultSets(int offset_if, const bool& redistributed);
 
-  /*! \brief Store the unredistributed local slave and lagrange multiplier
-   *   row dof maps
+  /*! \brief Store the unredistributed local slave and lagrange multiplier maps
    *
    *  \author hiermeier
    *  \date 07/2016 */
-  void StoreUnredistributedDofRowMaps();
+  void StoreUnredistributedMaps();
 
   /*! \brief Redistribute the lagrange multiplier sets in a deterministic way
    *  in correlation to the redistributed slave dofs.

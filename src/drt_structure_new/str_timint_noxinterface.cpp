@@ -237,6 +237,8 @@ double STR::TIMINT::NoxInterface::GetPrimaryRHSNorms(
       // remove entries specific to element technology
       gstate_ptr_->RemoveElementTechnologies(rhs_ptr);
 
+      implint_ptr_->RemoveCondensedContributionsFromRhs(*rhs_ptr);
+
       rhsnorm = CalculateNorm(rhs_ptr,type,isscaled);
 
       break;

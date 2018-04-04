@@ -497,6 +497,7 @@ set(OBJS_DRT_LIB
   src/drt_lib/drt_utils_discret.cpp
   src/drt_lib/drt_utils_discret_dbc.cpp
   src/drt_lib/drt_utils_discret_evaluate.cpp
+  src/drt_lib/connectivity.cpp
 )
 set(OBJS_DRT_MAT_LIB
   src/drt_matelast/elast_aniso_structuraltensor_strategy.cpp
@@ -2236,12 +2237,14 @@ set(OBJS_DRT_CONTACT_AUG
   src/drt_contact_aug/contact_augmented_interface_tools.cpp
   src/drt_contact_aug/contact_augmented_integrator.cpp
   src/drt_contact_aug/contact_augmented_integrator_evaluate.cpp
+  src/drt_contact_aug/contact_aug_active_set.cpp
   src/drt_contact_aug/contact_aug_projector.cpp
   src/drt_contact_aug/contact_aug_lagrange_strategy.cpp
   src/drt_contact_aug/contact_aug_lagrange_interface.cpp
   src/drt_contact_aug/contact_aug_steepest_ascent_strategy.cpp
   src/drt_contact_aug/contact_aug_steepest_ascent_interface.cpp
   src/drt_contact_aug/contact_aug_penalty_update.cpp
+  src/drt_contact_aug/contact_aug_adaptive_cn.cpp
   src/drt_contact_aug/contact_aug_combo_strategy.cpp
   src/drt_contact_aug/contact_aug_combo_strategy_switching.cpp
   src/drt_contact_aug/contact_aug_potential.cpp

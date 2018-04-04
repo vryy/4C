@@ -228,6 +228,7 @@ bool CONTACT::AUG::Projector<probdim,ref_type,tar_type>::operator()(
   const double ref_rhs_nrm2 = std::max( 1.0, rhs_.Norm2() );
   double dx_nrm2 = 0.0;
   double rhs_nrm2 = 0.0;
+  bool is_parallel_proj = false;
 
   for ( ; iter_ < MORTARMAXITER; ++iter_ )
   {
@@ -239,8 +240,12 @@ bool CONTACT::AUG::Projector<probdim,ref_type,tar_type>::operator()(
     // safety check
     if ( std::abs(det) < 1.0e-12 )
     {
-      std::cout << "WARNING: GPProjection parallel to master element --> "
-             "GP skipped for this master element!" << std::endl;
+      is_parallel_proj = true;
+      std::cout << "WARNING: GPProjection parallel to master element:\n"
+                << "Determinant:           " << det << "\n"
+                << "Reference element GID: " << ref_ele.Id() << "\n"
+                << "Target element GID:    " << target_ele.Id() << "\n"
+                << "GP will be skipped for this master element!" << std::endl;
       break;
     }
 
@@ -277,7 +282,7 @@ bool CONTACT::AUG::Projector<probdim,ref_type,tar_type>::operator()(
   }
 
   // Newton iteration unconverged
-  if ( iter_==MORTARMAXITER )
+  if ( iter_==MORTARMAXITER or is_parallel_proj )
   {
     std::fill( txi.A(), txi.A() + TAR_DIM, 1.0e12 );
 

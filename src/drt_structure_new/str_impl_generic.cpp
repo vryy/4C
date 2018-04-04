@@ -313,3 +313,11 @@ void STR::IMPLICIT::Generic::ComputeJacobianContributionsFromElementLevelForPTC(
 {
   ModelEval().ComputeJacobianContributionsFromElementLevelForPTC(scalingMatrixOpPtr);
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::IMPLICIT::Generic::RemoveCondensedContributionsFromRhs(
+    Epetra_Vector& rhs ) const
+{
+  ModelEval().RemoveCondensedContributionsFromRhs( rhs );
+}

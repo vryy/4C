@@ -203,6 +203,7 @@ void CONTACT::CoNitscheStrategy::Evaluate(
   case MORTAR::eval_force_stiff:
     Integrate(cparams);
     break;
+  case MORTAR::eval_run_pre_evaluate: break;
   case MORTAR::eval_run_post_evaluate: break;
   case MORTAR::eval_reset:
     SetState(MORTAR::state_new_displacement, *((*eval_vec)[0])); break;
@@ -210,6 +211,7 @@ void CONTACT::CoNitscheStrategy::Evaluate(
   case MORTAR::eval_run_pre_compute_x: break;
   case MORTAR::eval_run_post_iterate: break;
   case MORTAR::eval_run_post_apply_jacobian_inverse: break;
+  case MORTAR::remove_condensed_contributions_from_str_rhs: break;
   default: dserror("unknown action: %s",
       MORTAR::ActionType2String(act).c_str()); break;
   }

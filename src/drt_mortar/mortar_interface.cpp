@@ -1961,10 +1961,15 @@ void MORTAR::MortarInterface::UpdateLagMultSets(int offset_if,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::StoreUnredistributedDofRowMaps()
+void MORTAR::MortarInterface::StoreUnredistributedMaps()
 {
   psdofrowmap_  = Teuchos::rcp(new Epetra_Map(*sdofrowmap_));
+  idata_.PMDofRowMap() = Teuchos::rcp(new Epetra_Map(*mdofrowmap_));
   plmdofmap_ = Teuchos::rcp(new Epetra_Map(*lmdofmap_));
+
+  idata_.PSNodeRowMap() = Teuchos::rcp(new Epetra_Map(*snoderowmap_));
+  idata_.PMNodeRowMap() = Teuchos::rcp(new Epetra_Map(*mnoderowmap_));
+
   return;
 }
 

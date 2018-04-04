@@ -218,6 +218,15 @@ bool STR::MODELEVALUATOR::Contact::EvaluateForceStiff()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Contact::PreEvaluate()
+{
+  EvalContact().SetActionType( MORTAR::eval_run_pre_evaluate );
+  EvalData().SetModelEvaluator( this );
+  Strategy().Evaluate( EvalContact() );
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Contact::PostEvaluate()
 {
   EvalContact().SetActionType( MORTAR::eval_run_post_evaluate );
@@ -1027,4 +1036,17 @@ bool STR::MODELEVALUATOR::Contact::CorrectParameters(
   Strategy().Evaluate( EvalContact() );
 
   return true;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Contact::RemoveCondensedContributionsFromRhs(
+    Epetra_Vector& rhs )
+{
+  CheckInitSetup();
+  EvalContact().SetActionType( MORTAR::remove_condensed_contributions_from_str_rhs );
+
+  std::vector<Teuchos::RCP<Epetra_Vector> > mutable_vec(1,
+      Teuchos::rcpFromRef(rhs) );
+  Strategy().Evaluate( EvalContact(), NULL, &mutable_vec );
 }

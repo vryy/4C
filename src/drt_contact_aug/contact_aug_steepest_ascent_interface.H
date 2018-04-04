@@ -54,8 +54,8 @@ namespace STEEPESTASCENT {
     virtual ~Interface() {};
 
   protected:
-    virtual Teuchos::RCP<CONTACT::AUG::INTERFACE::AssembleStrategy>
-    CreateNodeBasedAssembleStrategy();
+    Teuchos::RCP<CONTACT::AUG::INTERFACE::AssembleStrategy>
+    CreateNodeBasedAssembleStrategy() override;
 
   };  // class Interface
 
@@ -83,14 +83,14 @@ namespace INTERFACE {
     virtual ~NodeBasedAssembleStrategy() {};
 
     /// derived
-    virtual void Add_Var_A_GG(
+    void Add_Var_A_GG(
         Epetra_Vector& sl_force_g,
-        const Epetra_Vector& cnVec ) const;
+        const Epetra_Vector& cnVec ) const override;
 
     /// derived
-    virtual void AssembleDGGLinMatrix(
+    void AssembleDGGLinMatrix(
         LINALG::SparseMatrix& dGGLinMatrix,
-        const Epetra_Vector& cnVec) const;
+        const Epetra_Vector& cnVec) const override;
   };
 
 } // namespace INTERFACE

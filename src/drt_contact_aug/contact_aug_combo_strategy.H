@@ -227,6 +227,9 @@ namespace AUG {
     void EvalStaticConstraintRHS(CONTACT::ParamsInterface& cparams) override;
 
     /// function wrapper
+    void RunPreEvaluate( CONTACT::ParamsInterface& cparams ) override;
+
+    /// function wrapper
     void RunPostEvaluate( CONTACT::ParamsInterface& cparams ) override;
 
     /// function wrapper
@@ -253,6 +256,10 @@ namespace AUG {
         Epetra_Vector& result,
         const Epetra_Vector& xold,
         const NOX::NLN::Group& grp ) override;
+
+    /// function wrapper
+    void RemoveCondensedContributionsFromRhs(
+        Epetra_Vector& str_rhs ) const override;
 
     /// function wrapper
     void CorrectParameters(

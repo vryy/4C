@@ -340,8 +340,10 @@ void CONTACT::AUG::PenaltyUpdate::PrintUpdate( std::ostream& os ) const
 
   os << "\n=== Update of the regularization parameter ===\n";
   os << "Type   = " << INPAR::CONTACT::PenaltyUpdate2String( Type() ) << "\n";
-  os << "Ratio (cN_new / cn_old) = " << Ratio() << "\n";
-  os << "New cN = " << cnmax << "\n";
+  os << "Ratio (cN_new / cn_old) = " << std::setw(10) << std::setprecision(4)
+     << std::scientific << Ratio() << "\n";
+  os << "New cN = " << std::setw(10) << std::setprecision(4)
+     << std::scientific << cnmax << "\n";
   os << "==============================================\n" << std::endl;
 }
 

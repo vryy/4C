@@ -17,6 +17,7 @@
 #include "contact_augmented_interface.H"
 #include "contact_aug_potential.H"
 #include "contact_aug_steepest_ascent_strategy.H"
+#include "contact_aug_active_set.H"
 
 #include "../drt_mortar/mortar_matrix_transform.H"
 
@@ -836,6 +837,9 @@ void CONTACT::AUG::Strategy::EvalForce(
   // --- Assemble the gap vectors ---------------------------------------------
   AssembleGap();
 
+  // --- Adapt the regularization parameter (optional) ------------------------
+  AdaptiveCn( cparams );
+
   // --- compute the augmented forces -----------------------------------------
   EvalAugmentedForces();
 
@@ -849,6 +853,15 @@ void CONTACT::AUG::Strategy::EvalForce(
   EvalConstrRHS();       // update the constrRHS
 
   PostEvalForce( cparams );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::AUG::Strategy::AdaptiveCn(
+    CONTACT::ParamsInterface& cparams )
+{
+  // not necessary for the standard/augmented Lagrangian strategy
+  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -1020,247 +1033,8 @@ void CONTACT::AUG::Strategy::AssembleContactStiff()
 void CONTACT::AUG::Strategy::UpdateActiveSetSemiSmooth(
     const CONTACT::ParamsInterface& cparams )
 {
-  // get out of here if not in the semi-smooth Newton case
-  // (but before doing this, check if there are invalid active nodes)
-  if ( not Data().IsSemiSmoothNewton() )
-  {
-    // loop over all interfaces
-    for ( plain_interface_set::const_iterator cit = interface_.begin();
-          cit != interface_.end(); ++cit )
-    {
-      const CoInterface& interface = **cit;
-
-      // loop over all slave nodes on the current interface
-      for (int j=0;j<interface.SlaveRowNodes()->NumMyElements();++j)
-      {
-        int gid = interface.SlaveRowNodes()->GID(j);
-        DRT::Node* node = interface.Discret().gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-        CoNode* cnode = static_cast<CoNode*>(node);
-
-        /* The nested active set strategy cannot deal with the case of
-         * active nodes that have no integration segments/cells attached,
-         * as this leads to zero rows in D and M and thus to singular systems.
-         * However, this case might possibly happen when slave nodes slide
-         * over the edge of a master body within one fixed active set step.
-         * (Remark: Semi-smooth Newton has no problems in this case, as it
-         * updates the active set after EACH Newton step, see below, and thus
-         * would always set the corresponding nodes to INACTIVE.) */
-        if (cnode->Active() && !cnode->HasSegment())
-          dserror("ERROR: Active node %i without any segment/cell attached",cnode->Id());
-      }
-    }
-    return;
-  }
-
-  // assume that active set has converged and check for opposite
-  Data().IsActiveSetConverged() = true;
-  enum class ASStatus : int { unchanged = 0, changed =1 };
-  enum ASStatus lstatus = ASStatus::unchanged;
-
-  // loop over all interfaces
-  for ( plain_interface_set::const_iterator cit = interface_.begin();
-        cit != interface_.end(); ++cit )
-  {
-    const Interface& interface = dynamic_cast<const Interface&>(**cit);
-
-    // loop over all slave nodes of the current interface
-    const int num_my_slave_row_nodes = interface.SlaveRowNodes()->NumMyElements();
-    int* my_slave_row_node_gids       = interface.SlaveRowNodes()->MyGlobalElements();
-    for ( int j=0; j < num_my_slave_row_nodes; ++j )
-    {
-      const int gid = my_slave_row_node_gids[j];
-      CoNode* cnode = dynamic_cast<CoNode*>(interface.Discret().gNode(gid));
-      if (!cnode) dserror("ERROR: AugmentedInterface::UpdateAugActiveSetSemiSmooth: "
-          "Cannot find node with gid %",gid);
-
-      /* Set the status to active of the node during the predictor of the
-       * very first step, if the node has been set active by INITCONTACTBYGAP,
-       * via the condition line or any other prescribed option. */
-      if ( not cnode->Active() and
-           interface.SetNodeInitiallyActive( cparams, *cnode ) )
-      {
-        lstatus = ( cnode->Active() ? ASStatus::changed : lstatus );
-        continue;
-      }
-
-      /* read weighting factor cn
-       * (this is necessary in semi-smooth Newton case, as the search for the
-       * active set is now part of the Newton iteration. Thus, we do not know
-       * the active / inactive status in advance and we can have a state in
-       * which both the condition znormal = 0 and wgap = 0 are violated. Here
-       * we have to weight the two violations via cn! */
-      const int cn_lid = Data().Cn().Map().LID(gid);
-      const double cn = std::abs( Data().Cn()[cn_lid] );
-
-      // compute averaged weighted gap
-      const double kappa = cnode->AugData().GetKappa();
-      double awgap = cnode->AugData().GetWGap();
-      if (kappa != 1.0e12)
-        awgap /= kappa;
-
-      // get normal part of the Lagrange multiplier
-      const double zn = cnode->MoData().lm()[0];
-
-      // check nodes of inactive set *************************************
-      if (cnode->Active()==false)
-      {
-        // check for fulfillment of contact condition
-        if (zn - cn*awgap > 0.0)
-        {
-          cnode->Active() = true;
-          lstatus = ASStatus::changed;
-        }
-      }
-      // check nodes of active set ***************************************
-      else
-      {
-        if (zn-cn*awgap<=0.0)
-        {
-          cnode->Active() = false;
-          lstatus = ASStatus::changed;
-        }
-      }
-    }
-  } // end loop over all interfaces
-
-#if 0
-  int debug_count = 0;
-  for ( plain_interface_set::const_iterator cit = interface_.begin();
-        cit != interface_.end(); ++cit )
-  {
-    IO::cout << "---------------- INTERFACE " << ++debug_count << " ----------------\n";
-    const Interface& interface = dynamic_cast<const Interface&>(**cit);
-
-    // loop over all slave nodes of the current interface
-    const int num_my_slave_row_nodes = interface.SlaveRowNodes()->NumMyElements();
-    int* my_slave_row_node_gids       = interface.SlaveRowNodes()->MyGlobalElements();
-    for ( int j=0; j < num_my_slave_row_nodes; ++j )
-    {
-      const int gid = my_slave_row_node_gids[j];
-      CoNode* cnode = dynamic_cast<CoNode*>(interface.Discret().gNode(gid));
-      if (!cnode) dserror("ERROR: AugmentedInterface::UpdateAugActiveSetSemiSmooth: "
-          "Cannot find node with gid %",gid);
-
-      // compute averaged weighted gap
-      const double kappa = cnode->AugData().GetKappa();
-      double awgap = cnode->AugData().GetWGap();
-      if (kappa != 1.0e12)
-        awgap /= kappa;
-
-      // get normal part of the Lagrange multiplier
-      const double zn = cnode->MoData().lm()[0];
-
-      std::cout << "PROC #" << Comm().MyPID() << " -- NODE #"
-          << std::setprecision(4) << std::setw(10) << cnode->Id() << "("
-          << debug_count << ") | "
-          << std::scientific << std::setw(12) <<cnode->X()[0] << ", "
-          << std::scientific << std::setw(12) << cnode->X()[1] << ", "
-          << std::scientific << std::setw(12) << cnode->X()[2] << " | wgap = "
-          << std::scientific << std::setw(12) << cnode->AugData().GetWGap() <<
-          ", awgap = " << std::setw(12) << awgap
-          << ( cnode->Active() ? "   [ACTIVE]" : " [INACTIVE]" ) <<
-          ", lm = " << std::scientific << std::setw(12) << zn << std::endl;
-    }
-  }
-#endif
-
-  // make local active set status global
-  enum ASStatus gstatus = ASStatus::unchanged;
-  {
-    int local = static_cast<int>(lstatus);
-    int global = static_cast<int>(gstatus);
-    Comm().MaxAll( &local, &global, 1 );
-    gstatus = ( global>0 ? ASStatus::changed : ASStatus::unchanged );
-  }
-
-  // only if it's a full Newton step...
-  if ( cparams.IsDefaultStep() )
-  {
-    // store the previous augmented active set
-    if ( Data().GActiveNodeRowMapPtr() != Teuchos::null )
-      Data().GOldActiveSlaveNodesPtr() = Teuchos::rcp( new Epetra_Map( Data().GActiveNodeRowMap() ) );
-    else
-      Data().GOldActiveSlaveNodesPtr() = Teuchos::rcp(new Epetra_Map(0,0,Comm()));
-  }
-  else
-    IO::cout << "This is no default step! History information stays untouched." << IO::endl;
-
-  // (re)setup of the global Epetra_maps
-  Data().GActiveNodeRowMapPtr() = Teuchos::null;
-  Data().GActiveDofRowMapPtr()  = Teuchos::null;
-  Data().GActiveNDofRowMapPtr() = Teuchos::null;
-  Data().GActiveTDofRowMapPtr() = Teuchos::null;
-
-  // loop over all interfaces
-  for ( plain_interface_set::const_iterator cit = interface_.begin();
-        cit != interface_.end(); ++cit )
-  {
-    CoInterface& interface = **cit;
-
-    // update active set Epetra_Maps
-    interface.BuildActiveSet();
-
-    // Update Active set
-    Data().GActiveNodeRowMapPtr() = LINALG::MergeMap(
-        Data().GActiveNodeRowMapPtr(),interface.ActiveNodes(),false);
-    Data().GActiveDofRowMapPtr()  = LINALG::MergeMap(
-        Data().GActiveDofRowMapPtr(),interface.ActiveDofs(),false);
-    Data().GActiveNDofRowMapPtr() = LINALG::MergeMap(
-        Data().GActiveNDofRowMapPtr(),interface.ActiveNDofs(),false);
-    Data().GActiveTDofRowMapPtr() = LINALG::MergeMap(
-        Data().GActiveTDofRowMapPtr(),interface.ActiveTDofs(),false);
-  }
-
-  // check the convergence of the active set
-  Data().IsActiveSetConverged() =
-      Data().GActiveNodeRowMap().SameAs( Data().GOldActiveSlaveNodes() );
-
-  if ( gstatus == ASStatus::changed )
-  {
-    Data().SetVectorMapsValid( false );
-    Data().SetMatrixMapsValid( false );
-
-    // reset the active/inactive state vectors
-    Data().Potential().Setup();
-  }
-
-  if ( cparams.IsDefaultStep() and
-       ( gstatus == ASStatus::changed ) == Data().IsActiveSetConverged() )
-    dserror("The convergence state of the active set was not detected correctly!");
-
-
-  // set the new active/inactive state
-  Data().Potential().SetActiveInactiveState();
-
-  // update the history information only if it's no correction step of the active set
-  if ( cparams.IsDefaultStep() )
-  {
-    // update flag for the contact status of the last iterate (history information)
-    if (IsInContact())
-      Data().WasInContactLastIter() = true;
-    else
-      Data().WasInContactLastIter() = false;
-  }
-  // update flag for global contact status
-  if ( Data().GActiveNodeRowMap().NumGlobalElements() )
-  {
-    Data().IsInContact()  = true;
-    Data().WasInContact() = true;
-  }
-  else
-    Data().IsInContact() = false;
-
-//  int icount = 0;
-//  for ( plain_interface_set::const_iterator cit = interface_.begin();
-//        cit != interface_.end(); ++cit, ++icount )
-//  {
-//    CoInterface& interface = **cit;
-//    interface.WriteNodalCoordinatesToFile( icount, *Data().GActiveNodeRowMapPtr(),
-//        "../o/half_sphere/aug_nurbs_complete_active_slave_node_coordinates.data");
-//  }
-
-  return;
+  ActiveSet active_set(*this);
+  active_set.Update( cparams );
 }
 
 /*----------------------------------------------------------------------------*
@@ -2152,6 +1926,8 @@ void CONTACT::AUG::Strategy::EvalWeightedGapGradientError(
         Data().NodalGradientError_MaProj();
 
     L2ErrorNormPerNode( grad_error_ma, grad_error_ma_per_node );
+    IO::cout(IO::standard) << "Nodal gradient error: projected parametric "
+        "master coordinate\n";
     for ( auto& ge_per_node : grad_error_ma_per_node )
       IO::cout(IO::standard) << "GID #" << ge_per_node.first << ", e = "
           << ge_per_node.second << IO::endl;
@@ -2163,6 +1939,7 @@ void CONTACT::AUG::Strategy::EvalWeightedGapGradientError(
         Data().NodalGradientError_Jacobian();
 
     L2ErrorNormPerNode( grad_error_jac, grad_error_jac_per_node );
+    IO::cout(IO::standard) << "Nodal gradient error: jacobian\n";
     for ( auto& ge_per_node : grad_error_jac_per_node )
       IO::cout(IO::standard) << "GID #" << ge_per_node.first << ", e = "
           << ge_per_node.second << IO::endl;

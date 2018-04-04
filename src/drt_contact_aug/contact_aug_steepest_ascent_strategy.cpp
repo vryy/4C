@@ -19,6 +19,7 @@
 #include "contact_aug_potential.H"
 #include "contact_aug_lagrange_multiplier_function.H"
 #include "contact_aug_penalty_update.H"
+#include "contact_aug_adaptive_cn.H"
 
 #include "../drt_contact/contact_paramsinterface.H"
 
@@ -61,6 +62,9 @@ CONTACT::AUG::STEEPESTASCENT::Strategy::Strategy(
   Data().SaData().SetCnUpperBound( sa_params.get<double>( "CN_UPPER_BOUND" ) );
   Data().SaData().SetPenaltyCorrectionParameter(
       sa_params.get<double>( "CORRECTION_PARAMETER" ) );
+
+  Data().SaData().SetUnitGapForceScale(
+      sa_params.get<double>( "UNIT_GAP_FORCE_SCALE" ) );
 
   Data().SaData().LagrangeMultiplierFuncPtr() =
       Teuchos::rcp( new LagrangeMultiplierFunction() );
@@ -258,6 +262,15 @@ void CONTACT::AUG::STEEPESTASCENT::Strategy::RunPostApplyJacobianInverse(
   result.Scale(-1.0);
   AugmentDirection( cparams, xold, result );
   result.Scale(-1.0);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::AUG::STEEPESTASCENT::Strategy::AdaptiveCn(
+    CONTACT::ParamsInterface& cparams )
+{
+  CONTACT::AUG::AdaptiveCn ad_cn( *this, Interfaces(), Data() );
+  ad_cn.Execute( AdaptiveCnType::init_nbc, cparams, &IO::cout.os( IO::verbose ) );
 }
 
 /*----------------------------------------------------------------------------*
@@ -479,4 +492,18 @@ void CONTACT::AUG::STEEPESTASCENT::Strategy::UpdateCn(
     const CONTACT::ParamsInterface& cparams )
 {
   Data().SaData().PenaltyUpdate().Update( cparams );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::AUG::STEEPESTASCENT::Strategy::RemoveCondensedContributionsFromRhs(
+    Epetra_Vector& str_rhs ) const
+{
+  Epetra_Vector regforce( *Data().GSlMaDofRowMapPtr() );
+  LINALG::AssembleMyVector(0.0, regforce, 1.0, *Data().SlForceGPtr() );
+  LINALG::AssembleMyVector(1.0, regforce, 1.0, *Data().MaForceGPtr() );
+
+  Epetra_Vector regforce_exp( *ProblemDofs() );
+  LINALG::Export( regforce, regforce_exp );
+  CATCH_EPETRA_ERROR(str_rhs.Update( -1.0, regforce_exp, 1.0 ));
 }

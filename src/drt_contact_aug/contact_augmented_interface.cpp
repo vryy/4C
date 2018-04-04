@@ -714,6 +714,14 @@ void CONTACT::AUG::Interface::AssembleDLmNWGapLinMatrix(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void CONTACT::AUG::Interface::AssembleActiveUnitGap(
+    Epetra_Vector& unit_gap ) const
+{
+  idata_.AssembleStrategy().AssembleActiveUnitGap( unit_gap );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::AssembleActiveGapVectors(
     Epetra_Vector& aWGapVec,
     Epetra_Vector& wGapVec ) const
@@ -1462,9 +1470,6 @@ bool CONTACT::AUG::Interface::SetNodeInitiallyActive(
     const CONTACT::ParamsInterface& cparams,
     CONTACT::CoNode& cnode ) const
 {
-  if ( !cparams.IsPredictor() or cparams.GetStepNp() != 1 )
-    return false;
-
   static const bool init_contact_by_gap =
       DRT::INPUT::IntegralValue<int>(IParams(),"INITCONTACTBYGAP");
 
@@ -1477,6 +1482,13 @@ bool CONTACT::AUG::Interface::SetNodeInitiallyActive(
     cnode.Active() = true;
   else if ( init_contact_by_gap )
     SetNodeInitiallyActiveByGap( cnode );
+
+  if ( node_init_active )
+    std::cout <<  "Node #" << std::setw(5) << cnode.Id()
+        << " is set initially active via the condition line.\n";
+  else if ( init_contact_by_gap )
+    std::cout <<  "Node #" << std::setw(5) << cnode.Id()
+        << " is set initially active by gap.\n";
 
   return ( node_init_active or init_contact_by_gap );
 }

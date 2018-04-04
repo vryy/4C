@@ -84,6 +84,103 @@ NodeBasedAssembleStrategy(
  *----------------------------------------------------------------------------*/
 template < typename assemble_policy >
 void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::
+AssembleActiveUnitGap( Epetra_Vector& unit_gap ) const
+{
+  if ( not Inter().lComm() )
+    return;
+
+  const int nummyanodes   = IData().ActiveNodes()->NumMyElements();
+  const int * myanodegids = IData().ActiveNodes()->MyGlobalElements();
+
+  std::vector<const CONTACT::CoNode*> overlapping_nodes;
+  overlapping_nodes.reserve( nummyanodes );
+  std::vector<const CONTACT::CoNode*> projectable_nodes;
+  projectable_nodes.reserve( nummyanodes );
+
+  double total_overlap = 0.0;
+
+  const double threshold = 1.0e-12;
+
+  // (0) check if there is a meaningful overlap for any of the nodes
+  for ( int alid = 0; alid<nummyanodes; ++alid )
+  {
+    const int agid = myanodegids[alid];
+    const CONTACT::CoNode* cnode = dynamic_cast<const CONTACT::CoNode*>(
+        idiscret_.gNode(agid) );
+
+    const double wgap = cnode->AugData().GetWGap();
+    const double kappa = cnode->AugData().GetKappa();
+
+    // ignore nodes without projection
+    if ( wgap == 1.0e12 )
+      continue;
+
+    const double awgap = wgap / kappa;
+
+    // overlap => negative gap value
+    if ( awgap < -threshold )
+    {
+      total_overlap += wgap*wgap;
+      overlapping_nodes.push_back( cnode );
+    }
+    projectable_nodes.push_back( cnode );
+  }
+
+  if ( overlapping_nodes.size() > projectable_nodes.size() )
+    dserror("sanity check failed!");
+
+  const bool meaningful_overlap = ( overlapping_nodes.size() > 0 );
+  const bool any_projectable = ( projectable_nodes.size() > 0 );
+
+  double* unit_gap_values = unit_gap.Values();
+  const Epetra_Map& slnoderowmap = *IData().SNodeRowMap();
+  const Epetra_Map& slnormaldofrowmap = *IData().SNDofRowMap();
+
+  if ( not slnoderowmap.PointSameAs( slnormaldofrowmap ) )
+    dserror("mismatch bewteen slave node map and slave normal dof map");
+  if ( not unit_gap.Map().SameAs( slnormaldofrowmap ) )
+    dserror("Unexpected map!");
+
+  if ( meaningful_overlap )
+  {
+    double gtotal_overlap = 0.0;
+    unit_gap.Map().Comm().SumAll( &total_overlap, &gtotal_overlap, 1 );
+    const double scale = 1.0 / std::sqrt(gtotal_overlap);
+
+    for ( const CoNode* cnode : overlapping_nodes )
+    {
+      const int lid = slnoderowmap.LID( cnode->Id() );
+      if ( lid == -1 )
+        dserror( "Couldn't find the slave GID #%d in our slave node row map!",
+            cnode->Id() );
+
+      unit_gap_values[lid] = scale * cnode->AugData().GetWGap();
+    }
+  }
+  else if ( any_projectable )
+  {
+    int gnum_pnodes = 0;
+    int mynum_pnodes = projectable_nodes.size();
+    unit_gap.Map().Comm().SumAll( &mynum_pnodes, &gnum_pnodes, 1 );
+    const double scale = 1.0 / std::sqrt( gnum_pnodes );
+
+    for ( const CoNode* cnode : projectable_nodes )
+    {
+      const int lid = slnoderowmap.LID( cnode->Id() );
+      if ( lid == -1 )
+        dserror( "Couldn't find the slave GID #%d in our slave node row map!",
+            cnode->Id() );
+
+      // negative value --> artificial overlap
+      unit_gap_values[lid] = -scale;
+    }
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template < typename assemble_policy >
+void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::
 AssembleBMatrix( LINALG::SparseMatrix& BMatrix ) const
 {
   // get out of here if not participating in interface

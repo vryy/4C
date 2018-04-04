@@ -16,6 +16,7 @@
 
 #include "str_model_evaluator_data.H"
 #include "str_timint_implicit.H"
+#include "str_impl_generic.H"
 #include "str_nln_solver_utils.H"
 #include "str_nln_solver_nox.H"
 
@@ -391,6 +392,20 @@ bool STR::MODELEVALUATOR::Data::IsEleEvalError() const
 {
   CheckInitSetup();
   return (ele_eval_error_flag_!=STR::ELEMENTS::ele_error_none);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::MODELEVALUATOR::Data::IsPredictorState() const
+{
+  CheckInitSetup();
+
+  const STR::IMPLICIT::Generic* impl_ptr =
+      dynamic_cast<const STR::IMPLICIT::Generic*>( &TimInt().Integrator() );
+
+  if ( not impl_ptr )
+    return false;
+  return impl_ptr->IsPredictorState();
 }
 
 /*----------------------------------------------------------------------------*

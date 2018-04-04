@@ -90,6 +90,13 @@ namespace IMPLICIT {
         Epetra_Vector& f,
         LINALG::SparseOperator& jac );
 
+    /*! \brief Remove contributions from the structural right-hand side stemming
+     *  from any condensation operations (typical example is contact)
+     *
+     *  \author hiermeier \date 03/18 */
+    void RemoveCondensedContributionsFromRhs(
+        Epetra_Vector& rhs ) const;
+
     //! derived
     virtual bool AssembleForce( Epetra_Vector& f,
         const std::vector<INPAR::STR::ModelType>* without_these_models = NULL ) const = 0;
@@ -179,7 +186,8 @@ namespace IMPLICIT {
     const bool& IsPredictorState() const;
 
     //! compute the scaling operator for element based scaling using PTC
-    virtual void ComputeJacobianContributionsFromElementLevelForPTC(Teuchos::RCP<LINALG::SparseMatrix>& scalingMatrixOpPtr);
+    void ComputeJacobianContributionsFromElementLevelForPTC(
+        Teuchos::RCP<LINALG::SparseMatrix>& scalingMatrixOpPtr);
 
     /** \brief Print jacbian into text file for later use in MATLAB
      *

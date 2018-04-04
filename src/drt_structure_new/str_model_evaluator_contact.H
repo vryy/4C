@@ -63,7 +63,14 @@ namespace MODELEVALUATOR {
     virtual bool EvaluateForceStiff();
 
     //! [derived]
+    void PreEvaluate() override;
+
+    //! [derived]
     virtual void PostEvaluate();
+
+    //! [derived]
+    void RemoveCondensedContributionsFromRhs(
+        Epetra_Vector& rhs ) override;
 
     //! [derived]
     virtual bool AssembleForce(Epetra_Vector& f,
@@ -174,6 +181,11 @@ namespace MODELEVALUATOR {
     virtual Teuchos::RCP<LINALG::SparseOperator> GetAuxDisplJacobian() const;
 
     void EvaluateWeightedGapGradientError();
+
+    inline const DRT::DiscretizationInterface& StrDiscret() const
+    {
+      return Discret();
+    }
 
     /// @}
 

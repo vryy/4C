@@ -217,6 +217,21 @@ const int& STR::MODELEVALUATOR::Generic::DofOffset() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> STR::MODELEVALUATOR::Generic::GetFextIncr() const
+{
+  CheckInitSetup();
+  const Epetra_Vector& fextn  = *GState().GetFextN();
+  const Epetra_Vector& fextnp = *GState().GetFextNp();
+
+  Teuchos::RCP<Epetra_Vector> fext_incr =
+      Teuchos::rcp<Epetra_Vector>( new Epetra_Vector( fextnp ) );
+  fext_incr->Update(-1.0,fextn,1.0);
+
+  return fext_incr;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Generic::EvalErrorCheck() const
 {
   // --- Did an exception occur during the evaluation process? -----------------

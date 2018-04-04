@@ -119,6 +119,16 @@ namespace MODELEVALUATOR {
     bool CorrectParameters(
         const enum NOX::NLN::CorrectionType type ) const;
 
+    /*! Remove any condensed contributions from the structural rhs
+     *
+     *  Recover the original right hand side vector by removing any
+     *  contributions stemming from the condensation algorithm. A typical
+     *  example is the condensed contact.
+     *
+     *  \author hiermeier \date 03/18 */
+    void RemoveCondensedContributionsFromRhs(
+        Epetra_Vector& rhs ) const;
+
     //! predict all internal variables in model evaluators
     void Predict(const INPAR::STR::PredEnum& pred_type) const;
 
@@ -396,6 +406,8 @@ namespace MODELEVALUATOR {
     void EvaluateCheapSOCRhs( bool& ok, const Vector& me_vec ) const;
 
     void PostEvaluate( bool ok, const Vector& me_vec ) const;
+
+    void PreEvaluate( bool ok, const Vector& me_vec ) const;
 
     /** \brief split the internally stored model vector and get the set without
      *  the specified models */

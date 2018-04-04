@@ -45,6 +45,9 @@ namespace CONTACT {
     //! get the predictor status
     virtual bool IsPredictor() const = 0;
 
+    //! Is the current state coming from a predictor step?
+    virtual bool IsPredictorState() const = 0;
+
     //! \brief get the currently active predictor type
     /** \note If the execution of the predictor is finished, this
      *  function will return INPAR::STR::pred_vague. \author hiermeier */

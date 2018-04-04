@@ -1387,6 +1387,15 @@ protected:
    *  \author hiermeier \date 12/17 */
   virtual void EvalStaticConstraintRHS(CONTACT::ParamsInterface& cparams);
 
+  /** \brief Run at the very beginning of a call to STR::ModelEvaluator::Evalute*
+   *
+   *  \param cparams (in): parameter interface between the contact objects and
+   *                       the structural time integration
+   *
+   *  \date 03/2016
+   *  \author hiermeier */
+  virtual void RunPreEvaluate( CONTACT::ParamsInterface& cparams );
+
   /** \brief Run in the end of a call to STR::ModelEvaluator::EvaluteForce/Stiff/ForceStiff
    *
    *  \param cparams (in): parameter interface between the contact objects and the structural time integration
@@ -1482,6 +1491,13 @@ protected:
   virtual void CorrectParameters(
       CONTACT::ParamsInterface& cparams,
       const NOX::NLN::CorrectionType type );
+
+  /// remove condensed contact contributions from the structural rhs
+  /**
+   *  \param(in) str_rhs: reference to the structural rhs
+   *  \author hiermeier \date 03/18 */
+  virtual void RemoveCondensedContributionsFromRhs(
+      Epetra_Vector& str_rhs ) const;
 
   //! @}
 protected:

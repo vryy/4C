@@ -153,6 +153,14 @@ INPAR::CONTACT::SolvingStrategy CONTACT::AUG::ComboStrategy::Type() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void CONTACT::AUG::ComboStrategy::RunPreEvaluate(
+    CONTACT::ParamsInterface& cparams )
+{
+  Get().RunPreEvaluate( cparams );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void CONTACT::AUG::ComboStrategy::RunPostEvaluate(
     CONTACT::ParamsInterface& cparams )
 {
@@ -592,6 +600,14 @@ void CONTACT::AUG::ComboStrategy::RunPostApplyJacobianInverse(
     const NOX::NLN::Group& grp )
 {
   Get().RunPostApplyJacobianInverse( cparams, rhs, result, xold, grp );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::AUG::ComboStrategy::RemoveCondensedContributionsFromRhs(
+        Epetra_Vector& str_rhs ) const
+{
+  Get().RemoveCondensedContributionsFromRhs(str_rhs);
 }
 
 /*----------------------------------------------------------------------------*

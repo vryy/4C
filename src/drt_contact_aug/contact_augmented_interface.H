@@ -349,6 +349,8 @@ namespace INTERFACE {
     void AssembleGapVectorOfAllSlNodes(
         Epetra_Vector& wGapAllSlNodesVec ) const;
 
+    void AssembleActiveUnitGap( Epetra_Vector& unit_gap ) const;
+
     /** Add the varied tributary area contributions to the force originating
      *  from the augmented gap term */
     void Add_Var_A_GG(
@@ -896,6 +898,8 @@ namespace INTERFACE {
     /// destructor
     virtual ~AssembleStrategy() {};
 
+    virtual void AssembleActiveUnitGap(
+        Epetra_Vector& unit_gap ) const = 0;
 
    /** \brief Assemble Dn and Mn matrices
     *
@@ -982,42 +986,46 @@ namespace INTERFACE {
     explicit NodeBasedAssembleStrategy( Interface* inter );
 
     /// destructor
-    virtual ~NodeBasedAssembleStrategy() {};
+    ~NodeBasedAssembleStrategy() override {};
+
+    /// derived
+    void AssembleActiveUnitGap(
+        Epetra_Vector& unit_gap ) const override;
 
      /// derived
-    virtual void AssembleBMatrix(
-        LINALG::SparseMatrix& BMatrix ) const;
+    void AssembleBMatrix(
+        LINALG::SparseMatrix& BMatrix ) const override;
 
     /// derived
-    virtual void Add_Var_A_GG(
+    void Add_Var_A_GG(
         Epetra_Vector& sl_force_g,
-        const Epetra_Vector& cnVec ) const;
+        const Epetra_Vector& cnVec ) const override;
 
     /// derived
-    virtual void Assemble_SlForceLmInactive(
+    void Assemble_SlForceLmInactive(
         Epetra_Vector& sl_force_lm_inactive,
         const Epetra_Vector& cnVec,
-        const double inactive_scale ) const;
+        const double inactive_scale ) const override;
 
     /// derived
-    virtual void AssembleInactiveDDMatrix(
+    void AssembleInactiveDDMatrix(
         LINALG::SparseMatrix& inactive_dd_matrix,
         const Epetra_Vector& cnVec,
-        const double inactive_scale ) const;
+        const double inactive_scale ) const override;
 
     /// derived
-    virtual void AssembleDGLmLinMatrix(
-        LINALG::SparseMatrix& dGLmLinMatrix ) const;
+    void AssembleDGLmLinMatrix(
+        LINALG::SparseMatrix& dGLmLinMatrix ) const override;
 
     /// derived
-    virtual void AssembleDGGLinMatrix(
+    void AssembleDGGLinMatrix(
         LINALG::SparseMatrix& dGGLinMatrix,
-        const Epetra_Vector& cnVec) const;
+        const Epetra_Vector& cnVec) const override;
 
     /// derived
-    virtual void AssembleDLmNWGapLinMatrix(
+    void AssembleDLmNWGapLinMatrix(
         LINALG::SparseMatrix& dLmNWGapLinMatrix,
-        const enum MapType map_type ) const;
+        const enum MapType map_type ) const override;
   };
 
   /*--------------------------------------------------------------------------*/

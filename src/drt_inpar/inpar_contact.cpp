@@ -273,6 +273,11 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
       "which accelerates the convergence. This parameter can be specified here.",
       &sacontact);
 
+  DoubleParameter("UNIT_GAP_FORCE_SCALE", 1.0, "This parameter is optional and "
+      "can be used to scale the unit gap force in the case of an initial "
+      "Neumann boundary condition. It is used to compute an estimate for the"
+      "necessary initial regularization parameter.", &sacontact);
+
   setStringToIntegralParameter<PenaltyUpdate>("PENALTY_UPDATE","Vague","Which kind of "
       "penalty update should be used?",
         tuple<std::string>("Vague",

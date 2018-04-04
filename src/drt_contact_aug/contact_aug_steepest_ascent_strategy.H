@@ -71,6 +71,20 @@ namespace STEEPESTASCENT {
       return penalty_correction_parameter_;
     }
 
+    void SetUnitGapForceScale( const double scale )
+    {
+      if ( scale <= 0.0 )
+        dserror("The unit gap force scaling is not allowed to be smaller or "
+            "equal to zero.");
+
+      unit_gap_force_scale_ = scale;
+    }
+
+    double GetUnitGapForceScale() const
+    {
+      return unit_gap_force_scale_;
+    }
+
     Teuchos::RCP<const LagrangeMultiplierFunction> LagrangeMultiplierFuncPtr() const
     {
       return lm_func_ptr_.getConst();
@@ -130,6 +144,8 @@ namespace STEEPESTASCENT {
     double cn_upper_bound_ = 0.0;
 
     double penalty_correction_parameter_ = 0.0;
+
+    double unit_gap_force_scale_ = 0.0;
 
     double steplength_ = 1.0;
 
@@ -191,6 +207,9 @@ namespace STEEPESTASCENT {
         LINALG::SparseMatrix& kdd,
         const CONTACT::ParamsInterface* cparams = NULL ) const override;
 
+    /// derived
+    void AdaptiveCn( CONTACT::ParamsInterface& cparams ) override;
+
     /*! \brief Derived function, which is called at the very beginning of a call to
      *  NOX::NLN::Group::computeX()
      *
@@ -213,8 +232,7 @@ namespace STEEPESTASCENT {
         const Epetra_Vector& xold,
         const NOX::NLN::Group& grp ) override;
 
-    void RunPostIterate(
-        const CONTACT::ParamsInterface& cparams ) override;
+    void RunPostIterate( const CONTACT::ParamsInterface& cparams ) override;
 
     /** \brief parameter correction during a more sophisticated non-linear
      *  solver approach (e.g. the filter method) [derived]
@@ -223,6 +241,10 @@ namespace STEEPESTASCENT {
     void CorrectParameters(
         CONTACT::ParamsInterface& cparams,
         const NOX::NLN::CorrectionType type ) override;
+
+    /// derived
+    void RemoveCondensedContributionsFromRhs(
+        Epetra_Vector& str_rhs ) const override;
 
   private:
 

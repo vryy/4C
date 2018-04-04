@@ -82,7 +82,7 @@ bool CONTACT::INTEGRATOR::FindFeasibleMasterElements(
 
       // --- DEBUGGING --------------------------------------------------------
 #ifdef DEBUG_FIND_FEASIBLE_MASTER_ELEMENT
-      DRT::Node** snodes = sele.Nodes();
+//      DRT::Node** snodes = sele.Nodes();
 //      if ( ( snodes[0]->Id() == 174 or snodes[1]->Id() == 174 ) )
       {
         std::cout << "Slave element #" << sele.Id() << std::endl;

@@ -42,6 +42,7 @@ namespace POTENTIAL {
   enum class SetType : int;
 } // namespace POTENTIAL
   class ComboStrategy;
+  class ActiveSet;
 
   /*--------------------------------------------------------------------------*/
   class DataContainer : public ::CONTACT::AbstractStratDataContainer
@@ -680,6 +681,8 @@ namespace POTENTIAL {
      *  strategies and needs access to all methods. */
     friend class CONTACT::AUG::ComboStrategy;
 
+    friend class CONTACT::AUG::ActiveSet;
+
   public:
     //! Standard constructor
     Strategy(
@@ -1058,6 +1061,16 @@ namespace POTENTIAL {
 
      //! Check linear and angular momentum conservation
     void CheckConservationLaws( CONTACT::ParamsInterface& cparams );
+
+    //! \brief adapt the cn-value (optional)
+    /** The adaptive cn routine is in addition to the default regularization
+     *  parameter correction. Think of an meaningful initial choice of the
+     *  regularization parameter for example.
+     *
+     * \param(in) cparams  Contact parameter interface
+     *
+     *  \author hiermeier \date 03/18 */
+    virtual void AdaptiveCn( CONTACT::ParamsInterface& cparams );
 
     //! Finite Difference check of the augmented Lagrange terms at GP level
     void AugFDCheckGP(CONTACT::ParamsInterface& cparams);

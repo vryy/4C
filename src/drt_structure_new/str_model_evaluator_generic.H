@@ -146,11 +146,26 @@ namespace MODELEVALUATOR {
     virtual bool EvaluateCheapSOCRhs()
     { return true; };
 
-    /*! \brief Called at the end of each call to one of the STR::ModelEvaluator::Evaluate routines,
-     *         i.e. EvaluateForce, EvaluateStiff, EvaluateForceStiff.
+    /*! \brief Called in the very beginning of each call to one of the
+     *  STR::ModelEvaluator::Evaluate routines, such as EvaluateForce,
+     *  EvaluateStiff, EvaluateForceStiff.
+     *
+     *  \author hiermeier \date 03/17 */
+    virtual void PreEvaluate()
+    { return; };
+
+    /*! \brief Called at the end of each call to one of the
+     *  STR::ModelEvaluator::Evaluate routines, i.e. EvaluateForce,
+     *  EvaluateStiff, EvaluateForceStiff.
      *
      *  \author hiermeier \date 03/17 */
     virtual void PostEvaluate() = 0;
+
+    /*! Remove any condensed contributions from the structural rhs
+     *
+     *  \author hiermeier \date 03/18 */
+    virtual void RemoveCondensedContributionsFromRhs( Epetra_Vector& rhs )
+    { return; }
 
     /*! \brief Assemble the force right-hand-side
      *
@@ -337,6 +352,9 @@ namespace MODELEVALUATOR {
     /*! Returns a pointer to the model solution vector of the last time step
      *  (usually the Lagrange multiplier vector) */
     virtual Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const = 0;
+
+    /// access the current external load increment
+    Teuchos::RCP<Epetra_Vector> GetFextIncr() const;
 
     //! @}
 
