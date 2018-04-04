@@ -83,6 +83,8 @@ namespace StatusTest {
     //! value for upper bound of Newton step size
     double upperboundval_;
 
+    double reduction_fac_;
+
     //! current maximal value of step size
     double stepmaxval_;
   };

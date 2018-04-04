@@ -35,6 +35,7 @@ NOX::NLN::INNER::StatusTest::UpperBound::UpperBound(
       normtype_(normtype),
       qtype_(qtype),
       upperboundval_(upperboundval),
+      reduction_fac_(1.0),
       stepmaxval_(0.0)
 {
   // empty
@@ -99,17 +100,20 @@ NOX::NLN::INNER::StatusTest::StatusType
       /* the following is equivalent to dividing the step successively by two until
        * criterion is met. note: upperboundval_!=0 is checked in
        * NOX::NLN::INNER::StatusTest::Factory::BuildUpperBoundTest */
-      double reduction_fac = std::pow(0.5 ,
+      reduction_fac_ = std::pow(0.5 ,
           std::ceil(std::log(stepmaxval_/upperboundval_) / std::log(2)) );
 
-      steplength *= reduction_fac;
+      steplength *= reduction_fac_;
       linesearch_mutable->SetStepLength(steplength);
 
       // adapt the stepmaxval_ variable accordingly to get correct output from Print()
-      stepmaxval_ *= reduction_fac;
+      stepmaxval_ *= reduction_fac_;
 
       status_ = status_converged;
     }
+    // nothing to do. reset the the reduction factor to its default value
+    else
+      reduction_fac_ = 1.0;
   }
   else if (checkType == NOX::StatusTest::None)
   {
@@ -148,6 +152,8 @@ std::ostream& NOX::NLN::INNER::StatusTest::UpperBound::Print(
   stream << NOX::Utils::sciformat(stepmaxval_,3)
          << " < "
          << NOX::Utils::sciformat(upperboundval_,3) << "\n";
+  stream << indent_string << NOX::Utils::fill(13,' ') << " (reduction factor = "
+         << NOX::Utils::sciformat(reduction_fac_,3) << ")\n";
 
   return stream;
 }
