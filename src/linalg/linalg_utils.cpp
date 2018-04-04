@@ -1846,6 +1846,71 @@ Teuchos::RCP<Epetra_Map> LINALG::IntersectMap(const Epetra_Map& map1,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void LINALG::ComputeDofMapsFromNodeMaps(
+    const int dofset_id,
+    const std::vector<Teuchos::RCP<Epetra_Map> >& node_maps,
+    const DRT::DiscretizationInterface& discret,
+    std::vector<Teuchos::RCP<Epetra_Map> >& dof_maps )
+{
+  dof_maps.reserve( dof_maps.size() + node_maps.size() );
+  for ( const Teuchos::RCP<Epetra_Map>& node_map : node_maps )
+    dof_maps.push_back( ComputeDofMapFromNodeMap( dofset_id, *node_map, discret ) );
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Map> LINALG::ComputeDofMapFromNodeMap(
+    const int dofset_id,
+    const Epetra_Map& node_map,
+    const DRT::DiscretizationInterface& discret )
+{
+  std::set<int> dof_set;
+  std::vector<int> dof_vec;
+
+  const int my_num_nodes = node_map.NumMyElements();
+  const int* my_ngids = node_map.MyGlobalElements();
+
+  for ( int nlid = 0; nlid < my_num_nodes; ++nlid )
+  {
+    const DRT::Node* node = discret.gNode( my_ngids[nlid] );
+
+    const int numdofs = discret.NumDof( dofset_id, node );
+    for ( int d=0; d<numdofs; ++d )
+      dof_set.insert( discret.Dof( dofset_id, node, d ) );
+  }
+
+  dof_vec.resize( dof_set.size() );
+  std::copy( dof_set.begin(), dof_set.end(), dof_vec.begin() );
+
+  return Teuchos::rcp( new Epetra_Map( -1, dof_vec.size(), dof_vec.data(), 0,
+      discret.Comm() ) );
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Map> LINALG::ExtractMyOverlappingSubMap(
+    const Epetra_BlockMap& src_map ,
+    const Epetra_BlockMap& ref_map )
+{
+  std::vector<int> my_overlapping_gids;
+  my_overlapping_gids.reserve(src_map.NumMyElements());
+
+  const int num_my_src_entries = src_map.NumMyElements();
+  const int* my_src_gids = src_map.MyGlobalElements();
+
+  for ( int i=0; i<num_my_src_entries; ++i )
+  {
+    const int my_src_gid = my_src_gids[i];
+    if ( ref_map.MyGID( my_src_gid ) )
+      my_overlapping_gids.push_back( my_src_gid );
+  }
+
+  return Teuchos::rcp( new Epetra_Map( -1, my_overlapping_gids.size(),
+      my_overlapping_gids.data(), 0, src_map.Comm() ) );
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> LINALG::CreateMap(const std::set<int>& gids,
     const Epetra_Comm& comm)
 {

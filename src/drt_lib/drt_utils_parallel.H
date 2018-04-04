@@ -164,7 +164,7 @@ namespace UTILS
    *                           can be larger than the non-redistributed map but has to
    *                           contain the non-redistributed map as a subset.
    *  \param(in) unred_map   : original non-redistributed map
-   *  \param(in) red_map     : redistributed map, following the same parallel
+   *  \param(out) red_map    : redistributed map, following the same parallel
    *                           distribution as the reference map
    *
    *  \author hiermeier \date 01/18 */
