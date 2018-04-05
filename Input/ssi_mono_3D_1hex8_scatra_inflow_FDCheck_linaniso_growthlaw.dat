@@ -17,8 +17,9 @@ simple, academic test case for monolithic scalar-structure interaction:
 - homogeneous Neumann boundary conditions are applied to all other sides throughout the simulation time
 - structure and scatra fields are coupled via MAT_MultiplicativeSplitDefgradElastHyper using the following inelastic deformation
   gradient formulation:
-- MAT_InelasticDefgradLinScalarIso: isotropic strain dependent on scalar concentration according to the following equation:
-- F_{in} = [1 + GrowthFac * det(F) * (c - RefConc)]^(1/3) I
+- MAT_InelasticDefgradLinScalarAniso: anisotropic strain dependent on scalar concentration according to the following equation
+  (growth-direction vector g is prescribed via vector in Input-File):
+- F_{in} = I + [GrowthFac * det(F) * (c - RefConc)] g \otimes g
 - two inelastic deformation gradients are prescribed to check the framework
 - linearizations are checked using an FD Check for each TS > 1
 ------------------------------------------------------PROBLEM SIZE
@@ -41,7 +42,8 @@ INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 CONVFORM                        conservative
 FDCHECK                         global
-FDCHECKTOL                      4.e-4
+FDCHECKEPS                      1.e-7
+FDCHECKTOL                      2.e-3
 -------------------------------------------------------SSI CONTROL
 NUMSTEP                         100
 TIMESTEP                        0.1
@@ -56,8 +58,8 @@ SOLVER                          UMFPACK
 MAT 1 MAT_scatra DIFFUSIVITY 0.1
 MAT 2 MAT_MultiplicativeSplitDefgradElastHyper NUMMATEL 1 MATIDSEL 3 NUMFACINEL 2 INELDEFGRADFACIDS 4 5 DENS 1.0e-3
 MAT 3 ELAST_CoupSVK YOUNG 1.0 NUE 0.3
-MAT 4 MAT_InelasticDefgradLinScalarIso SCALAR1 1 SCALAR1_GrowthFac 0.2 SCALAR1_RefConc 0.0
-MAT 5 MAT_InelasticDefgradLinScalarIso SCALAR1 1 SCALAR1_GrowthFac 0.1 SCALAR1_RefConc 0.0
+MAT 4 MAT_InelasticDefgradLinScalarAniso SCALAR1 1 SCALAR1_GrowthFac 0.1 SCALAR1_RefConc 0.0 NUMSPACEDIM 3 GrowthDirection 1.0 0.0 0.0
+MAT 5 MAT_InelasticDefgradLinScalarAniso SCALAR1 1 SCALAR1_GrowthFac 0.2 SCALAR1_RefConc 0.0 NUMSPACEDIM 3 GrowthDirection 0.0 1.0 0.0
 ----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 1
 ------------------------------------------------------------FUNCT1
@@ -65,19 +67,19 @@ COMPONENT 0 FUNCTION 0.0
 ------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION (1.0-1.0*heaviside(t-5.0))
 ------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 1 QUANTITY phi VALUE 4.78186204386824021e-01 TOLERANCE 1.e-10
-SCATRA DIS scatra NODE 3 QUANTITY phi VALUE 4.78186204386824409e-01 TOLERANCE 1.e-10
-SCATRA DIS scatra NODE 5 QUANTITY phi VALUE 4.73560686424588206e-01 TOLERANCE 1.e-10
-SCATRA DIS scatra NODE 7 QUANTITY phi VALUE 4.73560686424586208e-01 TOLERANCE 1.e-10
-STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 0.00000000000000000e+00 TOLERANCE 1.e-14
-STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE -2.76321068516207739e-02 TOLERANCE 1.e-11
-STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE 2.76321068516169402e-02 TOLERANCE 1.e-11
-STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE 5.47162632184856335e-02 TOLERANCE 1.e-11
-STRUCTURE DIS structure NODE 5 QUANTITY dispy VALUE -2.73873182541393284e-02 TOLERANCE 1.e-11
-STRUCTURE DIS structure NODE 5 QUANTITY dispz VALUE 2.73873182541413372e-02 TOLERANCE 1.e-11
-STRUCTURE DIS structure NODE 7 QUANTITY dispx VALUE 5.47162632184877498e-02 TOLERANCE 1.e-11
-STRUCTURE DIS structure NODE 7 QUANTITY dispy VALUE 2.73873182541462187e-02 TOLERANCE 1.e-11
-STRUCTURE DIS structure NODE 7 QUANTITY dispz VALUE -2.73873182541390890e-02 TOLERANCE 1.e-11
+SCATRA DIS scatra NODE 1 QUANTITY phi VALUE 4.77713130528840790e-01 TOLERANCE 1.e-10
+SCATRA DIS scatra NODE 3 QUANTITY phi VALUE 4.77713130528841012e-01 TOLERANCE 1.e-10
+SCATRA DIS scatra NODE 5 QUANTITY phi VALUE 4.73041727467432782e-01 TOLERANCE 1.e-10
+SCATRA DIS scatra NODE 7 QUANTITY phi VALUE 4.73041727467433559e-01 TOLERANCE 1.e-10
+STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 0.00000000000000000e+00 TOLERANCE 1.e-18
+STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE -5.59749451494276837e-02 TOLERANCE 1.e-11
+STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE 1.55151706182761484e-04 TOLERANCE 1.e-13
+STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE 5.56325539650352613e-02 TOLERANCE 1.e-11
+STRUCTURE DIS structure NODE 5 QUANTITY dispy VALUE -5.56458795659402067e-02 TOLERANCE 1.e-11
+STRUCTURE DIS structure NODE 5 QUANTITY dispz VALUE 5.63870422096920411e-05 TOLERANCE 1.e-14
+STRUCTURE DIS structure NODE 7 QUANTITY dispx VALUE 5.56325539650333392e-02 TOLERANCE 1.e-11
+STRUCTURE DIS structure NODE 7 QUANTITY dispy VALUE 5.56458795659487138e-02 TOLERANCE 1.e-11
+STRUCTURE DIS structure NODE 7 QUANTITY dispz VALUE -5.63870422133224718e-05 TOLERANCE 1.e-14
 ------------------------------------------------DESIGN DESCRIPTION
 NDSURF  2
 -------------------------------------DESIGN SURF DIRICH CONDITIONS

@@ -1577,9 +1577,10 @@ void SSI::SSI_Mono::Setup()
 
   // safety checks
   if(scatra_->ScaTraField()->NumScal() != 1)
-    dserror("Since the ssi_monolithic framework is only implemented for usage in combination with growth laws 'MAT_GrowthLinIso' or 'MAT_GrowthLinANIso' so far "
-        "and these growth laws are implemented for one transported scalar at the moment it is not reasonable to use it with more than one transported scalar. "
-        "So you need to cope with it or change implementation! ;-)");
+    dserror("Since the ssi_monolithic framework is only implemented for usage in combination with volume change laws 'MAT_InelasticDefgradLinScalarIso' or"
+        " 'MAT_InelasticDefgradLinScalarAniso' so far and these laws are implemented for only one transported scalar at the moment it is not reasonable to"
+        " use them with more than one transported scalar. So you need to cope with it or change implementation! ;-)");
+
   if(!scatra_->ScaTraField()->IsIncremental())
     dserror("Must have incremental solution approach for monolithic scalar-structure interaction!");
 

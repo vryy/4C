@@ -93,8 +93,6 @@ namespace INPAR
       m_growth_ac_radial,                      ///< scalar depended growth in radial direction
       m_growth_ac_radial_refconc,              ///< scalar depended growth in radial direction using reference concentrations
       m_growth_const,                          ///< growth factor given as material parameter via input
-      m_growth_lin_iso,                        ///< scalar dependent isotropic growth (same growth rate in each space dimension; volumetric growth linear dependent on concentration)
-      m_growth_lin_aniso,                      ///< scalar dependent anisotropic 1D growth (growth direction is read from input file; volumetric growth linear dependent on concentration)
       m_growth_volumetric,                     ///< volumetric growth base material
       m_sc_dep_interp,                         ///< integration point based and scalar dependent interpolation between to materials
       m_membrane_elasthyper,                   ///< collection of hyperelastic materials for membranes
@@ -110,6 +108,7 @@ namespace INPAR
       m_matlist_chemoreac,                     ///< collection of single materials (used for scalar transport problems) and collection of chemotactic pairs AND reactions
       m_mixfrac,                               ///< material according to mixture-fraction approach
       m_modpowerlaw,                           ///< fluid with nonlinear viscosity according to a modified power law
+      m_multiplicative_split_defgrad_elasthyper,  ///< deformation gradient is split multiplicatively in elastic and inelastic parts
       m_myocard,                               ///< anisotropic electrophysical model of heart tissue
       m_neohooke,                              ///< Neo-Hooke material
       m_newman,                                ///< properties of an ion species in an electrolyte solution
@@ -205,7 +204,9 @@ namespace INPAR
       mes_volpenalty,                          ///< Penalty volumetric part of the  hyperelastic potential summand
       mes_volsussmanbathe,                     ///< volumetric SussmanBathe hyperelastic potential summand
       mes_volpow,                              ///< volumetric power law hyperelastic potential summand
-      mes_structuraltensorstratgy              ///< structural tensor in anisotropic materials
+      mes_structuraltensorstratgy,             ///< structural tensor in anisotropic materials
+      mfi_lin_scalar_aniso,                    ///< volume change due to (anisotropic) inelastic deformation gradient is a linear function of the scalar (in material configuration) that causes the volume change
+      mfi_lin_scalar_iso                       ///< volume change due to (isotropic) inelastic deformation gradient is a linear function of the scalar (in material configuration) that causes the volume change
     };
 
     /*----------------------------------------------------------------------*

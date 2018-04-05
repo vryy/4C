@@ -453,25 +453,25 @@ class GrowthLaw;
 //                        const double j);
 
     ///transform vector in voigt notation into symmetric 2Tensor (in matrix notation)
-    void VectorToMatrix(
+    static void VectorToMatrix(
         LINALG::Matrix<3,3>& Matrix,
         const LINALG::Matrix<6,1>& Vector,
         const MAT::VoigtType Type);
 
     ///transform symmetric 2Tensor(in matrix notation) into voigt notation ( e.g. vector notation)
-    void MatrixToVector(
+    static void MatrixToVector(
         const LINALG::Matrix<3,3>& Matrix,
         LINALG::Matrix<6,1>& Vector,
         const MAT::VoigtType Type);
 
     /// pull back of a symmetric elastic 4th order tensor (in matrix/voigt notation)
     /// via the 2th order deformation gradient (also in matrix notation)
-    LINALG::Matrix<6,6> PullBack4Tensor(const LINALG::Matrix<3,3>& defgr,
+    static LINALG::Matrix<6,6> PullBack4Tensor(const LINALG::Matrix<3,3>& defgr,
                             const LINALG::Matrix<6,6>& Cmat);
 
     /// pull back the ijkl-th entry of a symmetric elastic 4th order tensor (in matrix/voigt notation)
     /// via the 2th order deformation gradient (also in matrix notation)
-    double PullBack4Tensorijkl(const LINALG::Matrix<3,3>& defgr,
+    static double PullBack4Tensorijkl(const LINALG::Matrix<3,3>& defgr,
                           const double (&FourTensor)[3][3][3][3],
                           const double& i,
                           const double& j,
@@ -479,7 +479,7 @@ class GrowthLaw;
                           const double& l);
 
     //Setup 4-Tensor from 6x6 Voigt notation
-    void Setup4Tensor(
+    static void Setup4Tensor(
         double (&FourTensor)[3][3][3][3],
         const LINALG::Matrix<6,6>& VoigtMatrix
     );

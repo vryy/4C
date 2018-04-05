@@ -77,6 +77,7 @@
 #include "soret.H"
 #include "membrane_elasthyper.H"
 #include "growthremodel_elasthyper.H"
+#include "inelastic_defgrad_factors.H"
 #include "scalardepinterp.H"
 #include "scatra_reaction_mat.H"
 #include "scatra_bondreac_mat.H"
@@ -121,6 +122,7 @@
 #include "growth.H"
 #include "fluidporo_relpermeability_law.H"
 #include "fluidporo_viscosity_law.H"
+#include "multiplicative_split_defgrad_elasthyper.H"
 #include "superelastic_sma.H"
 
 
@@ -825,9 +827,9 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::m_growth_ac_radial:
   case INPAR::MAT::m_growth_ac_radial_refconc:
   case INPAR::MAT::m_growth_const:
-  case INPAR::MAT::m_growth_lin_iso:
-  case INPAR::MAT::m_growth_lin_aniso:
   case INPAR::MAT::mes_coupSVK:
+  case INPAR::MAT::mfi_lin_scalar_aniso:
+  case INPAR::MAT::mfi_lin_scalar_iso:
   {
     return Teuchos::null;
   }
@@ -913,6 +915,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::GrowthRemodel_ElastHyper(curmat));
     MAT::PAR::GrowthRemodel_ElastHyper* params = static_cast<MAT::PAR::GrowthRemodel_ElastHyper*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_multiplicative_split_defgrad_elasthyper:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::MultiplicativeSplitDefgrad_ElastHyper(curmat));
+    MAT::PAR::MultiplicativeSplitDefgrad_ElastHyper* params = static_cast<MAT::PAR::MultiplicativeSplitDefgrad_ElastHyper*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_growth_volumetric:

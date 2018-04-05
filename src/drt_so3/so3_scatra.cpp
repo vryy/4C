@@ -256,9 +256,9 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::SetMaterial(int matnum)
   Teuchos::RCP<MAT::Material> mat = Material();
 
   if ((DRT::INPUT::IntegralValue<INPAR::SSI::SolutionSchemeOverFields>(ssicontrol,"COUPALGO") == INPAR::SSI::ssi_Monolithic) and
-      (mat->MaterialType() != INPAR::MAT::m_growth_volumetric))
+      (mat->MaterialType() != INPAR::MAT::m_multiplicative_split_defgrad_elasthyper))
     dserror("When you use the 'COUPALGO' 'ssi_Monolithic' from the 'SSI CONTROL' section,"
-        " you need to use the material 'MAT_GrowthVolumetric'! If you want to use another material"
+        " you need to use the material 'MAT_MultiplicativeSplitDefgradElastHyper'! If you want to use another material"
         " feel free to implement it! ;-)");
 
   return;

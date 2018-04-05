@@ -2165,6 +2165,54 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
      AppendMaterialDefinition(matlist,m);
    }
 
+  /*----------------------------------------------------------------------*/
+  // multiplicative split of deformation gradient in elastic and inelastic parts
+  {
+    Teuchos::RCP<MaterialDefinition> m
+    = Teuchos::rcp(new MaterialDefinition("MAT_MultiplicativeSplitDefgradElastHyper",
+                                          "multiplicative split of deformation gradient",
+                                          INPAR::MAT::m_multiplicative_split_defgrad_elasthyper));
+
+    AddNamedInt(m,"NUMMATEL","number of elastic materials/potentials in list",0,false);
+    AddNamedIntVector(m,"MATIDSEL","the list of elastic material/potential IDs","NUMMATEL",-1,false);
+    AddNamedInt(m,"NUMFACINEL","number of factors of inelastic deformation gradient",false);
+    AddNamedIntVector(m,"INELDEFGRADFACIDS","the list of inelastic deformation gradient factor IDs","NUMFACINEL",false);
+    AddNamedReal(m,"DENS","material mass density",false);
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // simple isotropic, volumetric growth; growth is linearly dependent on scalar mapped to material configuration, constant material density
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_InelasticDefgradLinScalarIso",
+                                            "scalar dependent isotropic growth law; volume change linearly dependent on scalar (in material configuration)",
+                                            INPAR::MAT::mfi_lin_scalar_iso));
+
+    AddNamedInt(m,"SCALAR1","number of growth inducing scalar");
+    AddNamedReal(m,"SCALAR1_GrowthFac","isotropic growth factor due to scalar 1");
+    AddNamedReal(m,"SCALAR1_RefConc","reference concentration of scalar 1 causing no strains");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // simple anisotropic, volumetric growth; growth direction prescribed in input-file;
+  // growth is linearly dependent on scalar mapped to material configuration, constant material density
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_InelasticDefgradLinScalarAniso",
+                                            "scalar dependent anisotropic growth law; growth in direction as given in input-file; volume change linearly dependent on scalar (in material configuration)",
+                                            INPAR::MAT::mfi_lin_scalar_aniso));
+
+    AddNamedInt(m,"SCALAR1","number of growth inducing scalar");
+    AddNamedReal(m,"SCALAR1_GrowthFac","anisotropic growth factor due to scalar 1");
+    AddNamedReal(m,"SCALAR1_RefConc","reference concentration of scalar 1 causing no strains");
+    AddNamedInt(m,"NUMSPACEDIM","Number of space dimension (only 3 valid)");
+    AddNamedRealVector(m,"GrowthDirection","vector that defines the growth direction","NUMSPACEDIM");
+
+    AppendMaterialDefinition(matlist,m);
+  }
 
  /*----------------------------------------------------------------------*/
   // integration point based and scalar dependent interpolation between to materials
@@ -2287,41 +2335,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AppendMaterialDefinition(matlist,m);
   }
-
-  /*----------------------------------------------------------------------*/
-  /*----------------------------------------------------------------------*/
-  // simple isotropic growth law, scalar-dependent linear volumetric growth, constant material density
-  {
-    Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("MAT_GrowthLinIso",
-                                            "scalar dependent isotropic growth law; volume change linear dependent on scalar",
-                                            INPAR::MAT::m_growth_lin_iso));
-
-    AddNamedInt(m,"SCALAR1","number of growth inducing scalar");
-    AddNamedReal(m,"SCALAR1_GrowthFac","isotropic growth factor due to scalar 1");
-    AddNamedReal(m,"SCALAR1_RefConc","reference concentration of scalar 1 causing no strains");
-
-    AppendMaterialDefinition(matlist,m);
-  }
-
-  /*----------------------------------------------------------------------*/
-  /*----------------------------------------------------------------------*/
-  // simple anisotropic growth law, growth in direction prescribed in input-file, scalar-dependent linear volumetric growth, constant material density
-  {
-    Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("MAT_GrowthLinAnIso",
-                                            "scalar dependent anisotropic growth law; growth in direction as given in input-file; volume change linear dependent on scalar",
-                                            INPAR::MAT::m_growth_lin_aniso));
-
-    AddNamedInt(m,"SCALAR1","number of growth inducing scalar");
-    AddNamedReal(m,"SCALAR1_GrowthFac","anisotropic growth factor due to scalar 1");
-    AddNamedReal(m,"SCALAR1_RefConc","reference concentration of scalar 1 causing no strains");
-    AddNamedInt(m,"NUMSPACEDIM","Number of space dimension (only 3 valid)");
-    AddNamedRealVector(m,"GrowthDirection","vector that defines the growth direction","NUMSPACEDIM");
-
-    AppendMaterialDefinition(matlist,m);
-  }
-
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/

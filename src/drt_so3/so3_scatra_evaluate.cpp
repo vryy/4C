@@ -231,7 +231,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::nln_kdS_ssi(
   // compute derivatives N_XYZ at gp w.r.t. material coordinates
   LINALG::Matrix<numdim_,numnod_> N_XYZ(true);
   // compute deformation gradient w.r.t. to material configuration
-  LINALG::Matrix<numdim_,numdim_> defgrd(true);
+  LINALG::Matrix<numdim_,numdim_> defgrad(true);
 
   // get numscatradofspernode from parameter list
   const int numscatradofspernode = params.get<int>("numscatradofspernode",-1);
@@ -253,11 +253,11 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::nln_kdS_ssi(
 
     // (material) deformation gradient
     // F = d xcurr / d xrefe = xcurr^T . N_XYZ^T
-    defgrd.MultiplyTT(xcurr,N_XYZ);
+    defgrad.MultiplyTT(xcurr,N_XYZ);
 
     // right Cauchy-Green tensor = F^T . F
     LINALG::Matrix<3,3> cauchygreen;
-    cauchygreen.MultiplyTN(defgrd,defgrd);
+    cauchygreen.MultiplyTN(defgrad,defgrad);
 
     // calculate vector of right Cauchy-Green tensor
     LINALG::Matrix<numstr_,1> cauchygreenvec;
@@ -280,48 +280,33 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::nln_kdS_ssi(
 
     // calculate nonlinear B-operator
     LINALG::Matrix<numstr_,numdofperelement_> bop(true);
-    CalculateBop(&bop,&defgrd,&N_XYZ);
+    CalculateBop(&bop,&defgrad,&N_XYZ);
 
     /*==== call material law ======================================================*/
-    // init cmat and stress
-    LINALG::Matrix<numstr_,numstr_> cmat(true);
-    LINALG::Matrix<numstr_,1> stress(true);
-
+    // init derivative of second Piola-Kirchhoff stresses w.r.t. concentrations dSdc
+    LINALG::Matrix<numstr_,1> dSdc(true);
     // set current gauss point
     params.set<int>("gp",gp);
 
-    // get the cmat and stress tensors here
+    // get dSdc, hand in NULL as 'cmat' to evaluate the off-diagonal block
     Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_static_cast<MAT::So3Material>(Material());
-    so3mat->Evaluate(&defgrd,&glstrain,params,&stress,&cmat,Id());
+    so3mat->Evaluate(&defgrad,&glstrain,params,&dSdc,NULL,Id());
 
     /*==== end of call material law ===============================================*/
 
-    // update stiffness matrix kdS (derivative of structure residuals w.r.t. scalar dofs)
-    // get integration specific factors from parameter list
-    const double theta = params.get<double>("theta");
-    const double dtheta_dc = params.get<double>("dtheta_dc");
-    const double fac = - dtheta_dc / theta;
-    // determinant of the jacobian multiplied by gauss weight and above calculated factor
-    const double detJ_w_fac = detJ_[gp] * intpoints_.qwgt[gp] * fac;
+    // k_dS = B^T . dS/dc * detJ * N * w(gp)
+    const double detJ_w = detJ_[gp] * intpoints_.qwgt[gp];
+    LINALG::Matrix<numdofperelement_,1> BdSdc(true);
+    BdSdc.MultiplyTN(detJ_w,bop,dSdc);
 
-    // k_dS = 2 . (B^T . S . N^T) . detJ . w(gp) . fac + B^T . Cmat . C . N^T . detJ . w(gp) . fac =
-    //      = B^T . (2 . S + Cmat . C) N^T . detJ . w(gp) . fac
-    // so first pre calculate 2 . S + Cmat . C
-    LINALG::Matrix<numstr_,1> sig(true);
-    sig.Multiply(cmat,cauchygreenvec);
-    sig.Update(2.0,stress,1.0);
-    // now calculate B^T . [2 S + Cmat . C]
-    LINALG::Matrix<numdofperelement_,1> Bsig(true);
-    Bsig.MultiplyTN(bop,sig);
-
-    // loop over all rows
+    // loop over rows
     for(unsigned rowi = 0; rowi < numdofperelement_; ++rowi)
     {
-      const double factor = detJ_w_fac*Bsig(rowi,0);
-      // loop over column nodes
+      const double BdSdc_rowi = BdSdc(rowi,0);
+      // loop over columns
       for(unsigned coli = 0; coli < numnod_; ++coli)
       {
-        stiffmatrix_kdS(rowi,coli*numscatradofspernode) += factor*shapefunct(coli,0);
+        stiffmatrix_kdS(rowi,coli*numscatradofspernode) += BdSdc_rowi*shapefunct(coli,0);
       }
     }
   } // gauss point loop
@@ -336,7 +321,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::nln_kdS_ssi(
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::CalculateBop(
           LINALG::Matrix<numstr_,numdofperelement_>*  bop,         //!< (o): nonlinear B-operator
-          const LINALG::Matrix<numdim_,numdim_>*      defgrd,      //!< (i): deformation gradient
+          const LINALG::Matrix<numdim_,numdim_>*      defgrad,     //!< (i): deformation gradient
           const LINALG::Matrix<numdim_,numnod_>*      N_XYZ) const //!< (i): (material) derivative of shape functions
 {
   // calc bop matrix if provided
@@ -368,25 +353,25 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::CalculateBop(
     */
     for (int i=0; i<numnod_; ++i)
     {
-      (*bop)(0,numdofpernode_*i+0) = (*defgrd)(0,0)*(*N_XYZ)(0,i);
-      (*bop)(0,numdofpernode_*i+1) = (*defgrd)(1,0)*(*N_XYZ)(0,i);
-      (*bop)(0,numdofpernode_*i+2) = (*defgrd)(2,0)*(*N_XYZ)(0,i);
-      (*bop)(1,numdofpernode_*i+0) = (*defgrd)(0,1)*(*N_XYZ)(1,i);
-      (*bop)(1,numdofpernode_*i+1) = (*defgrd)(1,1)*(*N_XYZ)(1,i);
-      (*bop)(1,numdofpernode_*i+2) = (*defgrd)(2,1)*(*N_XYZ)(1,i);
-      (*bop)(2,numdofpernode_*i+0) = (*defgrd)(0,2)*(*N_XYZ)(2,i);
-      (*bop)(2,numdofpernode_*i+1) = (*defgrd)(1,2)*(*N_XYZ)(2,i);
-      (*bop)(2,numdofpernode_*i+2) = (*defgrd)(2,2)*(*N_XYZ)(2,i);
+      (*bop)(0,numdofpernode_*i+0) = (*defgrad)(0,0)*(*N_XYZ)(0,i);
+      (*bop)(0,numdofpernode_*i+1) = (*defgrad)(1,0)*(*N_XYZ)(0,i);
+      (*bop)(0,numdofpernode_*i+2) = (*defgrad)(2,0)*(*N_XYZ)(0,i);
+      (*bop)(1,numdofpernode_*i+0) = (*defgrad)(0,1)*(*N_XYZ)(1,i);
+      (*bop)(1,numdofpernode_*i+1) = (*defgrad)(1,1)*(*N_XYZ)(1,i);
+      (*bop)(1,numdofpernode_*i+2) = (*defgrad)(2,1)*(*N_XYZ)(1,i);
+      (*bop)(2,numdofpernode_*i+0) = (*defgrad)(0,2)*(*N_XYZ)(2,i);
+      (*bop)(2,numdofpernode_*i+1) = (*defgrad)(1,2)*(*N_XYZ)(2,i);
+      (*bop)(2,numdofpernode_*i+2) = (*defgrad)(2,2)*(*N_XYZ)(2,i);
       /* ~~~ */
-      (*bop)(3,numdofpernode_*i+0) = (*defgrd)(0,0)*(*N_XYZ)(1,i) + (*defgrd)(0,1)*(*N_XYZ)(0,i);
-      (*bop)(3,numdofpernode_*i+1) = (*defgrd)(1,0)*(*N_XYZ)(1,i) + (*defgrd)(1,1)*(*N_XYZ)(0,i);
-      (*bop)(3,numdofpernode_*i+2) = (*defgrd)(2,0)*(*N_XYZ)(1,i) + (*defgrd)(2,1)*(*N_XYZ)(0,i);
-      (*bop)(4,numdofpernode_*i+0) = (*defgrd)(0,1)*(*N_XYZ)(2,i) + (*defgrd)(0,2)*(*N_XYZ)(1,i);
-      (*bop)(4,numdofpernode_*i+1) = (*defgrd)(1,1)*(*N_XYZ)(2,i) + (*defgrd)(1,2)*(*N_XYZ)(1,i);
-      (*bop)(4,numdofpernode_*i+2) = (*defgrd)(2,1)*(*N_XYZ)(2,i) + (*defgrd)(2,2)*(*N_XYZ)(1,i);
-      (*bop)(5,numdofpernode_*i+0) = (*defgrd)(0,2)*(*N_XYZ)(0,i) + (*defgrd)(0,0)*(*N_XYZ)(2,i);
-      (*bop)(5,numdofpernode_*i+1) = (*defgrd)(1,2)*(*N_XYZ)(0,i) + (*defgrd)(1,0)*(*N_XYZ)(2,i);
-      (*bop)(5,numdofpernode_*i+2) = (*defgrd)(2,2)*(*N_XYZ)(0,i) + (*defgrd)(2,0)*(*N_XYZ)(2,i);
+      (*bop)(3,numdofpernode_*i+0) = (*defgrad)(0,0)*(*N_XYZ)(1,i) + (*defgrad)(0,1)*(*N_XYZ)(0,i);
+      (*bop)(3,numdofpernode_*i+1) = (*defgrad)(1,0)*(*N_XYZ)(1,i) + (*defgrad)(1,1)*(*N_XYZ)(0,i);
+      (*bop)(3,numdofpernode_*i+2) = (*defgrad)(2,0)*(*N_XYZ)(1,i) + (*defgrad)(2,1)*(*N_XYZ)(0,i);
+      (*bop)(4,numdofpernode_*i+0) = (*defgrad)(0,1)*(*N_XYZ)(2,i) + (*defgrad)(0,2)*(*N_XYZ)(1,i);
+      (*bop)(4,numdofpernode_*i+1) = (*defgrad)(1,1)*(*N_XYZ)(2,i) + (*defgrad)(1,2)*(*N_XYZ)(1,i);
+      (*bop)(4,numdofpernode_*i+2) = (*defgrad)(2,1)*(*N_XYZ)(2,i) + (*defgrad)(2,2)*(*N_XYZ)(1,i);
+      (*bop)(5,numdofpernode_*i+0) = (*defgrad)(0,2)*(*N_XYZ)(0,i) + (*defgrad)(0,0)*(*N_XYZ)(2,i);
+      (*bop)(5,numdofpernode_*i+1) = (*defgrad)(1,2)*(*N_XYZ)(0,i) + (*defgrad)(1,0)*(*N_XYZ)(2,i);
+      (*bop)(5,numdofpernode_*i+2) = (*defgrad)(2,2)*(*N_XYZ)(0,i) + (*defgrad)(2,0)*(*N_XYZ)(2,i);
     }
   }
 

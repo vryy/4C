@@ -15,9 +15,10 @@ simple, academic test case for monolithic scalar-structure interaction:
 - scalar inflow via Neumann boundary condition applied to one side of the cubic domain for the first 50 seconds, after that homogeneous
   Neumann boundary condition is applied
 - homogeneous Neumann boundary conditions are applied to all other sides throughout the simulation
-- structure and scatra fields are coupled via MAT_GrowthIso
-- MAT_GrowthLinIso: isotropic strain dependent on scalar concentration according to the following equation:
-- strain = [1 + GrowthFac * (c - RefConc)]^(1/3)
+- structure and scatra fields are coupled via MAT_MultiplicativeSplitDefgradElastHyper using:
+- MAT_InelasticDefgradLinScalarIso: isotropic strain dependent on scalar concentration according to the following equation:
+- F_{in} = [1 + GrowthFac * det(F) * (c - RefConc)]^(1/3) I
+- deformation is compared to analytically expected deformation in result tests
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    8
 //NODES       27
@@ -48,42 +49,39 @@ MATRIXTYPE                      sparse
 ----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ---------------------------------------------------------MATERIALS
-MAT 1 MAT_scatra DIFFUSIVITY 0.1
-MAT 2 MAT_GrowthVolumetric GROWTHLAW 3 IDMATELASTIC 4 STARTTIME -1. ENDTIME -1.
-MAT 3 MAT_GrowthLinIso SCALAR1 1 SCALAR1_GrowthFac 0.1 SCALAR1_RefConc 0.0
-MAT 4 MAT_ElastHyper NUMMAT 1 MATIDS 5 DENS 1.0e-3
-MAT 5 ELAST_CoupSVK YOUNG 1.0 NUE 0.3
+MAT 1 MAT_scatra DIFFUSIVITY 2.0
+MAT 2 MAT_MultiplicativeSplitDefgradElastHyper NUMMATEL 1 MATIDSEL 3 NUMFACINEL 1 INELDEFGRADFACIDS 4 DENS 1.0e-2
+MAT 3 ELAST_CoupSVK YOUNG 1.0e1 NUE 0.3
+MAT 4 MAT_InelasticDefgradLinScalarIso SCALAR1 1 SCALAR1_GrowthFac 0.1 SCALAR1_RefConc 0.0
 ----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 1
 ------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 0.0
 ------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION (1.0-1.0*heaviside(t-50.0))
+COMPONENT 0 FUNCTION (1.0*heaviside(t-1.0)-1.0*heaviside(t-51.0))
 ------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 1 QUANTITY phi VALUE 9.59268841909200987e+00 TOLERANCE 1.e-09
-SCATRA DIS scatra NODE 7 QUANTITY phi VALUE 9.58424249903434777e+00 TOLERANCE 1.e-09
-SCATRA DIS scatra NODE 17 QUANTITY phi VALUE 9.59268841909202230e+00 TOLERANCE 1.e-09
-SCATRA DIS scatra NODE 25 QUANTITY phi VALUE 9.58751909939799951e+00 TOLERANCE 1.e-09
-STRUCTURE DIS structure NODE 9 QUANTITY dispx VALUE 2.24907964724714192e-03 TOLERANCE 1.e-12
-STRUCTURE DIS structure NODE 9 QUANTITY dispy VALUE -2.51145454864973083e-01 TOLERANCE 1.e-10
-STRUCTURE DIS structure NODE 9 QUANTITY dispz VALUE -2.51145454865292550e-01 TOLERANCE 1.e-10
-STRUCTURE DIS structure NODE 14 QUANTITY dispx VALUE 2.24907964754007860e-03 TOLERANCE 1.e-12
-STRUCTURE DIS structure NODE 14 QUANTITY dispy VALUE 2.51145454864973472e-01 TOLERANCE 1.e-10
-STRUCTURE DIS structure NODE 14 QUANTITY dispz VALUE 2.51145454865294770e-01 TOLERANCE 1.e-10
-STRUCTURE DIS structure NODE 26 QUANTITY dispx VALUE 5.05471926094516188e-01 TOLERANCE 1.e-10
-STRUCTURE DIS structure NODE 26 QUANTITY dispy VALUE 2.50671359127532578e-01 TOLERANCE 1.e-10
-STRUCTURE DIS structure NODE 26 QUANTITY dispz VALUE 2.50671359127794424e-01 TOLERANCE 1.e-10
+SCATRA DIS scatra NODE 1 QUANTITY phi VALUE 8.45315345112383554e+00 TOLERANCE 1.e-09
+SCATRA DIS scatra NODE 7 QUANTITY phi VALUE 8.45232480673251807e+00 TOLERANCE 1.e-09
+SCATRA DIS scatra NODE 17 QUANTITY phi VALUE 8.45315345112380001e+00 TOLERANCE 1.e-09
+SCATRA DIS scatra NODE 25 QUANTITY phi VALUE 8.45244181872807232e+00 TOLERANCE 1.e-09
+STRUCTURE DIS structure NODE 9 QUANTITY dispx VALUE 0.00000000000000000e+00 TOLERANCE 1.e-18
+STRUCTURE DIS structure NODE 9 QUANTITY dispy VALUE -8.62683367095528508e-01 TOLERANCE 1.e-10
+STRUCTURE DIS structure NODE 9 QUANTITY dispz VALUE -8.62683367095366305e-01 TOLERANCE 1.e-10
+STRUCTURE DIS structure NODE 14 QUANTITY dispx VALUE 0.00000000000000000e+00 TOLERANCE 1.e-18
+STRUCTURE DIS structure NODE 14 QUANTITY dispy VALUE 8.62683367095520515e-01 TOLERANCE 1.e-10
+STRUCTURE DIS structure NODE 14 QUANTITY dispz VALUE 8.62683367095351761e-01 TOLERANCE 1.e-10
+STRUCTURE DIS structure NODE 26 QUANTITY dispx VALUE 1.72494262241429808e+00 TOLERANCE 1.e-09
+STRUCTURE DIS structure NODE 26 QUANTITY dispy VALUE 8.62640984384258958e-01 TOLERANCE 1.e-10
+STRUCTURE DIS structure NODE 26 QUANTITY dispz VALUE 8.62640984384087983e-01 TOLERANCE 1.e-10
 ------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 1
-NDSURF  1
+NDSURF  2
 ---------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
 DSURF  1
-E 1 - NUMDOF 1 ONOFF 1 VAL 0.5 FUNCT 2
--------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT 1
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT none none none
+E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 2
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
+DSURF 1
+E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT none none none
 -----------------------------------------------DNODE-NODE TOPOLOGY
-NODE    3 DNODE 1
 -----------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    1 DSURF 1

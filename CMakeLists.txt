@@ -541,6 +541,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/growth_law.cpp
   src/drt_mat/herschelbulkley.cpp
   src/drt_mat/ion.cpp
+  src/drt_mat/inelastic_defgrad_factors.cpp
   src/drt_mat/lubrication_law.cpp
   src/drt_mat/lubrication_mat.cpp
   src/drt_mat/material.cpp
@@ -554,6 +555,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/micromaterial.cpp
   src/drt_mat/mixfrac.cpp
   src/drt_mat/modpowerlaw.cpp
+  src/drt_mat/multiplicative_split_defgrad_elasthyper.cpp
   src/drt_mat/myocard.cpp
   src/drt_mat/myocard_fitzhugh_nagumo.cpp
   src/drt_mat/myocard_inada.cpp

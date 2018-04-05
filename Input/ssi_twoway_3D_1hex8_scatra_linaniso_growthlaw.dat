@@ -13,10 +13,10 @@ simple, academic test case for partitioned scalar-structure interaction:
 - cubic domain discretized by 1 hex8 element
 - constant initial value 0.0 of transported scalar
 - scalar is ramped from 0 to 10 via volume dirichlet condition
-- structure and scatra fields are coupled via MAT_GrowthLinAnIso
-- MAT_GrowthLinAnIso: anisotropic strain dependent on scalar concentration according to the following equation
-  (growth-direction is prescribed via vector in Input-File):
-- strain = [1 + GrowthFac * (c - RefConc)]
+- structure and scatra fields are coupled via MAT_MultiplicativeSplitDefgradElastHyper using:
+- MAT_InelasticDefgradLinScalarAniso: anisotropic strain dependent on scalar concentration according to the following equation
+  (growth-direction vector g is prescribed via vector in Input-File):
+- F_{in} = I + [GrowthFac * det(F) * (c - RefConc)] g \otimes g
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    1
 //NODES       8
@@ -48,27 +48,26 @@ SCATRATIMINTTYPE                Standard
 SOLVER                          UMFPACK
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_scatra DIFFUSIVITY 0.1
-MAT 2 MAT_GrowthVolumetric GROWTHLAW 3 IDMATELASTIC 4 STARTTIME -1. ENDTIME -1.
-MAT 3 MAT_GrowthLinAnIso SCALAR1 1 SCALAR1_GrowthFac 0.1 SCALAR1_RefConc 0.0 NUMSPACEDIM 3 GrowthDirection 1.0 1.0 0.0
-MAT 4 MAT_ElastHyper NUMMAT 1 MATIDS 5 DENS 1.0e-3
-MAT 5 ELAST_CoupSVK YOUNG 1.0 NUE 0.3
+MAT 2 MAT_MultiplicativeSplitDefgradElastHyper NUMMATEL 1 MATIDSEL 3 NUMFACINEL 1 INELDEFGRADFACIDS 4 DENS 1.0e-3
+MAT 3 ELAST_CoupSVK YOUNG 1.0 NUE 0.3
+MAT 4 MAT_InelasticDefgradLinScalarAniso SCALAR1 1 SCALAR1_GrowthFac 0.1 SCALAR1_RefConc 0.0 NUMSPACEDIM 3 GrowthDirection 1.0 1.0 0.0
 ----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 1
 ------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION t
 ------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 7 QUANTITY phi VALUE 9.99999999999998046e+00 TOLERANCE 1.e-08
-STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE -4.99403341856858252e-01 TOLERANCE 1.e-10
-STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE -4.99403341856840766e-01 TOLERANCE 1.e-10
+STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE -1.24609855812480852e+01 TOLERANCE 1.e-08
+STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE -1.24609855812480355e+01 TOLERANCE 1.e-08
 STRUCTURE DIS structure NODE 2 QUANTITY dispz VALUE 0.00000000000000000e+00 TOLERANCE 1.e-20
-STRUCTURE DIS structure NODE 4 QUANTITY dispx VALUE 5.24498278120315344e-05 TOLERANCE 1.e-14
-STRUCTURE DIS structure NODE 4 QUANTITY dispy VALUE -5.24498278023427243e-05 TOLERANCE 1.e-14
+STRUCTURE DIS structure NODE 4 QUANTITY dispx VALUE -1.22242526021912809e-02 TOLERANCE 1.e-11
+STRUCTURE DIS structure NODE 4 QUANTITY dispy VALUE 1.22242526022873863e-02 TOLERANCE 1.e-11
 STRUCTURE DIS structure NODE 4 QUANTITY dispz VALUE 0.00000000000000000e+00 TOLERANCE 1.e-20
-STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE -5.24498278108726646e-05 TOLERANCE 1.e-14
-STRUCTURE DIS structure NODE 6 QUANTITY dispy VALUE 5.24498278003617107e-05 TOLERANCE 1.e-14
+STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE 1.22242526021945682e-02 TOLERANCE 1.e-11
+STRUCTURE DIS structure NODE 6 QUANTITY dispy VALUE -1.22242526022780899e-02 TOLERANCE 1.e-11
 STRUCTURE DIS structure NODE 6 QUANTITY dispz VALUE 0.00000000000000000e+00 TOLERANCE 1.e-20
-STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE 4.99403341856871130e-01 TOLERANCE 1.e-10
-STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE 4.99403341856838434e-01 TOLERANCE 1.e-10
+STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE 1.24609855812481261e+01 TOLERANCE 1.e-08
+STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE 1.24609855812480959e+01 TOLERANCE 1.e-08
 STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE 0.00000000000000000e+00 TOLERANCE 1.e-20
 SSI SPECIAL QUANTITY numiterlastnonlinearsolve VALUE 2.00000000000000000e+00 TOLERANCE 1.e-20
 ------------------------------------------------DESIGN DESCRIPTION

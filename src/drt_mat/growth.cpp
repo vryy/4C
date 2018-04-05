@@ -21,7 +21,6 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_lib/drt_utils_factory.H"
-#include "../drt_inpar/inpar_ssi.H"
 
 
 /*----------------------------------------------------------------------------*/
@@ -121,43 +120,10 @@ MAT::PAR::Growth::Growth(
     growthlaw_ = params->CreateGrowthLaw();
     break;
   }
-  case INPAR::MAT::m_growth_lin_iso:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::GrowthLawLinIso(curmat));
-    MAT::PAR::GrowthLawLinIso* params = static_cast<MAT::PAR::GrowthLawLinIso*>(curmat->Parameter());
-    growthlaw_ = params->CreateGrowthLaw();
-    break;
-  }
-  case INPAR::MAT::m_growth_lin_aniso:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::GrowthLawLinAnIso(curmat));
-    MAT::PAR::GrowthLawLinAnIso* params = static_cast<MAT::PAR::GrowthLawLinAnIso*>(curmat->Parameter());
-    growthlaw_ = params->CreateGrowthLaw();
-    break;
-  }
   default:
     dserror("unknown material type %d", curmat->Type());
     break;
   }
-
-  // safety checks
-  // get the scatra structure control parameter list
-  const Teuchos::ParameterList& ssicontrol = DRT::Problem::Instance()->SSIControlParams();
-  // monolithic ssi coupling algorithm only implemented for MAT_GrowthLinIso and MAT_GrowthLinAnIso so far
-  if ((DRT::INPUT::IntegralValue<INPAR::SSI::SolutionSchemeOverFields>(ssicontrol,"COUPALGO") == INPAR::SSI::ssi_Monolithic) and
-      ((curmat->Type() != INPAR::MAT::m_growth_lin_iso) and (curmat->Type() != INPAR::MAT::m_growth_lin_aniso)))
-    dserror("When you use the the 'COUPALGO' 'ssi_Monolithic' from the 'SSI CONTROL' section,"
-        " you need to use the material 'MAT_GrowthLinIso' or 'MAT_GrowthLinAnIso'! If you want to use another material"
-        " feel free to implement it! ;-)");
-
-  // safety check to ensure that growth is possible throughout the whole simulation time if
-  // growth law 'MAT_GrowthLinIso' or 'MAT_GrowthLinAnIso' is chosen
-  if (((curmat->Type() == INPAR::MAT::m_growth_lin_iso) or (curmat->Type() == INPAR::MAT::m_growth_lin_aniso)) and
-      ((starttime_ >= 0.0) or (endtime_ >= 0.0)))
-    dserror("Since growth is possible throughout the whole simulation time for the growth law 'MAT_GrowthLinIso' or 'MAT_GrowthLinAnIso' "
-        "you need to set the 'STARTTIME' and 'ENDTIME' to a negative value to ensure this!");
 
   if(starttime_ > endtime_)
     dserror("WTF! It is not reasonable to have a starttime that is larger than the endtime!");
@@ -179,8 +145,6 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Growth::CreateMaterial()
   case INPAR::MAT::m_growth_ac_radial:
   case INPAR::MAT::m_growth_ac_radial_refconc:
   case INPAR::MAT::m_growth_const:
-  case INPAR::MAT::m_growth_lin_iso:
-  case INPAR::MAT::m_growth_lin_aniso:
     mat = Teuchos::rcp(new MAT::GrowthVolumetric(this));
     break;
   default:
@@ -579,11 +543,10 @@ void MAT::GrowthVolumetric::Evaluate
   MAT::PAR::Growth* growth_params = Parameter();
   const double endtime = growth_params->endtime_;
   const double starttime = growth_params->starttime_;
-  // when stress output is calculated the final parameters already exist
-  // we should not do another local Newton iteration, which uses eventually a wrong thetaold
-  if ((((time > starttime + eps) and (time <= endtime + eps)) or ((starttime < 0.0) and (endtime < 0.0))) and !output)
-  { // growth is allowed in here
 
+  // growth is allowed in here
+  if ((((time > starttime + eps) and (time <= endtime + eps)) or ((starttime < 0.0) and (endtime < 0.0))) and !output)
+  {
     // not nice but currently the only way we may do that....
     switch (Parameter()->growthlaw_->MaterialType())
     {
@@ -696,11 +659,10 @@ void MAT::GrowthVolumetric::Evaluate
 
     // store theta
     theta_->at(gp) = theta;
-
-    // if action is "calc_struct_stiffscalar" additional values have to be added to the parameter list to be able to evaluate the off diagonal block
-    if (action == "calc_struct_stiffscalar")
-      Parameter()->growthlaw_->AddParamsToParameterList(params,theta);
   }
+
+  // when stress output is calculated the final parameters already exist
+  // we should not do another local Newton iteration, which uses eventually a wrong thetaold
   else if ((time > endtime + eps) or output)
   { // turn off growth or calculate stresses for output
     double theta = theta_->at(gp);
@@ -748,7 +710,7 @@ void MAT::GrowthVolumetric::Evaluate
 
     // elastic fiber stretch
     LINALG::Matrix<3,3> C(true);
-    GrowthVolumetric().VectorToMatrix(C,Cvec,MAT::voigt_strain);
+    VectorToMatrix(C,Cvec,MAT::voigt_strain);
 
     LINALG::Matrix<3,1> CDir(true);
     CDir.MultiplyNN(1.0,C,refdir_);
