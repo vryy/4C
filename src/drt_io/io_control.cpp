@@ -100,23 +100,11 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
     }
   }
 
-  if (myrank_==0)
-  {
-    std::stringstream name;
-    name << filename_ << ".control";
-    WriteHeader( name.str(), spatial_approx );
+  std::stringstream name;
+  name << filename_ << ".control";
+  WriteHeader( name.str(), spatial_approx );
 
-    // insert back reference
-    if (restart)
-    {
-      size_t pos = outputname.rfind('/');
-      controlfile_ << "restarted_run = \""
-                   << ((pos!=std::string::npos) ? outputname.substr(pos+1) : outputname)
-                   << "\"\n\n";
-    }
-
-    controlfile_ << std::flush;
-  }
+  InsertRestartBackReference( restart, outputname );
 }
 
 
@@ -211,6 +199,8 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
     name << filename_ << ".control";
 
     WriteHeader( name.str(), spatial_approx );
+
+    InsertRestartBackReference( restart, outputname );
   }
 }
 
@@ -352,6 +342,27 @@ void IO::OutputControl::WriteHeader(
                  << "spatial_approximation = \"" << spatial_approx << "\"\n"
                  << "ndim = " << ndim_ << "\n"
                  << "\n";
+
+    controlfile_ << std::flush;
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IO::OutputControl::InsertRestartBackReference(
+    int restart,
+    const std::string& outputname )
+{
+  if ( myrank_!=0 )
+    return;
+
+  // insert back reference
+  if (restart)
+  {
+    size_t pos = outputname.rfind('/');
+    controlfile_ << "restarted_run = \""
+                 << ((pos!=std::string::npos) ? outputname.substr(pos+1) : outputname)
+                 << "\"\n\n";
 
     controlfile_ << std::flush;
   }

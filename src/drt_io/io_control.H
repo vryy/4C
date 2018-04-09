@@ -121,6 +121,10 @@ namespace IO
         const std::string& control_file_name,
         const std::string& spatial_approx );
 
+    void InsertRestartBackReference(
+        int restart,
+        const std::string& outputname );
+
   private:
     std::string problemtype_;
     std::string inputfile_;  ///< input file name
