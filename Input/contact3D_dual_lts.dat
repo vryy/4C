@@ -42,9 +42,6 @@ NLNSOL               fullnewton // fullnewton modnewton matfreenewton nlncg ptc
 TIMESTEP             0.005
 NUMSTEP              20
 MAXTIME              0.1
-DAMPING              Yes//Yes
-M_DAMP               0.0005
-K_DAMP               0.0005
 TOLRES               1.0E-6
 TOLDISP              1.0E-8
 NORM_RESF            Abs
