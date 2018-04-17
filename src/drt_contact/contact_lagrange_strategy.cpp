@@ -26,6 +26,7 @@
 #include "../drt_io/io.H"
 #include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_lib/epetra_utils.H"
 
 #include "../drt_structure_new/str_model_evaluator_contact.H"
 
@@ -3963,9 +3964,9 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetMatrixBlockPt
 
       // transform parallel row/column distribution of matrix kdz
       // (only necessary in the parallel redistribution case)
-      if (ParRedist())
+      if (ParRedist() or IsSelfContact())
         mat_ptr = MORTAR::MatrixRowColTransform(mat_ptr,
-            ProblemDofs(),LMDoFRowMapPtr(false));
+            ProblemDofs(),LinSystemLMDoFRowMapPtr());
 
       break;
     }
@@ -3999,17 +4000,31 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetMatrixBlockPt
 
       // transform parallel row/column distribution of matrix kzd
       // (only necessary in the parallel redistribution case)
-      if (ParRedist())
+      if (ParRedist() or IsSelfContact())
         mat_ptr = MORTAR::MatrixRowColTransform(mat_ptr,
-            LMDoFRowMapPtr(false),ProblemDofs());
+            LinSystemLMDoFRowMapPtr(),ProblemDofs());
 
       break;
     }
     case DRT::UTILS::block_lm_lm:
     {
       // build constraint matrix kzz
-      Teuchos::RCP<LINALG::SparseMatrix> kzz_ptr =
-          Teuchos::rcp(new LINALG::SparseMatrix(SlDoFRowMap(true),100,false,true));
+      Teuchos::RCP<LINALG::SparseMatrix> kzz_ptr = Teuchos::null;
+      if ( IsSelfContact() )
+      {
+        kzz_ptr = Teuchos::rcp(new LINALG::SparseMatrix(
+            GSelfContactRefMap(),100,false,true));
+
+        Teuchos::RCP<Epetra_Map> unused_lmdofs =
+            LINALG::SplitMap( GSelfContactRefMap(), *gsdofrowmap_ );
+        Epetra_Vector ones = Epetra_Vector( *unused_lmdofs, false );
+        ones.PutScalar(1.0);
+        if ( LINALG::InsertMyRowDiagonalIntoUnfilledMatrix( *kzz_ptr, ones ) )
+          dserror("Unexpected error!");
+      }
+      else
+        kzz_ptr = Teuchos::rcp(new LINALG::SparseMatrix(SlDoFRowMap(true),100,
+            false,true));
 
       // build unity matrix for inactive dofs
       Teuchos::RCP<Epetra_Map> gidofs = LINALG::SplitMap(*gsdofrowmap_,*gactivedofs_);
@@ -4023,17 +4038,26 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetMatrixBlockPt
         kzz_ptr->Add(*onesdiag,false,1.0,1.0);
       if (gactivet_->NumGlobalElements())
         kzz_ptr->Add(*tmatrix_,false,1.0,1.0);
-      kzz_ptr->Complete(*gsdofrowmap_,*gsdofrowmap_);
 
       // transform constraint matrix kzz to lmdofmap
-      mat_ptr = MORTAR::MatrixRowColTransformGIDs(kzz_ptr,
+      if ( IsSelfContact() )
+      {
+        kzz_ptr->Complete(*gsmdofrowmap_,*gsmdofrowmap_);
+        mat_ptr = MORTAR::MatrixRowColTransformGIDs(kzz_ptr,
+            LinSystemLMDoFRowMapPtr(),LinSystemLMDoFRowMapPtr());
+      }
+      else
+      {
+        kzz_ptr->Complete(*gsdofrowmap_,*gsdofrowmap_);
+        mat_ptr = MORTAR::MatrixRowColTransformGIDs(kzz_ptr,
            LMDoFRowMapPtr(true),LMDoFRowMapPtr(true));
+      }
 
       // transform parallel row/column distribution of matrix kzz
       // (only necessary in the parallel redistribution case)
       if (ParRedist())
         mat_ptr = MORTAR::MatrixRowColTransform(mat_ptr,
-            LMDoFRowMapPtr(false),LMDoFRowMapPtr(false));
+            LinSystemLMDoFRowMapPtr(),LinSystemLMDoFRowMapPtr());
 
       break;
     }
@@ -4460,17 +4484,20 @@ void CONTACT::CoLagrangeStrategy::RunPostComputeX(
   }
   else
   {
-    Teuchos::RCP<Epetra_Vector> zdir_ptr =
-        Teuchos::rcp(new Epetra_Vector(LMDoFRowMap(true),true));
-    LINALG::Export(dir,*zdir_ptr);
-    // get the current step length
-    const double stepLength = cparams.GetStepLength();
-    // ---------------------------------------------------------------------
-    // store the SCALED Lagrange multiplier increment in the contact
-    // strategy
-    // ---------------------------------------------------------------------
-    zdir_ptr->ReplaceMap(zincr_->Map());
-    zincr_->Scale(stepLength,*zdir_ptr);
+    if ( LMDoFRowMap(true).NumGlobalElements() > 0 )
+    {
+      Teuchos::RCP<Epetra_Vector> zdir_ptr =
+          Teuchos::rcp(new Epetra_Vector(LMDoFRowMap(true),true));
+      LINALG::Export(dir,*zdir_ptr);
+      // get the current step length
+      const double stepLength = cparams.GetStepLength();
+      // ---------------------------------------------------------------------
+      // store the SCALED Lagrange multiplier increment in the contact
+      // strategy
+      // ---------------------------------------------------------------------
+      zdir_ptr->ReplaceMap(zincr_->Map());
+      zincr_->Scale(stepLength,*zdir_ptr);
+    }
   }
 
   return;
@@ -4496,6 +4523,15 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoLagrangeStrategy::GetRhsBlockPtr(
     case DRT::UTILS::block_constraint:
     {
       vec_ptr = constrrhs_;
+      if ( IsSelfContact() )
+      {
+        static Teuchos::RCP<Epetra_Vector> tmp_ptr =
+            Teuchos::rcp( new Epetra_Vector( LinSystemLMDoFRowMap(), false ) );
+        tmp_ptr->PutScalar(0.0);
+        LINALG::Export( *vec_ptr, *tmp_ptr );
+        vec_ptr = tmp_ptr;
+      }
+
       break;
     }
     default:
@@ -4910,6 +4946,9 @@ void CONTACT::CoLagrangeStrategy::ResetLagrangeMultipliers(
     const CONTACT::ParamsInterface& cparams,
     const Epetra_Vector& xnew)
 {
+  if ( LMDoFRowMap(true).NumGlobalElements() == 0 )
+    return;
+
   Teuchos::RCP<Epetra_Vector> znew_ptr =
       Teuchos::rcp(new Epetra_Vector(LMDoFRowMap(true),true));
   LINALG::Export(xnew,*znew_ptr);

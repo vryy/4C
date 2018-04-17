@@ -353,8 +353,7 @@ void CONTACT::AUG::Strategy::InitMortar()
 {
   // for self contact, slave and master sets may have changed,
   // thus we have to update them before initializing Dn, Mn etc.
-  if (IsSelfContact())
-    UpdateMasterSlaveSetsGlobal();
+  UpdateGlobalSelfContactState();
 
   // (re)setup global Mortar LINALG::SparseMatrices and Epetra_Vectors
   Data().DMatrixPtr() = Teuchos::null;
@@ -527,6 +526,7 @@ void CONTACT::AUG::Strategy::Initialize( enum MORTAR::ActionType actiontype )
         Data().SetMatrixMapsValid( true );
       }
     }
+    // no break
     case MORTAR::eval_force:
     {
       if ( Data().VectorMapsValid() )

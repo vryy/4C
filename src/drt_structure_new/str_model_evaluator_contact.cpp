@@ -831,7 +831,7 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Contact::
             problem->ContactDynamicParams(),"SYSTEM");
 
     if (systype == INPAR::CONTACT::system_saddlepoint)
-      return Strategy().LMDoFRowMapPtr(false);
+      return Strategy().LinSystemLMDoFRowMapPtr();
     else
       return GState().DofRowMap();
   }
@@ -855,7 +855,10 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Contact::
     Teuchos::RCP<Epetra_Vector> curr_lm_ptr =
         Teuchos::rcp(new Epetra_Vector(*Strategy().GetLagrMultNp(false)));
     if (not curr_lm_ptr.is_null())
-      curr_lm_ptr->ReplaceMap(*GetBlockDofRowMapPtr());
+      curr_lm_ptr->ReplaceMap(Strategy().LMDoFRowMap(false));
+
+    ExtendLagrangeMultiplierDomain( curr_lm_ptr );
+
     return curr_lm_ptr;
   }
   else
@@ -873,8 +876,33 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Contact::
   Teuchos::RCP<Epetra_Vector> old_lm_ptr =
       Teuchos::rcp(new Epetra_Vector(*Strategy().GetLagrMultN(false)));
   if (not old_lm_ptr.is_null())
-    old_lm_ptr->ReplaceMap(*GetBlockDofRowMapPtr());
+    old_lm_ptr->ReplaceMap(Strategy().LMDoFRowMap(false));
+
+  ExtendLagrangeMultiplierDomain( old_lm_ptr );
+
   return old_lm_ptr;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Contact::ExtendLagrangeMultiplierDomain(
+    Teuchos::RCP<Epetra_Vector>& lm_vec ) const
+{
+  // default case: do nothing
+  if ( Strategy().LMDoFRowMap(false).NumGlobalElements() ==
+      GetBlockDofRowMapPtr()->NumGlobalElements() )
+    return;
+
+  if ( Strategy().LMDoFRowMap(false).NumGlobalElements() <
+      GetBlockDofRowMapPtr()->NumGlobalElements() )
+  {
+    Teuchos::RCP<Epetra_Vector> tmp_ptr = Teuchos::rcp( new Epetra_Vector(
+        *GetBlockDofRowMapPtr() ) );
+    LINALG::Export( *lm_vec, *tmp_ptr );
+    lm_vec = tmp_ptr;
+  }
+  else
+    dserror("Unconsidered case.");
 }
 
 /*----------------------------------------------------------------------*

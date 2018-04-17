@@ -212,6 +212,9 @@ namespace MODELEVALUATOR {
 
     void PostUpdateStepState();
 
+    void ExtendLagrangeMultiplierDomain(
+        Teuchos::RCP<Epetra_Vector>& lm_vec ) const;
+
   private:
     //! contact evaluation data container
     Teuchos::RCP<STR::MODELEVALUATOR::ContactData> eval_contact_ptr_;

@@ -592,6 +592,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
   bool isporo = (cparams.get<int>("PROBTYPE")==INPAR::CONTACT::poro);
   bool structmaster = false;
   bool structslave = false;
+  bool isanyselfcontact = false;
   enum MORTAR::MortarElement::PhysicalType slavetype = MORTAR::MortarElement::other;
   enum MORTAR::MortarElement::PhysicalType mastertype = MORTAR::MortarElement::other;
 
@@ -619,6 +620,12 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
     std::vector<bool> isslave(0);
     std::vector<bool> isself(0);
     CONTACT::UTILS::GetMasterSlaveSideInfo(isslave,isself,currentgroup);
+    for ( const bool is : isself )
+      if ( is )
+      {
+        isanyselfcontact = true;
+        break;
+      }
 
     // find out which sides are initialized as Active
     std::vector<const std::string*> active(currentgroup.size());
@@ -1044,7 +1051,8 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
 
   } // for (int i=0; i<(int)contactconditions.size(); ++i)
 
-  FullyOverlappingInterfaces( interfaces );
+  if ( not isanyselfcontact )
+    FullyOverlappingInterfaces( interfaces );
 
   // finish the interface creation
   if (Comm().MyPID() == 0)
@@ -1098,7 +1106,7 @@ void CONTACT::STRATEGY::Factory::FullyOverlappingInterfaces(
         << ( (*it)->HasMaSharingRefInterface() ? "TRUE" : "FALSE" ) << IO::endl;
 
   // resort the interface vector via a short bubble sort:
-  /* Move all interfaces with an shared reference interface to the end of the
+  /* Move all interfaces with a shared reference interface to the end of the
    * vector */
   for ( auto it = interfaces.begin(); it!=interfaces.end(); ++it  )
   {

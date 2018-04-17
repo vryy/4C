@@ -1910,13 +1910,14 @@ void MORTAR::MortarInterface::RestrictSlaveSets()
 /*----------------------------------------------------------------------*
  |  update Lagrange multiplier set (dofs)                     popp 08/10|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::UpdateLagMultSets(int offset_if,
-    const bool& redistributed)
+Teuchos::RCP<Epetra_Map> MORTAR::MortarInterface::UpdateLagMultSets(
+    int offset_if,
+    const bool& redistributed,
+    const Epetra_Map& ref_map ) const
 {
   if (redistributed)
   {
-    RedistributeLagMultSets();
-    return;
+    return RedistributeLagMultSets();
   }
   //********************************************************************
   // LAGRANGE MULTIPLIER DOFS
@@ -1938,7 +1939,7 @@ void MORTAR::MortarInterface::UpdateLagMultSets(int offset_if,
   // gather information over all procs
   std::vector<int> localnumlmdof(Comm().NumProc());
   std::vector<int> globalnumlmdof(Comm().NumProc());
-  localnumlmdof[Comm().MyPID()] = sdofrowmap_->NumMyElements();
+  localnumlmdof[Comm().MyPID()] = ref_map.NumMyElements();
   Comm().SumAll(&localnumlmdof[0], &globalnumlmdof[0], Comm().NumProc());
 
   // compute offset for LM dof initialization for all procs
@@ -1947,16 +1948,16 @@ void MORTAR::MortarInterface::UpdateLagMultSets(int offset_if,
     offset += globalnumlmdof[k];
 
   // loop over all slave dofs and initialize LM dofs
-  for (int i = 0; i < sdofrowmap_->NumMyElements(); ++i)
+  for (int i = 0; i < ref_map.NumMyElements(); ++i)
     lmdof.push_back(MaxDofGlobal() + 1 + offset_if + offset + i);
 
   // create interface LM map
   // (if maxdofglobal_ == 0, we do not want / need this)
   if (MaxDofGlobal() > 0)
-    lmdofmap_ = Teuchos::rcp(
+    return Teuchos::rcp(
         new Epetra_Map(-1, (int) lmdof.size(), &lmdof[0], 0, Comm()));
 
-  return;
+  return Teuchos::null;
 }
 
 /*----------------------------------------------------------------------*
@@ -1975,7 +1976,7 @@ void MORTAR::MortarInterface::StoreUnredistributedMaps()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::RedistributeLagMultSets()
+Teuchos::RCP<Epetra_Map> MORTAR::MortarInterface::RedistributeLagMultSets() const
 {
   if (plmdofmap_.is_null())
     dserror("The plmdofmap_ is not yet initialized!");
@@ -2032,7 +2033,7 @@ void MORTAR::MortarInterface::RedistributeLagMultSets()
   }
 
   // create deterministic interface LM map
-  lmdofmap_ = Teuchos::rcp(
+  return Teuchos::rcp(
       new Epetra_Map(-1, (int) lmdof.size(), &lmdof[0], 0, Comm()));
 }
 

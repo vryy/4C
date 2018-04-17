@@ -1104,7 +1104,7 @@ public:
   /*!
   \brief Get maximum dof ID in global discretization
   */
-  const int& MaxDofGlobal()
+  int MaxDofGlobal() const
   {
     if (maxdofglobal_ < 0) dserror("MaxDofGlobal not yet initialized");
     return maxdofglobal_;
@@ -1211,9 +1211,14 @@ public:
   status and thus the LM set is assigned dynamically.
 
   */
-  void UpdateLagMultSets(int offset_if)
+  inline void UpdateLagMultSets(int offset_if)
   { UpdateLagMultSets(offset_if,false); };
-  void UpdateLagMultSets(int offset_if, const bool& redistributed);
+  inline void UpdateLagMultSets(int offset_if, const bool& redistributed)
+  { lmdofmap_ = UpdateLagMultSets(offset_if, redistributed, *sdofrowmap_ ); };
+  Teuchos::RCP<Epetra_Map> UpdateLagMultSets(
+      int offset_if,
+      const bool& redistributed,
+      const Epetra_Map& ref_map ) const;
 
   /*! \brief Store the unredistributed local slave and lagrange multiplier maps
    *
@@ -1229,7 +1234,7 @@ public:
    *
    *  \author hiermeier
    *  \date 07/2016 */
-  void RedistributeLagMultSets();
+ Teuchos::RCP<Epetra_Map> RedistributeLagMultSets() const;
 
   /*!
   \brief Initialize / reset mortar interface

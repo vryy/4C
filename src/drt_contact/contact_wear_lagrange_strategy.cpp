@@ -343,7 +343,7 @@ void WEAR::WearLagrangeStrategy::InitMortar()
 {
   // for self contact, slave and master sets may have changed,
   // thus we have to update them before initializing D,M etc.
-  if (IsSelfContact()) UpdateMasterSlaveSetsGlobal();
+  UpdateGlobalSelfContactState();
 
   /**********************************************************************/
   /* initialize Dold and Mold if not done already                       */

@@ -14063,3 +14063,33 @@ void CONTACT::CoInterface::StoreToOld(
   }
   return;
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::UpdateSelfContactLagMultSet(
+    const Epetra_Map& gref_lmmap,
+    const Epetra_Map& gref_smmap )
+{
+  if ( gref_lmmap.NumMyElements() != gref_smmap.NumMyElements() )
+    dserror("Size mismatch!");
+
+  const int num_sgids = sdofrowmap_->NumMyElements();
+  const int* sgids = sdofrowmap_->MyGlobalElements();
+  const int* ref_lmgids = gref_lmmap.MyGlobalElements();
+
+  std::vector<int> lmdofs;
+  lmdofs.reserve( num_sgids );
+
+  for ( int i=0; i<num_sgids; ++i )
+  {
+    const int sgid = sgids[i];
+    const int ref_lid = gref_smmap.LID( sgid );
+    if (ref_lid == -1)
+      dserror( "Couldn't find the current slave gid #%d in the reference self "
+          "contact slave master map.", sgid );
+    lmdofs.push_back( ref_lmgids[ref_lid] );
+  }
+
+  lmdofmap_ = Teuchos::rcp( new Epetra_Map( -1, static_cast<int>(lmdofs.size()),
+      lmdofs.data(), 0, Comm() ) );
+}

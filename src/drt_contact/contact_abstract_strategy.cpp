@@ -471,10 +471,38 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
   for (int i = 0; i < (int) Interfaces().size(); ++i)
   {
     // build Lagrange multiplier dof map
-    Interfaces()[i]->UpdateLagMultSets(offset_if,redistributed);
-    const int loffset_interface = Interfaces()[i]->LagMultDofs()->NumGlobalElements();
-    if (loffset_interface > 0)
-      offset_if += loffset_interface;
+    if ( IsSelfContact() )
+    {
+      if (redistributed)
+        dserror("SELF-CONTACT: Parallel redistribution is not supported!");
+
+      CoInterface& inter = *Interfaces()[i];
+      Teuchos::RCP<const Epetra_Map> refdofrowmap = Teuchos::null;
+      if ( inter.SelfContact() )
+        refdofrowmap =
+            LINALG::MergeMap( inter.SlaveRowDofs(), inter.MasterRowDofs() );
+      else
+        refdofrowmap = inter.SlaveRowDofs();
+
+      Teuchos::RCP<Epetra_Map> selfcontact_lmmap =
+          Interfaces()[i]->UpdateLagMultSets(offset_if,redistributed,*refdofrowmap );
+
+      Teuchos::RCP<Epetra_Map>& gsc_refdofmap_ptr = Data().GSelfContactRefDofRowMapPtr();
+      Teuchos::RCP<Epetra_Map>& gsc_lmdofmap_ptr = Data().GSelfContactLmDofRowMapPtr();
+      gsc_lmdofmap_ptr = LINALG::MergeMap( selfcontact_lmmap, gsc_lmdofmap_ptr );
+      gsc_refdofmap_ptr = LINALG::MergeMap( refdofrowmap, gsc_refdofmap_ptr );
+
+      const int loffset_interface = selfcontact_lmmap->NumGlobalElements();
+      if (loffset_interface > 0)
+        offset_if += loffset_interface;
+    }
+    else
+    {
+      Interfaces()[i]->UpdateLagMultSets(offset_if,redistributed);
+      const int loffset_interface = Interfaces()[i]->LagMultDofs()->NumGlobalElements();
+      if (loffset_interface > 0)
+        offset_if += loffset_interface;
+    }
 
     // merge interface master, slave maps to global master, slave map
     gsnoderowmap_ = LINALG::MergeMap(SlRowNodesPtr(),
@@ -960,8 +988,11 @@ void CONTACT::CoAbstractStrategy::SetState(
 /*----------------------------------------------------------------------*
  | update global master and slave sets (public)               popp 11/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoAbstractStrategy::UpdateMasterSlaveSetsGlobal()
+void CONTACT::CoAbstractStrategy::UpdateGlobalSelfContactState()
 {
+  if ( not IsSelfContact() )
+    return;
+
   // reset global slave / master Epetra Maps
   gsnoderowmap_ = Teuchos::rcp(new Epetra_Map(0, 0, Comm()));
   gsdofrowmap_  = Teuchos::rcp(new Epetra_Map(0, 0, Comm()));
@@ -976,7 +1007,8 @@ void CONTACT::CoAbstractStrategy::UpdateMasterSlaveSetsGlobal()
   for (int i = 0; i < (int) Interfaces().size(); ++i)
   {
     // build Lagrange multiplier dof map
-    Interfaces()[i]->UpdateLagMultSets(offset_if);
+    Interfaces()[i]->UpdateSelfContactLagMultSet(
+        GSelfContactLmMap(), *gsmdofrowmap_ );
 
     // merge interface Lagrange multiplier dof maps to global LM dof map
     glmdofrowmap_ = LINALG::MergeMap(LMDoFRowMapPtr(true),
@@ -992,6 +1024,44 @@ void CONTACT::CoAbstractStrategy::UpdateMasterSlaveSetsGlobal()
         Interfaces()[i]->SlaveRowDofs());
     gmdofrowmap_ = LINALG::MergeMap(gmdofrowmap_,
         Interfaces()[i]->MasterRowDofs());
+  }
+
+  Teuchos::RCP<Epetra_Vector> tmp_ptr =
+      Teuchos::rcp( new Epetra_Vector( *gsdofrowmap_, true ) );
+
+  {
+    const int* oldgids = zincr_->Map().MyGlobalElements();
+    for ( int i=0; i<zincr_->Map().NumMyElements(); ++i )
+    {
+      if ( std::abs((*zincr_)[i]) > std::numeric_limits<double>::epsilon() )
+      {
+        const int new_lid = gsdofrowmap_->LID(oldgids[i]);
+        if ( new_lid == -1 )
+          dserror("Self contact: The Lagrange multiplier increment vector "
+              "could not be transferred consistently.");
+        else
+          (*tmp_ptr)[new_lid] = (*zincr_)[i];
+      }
+    }
+    zincr_ = Teuchos::rcp( new Epetra_Vector( *tmp_ptr ) );
+  }
+
+  tmp_ptr->PutScalar(0.0);
+  {
+    const int* oldgids = z_->Map().MyGlobalElements();
+    for ( int i=0; i<z_->Map().NumMyElements(); ++i )
+    {
+      if ( std::abs((*z_)[i]) > std::numeric_limits<double>::epsilon() )
+      {
+        const int new_lid = gsdofrowmap_->LID(oldgids[i]);
+        if ( new_lid == -1 )
+          dserror("Self contact: The Lagrange multiplier vector "
+              "could not be transferred consistently.");
+        else
+          (*tmp_ptr)[new_lid] = (*z_)[i];
+      }
+    }
+    z_ = tmp_ptr;
   }
 
   return;
@@ -1315,8 +1385,7 @@ void CONTACT::CoAbstractStrategy::InitMortar()
 {
   // for self contact, slave and master sets may have changed,
   // thus we have to update them before initializing D,M etc.
-  if (IsSelfContact())
-    UpdateMasterSlaveSetsGlobal();
+  UpdateGlobalSelfContactState();
 
   // initialize Dold and Mold if not done already
   if (dold_ == Teuchos::null)

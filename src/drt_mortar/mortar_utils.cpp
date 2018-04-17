@@ -301,12 +301,14 @@ void MORTAR::ReplaceColumnAndDomainMap(
 /*----------------------------------------------------------------------*
  | transform the row and column maps of a matrix (GIDs)       popp 08/10|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> MORTAR::MatrixRowColTransformGIDs(Teuchos::RCP<const LINALG::SparseMatrix> inmat,
-                                                                     Teuchos::RCP<const Epetra_Map> newrowmap,
-                                                                     Teuchos::RCP<const Epetra_Map> newdomainmap)
+Teuchos::RCP<LINALG::SparseMatrix> MORTAR::MatrixRowColTransformGIDs(
+    Teuchos::RCP<const LINALG::SparseMatrix> inmat,
+    Teuchos::RCP<const Epetra_Map> newrowmap,
+    Teuchos::RCP<const Epetra_Map> newdomainmap)
 {
   // initialize output matrix
-  Teuchos::RCP<LINALG::SparseMatrix> outmat = Teuchos::rcp(new LINALG::SparseMatrix(*newrowmap,100,true,true));
+  Teuchos::RCP<LINALG::SparseMatrix> outmat =
+      Teuchos::rcp(new LINALG::SparseMatrix(*newrowmap,100,true,true));
 
   // mapping of column gids
   std::map<int,int> gidmap;

@@ -308,7 +308,8 @@ void NOX::NLN::CONTACT::LinearSystem::LinearSubProblem::ExtractActiveBlocks(
   {
     for ( int c = 0; c < numcols; ++c )
     {
-      if ( block_mat( r, c ).EpetraMatrix()->GlobalMaxNumEntries() == 0 )
+      if ( block_mat( r, c ).EpetraMatrix()->GlobalMaxNumEntries() == 0 or
+           block_mat( r, c ).EpetraMatrix()->NormFrobenius() == 0.0 )
         isempty[r][c] = true;
     }
 

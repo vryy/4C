@@ -80,6 +80,14 @@ public:
   Teuchos::RCP<Epetra_Map>& GLmDofRowMapPtr() { return glmdofrowmap_; };
   Teuchos::RCP<const Epetra_Map> GLmDofRowMapPtr() const { return glmdofrowmap_; };
 
+  //! return global reference dof row map for self contact Lagr. multipliers (of all interfaces)
+  Teuchos::RCP<Epetra_Map>& GSelfContactRefDofRowMapPtr() { return gscrefdofrowmap_; };
+  Teuchos::RCP<const Epetra_Map> GSelfContactRefDofRowMapPtr() const { return gscrefdofrowmap_; };
+
+  //! return global self-contact Lagrange mult. dof row map (of all interfaces)
+  Teuchos::RCP<Epetra_Map>& GSelfContactLmDofRowMapPtr() { return gsclmdofrowmap_; };
+  Teuchos::RCP<const Epetra_Map> GSelfContactLmDofRowMapPtr() const { return gsclmdofrowmap_; };
+
   //! return global slave node row map (of all interfaces)
   Teuchos::RCP<Epetra_Map>& GSlNodeRowMapPtr() { return gsnoderowmap_; };
   Teuchos::RCP<const Epetra_Map> GSlNodeRowMapPtr() const { return gsnoderowmap_; };
@@ -440,6 +448,12 @@ private:
   //! global Lagrange mult. dof row map (of all interfaces)
   Teuchos::RCP<Epetra_Map> glmdofrowmap_;
 
+  //! global reference dof row map for self contact Lagrange multipliers (of all interfaces)
+  Teuchos::RCP<Epetra_Map> gscrefdofrowmap_;
+
+  //! global Lagrange mult. dof row map for self contact (of all interfaces)
+  Teuchos::RCP<Epetra_Map> gsclmdofrowmap_;
+
   //! global slave node row map (of all interfaces)
   Teuchos::RCP<Epetra_Map> gsnoderowmap_;
 
@@ -711,6 +725,31 @@ public:
   };
   virtual const Epetra_Map& LMDoFRowMap(const bool& redist) const
   { return *LMDoFRowMapPtr(redist); }
+
+  /*! \brief Return the Lagrange multiplier dof row map for the global linear
+   *  system
+   *
+   *  \note This map is NOT used internally. Its only purpose is to provide a
+   *  map as meaningful upper bound for potentially acquired LM dofs.
+   *
+   *  \date 04/2018
+   *  \author hiermeier */
+  virtual Teuchos::RCP<const Epetra_Map> LinSystemLMDoFRowMapPtr() const
+  {
+    if ( SystemType() != INPAR::CONTACT::system_saddlepoint )
+      return Teuchos::null;
+
+    if ( IsSelfContact() )
+    {
+      if (ParRedist())
+        dserror("Parallel redistribution is not supported for self contact!");
+      return Data().GSelfContactLmDofRowMapPtr();
+    }
+    else
+      return LMDoFRowMapPtr(false);
+  };
+  virtual const Epetra_Map& LinSystemLMDoFRowMap() const
+  { return *LinSystemLMDoFRowMapPtr(); }
 
   /*! \brief Return the slave dof row map
    *
@@ -1012,6 +1051,7 @@ public:
 
    TODO: automatically recognize ACTUAL self contact */
   bool& IsSelfContact() { return Data().IsSelfContact(); }
+  bool IsSelfContact() const { return Data().IsSelfContact(); };
 
   //! Return global frictional status
   bool Friction() const { return Data().IsFriction(); }
@@ -1589,14 +1629,25 @@ protected:
    current ones to the old ones. */
   void StoreToOld(MORTAR::StrategyBase::QuantityType type);
 
-  /*! \brief Update global master and slave sets
+  /*! \brief Update global self contact state
 
    This becomes necessary for self contact simulations, because in a
    self contact interface master and slave status are assigned dynamically
    and thus the global maps change constantly.
 
    */
-  void UpdateMasterSlaveSetsGlobal();
+  void UpdateGlobalSelfContactState();
+
+  /// access global self contact lagrange multiplier map (read & write)
+  inline const Epetra_Map& GSelfContactLmMap() const
+  {
+    return *Data().GSelfContactLmDofRowMapPtr();
+  }
+
+  inline const Epetra_Map& GSelfContactRefMap() const
+  {
+    return *Data().GSelfContactRefDofRowMapPtr();
+  }
 
 private:
   /*! \brief Create the global Lagrange multiplier DoF row map

@@ -1044,6 +1044,14 @@ public:
   */
   virtual bool SplitActiveDofs();
 
+  /// \brief update the lagrange multiplier sets for self contact
+  /**
+   *  \param(in) gref_lmmap: global lagrange multiplier reference map
+   *  \param(in) gref_smmap: global merged slave/master reference map
+   */
+  void UpdateSelfContactLagMultSet( const Epetra_Map& gref_lmmap,
+      const Epetra_Map& gref_smmap );
+
   /*!
   \brief Assemble normal coupling weighted condition for poro contact
 
