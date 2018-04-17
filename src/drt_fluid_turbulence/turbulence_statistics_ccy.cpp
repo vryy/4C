@@ -4,12 +4,12 @@
 \brief Compute (time and space) averaged values for turbulent flows
        around a rotating cylinder and write them to files.
 
-
+\level 2
 <pre>
-Maintainer: Benjamin Krank
-            krank@lnm.mw.tum.de
+\maintainer Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15252
+            089 - 289-15235
 </pre>
 
 *----------------------------------------------------------------------*/

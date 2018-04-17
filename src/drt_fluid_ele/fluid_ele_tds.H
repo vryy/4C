@@ -4,10 +4,10 @@
 \brief A container for all time-dependent subgrid scale stuff
 \level 3
 <pre>
-\maintainer Benjamin Krank
-            krank@lnm.mw.tum.de
+\maintainer Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15252
+            089 - 289-15235
 </pre>
 */
 #ifndef DRT_FLUID_ELE_TDS_H

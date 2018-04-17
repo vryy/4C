@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file drt_turbulent_inflow.H
+\file drt_transfer_turb_inflow.H
 
 \brief Methods to transfer a turbulent inflow profile a from a master
 boundary to a slave boundary on a seperate domain.
@@ -7,11 +7,13 @@ The slave boundary must have an additional Dirichlet condition, the
 master boundary will usually be a periodic boundary (but is not required
 to)
 
+\level 3
+
 <pre>
-Maintainer: Benjamin Krank
-            krank@lnm.mw.tum.de
+\maintainer Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15252
+            089 - 289-15235
 </pre>
 
 *----------------------------------------------------------------------*/

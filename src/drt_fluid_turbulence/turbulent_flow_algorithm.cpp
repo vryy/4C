@@ -1,13 +1,15 @@
 /*!-----------------------------------------------------------------------------------------------*
-\file turbulent_inflow_algorithm.H
+\file turbulent_flow_algorithm.cpp
 
   \brief algorithm for turbulent flows with separate inflow section
 
+\level 2
+
 <pre>
-Maintainer: Benjamin Krank
-            krank@lnm.mw.tum.de
+\maintainer Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15252
+            089 - 289-15235
 </pre>
  *------------------------------------------------------------------------------------------------*/
 

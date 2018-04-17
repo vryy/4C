@@ -6,11 +6,13 @@ turbulent flow over a periodic constrictions
 literature see Froehlich Mellen Rodi Temmerman Leschziner (2004) and Rapp Breuer Manhart Peller (2010)
 created in a Semesterarbeit by Stephan Jaeger 2015
 
+\level 2
+
 <pre>
-Maintainer: Benjamin Krank
-            krank@lnm.mw.tum.de
+\maintainer Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15252
+            089 - 289-15235
 </pre>
 */
 

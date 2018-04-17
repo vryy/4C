@@ -4,10 +4,12 @@
 \brief Compute dissipation rates for Taylor-Green vortex
        and write them to files.
 
-Maintainer: Benjamin Krank
-            krank@lnm.mw.tum.de
+\level 2
+
+\maintainer Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15252
+            089 - 289-15235
 </pre>
 
 *----------------------------------------------------------------------*/

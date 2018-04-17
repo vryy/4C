@@ -4,7 +4,10 @@
 \brief Write (time and space) averaged values to file for
 turbulent flow over a periodic hill
 
-\maintainer Benjamin Krank
+\maintainer Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
 
 \level 2
 
@@ -31,10 +34,6 @@ and the basename of the statistics outfile. These parameters are
 expected to be contained in the fluid time integration parameter list
 given on input.
 
-Maintainer: Benjamin Krank
-            krank@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15252
 </pre>
 
 *----------------------------------------------------------------------*/

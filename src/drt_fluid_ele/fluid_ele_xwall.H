@@ -6,11 +6,13 @@ and Gauss point loop (depending on the fluid implementation)
 as well as some additional service routines (for the evaluation
 of errors, turbulence statistics etc.).
 
+\level 2
+
 <pre>
-Maintainer: Benjamin Krank
-            krank@lnm.mw.tum.de
+\maintainer Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15252/-245
+            089 - 289-15235
 </pre>
 */
 #ifndef DRT_FLUID_ELE_XWALL_H

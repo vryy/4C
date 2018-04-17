@@ -2,7 +2,10 @@
 /*!
 \file modpowerlaw.cpp
 
-\maintainer Benjamin Krank
+\maintainer Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
 
 \level 3
 */
