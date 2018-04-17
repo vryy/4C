@@ -6,10 +6,10 @@
 
 \level 3
 <pre>
-\maintainer Benjamin Krank & Martin Kronbichler
-             {krank,kronbichler}@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15252/-235
+\maintainer Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15235/-235
 </pre>
 */
 /*----------------------------------------------------------------------*/

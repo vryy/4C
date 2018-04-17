@@ -15,10 +15,10 @@
 
 \level 1
 
-\maintainer Benjamin Krank & Volker Gravemeier
-             {krank,vgravem}@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15252/-245
+\maintainer Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15235/-235
 
 *----------------------------------------------------------------------*/
 

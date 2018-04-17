@@ -3,11 +3,13 @@
 \file fluid_timint_loma_ost.cpp
 \brief TimIntLomaOst
 
+\level 2
+
 <pre>
-Maintainers: Benjamin Krank & Martin Kronbichler
-             {krank,kronbichler}@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15252/-235
+\maintainer Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15235/-235
 </pre>
 */
 /*----------------------------------------------------------------------*/

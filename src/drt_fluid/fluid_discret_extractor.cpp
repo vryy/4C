@@ -3,13 +3,11 @@
 
 \brief creates a second discretization as part of the complete discretization for inflow generation
 
-\level 2
-
 <pre>
-\maintainer Benjamin Krank & Martin Kronbichler
-            {krank,kronbichler}@lnm.mw.tum.de
+\maintainer Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15252/-235
+            089 - 289-15235/-235
 
 \level 1
 </pre>
