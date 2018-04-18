@@ -172,7 +172,10 @@ namespace DRT
         //! set factor F/RT
         void SetFRT()
         {
-          vmelch::frt_ = INPAR::ELCH::faraday_const/(INPAR::ELCH::gas_const*vmthermo::Temp());
+          const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
+          const double gasconstant = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
+
+          vmelch::frt_ = faraday/(gasconstant*vmthermo::Temp());
 
           return;
         }

@@ -475,9 +475,11 @@ class ScaTraEleDiffManagerElchDiffCond : public ScaTraEleDiffManagerElchElectrod
       // call base class routine
       dmelch::SetValence(valence,k);
 
+      const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
+
       // set additional parameters involving inverse of valence
       invval_[k] = 1./valence;
-      invfval_[k] = 1./INPAR::ELCH::faraday_const/valence;
+      invfval_[k] = 1./faraday/valence;
 
       return;
     };

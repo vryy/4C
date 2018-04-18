@@ -593,7 +593,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateElchBoundaryKineticsPoin
     //                    |_______fns_________________|
     // see, e.g. in Ehrl et al., "A computational approach for the simulation of natural convection in
     // electrochemical cells", JCP, 2012
-    double fns = -1.0/INPAR::ELCH::faraday_const/nume;
+    double fns = -1.0/elchparams_->Faraday()/nume;
     // stoichiometry as a consequence of the reaction convention
     fns*=stoich[k];
 

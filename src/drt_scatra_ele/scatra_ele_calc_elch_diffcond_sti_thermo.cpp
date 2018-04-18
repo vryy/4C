@@ -17,6 +17,7 @@
 #include "scatra_ele_calc_elch_diffcond_sti_thermo.H"
 
 #include "scatra_ele_parameter_timint.H"
+#include "scatra_ele_parameter_elch.H"
 
 #include "../drt_mat/material.H"
 
@@ -141,9 +142,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::CalcMatAndRhs(
   const LINALG::Matrix<my::nsd_,1>& gradtemp = VarManager()->GradTemp();
   const double& kappa = mydiffcond::DiffManager()->GetCond();
   const double& kappaderiv = mydiffcond::DiffManager()->GetDerivCond(0);
-  const double invffval = mydiffcond::DiffManager()->InvFVal(0)/INPAR::ELCH::faraday_const;
+  const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
+  const double invffval = mydiffcond::DiffManager()->InvFVal(0)/faraday;
   const double& invfval = mydiffcond::DiffManager()->InvFVal(0);
-  const double& R = INPAR::ELCH::gas_const;
+  const double& R = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
   const double& t = mydiffcond::DiffManager()->GetTransNum(0);
   const double& tderiv = mydiffcond::DiffManager()->GetDerivTransNum(0,0);
 
@@ -273,10 +275,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::SysmatODScatraT
     // extract variables and parameters
     const double& concentration = VarManager()->Phinp(0);
     const LINALG::Matrix<my::nsd_,1>& gradconc = VarManager()->GradPhi(0);
-    const double& invffval = mydiffcond::DiffManager()->InvFVal(0)/INPAR::ELCH::faraday_const;
+    const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
+    const double& invffval = mydiffcond::DiffManager()->InvFVal(0)/faraday;
     const double& invfval = mydiffcond::DiffManager()->InvFVal(0);
     const double& kappa = mydiffcond::DiffManager()->GetCond();
-    const double& R = INPAR::ELCH::gas_const;
+    const double& R = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
     const double& t = mydiffcond::DiffManager()->GetTransNum(0);
 
     // matrix contributions arising from additional, thermodynamic term in expression for current density

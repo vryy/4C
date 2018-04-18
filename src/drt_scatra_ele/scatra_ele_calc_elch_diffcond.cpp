@@ -1281,7 +1281,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetMaterialParams(
 
   // evaluate electrolyte material
   if (material->MaterialType() == INPAR::MAT::m_elchmat)
-    Utils()->MatElchMat(material,VarManager()->Phinp(),myelch::elchparams_->EquPot(),INPAR::ELCH::faraday_const*VarManager()->FRT(),DiffManager(),diffcondmat_);
+    Utils()->MatElchMat(material,VarManager()->Phinp(),myelch::elchparams_->EquPot(),myelch::elchparams_->Faraday()*VarManager()->FRT(),DiffManager(),diffcondmat_);
   else
     dserror("Invalid material type!");
 

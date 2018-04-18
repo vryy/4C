@@ -3534,8 +3534,9 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
                 dserror("Number of stoichiometric coefficients does not match number of scalars!");
               if((*stoichiometries)[0] != -1)
                 dserror("Invalid stoichiometric coefficient!");
-              const double faraday = INPAR::ELCH::faraday_const;
-              const double frt = faraday/(INPAR::ELCH::gas_const*(DRT::Problem::Instance(0)->ELCHControlParams().get<double>("TEMPERATURE")));
+              const double faraday = DRT::Problem::Instance(0)->ELCHControlParams().get<double>("FARADAY_CONSTANT");
+              const double gasconstant = DRT::Problem::Instance(0)->ELCHControlParams().get<double>("GAS_CONSTANT");
+              const double frt = faraday/(gasconstant*(DRT::Problem::Instance(0)->ELCHControlParams().get<double>("TEMPERATURE")));
               const double alphaa = conditions[icond]->GetDouble("alpha_a");   // anodic transfer coefficient
               const double alphac = conditions[icond]->GetDouble("alpha_c");   // cathodic transfer coefficient
               const double kr = conditions[icond]->GetDouble("k_r");           // rate constant of charge transfer reaction

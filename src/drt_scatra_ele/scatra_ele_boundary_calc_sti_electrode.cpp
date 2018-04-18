@@ -195,7 +195,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateS2ICoupl
     case INPAR::S2I::kinetics_butlervolmerpeltier:
     {
       // access input parameters associated with current condition
-      const double faraday = INPAR::ELCH::faraday_const;
+      const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
+      const double gasconstant = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
       const double alphaa = s2icondition.GetDouble("alpha_a");
       const double alphac = s2icondition.GetDouble("alpha_c");
       const double kr = s2icondition.GetDouble("k_r");
@@ -209,7 +210,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateS2ICoupl
         dserror("Saturation value c_max of intercalated lithium concentration is too small!");
 
       // evaluate factor F/RT
-      const double frt = INPAR::ELCH::faraday_const/(INPAR::ELCH::gas_const*eslavetempint);
+      const double frt = faraday/(gasconstant*eslavetempint);
 
       // equilibrium electric potential difference at electrode surface
       const double epd = matelectrode->ComputeOpenCircuitPotential(eslavephiint,faraday,frt);
@@ -359,7 +360,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateS2ICoupl
     case INPAR::S2I::kinetics_butlervolmerpeltier:
     {
       // access input parameters associated with current condition
-      const double faraday = INPAR::ELCH::faraday_const;
+      const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
+      const double gasconstant = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
       const double alphaa = s2icondition.GetDouble("alpha_a");
       const double alphac = s2icondition.GetDouble("alpha_c");
       const double kr = s2icondition.GetDouble("k_r");
@@ -373,7 +375,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateS2ICoupl
         dserror("Saturation value c_max of intercalated lithium concentration is too small!");
 
       // evaluate factor F/RT
-      const double frt = INPAR::ELCH::faraday_const/(INPAR::ELCH::gas_const*eslavetempint);
+      const double frt = faraday/(gasconstant*eslavetempint);
 
       // equilibrium electric potential difference at electrode surface and its derivative w.r.t. concentration at electrode surface
       const double epd = matelectrode->ComputeOpenCircuitPotential(eslavephiint,faraday,frt);

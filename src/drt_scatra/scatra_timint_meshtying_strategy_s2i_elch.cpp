@@ -311,9 +311,10 @@ void SCATRA::MeshtyingStrategyS2IElch::Update() const
           const double alphac = condition->GetDouble("alpha_c");
           const double frt = ElchTimInt()->FRT();
           const double conductivity_inverse = 1./condition->GetDouble("conductivity");
+          const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
 
           // pre-compute integration factor
-          const double integrationfac(condition->GetDouble("molar mass")*scatratimint_->Dt()/(condition->GetDouble("density")*INPAR::ELCH::faraday_const));
+          const double integrationfac(condition->GetDouble("molar mass")*scatratimint_->Dt()/(condition->GetDouble("density")*faraday));
 
           // extract nodal cloud from current condition
           const std::vector<int>* nodegids = condition->Nodes();
@@ -359,7 +360,7 @@ void SCATRA::MeshtyingStrategyS2IElch::Update() const
                 const unsigned heaviside(resistance > 0. ? 1 : 0);
 
                 // compute exchange current density
-                const double i0 = kr*INPAR::ELCH::faraday_const*pow(masterphi,alphaa);
+                const double i0 = kr*faraday*pow(masterphi,alphaa);
 
                 // compute initial guess of Butler-Volmer current density associated with lithium plating, neglecting overpotential due to resistance of plated lithium
                 double eta = slavepot-masterpot;
@@ -914,8 +915,11 @@ double SCATRA::MortarCellCalcElchSTIThermo<distypeS,distypeM>::GetFRT() const
   if(temperature <= 0.)
     dserror("Temperature is non-positive!");
 
+  const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
+  const double gasconstant = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
+
   // evaluate factor F/RT
-  return INPAR::ELCH::faraday_const/(INPAR::ELCH::gas_const*temperature);
+  return faraday/(gasconstant*temperature);
 }
 
 

@@ -437,7 +437,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElchBoundaryKine
 )
 {
   // for pre-multiplication of i0 with 1/(F z_k)
-  const double faraday = INPAR::ELCH::faraday_const;    // unit of F: C/mol or mC/mmol or µC/µmol
+  const double faraday = elchparams_->Faraday();
 
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);

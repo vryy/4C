@@ -86,12 +86,6 @@ namespace INPAR
       cccv_rx           //!< relaxation (RX) mode
     };
 
-    // faraday constant (general definition)
-    const double faraday_const = 96485.3399;
-
-    // gas constant (general definition)
-    const double gas_const = 8.314472;
-
     // permittivität (not a general definition, but only once used)
     const double epsilon_const = 1.e-4;
 

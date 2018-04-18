@@ -172,7 +172,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatAndRhsMixing(
   // extract variables and parameters
   const double& concentration = VarManager()->Conc();
   const double& diffcoeff = diffmanagerstielectrode_->GetIsotropicDiff(0);
-  const double& F = INPAR::ELCH::faraday_const;
+  const double& F = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
   const LINALG::Matrix<my::nsd_,1>& gradtemp = my::scatravarmanager_->GradPhi(0);
   const double& soret = DiffManager()->GetSoret();
   const double& temperature = my::scatravarmanager_->Phinp(0);
@@ -222,7 +222,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatAndRhsSoret(
   // extract variables and parameters
   const double& concentration = VarManager()->Conc();
   const double& diffcoeff = diffmanagerstielectrode_->GetIsotropicDiff(0);
-  const double& F = INPAR::ELCH::faraday_const;
+  const double& F = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
   const LINALG::Matrix<my::nsd_,1>& gradtemp = my::scatravarmanager_->GradPhi(0);
   const double& soret = DiffManager()->GetSoret();
   const double& temperature = my::scatravarmanager_->Phinp(0);
@@ -447,7 +447,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatMixingOD(
       const double term4 = -diffmanagerstielectrode_->GetOCPDeriv()*n2/diffcoeff*diffcoeffderiv*my::funct_(ui);
 
       // linearizations of heat of mixing term in thermo residuals w.r.t. concentration dofs
-      emat(vi,ui*2) += timefacfac*my::funct_(vi)*INPAR::ELCH::faraday_const/diffcoeff*(term1+term2+term3+term4);
+      emat(vi,ui*2) += timefacfac*my::funct_(vi)*DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday()/diffcoeff*(term1+term2+term3+term4);
 
       // linearizations of heat of mixing term in thermo residuals w.r.t. electric potential dofs are zero
     }
@@ -470,7 +470,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatSoretOD(
   const double& concentration = VarManager()->Conc();
   const double& diffcoeff = diffmanagerstielectrode_->GetIsotropicDiff(0);
   const double& diffcoeffderiv = diffmanagerstielectrode_->GetDerivIsoDiffCoef(0,0);
-  const double& F = INPAR::ELCH::faraday_const;
+  const double& F = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
   const LINALG::Matrix<my::nsd_,1>& gradconc = VarManager()->GradConc();
   const LINALG::Matrix<my::nsd_,1>& gradtemp = my::scatravarmanager_->GradPhi(0);
   const double& soret = DiffManager()->GetSoret();

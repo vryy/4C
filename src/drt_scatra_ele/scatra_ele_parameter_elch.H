@@ -61,6 +61,9 @@ namespace DRT
         //! return Faraday constant
         double Faraday() const {return faraday_;};
 
+        //! return the (universal) gas constant
+        double GasConstant() const {return gas_constant_;};
+
         //! return dielectric constant
         double Epsilon() const {return epsilon_;};
 
@@ -81,7 +84,10 @@ namespace DRT
         enum INPAR::ELCH::EquPot equpot_;
 
         //! Faraday constant
-        const double faraday_;
+        double faraday_;
+
+        //! (universal) gas constant
+        double gas_constant_;
 
         //! dielectric constant
         const double epsilon_;

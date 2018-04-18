@@ -209,8 +209,10 @@ namespace DRT
             const double&         temperature
             )
         {
+          const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
+          const double gasconstant = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
           // factor F/RT
-          const double frt = INPAR::ELCH::faraday_const/(INPAR::ELCH::gas_const*temperature);
+          const double frt = faraday/(gasconstant*temperature);
 
           // access electrode material
           const Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->Material(1));
@@ -218,9 +220,9 @@ namespace DRT
             dserror("Invalid electrode material!");
 
           // evaluate material
-          ocp_ = matelectrode->ComputeOpenCircuitPotential(concentration,INPAR::ELCH::faraday_const,frt);
-          ocpderiv_ = matelectrode->ComputeFirstDerivOpenCircuitPotential(concentration,INPAR::ELCH::faraday_const,frt);
-          ocpderiv2_ = matelectrode->ComputeSecondDerivOpenCircuitPotential(concentration,INPAR::ELCH::faraday_const,frt);
+          ocp_ = matelectrode->ComputeOpenCircuitPotential(concentration,faraday,frt);
+          ocpderiv_ = matelectrode->ComputeFirstDerivOpenCircuitPotential(concentration,faraday,frt);
+          ocpderiv2_ = matelectrode->ComputeSecondDerivOpenCircuitPotential(concentration,faraday,frt);
 
           return;
         };

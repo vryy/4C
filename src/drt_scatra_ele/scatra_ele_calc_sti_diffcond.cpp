@@ -148,9 +148,9 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsJoule(
 {
   // extract variables and parameters
   const double& concentration = VarManager()->Conc();
-  const double& invfval = 1./(diffmanagerdiffcond_->GetValence(0)*INPAR::ELCH::faraday_const);
+  const double& invfval = 1./(diffmanagerdiffcond_->GetValence(0)*DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday());
   const double& kappa = diffmanagerdiffcond_->GetCond();
-  const double& R = INPAR::ELCH::gas_const;
+  const double& R = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
   const double& t = diffmanagerdiffcond_->GetTransNum(0);
 
   // current density
@@ -206,6 +206,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsMixing(
   const LINALG::Matrix<my::nsd_,1>& gradtemp = my::scatravarmanager_->GradPhi(0);
   const double& soret = DiffManager()->GetSoret();
   const double& temperature = my::scatravarmanager_->Phinp(0);
+  const double gasconstant = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
 
   // gradient of concentration plus scaled gradient of temperature
   LINALG::Matrix<my::nsd_,1> a = VarManager()->GradConc();
@@ -228,11 +229,11 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsMixing(
       const double term3 = 2.*temperature*laplawfrhs_a*soret/temperature;
 
       // linearizations of heat of mixing term in thermo residuals w.r.t. thermo dofs
-      emat(vi,ui) -= timefacfac*my::funct_(vi)*pow(diffcoeff,2)*2.*INPAR::ELCH::gas_const*(term1+term2+term3);
+      emat(vi,ui) -= timefacfac*my::funct_(vi)*pow(diffcoeff,2)*2.*gasconstant*(term1+term2+term3);
     }
 
     // contributions of heat of mixing term to thermo residuals
-    erhs[vi] += rhsfac*my::funct_(vi)*pow(diffcoeff,2)*INPAR::ELCH::gas_const*2.*temperature/concentration*a2;
+    erhs[vi] += rhsfac*my::funct_(vi)*pow(diffcoeff,2)*gasconstant*2.*temperature/concentration*a2;
   }
 
   return;
@@ -254,7 +255,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsSoret(
   const double& concentration = VarManager()->Conc();
   const double& diffcoeff = diffmanagerdiffcond_->GetIsotropicDiff(0);
   const LINALG::Matrix<my::nsd_,1>& gradtemp = my::scatravarmanager_->GradPhi(0);
-  const double& R = INPAR::ELCH::gas_const;
+  const double& R = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
   const double& soret = DiffManager()->GetSoret();
   const double& temperature = my::scatravarmanager_->Phinp(0);
 
@@ -408,10 +409,10 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatJouleOD(
   const LINALG::Matrix<my::nsd_,1>& gradconc = VarManager()->GradConc();
   const LINALG::Matrix<my::nsd_,1>& gradpot = VarManager()->GradPot();
   const LINALG::Matrix<my::nsd_,1>& gradtemp = my::scatravarmanager_->GradPhi(0);
-  const double invfval = 1./(diffmanagerdiffcond_->GetValence(0)*INPAR::ELCH::faraday_const);
+  const double invfval = 1./(diffmanagerdiffcond_->GetValence(0)*DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday());
   const double& kappa = diffmanagerdiffcond_->GetCond();
   const double& kappaderiv = diffmanagerdiffcond_->GetDerivCond(0);
-  const double& R = INPAR::ELCH::gas_const;
+  const double& R = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
   const double& t = diffmanagerdiffcond_->GetTransNum(0);
   const double& temperature=my::scatravarmanager_->Phinp(0);
 
@@ -485,6 +486,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatMixingOD(
   const LINALG::Matrix<my::nsd_,1>& gradtemp = my::scatravarmanager_->GradPhi(0);
   const double& soret = DiffManager()->GetSoret();
   const double& temperature = my::scatravarmanager_->Phinp(0);
+  const double gasconstant = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
 
   // gradient of concentration plus scaled gradient of temperature
   LINALG::Matrix<my::nsd_,1> a = VarManager()->GradConc();
@@ -508,7 +510,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatMixingOD(
       const double term4 = 2.*pow(diffcoeff,2)/concentration*laplawfrhs_a;
 
       // linearizations of heat of mixing term in thermo residuals w.r.t. concentration dofs
-      emat(vi,ui*2) += -timefacfac*my::funct_(vi)*INPAR::ELCH::gas_const*temperature*2.*(term1+term2+term3+term4);
+      emat(vi,ui*2) += -timefacfac*my::funct_(vi)*gasconstant*temperature*2.*(term1+term2+term3+term4);
 
       // linearizations of heat of mixing term in thermo residuals w.r.t. electric potential dofs are zero
     }
@@ -534,6 +536,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatSoretOD(
   const LINALG::Matrix<my::nsd_,1>& gradtemp = my::scatravarmanager_->GradPhi(0);
   const double& soret = DiffManager()->GetSoret();
   const double& temperature = my::scatravarmanager_->Phinp(0);
+  const double gasconstant = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
 
   // square of temperature gradient
   const double gradtemp2 = gradtemp.Dot(gradtemp);
@@ -566,7 +569,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatSoretOD(
       my::GetLaplacianWeakForm(laplawf,vi,ui);
 
       // linearizations of Soret effect term in thermo residuals w.r.t. concentration dofs
-      emat(vi,ui*2) += timefacfac*soret*2.*INPAR::ELCH::gas_const*(my::funct_(ui)*(diffcoeffderiv*(gradtemp_a*my::funct_(vi)+temperature*laplawfrhs_a)+diffcoeff*soret*(gradtemp2*my::funct_(vi)/temperature+laplawfrhs_gradtemp_vi))+diffcoeff*(laplawfrhs_gradtemp_ui*my::funct_(vi)+temperature*laplawf));
+      emat(vi,ui*2) += timefacfac*soret*2.*gasconstant*(my::funct_(ui)*(diffcoeffderiv*(gradtemp_a*my::funct_(vi)+temperature*laplawfrhs_a)+diffcoeff*soret*(gradtemp2*my::funct_(vi)/temperature+laplawfrhs_gradtemp_vi))+diffcoeff*(laplawfrhs_gradtemp_ui*my::funct_(vi)+temperature*laplawf));
 
       // linearizations of Soret effect term in thermo residuals w.r.t. electric potential dofs are zero
     }
@@ -623,7 +626,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::GetMaterialParams(
   {
     std::vector<double> concentrations(1,VarManager()->Conc());
     INPAR::ELCH::DiffCondMat dummy(INPAR::ELCH::diffcondmat_undefined);
-    utils_->MatElchMat(material,concentrations,INPAR::ELCH::equpot_undefined,pow(INPAR::ELCH::faraday_const,2)/(INPAR::ELCH::gas_const*VarManager()->Phinp(0)),diffmanagerdiffcond_,dummy);
+    utils_->MatElchMat(material,concentrations,INPAR::ELCH::equpot_undefined,pow(DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday(),2)/(DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant()*VarManager()->Phinp(0)),diffmanagerdiffcond_,dummy);
   }
   else
     dserror("Invalid scalar transport material!");

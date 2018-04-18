@@ -4,8 +4,10 @@
 
 \brief utility class supporting element evaluation for electrochemistry problems
 
+\level 2
+
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -112,7 +114,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
 ) const
 {
   // for pre-multiplication of i0 with 1/(F z_k)
-  const double faraday = INPAR::ELCH::faraday_const;    // unit of F: C/mol or mC/mmol or µC/µmol
+  const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
 
   // concentration of active species at integration point
   std::vector<double> conint(numscal_,0.0);
@@ -675,7 +677,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
 ) const
 {
   // get Faraday constant
-  double faraday = INPAR::ELCH::faraday_const;    // unit of F: C/mol or mC/mmol or µC/µmol
+  const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
 
   // get variables with their current values
   // current integrals: (i = epsilon i^E ) is calculated in case of porous media

@@ -1121,121 +1121,125 @@ void SSI::SSI_Mono::EquilibrateSystem(
     const Teuchos::RCP<Epetra_Vector>&            residual        //!< residual vector
     ) const
 {
-  switch(strategy_scatra_->Equilibration())
+  // for equilibration, S2ICoupling needs to be activated, as it uses the S2I equilibration input values
+  if(scatra_->ScaTraField()->S2ICoupling())
   {
-    case INPAR::S2I::equilibration_none:
+    switch(strategy_scatra_->Equilibration())
     {
-      // do nothing
-      break;
-    }
-
-    case INPAR::S2I::equilibration_rows_full:
-    case INPAR::S2I::equilibration_rows_maindiag:
-    {
-      // initialize vector for inverse sums of absolute values of matrix row entries
-      const Teuchos::RCP<Epetra_Vector> invrowsums = LINALG::CreateVector(*DofRowMap());
-
-      switch(matrixtype_)
+      case INPAR::S2I::equilibration_none:
       {
-        case INPAR::SSI::matrix_block:
-        {
-          // check matrix
-          const Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksparsematrix = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(systemmatrix);
-          if(blocksparsematrix == Teuchos::null)
-            dserror("System matrix is not a block sparse matrix!");
-
-          // perform row equilibration
-          for(int i=0; i<blocksparsematrix->Rows(); ++i)
-          {
-            // initialize vector for inverse row sums
-            const Teuchos::RCP<Epetra_Vector> invrowsums_block(Teuchos::rcp(new Epetra_Vector(blocksparsematrix->Matrix(i,i).RowMap())));
-
-            // compute inverse row sums of current main diagonal matrix block
-            if(strategy_scatra_->Equilibration() == INPAR::S2I::equilibration_rows_maindiag)
-              ComputeInvRowSums(blocksparsematrix->Matrix(i,i),invrowsums_block);
-
-            // compute inverse row sums of current row block of global system matrix
-            else
-            {
-              // loop over all column blocks of global system matrix
-              for(int j=0; j<blocksparsematrix->Cols(); ++j)
-              {
-                // extract current block of global system matrix
-                const LINALG::SparseMatrix& matrix = blocksparsematrix->Matrix(i,j);
-
-                // loop over all rows of current matrix block
-                for(int irow=0; irow<matrix.RowMap().NumMyElements(); ++irow)
-                {
-                  // determine length of current matrix row
-                  const int length = matrix.EpetraMatrix()->NumMyEntries(irow);
-
-                  if(length > 0)
-                  {
-                    // extract current matrix row from matrix block
-                    int numentries(0);
-                    std::vector<double> values(length,0.);
-                    if(matrix.EpetraMatrix()->ExtractMyRowCopy(irow,length,numentries,&values[0]))
-                      dserror("Cannot extract matrix row with local ID %d from matrix block!",irow);
-
-                    // compute and store current row sum
-                    double rowsum(0.);
-                    for(int ientry=0; ientry<numentries; ++ientry)
-                      rowsum += std::abs(values[ientry]);
-                    (*invrowsums)[irow] += rowsum;
-                  }
-                }
-              }
-
-              // invert row sums
-              if(invrowsums->Reciprocal(*invrowsums))
-                dserror("Vector could not be inverted!");
-            }
-
-            // perform row equilibration of matrix blocks in current row block of global system matrix
-            for(int j=0; j<blocksparsematrix->Cols(); ++j)
-              EquilibrateMatrixRows(blocksparsematrix->Matrix(i,j),invrowsums_block);
-
-            // insert inverse row sums of current main diagonal matrix block into global vector
-            maps_systemmatrix_->InsertVector(invrowsums_block,i,invrowsums);
-          }
-
-          break;
-        }
-
-        case INPAR::SSI::matrix_sparse:
-        {
-          // check matrix
-          const Teuchos::RCP<LINALG::SparseMatrix> sparsematrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix_);
-          if(sparsematrix == Teuchos::null)
-            dserror("System matrix is not a sparse matrix!");
-
-          // compute inverse row sums of global system matrix
-          ComputeInvRowSums(*sparsematrix,invrowsums);
-
-          // perform row equilibration of global system matrix
-          EquilibrateMatrixRows(*sparsematrix,invrowsums);
-
-          break;
-        }
-
-        default:
-        {
-          dserror("Type of global system matrix for scalar-structure interaction not recognized!");
-          break;
-        }
+        // do nothing
+        break;
       }
 
-      // perform equilibration of global residual vector
-      if(residual->Multiply(1.,*invrowsums,*residual,0.))
-         dserror("Equilibration of global residual vector failed!");
+      case INPAR::S2I::equilibration_rows_full:
+      case INPAR::S2I::equilibration_rows_maindiag:
+      {
+        // initialize vector for inverse sums of absolute values of matrix row entries
+        const Teuchos::RCP<Epetra_Vector> invrowsums = LINALG::CreateVector(*DofRowMap());
 
-      break;
-    }
+        switch(matrixtype_)
+        {
+          case INPAR::SSI::matrix_block:
+          {
+            // check matrix
+            const Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksparsematrix = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(systemmatrix);
+            if(blocksparsematrix == Teuchos::null)
+              dserror("System matrix is not a block sparse matrix!");
 
-    default:
-    {
-      dserror("Equilibration method not yet implemented!");
-      break;
+            // perform row equilibration
+            for(int i=0; i<blocksparsematrix->Rows(); ++i)
+            {
+              // initialize vector for inverse row sums
+              const Teuchos::RCP<Epetra_Vector> invrowsums_block(Teuchos::rcp(new Epetra_Vector(blocksparsematrix->Matrix(i,i).RowMap())));
+
+              // compute inverse row sums of current main diagonal matrix block
+              if(strategy_scatra_->Equilibration() == INPAR::S2I::equilibration_rows_maindiag)
+                ComputeInvRowSums(blocksparsematrix->Matrix(i,i),invrowsums_block);
+
+              // compute inverse row sums of current row block of global system matrix
+              else
+              {
+                // loop over all column blocks of global system matrix
+                for(int j=0; j<blocksparsematrix->Cols(); ++j)
+                {
+                  // extract current block of global system matrix
+                  const LINALG::SparseMatrix& matrix = blocksparsematrix->Matrix(i,j);
+
+                  // loop over all rows of current matrix block
+                  for(int irow=0; irow<matrix.RowMap().NumMyElements(); ++irow)
+                  {
+                    // determine length of current matrix row
+                    const int length = matrix.EpetraMatrix()->NumMyEntries(irow);
+
+                    if(length > 0)
+                    {
+                      // extract current matrix row from matrix block
+                      int numentries(0);
+                      std::vector<double> values(length,0.);
+                      if(matrix.EpetraMatrix()->ExtractMyRowCopy(irow,length,numentries,&values[0]))
+                        dserror("Cannot extract matrix row with local ID %d from matrix block!",irow);
+
+                      // compute and store current row sum
+                      double rowsum(0.);
+                      for(int ientry=0; ientry<numentries; ++ientry)
+                        rowsum += std::abs(values[ientry]);
+                      (*invrowsums_block)[irow] += rowsum;
+                    }
+                  }
+                }
+
+                // invert row sums of current matrix row block
+                if(invrowsums_block->Reciprocal(*invrowsums_block))
+                  dserror("Vector could not be inverted!");
+              }
+
+              // perform row equilibration of matrix blocks in current row block of global system matrix
+              for(int j=0; j<blocksparsematrix->Cols(); ++j)
+                EquilibrateMatrixRows(blocksparsematrix->Matrix(i,j),invrowsums_block);
+
+              // insert inverse row sums of current main diagonal matrix block into global vector
+              maps_systemmatrix_->InsertVector(invrowsums_block,i,invrowsums);
+            }
+
+            break;
+          }
+
+          case INPAR::SSI::matrix_sparse:
+          {
+            // check matrix
+            const Teuchos::RCP<LINALG::SparseMatrix> sparsematrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix_);
+            if(sparsematrix == Teuchos::null)
+              dserror("System matrix is not a sparse matrix!");
+
+            // compute inverse row sums of global system matrix
+            ComputeInvRowSums(*sparsematrix,invrowsums);
+
+            // perform row equilibration of global system matrix
+            EquilibrateMatrixRows(*sparsematrix,invrowsums);
+
+            break;
+          }
+
+          default:
+          {
+            dserror("Type of global system matrix for scalar-structure interaction not recognized!");
+            break;
+          }
+        }
+
+        // perform equilibration of global residual vector
+        if(residual->Multiply(1.,*invrowsums,*residual,0.))
+           dserror("Equilibration of global residual vector failed!");
+
+        break;
+      }
+
+      default:
+      {
+        dserror("Equilibration method not yet implemented!");
+        break;
+      }
     }
   }
 
@@ -1854,6 +1858,9 @@ void SSI::SSI_Mono::Solve()
 
     // store time before solving global system of equations
     time = timer_->WallTime();
+
+    // equilibrate global system of equations if necessary
+    EquilibrateSystem(systemmatrix_,residual_);
 
     // solve global system of equations
     // Dirichlet boundary conditions have already been applied to global system of equations

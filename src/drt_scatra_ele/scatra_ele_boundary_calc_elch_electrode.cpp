@@ -222,7 +222,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
         dserror("Number of stoichiometric coefficients does not match number of scalars!");
       if((*stoichiometries)[0] != -1)
         dserror("Invalid stoichiometric coefficient!");
-      const double faraday = INPAR::ELCH::faraday_const;
+      const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
       const double alphaa = s2icondition.GetDouble("alpha_a");
       const double alphac = s2icondition.GetDouble("alpha_c");
       const double kr = s2icondition.GetDouble("k_r");
@@ -425,7 +425,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
           dserror("Number of stoichiometric coefficients does not match number of scalars!");
         if((*stoichiometries)[0] != -1)
           dserror("Invalid stoichiometric coefficient!");
-        const double faraday = INPAR::ELCH::faraday_const;
+        const double faraday = myelch::elchparams_->Faraday();
         const double alphaa = s2icondition->GetDouble("alpha_a");
         const double alphac = s2icondition->GetDouble("alpha_c");
         const double kr = s2icondition->GetDouble("k_r");

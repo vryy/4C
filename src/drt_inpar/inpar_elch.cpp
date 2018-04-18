@@ -31,6 +31,8 @@ void INPAR::ELCH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   IntParameter("MOVBOUNDARYITEMAX",10,"Maximum number of outer iterations in electrode shape change computations",&elchcontrol);
   DoubleParameter("MOVBOUNDARYCONVTOL",1e-6,"Convergence check tolerance for outer loop in electrode shape change computations",&elchcontrol);
   DoubleParameter("TEMPERATURE",298.0,"Constant temperature (Kelvin)",&elchcontrol);
+  DoubleParameter("FARADAY_CONSTANT",9.64853399e4,"Faraday constant (in unit system as chosen in input file)",&elchcontrol);
+  DoubleParameter("GAS_CONSTANT",8.314472,"(universal) gas constant (in unit system as chosen in input file)",&elchcontrol);
   // parameter for possible types of ELCH algorithms for deforming meshes
   setStringToIntegralParameter<int>("MOVINGBOUNDARY",
                               "No",

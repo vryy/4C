@@ -117,17 +117,18 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::EvaluateElchBoundaryKineticsPo
   // need special treatment for Laplace equation due to missing scaling with inverse of Faraday constant
   case INPAR::ELCH::equpot_laplace:
   {
+    const double faraday = myelch::elchparams_->Faraday();
     for(int k=0; k<my::numscal_; ++k)
     {
       for (unsigned vi=0; vi<my::nen_; ++vi)
       {
         for (unsigned ui=0; ui<my::nen_; ++ui)
         {
-          emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k) += INPAR::ELCH::faraday_const*nume*emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k);
-          emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+my::numscal_) += INPAR::ELCH::faraday_const*nume*emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_);
+          emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k) += faraday*nume*emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k);
+          emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+my::numscal_) += faraday*nume*emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_);
         }
 
-        erhs[vi*my::numdofpernode_+my::numscal_] += INPAR::ELCH::faraday_const*nume*erhs[vi*my::numdofpernode_+k];
+        erhs[vi*my::numdofpernode_+my::numscal_] += faraday*nume*erhs[vi*my::numdofpernode_+k];
       }
     }
 
@@ -164,7 +165,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::GetConductivity(
 {
   // calculate conductivity of electrolyte solution
   const double frt = VarManager()->FRT();
-  const double factor = frt*INPAR::ELCH::faraday_const; // = F^2/RT
+  const double factor = frt*myelch::elchparams_->Faraday(); // = F^2/RT
 
   // Dilute solution theory:
   // Conductivity is computed by

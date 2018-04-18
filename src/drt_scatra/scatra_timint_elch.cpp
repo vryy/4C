@@ -49,7 +49,7 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(
   : ScaTraTimIntImpl(dis,solver,sctratimintparams,extraparams,output),
     elchparams_     (params),
     equpot_         (DRT::INPUT::IntegralValue<INPAR::ELCH::EquPot>(*elchparams_,"EQUPOT")),
-    frt_            (INPAR::ELCH::faraday_const/(INPAR::ELCH::gas_const * elchparams_->get<double>("TEMPERATURE"))),
+    frt_            (elchparams_->get<double>("FARADAY_CONSTANT")/(elchparams_->get<double>("GAS_CONSTANT") * elchparams_->get<double>("TEMPERATURE"))),
     gstatnumite_    (0),
     gstatincrement_ (0.),
     dlcapexists_    (false),
@@ -344,7 +344,9 @@ void SCATRA::ScaTraTimIntElch::SetElementSpecificScaTraParameters(Teuchos::Param
     eleparams.set<int>("action",SCATRA::set_elch_scatra_parameter);
 
   // general elch parameters
-  eleparams.set<double>("frt",INPAR::ELCH::faraday_const/(INPAR::ELCH::gas_const*(elchparams_->get<double>("TEMPERATURE"))));
+  eleparams.set<double>("faraday",elchparams_->get<double>("FARADAY_CONSTANT"));
+  eleparams.set<double>("gas_constant",elchparams_->get<double>("GAS_CONSTANT"));
+  eleparams.set<double>("frt",FRT());
   eleparams.set<int>("equpot",equpot_);
   eleparams.set<bool>("boundaryfluxcoupling",DRT::INPUT::IntegralValue<bool>(*elchparams_,"COUPLE_BOUNDARY_FLUXES"));
 
@@ -3030,7 +3032,7 @@ void SCATRA::ScaTraTimIntElch::OutputFlux(
     // Therefore, the associated boundary flux computed by the function CalcFluxAtBoundary is also scaled by this factor.
     // To avoid confusion, we remove the scaling factor from the boundary flux before outputting it, so that the result
     // can be physically interpreted as the plain boundary current density without any scaling.
-    splitter_->Scale(*flux,1,INPAR::ELCH::faraday_const);
+    splitter_->Scale(*flux,1,elchparams_->get<double>("FARADAY_CONSTANT"));
   }
 
   else

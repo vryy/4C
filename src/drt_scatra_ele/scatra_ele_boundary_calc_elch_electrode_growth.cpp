@@ -125,7 +125,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateM
   const int kineticmodel = s2icondition->GetInt("kinetic model");
   if(kineticmodel != INPAR::S2I::growth_kinetics_butlervolmer)
     dserror("Received illegal kinetic model for scatra-scatra interface coupling involving interface layer growth!");
-  const double faraday = INPAR::ELCH::faraday_const;
+  const double faraday = myelch::elchparams_->Faraday();
   const double alphaa = s2icondition->GetDouble("alpha_a");
   const double alphac = s2icondition->GetDouble("alpha_c");
   const double kr = s2icondition->GetDouble("k_r");
@@ -235,7 +235,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
     dserror("Number of stoichiometric coefficients does not match number of scalars!");
   if((*stoichiometries)[0] != -1)
     dserror("Invalid stoichiometric coefficient!");
-  const double faraday = INPAR::ELCH::faraday_const;
+  const double faraday = myelch::elchparams_->Faraday();
   const double invF = 1./faraday;
   const double alphaa = s2icondition->GetDouble("alpha_a");
   const double alphac = s2icondition->GetDouble("alpha_c");
@@ -501,7 +501,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
     dserror("Number of stoichiometric coefficients does not match number of scalars!");
   if((*stoichiometries)[0] != -1)
     dserror("Invalid stoichiometric coefficient!");
-  const double faraday = INPAR::ELCH::faraday_const;
+  const double faraday = myelch::elchparams_->Faraday();
   const double invF = 1./faraday;
   const double alphaa = s2icondition->GetDouble("alpha_a");
   const double alphac = s2icondition->GetDouble("alpha_c");
@@ -648,7 +648,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
     dserror("Number of stoichiometric coefficients does not match number of scalars!");
   if((*stoichiometries)[0] != -1)
     dserror("Invalid stoichiometric coefficient!");
-  const double faraday = INPAR::ELCH::faraday_const;
+  const double faraday = myelch::elchparams_->Faraday();
   const double alphaa = s2icondition->GetDouble("alpha_a");
   const double alphac = s2icondition->GetDouble("alpha_c");
   const double kr = s2icondition->GetDouble("k_r");
@@ -784,7 +784,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
     dserror("Number of stoichiometric coefficients does not match number of scalars!");
   if((*stoichiometries)[0] != -1)
     dserror("Invalid stoichiometric coefficient!");
-  const double faraday = INPAR::ELCH::faraday_const;
+  const double faraday = myelch::elchparams_->Faraday();
   const double alphaa = s2icondition->GetDouble("alpha_a");
   const double alphac = s2icondition->GetDouble("alpha_c");
   const double kr = s2icondition->GetDouble("k_r");

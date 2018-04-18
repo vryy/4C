@@ -211,7 +211,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>::Evalua
         dserror("Number of stoichiometric coefficients does not match number of scalars!");
       if((*stoichiometries)[0] != -1)
         dserror("Invalid stoichiometric coefficient!");
-      const double faraday = INPAR::ELCH::faraday_const;
+      const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
+      const double gasconstant = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
       const double alphaa = s2icondition.GetDouble("alpha_a");
       const double alphac = s2icondition.GetDouble("alpha_c");
       const double kr = s2icondition.GetDouble("k_r");
@@ -224,7 +225,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>::Evalua
         dserror("Saturation value c_max of intercalated lithium concentration is too small!");
 
       // evaluate factor F/RT
-      const double frt = INPAR::ELCH::faraday_const/(INPAR::ELCH::gas_const*eslavetempint);
+      const double frt = faraday/(gasconstant*eslavetempint);
 
       // equilibrium electric potential difference at electrode surface
       const double epd = matelectrode->ComputeOpenCircuitPotential(eslavephiint,faraday,frt);
@@ -374,8 +375,11 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>::GetF
   if(temperature <= 0.)
     dserror("Temperature is non-positive!");
 
+  const double faraday = myelch::elchparams_->Faraday();
+  const double gasconstant = myelch::elchparams_->GasConstant();
+
   // evaluate factor F/RT
-  return INPAR::ELCH::faraday_const/(INPAR::ELCH::gas_const*temperature);
+  return faraday/(gasconstant*temperature);
 }
 
 
