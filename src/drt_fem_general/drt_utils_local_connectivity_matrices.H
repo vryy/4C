@@ -544,8 +544,29 @@ namespace UTILS
     const DRT::Element::DiscretizationType&     distype
     );
 
+  /*!
+  \brief  Returns the number of corner nodes
+          for each face element of a given element discretization type
+
+  \return   number of corner nodes for each face element of a given element
+             of the discretization type
+   */
+  std::vector<int> getNumberOfFaceElementCornerNodes(
+    const DRT::Element::DiscretizationType&     distype
+    );
 
   /*!
+  \brief  Returns the number of internal nodes
+          for each face element of a given element discretization type
+
+  \return   number of internal nodes for each face element of a given element
+             of the discretization type
+   */
+  std::vector<int> getNumberOfFaceElementInternalNodes(
+    const DRT::Element::DiscretizationType&     distype
+    );
+
+    /*!
   \brief  Returns the number of corner nodes
           for each surface element of a given volume discretization type
 

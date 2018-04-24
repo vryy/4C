@@ -142,6 +142,150 @@ std::vector<int> DRT::UTILS::getNumberOfSurfaceElementCornerNodes(
     return surfNodeMap;
 }
 
+/*----------------------------------------------------------------------*
+ |  returns the number of corner nodes                 berardocco 04/18 |
+ |  for each face of an element for each discretization type            |
+ *----------------------------------------------------------------------*/
+std::vector<int> DRT::UTILS::getNumberOfFaceElementCornerNodes(
+    const DRT::Element::DiscretizationType&     distype)
+{
+    std::vector<int> faceNodeMap;
+    switch(distype)
+    {
+        //For 1D elements the faces are the veritices of the element
+        case DRT::Element::line2: case DRT::Element::line3: case DRT::Element::line4:
+        case DRT::Element::line5: case DRT::Element::line6:
+        {
+            const int nFace = 2;
+            const int nCornerNode = 0;
+            for(int i = 0; i < nFace; i++)
+                faceNodeMap.push_back(nCornerNode);
+            break;
+        }
+        //For 2D elements the faces are the sides of the element
+        case DRT::Element::tri3: case DRT::Element::tri6:
+        {
+            const int nFace = 3;
+            const int nCornerNode = 2;
+            for(int i = 0; i < nFace; i++)
+                faceNodeMap.push_back(nCornerNode);
+            break;
+        }
+        case DRT::Element::quad4: case DRT::Element::quad6:
+        case DRT::Element::quad8: case DRT::Element::quad9:
+        {
+            const int nFace = 4;
+            const int nCornerNode = 2;
+            for(int i = 0; i < nFace; i++)
+                faceNodeMap.push_back(nCornerNode);
+            break;
+        }
+        //For 3D elements the faces are the "faces" of the element
+        case DRT::Element::tet4: case DRT::Element::tet10:
+        {
+            const int nFace = 4;
+            const int nCornerNode = 3;
+            for(int i = 0; i < nFace; i++)
+                faceNodeMap.push_back(nCornerNode);
+            break;
+        }
+        case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27:
+        {
+            const int nFace = 6;
+            const int nCornerNode = 4;
+            for(int i = 0; i < nFace; i++)
+                faceNodeMap.push_back(nCornerNode);
+            break;
+        }
+        default:
+            dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
+    }
+    return faceNodeMap;
+}
+
+/*----------------------------------------------------------------------*
+ |  returns the number of internal nodes               berardocco 04/18 |
+ |  for each surface of a volume element for each discretization type   |
+ *----------------------------------------------------------------------*/
+std::vector<int> DRT::UTILS::getNumberOfFaceElementInternalNodes(
+    const DRT::Element::DiscretizationType&     distype)
+{
+    std::vector<int> faceNodeMap;
+    switch(distype)
+    {
+        //For 1D elements the faces are the veritices of the element
+        case DRT::Element::line2: case DRT::Element::line3: case DRT::Element::line4:
+        case DRT::Element::line5: case DRT::Element::line6:
+        {
+            const int nFace = 2;
+            const int nInternalNode = 1;
+            for(int i = 0; i < nFace; i++)
+                faceNodeMap.push_back(nInternalNode);
+            break;
+        }
+        //For 2D elements the faces are the sides of the element
+        case DRT::Element::tri3:
+        {
+            const int nFace = 3;
+            const int nInternalNode = 0;
+            for(int i = 0; i < nFace; i++)
+                faceNodeMap.push_back(nInternalNode);
+            break;
+        }
+        case DRT::Element::tri6:
+        {
+            const int nFace = 3;
+            const int nInternalNode = 1;
+            for(int i = 0; i < nFace; i++)
+                faceNodeMap.push_back(nInternalNode);
+            break;
+        }
+        case DRT::Element::quad4:
+        {
+            const int nFace = 4;
+            const int nInternalNode = 0;
+            for(int i = 0; i < nFace; i++)
+                faceNodeMap.push_back(nInternalNode);
+            break;
+        }
+        case DRT::Element::quad8: case DRT::Element::quad9:
+        {
+            const int nFace = 4;
+            const int nInternalNode = 1;
+            for(int i = 0; i < nFace; i++)
+                faceNodeMap.push_back(nInternalNode);
+            break;
+        }
+        //For 3D elements the faces are the "faces" of the element
+        case DRT::Element::tet4: case DRT::Element::tet10:
+        {
+            const int nFace = 4;
+            const int nInternalNode = 0;
+            for(int i = 0; i < nFace; i++)
+                faceNodeMap.push_back(nInternalNode);
+            break;
+        }
+        case DRT::Element::hex8: case DRT::Element::hex20:
+        {
+            const int nFace = 6;
+            const int nInternalNode = 0;
+            for(int i = 0; i < nFace; i++)
+                faceNodeMap.push_back(nInternalNode);
+            break;
+        }
+        case DRT::Element::hex27:
+        {
+            const int nFace = 6;
+            const int nInternalNode = 1;
+            for(int i = 0; i < nFace; i++)
+                faceNodeMap.push_back(nInternalNode);
+            break;
+        }
+        default:
+            dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
+    }
+    return faceNodeMap;
+}
 
 /*----------------------------------------------------------------------*
  |  returns the number of lines                              a.ger 08/07|
