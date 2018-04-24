@@ -403,7 +403,7 @@ void MAT::PAR::REACTIONCOUPLING::PowerMultiplicative::CalcReaBodyForceDeriv(
           if (couprole[ii]!=0 and ii!=toderive)
             bfdmfac *= std::pow(phinp[ii],couprole[ii]);
           else if(couprole[ii]!=0 and ii==toderive)
-            bfdmfac *= std::pow(phinp[ii],couprole[ii]-1.0);
+            bfdmfac *= couprole[ii]*std::pow(phinp[ii],couprole[ii]-1.0);
         }
       }
     else
