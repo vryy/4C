@@ -773,7 +773,6 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_cardiovascular0d.cpp
   src/drt_inpar/inpar_acou.cpp
   src/drt_inpar/inpar_ale.cpp
-#  src/drt_inpar/inpar_biopolynet_dbc.cpp
   src/drt_inpar/inpar_beamcontact.cpp
   src/drt_inpar/inpar_beaminteraction.cpp
   src/drt_inpar/inpar_beampotential.cpp
