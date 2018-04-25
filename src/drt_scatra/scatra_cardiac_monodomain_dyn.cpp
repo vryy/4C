@@ -136,8 +136,10 @@ void scatra_cardiac_monodomain_dyn(int restart)
           std::vector<Teuchos::RCP<Epetra_Map> > stdelecolmap;
           std::vector<Teuchos::RCP<Epetra_Map> > stdnodecolmap;
 
-          /// binning strategy is created and parallel redistribution is performed
-          binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy(dis,stdelecolmap,stdnodecolmap));
+          // binning strategy is created and parallel redistribution is performed
+          binningstrategy = Teuchos::rcp( new BINSTRATEGY::BinningStrategy() );
+          binningstrategy->Init(dis);
+          binningstrategy->WeightedPartitioning(dis,stdelecolmap,stdnodecolmap);
         }
       }
 
@@ -274,7 +276,9 @@ void scatra_cardiac_monodomain_dyn(int restart)
             std::vector<Teuchos::RCP<Epetra_Map> > stdnodecolmap;
 
             /// binning strategy is created and parallel redistribution is performed
-            binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy(dis,stdelecolmap,stdnodecolmap));
+            binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy());
+            binningstrategy->Init(dis);
+            binningstrategy->WeightedPartitioning(dis,stdelecolmap,stdnodecolmap);
           }
         }
       }

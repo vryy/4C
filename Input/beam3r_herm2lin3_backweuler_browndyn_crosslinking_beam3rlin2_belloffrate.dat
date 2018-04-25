@@ -65,10 +65,8 @@ MASSLIN                         rotations
 -----------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1
 -----------------------------------------------------BINNING STRATEGY
-DEFINEBINSPER                   cutoff
 CUTOFF_RADIUS                   2
 PERIODICONOFF                   1 1 1
-DEFINEXAABBPER                  input
 BOUNDINGBOX                     0 0 0 10 6 6
 -----------------------------------------------------BROWNIAN DYNAMICS
 BROWNDYNPROB                    yes
@@ -81,7 +79,7 @@ CROSSLINKER                     yes
 MAXNUMINITCROSSLINKERPERTYPE    20
 NUMCROSSLINKERPERTYPE           0
 MATCROSSLINKERPERTYPE           2
-FILAMENTBSPOTINTERVAL           0.8
+FILAMENTBSPOTINTERVALGLOBAL     0.8
 VISCOSITY                       0.001
 KT                              0.004
 -----------------------------------------------------SOLVER 1

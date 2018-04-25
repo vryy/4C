@@ -353,7 +353,7 @@ public:
   void ScaleRadius( double scalefac ) { radius_ *= scalefac;};
 
   /// return binding spot xi function dummy
-  double GetBindingSpotXi(int dummy ) const
+  double GetBindingSpotXi( INPAR::BEAMINTERACTION::CrosslinkerType dummy1, int dummy2 ) const
   {
     return 0.0;
   }
@@ -386,7 +386,7 @@ public:
    *
    *  \author eichinger
    *  \date 06/17 */
-  std::unordered_map< int, Teuchos::RCP< BEAMINTERACTION::BeamLinkPinJointed > > const & GetBondMap() const
+  std::map< int, Teuchos::RCP< BEAMINTERACTION::BeamLinkPinJointed > > const & GetBondMap() const
   {
     return mybondstobeams_;
   }
@@ -439,7 +439,7 @@ private:
   //! @name variables for biopolymer network simulations
 
   /// holds unique id of beam element binding spot to which sphere is bonded to (size equals number of bonds)
-  std::unordered_map< int, Teuchos::RCP< BEAMINTERACTION::BeamLinkPinJointed > > mybondstobeams_;
+  std::map< int, Teuchos::RCP< BEAMINTERACTION::BeamLinkPinJointed > > mybondstobeams_;
 
   //@}
 

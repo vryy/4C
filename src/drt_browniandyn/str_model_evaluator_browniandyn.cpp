@@ -90,18 +90,6 @@ void STR::MODELEVALUATOR::BrownianDyn::Setup()
   // -------------------------------------------------------------------------
   stiff_brownian_ptr_ = Teuchos::rcp(new LINALG::SparseMatrix(
       *GState().DofRowMapView(), 81, true, true));
-  // -------------------------------------------------------------------------
-  // adapt displacement vector so that node positions are consistent with
-  // periodic boundary condition. Note: Input file contains the unshifted
-  // configuration so that we do not have to set up the elements twice.
-  // Shifting to periodic boundary configuration is done here. From now on the
-  // global displacement vector always contains the shifted configuration.
-  // -------------------------------------------------------------------------
-  // check whether the underlying assumption of shifting procedure is fulfilled
-  // (at least initially, i.e. here in the setup)
-  if (IsAnyBeamElementLengthLargerThanMinHalfPBBEdgeLength())
-    dserror("The reference length of one of your beam elements is larger than half"
-        "of the periodic box length. Shifting algorithm will fail!");
 
   // -------------------------------------------------------------------------
   // get maximal number of random numbers required by any element in the

@@ -169,8 +169,18 @@ BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
 
     if ( use_absolute_positions_ )
     {
-      BEAMINTERACTION::UTILS::GetCurrentElementDis(
-          *discretization_, ele, displacement_state_vector, beamelement_displacement_vector );
+      // this is needed in case your input file contains shifted/cut elements
+      if ( periodic_boundingbox_ != Teuchos::null )
+      {
+        BEAMINTERACTION::UTILS::GetCurrentUnshiftedElementDis(
+            *discretization_, ele, displacement_state_vector, *periodic_boundingbox_, beamelement_displacement_vector );
+      }
+      // this is needed is enough in case your input file does not contain shifted/cut elements
+      else
+      {
+        BEAMINTERACTION::UTILS::GetCurrentElementDis(
+                    *discretization_, ele, displacement_state_vector, beamelement_displacement_vector );
+      }
     }
 
     /* loop over the chosen visualization points (equidistant distribution in the element

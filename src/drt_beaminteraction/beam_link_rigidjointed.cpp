@@ -58,11 +58,12 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Init(
     const std::vector<std::pair<int, int> >& eleids,
     const std::vector<LINALG::Matrix<3,1> >& initpos,
     const std::vector<LINALG::Matrix<3,3> >& inittriad,
+    INPAR::BEAMINTERACTION::CrosslinkerType linkertype,
     double timelinkwasset )
 {
   issetup_ = false;
 
-  BeamLink::Init( id, eleids, initpos, inittriad, timelinkwasset );
+  BeamLink::Init( id, eleids, initpos, inittriad, linkertype, timelinkwasset );
 
   // *** initialization of the two triads of the connecting element ***
 
@@ -78,7 +79,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Init(
   distvec.Update(1.0, GetBindSpotPos2(), -1.0, GetBindSpotPos1());
 
   // feasibility check regarding coinciding connection sites
-  if (distvec.Norm2() < 1e-12)
+  if ( distvec.Norm2() < 1e-12 )
   {
     std::cout << "\nBeamLinkRigidJointed initialized with ...";
     std::cout << "\ninitbspotpos1 =";
@@ -90,8 +91,8 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Init(
     std::cout << "\ninitbspottriad2 =";
     inittriad[1].Print(std::cout);
 
-    dserror("Initialization of BeamLinkRigidJointed failed because the two given binding "
-        "spot positions are almost identical!");
+    dserror("Initialization of BeamLinkRigidJointed between element %i and %i failed because the two given binding "
+        "spot positions are almost identical!", eleids[0].first, eleids[1].first);
   }
 
   // first base vector

@@ -184,7 +184,7 @@ private:
     virtual double DeltaBellEq() const { return params_->deltabelleq_; };
 
     /// force depedent off rate according to bells equation
-    virtual INPAR::BEAMINTERACTION::CrosslinkerType LinkingType() const { return params_->linkertype_; };
+    virtual INPAR::BEAMINTERACTION::CrosslinkerType LinkerType() const { return params_->linkertype_; };
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }

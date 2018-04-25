@@ -12,8 +12,8 @@
 /*-----------------------------------------------------------*/
 
 
-#ifndef BEAMINTERACTION_SUBMODEL_EVALUATOR_INTEGRINS_H_
-#define BEAMINTERACTION_SUBMODEL_EVALUATOR_INTEGRINS_H_
+#ifndef BEAMINTERACTION_SUBMODEL_EVALUATOR_SPHEREBEAMLINKING_H_
+#define BEAMINTERACTION_SUBMODEL_EVALUATOR_SPHEREBEAMLINKING_H_
 
 #include "../drt_inpar/inpar_beaminteraction.H"
 #include "../linalg/linalg_fixedsizematrix.H"
@@ -81,7 +81,7 @@ namespace SUBMODELEVALUATOR {
     virtual void PostUpdateStepElement();
 
     //! derived
-    double GetEnergy() const override;
+    std::map< STR::EnergyType, double > GetEnergy() const override;
 
     //! derived
     virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const;
@@ -141,7 +141,7 @@ private:
     /// get neighboring eles in discret
     virtual void CheckFeasibilityOfNewLink(
         DRT::Element const * currele,
-        std::set< DRT::Element * > const & neighbors,
+        std::vector< DRT::Element const * > const & neighbors,
         std::unordered_set< int > & tobebonded,
         std::map< int, std::vector< std::pair< int, int > > > & newlinks ) const;
 
@@ -153,12 +153,13 @@ private:
     virtual void UpdateLinkerLength();
 
     /// check if bond needs to be dissolved
-    virtual void UnbindSphereBeamBonds();
+    virtual void UnbindSphereBeamBonds(
+        int & num_disolved);
 
     /// compute force dependent off rate for a catch-slip bond
     virtual void CalcForceDependentCatchSlipBondUnbindProbability(
         Teuchos::RCP< BEAMINTERACTION::BeamLinkPinJointed> linkelepairptr,
-        double & p_unbind) const;
+        double & p_unbind);
 
     //! @}
 
@@ -172,6 +173,9 @@ private:
 
     //! runtime output for cell beam crosslinks (integrins)
     Teuchos::RCP<RuntimeVtpWriter> vtp_writer_ptr_;
+
+    //! step number for random stuff concerning sphere beam linking
+    int random_number_sphere_beam_linking_step_;
 
   };
 

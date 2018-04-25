@@ -94,6 +94,13 @@ namespace BEAMINTERACTION {
       return matcrosslinkerpertype_;
     };
 
+    /// get all active crosslinker types
+    std::vector< INPAR::BEAMINTERACTION::CrosslinkerType > const & LinkerTypes() const
+    {
+      CheckInitSetup();
+      return linkertypes_;
+    };
+
     /// number of different crosslinker types in simulation volume
     int NumberOfCrosslinkerTypes() const
     {
@@ -123,24 +130,40 @@ namespace BEAMINTERACTION {
     };
 
     // distance between two binding spots on a filament
-    double const & FilamentBspotInterval() const
+    int MaxNumberOfBondsPerFilamentBspot( INPAR::BEAMINTERACTION::CrosslinkerType linkertype ) const
     {
       CheckInitSetup();
-      return filamentbspotinterval_;
+      return max_num_bonds_per_filament_bspot_.at( linkertype );
     };
 
     // distance between two binding spots on a filament
-    int MaxNumberOfBondsPerFilamentBspot() const
+    double FilamentBspotIntervalGlobal( INPAR::BEAMINTERACTION::CrosslinkerType linkertype ) const
     {
       CheckInitSetup();
-      return max_num_bonds_per_filament_bspot_;
+      return filamentbspotintervalglobal_.at( linkertype );
+    };
+
+    // distance between two binding spots on a filament
+    double FilamentBspotIntervalLocal( INPAR::BEAMINTERACTION::CrosslinkerType linkertype ) const
+    {
+      CheckInitSetup();
+      return filamentbspotintervallocal_.at( linkertype );
     };
 
     // start and end arc parameter for binding spots on a filament
-    std::vector<double> const & FilamentBspotRange() const
+    std::pair< double, double > const &
+    FilamentBspotRangeLocal( INPAR::BEAMINTERACTION::CrosslinkerType linkertype ) const
     {
       CheckInitSetup();
-      return filamentbspotrange_;
+      return filamentbspotrangelocal_.at( linkertype );
+    };
+
+    // start and end arc parameter for binding spots on a filament
+    std::pair< double, double > const &
+    FilamentBspotRangeGlobal( INPAR::BEAMINTERACTION::CrosslinkerType linkertype ) const
+    {
+      CheckInitSetup();
+      return filamentbspotrangeglobal_.at( linkertype );
     };
 
   private:
@@ -149,24 +172,31 @@ namespace BEAMINTERACTION {
 
     bool issetup_;
 
-    /// number of crosslinker that are initially set
-    std::map< int, int > maxnum_init_crosslinker_pertype_;
-    /// number of crosslinkers in the simulated volume
-    std::vector<int> numcrosslinkerpertype_;
-    /// material numbers for crosslinker types
-    std::vector<int> matcrosslinkerpertype_;
     /// viscosity
     double viscosity_;
     /// thermal energy
     double kt_;
     /// time step for stochastic events concerning crosslinking
     double deltatime_;
-    /// distance between two binding spots on a filament
-    double filamentbspotinterval_;
+    /// number of crosslinker that are initially set
+    std::map< int, int > maxnum_init_crosslinker_pertype_;
+    /// number of crosslinkers in the simulated volume
+    std::vector<int> numcrosslinkerpertype_;
+    /// material numbers for crosslinker types
+    std::vector<int> matcrosslinkerpertype_;
+    /// linker and therefore binding spot types
+    std::vector< INPAR::BEAMINTERACTION::CrosslinkerType > linkertypes_;
     /// maximal number of bonds per filament binding spot
-    int max_num_bonds_per_filament_bspot_;
+    std::map< INPAR::BEAMINTERACTION::CrosslinkerType, int > max_num_bonds_per_filament_bspot_;
+    /// distance between two binding spots on each filament
+    std::map< INPAR::BEAMINTERACTION::CrosslinkerType, double > filamentbspotintervalglobal_;
+    /// distance between two binding spots on a filament as percentage of filament reference length
+    std::map< INPAR::BEAMINTERACTION::CrosslinkerType, double > filamentbspotintervallocal_;
     /// start and end arc parameter for binding spots on a filament
-    std::vector<double> filamentbspotrange_;
+    std::map< INPAR::BEAMINTERACTION::CrosslinkerType, std::pair< double, double > > filamentbspotrangeglobal_;
+    /// start and end arc parameter for binding spots on a filament
+    /// in percent of filament reference length
+    std::map< INPAR::BEAMINTERACTION::CrosslinkerType, std::pair< double, double > > filamentbspotrangelocal_;
 
   };
 }

@@ -351,7 +351,7 @@ public:
   virtual double GetKineticEnergy() const = 0;
 
   //! shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions
-  virtual void UnShiftNodePosition(
+  virtual bool UnShiftNodePosition(
       std::vector<double>&       disp, //!<element disp vector
       GEO::MESHFREE::BoundingBox const & periodic_boundingbox) const;
 
@@ -470,69 +470,80 @@ protected:
                            LINALG::TMatrix<T,ndim,ndim>&    velbackgroundgrad) const; //!<gradient of velocity of background fluid
 
   //! shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions
-  virtual void UnShiftNodePosition(std::vector<double>& disp) const;
+  virtual bool UnShiftNodePosition(std::vector<double>& disp) const;
 
 public:
 
   //! get centerline pos at binding spot with locn x stored in element parameter space coordinates \in [-1,1] from displacement state vector
-  void GetPosOfBindingSpot(LINALG::Matrix<3,1>&               pos,
-                           std::vector<double>&               disp,
-                           const int&                         bspotlocn,
-                           GEO::MESHFREE::BoundingBox const & periodic_boundingbox) const;
+  void GetPosOfBindingSpot(LINALG::Matrix< 3, 1 > &                pos,
+                           std::vector<double> &                   disp,
+                           INPAR::BEAMINTERACTION::CrosslinkerType linkertype,
+                           int                                     bspotlocn,
+                           GEO::MESHFREE::BoundingBox const &      periodic_boundingbox) const;
 
   //! get triad at binding spot with locn x stored in element parameter space coordinates \in [-1,1] from displacement state vector
   void GetTriadOfBindingSpot(
-      LINALG::Matrix<3,3>&                            triad,
-      std::vector<double>&                            disp,
-      const int&                                      bspotlocn) const;
+      LINALG::Matrix< 3, 3 > &                triad,
+      std::vector<double> &                   disp,
+      INPAR::BEAMINTERACTION::CrosslinkerType linkertype,
+      int                                     bspotlocn) const;
 
-//  const std::map< int, std::set<int> >& GetBindingSpotStatus()
-//  {
-//    // safety check
-//    if( bspotstatus_.size() != bspotposxi_.size() )
-//      dserror("size miss match regarding binding spots on this element");
-//
-//    return bspotstatus_;
-//  }
-
-  /** \brief get number of binding spots on this element
+  /** \brief get entire binding spot information of element
    *
    *  \author eichinger
    *  \date 06/17 */
-  unsigned int GetNumberOfBindingSpots() const { return bspotposxi_.size(); }
+  std::map< INPAR::BEAMINTERACTION::CrosslinkerType, std::vector<double> > const & GetBindingSpots() const {
+    return bspotposxi_;
+  }
+
+  /** \brief get number of binding spot types on this element
+   *
+   *  \author eichinger
+   *  \date 06/17 */
+  unsigned int GetNumberOfBindingSpotTypes() const {
+    return bspotposxi_.size();
+  }
+
+  /** \brief get number of binding spots of certain binding spot type on this element
+   *
+   *  \author eichinger
+   *  \date 06/17 */
+  unsigned int GetNumberOfBindingSpots( INPAR::BEAMINTERACTION::CrosslinkerType linkertype ) const {
+    return bspotposxi_.at(linkertype).size();
+  }
 
   /** \brief get binding spot positions xi
    *
    *  \author eichinger
    *  \date 03/17 */
-  double GetBindingSpotXi( int bspotlocn ) const
+  double GetBindingSpotXi( INPAR::BEAMINTERACTION::CrosslinkerType linkertype, unsigned int bspotlocn ) const
   {
-    if ( (unsigned int) bspotlocn > bspotposxi_.size())
+    if ( bspotlocn > bspotposxi_.at(linkertype).size() )
       dserror("number of requested binding spot exceeds total number of binding spots");
 
-    return bspotposxi_[bspotlocn];
+    return bspotposxi_.at(linkertype)[bspotlocn];
   }
 
   /** \brief set binding spot positions and status in crosslinker simulation
    *
    *  \author eichinger
    *  \date 03/17 */
-  void SetPositionsOfBindingSpot( std::vector<double> const & bspotposxi)
+  void SetBindingSpots( std::map< INPAR::BEAMINTERACTION::CrosslinkerType, std::vector<double> > bspotposxi )
   {
     bspotposxi_.clear();
     bspotposxi_ = bspotposxi;
   }
 
-  /** \brief set status (bonded or unbonded) of binding spot
+  /** \brief set binding spot positions and status in crosslinker simulation
    *
    *  \author eichinger
    *  \date 03/17 */
-//  void SetBindingSpotStatus( std::map< int, std::set<int> > bspotstatus )
-//  { bspotstatus_ = bspotstatus; }
-//  void EraseBondFromBindingSpot( int locbspotid, int clgid )
-//  { bspotstatus_[locbspotid].erase( clgid ); }
-//  void AddBondToBindingSpot( int locbspotid, int clgid )
-//  { bspotstatus_[locbspotid].insert( clgid ); }
+  void SetPositionsOfBindingSpotType(
+      INPAR::BEAMINTERACTION::CrosslinkerType linkertype,
+      std::vector<double> const & bspotposxi )
+  {
+    bspotposxi_[linkertype] = bspotposxi;
+  }
 
   /** \brief set/get type of filament the element is part of
    *
@@ -547,7 +558,7 @@ private:
 
   //! position of binding spots on beam element in local coordinate system
   //! size of vector equals number of binding spots on this element
-  std::vector<double> bspotposxi_;
+  std::map< INPAR::BEAMINTERACTION::CrosslinkerType, std::vector<double> > bspotposxi_;
 
   //! type of filament element belongs to
   INPAR::BEAMINTERACTION::FilamentType filamenttype_;

@@ -92,10 +92,13 @@ void DRT::UTILS::RedistributeDiscretizationsByBinning(
 
     // binning strategy is created and parallel redistribution is performed
     Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
-        Teuchos::rcp(new BINSTRATEGY::BinningStrategy(
-            vector_of_discretizations,
+        Teuchos::rcp( new BINSTRATEGY::BinningStrategy() );
+
+    binningstrategy->Init(vector_of_discretizations);
+
+    binningstrategy->WeightedPartitioning(vector_of_discretizations,
             stdelecolmap,
-            stdnodecolmap) );
+            stdnodecolmap);
 
     // revert extended ghosting if requested
     if(revertextendedghosting)

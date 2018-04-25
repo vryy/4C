@@ -61,9 +61,7 @@ BEAMS_PENREGPARAM_C0            0.0
 BEAMS_MAXDISISCALEFAC           -1.0
 BEAMS_MAXDELTADISSCALEFAC       -1.0
 --------------------------------------------------------------------BINNING STRATEGY
-DEFINEBINSPER          cutoff
 CUTOFF_RADIUS          2
-DEFINEXAABBPER         input
 BOUNDINGBOX            0 0 0 15 15 15
 ------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                  1

@@ -80,11 +80,12 @@ void BEAMINTERACTION::BeamLinkBeam3rLin2PinJointed::Init(
     const std::vector<std::pair<int, int> >& eleids,
     const std::vector<LINALG::Matrix<3,1> >& initpos,
     const std::vector<LINALG::Matrix<3,3> >& inittriad,
+    INPAR::BEAMINTERACTION::CrosslinkerType linkertype,
     double timelinkwasset)
 {
   issetup_ = false;
 
-  BeamLinkPinJointed::Init( id, eleids, initpos, inittriad, timelinkwasset);
+  BeamLinkPinJointed::Init( id, eleids, initpos, inittriad, linkertype, timelinkwasset );
 
   // *** initialization of the two triads of the connecting element ***
   /* they are determined such that:
@@ -612,4 +613,18 @@ void BEAMINTERACTION::BeamLinkBeam3rLin2PinJointed::GetBindingSpotForce(
     LINALG::SerialDenseVector & bspotforce ) const
 {
   bspotforce = bspotforces_[bspotid];
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double BEAMINTERACTION::BeamLinkBeam3rLin2PinJointed::GetInternalEnergy() const
+{
+  return linkele_->GetInternalEnergy();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double BEAMINTERACTION::BeamLinkBeam3rLin2PinJointed::GetKineticEnergy() const
+{
+  return linkele_->GetKineticEnergy();
 }

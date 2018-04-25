@@ -2,6 +2,7 @@
 /*!
 \file spherebeamlinking_params.H
 
+
 \brief data container holding all contractile cells input parameters
 
 \level 3
@@ -10,11 +11,13 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef INTEGRINS_H
-#define INTEGRINS_H
+#ifndef SPHEREBEAMLINKING_PARAMS_H
+#define SPHEREBEAMLINKING_PARAMS_H
 
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_inpar/inpar_beaminteraction.H"
 #include<Teuchos_RCP.hpp>
+
 
 
 // forward declaration
@@ -69,18 +72,12 @@ namespace BEAMINTERACTION {
         dserror("Init() has not been called, yet!");
     }
 
-    /// max number of integrins per cell
-    int MaxNumberOfIntegrinsPerCell() const
+    /// linker material id
+    Teuchos::RCP< MAT::CrosslinkerMat > GetLinkerMaterial() const
     {
+      /// HACK: FIX IF MORE THAN ONE CROSSLINKER TYPE
       CheckInitSetup();
-      return maxnumintegrins_;
-    };
-
-    /// integrin material id
-    Teuchos::RCP< MAT::CrosslinkerMat const > GetLinkerMaterial() const
-    {
-      CheckInitSetup();
-      return mat_;
+      return mat_.back();
     };
 
     /// time step for stochastic events concerning crosslinking
@@ -91,10 +88,61 @@ namespace BEAMINTERACTION {
     };
 
     /// time step for stochastic events concerning crosslinking
-    double const & ContractionRate() const
+    double ContractionRate( INPAR::BEAMINTERACTION::CrosslinkerType linkertype ) const
     {
       CheckInitSetup();
-      return contractionrate_;
+      return contractionrate_.at(linkertype);
+    };
+
+    /// number of linker per type
+    std::vector<int> const & MaxNumLinkerPerType() const
+    {
+      CheckInitSetup();
+      return maxnumlinkerpertype_;
+    };
+
+    /// material number for linker types
+    std::vector<int> const & MatLinkerPerType() const
+    {
+      CheckInitSetup();
+      return matlinkerpertype_;
+    };
+
+    /// get all active linker types
+    std::vector< INPAR::BEAMINTERACTION::CrosslinkerType > const & LinkerTypes() const
+    {
+      CheckInitSetup();
+      return linkertypes_;
+    };
+
+    // distance between two binding spots on a filament
+    double FilamentBspotIntervalGlobal( INPAR::BEAMINTERACTION::CrosslinkerType linkertype ) const
+    {
+      CheckInitSetup();
+      return filamentbspotintervalglobal_.at( linkertype );
+    };
+
+    // distance between two binding spots on a filament
+    double FilamentBspotIntervalLocal( INPAR::BEAMINTERACTION::CrosslinkerType linkertype ) const
+    {
+      CheckInitSetup();
+      return filamentbspotintervallocal_.at( linkertype );
+    };
+
+    // start and end arc parameter for binding spots on a filament
+    std::pair< double, double > const &
+    FilamentBspotRangeLocal( INPAR::BEAMINTERACTION::CrosslinkerType linkertype ) const
+    {
+      CheckInitSetup();
+      return filamentbspotrangelocal_.at( linkertype );
+    };
+
+    // start and end arc parameter for binding spots on a filament
+    std::pair< double, double > const &
+    FilamentBspotRangeGlobal( INPAR::BEAMINTERACTION::CrosslinkerType linkertype ) const
+    {
+      CheckInitSetup();
+      return filamentbspotrangeglobal_.at( linkertype );
     };
 
   private:
@@ -103,14 +151,27 @@ namespace BEAMINTERACTION {
 
     bool issetup_;
 
-    // maximum number integrins per cell
-    int maxnumintegrins_;
     /// time step for stochastic events concerning integrins, e.g. catch-slip-bond behavior
     double deltatime_;
     /// contraction rate of cell (integrin linker) in [μm/s]
-    double contractionrate_;
+    std::map< INPAR::BEAMINTERACTION::CrosslinkerType, double > contractionrate_;
     /// crosslinker material
-    Teuchos::RCP< MAT::CrosslinkerMat > mat_;
+    std::vector< Teuchos::RCP< MAT::CrosslinkerMat > > mat_;
+    /// number of crosslinkers in the simulated volume
+    std::vector<int> maxnumlinkerpertype_;
+    /// material numbers for crosslinker types
+    std::vector<int> matlinkerpertype_;
+    /// linker and therefore binding spot types
+    std::vector< INPAR::BEAMINTERACTION::CrosslinkerType > linkertypes_;
+    /// distance between two binding spots on each filament
+    std::map< INPAR::BEAMINTERACTION::CrosslinkerType, double > filamentbspotintervalglobal_;
+    /// distance between two binding spots on a filament as percentage of filament reference length
+    std::map< INPAR::BEAMINTERACTION::CrosslinkerType, double > filamentbspotintervallocal_;
+    /// start and end arc parameter for binding spots on a filament
+    std::map< INPAR::BEAMINTERACTION::CrosslinkerType, std::pair< double, double > > filamentbspotrangeglobal_;
+    /// start and end arc parameter for binding spots on a filament
+    /// in percent of filament reference length
+    std::map< INPAR::BEAMINTERACTION::CrosslinkerType, std::pair< double, double > > filamentbspotrangelocal_;
 
   };
 

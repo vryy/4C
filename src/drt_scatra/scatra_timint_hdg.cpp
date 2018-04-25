@@ -395,8 +395,10 @@ void SCATRA::TimIntHDG::ReadRestart(const int step,Teuchos::RCP<IO::InputControl
       std::vector<Teuchos::RCP<Epetra_Map> > stdelecolmap;
       std::vector<Teuchos::RCP<Epetra_Map> > stdnodecolmap;
 
-      /// binning strategy is created and parallel redistribution is performed
-      binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy(dis,stdelecolmap,stdnodecolmap));
+      // binning strategy is created and parallel redistribution is performed
+      binningstrategy = Teuchos::rcp( new BINSTRATEGY::BinningStrategy() );
+      binningstrategy->Init(dis);
+      binningstrategy->WeightedPartitioning(dis,stdelecolmap,stdnodecolmap);
     }
   }
 

@@ -83,6 +83,7 @@ public:
       const std::vector<std::pair<int, int> >& eleids,
       const std::vector<LINALG::Matrix<3,1> >& initpos,
       const std::vector<LINALG::Matrix<3,3> >& inittriad,
+      INPAR::BEAMINTERACTION::CrosslinkerType linkertype,
       double timelinkwasset);
 
   //! Setup [derived]
@@ -118,6 +119,12 @@ public:
   //@}
 
   //! @name Access methods
+
+  //! get internal linker energy
+  virtual double GetInternalEnergy() const override;
+
+  //! get kinetic linker energy
+  virtual double GetKineticEnergy() const override;
 
   //! scale linker element reference length
   virtual void ScaleLinkerReferenceLength( double scalefac )  {

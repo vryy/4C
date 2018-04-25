@@ -104,9 +104,7 @@ EVERY_ITERATION                 no
 INTERVAL_STEPS                  1
 FORCES                          yes
 --------------------------------------------------------------------BINNING STRATEGY
-DEFINEBINSPER                   cutoff
 CUTOFF_RADIUS                   3
-DEFINEXAABBPER                  input
 BOUNDINGBOX                     -0.5 -0.5 -0.5 5.5 5.5 5.5
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver

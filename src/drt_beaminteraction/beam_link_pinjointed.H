@@ -81,6 +81,7 @@ public:
       const std::vector<std::pair<int, int> >& eleids,
       const std::vector<LINALG::Matrix<3,1> >& initpos,
       const std::vector<LINALG::Matrix<3,3> >& inittriad,
+      INPAR::BEAMINTERACTION::CrosslinkerType linkertype,
       double timelinkwasset);
 
   //! Setup

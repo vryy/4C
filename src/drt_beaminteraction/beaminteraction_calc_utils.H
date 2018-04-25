@@ -17,6 +17,7 @@
 #include "Teuchos_RCP.hpp"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../linalg/linalg_mapextractor.H"
+#include "../drt_inpar/inpar_beaminteraction.H"
 
 
 // forward declaration
@@ -116,13 +117,6 @@ void PeriodicBoundaryConsistentDisVector(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void UpdateCellsPositionRandomly(
-    Teuchos::RCP<Epetra_Vector>              dis,
-    Teuchos::RCP<DRT::Discretization> const& discret,
-    int const                                step);
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 inline int CalculateNumberOfBeamElementsFromNumberOfNodesOnFilament(
     int const numnodes,
     int const numnodesperele)
@@ -133,7 +127,7 @@ inline int CalculateNumberOfBeamElementsFromNumberOfNodesOnFilament(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::vector<int> Permutation( int const number );
+std::vector<int> Permutation( int number );
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
@@ -154,24 +148,64 @@ void GetCurrentUnshiftedElementDis(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void GetPosAndTriadOfBindingSpot(
-    DRT::Element*                                   ele,
-    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& pbb,
-    int const                                       locbspotnum,
-    LINALG::Matrix<3,1>&                            bspotpos,
-    LINALG::Matrix<3,3>&                            bspottriad,
-    std::vector<double>&                            eledisp);
+template< typename T >
+void SetFilamentBindingSpotPositions(
+    Teuchos::RCP< DRT::Discretization > discret,
+    Teuchos::RCP< T >                   params);
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void ExtendGhostingForFilamentBspotSetup(
+    std::set< int > &                   relevantfilaments,
+    Teuchos::RCP< DRT::Discretization > discret );
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void DetermineOffMyRankNodesWithRelevantEleCloudForFilamentBspotSetup(
+    std::set< int > &                   relevantfilaments,
+    std::set< int > &                   setofrequirednodes,
+    Teuchos::RCP< DRT::Discretization > discret );
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void ComputeFilamentLengthAndSortItsElements(
+    std::vector< DRT::Element * > &   sortedfilamenteles,
+    std::vector< int > const *        nodeids,
+    double &                          filreflength,
+    Teuchos::RCP<DRT::Discretization> discret );
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void SetBindingSpotsPositionsOnFilament(
+    std::vector< DRT::Element* > & sortedfilamenteles,
+    double start,
+    INPAR::BEAMINTERACTION::CrosslinkerType linkertype,
+    int numbspot,
+    double filamentbspotinterval,
+    double tol );
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void GetPosAndTriadOfBindingSpot(
-    DRT::Discretization const&                      discret,
-    DRT::Element*                                   ele,
-    Teuchos::RCP<Epetra_Vector> const&              ia_discolnp,
-    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& pbb,
-    int const                                       locbspotnum,
-    LINALG::Matrix<3,1>&                            bspotpos,
-    LINALG::Matrix<3,3>&                            bspottriad);
+    DRT::Element*                                    ele,
+    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const & pbb,
+    INPAR::BEAMINTERACTION::CrosslinkerType          linkertype,
+    int                                              locbspotnum,
+    LINALG::Matrix< 3, 1 > &                         bspotpos,
+    LINALG::Matrix< 3, 3 > &                         bspottriad,
+    std::vector<double> &                            eledisp);
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void GetPosAndTriadOfBindingSpot(
+    DRT::Discretization const &                      discret,
+    DRT::Element *                                   ele,
+    Teuchos::RCP<Epetra_Vector> const &              ia_discolnp,
+    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const & pbb,
+    INPAR::BEAMINTERACTION::CrosslinkerType          linkertype,
+    int                                              locbspotnum,
+    LINALG::Matrix< 3, 1 > &                         bspotpos,
+    LINALG::Matrix< 3, 3 > &                         bspottriad);
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
@@ -273,11 +307,11 @@ void UpdateDofMapOfVector(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int CantorPairing( std::pair< int, int > const & pair );
+long long CantorPairing( std::pair< int, int > const & pair );
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::pair< int, int > CantorDePairing( int z );
+std::pair< int, int > CantorDePairing( long long z );
 
 
 }

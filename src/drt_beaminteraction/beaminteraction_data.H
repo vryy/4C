@@ -185,34 +185,49 @@ namespace DATA
 
     int GetId() const { return id_; };
 
-    std::map< int, LINALG::Matrix< 3, 1 > > const & GetBSpotPositions() const { return bspotpos_; };
-    LINALG::Matrix< 3, 1 > const & GetBSpotPosition( int bspotid ) const { return bspotpos_.at(bspotid); };
+    std::map< INPAR::BEAMINTERACTION::CrosslinkerType, std::map< int, LINALG::Matrix< 3, 1 > > > const &
+    GetBSpotPositions() const { return bspotpos_; };
 
-    std::map< int, LINALG::Matrix< 3, 3 > > const & GetBSpotTriads() const { return bspottriad_; };
-    LINALG::Matrix< 3, 3 > const & GetBSpotTriad( int bspotid ) const { return bspottriad_.at(bspotid); };
+    LINALG::Matrix< 3, 1 > const & GetBSpotPosition( INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int bspotid ) const
+        { return bspotpos_.at(linkertype).at(bspotid); };
 
-    std::map<int, std::set<int> > const & GetBSpotStatus() const { return bspotstatus_; };
+    std::map< INPAR::BEAMINTERACTION::CrosslinkerType, std::map< int, LINALG::Matrix< 3, 3 > > > const & GetBSpotTriads() const
+        { return bspottriad_; };
+    LINALG::Matrix< 3, 3 > const & GetBSpotTriad( INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int bspotid ) const
+        { return bspottriad_.at(linkertype).at(bspotid); };
 
-    std::set<int> const & GetBSpotStatusAt( int bspotid ) const { return bspotstatus_.at(bspotid); };
+    std::map< INPAR::BEAMINTERACTION::CrosslinkerType, std::map< int, std::set<int> > > const & GetBSpotStatus() const
+        { return bspotstatus_; };
 
-    int GetNumberOfBindingSpots() const { return bspotstatus_.size();};
+    std::set<int> const & GetBSpotStatusAt( INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int bspotid ) const
+        { return bspotstatus_.at(linkertype).at(bspotid); };
+
+    // not [] necessary here in case element has no binding spot of certain type
+    unsigned int GetNumberOfBindingSpotsOfType( INPAR::BEAMINTERACTION::CrosslinkerType linkertype )
+        { return bspotstatus_[linkertype].size(); };
 
 
     void SetId( int id ) { id_ = id; };
 
-    void SetBSpotPositions( std::map< int, LINALG::Matrix< 3, 1 > > const & bspotpos ) { bspotpos_ = bspotpos; };
-    void SetBSpotPosition( int bspotid, LINALG::Matrix< 3, 1 > const & bspotpos ) { bspotpos_[bspotid] = bspotpos; };
+    void SetBSpotPositions( std::map< INPAR::BEAMINTERACTION::CrosslinkerType, std::map< int, LINALG::Matrix< 3, 1 > > > const & bspotpos )
+        { bspotpos_ = bspotpos; };
+    void SetBSpotPosition( INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int bspotid, LINALG::Matrix< 3, 1 > const & bspotpos )
+        { bspotpos_[linkertype][bspotid] = bspotpos; };
 
-    void SetBSpotTriads( std::map< int, LINALG::Matrix< 3, 3 > > const & bspottriad ) { bspottriad_ = bspottriad; };
-    void SetBSpotTriad( int bspotid, LINALG::Matrix< 3, 3 > const & bspottriad ) { bspottriad_[bspotid] = bspottriad; };
+    void SetBSpotTriads( std::map< INPAR::BEAMINTERACTION::CrosslinkerType, std::map< int, LINALG::Matrix< 3, 3 > > > const & bspottriad )
+        { bspottriad_ = bspottriad; };
+    void SetBSpotTriad( INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int bspotid, LINALG::Matrix< 3, 3 > const & bspottriad )
+        { bspottriad_[linkertype][bspotid] = bspottriad; };
 
-    void SetBSpotStatus( std::map<int, std::set<int> > const & bspotstatus ) { bspotstatus_ = bspotstatus; };
-    void SetBSpotStatus( int bspotid, std::set<int> clgids ) { bspotstatus_[bspotid] = clgids; };
+    void SetBSpotStatus( std::map< INPAR::BEAMINTERACTION::CrosslinkerType, std::map< int, std::set<int> > > const & bspotstatus )
+        { bspotstatus_ = bspotstatus; };
+    void SetBSpotStatus( INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int bspotid, std::set<int> clgids )
+        { bspotstatus_[linkertype][bspotid] = clgids; };
 
-    void EraseBondFromBindingSpot( int locbspotid, int clgid )
-    { bspotstatus_[locbspotid].erase( clgid ); }
-    void AddBondToBindingSpot( int locbspotid, int clgid )
-    { bspotstatus_[locbspotid].insert( clgid ); }
+    void EraseBondFromBindingSpot( INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int locbspotid, int clgid )
+        { bspotstatus_.at(linkertype).at(locbspotid).erase( clgid ); }
+    void AddBondToBindingSpot( INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int locbspotid, int clgid )
+        { bspotstatus_.at(linkertype).at(locbspotid).insert( clgid ); }
 
 
     //! @}
@@ -241,13 +256,13 @@ namespace DATA
     int id_;
 
     /// current position at bindingspots (xi) (key is local number of binding spot)
-    std::map< int, LINALG::Matrix< 3, 1 > > bspotpos_;
+    std::map< INPAR::BEAMINTERACTION::CrosslinkerType, std::map< int, LINALG::Matrix< 3, 1 > > > bspotpos_;
 
     /// current triad at bindingspots (xi) (key is local number of binding spot)
-    std::map< int, LINALG::Matrix< 3, 3 > > bspottriad_;
+    std::map< INPAR::BEAMINTERACTION::CrosslinkerType, std::map< int, LINALG::Matrix< 3, 3 > > > bspottriad_;
 
     /// key is locn of bspot, holds gid of crosslinker to which it is bonded
-    std::map< int, std::set<int> > bspotstatus_;
+    std::map< INPAR::BEAMINTERACTION::CrosslinkerType, std::map< int, std::set<int> > > bspotstatus_;
 
     //! @}
   };
@@ -345,10 +360,14 @@ namespace DATA
 
     std::pair< int, int > const & GetEleToUpdate() const { return eletoupdate_; };
 
+    INPAR::BEAMINTERACTION::CrosslinkerType GetLinkerType() const { return linkertype_; };
+
 
     void SetClId( int clgid ) { clgid_ = clgid; };
 
     void SetEleToUpdate( std::pair< int, int > eletoupdate ) { eletoupdate_ = eletoupdate; };
+
+    void SetLinkerType( INPAR::BEAMINTERACTION::CrosslinkerType linkertype ) { linkertype_ = linkertype; };
 
 
     //! @}
@@ -374,11 +393,14 @@ namespace DATA
     //!@name member variables
     //! @{
 
-    // crosslinker (gid) that is no longer bonded to above binding spot
+    /// crosslinker (gid) that is no longer bonded to above binding spot
     int clgid_;
 
-    // element gid (first) that needs to be updated at local binding (second)
+    /// element gid (first) that needs to be updated at local binding (second)
     std::pair< int, int > eletoupdate_;
+
+    /// type of binding spot where unbinding takes place
+    INPAR::BEAMINTERACTION::CrosslinkerType linkertype_;
 
 
     //! @}

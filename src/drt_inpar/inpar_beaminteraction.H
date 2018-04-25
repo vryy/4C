@@ -53,32 +53,33 @@ namespace INPAR
   /// (this enum represents the input file parameter STRATEGY)
   enum Strategy
   {
-    bstr_none,        ///< no beam contact
-    bstr_penalty      ///< penalty method
+    bstr_none,             ///< no beam contact
+    bstr_penalty           ///< penalty method
   };
 
   /// type of linker
   enum JointType
   {
-    beam3r_lin2_rigid,        ///< rigid joint
-    beam3r_lin2_pin,          ///< pin joint
-    truss                     ///< truss
+    beam3r_lin2_rigid,     ///< rigid joint
+    beam3r_lin2_pin,       ///< pin joint
+    truss                  ///< truss
   };
 
   /// type of filament
   enum FilamentType
   {
-    filtype_arbitrary,        ///< no special type
-    filtype_actin,           ///< actin type
-    filtype_collagen         ///< collagen type
+    filtype_arbitrary,     ///< no special type
+    filtype_actin,         ///< actin type
+    filtype_collagen       ///< collagen type
   };
 
   /// type of crosslinker
   enum CrosslinkerType
   {
-    linkertype_arbitrary,        ///< binds to all filament
-    linkertype_actin,           ///< only binds to actin filaments
-    linkertype_collagen         ///< only binds to collagen filaments
+    linkertype_arbitrary,  ///< binds to all filament
+    linkertype_actin,      ///< only binds to actin filaments
+    linkertype_collagen,   ///< only binds to collagen filaments
+    linkertype_integrin    ///< sphere to beam linker
   };
 
   //! Map type std::string to enum
@@ -123,10 +124,31 @@ namespace INPAR
       type = linkertype_actin;
     else if ( boost::iequals( name, "collagen" ) )
       type = linkertype_collagen;
+    else if ( boost::iequals( name, "integrin" ) )
+      type = linkertype_integrin;
     else
       dserror("invalid crosslinker type std::string ");
 
     return type;
+  };
+
+  //! Map action type enum to std::string
+  static inline const std::string CrosslinkerType2String(const enum CrosslinkerType type)
+  {
+    switch (type)
+    {
+      case linkertype_arbitrary:
+        return "Arbitrary";
+      case linkertype_actin:
+        return "Actin";
+      case linkertype_collagen:
+        return "Collagen";
+      case linkertype_integrin:
+        return "Integrin";
+      default:
+        return "unknown";
+    }
+    return "";
   };
 
 

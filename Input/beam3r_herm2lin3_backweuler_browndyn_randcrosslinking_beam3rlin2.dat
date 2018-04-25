@@ -64,10 +64,8 @@ MASSLIN                         rotations
 -----------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1
 -------------------------------------------------------------------------BINNING STRATEGY
-DEFINEBINSPER                   cutoff
 CUTOFF_RADIUS                   2
 PERIODICONOFF                   1 1 1
-DEFINEXAABBPER                  input
 BOUNDINGBOX                     0 0 0 10 6 6
 ----------------------------------------------BROWNIAN DYNAMICS
 BROWNDYNPROB                    yes
@@ -81,7 +79,7 @@ CROSSLINKER                     yes
 MAXNUMINITCROSSLINKERPERTYPE    0
 NUMCROSSLINKERPERTYPE           2000
 MATCROSSLINKERPERTYPE           2
-FILAMENTBSPOTINTERVAL           0.8
+FILAMENTBSPOTINTERVALGLOBAL     0.8
 VISCOSITY                       0.001
 KT                              0.0
 TIMESTEP                        0.0001
@@ -166,7 +164,7 @@ MAT 3 MAT_BeamReissnerElastHyper YOUNG 1.3e+09 POISSONRATIO 0.3 DENS 1.384e-09 C
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 0.0001 0.01 1.0 VALUES 0.0 0.0 1.0 1.0
 ---------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE 2.64399256206685751e-02 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 3 QUANTITY dispy VALUE 1.15008612329059942e-02 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 3 QUANTITY dispz VALUE 3.76561861700224626e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -1.23629219698481695e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispy VALUE  5.91641471996423671e-03 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispz VALUE -6.85552172862493453e-02 TOLERANCE 1e-10
 ---------------------------------------------------------------END

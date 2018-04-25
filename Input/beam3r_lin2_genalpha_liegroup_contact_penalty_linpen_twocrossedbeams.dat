@@ -68,9 +68,7 @@ BEAMS_MAXDELTADISSCALEFAC       -1.0
 BEAMS_ADDITEXT                  Yes
 BEAMS_EXTVAL                    2.0
 --------------------------------------------------------------------BINNING STRATEGY
-DEFINEBINSPER                   cutoff
 CUTOFF_RADIUS                   1
-DEFINEXAABBPER                  input
 BOUNDINGBOX                     -3 -3 -3 3 3 3
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver

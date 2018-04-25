@@ -63,9 +63,7 @@ BEAMS_BTSVOLMTPENALTYPARAM      1.0e+10
 ----------------------------------------------------------------BEAM CONTACT
 MODELEVALUATOR                  Standard
 --------------------------------------------------------------------BINNING STRATEGY
-DEFINEBINSPER                   cutoff
 CUTOFF_RADIUS                   2
-DEFINEXAABBPER                  input
 BOUNDINGBOX                     -2 -2 -2 2 2 2
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE  1 QUANTITY dispx VALUE  0.0                     TOLERANCE 1e-8

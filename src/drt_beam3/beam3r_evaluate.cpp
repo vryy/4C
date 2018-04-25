@@ -2628,8 +2628,10 @@ void DRT::ELEMENTS::Beam3r::EvaluateStochasticForces(
   const unsigned int dofpernode = 3*vpernode+3;
 
   // damping coefficients for three translational and one rotational degree of freedom
-  LINALG::Matrix<3,1> gamma(true);
-  GetDampingCoefficients(gamma);
+  LINALG::Matrix< 3, 1 > sqrt_gamma(true);
+  GetDampingCoefficients(sqrt_gamma);
+  for ( unsigned int i = 0; i < 2; ++i )
+    sqrt_gamma(i) = std::sqrt( sqrt_gamma(i) );
 
   /* get pointer at Epetra multivector in parameter list linking to random numbers for stochastic forces with zero mean
    * and standard deviation (2*kT / dt)^0.5 */
@@ -2683,8 +2685,8 @@ void DRT::ELEMENTS::Beam3r::EvaluateStochasticForces(
     for (unsigned int idim=0; idim<ndim; idim++)
       for (unsigned int jdim=0; jdim<ndim; jdim++)
         f_stoch(idim) +=
-            ( std::sqrt(gamma(1)) * (idim==jdim)
-             + ( std::sqrt(gamma(0)) - std::sqrt(gamma(1)) ) * r_s(idim) * r_s(jdim) )
+            ( sqrt_gamma(1) * (idim==jdim)
+             + ( sqrt_gamma(0) - sqrt_gamma(1) ) * r_s(idim) * r_s(jdim) )
             * randnumvec(jdim);
 
     const double sqrt_jacobifac_gp_weight =
@@ -2714,7 +2716,7 @@ void DRT::ELEMENTS::Beam3r::EvaluateStochasticForces(
           std::sqrt( gausspoints.qwgt[gp] / jacobiGPdampstoch_[gp]);
 
       const double prefactor =
-          sqrt_gp_weight_jacobifac_inv * ( std::sqrt(gamma(0)) - std::sqrt(gamma(1)) );
+          sqrt_gp_weight_jacobifac_inv * ( sqrt_gamma(0) - sqrt_gamma(1) );
 
       // loop over all nodes used for centerline interpolation
       for (unsigned int inode=0; inode<nnodecl; inode++)

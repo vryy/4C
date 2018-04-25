@@ -456,15 +456,16 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::PostUpdateStepElement()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::GetEnergy() const
+std::map< STR::EnergyType, double >
+BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::GetEnergy() const
 {
   CheckInitSetup();
 
-  double contact_penalty_potential = 0.0;
+  std::map< STR::EnergyType, double > contact_penalty_potential;
 
   for ( auto& elepairptr : contact_elepairs_ )
   {
-    contact_penalty_potential += elepairptr->GetEnergy();
+    contact_penalty_potential[STR::beam_contact_penalty_potential] += elepairptr->GetEnergy();
   }
 
   return contact_penalty_potential;
@@ -787,6 +788,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
 
     half_interaction_distance = ( globalmax_beam_ia_distance > half_interaction_distance ) ?
         globalmax_beam_ia_distance : half_interaction_distance;
+
+    // some screen output
+    if ( GState().GetMyRank() == 0 )
+      std::cout << " beam to beam contact half interaction distance " << globalmax_beam_ia_distance << std::endl;
   }
 
   // ii) beam to sphere contact
@@ -816,6 +821,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
 
     half_interaction_distance = ( spherebeamlinking_half_interaction_distance_global > half_interaction_distance ) ?
         spherebeamlinking_half_interaction_distance_global : half_interaction_distance;
+
+    // some screen output
+    if ( GState().GetMyRank() == 0 )
+      std::cout << " sphere to beam contact half interaction distance " << spherebeamlinking_half_interaction_distance_global << std::endl;
   }
 
   // iii) beam to solid contact

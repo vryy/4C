@@ -29,9 +29,7 @@ NUMPARTICLE                     2
 PARTICLEBANDWIDTH               1.0
 FAST_CHECK                      yes
 --------------------------------------------------------------------BINNING STRATEGY
-DEFINEBINSPER                   binsperdir
 PERIODICONOFF                   1 0 0
-DEFINEXAABBPER                  input
 //CUTOFF_RADIUS                   0.4
 BIN_PER_DIR                     20 5 1
 BOUNDINGBOX                     -4.0 4.0 0.0 0.0 0.0 0.0

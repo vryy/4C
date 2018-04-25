@@ -65,7 +65,7 @@ public:
   double operator()( int i, int j ) const { return box_(i, j); }
 
   /// initialize bounding box discretization
-  void InitBoundingBoxDiscretization();
+  void SetupBoundingBoxDiscretization();
 
   /*!
   \brief shift node (if outside) back in box if periodic boundary conditions
@@ -155,7 +155,8 @@ public:
   /*!
    \brief Get the outmost point of the boundingbox
    */
-  void UndeformedBoxCornerPointPosition( int i, double * x );
+  void UndeformedBoxCornerPointPosition( int i, double * x ) const;
+  LINALG::Matrix< 3, 1 > UndeformedBoxCornerPointPosition( int i ) const;
   /*!
    \brief get reference position of corner point i
    */

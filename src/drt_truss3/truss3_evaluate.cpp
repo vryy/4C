@@ -793,7 +793,7 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_engstr(const LINALG::Matrix<1,6>&   
   }
 
   return;
-} // DRT::ELEMENTS::Truss3::bt_nlnstiffmass3
+}
 
 
 /*----------------------------------------------------------------------------*
@@ -862,6 +862,8 @@ void DRT::ELEMENTS::Truss3::CalcInternalForceStiffTotLag(
     }
   }
 
+  Eint_ = 0.5 * ym * crosssec_ * lrefe_ * epsilon * epsilon;
+
   double lrefeinv = 1.0 / lrefe_;
   //computing global internal forces
   for ( unsigned int i = 0; i < 6; ++i )
@@ -883,9 +885,11 @@ void DRT::ELEMENTS::Truss3::CalcInternalForceStiffTotLag(
     for ( unsigned int j = 0; j < 6; ++j )
       stiffmat(i,j) += ym * crosssec_ * lrefepow3inv * aux(i) * aux(j);
 
+
 }
 
-// lump mass matrix
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss3::t3_lumpmass(Epetra_SerialDenseMatrix* emass)
 {
   // lump mass matrix

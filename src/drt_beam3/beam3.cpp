@@ -21,6 +21,7 @@
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_fem_general/largerotations.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_beaminteraction/periodic_boundingbox.H"
 
 DRT::ELEMENTS::Beam3Type DRT::ELEMENTS::Beam3Type::instance_;
 
@@ -549,16 +550,30 @@ int DRT::ELEMENTS::Beam3Type::Initialize(DRT::Discretization& dis)
       xrefe.resize(3*nnode);
       rotrefe.resize(3*nnode);
 
+      // the next section is needed in case of periodic boundary conditions and a shifted configuration
+      // (i.e. elements cut by the periodic boundary) in the input file
+      Teuchos::RCP< GEO::MESHFREE::BoundingBox > periodic_boundingbox =
+            Teuchos::rcp( new GEO::MESHFREE::BoundingBox() );
+      periodic_boundingbox->Init(); // no Setup() call needed here
+
+      std::vector<double> disp_shift;
+      int numdof = currele->NumDofPerNode( *( currele->Nodes()[0] ) );
+      disp_shift.resize( numdof * nnode );
+      for ( unsigned int i = 0; i < disp_shift.size(); ++i )
+        disp_shift[i] = 0.0;
+      if ( periodic_boundingbox->HavePBC() )
+        currele->UnShiftNodePosition( disp_shift, *periodic_boundingbox );
+
       //getting element's nodal coordinates and treating them as reference configuration
       if (currele->Nodes()[0] == NULL || currele->Nodes()[1] == NULL)
         dserror("Cannot get nodes in order to compute reference configuration'");
       else
       {
-        for (int node=0; node<nnode; node++) //element has k nodes
-          for(int dof= 0; dof < 3; dof++)// element node has three coordinates x1, x2 and x3
+        for ( int node = 0; node < nnode; ++node ) //element has k nodes
+          for ( int dof = 0; dof < 3; ++dof )// element node has three coordinates x1, x2 and x3
           {
-            xrefe[node*3 + dof] = currele->Nodes()[node]->X()[dof];
-            rotrefe[node*3 + dof]= 0.0;
+            xrefe[ node * 3 + dof ] = currele->Nodes()[node]->X()[dof] + disp_shift[ node * numdof + dof ];
+            rotrefe[ node * 3 + dof ]= 0.0;
           }
       }
 

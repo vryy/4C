@@ -68,9 +68,7 @@ EVERY_ITERATION                 no
 INTERVAL_STEPS                  1
 FORCES                          yes
 --------------------------------------------------------------------BINNING STRATEGY
-DEFINEBINSPER                   cutoff
 CUTOFF_RADIUS                   5
-DEFINEXAABBPER                  input
 BOUNDINGBOX                     -5 -5 -5 5 5 5
 ------------------------------------------------STRUCT NOX/Printing
 Outer Iteration                 = Yes

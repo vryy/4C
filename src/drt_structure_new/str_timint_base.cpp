@@ -37,6 +37,8 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 
+#include "../drt_beaminteraction/str_model_evaluator_beaminteraction.H"
+
 #include <Teuchos_ParameterList.hpp>
 
 #include <Epetra_Vector.h>
@@ -339,8 +341,28 @@ void STR::TIMINT::Base::SelectEnergyTypesToBeWritten()
       }
       case INPAR::STR::model_beaminteraction:
       {
-        evaldata.InsertEnergyTypeToBeConsidered( STR::beam_contact_penalty_potential );
-        evaldata.InsertEnergyTypeToBeConsidered( STR::beam_interaction_potential );
+        STR::MODELEVALUATOR::BeamInteraction const beaminteraction_evaluator =
+            dynamic_cast< STR::MODELEVALUATOR::BeamInteraction const & >( int_ptr_->ModelEvalPtr()->
+                Evaluator( INPAR::STR::model_beaminteraction ) );
+
+        if ( beaminteraction_evaluator.HaveSubModelType( INPAR::BEAMINTERACTION::submodel_beamcontact ) )
+        {
+          evaldata.InsertEnergyTypeToBeConsidered( STR::beam_contact_penalty_potential );
+        }
+        if ( beaminteraction_evaluator.HaveSubModelType( INPAR::BEAMINTERACTION::submodel_potential ) )
+        {
+          evaldata.InsertEnergyTypeToBeConsidered( STR::beam_interaction_potential );
+        }
+        if ( beaminteraction_evaluator.HaveSubModelType( INPAR::BEAMINTERACTION::submodel_crosslinking ) )
+        {
+          evaldata.InsertEnergyTypeToBeConsidered( STR::beam_to_beam_link_internal_energy );
+          evaldata.InsertEnergyTypeToBeConsidered( STR::beam_to_beam_link_kinetic_energy );
+        }
+        if ( beaminteraction_evaluator.HaveSubModelType( INPAR::BEAMINTERACTION::submodel_spherebeamlink ) )
+        {
+          evaldata.InsertEnergyTypeToBeConsidered( STR::beam_to_sphere_link_internal_energy );
+          evaldata.InsertEnergyTypeToBeConsidered( STR::beam_to_sphere_link_kinetic_energy );
+        }
         break;
       }
       default:

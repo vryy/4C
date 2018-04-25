@@ -15,7 +15,6 @@
 
 #include "../drt_structure_new/str_timint_base.H"
 #include "../drt_structure_new/str_utils.H"
-#include "../drt_structure_new/str_enum_lists.H"
 #include "../drt_structure_new/str_model_evaluator_data.H"
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -147,10 +146,11 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   bindis_->FillComplete( false, false, false );
 
   // construct, init and setup binning strategy
+  std::vector< Teuchos::RCP < DRT::Discretization > > discret_vec( 1, ia_discret_ );
+  std::vector< Teuchos::RCP < Epetra_Vector > > disp_vec ( 1, ia_state_ptr_->GetMutableDisNp() );
   binstrategy_ = Teuchos::rcp( new BINSTRATEGY::BinningStrategy() );
-  binstrategy_->Init( bindis_, ia_discret_, ia_state_ptr_->GetMutableDisNp(),
-      TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox() );
-  binstrategy_->Setup();
+  binstrategy_->Init( discret_vec, disp_vec );
+  binstrategy_->Setup( bindis_, TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox() );
 
   // construct, init and setup particle handler and binning strategy
   // todo: move this and its single call during partition to crosslinker submodel
@@ -202,6 +202,9 @@ void STR::MODELEVALUATOR::BeamInteraction::PostSetup()
     for ( sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter )
       (*sme_iter)->GetHalfInteractionDistance( half_interaction_distance_ );
 
+    if ( GState().GetMyRank() == 0 )
+      std::cout << " half cutoff " << 0.5 * binstrategy_->CutoffRadius() << std::endl;
+
     // safety checks
     if ( half_interaction_distance_ > ( 0.5 * binstrategy_->CutoffRadius() ) )
       dserror( "Your half interaction distance %f is larger than half your cuttoff %f. You will not be\n"
@@ -223,7 +226,7 @@ void STR::MODELEVALUATOR::BeamInteraction::SetSubModelTypes()
   // check for crosslinking in biopolymer networks
   // ---------------------------------------------------------------------------
   if ( DRT::INPUT::IntegralValue<int>( DRT::Problem::Instance()->BeamInteractionParams().sublist(
-      "SPHERE BEAM LINK"), "INTEGRINS") )
+      "SPHERE BEAM LINK"), "SPHEREBEAMLINKING") )
     submodeltypes_->insert(INPAR::BEAMINTERACTION::submodel_spherebeamlink);
 
   // ---------------------------------------------------------------------------
@@ -800,11 +803,12 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepElement()
 
     beam_redist = ( ( half_interaction_distance_ + gmaxdisincr ) > ( 0.5 * binstrategy_->CutoffRadius() ) );
 
+    // some verbose screen output
     if ( GState().GetMyRank() == 0 )
     {
-      std::cout << " half interaction distance " << half_interaction_distance_ << std::endl;
-      std::cout << " gmaxdisincr " << gmaxdisincr << std::endl;
-      std::cout << " half cutoff " << 0.5 * binstrategy_->CutoffRadius() << std::endl;
+      IO::cout(IO::verbose) << " half interaction distance " << half_interaction_distance_ << IO::endl;
+      IO::cout(IO::verbose) << " gmaxdisincr " << gmaxdisincr << IO::endl;
+      IO::cout(IO::verbose) << " half cutoff " << 0.5 * binstrategy_->CutoffRadius() << IO::endl;
     }
   }
 
@@ -881,38 +885,15 @@ void STR::MODELEVALUATOR::BeamInteraction::DetermineEnergy()
 {
   CheckInitSetup();
 
-  double energy_this_submodel = 0.0;
+  std::map< STR::EnergyType, double > energy_this_submodel;
 
   for ( auto& submodel : (*me_vec_ptr_) )
   {
     energy_this_submodel = submodel->GetEnergy();
 
-    switch ( submodel->Type() )
-    {
-      case INPAR::BEAMINTERACTION::submodel_beamcontact:
-      {
-        EvalData().AddContributionToEnergyType( energy_this_submodel,
-            STR::beam_contact_penalty_potential );
-
-        break;
-      }
-
-      case INPAR::BEAMINTERACTION::submodel_potential:
-      {
-        EvalData().AddContributionToEnergyType( energy_this_submodel,
-            STR::beam_interaction_potential );
-
-        break;
-      }
-
-      default:
-      {
-        dserror("computation of energy not implemented for this beam interaction"
-            " submodel! Implement energy evaluation and add submodel here.");
-
-        break;
-      }
-    }
+    for ( auto const & energy_type : energy_this_submodel )
+      EvalData().AddContributionToEnergyType( energy_type.second,
+          energy_type.first );
 
   }
 }

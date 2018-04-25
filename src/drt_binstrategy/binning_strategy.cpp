@@ -9,9 +9,7 @@
 \maintainer Jonas Eichinger
 *----------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------*
- | headers                                                  ghamm 11/13 |
- *----------------------------------------------------------------------*/
+
 //Include Isorropia_Exception.hpp only because the helper functions at
 //the bottom of this file (which create the epetra objects) can
 //potentially throw exceptions.
@@ -23,47 +21,54 @@
 #include <Isorropia_EpetraRedistributor.hpp>
 #include <Isorropia_EpetraPartitioner.hpp>
 #include <Isorropia_EpetraCostDescriber.hpp>
-#include <Teuchos_TimeMonitor.hpp>
 
-#include "binning_strategy.H"
-#include "binning_strategy_utils.H"
+#include "../drt_binstrategy/binning_strategy.H"
+#include "../drt_binstrategy/binning_strategy_utils.H"
+#include "../drt_binstrategy/drt_meshfree_multibin.H"
+#include "../drt_inpar/inpar_binningstrategy.H"
+
+#include "../drt_particle/particle_algorithm.H"
+
+#include "../drt_io/io.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_geometry/searchtree_geometry_service.H"
-#include "../drt_geometry/intersection_math.H"
-#include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_utils_parallel.H"
 #include "../drt_lib/drt_discret.H"
-#include "drt_meshfree_multibin.H"
-#include "../drt_io/io.H"
 #include "../drt_lib/drt_dofset_independent.H"
+#include "../drt_comm/comm_utils.H"
+
+#include "../drt_geometry/searchtree_geometry_service.H"
+#include "../drt_geometry/intersection_math.H"
+
+#include "../linalg/linalg_utils.H"
 
 #include "../drt_rigidsphere/rigidsphere.H"
 #include "../drt_mortar/mortar_element.H"
 #include "../drt_mortar/mortar_node.H"
-
-#include "../drt_particle/particle_algorithm.H"
-#include "../drt_beaminteraction/periodic_boundingbox.H"
 #include "../drt_beam3/beam3_base.H"
-#include "../drt_inpar/inpar_binningstrategy.H"
+
+#include "../drt_beaminteraction/periodic_boundingbox.H"
+
+#include <Teuchos_TimeMonitor.hpp>
 
 
 /*----------------------------------------------------------------------*
  | standard constructor                                                 |
  *----------------------------------------------------------------------*/
 BINSTRATEGY::BinningStrategy::BinningStrategy() :
-    bindis_(Teuchos::null),
-    visbindis_(Teuchos::null),
-    cutoff_radius_(0.0),
-    XAABB_(true),
-    deforming_simulation_domain_handler(Teuchos::null),
-    writebinstype_(DRT::INPUT::IntegralValue<INPAR::BINSTRATEGY::writebins>(DRT::Problem::Instance()->BinningStrategyParams(),("WRITEBINS"))),
+    bindis_( Teuchos::null ),
+    visbindis_( Teuchos::null ),
+    cutoff_radius_( 0.0 ),
+    XAABB_( true ),
+    deforming_simulation_domain_handler( Teuchos::null ),
+    writebinstype_( DRT::INPUT::IntegralValue<INPAR::BINSTRATEGY::writebins>(DRT::Problem::Instance()->BinningStrategyParams(),("WRITEBINS") ) ),
     havepbc_(false),
-    particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION"))
+    particle_dim_( DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION") ),
+    myrank_( DRT::Problem::Instance()->GetNPGroup()->GlobalComm()->MyPID() )
 {
   // initialize arrays
-  for( int idim = 0; idim < 3; ++idim )
+  for ( int idim = 0; idim < 3; ++idim )
   {
     bin_size_[idim] = 0.0;
     inv_bin_size_[idim] = 0.0;
@@ -79,148 +84,96 @@ BINSTRATEGY::BinningStrategy::BinningStrategy() :
  | Init                                                       eichinger 11/16 |
  *----------------------------------------------------------------------------*/
 void BINSTRATEGY::BinningStrategy::Init(
-    Teuchos::RCP<DRT::Discretization>& bindis,
-    Teuchos::RCP<DRT::Discretization> const discret,
-    Teuchos::RCP<Epetra_Vector> const disnp,
-    Teuchos::RCP<GEO::MESHFREE::BoundingBox>const pbb)
+    std::vector< Teuchos::RCP < DRT::Discretization > > const discret,
+    std::vector< Teuchos::RCP < Epetra_Vector > > disnp )
 {
-  // myrank
-  myrank_ = bindis->Comm().MyPID();
-  // binning discretization
-  bindis_ = bindis;
-  //
-  deforming_simulation_domain_handler = pbb;
   // binning strategy params
   const Teuchos::ParameterList& binstrategyparams = DRT::Problem::Instance()->BinningStrategyParams();
 
-  // get type of bounding box specification
-  INPAR::BINSTRATEGY::xaabbspectype xaabbpectype =
-      DRT::INPUT::IntegralValue<INPAR::BINSTRATEGY::xaabbspectype>(binstrategyparams,"DEFINEXAABBPER");
-
-  switch (xaabbpectype)
+  // try to read valid input
+  bool feasibleboxinput = true;
+  XAABB_.PutScalar(1.0e12);
+  // get bounding box specified in the input file
+  std::istringstream xaabbstream( Teuchos::getNumericStringParameter( binstrategyparams,"BOUNDINGBOX") );
+  for ( int col = 0; col < 2; ++col )
   {
-    case INPAR::BINSTRATEGY::input:
+    for ( int row = 0; row < 3; ++row )
     {
-      XAABB_.PutScalar(1.0e12);
-      // get bounding box specified in the input file
-      std::istringstream xaabbstream(Teuchos::getNumericStringParameter(binstrategyparams,"BOUNDINGBOX"));
-      for(int col=0; col<2; col++)
-      {
-        for(int row=0; row<3; row++)
-        {
-          double value = 1.0e12;
-          if(xaabbstream >> value)
-            XAABB_(row,col) = value;
-          else
-            dserror("specify six values for bounding box in three dimensional problem. Fix input file");
-        }
-      }
-
-      break;
-    }
-    case INPAR::BINSTRATEGY::dynamic:
-    {
-      CreateXAABB(discret, disnp, XAABB_);
-      break;
-    }
-    default :
-    {
-      dserror("You should not be here");
-      break;
+      double value = 1.0e12; // this is also default input if not specified in input file
+      if ( xaabbstream >> value )
+        XAABB_( row, col ) = value;
+      else
+        dserror("specify six values for bounding box in three dimensional problem. Fix input file");
     }
   }
 
-  // get type for bin specification
-  INPAR::BINSTRATEGY::binspectype binspectype =
-      DRT::INPUT::IntegralValue<INPAR::BINSTRATEGY::binspectype>(binstrategyparams,"DEFINEBINSPER");
+  for ( int col = 0; col < 2; ++col )
+    for ( int row = 0; row < 3; ++row )
+      if ( XAABB_( row, col ) > 1.0e11 )
+        feasibleboxinput = false;
 
-  switch (binspectype)
+  // get number of bins per direction
+  bool feasiblebininput = true;
+  std::istringstream binstream(Teuchos::getNumericStringParameter(binstrategyparams,"BIN_PER_DIR"));
+  for ( int idim = 0; idim < 3; ++idim )
   {
-    case INPAR::BINSTRATEGY::cutoff:
-    {
-      // get cutoff radius
-      cutoff_radius_ = binstrategyparams.get<double>("CUTOFF_RADIUS");
-      if(cutoff_radius_<0.0)
-        dserror("Negative cutoff radius set in input file for definition of bins. Fix it ...");
-
-      // some check
-      std::istringstream binstream(Teuchos::getNumericStringParameter(binstrategyparams,"BIN_PER_DIR"));
-      for(int idim=0; idim<3; idim++)
-      {
-        int val = -1;
-        if (binstream >> val)
-        {
-          if(val > 0 && myrank_ == 0)
-            std::cout<<"\n WARNING: specified number of bins per direction not used "
-                       " as you choose DEFINEBINSPER cutoff"<<std::endl;
-        }
-      }
-      break;
-    }
-    case INPAR::BINSTRATEGY::binsperdir:
-    {
-      // get number of bins per direction
-      std::istringstream binstream(Teuchos::getNumericStringParameter(binstrategyparams,"BIN_PER_DIR"));
-      for(int idim=0; idim<3; idim++)
-      {
-        int val = -1;
-        if (binstream >> val)
-        {
-          if(val>0)
-            bin_per_dir_[idim] = val;
-          else
-            dserror("Negative number of bins in direction %i does not make sense", idim);
-        }
-        else
-        {
-          dserror("You need to specify three figures for BIN_PER_DIR in input file for three dimensional problem. ");
-        }
-      }
-
-      // some check
-      if(cutoff_radius_ > 0.0)
-        std::cout<<"\n WARNING: specified cutoff radius not used "
-                   " as you choose DEFINEBINSPER binsperdir"<<std::endl;
-
-      break;
-    }
-    case INPAR::BINSTRATEGY::largestele:
-    {
-      // todo:
-      dserror("Biopolynet: unshifted configuration is needed (not yet here) for calculation of cutoff.");
-      // store structure discretization in vector
-      std::vector<Teuchos::RCP<DRT::Discretization> > discret_vec(1);
-      discret_vec[0] = discret;
-      // displacement vector according to periodic boundary conditions
-      std::vector<Teuchos::RCP<Epetra_Vector> > disnp_vec(1);
-      disnp_vec[0] = disnp;
-      cutoff_radius_ = ComputeMinCutoffAsMaxEdgeLengthOfXAABBOfLargestEle( discret_vec, disnp_vec );
-
-      break;
-    }
-    default :
-    {
-      dserror("You should not be here");
-      break;
-    }
+    int val = -1;
+    if ( binstream >> val )
+      bin_per_dir_[idim] = val;
+    else
+      dserror("You need to specify three figures for BIN_PER_DIR in input file for three dimensional problem. ");
   }
-  // done
-  return;
-}
 
-/*----------------------------------------------------------------------------*
- | Setup                                                      eichinger 11/13 |
- *----------------------------------------------------------------------------*/
-void BINSTRATEGY::BinningStrategy::Setup()
-{
+  // get cutoff radius
+  cutoff_radius_ = binstrategyparams.get<double>("CUTOFF_RADIUS");
+
+  for ( int idim = 0; idim < 3; ++idim )
+    if ( bin_per_dir_[idim] < 1 )
+      feasiblebininput = false;
+
+  // safety check
+  if ( feasiblebininput and cutoff_radius_ > 0.0 )
+    dserror("Choose either cutoff or binsperdir to specify binning domain.");
+
+  // init vectors for function calls
+  if ( disnp.size() == 0 )
+  {
+    disnp.resize( discret.size() );
+    for ( unsigned int i = 0; i < disnp.size(); ++i )
+      disnp[i] = Teuchos::null;
+  }
+
+  if ( not feasibleboxinput )
+  {
+    if ( discret.size() == 0 )
+      dserror( "We need a discretization at this point.");
+    ComputeMinXAABBContainingAllElementsOfInputDiscrets( discret, disnp, XAABB_, cutoff_radius_ < 0.0 );
+  }
+  else if ( cutoff_radius_ < 0.0 )
+  {
+    if ( discret.size() == 0 )
+      dserror( "We need a discretization at this point.");
+    cutoff_radius_ = ComputeMinCutoffAsMaxEdgeLengthOfXAABBOfLargestEle( discret, disnp );
+  }
+
   // create bins
   CreateBinsBasedOnCutoffAndXAABB();
 
   // build periodic boundary condition
   BuildPeriodicBC();
+}
 
-  // done
-  return;
+/*----------------------------------------------------------------------------*
+ | Setup                                                      eichinger 11/13 |
+ *----------------------------------------------------------------------------*/
+void BINSTRATEGY::BinningStrategy::Setup(
+    Teuchos::RCP<DRT::Discretization> & bindis,
+    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const pbb )
+{
+  // binning discretization
+  bindis_ = bindis;
+  // in case of deforming binning domain during simulation
+  deforming_simulation_domain_handler = pbb;
 }
 
 /*----------------------------------------------------------------------*
@@ -229,8 +182,7 @@ void BINSTRATEGY::BinningStrategy::Setup()
 BINSTRATEGY::BinningStrategy::BinningStrategy(
     const Epetra_Comm& comm,
     double cutoff_radius,
-    LINALG::Matrix<3,2> XAABB
-    ) :
+    LINALG::Matrix<3,2> XAABB ) :
     bindis_(Teuchos::null),
     visbindis_(Teuchos::null),
     cutoff_radius_(cutoff_radius),
@@ -275,7 +227,7 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
     cutoff_radius_(0.0),
     XAABB_(true),
     deforming_simulation_domain_handler(Teuchos::null),
-writebinstype_(DRT::INPUT::IntegralValue<INPAR::BINSTRATEGY::writebins>(DRT::Problem::Instance()->BinningStrategyParams(),("WRITEBINS"))),
+    writebinstype_(DRT::INPUT::IntegralValue<INPAR::BINSTRATEGY::writebins>(DRT::Problem::Instance()->BinningStrategyParams(),("WRITEBINS"))),
     havepbc_(false),
     particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")),
     myrank_(comm.MyPID())
@@ -319,37 +271,6 @@ writebinstype_(DRT::INPUT::IntegralValue<INPAR::BINSTRATEGY::writebins>(DRT::Pro
     pbconoff_[idim] = false;
     pbcdeltas_[idim] = 0.0;
   }
-}
-
-
-/*----------------------------------------------------------------------*
- | Repartitioning Binning strategy constructor              ghamm 06/14 |
- *----------------------------------------------------------------------*/
-BINSTRATEGY::BinningStrategy::BinningStrategy(
-    std::vector<Teuchos::RCP<DRT::Discretization> > dis,
-    std::vector<Teuchos::RCP<Epetra_Map> >& stdelecolmap,
-    std::vector<Teuchos::RCP<Epetra_Map> >& stdnodecolmap
-    ) :
-    bindis_(Teuchos::null),
-    cutoff_radius_(0.0),
-    XAABB_(true),
-    deforming_simulation_domain_handler(Teuchos::null),
-  writebinstype_(DRT::INPUT::IntegralValue<INPAR::BINSTRATEGY::writebins>(DRT::Problem::Instance()->BinningStrategyParams(),("WRITEBINS"))),
-    havepbc_(false),
-    particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")),
-    myrank_(dis[0]->Comm().MyPID())
-{
-  // initialize arrays
-  for(int idim=0; idim<3; ++idim)
-  {
-    bin_size_[idim] = 0.0;
-    inv_bin_size_[idim] = 0.0;
-    bin_per_dir_[idim] = 0;
-    pbconoff_[idim] = false;
-    pbcdeltas_[idim] = 0.0;
-  }
-
-  WeightedPartitioning(dis,stdelecolmap,stdnodecolmap);
 }
 
 /*----------------------------------------------------------------------*
@@ -754,8 +675,8 @@ void BINSTRATEGY::BinningStrategy::DistributeNodesToBins(
     const int binid = ConvertijkToGid(&ijk[0]);
 
     if ( binid == -1 )
-      dserror( "There are nodes in your discretization that reside outside the binning \n"
-               "domain, this does not work at this point.");
+      dserror( "Node %i in your discretization resides outside the binning \n"
+               "domain, this does not work at this point.", node->Id() );
 
     // assign node to bin
     nodesinbin[binid].push_back( node->Id() );
@@ -775,11 +696,6 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::WeightedPartitioning(
   // initialize dummys
   std::vector<std::map<int, std::set<int> > > dummy1(discret.size());
   std::vector<Teuchos::RCP<Epetra_Vector> >   dummy2(discret.size());
-
-  ComputeMinXAABBContainingAllElementsOfInputDiscrets( discret, dummy2, XAABB_, true );
-
-  // create bins
-  CreateBinsBasedOnCutoffAndXAABB(Teuchos::null);
 
   // ------------------------------------------------------------------------
   // create bins, weight them according to number of nodes (of discrets) they
@@ -884,8 +800,8 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::WeightedDistributionOfBin
   // some safety checks to ensure efficiency
   {
     if( numbin < discret[0]->Comm().NumProc() && myrank_ == 0 )
-      dserror("ERROR:NumProc > NumBin. Too many processors to "
-              "distribute your bins properly!!!");
+      dserror("ERROR:NumProc %i > NumBin %i. Too many processors to "
+              "distribute your bins properly!!!", numbin, numbin < discret[0]->Comm().NumProc() );
 
     if( numbin < 8 * discret[0]->Comm().NumProc() && myrank_ == 0 )
       std::cout << "\n\nWARNING: partitioning not useful, choose less procs. "
@@ -1983,16 +1899,22 @@ double BINSTRATEGY::BinningStrategy::ComputeMinCutoffAsMaxEdgeLengthOfXAABBOfLar
  *----------------------------------------------------------------------*/
 void BINSTRATEGY::BinningStrategy::ComputeMinXAABBContainingAllElementsOfInputDiscrets(
     std::vector<Teuchos::RCP<DRT::Discretization> > discret,
-    std::vector<Teuchos::RCP<Epetra_Vector> >disnp,
+    std::vector<Teuchos::RCP<Epetra_Vector> > disnp,
     LINALG::Matrix<3,2>& XAABB,
     bool setmincutoff)
 {
   // reset cutoff
-  if(setmincutoff)
+  if ( setmincutoff )
     cutoff_radius_ = 0.0;
+
+  // safety check
+  if ( discret[0]->NodeRowMap()->NumMyElements() == 0 )
+    dserror("At least one proc does not even own at least one element, this leads to problems."
+        " Choose less procs or change parallel distribution");
 
   // initialize XAABB_ as rectangle around the first node of first discret
   const DRT::Node* node = discret[0]->lRowNode(0);
+
   // calculate current position of this node
   double currpos[3] = { 0.0, 0.0, 0.0 };
   GetCurrentNodePos( discret[0], node, disnp[0], currpos );
@@ -2008,7 +1930,7 @@ void BINSTRATEGY::BinningStrategy::ComputeMinXAABBContainingAllElementsOfInputDi
   for( size_t i = 0; i < discret.size(); ++i )
   {
     LINALG::Matrix<3,2> locXAABB;
-    CreateXAABB( discret[i], disnp[0], locXAABB, setmincutoff );
+    CreateXAABB( discret[i], disnp[i], locXAABB, setmincutoff );
 
     // set XAABB_ considering all input discrets
     for( int dim = 0; dim < 3; ++dim )

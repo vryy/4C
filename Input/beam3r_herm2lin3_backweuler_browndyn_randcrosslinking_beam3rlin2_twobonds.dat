@@ -52,7 +52,7 @@ RESTARTEVRY                     10
 NLNSOL                          fullnewton
 DIVERCONT                       stop
 TIMESTEP                        0.0001
-NUMSTEP                         60
+NUMSTEP                         50
 MAXTIME                         10000
 PREDICT                         ConstDis
 TOLDISP                         1.0E-12
@@ -63,10 +63,8 @@ MASSLIN                         rotations
 ----------------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1
 ----------------------------------------------------------BINNING STRATEGY
-DEFINEBINSPER                   cutoff
 CUTOFF_RADIUS                   2
 PERIODICONOFF                   1 1 1
-DEFINEXAABBPER                  input
 BOUNDINGBOX                     0 0 0 10 6 6
 ----------------------------------------------------------BROWNIAN DYNAMICS
 BROWNDYNPROB                    yes
@@ -79,7 +77,7 @@ REPARTITIONSTRATEGY             Everydt
 CROSSLINKER                     yes
 NUMCROSSLINKERPERTYPE           2000
 MATCROSSLINKERPERTYPE           2
-FILAMENTBSPOTINTERVAL           0.8
+FILAMENTBSPOTINTERVALGLOBAL     0.8
 MAXNUMBONDSPERFILAMENTBSPOT     2
 VISCOSITY                       0.001
 KT                              0.0
@@ -203,7 +201,7 @@ MAT 3 MAT_BeamReissnerElastHyper YOUNG 1.3e+09 POISSONRATIO 0.3 DENS 1.384e-09 C
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 0.0001 0.01 1.0 VALUES 0.0 0.0 1.0 1.0
 ---------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -3.97522442519351038e-01 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 3 QUANTITY dispy VALUE  6.62473034159065777e-01 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 3 QUANTITY dispz VALUE -4.79424342362831601e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -2.42880646760662094e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispy VALUE  4.34491748747881601e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispz VALUE -2.41724095364741765e-01 TOLERANCE 1e-10
 ---------------------------------------------------------------END

@@ -390,9 +390,11 @@ void fsi_ale_drt()
       // redistribute discr. with help of binning strategy
       if(structdis->Comm().NumProc()>1)
       {
-        /// binning strategy is created and parallel redistribution is performed
+        // binning strategy is created and parallel redistribution is performed
         Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
-            Teuchos::rcp(new BINSTRATEGY::BinningStrategy(dis,stdelecolmap,stdnodecolmap));
+            Teuchos::rcp(new BINSTRATEGY::BinningStrategy());
+        binningstrategy->Init(dis);
+        binningstrategy->WeightedPartitioning(dis,stdelecolmap,stdnodecolmap);
       }
     }
   }

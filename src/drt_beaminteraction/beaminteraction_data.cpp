@@ -233,7 +233,8 @@ void BEAMINTERACTION::DATA::BindEventData::Unpack( std::vector<char> const & dat
  *----------------------------------------------------------------------------*/
 BEAMINTERACTION::DATA::UnBindEventData::UnBindEventData() :
     clgid_(-1),
-    eletoupdate_( std::make_pair( -1, -1 ) )
+    eletoupdate_( std::make_pair( -1, -1 ) ),
+    linkertype_(INPAR::BEAMINTERACTION::linkertype_arbitrary)
 {
   //empty
 }
@@ -249,6 +250,8 @@ void BEAMINTERACTION::DATA::UnBindEventData::Pack( DRT::PackBuffer & data ) cons
 
   DRT::ParObject::AddtoPack( data, eletoupdate_ );
 
+  DRT::ParObject::AddtoPack( data, linkertype_ );
+
   return;
 }
 
@@ -261,6 +264,8 @@ void BEAMINTERACTION::DATA::UnBindEventData::Unpack( std::vector<char> const & d
   DRT::ParObject::ExtractfromPack( position, data, clgid_);
 
   DRT::ParObject::ExtractfromPack( position, data, eletoupdate_);
+
+  linkertype_ = static_cast<INPAR::BEAMINTERACTION::CrosslinkerType>( DRT::ParObject::ExtractInt(position,data) );
 
   if ( position != data.size() )
     dserror("Mismatch in size of data %d and position %d", static_cast<int>( data.size() ), position );

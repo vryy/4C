@@ -73,22 +73,18 @@ namespace BINSTRATEGY
       const Epetra_Comm& lcomm  ///< local epetra communicator
       );
 
-    /// repartitioning constructor
-    BinningStrategy(std::vector<Teuchos::RCP<DRT::Discretization> > dis,
-                    std::vector<Teuchos::RCP<Epetra_Map> >& stdelecolmap,
-                    std::vector<Teuchos::RCP<Epetra_Map> >& stdnodecolmap);
-
     /// destructor
     virtual ~BinningStrategy(){};
 
     /// initialize binning strategy
-    virtual void Init( Teuchos::RCP<DRT::Discretization>& bindis,
-                       Teuchos::RCP<DRT::Discretization> const discret = Teuchos::null,
-                       Teuchos::RCP<Epetra_Vector> const disnp = Teuchos::null,
-                       Teuchos::RCP<GEO::MESHFREE::BoundingBox>const pbb = Teuchos::null);
+    virtual void Init(
+        std::vector< Teuchos::RCP < DRT::Discretization> > const discret,
+        std::vector< Teuchos::RCP < Epetra_Vector > > disnp = std::vector< Teuchos::RCP < Epetra_Vector > >() );
 
     /// setup binning strategy
-    virtual void Setup();
+    virtual void Setup(
+        Teuchos::RCP<DRT::Discretization> & bindis,
+        Teuchos::RCP<GEO::MESHFREE::BoundingBox> const pbb );
 
     /// fill bins into bin discretization
     virtual void FillBinsIntoBinDiscretization( Teuchos::RCP<Epetra_Map> const& rowbins);

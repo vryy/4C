@@ -230,7 +230,7 @@ void STR::MonitorDbc::Execute( IO::DiscretizationWriter& writer )
     GetReactionForce( rforce_xyz, react_maps_[rid].data() );
 
     WriteResultsToFile( *(filepath++), rforce_xyz, area_ref, area_curr );
-    WriteResultsToScreen( rforce_xyz, area_ref, area_curr );
+    WriteResultsToScreen( rcond_ptr, rforce_xyz, area_ref, area_curr );
   }
 }
 
@@ -247,8 +247,8 @@ void STR::MonitorDbc::WriteResultsToFile(
 
   std::ofstream of(full_filepath,std::ios_base::out|std::ios_base::app);
 
-  WriteResults( of, OF_WIDTH, OF_PRECISION, gstate_ptr_->GetStepN(), rforce,
-      area_ref, area_curr );
+  WriteResults( of, OF_WIDTH, OF_PRECISION, gstate_ptr_->GetStepN(),
+      gstate_ptr_->GetTimeN(), rforce, area_ref, area_curr );
 
   of.close();
 }
@@ -256,14 +256,18 @@ void STR::MonitorDbc::WriteResultsToFile(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MonitorDbc::WriteResultsToScreen(
+    const Teuchos::RCP<DRT::Condition>& rcond_ptr,
     const LINALG::Matrix<DIM,1>& rforce,
     const double& area_ref,
     const double& area_curr ) const
 {
-  IO::cout << "\n\n--- Monitor Dirichlet boundary conditions\n";
+  if ( Comm().MyPID() != 0 )
+    return;
+
+  IO::cout << "\n\n--- Monitor Dirichlet boundary condition " << rcond_ptr->Id() + 1 <<" \n";
   WriteHeader( IO::cout.os(), OS_WIDTH );
   WriteResults( IO::cout.os(), OS_WIDTH, OS_PRECISION, gstate_ptr_->GetStepN(),
-      rforce, area_ref, area_curr );
+      gstate_ptr_->GetTimeN(), rforce, area_ref, area_curr );
 }
 
 /*----------------------------------------------------------------------------*
@@ -291,7 +295,7 @@ std::vector<std::string> STR::MonitorDbc::CreateDirectoryAndFiles(
   for ( const Teuchos::RCP<DRT::Condition>& rcond : rconds )
   {
     std::string& full_filepath = full_filepaths[i++];
-    full_filepath = full_dirpath + "/" + std::to_string(rcond->Id()) +
+    full_filepath = full_dirpath + "/" + std::to_string(rcond->Id()+1) +
         "_monitor_dbc.data";
 
     if ( write_header )
@@ -320,6 +324,7 @@ void STR::MonitorDbc::WriteHeader(
   }
 
   os << std::setw(col_width) << "step"
+     << std::setw(col_width) << "time"
      << std::setw(col_width) << "ref_area"
      << std::setw(col_width) << "curr_area"
      << std::setw(col_width) << "f_x"
@@ -334,12 +339,14 @@ void STR::MonitorDbc::WriteResults(
     const int col_width,
     const int precision,
     const unsigned step,
+    const double time,
     const LINALG::Matrix<DIM,1>& rforce,
     const double & area_ref,
     const double & area_curr ) const
 {
   os << std::setw(col_width) << step << std::setprecision(precision);
-  os << std::setw(col_width) << std::scientific << area_ref
+  os << std::setw(col_width) << std::scientific << time
+     << std::setw(col_width) << std::scientific << area_ref
      << std::setw(col_width) << std::scientific << area_curr;
 
   for ( unsigned i=0; i<DIM; ++i )

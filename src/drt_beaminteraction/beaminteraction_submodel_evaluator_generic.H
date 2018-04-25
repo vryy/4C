@@ -130,7 +130,7 @@ namespace SUBMODELEVALUATOR {
     virtual void PostUpdateStepElement() = 0;
 
     //! get contributions to system energy
-    virtual double GetEnergy() const = 0;
+    virtual std::map< STR::EnergyType, double > GetEnergy() const = 0;
 
     //! write submodel specific output
     virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const = 0;

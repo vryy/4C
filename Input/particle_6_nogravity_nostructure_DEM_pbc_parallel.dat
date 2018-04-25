@@ -29,8 +29,6 @@ Test case for particle DEM:
 PROBLEMTYP                      Particle
 SHAPEFCT                        Meshfree
 --------------------------------------------------------------------BINNING STRATEGY
-DEFINEBINSPER                   cutoff
-DEFINEXAABBPER                  input
 CUTOFF_RADIUS                   0.3
 PERIODICONOFF                   1 1 1
 BOUNDINGBOX                     -0.5 -0.5 -0.5 0.5 0.5 0.5

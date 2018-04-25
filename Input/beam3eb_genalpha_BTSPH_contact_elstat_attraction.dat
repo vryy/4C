@@ -55,9 +55,7 @@ NORMCOMBI_RESFDISP              And
 MAXITER                         25
 LOADLIN                         Yes
 --------------------------------------------------------------------BINNING STRATEGY
-DEFINEBINSPER                   cutoff
 CUTOFF_RADIUS                   4
-DEFINEXAABBPER                  input
 BOUNDINGBOX                     -5 -5 -5 5 5 5
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike

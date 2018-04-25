@@ -487,15 +487,16 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::PostUpdateStepElement()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-double BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::GetEnergy() const
+std::map< STR::EnergyType, double >
+BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::GetEnergy() const
 {
   CheckInitSetup();
 
-  double beam_interaction_potential = 0.0;
+  std::map< STR::EnergyType, double > beam_interaction_potential;
 
   for ( auto& elepairptr : beam_potential_element_pairs_ )
   {
-    beam_interaction_potential += elepairptr->GetEnergy();
+    beam_interaction_potential[STR::beam_interaction_potential] += elepairptr->GetEnergy();
   }
 
   return beam_interaction_potential;
@@ -597,6 +598,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
   // todo:
   dserror("Adaptive Repartitioning not yet implemented for potential interactions. Add Calculation\n"
       "of half interaction distance and you are good to go.");
+
+  // some screen output
+  if ( GState().GetMyRank() == 0 )
+    std::cout << " beam potential half interaction distance " << -1.0 << std::endl;
 
 }
 

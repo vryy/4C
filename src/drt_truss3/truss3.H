@@ -353,6 +353,9 @@ public:
     return lcurr_;
   }
 
+  //! get internal (elastic) energy of element
+  double GetInternalEnergy() const { return Eint_; };
+
   //! \brief return change in angle between filaments
   double GetDeltaTheta() const
   {
@@ -467,6 +470,8 @@ private:
   double NormForce;
   // Ratio of norm of Force to Moment
   double RatioNormForceMoment;
+  //! internal energy of element
+  double Eint_;
 
   //! angle of last time step (necessary for PTC scheme)
   LINALG::Matrix<3,1> Theta0_;

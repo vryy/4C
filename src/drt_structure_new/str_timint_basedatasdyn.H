@@ -308,7 +308,7 @@ namespace TIMINT {
     Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& GetPeriodicBoundingBox() const
     {
       CheckInitSetup();
-      return periodic_boundingbox;
+      return periodic_boundingbox_;
     }
     ///@}
 
@@ -879,7 +879,7 @@ namespace TIMINT {
     ///@{
 
     /// pointer to the linear solvers map
-    Teuchos::RCP<GEO::MESHFREE::BoundingBox> periodic_boundingbox;
+    Teuchos::RCP<GEO::MESHFREE::BoundingBox> periodic_boundingbox_;
     ///@}
 
     ///@}

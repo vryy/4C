@@ -33,6 +33,7 @@ BEAMINTERACTION::BeamLink::BeamLink() :
     id_(-1),
     bspotpos1_(true),
     bspotpos2_(true),
+    linkertype_(INPAR::BEAMINTERACTION::linkertype_arbitrary),
     timelinkwasset_(-1.0),
     reflength_(-1.0)
 {
@@ -49,6 +50,7 @@ BEAMINTERACTION::BeamLink::BeamLink( const BEAMINTERACTION::BeamLink & old) :
     bspotIds_(old.bspotIds_),
     bspotpos1_(old.bspotpos1_),
     bspotpos2_(old.bspotpos2_),
+    linkertype_(old.linkertype_),
     timelinkwasset_(old.timelinkwasset_),
     reflength_(old.reflength_)
 {
@@ -62,6 +64,7 @@ void BEAMINTERACTION::BeamLink::Init(
     const std::vector<std::pair<int, int> >& eleids,
     const std::vector<LINALG::Matrix< 3, 1 > >& initpos,
     const std::vector<LINALG::Matrix< 3, 3 > >& inittriad,
+    INPAR::BEAMINTERACTION::CrosslinkerType linkertype,
     double timelinkwasset )
 {
   issetup_ = false;
@@ -71,6 +74,8 @@ void BEAMINTERACTION::BeamLink::Init(
 
   bspotpos1_ = initpos[0];
   bspotpos2_ = initpos[1];
+
+  linkertype_ = linkertype;
 
   timelinkwasset_ = timelinkwasset;
 
@@ -114,8 +119,12 @@ void BEAMINTERACTION::BeamLink::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,bspotpos1_);
   // bspotpos2_
   AddtoPack(data,bspotpos2_);
+  // linkertype
+  AddtoPack(data,linkertype_);
   // timelinkwasset
   AddtoPack(data,timelinkwasset_);
+  // reflength
+  AddtoPack(data,reflength_);
 
   return;
 }
@@ -143,8 +152,12 @@ void BEAMINTERACTION::BeamLink::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,bspotpos1_);
   // bspotpos2
   ExtractfromPack(position,data,bspotpos2_);
+  // linkertype
+  linkertype_ = static_cast<INPAR::BEAMINTERACTION::CrosslinkerType>( ExtractInt(position,data) );
   // timelinkwasset
   ExtractfromPack(position,data,timelinkwasset_);
+  // reflength
+  ExtractfromPack(position,data,reflength_);
 
   if ( position != data.size() )
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(), position );

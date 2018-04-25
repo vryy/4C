@@ -56,7 +56,9 @@
  *-------------------------------------------------------------------------------*/
 BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::SphereBeamLinking() :
     sm_crosslinkink_ptr ( Teuchos::null ),
-    spherebeamlinking_params_ptr_ ( Teuchos::null )
+    spherebeamlinking_params_ptr_ ( Teuchos::null ),
+    vtp_writer_ptr_( Teuchos::null ),
+    random_number_sphere_beam_linking_step_(-1)
 {
 }
 
@@ -70,6 +72,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::Setup()
   spherebeamlinking_params_ptr_ = Teuchos::rcp( new BEAMINTERACTION::SphereBeamLinkingParams() );
   spherebeamlinking_params_ptr_->Init( GState() );
   spherebeamlinking_params_ptr_->Setup();
+
+  random_number_sphere_beam_linking_step_ = -1;
+
+  // this includes temporary change in ghosting
+  BEAMINTERACTION::UTILS::SetFilamentBindingSpotPositions( DiscretPtr(), spherebeamlinking_params_ptr_ );
 
   // build runtime vtp writer
   if ( GInOutput().GetRuntimeVtpOutputParams() != Teuchos::null )
@@ -145,7 +152,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::Reset()
       std::vector<double> beameledisp;
       BEAMINTERACTION::UTILS::GetCurrentUnshiftedElementDis( Discret(), beamele,
           BeamInteractionDataState().GetDisColNp(), PeriodicBoundingBox(), beameledisp );
-      beamele->GetPosOfBindingSpot( pos[1], beameledisp, elepairptr->GetLocBSpotNum(1), PeriodicBoundingBox() );
+      beamele->GetPosOfBindingSpot( pos[1], beameledisp, spherebeamlinking_params_ptr_->GetLinkerMaterial()->LinkerType(),
+          elepairptr->GetLocBSpotNum(1), PeriodicBoundingBox() );
 
       // unshift one of the positions if both are separated by a periodic boundary
       // condition, i.e. have been shifted before
@@ -368,19 +376,50 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::UpdateStepElement(
 {
   CheckInitSetup();
 
-  // update linker
-  if ( spherebeamlinking_params_ptr_->MaxNumberOfIntegrinsPerCell() > 0 )
+  // some screen output ( 0 = num_linker, 1 = num_newlinker, 2 = num_dissolved)
+  std::vector<int> num_local( 3, 0 );
+  std::vector<int> num_global( 3, 0 );
+
+  // consider new bonds
+  std::map< int, std::vector< std::pair< int, int > > > newlinks;
+  newlinks.clear();
+  if ( spherebeamlinking_params_ptr_->MaxNumLinkerPerType()[0] > 0 )
   {
-    // consider new bonds
-    std::map< int, std::vector< std::pair< int, int > > > newlinks;
     FindAndStoreNeighboringElements( newlinks );
     CreateBeamToSphereJoint( newlinks );
+  }
 
-    // consider possible unbinding
-    UnbindSphereBeamBonds();
+  for ( auto const & iter : newlinks )
+    num_local[1] += static_cast<int>( iter.second.size() );
 
-    // consider sphere linker contraction
-    UpdateLinkerLength();
+  // consider possible unbinding
+  UnbindSphereBeamBonds( num_local[2] );
+
+  // sphere loop
+  int unsigned const numrowsphereeles = EleTypeMapExtractorPtr()->SphereMap()->NumMyElements();
+  for ( unsigned int rowele_i = 0; rowele_i < numrowsphereeles; ++rowele_i )
+  {
+    int const elegid = EleTypeMapExtractorPtr()->SphereMap()->GID(rowele_i);
+    DRT::ELEMENTS::Rigidsphere * sphere =
+        dynamic_cast< DRT::ELEMENTS::Rigidsphere* >( Discret().gElement( elegid ) );
+
+    num_local[0] += sphere->GetNumberOfBonds();
+  }
+
+  // consider sphere linker contraction
+  UpdateLinkerLength();
+
+  // build sum over all procs
+  MPI_Reduce( &num_local[0], &num_global[0], 3, MPI_INT, MPI_SUM, 0,
+      dynamic_cast<const Epetra_MpiComm*>( &(Discret().Comm() ) )->Comm() );
+
+  if ( GState().GetMyRank() == 0 )
+  {
+    IO::cout(IO::standard) << "\n************************************************" << IO::endl;
+    IO::cout(IO::standard) << "Sphere Beam Links: " << num_global[0];
+    IO::cout(IO::standard) << " (New: " << num_global[1];
+    IO::cout(IO::standard) << " Dissolved: " << num_global[2];
+    IO::cout(IO::standard) << ")\n************************************************\n" <<IO::endl;
   }
 }
 
@@ -389,28 +428,6 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::UpdateStepElement(
 void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::PostUpdateStepElement()
 {
   CheckInitSetup();
-
-  // print total number of linker across all procs
-  int num_local_linker = 0;
-  int num_global_linker = 0;
-  int unsigned const numrowsphereeles = EleTypeMapExtractorPtr()->SphereMap()->NumMyElements();
-  for ( unsigned int rowele_i = 0; rowele_i < numrowsphereeles; ++rowele_i )
-  {
-    int const elegid = EleTypeMapExtractorPtr()->SphereMap()->GID(rowele_i);
-    DRT::ELEMENTS::Rigidsphere const * sphere =
-        dynamic_cast< DRT::ELEMENTS::Rigidsphere const* >( Discret().gElement( elegid ) );
-
-    num_local_linker += sphere->GetNumberOfBonds();
-  }
-  // build sum over all procs
-  MPI_Reduce( &num_local_linker, &num_global_linker, 1, MPI_INT, MPI_SUM, 0,
-      dynamic_cast<const Epetra_MpiComm*>( &(Discret().Comm() ) )->Comm() );
-  if ( GState().GetMyRank() == 0 )
-  {
-    IO::cout(IO::standard) << "\n************************************************\n" <<IO::endl;
-    IO::cout(IO::standard) << "total number of Integrins: " << num_global_linker <<IO::endl;
-    IO::cout(IO::standard) << "\n************************************************\n" <<IO::endl;
-  }
 
 //  std::set<int> spherebingids;
 //  int spheregid = -1;
@@ -431,13 +448,28 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::PostUpdateStepElemen
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-double BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::GetEnergy() const
+std::map< STR::EnergyType, double >
+BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::GetEnergy() const
 {
   CheckInitSetup();
 
-  dserror("Computation of energy not implemented yet for sphere-beam linking!");
+  std::map< STR::EnergyType, double > sp_beam_link_energies;
 
-  return 0.0;
+  int unsigned const numrowsphereeles = EleTypeMapExtractor().SphereMap()->NumMyElements();
+  for ( unsigned int rowele_i = 0; rowele_i < numrowsphereeles; ++rowele_i )
+  {
+    int const elegid = EleTypeMapExtractor().SphereMap()->GID(rowele_i);
+    DRT::ELEMENTS::Rigidsphere const * sphere =
+        dynamic_cast< DRT::ELEMENTS::Rigidsphere const* >( Discret().gElement( elegid ) );
+
+    for ( auto const & bond_iter : sphere->GetBondMap() )
+    {
+      sp_beam_link_energies[STR::beam_to_sphere_link_internal_energy] += bond_iter.second->GetInternalEnergy();
+      sp_beam_link_energies[STR::beam_to_sphere_link_kinetic_energy] += bond_iter.second->GetKineticEnergy();
+    }
+  }
+
+  return sp_beam_link_energies;
 }
 
 /*-------------------------------------------------------------------------------*
@@ -544,8 +576,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::
   MPI_Allreduce( &spherebeamlinking_half_interaction_distance, &spherebeamlinking_half_interaction_distance_global,
       1, MPI_DOUBLE, MPI_MAX, dynamic_cast<const Epetra_MpiComm*>( &(Discret().Comm() ) )->Comm() );
 
+  // some screen output
   if ( GState().GetMyRank() == 0 )
-    std::cout << " spherebeamlinking half interaction distance " << spherebeamlinking_half_interaction_distance_global << std::endl;
+    std::cout << "\n spherebeamlinking half interaction distance " << spherebeamlinking_half_interaction_distance_global << std::endl;
 
 
   half_interaction_distance = ( spherebeamlinking_half_interaction_distance_global > half_interaction_distance ) ?
@@ -618,6 +651,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::WriteOutputRuntimeVt
   // init output desired output vectors
   std::vector<double> currlength ( num_row_points, 0.0 );
   std::vector<double> orientation ( num_row_points * num_spatial_dimensions, 0.0 );
+  std::vector<double> force ( num_row_points * num_spatial_dimensions, 0.0 );
+  LINALG::SerialDenseVector bspotforce(true);
 
   // set position of spherebeamlinks
   unsigned int bond_i = 0;
@@ -651,19 +686,21 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::WriteOutputRuntimeVt
       std::vector<double> beameledisp;
       BEAMINTERACTION::UTILS::GetCurrentUnshiftedElementDis( Discret(), beamele,
           BeamInteractionDataState().GetDisColNp(), PeriodicBoundingBox(), beameledisp );
-      beamele->GetPosOfBindingSpot( pos[1], beameledisp, elepairptr->GetLocBSpotNum(1), PeriodicBoundingBox() );
+      beamele->GetPosOfBindingSpot( pos[1], beameledisp, spherebeamlinking_params_ptr_->GetLinkerMaterial()->LinkerType(),
+          elepairptr->GetLocBSpotNum(1), PeriodicBoundingBox() );
 
       // unshift one of the positions if both are separated by a periodic boundary
       // condition, i.e. have been shifted before
       PeriodicBoundingBox().UnShift3D( pos[1], pos[0] );
 
-      // set point coordiates value
+      elepairptr->GetBindingSpotForce( 0, bspotforce );
+      // set point coordinate value
       for ( unsigned int idim = 0; idim < num_spatial_dimensions; ++idim )
+      {
         point_coordinates.push_back( pos[0](idim) + 0.5 * ( pos[1](idim) - pos[0](idim) ) );
-
-      // set desired output vectors
-      for ( unsigned int idim = 0; idim < num_spatial_dimensions; ++idim )
         orientation[bond_i * num_spatial_dimensions + idim] = ( pos[1](idim) - pos[0](idim) );
+        force[bond_i * num_spatial_dimensions + idim] = bspotforce(idim);
+      }
 
       ++bond_i;
     }
@@ -674,8 +711,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::WriteOutputRuntimeVt
       GState().GetTimeN(), GState().GetStepN(), "spherebeamlinker" );
 
   // append all desired output data to the writer object's storage
-  // i) number of bonds: collect data and append to visualization results if desired
+  // i) number of bonds
   vtp_writer_ptr_->AppendVisualizationPointDataVector( orientation, 3, "orientation" );
+  // ii) linker force
+    vtp_writer_ptr_->AppendVisualizationPointDataVector( force, 3, "force" );
 
   // finalize everything and write all required VTU files to filesystem
   vtp_writer_ptr_->WriteFiles();
@@ -729,8 +768,15 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::FindAndStoreNeighbor
     std::vector< BINSTRATEGY::UTILS::BinContentType > bc( 1, BINSTRATEGY::UTILS::Beam );
     BinStrategyPtr()->GetBinContent( neighboring_elements, bc, glob_neighboring_binIds );
 
+    // -------------------------------------------------------------------------
+    // NOTE: This is crucial for reproducibility to ensure that computation does
+    // not depend on pointer addresses (see also comment of class Less)
+    // -------------------------------------------------------------------------
+    std::vector< DRT::Element const * > beamvec( neighboring_elements.begin(), neighboring_elements.end() );
+    std::sort( beamvec.begin(), beamvec.end(), BEAMINTERACTION::UTILS::Less() );
+
     // sort out elements that do not meet bind event criteria
-    CheckFeasibilityOfNewLink( currsphere, neighboring_elements, tobebonded, newlinks );
+    CheckFeasibilityOfNewLink( currsphere, beamvec, tobebonded, newlinks );
 
   }
 }
@@ -739,7 +785,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::FindAndStoreNeighbor
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::CheckFeasibilityOfNewLink(
     DRT::Element const * currele,
-    std::set< DRT::Element * > const & neighbors,
+    std::vector< DRT::Element const * > const & neighbors,
     std::unordered_set< int > & tobebonded,
     std::map< int, std::vector< std::pair< int, int > > > & newlinks ) const
 {
@@ -779,39 +825,50 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::CheckFeasibilityOfNe
     LINALG::Matrix< 3, 3 > bspottriad(true);
 
     // loop over binding spots of neighboring element
-    for ( unsigned int bspot_i = 0; bspot_i < beamele->GetNumberOfBindingSpots(); ++bspot_i )
+    unsigned int numbspots = beamele->GetNumberOfBindingSpots( spherebeamlinking_params_ptr_->GetLinkerMaterial()->LinkerType() );
+    for ( unsigned int bspot_i = 0; bspot_i < numbspots; ++bspot_i )
     {
       // build unique linker id from elegid and local binding spot id
       std::pair< int, int > bspotpair = std::make_pair( beamele->Id(), bspot_i );
       int bpspotgid = BEAMINTERACTION::UTILS::CantorPairing( bspotpair);
 
-      // 0. criterion: has sphere reached maximum number of admissible bonds?
+      // criterion: probability check for integrin collagen binding
+      if ( spherebeamlinking_params_ptr_->GetLinkerMaterial()->KOn() > -1e-08 )
+      {
+        double plink = 1.0 - exp( (-1.0) * spherebeamlinking_params_ptr_->DeltaTime()
+                                         * spherebeamlinking_params_ptr_->GetLinkerMaterial()->KOn() );
+        if ( DRT::Problem::Instance()->Random()->Uni() > plink )
+          continue;
+      }
+
+      // criterion: has sphere reached maximum number of admissible bonds?
       if ( ( sphere->GetNumberOfBonds() + numnewbondsthisstep ) ==
-             spherebeamlinking_params_ptr_->MaxNumberOfIntegrinsPerCell() )
+             spherebeamlinking_params_ptr_->MaxNumLinkerPerType()[0] )
         continue;
 
 #ifdef DEBUG
       // todo: do only in debug mode as soon tested enough
       // safety check
       if ( ( sphere->GetNumberOfBonds() + numnewbondsthisstep ) >
-             spherebeamlinking_params_ptr_->MaxNumberOfIntegrinsPerCell() )
+             spherebeamlinking_params_ptr_->MaxNumLinkerPerType()[0] )
         dserror(" sphere has more bonds than allowed. Something went wrong.");
 #endif
 
-      // 1. criterion: does identical bond already exist?
+      // criterion: does identical bond already exist?
       if ( sphere->DoesBondExist( bpspotgid ) )
         continue;
 
-      // 2. criterion: is beam binding spot free (covered by criterion 1? Only in case of separate linker
+      // criterion: is beam binding spot free (covered by criterion 1? Only in case of separate linker
       // for cell to beam and beam to beam
       // fixme: maybe replace beam to beam in this case
       // search literature if binding spots are the same
 
 
-      // 3. criterion: distance
+      // criterion: distance
       // get current position at binding spot xi
       bspotpos.Clear();
-      beamele->GetPosOfBindingSpot( bspotpos, beameledisp, bspot_i, PeriodicBoundingBox() );
+      beamele->GetPosOfBindingSpot( bspotpos, beameledisp, spherebeamlinking_params_ptr_->GetLinkerMaterial()->LinkerType(),
+          bspot_i, PeriodicBoundingBox() );
 
       double const linkdistmin = spherebeamlinking_params_ptr_->GetLinkerMaterial()->LinkingLength()
                                  - spherebeamlinking_params_ptr_->GetLinkerMaterial()->LinkingLengthTolerance();
@@ -822,7 +879,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::CheckFeasibilityOfNe
       if ( BEAMINTERACTION::UTILS::IsDistanceOutOfRange( spherepos, bspotpos, linkdistmin, linkdistmax ) )
         continue;
 
-      // 4. criterion: orientation
+      // criterion: orientation
       /* NOTE: this works slightly different to crosslinking of two beams: here we check the angle
        * between the beams first base vector and the direction vector from the spheres mid point to
        * the binding spot, i.e. LINKINGANGLE in the input file means something slightly different in
@@ -830,7 +887,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::CheckFeasibilityOfNe
 
       // get current triad at binding spot xi
       bspottriad.Clear();
-      beamele->GetTriadOfBindingSpot( bspottriad, beameledisp, bspot_i );
+      beamele->GetTriadOfBindingSpot( bspottriad, beameledisp, spherebeamlinking_params_ptr_->GetLinkerMaterial()->LinkerType(),
+          bspot_i );
 
       // note: we use first base vector instead of tangent vector here
       LINALG::Matrix< 3, 1> curr_bindingspot_beam_tangent(true);
@@ -848,8 +906,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::CheckFeasibilityOfNe
       if ( BEAMINTERACTION::UTILS::IsEnclosedAngleOutOfRange(
           dist_vec, curr_bindingspot_beam_tangent, linkanglemin, linkanglemax ) )
 
-
-      // 5. criterion: check if bspot will already be bonded this step
+      // criterion: check if bspot will already be bonded this step
       if ( tobebonded.find(bpspotgid) != tobebonded.end() )
         continue;
 
@@ -911,7 +968,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::CreateBeamToSphereJo
       std::vector<double> beameledisp;
       BEAMINTERACTION::UTILS::GetCurrentUnshiftedElementDis( Discret(), beamele,
           BeamInteractionDataState().GetDisColNp(), PeriodicBoundingBox(), beameledisp );
-      beamele->GetPosOfBindingSpot( pos[1], beameledisp, bspotiter.second, PeriodicBoundingBox() );
+      beamele->GetPosOfBindingSpot( pos[1], beameledisp, spherebeamlinking_params_ptr_->GetLinkerMaterial()->LinkerType(),
+          bspotiter.second, PeriodicBoundingBox() );
 
       // create and initialize objects of beam-to-beam connections
       // Todo introduce enum for type of linkage (only linear Beam3r element possible so far)
@@ -926,7 +984,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::CreateBeamToSphereJo
       std::vector< LINALG::Matrix< 3, 3 > > dummy_triad( 2, LINALG::Matrix< 3, 3 >(true) );
 
       // finally initialize and setup object
-      linkelepairptr->Init( id, eleids, pos, dummy_triad, GState().GetTimeNp() );
+      linkelepairptr->Init( id, eleids, pos, dummy_triad, spherebeamlinking_params_ptr_->GetLinkerMaterial()->LinkerType(),
+          GState().GetTimeNp() );
       // material id
       linkelepairptr->Setup( spherebeamlinking_params_ptr_->GetLinkerMaterial()->BeamElastHyperMatNum() );
 
@@ -938,14 +997,31 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::CreateBeamToSphereJo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::UnbindSphereBeamBonds()
+void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::UnbindSphereBeamBonds(
+    int & num_dissolved )
 {
   CheckInitSetup();
+
+  // safety check
+  if ( spherebeamlinking_params_ptr_->DeltaTime() < 1.0e-8 )
+    dserror("You are about to divide by (almost) zero");
+
+  // check if unbinding needs to be checked this problem time step
+  int random_number_sphere_beam_linking_step = static_cast<int>( (GState().GetTimeNp() - (*GState().GetDeltaTime())[0] )
+      / spherebeamlinking_params_ptr_->DeltaTime() + 1.0e-8 );
+  if ( random_number_sphere_beam_linking_step == random_number_sphere_beam_linking_step_ )
+    return;
+  else
+    random_number_sphere_beam_linking_step_ = random_number_sphere_beam_linking_step;
+
+  // in case off rate is zero
+  if ( std::abs( spherebeamlinking_params_ptr_->GetLinkerMaterial()->KOff() ) < 1e-08 )
+    return;
 
   // init variables
   double p_unbind = 0.0;
 
-  // adapt force/strain in linker
+  // sphere loop
   int unsigned const numrowsphereeles = EleTypeMapExtractorPtr()->SphereMap()->NumMyElements();
   for ( unsigned int rowele_i = 0; rowele_i < numrowsphereeles; ++rowele_i )
   {
@@ -960,24 +1036,20 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::UnbindSphereBeamBond
     {
       Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> elepairptr = ipair.second;
 
+      // check if linker was set this time step
+      if ( elepairptr->GetTimeLinkWasSet() == GState().GetTimeNp() )
+        continue;
+
       // consider catch-slip bond behavior of integrin linkers
-      if ( spherebeamlinking_params_ptr_->DeltaTime() > 0 )
-      {
-        CalcForceDependentCatchSlipBondUnbindProbability( elepairptr, p_unbind );
-      }
-      else
-      {
-        p_unbind = 0.0;
-      }
+      CalcForceDependentCatchSlipBondUnbindProbability( elepairptr, p_unbind );
 
       // if probability criterion is not met, we are done here
       if ( DRT::Problem::Instance()->Random()->Uni() > p_unbind )
         continue;
 
       to_dissolve.push_back( ipair.first );
+      ++num_dissolved;
     }
-
-    std::cout << " unbound " << to_dissolve.size() << std::endl;
 
     // dissolve all bonds
     for ( unsigned int i_td = 0; i_td < to_dissolve.size(); ++i_td )
@@ -989,31 +1061,23 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::UnbindSphereBeamBond
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::CalcForceDependentCatchSlipBondUnbindProbability(
     Teuchos::RCP< BEAMINTERACTION::BeamLinkPinJointed> linkelepairptr,
-    double & p_unbind) const
+    double & p_unbind)
 {
   CheckInitSetup();
-
-  // check if link was set in current time step
-  if ( linkelepairptr->GetTimeLinkWasSet() == GState().GetTimeNp() )
-  {
-    p_unbind = 0.0;
-    return;
-  }
 
   // Note: this needs to come after a contraction was equilibrated by the network. Doing this directly
   // after changing the linker reference length does not make sense.
 
   // todo: maybe add these to linker material input line
-  double const & phi_FA_s = 7.78;
-  double const & phi_FA_c = 4.02;
-  double const & f_FA = 5.38;
-  double const & k_FA_0 = 1;
-
+  double const phi_FA_s = 7.78;
+  double const phi_FA_c = 4.02;
+  double const f_FA = 5.38;
+  double const k_FA_0 = spherebeamlinking_params_ptr_->GetLinkerMaterial()->KOff();
   double dt = spherebeamlinking_params_ptr_->DeltaTime();
 
   // Fixme: is force 1 the correct one, do we need to take the force on the end that is connected to the beam?
   // note: as we only check unbinding in links that were set before the current time step, we do not need to
-  // caclulate the forces again.
+  // calculate the forces again.
   LINALG::SerialDenseVector bspotforce_one(6);
   linkelepairptr->GetBindingSpotForce( 1, bspotforce_one );
   double f = bspotforce_one.Norm2();
@@ -1052,10 +1116,6 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::CalcForceDependentCa
         "sure this is what you want? " << std::endl;
   }
 
-  std::cout << " force " << f << std::endl;
-  std::cout << " koff: " << k_FA_off << std::endl;
-  std::cout << " p_unbind " << p_unbind << std::endl;
-
 }
 
 /*----------------------------------------------------------------------------*
@@ -1067,7 +1127,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::UpdateLinkerLength()
   // adapt force/strain in linker
   // note: problem time step is used here
   double contraction_per_dt =
-      spherebeamlinking_params_ptr_->ContractionRate() * (*GState().GetDeltaTime())[0];
+      spherebeamlinking_params_ptr_->ContractionRate(INPAR::BEAMINTERACTION::linkertype_integrin) * (*GState().GetDeltaTime())[0];
   double scalefac = 0.0;
   int unsigned const numrowsphereeles = EleTypeMapExtractorPtr()->SphereMap()->NumMyElements();
   for ( unsigned int rowele_i = 0; rowele_i < numrowsphereeles; ++rowele_i )
@@ -1076,7 +1136,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::UpdateLinkerLength()
     DRT::ELEMENTS::Rigidsphere * sphere =
         dynamic_cast< DRT::ELEMENTS::Rigidsphere * >( Discret().gElement( elegid ) );
 
-    // todo: do we want this
+    // todo: do we want this (note: this would be a compressible behavior in this case)
     // change radius of contracting cell
 //    if ( GState().GetStepN() % 10 == 0 )
 //      sphere->ScaleRadius(0.95);
@@ -1087,8 +1147,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::UpdateLinkerLength()
       // get pair object
       Teuchos::RCP< BEAMINTERACTION::BeamLinkPinJointed > elepairptr = ipair.second;
 
-      // only contract if linker size > sphere radius
-      if ( ( elepairptr->GetCurrentLinkerLength() <= sphere->Radius() ) and ( GState().GetStepN() == 0 ) )
+      // only contract if linker size > sphere radius * factor
+      double factor = 1.01;
+      if ( ( elepairptr->GetCurrentLinkerLength() <= sphere->Radius() * factor ) or ( GState().GetStepN() == 0 ) )
         continue;
 
       // compute scaling factor for linker length
@@ -1096,8 +1157,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::UpdateLinkerLength()
 
       // some safety checks
       if ( scalefac < 0.0 )
-        dserror( "Contraction %f of a linker of more than its reference length %f in one time does not make sense.",
-            contraction_per_dt, elepairptr->GetReferenceLength() );
+        dserror( "Contraction %f of a linker of more than its reference length %f in one time step "
+            "does not make sense.", contraction_per_dt, elepairptr->GetReferenceLength() );
       if ( contraction_per_dt > elepairptr->GetCurrentLinkerLength() )
         dserror( "Contraction of %f for a linker with current length %f does not make sense.",
             contraction_per_dt, elepairptr->GetCurrentLinkerLength() );

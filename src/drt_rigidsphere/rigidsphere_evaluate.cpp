@@ -143,6 +143,12 @@ int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
       break;
     }
 
+    case ELEMENTS::struct_calc_energy:
+    {
+      // no contribution of rigid sphere to system energy
+      break;
+    }
+
     default:
     {
       dserror("Unknown type of action for Rigidsphere %d", act);

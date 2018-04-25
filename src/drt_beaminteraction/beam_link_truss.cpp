@@ -76,11 +76,12 @@ void BEAMINTERACTION::BeamLinkTruss::Init(
     const std::vector<std::pair<int, int> >& eleids,
     const std::vector<LINALG::Matrix<3,1> >& initpos,
     const std::vector<LINALG::Matrix<3,3> >& inittriad,
+    INPAR::BEAMINTERACTION::CrosslinkerType linkertype,
     double timelinkwasset)
 {
   issetup_ = false;
 
-  BeamLinkPinJointed::Init( id, eleids, initpos, inittriad, timelinkwasset );
+  BeamLinkPinJointed::Init( id, eleids, initpos, inittriad, linkertype, timelinkwasset );
 
 }
 
@@ -341,3 +342,16 @@ double BEAMINTERACTION::BeamLinkTruss::GetCurrentLinkerLength() const
   return linkele_->Lcurr();
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double BEAMINTERACTION::BeamLinkTruss::GetInternalEnergy() const
+{
+  return linkele_->GetInternalEnergy();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double BEAMINTERACTION::BeamLinkTruss::GetKineticEnergy() const
+{
+  return 0.0;
+}

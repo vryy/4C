@@ -74,7 +74,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamLink> BEAMINTERACTION::BeamLinkBeam3rLin2Rigid
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::Setup( const int matnum )
+void BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::Setup( int matnum )
 {
   CheckInit();
 
@@ -322,4 +322,18 @@ void BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::FillStateVariablesForEleme
 
   Qnode.push_back(GetBindSpotQuaternion1());
   Qnode.push_back(GetBindSpotQuaternion2());
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::GetInternalEnergy() const
+{
+  return linkele_->GetInternalEnergy();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointed::GetKineticEnergy() const
+{
+  return linkele_->GetKineticEnergy();
 }

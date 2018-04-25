@@ -45,7 +45,8 @@ MAT::PAR::CrosslinkerMat::CrosslinkerMat(
         "greater than zero (as you need to divide by it during crosslinker diffusion).");
   if ( linkinglengthtol_ < 0.0 || linkinglengthtol_ > linkinglength_ )
     dserror(" Value for tolerance of linking does not make sense.");
-
+  if ( ( linkinglength_ - linkinglengthtol_ ) < 1e-08 )
+    dserror("choose linkinglengthtol < linkinglength_, otherwise a linker with length 0.0 maybe be possible.");
 }
 
 Teuchos::RCP<MAT::Material> MAT::PAR::CrosslinkerMat::CreateMaterial()

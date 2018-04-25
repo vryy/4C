@@ -97,7 +97,7 @@ namespace SUBMODELEVALUATOR {
     virtual void PostUpdateStepElement();
 
     //! derived
-    double GetEnergy() const override;
+    std::map< STR::EnergyType, double > GetEnergy() const override;
 
     //! derived
     virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const;
@@ -143,26 +143,26 @@ namespace SUBMODELEVALUATOR {
     //! @{
 
     /// unbind all crosslinker residing in bingid and its neighborhood
-    virtual void UnbindCrosslinkerInBinsAndNeighborhood(
-        std::set<int> const& bingids,
-        bool const doubleunbind);
+    void UnbindCrosslinkerInBinsAndNeighborhood(
+        std::set<int> const & bingids,
+        bool doubleunbind );
 
     /// unbind all crosslinker residing in bingid and its neighborhood
-    virtual void UnbindCrosslinkerInBinsAndNeighborhood(
+    void UnbindCrosslinkerInBinsAndNeighborhood(
         std::set<int> const& bingids);
 
     /// determine which proc is responsible for forced crosslinker unbinding in certain bins
     /// by checking bin ownership
-    virtual void DetermineResponsilbeProcsForForcedCrosslinkerUnbinding(
+    void DetermineResponsilbeProcsForForcedCrosslinkerUnbinding(
         std::set<int> const& bingids,
         std::set< int >& binsonmyrank) const;
 
-    virtual void CommunicateBinIds(
+    void CommunicateBinIds(
         std::map< int, std::vector< int > > const& binstosend,
         std::set< int >& binsonmyrank) const;
 
     /// set all double bonds in bind and neighborhood
-    virtual void DoubleBindCrosslinkerInBinsAndNeighborhood(
+    void DoubleBindCrosslinkerInBinsAndNeighborhood(
         std::set<int> const& bingids);
 
     //! @}
@@ -193,55 +193,27 @@ private:
     //! @{
 
     /// add crosslinker to bin discretization initially
-    virtual void AddCrosslinkerToBinDiscretization();
-
-    /// set binding spot positions on filament initially
-    virtual void SetFilamentBindingSpotPositions();
+    void AddCrosslinkerToBinDiscretization();
 
     /// set filament types on elements
-    virtual void SetFilamentTypes();
-
-    /// extent ghosting so that each proc has all nodes and elemens of a filament containing
-    /// at least one of its nodes
-    virtual void ExtendGhostingForFilamentBspotSetup(
-        std::set<int>& relevantfilaments);
-
-    /// determine nodes with relevant element cloud
-    virtual void DetermineOffMyRankNodesWithRelevantEleCloudForFilamentBspotSetup(
-        std::set<int>& examinedfilaments,
-        std::set<int>& setofrequirednodes) const;
-
-    // compute total filament length using its elements reference length and sort elements
-    virtual void ComputeFilamentLengthAndSortItsElements(
-        std::vector< DRT::Element* >& sortedfilamenteles,
-        std::vector<int> const* nodeids,
-        double & filreflength) const;
-
-    /// set binding spot positions on element of a filament
-    virtual void SetBindingSpotsPositionsOnFilament(
-        std::vector< DRT::Element* >& sortedfilamenteles,
-        double const start,
-        int const    numbspot,
-        double const filamentbspotinterval,
-        double const tol);
-
+    void SetFilamentTypes();
 
     /// set double bonded linker between all binding spots that match certain
     /// neigbhoring criteria
-    virtual void SetAllPossibleInitialDoubleBondedCrosslinker(
+    void SetAllPossibleInitialDoubleBondedCrosslinker(
         std::vector< Teuchos::RCP<BEAMINTERACTION::DATA::CrosslinkerData> > & newlinker,
         std::map< int, NewDoubleBonds > & mynewdbondcl);
 
     /// diffuse crosslinker depending on number of bonds they have
-    virtual void DiffuseCrosslinker();
+    void DiffuseCrosslinker();
 
     /// diffuse unbound crosslinker according to brownian dynamics
-    virtual void DiffuseUnboundCrosslinker(
+    void DiffuseUnboundCrosslinker(
         DRT::Node * crosslinker,
         BEAMINTERACTION::DATA::CrosslinkerData * cldata_i);
 
     /// get binding spot of crosslinker that is currently occupied
-    virtual int GetSingleOccupiedClBspot(
+    int GetSingleOccupiedClBspot(
         std::vector<std::pair<int, int> > const& clbspots
     ) const;
 
@@ -252,16 +224,16 @@ private:
     ) const;
 
     /// new position after transition from single to not bonded
-    virtual void SetPositionOfNewlyFreeCrosslinker(
+    void SetPositionOfNewlyFreeCrosslinker(
         CROSSLINKING::CrosslinkerNode* crosslinker,
         BEAMINTERACTION::DATA::CrosslinkerData * cldata
     );
 
     /// new position after transition from double to single bonded
-    virtual void  SetPositionOfNewlySingleBondedCrosslinker(
-        DRT::Node* crosslinker,
+    void SetPositionOfNewlySingleBondedCrosslinker(
+        CROSSLINKING::CrosslinkerNode * crosslinker,
         BEAMINTERACTION::DATA::CrosslinkerData * cldata,
-        int const stayoccpotid);
+        int stayoccpotid);
 
     /// fill epetar vectors to write vtp output
     void FillStateDataVectorsForOutput(
@@ -269,24 +241,23 @@ private:
         Teuchos::RCP<Epetra_Vector> orientation,
         Teuchos::RCP<Epetra_Vector> numberofbonds,
         Teuchos::RCP<Epetra_Vector> owner,
-        Teuchos::RCP<Epetra_Vector> force,
-        Teuchos::RCP<Epetra_Vector> force_norm
+        Teuchos::RCP<Epetra_Vector> force
     ) const;
 
     /// update maps
-    virtual void StoreMapsPriorRedistribution();
+    void StoreMapsPriorRedistribution();
 
     /// get crosslink data before interaction evaluation
-    virtual void UpdateAndExportCrosslinkerData();
+    void UpdateAndExportCrosslinkerData();
 
     /// get beam data before interaction evaluation
-    virtual void UpdateAndExportBeamData( bool update_states = true );
+    void UpdateAndExportBeamData( bool update_states = true );
 
     /// bind and unbind crosslinker
-    virtual void BindAndUnbindCrosslinker();
+    void BindAndUnbindCrosslinker();
 
     /// bind crossslinker
-    virtual void BindCrosslinker();
+    int BindCrosslinker();
 
     /// search and set crosslinker
     /*! -------------------------------------------------------------------------
@@ -307,75 +278,77 @@ private:
      different for a single bonded crosslinker compared to a free one)
     *  \author J. Eichinger
      -------------------------------------------------------------------------*/
-    virtual void FindPotentialBindingEvents(
+    void FindPotentialBindingEvents(
         std::map<int, Teuchos::RCP< BEAMINTERACTION::DATA::BindEventData > > & mybonds,
         std::map<int, std::vector< Teuchos::RCP< BEAMINTERACTION::DATA::BindEventData > > > & undecidedbonds
     );
 
     /// find potential binding events in one bin
-    virtual void FindPotentialBindingEventsInBinAndNeighborhood(
+    void FindPotentialBindingEventsInBinAndNeighborhood(
         DRT::Element* bin,
         std::map<int, Teuchos::RCP< BEAMINTERACTION::DATA::BindEventData > > & mybonds,
         std::map<int, std::vector< Teuchos::RCP< BEAMINTERACTION::DATA::BindEventData > > >& undecidedbonds,
-        std::vector< std::map< int, std::set<int> > >& intendedbeambonds,
-        bool const checklinkingprop
+        std::map< int, std::vector< std::map< int, std::set< int > > > > & intendedbeambonds,
+        bool checklinkingprop
     );
 
     /// search for binding events on each proc separately (i.e. pretending myrank is alone)
     /// communication to ensure correct binding over all procs is done afterwards
-    virtual void PrepareBinding(
+    void PrepareBinding(
         DRT::Node * node_i,
-        std::set<DRT::Element*> const & neighboring_beams,
+        std::set< DRT::Element * > const & neighboring_beams,
         std::map< int, Teuchos::RCP< BEAMINTERACTION::DATA::BindEventData > > & mybonds,
         std::map< int, std::vector< Teuchos::RCP< BEAMINTERACTION::DATA::BindEventData > > > & undecidedbonds,
-        std::vector< std::map< int, std::set<int> > > & intendedbeambonds,
-        bool const checklinkingprop
+        std::map< int, std::vector< std::map< int, std::set< int > > > > & intendedbeambonds,
+        bool checklinkingprop
     );
 
     /// check criteria if binding event is feasible
-    virtual bool CheckBindEventCriteria(
+    bool CheckBindEventCriteria(
         CROSSLINKING::CrosslinkerNode const * const crosslinker_i,
         DRT::Element const * const potbeampartner,
         BEAMINTERACTION::DATA::CrosslinkerData * cldata_i,
         BEAMINTERACTION::DATA::BeamData const * beamdata_i,
         int locnbspot,
-        std::vector< std::map< int, std::set<int> > >& intendedbeambonds,
+        std::map< int, std::vector< std::map< int, std::set< int > > > > & intendedbeambonds,
         bool checklinkingprop
     ) const;
 
     // check if identical bond alread exists
-    virtual bool ReturnFalseIfIdenticalBondAlreadyExists(
+    bool ReturnFalseIfIdenticalBondAlreadyExists(
+        CROSSLINKING::CrosslinkerNode const * const crosslinker_i,
         BEAMINTERACTION::DATA::CrosslinkerData * cldata_i,
-        std::vector< std::map< int, std::set<int> > > & intendedbeambonds,
+        std::map< int, std::vector< std::map< int, std::set< int > > > > & intendedbeambonds,
         BEAMINTERACTION::DATA::BeamData const * beamdata_i,
         int locnbspot,
         int potbeampartnerrowlid
     ) const;
 
     /// check if crosslinke and filament type are compatible
-    virtual bool CheckLinkerAndFilamentTypeCompatibility(
+    bool CheckLinkerAndFilamentTypeCompatibility(
         INPAR::BEAMINTERACTION::CrosslinkerType linkertype,
         INPAR::BEAMINTERACTION::FilamentType filamenttype) const;
 
     /// if crosslinker is singly bound, we fetch the orientation vector of the
     /// filament axis at the already occupied binding spot for the orientation
     /// criterion (enclosed angle) to be checked later on
-    virtual void GetOccupiedClBSpotBeamTangent(
+    void GetOccupiedClBSpotBeamTangent(
+        CROSSLINKING::CrosslinkerNode const * const crosslinker_i,
         BEAMINTERACTION::DATA::CrosslinkerData * cldata_i,
         LINALG::Matrix<3,1>& occ_bindingspot_beam_tangent,
-        int const clgid
+        int clgid
     ) const;
 
     /// decide by asking other procs who is allowed to set specific crosslinker,
     /// this is necessary to avoid setting crosslinker more than once per time step
-    virtual void ManageBindingInParallel(
+    void ManageBindingInParallel(
         std::map< int, Teuchos::RCP< BEAMINTERACTION::DATA::BindEventData> > & mysetbonds,  // clgid to cldata
         std::map< int, std::vector< Teuchos::RCP< BEAMINTERACTION::DATA::BindEventData > > > & undecidedbonds,  // owner of cldatas in vector to be requested
         std::map< int, Teuchos::RCP< BEAMINTERACTION::DATA::BindEventData > > & myelebonds
     ) const;
 
     /// communicate requests
-    virtual void CommunicateUndecidedBonds(
+    void CommunicateUndecidedBonds(
         std::map< int, std::vector< Teuchos::RCP< BEAMINTERACTION::DATA::BindEventData > > > & undecidedbonds,
         std::map< int, std::vector< Teuchos::RCP< BEAMINTERACTION::DATA::BindEventData > > > & requestedcl
     ) const;
@@ -390,14 +363,14 @@ private:
        a requested crosslinker, a random decision who is allowed to set the link
        has to be made
      -------------------------------------------------------------------------*/
-    virtual void DecideBindingInParallel(
+    void DecideBindingInParallel(
         std::map< int, std::vector< Teuchos::RCP< BEAMINTERACTION::DATA::BindEventData > > >& requestedcl,
         std::map< int, Teuchos::RCP< BEAMINTERACTION::DATA::BindEventData > >&              mybonds,
         std::map< int, std::vector< Teuchos::RCP< BEAMINTERACTION::DATA::BindEventData > > >& decidedbonds
     ) const;
 
     /// communicate decisions for binding events
-    virtual void CommunicateDecidedBonds(
+    void CommunicateDecidedBonds(
         std::map< int, std::vector< Teuchos::RCP< BEAMINTERACTION::DATA::BindEventData > > >& decidedbonds,
         std::map< int, Teuchos::RCP< BEAMINTERACTION::DATA::BindEventData >  >&              myelebonds
     ) const;
@@ -409,27 +382,27 @@ private:
        within those maps, different treatment is necessary for free and single
        bonded linker
                                                                             */
-    virtual void UpdateMyCrosslinkerAndElementBindingStates(
+    int UpdateMyCrosslinkerAndElementBindingStates(
         std::map< int, Teuchos::RCP< BEAMINTERACTION::DATA::BindEventData > > & mybonds,
         std::map< int, Teuchos::RCP< BEAMINTERACTION::DATA::BindEventData > >& myelbonds
     );
 
     /// bind row linker of myrank
-    virtual void UpdateMyCrosslinkerBindingStates(
-        const std::map< int, Teuchos::RCP< BEAMINTERACTION::DATA::BindEventData > >& mybonds,
-        std::map< int, NewDoubleBonds>&       mynewdbondcl
+    void UpdateMyCrosslinkerBindingStates(
+        std::map< int, Teuchos::RCP< BEAMINTERACTION::DATA::BindEventData > > const & mybonds,
+        std::map< int, NewDoubleBonds> & mynewdbondcl
     );
 
     /// bind row elements of myrank
-    virtual void UpdateMyElementBindingStates(
+    void UpdateMyElementBindingStates(
         std::map< int, Teuchos::RCP< BEAMINTERACTION::DATA::BindEventData > > const& myelebonds
     );
 
     /// setup new double bonds
-    virtual void CreateNewDoubleBondedCrosslinkerElementPairs( const std::map<int, NewDoubleBonds>& mynewdbondcl);
+    void CreateNewDoubleBondedCrosslinkerElementPairs( const std::map<int, NewDoubleBonds>& mynewdbondcl);
 
     /// unbind crosslinker if criteria are met
-    virtual void UnBindCrosslinker();
+    int UnBindCrosslinker();
 
     /// calclulate force dependent unbind probability for double bonded crosslinker
     /// according to Bell's equation (Howard, eq 5.10, p.89)
@@ -440,13 +413,13 @@ private:
     ) const;
 
     /// communicate crosslinker unbinding event data
-    virtual void CommunicateCrosslinkerUnbinding(
+    void CommunicateCrosslinkerUnbinding(
         std::map< int, std::vector< Teuchos::RCP< BEAMINTERACTION::DATA::UnBindEventData > > > & sendunbindevent,
         std::vector< Teuchos::RCP< BEAMINTERACTION::DATA::UnBindEventData > > &                 myrankunbindevent
     ) const;
 
     /// update binding status of beams after unbinding
-    virtual void UpdateBeamBindingStatusAfterUnbinding(
+    void UpdateBeamBindingStatusAfterUnbinding(
         std::vector< Teuchos::RCP< BEAMINTERACTION::DATA::UnBindEventData > > const & unbindevent
     );
 
@@ -455,23 +428,23 @@ private:
     /// myrank is still owner of all its crosslinker (if not, set up double bond on
     /// other proc that is now responsible)
     /// -------------------------------------------------------------------------
-    virtual void UpdateMyDoubleBondsAfterRedistribution();
+    void UpdateMyDoubleBondsAfterRedistribution();
 
     /// in case char vector containing double bonds is read by proc != proc
     /// that has written
-    virtual void UpdateMyDoubleBondsRemoteIdList();
+    void UpdateMyDoubleBondsRemoteIdList();
 
     /// dissolve certain bonds
-    virtual void DissolveBond(
+    void DissolveBond(
         DRT::Node* linker,
-        int const freedbspotid,
-        int const numbondsold,
+        int freedbspotid,
+        int numbondsold,
         std::map< int, std::vector< Teuchos::RCP< BEAMINTERACTION::DATA::UnBindEventData > > > & sendunbindevents,
         std::vector< Teuchos::RCP< BEAMINTERACTION::DATA::UnBindEventData > > & myrankunbindevents);
 
     /// send double bonds to new owner if crosslinker ownership change
     /// in the course of redistribution
-    virtual void CommunicateBeamLinkAfterRedistribution(
+    void CommunicateBeamLinkAfterRedistribution(
         std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::BeamLink> > >& dbondcltosend
     );
 
@@ -494,7 +467,7 @@ private:
     template<typename T>
     void RecvAny(
         DRT::Exporter & exporter,
-        int const receivesize,
+        int receivesize,
         std::vector< Teuchos::RCP<T> > & recv
     ) const;
 
@@ -506,14 +479,14 @@ private:
     ) const;
 
     // wait for all communication to finish
-    virtual void Wait(
+    void Wait(
         DRT::Exporter & exporter,
         std::vector<MPI_Request> & request,
         int length
     ) const;
 
     /// debug feature to check bindevent structs
-    virtual void PrintAndCheckBindEventData ( Teuchos::RCP< BEAMINTERACTION::DATA::BindEventData > bindeventdata ) const;
+    void PrintAndCheckBindEventData ( Teuchos::RCP< BEAMINTERACTION::DATA::BindEventData > bindeventdata ) const;
 
     //! @}
 

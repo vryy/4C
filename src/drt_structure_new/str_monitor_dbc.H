@@ -117,6 +117,7 @@ namespace TIMINT {
         const double& area_curr ) const;
 
     void WriteResultsToScreen(
+        const Teuchos::RCP<DRT::Condition>& rcond_ptr,
         const LINALG::Matrix<DIM,1>& rforce,
         const double& area_ref,
         const double& area_curr ) const;
@@ -126,6 +127,7 @@ namespace TIMINT {
         const int col_width,
         const int precision,
         const unsigned step,
+        const double time,
         const LINALG::Matrix<DIM,1>& rforce,
         const double & area_ref,
         const double & area_cur ) const;

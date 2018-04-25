@@ -54,11 +54,12 @@ void BEAMINTERACTION::BeamLinkPinJointed::Init(
     const std::vector<std::pair<int, int> >& eleids,
     const std::vector<LINALG::Matrix<3,1> >& initpos,
     const std::vector<LINALG::Matrix<3,3> >& inittriad,
+    INPAR::BEAMINTERACTION::CrosslinkerType linkertype,
     double timelinkwasset)
 {
   issetup_ = false;
 
-  BeamLink::Init( id, eleids, initpos, inittriad, timelinkwasset );
+  BeamLink::Init( id, eleids, initpos, inittriad, linkertype, timelinkwasset );
 
   issetup_ = true;
 }

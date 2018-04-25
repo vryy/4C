@@ -15,6 +15,7 @@
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/drt_parobjectfactory.H"
+#include "../drt_inpar/inpar_beaminteraction.H"
 
 //#include <Teuchos_RCP.hpp>
 
@@ -79,6 +80,7 @@ public:
       const std::vector<std::pair<int, int> >& eleids,
       const std::vector<LINALG::Matrix<3,1> >& initpos,
       const std::vector<LINALG::Matrix<3,3> >& inittriad,
+      INPAR::BEAMINTERACTION::CrosslinkerType linkertype,
       double timelinkwasset );
 
   //! Setup
@@ -141,6 +143,9 @@ public:
   inline const LINALG::TMatrix<double,3,1>& GetBindSpotPos2() const
     { return bspotpos2_; }
 
+  inline INPAR::BEAMINTERACTION::CrosslinkerType GetLinkerType() const
+    { return linkertype_; }
+
   //! return time at which linker was set
   inline double GetTimeLinkWasSet() const
     { return timelinkwasset_; }
@@ -151,6 +156,12 @@ public:
 
   //! get force in first or second binding spot
   virtual void GetBindingSpotForce( int bspotid, LINALG::SerialDenseVector & bspotforce ) const = 0;
+
+  //! get internal linker energy
+  virtual double GetInternalEnergy() const = 0;
+
+  //! get kinetic linker energy
+  virtual double GetKineticEnergy() const = 0;
 
   //! scale linker element reference length
   virtual void ScaleLinkerReferenceLength( double scalefac ) = 0;
@@ -244,6 +255,9 @@ private:
   //! current position of the two connection sites (a.k.a. binding spots)
   LINALG::Matrix< 3, 1 > bspotpos1_;
   LINALG::Matrix< 3, 1 > bspotpos2_;
+
+  //! type of filament element belongs to
+  INPAR::BEAMINTERACTION::CrosslinkerType linkertype_;
 
   //! stores the the time the link was set (can e.g. be used to calculate
   //  lifetime of a link or check if link is new in certain time step)

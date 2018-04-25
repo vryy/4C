@@ -58,10 +58,8 @@ Outer Iteration                 = Yes
 Inner Iteration                 = No
 Outer Iteration StatusTest      = No
 -------------------------------------------------------------------------BINNING STRATEGY
-DEFINEBINSPER                   cutoff
 CUTOFF_RADIUS                   2
 PERIODICONOFF                   0 0 0
-DEFINEXAABBPER                  input
 BOUNDINGBOX                     -2 -2 -1 2 2 1
 ----------------------------------------------BROWNIAN DYNAMICS
 BROWNDYNPROB                    yes

@@ -10,7 +10,10 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "crosslinking_params.H"
+#include "../drt_beaminteraction/crosslinking_params.H"
+
+#include "../drt_mat/crosslinkermat.H"
+
 #include "../drt_structure_new/str_timint_basedataglobalstate.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -24,11 +27,17 @@ BEAMINTERACTION::CrosslinkingParams::CrosslinkingParams()
     issetup_(false),
     viscosity_(0.0),
     kt_(0.0),
-    deltatime_(0.0),
-    filamentbspotinterval_(-1.0),
-    max_num_bonds_per_filament_bspot_(-1.0)
+    deltatime_(0.0)
 {
-  // empty constructor
+  maxnum_init_crosslinker_pertype_.clear();
+  numcrosslinkerpertype_.clear();
+  matcrosslinkerpertype_.clear();
+  linkertypes_.clear();
+  max_num_bonds_per_filament_bspot_.clear();
+  filamentbspotintervalglobal_.clear();
+  filamentbspotintervallocal_.clear();
+  filamentbspotrangeglobal_.clear();
+  filamentbspotrangelocal_.clear();
 }
 
 /*----------------------------------------------------------------------------*
@@ -39,70 +48,6 @@ void BEAMINTERACTION::CrosslinkingParams::Init( STR::TIMINT::BaseDataGlobalState
 
   const Teuchos::ParameterList& crosslinking_params_list =
       DRT::Problem::Instance()->BeamInteractionParams().sublist("CROSSLINKING");
-
-
-  {
-    // number of crosslinkers in the simulated volume
-    numcrosslinkerpertype_.clear();
-    std::istringstream PL(
-        Teuchos::getNumericStringParameter(crosslinking_params_list,"NUMCROSSLINKERPERTYPE"));
-    std::string word;
-    char* input;
-    while (PL >> word)
-      numcrosslinkerpertype_.push_back( std::strtod( word.c_str(), &input ) );
-
-    // safety check
-    for( int i = 0; i < static_cast<int>( numcrosslinkerpertype_.size() ); ++i )
-      if ( numcrosslinkerpertype_[i] < 0 )
-        dserror(" negative number of crosslinker does not make sense.");
-  }
-
-  {
-    // material numbers for crosslinker types
-    matcrosslinkerpertype_.clear();
-    std::istringstream PL(
-        Teuchos::getNumericStringParameter(crosslinking_params_list,"MATCROSSLINKERPERTYPE"));
-    std::string word;
-    char* input;
-    while (PL >> word)
-      matcrosslinkerpertype_.push_back( std::strtod( word.c_str(), &input ) );
-
-    // safety check
-    for( int i = 0; i < static_cast<int>( matcrosslinkerpertype_.size() ); ++i )
-      if ( matcrosslinkerpertype_[i] < 0 )
-        dserror(" negative material number does not make sense.");
-   }
-
-  // safety check
-  if ( numcrosslinkerpertype_.size() != matcrosslinkerpertype_.size() )
-    dserror("number of crosslinker types does not fit number of assigned materials");
-
-  {
-    // number of crosslinkers in the simulated volume
-    maxnum_init_crosslinker_pertype_.clear();
-    std::vector<int> maxnuminitcrosslinkerpertype;
-    std::istringstream PL(
-        Teuchos::getNumericStringParameter(crosslinking_params_list,"MAXNUMINITCROSSLINKERPERTYPE"));
-    std::string word;
-    char* input;
-    while (PL >> word)
-      maxnuminitcrosslinkerpertype.push_back( std::strtod( word.c_str(), &input ) );
-
-    if ( maxnuminitcrosslinkerpertype.size() > 1 or maxnuminitcrosslinkerpertype[0] != 0 )
-    {
-      // safety checks
-      for( int i = 0; i < static_cast<int>( maxnuminitcrosslinkerpertype.size() ); ++i )
-        if ( maxnuminitcrosslinkerpertype[i] < 0 )
-          dserror(" negative number of crosslinker does not make sense.");
-      if ( maxnuminitcrosslinkerpertype.size() != numcrosslinkerpertype_.size() )
-        dserror("number of initial set crosslinker types does not fit number of crosslinker types");
-
-      for( int i = 0; i < static_cast<int>( maxnuminitcrosslinkerpertype.size() ); ++i )
-        maxnum_init_crosslinker_pertype_[matcrosslinkerpertype_[i]] = maxnuminitcrosslinkerpertype[i];
-    }
-  }
-
-
 
   // viscosity
   viscosity_ =  crosslinking_params_list.get<double> ("VISCOSITY");
@@ -123,33 +68,210 @@ void BEAMINTERACTION::CrosslinkingParams::Init( STR::TIMINT::BaseDataGlobalState
           "used for crosslinking.\n" << std::endl;
   }
 
-  // distance between the two binding spots on a filament
-  filamentbspotinterval_ = crosslinking_params_list.get<double>("FILAMENTBSPOTINTERVAL");
-  if ( not (filamentbspotinterval_ > 0.0) )
-    dserror(" Choose realistic value for FILAMENTBSPOTINTERVAL (i.e. distance between "
-        "two binding spots on a filament) in input file. ");
-
-  max_num_bonds_per_filament_bspot_ = crosslinking_params_list.get<int>("MAXNUMBONDSPERFILAMENTBSPOT");
-  if ( max_num_bonds_per_filament_bspot_ < 0 )
-    dserror( " Choose a number of bonds per filament binding spot >= 0. " );
-
-
+  // number of linker in simulation volume
   {
-    // start and end arc parameter for binding spots on a filament
-    filamentbspotrange_.clear();
+    numcrosslinkerpertype_.clear();
     std::istringstream PL(
-        Teuchos::getNumericStringParameter(crosslinking_params_list,"FILAMENTBSPOTRANGE"));
+        Teuchos::getNumericStringParameter(crosslinking_params_list,"NUMCROSSLINKERPERTYPE"));
     std::string word;
     char* input;
     while (PL >> word)
-      filamentbspotrange_.push_back( std::strtod( word.c_str(), &input ) );
+      numcrosslinkerpertype_.push_back( std::strtod( word.c_str(), &input ) );
 
-    // sanity check
-    if ( static_cast<int>(filamentbspotrange_.size()) != 2 )
-      dserror(" Enter two values for FILAMENTBSPOTRANGE in input file. ");
-    if ( filamentbspotrange_[0] > 0 and filamentbspotrange_[1] > 0 and (filamentbspotrange_[0] > filamentbspotrange_[1]) )
-      dserror(" lower bound > upper bound, fix FILAMENTBSPOTRANGE in input file ");
+    // safety check
+    for( int i = 0; i < static_cast<int>( numcrosslinkerpertype_.size() ); ++i )
+      if ( numcrosslinkerpertype_[i] < 0 )
+        dserror(" negative number of crosslinker does not make sense.");
   }
+
+  // material numbers for crosslinker types
+  {
+    matcrosslinkerpertype_.clear();
+    std::istringstream PL(
+        Teuchos::getNumericStringParameter(crosslinking_params_list,"MATCROSSLINKERPERTYPE"));
+    std::string word;
+    char* input;
+    while (PL >> word)
+      matcrosslinkerpertype_.push_back( std::strtod( word.c_str(), &input ) );
+
+    // safety check
+    for( int i = 0; i < static_cast<int>( matcrosslinkerpertype_.size() ); ++i )
+      if ( matcrosslinkerpertype_[i] < 0 )
+        dserror(" negative material number does not make sense.");
+   }
+
+  // safety check
+  if ( numcrosslinkerpertype_.size() != matcrosslinkerpertype_.size() )
+    dserror("number of crosslinker types does not fit number of assigned materials");
+
+  // compute number of linker types
+  linkertypes_.clear();
+  for ( unsigned int type_i = 0; type_i < matcrosslinkerpertype_.size(); ++type_i )
+  {
+    if ( not ( std::find( linkertypes_.begin(), linkertypes_.end(), matcrosslinkerpertype_[type_i]) != linkertypes_.end() ) )
+      linkertypes_.push_back( Teuchos::rcp_dynamic_cast< MAT::CrosslinkerMat >(
+          MAT::Material::Factory( matcrosslinkerpertype_[type_i] ) )->LinkerType() );
+  }
+
+  // number of initially set linker
+  {
+    maxnum_init_crosslinker_pertype_.clear();
+    std::vector<int> maxnuminitcrosslinkerpertype;
+    std::istringstream PL(
+        Teuchos::getNumericStringParameter(crosslinking_params_list,"MAXNUMINITCROSSLINKERPERTYPE"));
+    std::string word;
+    char * input;
+    while ( PL >> word )
+      maxnuminitcrosslinkerpertype.push_back( std::strtod( word.c_str(), &input ) );
+
+    if ( maxnuminitcrosslinkerpertype.size() > 1 or maxnuminitcrosslinkerpertype[0] != 0 )
+    {
+      // safety checks
+      for( int i = 0; i < static_cast<int>( maxnuminitcrosslinkerpertype.size() ); ++i )
+        if ( maxnuminitcrosslinkerpertype[i] < 0 )
+          dserror(" negative number of crosslinker does not make sense.");
+      if ( maxnuminitcrosslinkerpertype.size() != numcrosslinkerpertype_.size() )
+        dserror("number of initial set crosslinker types does not fit number of crosslinker types");
+
+      for( int i = 0; i < static_cast<int>( maxnuminitcrosslinkerpertype.size() ); ++i )
+        maxnum_init_crosslinker_pertype_[matcrosslinkerpertype_[i]] = maxnuminitcrosslinkerpertype[i];
+    }
+  }
+
+  // maximal number of bonds per filament binding spot
+  {
+    max_num_bonds_per_filament_bspot_.clear();
+    std::istringstream PL(
+        Teuchos::getNumericStringParameter(crosslinking_params_list,"MAXNUMBONDSPERFILAMENTBSPOT"));
+    std::string word;
+    char * input;
+    int count = 0;
+    while ( PL >> word )
+    {
+      max_num_bonds_per_filament_bspot_[linkertypes_[count]] = std::strtod( word.c_str(), &input );
+      if ( max_num_bonds_per_filament_bspot_.at(linkertypes_[count]) < 0 )
+        dserror( " Choose a number of bonds per filament binding spot type >= 0. " );
+      ++count;
+    }
+
+    if ( max_num_bonds_per_filament_bspot_.size() != linkertypes_.size() )
+      dserror( " Num linker types %i does not match num input for MAXNUMBONDSPERFILAMENTBSPOT %i. ",
+          linkertypes_.size(), max_num_bonds_per_filament_bspot_.size() );
+
+  }
+
+  // distance between the two binding spots on each filament the same
+  {
+    filamentbspotintervalglobal_.clear();
+    std::istringstream PL(
+        Teuchos::getNumericStringParameter( crosslinking_params_list, "FILAMENTBSPOTINTERVALGLOBAL") );
+    std::string word;
+    char * input;
+    int count = 0;
+    while ( PL >> word )
+    {
+      filamentbspotintervalglobal_[linkertypes_[count]] = std::strtod( word.c_str(), &input );
+      ++count;
+    }
+  }
+
+  // distance between the two binding spots on a filament as percentage of current filament reference length
+  {
+    filamentbspotintervallocal_.clear();
+    std::istringstream PL(
+        Teuchos::getNumericStringParameter( crosslinking_params_list, "FILAMENTBSPOTINTERVALLOCAL" ) );
+    std::string word;
+    char * input;
+    int count = 0;
+    while ( PL >> word )
+    {
+      filamentbspotintervallocal_[linkertypes_[count]] = std::strtod( word.c_str(), &input );
+      ++count;
+    }
+  }
+
+  if ( linkertypes_.size() != filamentbspotintervalglobal_.size() and linkertypes_.size() != filamentbspotintervallocal_.size() )
+    dserror("You need to specify filament binding spots for all your linker types");
+
+  // safety checks for feasibility of input
+  if ( filamentbspotintervalglobal_.size() == filamentbspotintervallocal_.size() )
+  {
+    for ( auto const & iter : filamentbspotintervalglobal_ )
+    {
+      // safety feasibility checks
+      if ( iter.second <= 0.0 and not ( filamentbspotintervallocal_.at(iter.first) > 0.0 and filamentbspotintervallocal_.at(iter.first) <= 1.0 ) )
+        dserror(" Choose realistic value for FILAMENTBSPOTINTERVAL (i.e. distance between "
+            "two binding spots on a filament) in input file. ");
+      if ( iter.second > 0.0 and filamentbspotintervallocal_.at(iter.first) > 0.0 )
+        dserror( " You can only set either a global or a local filament binding spot interval");
+    }
+  }
+
+  // start and end arc parameter for binding spots on a filament
+  {
+    filamentbspotrangeglobal_.clear();
+    std::istringstream PL(
+        Teuchos::getNumericStringParameter(crosslinking_params_list,"FILAMENTBSPOTRANGEGLOBAL"));
+    std::string word;
+    char * input;
+    int count = 0;
+    while ( PL >> word )
+    {
+      std::pair< double, double > pair;
+      pair.first = std::strtod( word.c_str(), &input );
+      if ( PL >> word )
+        pair.second = std::strtod( word.c_str(), &input );
+      else
+        dserror("Filament binding spot range needs to be specified via two values");
+      filamentbspotrangeglobal_[linkertypes_[count]] = pair;
+
+      if ( pair.first > 0.0 and pair.second > 0.0 and ( pair.first > pair.second ) )
+            dserror(" lower bound > upper bound, fix FILAMENTBSPOTRANGEGLOBAL in input file ");
+
+      ++count;
+    }
+  }
+
+  // start and end arc parameter for binding spots on a filament
+  {
+    filamentbspotrangelocal_.clear();
+    std::istringstream PL(
+        Teuchos::getNumericStringParameter(crosslinking_params_list,"FILAMENTBSPOTRANGELOCAL"));
+    std::string word;
+    char * input;
+    int count = 0;
+    while ( PL >> word )
+    {
+      std::pair< double, double > pair;
+      pair.first = std::strtod( word.c_str(), &input );
+      if ( PL >> word )
+        pair.second = std::strtod( word.c_str(), &input );
+      else
+        dserror("Filament binding spot range needs to be specified via two values");
+      filamentbspotrangelocal_[linkertypes_[count]] = pair;
+
+      if ( pair.first > 0.0 and pair.second > 0.0 and ( pair.first > pair.second ) )
+            dserror(" lower bound > upper bound, fix FILAMENTBSPOTRANGEGLOCAL in input file ");
+      if ( pair.first > 1.0 or pair.second > 1.0 )
+        dserror("values > 1.0 do not make sense for local filament binding spot range");
+
+      ++count;
+    }
+  }
+
+  if ( linkertypes_.size() != filamentbspotrangeglobal_.size() and linkertypes_.size() !=  filamentbspotrangelocal_.size() )
+    dserror("You need to specify filament binding spots for all your linker types");
+
+  // safety checks for feasibility of input
+  if ( filamentbspotrangeglobal_.size() == filamentbspotrangelocal_.size() )
+  {
+    for ( auto const & iter : filamentbspotrangeglobal_ )
+    {
+      if ( filamentbspotrangelocal_.at(iter.first).first > 0.0 and filamentbspotrangelocal_.at(iter.first).second > 0.0 and ( iter.second.first > 0.0 or iter.second.second > 0.0 ) )
+        dserror("either local or global binding spot range can be specified");
+    }
+  }
+
 
   isinit_ = true;
 }

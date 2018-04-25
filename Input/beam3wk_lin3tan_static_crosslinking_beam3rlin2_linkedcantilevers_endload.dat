@@ -60,17 +60,15 @@ TOLRES                          1.0E-10
 MAXITER                         15
 LOADLIN                         Yes
 -------------------------------------------------------------------------BINNING STRATEGY
-DEFINEBINSPER                   cutoff
 CUTOFF_RADIUS                   2
 PERIODICONOFF                   0 0 0
-DEFINEXAABBPER                  input
 BOUNDINGBOX                     0 0 0 10 5 5
 ---------------------------------------------------------BEAM INTERACTION/CROSSLINKING
 CROSSLINKER                     yes
 NUMCROSSLINKERPERTYPE           0
 MATCROSSLINKERPERTYPE           2
 MAXNUMINITCROSSLINKERPERTYPE    1
-FILAMENTBSPOTINTERVAL           0.5
+FILAMENTBSPOTINTERVALGLOBAL     0.5
 -----------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

@@ -26,6 +26,7 @@
 #include "../drt_fem_general/largerotations.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_inpar/inpar_structure.H"
+#include "../drt_beaminteraction/periodic_boundingbox.H"
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
@@ -215,13 +216,27 @@ int DRT::ELEMENTS::Beam3rType::Initialize(DRT::Discretization& dis)
       for (int dim=0; dim<3; dim++)
         rotrefe[node*3+dim]=currele->InitialNodalRotVecs()[node](dim);
 
-    for (int node=0; node<nnodecl; node++)
+    // the next section is needed in case of periodic boundary conditions and a shifted configuration
+    // (i.e. elements cut by the periodic boundary) in the input file
+    Teuchos::RCP< GEO::MESHFREE::BoundingBox > periodic_boundingbox =
+          Teuchos::rcp( new GEO::MESHFREE::BoundingBox() );
+    periodic_boundingbox->Init(); // no Setup() call needed here
+
+    std::vector<double> disp_shift;
+    int numdof = currele->NumDofPerNode( *( currele->Nodes()[0] ) );
+    disp_shift.resize( numdof * nnodecl );
+    for ( unsigned int i = 0; i < disp_shift.size(); ++i )
+      disp_shift[i] = 0.0;
+    if ( periodic_boundingbox->HavePBC() )
+      currele->UnShiftNodePosition( disp_shift, *periodic_boundingbox );
+
+    for ( int node = 0; node < nnodecl; ++node )
     {
-      if (currele->Nodes()[node] == NULL)
+      if ( currele->Nodes()[node] == NULL )
         dserror("beam3r: Cannot get nodes in order to compute reference configuration");
 
-      for (int dim=0; dim<3; dim++)
-        xrefe[node*3+dim] = currele->Nodes()[node]->X()[dim];
+      for ( unsigned int dim = 0; dim < 3; ++dim )
+        xrefe[ node * 3 + dim ] = currele->Nodes()[node]->X()[dim] + disp_shift[ node * numdof + dim ];
     }
 
     // SetUpReferenceGeometry is a templated function
@@ -290,8 +305,8 @@ Ekin_(0.0),
 Ekintorsion_(0.0),
 Ekinbending_(0.0),
 Ekintrans_(0.0),
-L_(0.0),
-P_(0.0)
+L_(true),
+P_(true)
 {
   return;
 }

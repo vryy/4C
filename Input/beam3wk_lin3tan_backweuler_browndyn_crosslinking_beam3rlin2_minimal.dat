@@ -42,23 +42,21 @@ MASSLIN                rotations
 -----------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                  1
 -------------------------------------------------------------------------BINNING STRATEGY
-DEFINEBINSPER          cutoff
 CUTOFF_RADIUS          2
 PERIODICONOFF          1 1 1
-DEFINEXAABBPER         input
 BOUNDINGBOX            0 0 0 20 6 6
 ----------------------------------------------BROWNIAN DYNAMICS
 BROWNDYNPROB           yes
 VISCOSITY              0.0001
 KT                     0.0
 ---------------------------------------------------------BEAM INTERACTION/CROSSLINKING
-CROSSLINKER            yes
-NUMCROSSLINKERPERTYPE  2000
-MATCROSSLINKERPERTYPE  2
-FILAMENTBSPOTINTERVAL  2.0
-FILAMENTBSPOTRANGE     1.0 -1.0
-VISCOSITY              0.001
-KT                     0.0
+CROSSLINKER                  yes
+NUMCROSSLINKERPERTYPE        2000
+MATCROSSLINKERPERTYPE        2
+FILAMENTBSPOTINTERVALGLOBAL  2.0
+FILAMENTBSPOTRANGELOCAL      0.5 1.0
+VISCOSITY                    0.001
+KT                           0.0
 -----------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Amesos_KLU_nonsym  //UMFPACK

@@ -365,10 +365,11 @@ void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity(
  | space; the shift affects computation on element level within that           |
  | iteration step, only (no change in global variables performed)              |
  *-----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(
+bool DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(
     std::vector<double>& disp,
     GEO::MESHFREE::BoundingBox const & periodic_boundingbox) const
 {
+  bool unshifted = false;
   /* get number of degrees of freedom per node; note:
    * the following function assumes the same number of degrees
    * of freedom for each element node*/
@@ -390,32 +391,33 @@ void DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(
       X(dim) = Nodes()[i]->X()[dim];
     }
 
-    periodic_boundingbox.UnShift3D( d, ref, X );
+    unshifted = periodic_boundingbox.UnShift3D( d, ref, X );
 
     for( unsigned int dim = 0; dim < 3; ++dim )
     {
       disp[ numdof * i + dim ] = d(dim);
     }
   }
-
+  return unshifted;
 }
 
 /*---------------------------------------------------------------------------------------------   *
  | shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions|
  *------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(std::vector<double>& disp) const
+bool DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(std::vector<double>& disp) const
 {
-  this->UnShiftNodePosition( disp, *BrownianDynParamsInterface().GetPeriodicBoundingBox() );
+  return this->UnShiftNodePosition( disp, *BrownianDynParamsInterface().GetPeriodicBoundingBox() );
 }
 /*--------------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3Base::GetPosOfBindingSpot(
-    LINALG::Matrix<3,1>& pos,
-    std::vector<double>& disp,
-    const int& bspotlocn,
-    GEO::MESHFREE::BoundingBox const & periodic_boundingbox) const
+    LINALG::Matrix< 3, 1 > &                pos,
+    std::vector<double> &                   disp,
+    INPAR::BEAMINTERACTION::CrosslinkerType linkertype,
+    int                                     bspotlocn,
+    GEO::MESHFREE::BoundingBox const &      periodic_boundingbox) const
 {
-  const double xi = bspotposxi_[bspotlocn];
+  const double xi = bspotposxi_.at(linkertype)[bspotlocn];
   // get position
   GetPosAtXi( pos, xi, disp );
 
@@ -426,12 +428,13 @@ void DRT::ELEMENTS::Beam3Base::GetPosOfBindingSpot(
 /*--------------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3Base::GetTriadOfBindingSpot(
-    LINALG::Matrix<3,3>&                            triad,
-    std::vector<double>&                            disp,
-    const int&                                      bspotlocn) const
+    LINALG::Matrix< 3, 3 > &                triad,
+    std::vector<double> &                   disp,
+    INPAR::BEAMINTERACTION::CrosslinkerType linkertype,
+    int                                     bspotlocn) const
 {
 
-  const double xi = bspotposxi_[bspotlocn];
+  const double xi = bspotposxi_.at(linkertype)[bspotlocn];
   // get position
   GetTriadAtXi( triad, xi, disp );
 }

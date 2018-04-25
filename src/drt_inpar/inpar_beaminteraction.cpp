@@ -43,24 +43,28 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
   // remove this some day
   setStringToIntegralParameter<int>("CROSSLINKER","No", "Crosslinker in problem", yesnotuple,yesnovalue,&crosslinking);
 
-  // number of initial (are set right in the beginning) crosslinker of certain type
-  setNumericStringParameter("MAXNUMINITCROSSLINKERPERTYPE","0","number of initial crosslinker of certain type (additional to NUMCROSSLINKERPERTYPE) ",&crosslinking);
-  // number of crosslinker of certain type
-  setNumericStringParameter("NUMCROSSLINKERPERTYPE","0","number of crosslinker of certain type ",&crosslinking);
-  // material number characterizing crosslinker type
-  setNumericStringParameter("MATCROSSLINKERPERTYPE","-1","material number characterizing crosslinker type ",&crosslinking);
   // time step for stochastic events concerning crosslinking
   DoubleParameter("TIMESTEP",-1.0, "time step for stochastic events concerning crosslinking (e.g. diffusion, p_link, p_unlink) ", &crosslinking);
   //Reading double parameter for viscosity of background fluid
   DoubleParameter("VISCOSITY",0.0,"viscosity",&crosslinking);
   //Reading double parameter for thermal energy in background fluid (temperature * Boltzmann constant)
   DoubleParameter("KT",0.0,"thermal energy",&crosslinking);
-  // distance between two binding spots on a filament
-  DoubleParameter("FILAMENTBSPOTINTERVAL",-1.0 ,"distance between two binding spots on a filament",&crosslinking);
-  // maximal number of binding partner per filament binding spot
-  IntParameter("MAXNUMBONDSPERFILAMENTBSPOT", 1 ,"maximal number of bonds per filament binding spot",&crosslinking);
-  // start and end for bspots on a filament
-  setNumericStringParameter("FILAMENTBSPOTRANGE","-1.0 -1.0", "Lower and upper arc parameter bound for binding spots on a filament", &crosslinking);
+  // number of initial (are set right in the beginning) crosslinker of certain type
+  setNumericStringParameter("MAXNUMINITCROSSLINKERPERTYPE","0","number of initial crosslinker of certain type (additional to NUMCROSSLINKERPERTYPE) ",&crosslinking);
+  // number of crosslinker of certain type
+  setNumericStringParameter("NUMCROSSLINKERPERTYPE","0","number of crosslinker of certain type ",&crosslinking);
+  // material number characterizing crosslinker type
+  setNumericStringParameter("MATCROSSLINKERPERTYPE","-1","material number characterizing crosslinker type ",&crosslinking);
+  // maximal number of binding partner per filament binding spot for each binding spot type
+  setNumericStringParameter("MAXNUMBONDSPERFILAMENTBSPOT","1" ,"maximal number of bonds per filament binding spot",&crosslinking);
+  // distance between two binding spots on a filament (same on all filaments)
+  setNumericStringParameter("FILAMENTBSPOTINTERVALGLOBAL","-1.0" ,"distance between two binding spots on all filaments",&crosslinking);
+  // distance between two binding spots on a filament (as percentage of current filament length)
+  setNumericStringParameter("FILAMENTBSPOTINTERVALLOCAL","-1.0" ,"distance between two binding spots on current filament",&crosslinking);
+    // start and end for bspots on a filament in arc parameter (same on each filament independent of their length)
+  setNumericStringParameter("FILAMENTBSPOTRANGEGLOBAL","-1.0 -1.0", "Lower and upper arc parameter bound for binding spots on a filament", &crosslinking);
+  // start and end for bspots on a filament in percent of reference filament length
+  setNumericStringParameter("FILAMENTBSPOTRANGELOCAL","0.0 1.0", "Lower and upper arc parameter bound for binding spots on a filament", &crosslinking);
 
 
   /*----------------------------------------------------------------------*/
@@ -68,19 +72,25 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
 
   Teuchos::ParameterList& spherebeamlink = beaminteraction.sublist("SPHERE BEAM LINK",false,"");
 
-  setStringToIntegralParameter<int>( "INTEGRINS", "No",
+  setStringToIntegralParameter<int>( "SPHEREBEAMLINKING", "No",
                                  "Integrins in problem",
                                  yesnotuple, yesnovalue, &spherebeamlink );
 
-  // number of linker per cell
-  IntParameter( "MAXNUMINTEGRINSPERCELL", 0, "number of integrins per cell", &spherebeamlink );
-  // material id for integrins
-  IntParameter( "MATINTEGRINS", -1, "crosslinker material id for sphere beam linker", &spherebeamlink );
   // Reading double parameter for contraction rate for active linker
   DoubleParameter("CONTRACTIONRATE", 0.0 ,"contraction rate of cell (integrin linker) in [μm/s]", &spherebeamlink );
   // time step for stochastic events concerning sphere beam linking
   DoubleParameter( "TIMESTEP", -1.0, "time step for stochastic events concerning sphere beam linking (e.g. catch-slip-bond behavior) ", &spherebeamlink);
-
+  setNumericStringParameter("MAXNUMLINKERPERTYPE","0","number of crosslinker of certain type ",&spherebeamlink);
+  // material number characterizing crosslinker type
+  setNumericStringParameter("MATLINKERPERTYPE","-1","material number characterizing crosslinker type ",&spherebeamlink);
+  // distance between two binding spots on a filament (same on all filaments)
+  setNumericStringParameter("FILAMENTBSPOTINTERVALGLOBAL","-1.0" ,"distance between two binding spots on all filaments",&spherebeamlink);
+  // distance between two binding spots on a filament (as percentage of current filament length)
+  setNumericStringParameter("FILAMENTBSPOTINTERVALLOCAL","-1.0" ,"distance between two binding spots on current filament",&spherebeamlink);
+    // start and end for bspots on a filament in arc parameter (same on each filament independent of their length)
+  setNumericStringParameter("FILAMENTBSPOTRANGEGLOBAL","-1.0 -1.0", "Lower and upper arc parameter bound for binding spots on a filament", &spherebeamlink);
+  // start and end for bspots on a filament in percent of reference filament length
+  setNumericStringParameter("FILAMENTBSPOTRANGELOCAL","0.0 1.0", "Lower and upper arc parameter bound for binding spots on a filament", &spherebeamlink);
 
   /*----------------------------------------------------------------------*/
   /* parameters for beam to ? contact submodel*/

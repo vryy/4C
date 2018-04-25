@@ -77,7 +77,7 @@ public:
   virtual ~BeamLinkBeam3rLin2RigidJointed() {};
 
   //! Setup [derived]
-  virtual void Setup( const int matnum );
+  virtual void Setup( int matnum );
 
   /*!
   \brief Return unique ParObject id [derived]
@@ -110,6 +110,12 @@ public:
 
 
   //! @name Access methods
+
+  //! get internal linker energy
+  virtual double GetInternalEnergy() const override;
+
+  //! get kinetic linker energy
+  virtual double GetKineticEnergy() const override;
 
   //! scale linker element reference length
   virtual void ScaleLinkerReferenceLength( double scalefac )  {

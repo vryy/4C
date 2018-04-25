@@ -17,6 +17,7 @@
 #include "../drt_structure_new/str_model_evaluator_generic.H"        // base class
 #include "../drt_inpar/inpar_beaminteraction.H"
 #include "../linalg/linalg_mapextractor.H"
+#include "../drt_structure_new/str_enum_lists.H"
 
 
 //forward declaration ...
@@ -173,10 +174,15 @@ namespace MODELEVALUATOR{
     //! derived
     virtual void Reset(const Epetra_Vector& x);
 
-  private:
-
     //!@name routines for submodel management
     //! @{
+
+  public:
+
+    /// check if the given model type is active.
+    bool HaveSubModelType(INPAR::BEAMINTERACTION::SubModelType const& submodeltype) const;
+
+  private:
 
     void PartitionProblem();
 
@@ -185,8 +191,6 @@ namespace MODELEVALUATOR{
     //! set beaminteraction sub models
     void SetSubModelTypes();
 
-    /// check if the given model type is active.
-    bool HaveSubModelType(INPAR::BEAMINTERACTION::SubModelType const& submodeltype) const;
 
     //! build, init and setup submodel evaluator
     void InitAndSetupSubModelEvaluators();

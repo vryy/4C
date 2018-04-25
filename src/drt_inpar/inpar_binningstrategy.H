@@ -22,20 +22,6 @@ namespace INPAR
 /// Input parameters for Meshfree
 namespace BINSTRATEGY
 {
-
-  //! type of bin specification
-  enum xaabbspectype {
-    input,
-    dynamic
-  };
-
-  //! type of bin specification
-  enum binspectype {
-    cutoff,
-    binsperdir,
-    largestele
-  };
-
   //! type of gap function/projection
   enum writebins {
     none,

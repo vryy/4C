@@ -74,7 +74,7 @@ VISCOSITY                       0.001
 KT                              0.0
 ----------------------------------------------------------BEAM INTERACTION/CROSSLINKING
 CROSSLINKER                     yes
-MAXNUMINITCROSSLINKERPERTYPE    1
+MAXNUMINITCROSSLINKERPERTYPE    0
 NUMCROSSLINKERPERTYPE           0
 MATCROSSLINKERPERTYPE           2
 FILAMENTBSPOTINTERVALGLOBAL     0.8
@@ -102,9 +102,9 @@ E 1 - NUMDOF 9 ONOFF 1 1 1 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 F
 DSURF  2
 E 1 - NUMDOF 9 ONOFF 0 0 1 0 0 0 0 0 0 VAL 0.0 0.0 -1.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 1 0 0 0 0 0 0
 E 2 - NUMDOF 9 ONOFF 0 0 1 0 0 0 0 0 0 VAL 0.0 0.0  1.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 1 0 0 0 0 0 0
-//------------------------------------DESIGN POINT COUPLING CONDITIONS
-//DPOINT 1
-//E 2 - NUMDOF 6 ONOFF 1 1 1 1 1 1
+------------------------------------DESIGN POINT COUPLING CONDITIONS
+DPOINT 1
+E 2 - NUMDOF 6 ONOFF 1 1 1 1 1 1
 ----------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE expression DESCRIPTION t
@@ -162,5 +162,5 @@ MAT 3 MAT_BeamReissnerElastHyper YOUNG 1.3e+09 POISSONRATIO 0.3 DENS 1.384e-09 C
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE  2.70714331318906858e-14 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE  0.00000000000000000e+00 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE -8.51979923112799908e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE -7.91999652793279219e-01 TOLERANCE 1e-8
 ----------------------------------------------------------END
