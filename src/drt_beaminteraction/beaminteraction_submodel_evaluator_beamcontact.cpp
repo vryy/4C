@@ -75,6 +75,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
       "RUNTIME VTK OUTPUT"),"VTK_OUTPUT_BEAM_CONTACT") )
   {
     beam_contact_params_ptr_->BuildBeamContactRuntimeVtkOutputParams();
+
+    InitOutputRuntimeVtpBeamContact();
   }
 
 
