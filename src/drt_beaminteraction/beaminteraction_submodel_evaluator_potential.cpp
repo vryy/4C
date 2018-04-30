@@ -977,9 +977,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteOutputRuntimeVtpBea
   // reset time and time step and geometry name in the writer object
   vtp_writer_ptr_->SetupForNewTimeStepAndGeometry( time, timestep_number, "beam-potential" );
 
-  // estimate for number of interacting point pairs * 2 = number of row points for writer object
-  // Fixme
-  unsigned int num_row_points = 2000;
+  // estimate for number of interacting Gauss points = number of row points for writer object
+  unsigned int num_row_points = 2 * beam_potential_element_pairs_.size()
+      * BeamPotentialParams().NumberIntegrationSegments() * BeamPotentialParams().NumberGaussPoints();
 
   // get and prepare storage for point coordinate values
   std::vector<double>& point_coordinates = vtp_writer_ptr_->GetMutablePointCoordinateVector();
@@ -1038,10 +1038,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteOutputRuntimeVtpBea
       // ignore point pairs with zero forces
       /* (e.g. if no valid point-to-curve projection in master-slave approach or
        * contribution is neglected on element pair level due to cutoff value) */
-      if ( potential_forces_ele1_this_pair[ipointpair].Norm2() != 0.0 or
-          potential_forces_ele2_this_pair[ipointpair].Norm2() != 0.0 or
-          potential_moments_ele1_this_pair[ipointpair].Norm2() != 0.0 or
-          potential_moments_ele2_this_pair[ipointpair].Norm2() != 0.0 )
+      if ( potential_forces_ele1_this_pair[ipointpair].Norm2() > 1e-16 or
+          potential_forces_ele2_this_pair[ipointpair].Norm2() > 1e-16 or
+          potential_moments_ele1_this_pair[ipointpair].Norm2() > 1e-16 or
+          potential_moments_ele2_this_pair[ipointpair].Norm2() > 1e-16 )
       {
         // interacting point on first element
         for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)

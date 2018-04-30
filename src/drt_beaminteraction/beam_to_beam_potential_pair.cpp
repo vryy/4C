@@ -282,13 +282,9 @@ EvaluateFpotandStiffpot_LargeSepApprox(
   // prepare data storage for vtk visualization
   centerline_coords_GP1_.resize( numgp_perelement );
   centerline_coords_GP2_.resize( numgp_perelement );
-  forces_pot_GP1_.clear();
   forces_pot_GP1_.resize( numgp_perelement, LINALG::TMatrix<double,3,1>(true) );
-  forces_pot_GP2_.clear();
   forces_pot_GP2_.resize( numgp_perelement, LINALG::TMatrix<double,3,1>(true) );
-  moments_pot_GP1_.clear();
   moments_pot_GP1_.resize( numgp_perelement, LINALG::TMatrix<double,3,1>(true) );
-  moments_pot_GP2_.clear();
   moments_pot_GP2_.resize( numgp_perelement, LINALG::TMatrix<double,3,1>(true) );
 
   for (unsigned int isegment1 = 0; isegment1 < num_integration_segments; ++isegment1)
@@ -695,13 +691,9 @@ EvaluateFpotandStiffpot_DoubleLengthSpecific_SmallSepApprox(
   // prepare data storage for vtk visualization
   centerline_coords_GP1_.resize( numgp_perelement );
   centerline_coords_GP2_.resize( numgp_perelement );
-  forces_pot_GP1_.clear();
   forces_pot_GP1_.resize( numgp_perelement, LINALG::TMatrix<double,3,1>(true) );
-  forces_pot_GP2_.clear();
   forces_pot_GP2_.resize( numgp_perelement, LINALG::TMatrix<double,3,1>(true) );
-  moments_pot_GP1_.clear();
   moments_pot_GP1_.resize( numgp_perelement, LINALG::TMatrix<double,3,1>(true) );
-  moments_pot_GP2_.clear();
   moments_pot_GP2_.resize( numgp_perelement, LINALG::TMatrix<double,3,1>(true) );
 
   // auxiliary variables
@@ -1206,13 +1198,9 @@ EvaluateFpotandStiffpot_SingleLengthSpecific_SmallSepApprox(
   // prepare data storage for vtk visualization
   centerline_coords_GP1_.resize( numgp );
   centerline_coords_GP2_.resize( numgp );
-  forces_pot_GP1_.clear();
   forces_pot_GP1_.resize( numgp, LINALG::TMatrix<double,3,1>(true) );
-  forces_pot_GP2_.clear();
   forces_pot_GP2_.resize( numgp, LINALG::TMatrix<double,3,1>(true) );
-  moments_pot_GP1_.clear();
   moments_pot_GP1_.resize( numgp, LINALG::TMatrix<double,3,1>(true) );
-  moments_pot_GP2_.clear();
   moments_pot_GP2_.resize( numgp, LINALG::TMatrix<double,3,1>(true) );
 
 
@@ -2281,6 +2269,12 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Rese
     ele1pos_(i) = centerline_dofvec_ele1[i];
     ele2pos_(i) = centerline_dofvec_ele2[i];
   }
+
+
+  forces_pot_GP1_.clear();
+  forces_pot_GP2_.clear();
+  moments_pot_GP1_.clear();
+  moments_pot_GP2_.clear();
 }
 
 /*-----------------------------------------------------------------------------------------------*
