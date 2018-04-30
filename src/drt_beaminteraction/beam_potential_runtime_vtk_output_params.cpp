@@ -24,7 +24,8 @@ BEAMINTERACTION::BeamToBeamPotentialRuntimeVtkParams::BeamToBeamPotentialRuntime
   output_interval_steps_(-1),
   output_every_iteration_(false),
   output_forces_(false),
-  output_moments_(false)
+  output_moments_(false),
+  write_force_moment_per_elepair_(false)
 {
   // empty constructor
 }
@@ -56,6 +57,10 @@ void BEAMINTERACTION::BeamToBeamPotentialRuntimeVtkParams::Init(
   /****************************************************************************/
   output_moments_ =
       (bool) DRT::INPUT::IntegralValue<int>(beam_contact_vtk_paramslist, "MOMENTS");
+
+  /****************************************************************************/
+  write_force_moment_per_elepair_ = (bool) DRT::INPUT::IntegralValue<int>(
+      beam_contact_vtk_paramslist, "WRITE_FORCE_MOMENT_PER_ELEMENTPAIR");
 
   isinit_ = true;
 }

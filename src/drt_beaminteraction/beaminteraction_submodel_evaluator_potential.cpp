@@ -978,8 +978,22 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteOutputRuntimeVtpBea
   vtp_writer_ptr_->SetupForNewTimeStepAndGeometry( time, timestep_number, "beam-potential" );
 
   // estimate for number of interacting Gauss points = number of row points for writer object
-  unsigned int num_row_points = 2 * beam_potential_element_pairs_.size()
-      * BeamPotentialParams().NumberIntegrationSegments() * BeamPotentialParams().NumberGaussPoints();
+  unsigned int num_row_points = 0;
+
+  if ( BeamPotentialParams().GetBeamPotentialVtkParams()->IsWriteForcesMomentsPerElementPair() )
+  {
+    num_row_points = 2 * beam_potential_element_pairs_.size()
+        * BeamPotentialParams().NumberIntegrationSegments() * BeamPotentialParams().NumberGaussPoints();
+  }
+  else
+  {
+    // Todo: this won't perfectly work in parallel yet since some communication would be required
+//    if ( GState().GetMyRank() != 0 )
+//      dserror("visualization of resulting forces not implemented in parallel yet!");
+
+    num_row_points = Discret().NumGlobalElements() * BeamPotentialParams().NumberIntegrationSegments()
+        * BeamPotentialParams().NumberGaussPoints();
+  }
 
   // get and prepare storage for point coordinate values
   std::vector<double>& point_coordinates = vtp_writer_ptr_->GetMutablePointCoordinateVector();
@@ -1019,47 +1033,164 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteOutputRuntimeVtpBea
     (*pair_iter)->GetMomentsAtAllInteractingPointsElement1( potential_moments_ele1_this_pair );
     (*pair_iter)->GetMomentsAtAllInteractingPointsElement2( potential_moments_ele2_this_pair );
 
-    const unsigned int num_interacting_point_pairs =
+    const unsigned int num_interacting_points_per_element =
        (unsigned int) coordinates_ele1_this_pair.size();
 
-    dsassert( num_interacting_point_pairs == (unsigned int) coordinates_ele2_this_pair.size(),
+    dsassert( num_interacting_points_per_element == (unsigned int) coordinates_ele2_this_pair.size(),
        "number of interacting points on element 1 does not match number of interacting points "
        "on element 2!" );
 
-    dsassert( num_interacting_point_pairs == (unsigned int) potential_forces_ele1_this_pair.size(),
+    dsassert( num_interacting_points_per_element == (unsigned int) potential_forces_ele1_this_pair.size(),
        "number of interacting points on element 1 does not match number of potential forces!" );
 
-    dsassert( num_interacting_point_pairs == (unsigned int) potential_forces_ele2_this_pair.size(),
+    dsassert( num_interacting_points_per_element == (unsigned int) potential_forces_ele2_this_pair.size(),
        "number of interacting points on element 2 does not match number of potential forces!" );
 
 
-    for ( unsigned int ipointpair=0; ipointpair < num_interacting_point_pairs; ++ipointpair )
+    for ( unsigned int ipoint=0; ipoint < num_interacting_points_per_element; ++ipoint )
     {
       // ignore point pairs with zero forces
       /* (e.g. if no valid point-to-curve projection in master-slave approach or
        * contribution is neglected on element pair level due to cutoff value) */
-      if ( potential_forces_ele1_this_pair[ipointpair].Norm2() > 1e-16 or
-          potential_forces_ele2_this_pair[ipointpair].Norm2() > 1e-16 or
-          potential_moments_ele1_this_pair[ipointpair].Norm2() > 1e-16 or
-          potential_moments_ele2_this_pair[ipointpair].Norm2() > 1e-16 )
+      if ( potential_forces_ele1_this_pair[ipoint].Norm2() < 1e-16 and
+          potential_forces_ele2_this_pair[ipoint].Norm2() < 1e-16 and
+          potential_moments_ele1_this_pair[ipoint].Norm2() < 1e-16 and
+          potential_moments_ele2_this_pair[ipoint].Norm2() < 1e-16 )
+      {
+        continue;
+      }
+
+
+      // this is easier, since data is computed and stored in this 'element-pairwise' format
+      if ( BeamPotentialParams().GetBeamPotentialVtkParams()->IsWriteForcesMomentsPerElementPair() )
+      {
+        for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
+        {
+          point_coordinates.push_back( coordinates_ele1_this_pair[ipoint](idim) );
+
+          potential_force_vector.push_back( potential_forces_ele1_this_pair[ipoint](idim) );
+          potential_moment_vector.push_back( potential_moments_ele1_this_pair[ipoint](idim) );
+        }
+
+        for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
+        {
+          point_coordinates.push_back( coordinates_ele2_this_pair[ipoint](idim) );
+
+          potential_force_vector.push_back( potential_forces_ele2_this_pair[ipoint](idim) );
+          potential_moment_vector.push_back( potential_moments_ele2_this_pair[ipoint](idim) );
+        }
+      }
+      /* in this case, we need to identify unique Gauss points based on their coordinate values and
+       * compute resulting force/moment at this point by summation of contributions from all element
+       * pairs */
+      else
       {
         // interacting point on first element
-        for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
-        {
-          point_coordinates.push_back( coordinates_ele1_this_pair[ipointpair](idim) );
+        std::vector<double>::iterator xcoord_iter = point_coordinates.begin();
 
-          potential_force_vector.push_back( potential_forces_ele1_this_pair[ipointpair](idim) );
-          potential_moment_vector.push_back( potential_moments_ele1_this_pair[ipointpair](idim) );
+        // try to find data point with identical coordinates
+        while ( point_coordinates.size()>=3 and xcoord_iter != point_coordinates.end()-2 )
+        {
+          // find identical x-coordinate value
+          xcoord_iter = std::find( xcoord_iter, point_coordinates.end()-2,
+              coordinates_ele1_this_pair[ipoint](0) );
+
+          // check whether we've reached the end -> no match
+          if ( xcoord_iter == point_coordinates.end()-2 )
+          {
+            break;
+          }
+          // we have a match -> check whether also y- and z-coordinate value are identical
+          else if ( (xcoord_iter - point_coordinates.begin()) % 3 == 0 and
+                    *(xcoord_iter+1) == coordinates_ele1_this_pair[ipoint](1) and
+                    *(xcoord_iter+2) == coordinates_ele1_this_pair[ipoint](2) )
+          {
+            int offset = xcoord_iter - point_coordinates.begin();
+
+            for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
+            {
+              *(potential_force_vector.begin()+offset+idim) +=
+                  potential_forces_ele1_this_pair[ipoint](idim);
+              *(potential_moment_vector.begin()+offset+idim) +=
+                  potential_moments_ele1_this_pair[ipoint](idim);
+            }
+
+            break;
+          }
+          // we have a matching value but it's not a point with the identical (x,y,z) coordinates
+          else
+          {
+            xcoord_iter++;
+          }
+
         }
+
+        // add as a new point if not found above
+        if ( xcoord_iter == point_coordinates.end()-2 or point_coordinates.empty() )
+        {
+          for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
+          {
+            point_coordinates.push_back( coordinates_ele1_this_pair[ipoint](idim) );
+
+            potential_force_vector.push_back( potential_forces_ele1_this_pair[ipoint](idim) );
+            potential_moment_vector.push_back( potential_moments_ele1_this_pair[ipoint](idim) );
+          }
+        }
+
 
         // interacting point on second element
-        for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
-        {
-          point_coordinates.push_back( coordinates_ele2_this_pair[ipointpair](idim) );
+        xcoord_iter = point_coordinates.begin();
 
-          potential_force_vector.push_back( potential_forces_ele2_this_pair[ipointpair](idim) );
-          potential_moment_vector.push_back( potential_moments_ele2_this_pair[ipointpair](idim) );
+        // try to find data point with identical coordinates
+        while ( xcoord_iter != point_coordinates.end()-2 )
+        {
+          // find identical x-coordinate value
+          xcoord_iter = std::find( xcoord_iter, point_coordinates.end()-2,
+              coordinates_ele2_this_pair[ipoint](0) );
+
+          // check whether we've reached the end -> no match
+          if ( xcoord_iter == point_coordinates.end()-2 )
+          {
+            break;
+          }
+          // we have a match -> check whether also y- and z-coordinate value are identical
+          else if ( (xcoord_iter - point_coordinates.begin()) % 3 == 0 and
+                    *(xcoord_iter+1) == coordinates_ele2_this_pair[ipoint](1) and
+                    *(xcoord_iter+2) == coordinates_ele2_this_pair[ipoint](2) )
+          {
+            int offset = xcoord_iter - point_coordinates.begin();
+
+            for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
+            {
+              *(potential_force_vector.begin()+offset+idim) +=
+                  potential_forces_ele2_this_pair[ipoint](idim);
+              *(potential_moment_vector.begin()+offset+idim) +=
+                  potential_moments_ele2_this_pair[ipoint](idim);
+            }
+
+            break;
+          }
+          // we have a matching value but it's not a point with the identical (x,y,z) coordinates
+          else
+          {
+            xcoord_iter++;
+          }
+
         }
+
+        // add as a new point if not found above
+        if ( xcoord_iter == point_coordinates.end()-2 )
+        {
+          for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
+          {
+            point_coordinates.push_back( coordinates_ele2_this_pair[ipoint](idim) );
+
+            potential_force_vector.push_back( potential_forces_ele2_this_pair[ipoint](idim) );
+            potential_moment_vector.push_back( potential_moments_ele2_this_pair[ipoint](idim) );
+          }
+        }
+
+
       }
 
     }

@@ -63,11 +63,12 @@ STRATEGY                        DoubleLengthSpecific_SmallSepApprox
 NUM_INTEGRATION_SEGMENTS        10
 NUM_GAUSSPOINTS                 10
 -------------------------------------------------BEAM POTENTIAL/RUNTIME VTK OUTPUT
-VTK_OUTPUT_BEAM_POTENTIAL       yes
-OUTPUT_DATA_FORMAT              binary
-EVERY_ITERATION                 no
-INTERVAL_STEPS                  1
-FORCES                          yes
+VTK_OUTPUT_BEAM_POTENTIAL           yes
+OUTPUT_DATA_FORMAT                  binary
+EVERY_ITERATION                     no
+INTERVAL_STEPS                      1
+FORCES                              yes
+WRITE_FORCE_MOMENT_PER_ELEMENTPAIR  yes
 --------------------------------------------------------------------BINNING STRATEGY
 CUTOFF_RADIUS                   5
 BOUNDINGBOX                     -5 -5 -5 5 5 5

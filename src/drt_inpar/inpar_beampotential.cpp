@@ -127,6 +127,11 @@ void INPAR::BEAMPOTENTIAL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLis
   setStringToIntegralParameter<int>("MOMENTS","No",
                                "write vtp output for moments",
                                yesnotuple, yesnovalue, &beampotential_vtk_sublist);
+
+  // whether to write vtp output for forces/moments separately for each element pair
+  setStringToIntegralParameter<int>("WRITE_FORCE_MOMENT_PER_ELEMENTPAIR","No",
+                               "write vtp output for forces/moments separately for each element pair",
+                               yesnotuple, yesnovalue, &beampotential_vtk_sublist);
 }
 
 void INPAR::BEAMPOTENTIAL::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist)

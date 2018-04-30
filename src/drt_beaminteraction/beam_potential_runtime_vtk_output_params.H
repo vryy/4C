@@ -72,6 +72,13 @@ namespace BEAMINTERACTION {
       return output_moments_;
     };
 
+    /// whether to write forces/moments separately for each element pair
+    bool IsWriteForcesMomentsPerElementPair() const
+    {
+      ThrowErrorIfNotInitAndSetup();
+      return write_force_moment_per_elepair_;
+    };
+
   private:
     //! returns the isinit_ flag
     inline const bool& IsInit() const
@@ -109,6 +116,9 @@ namespace BEAMINTERACTION {
 
     /// whether to write moments
     bool output_moments_;
+
+    /// whether to write forces/moments separately for each element pair
+    bool write_force_moment_per_elepair_;
 
   };
 
