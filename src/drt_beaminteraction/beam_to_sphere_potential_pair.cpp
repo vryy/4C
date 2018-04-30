@@ -98,7 +98,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Setup
   radius2_ = sphere_element_->Radius();
 
   // initialize charge conditions applied to beam and sphere elements
-  chargeconds_.clear();
+  chargeconds_.resize(2);
 
   issetup_ = true;
 }
@@ -133,12 +133,12 @@ bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
   if(chargeconds.size() == 2)
   {
     if (chargeconds[0]->Type() == DRT::Condition::BeamPotential_LineChargeDensity)
-      chargeconds_.push_back(chargeconds[0]);
+      chargeconds_[0] = chargeconds[0];
     else
       dserror("Provided condition is not of correct type BeamPotential_LineChargeDensity!");
 
     if (chargeconds[1]->Type() == DRT::Condition::RigidspherePotential_PointCharge)
-      chargeconds_.push_back(chargeconds[1]);
+      chargeconds_[1] = chargeconds[1];
     else
       dserror("Provided condition is not of correct type RigidspherePotential_PointCharge!");
   }

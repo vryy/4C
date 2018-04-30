@@ -90,7 +90,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Setu
   }
 
   // initialize line charge conditions applied to element1 and element2
-  linechargeconds_.clear();
+  linechargeconds_.resize(2);
 
   issetup_ = true;
 
@@ -120,7 +120,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Eval
     for (unsigned int i=0; i<2; ++i)
     {
       if (linechargeconds[i]->Type() == DRT::Condition::BeamPotential_LineChargeDensity)
-        linechargeconds_.push_back(linechargeconds[i]);
+        linechargeconds_[i] = linechargeconds[i];
       else
         dserror("Provided line charge condition is not of correct type"
             "BeamPotential_LineChargeDensity!");
