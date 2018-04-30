@@ -2161,6 +2161,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ClosestPo
         // this exludes pairs with IDs i and i+2, i.e. contact with the next but one element
         if (FADUTILS::CastToDouble(FADUTILS::Norm(eta1)) <= 1.0 and FADUTILS::CastToDouble(FADUTILS::Norm(eta2)) <= 1.0)
         {
+          this->Print(std::cout);
           dserror("Beam axis identical, choose smaller time step!");
         }
         else

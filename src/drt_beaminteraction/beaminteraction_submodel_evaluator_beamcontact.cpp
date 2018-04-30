@@ -386,7 +386,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForceStiff()
 
   }
 
-  PrintActiveBeamContactSet(std::cout);
+  PrintActiveBeamContactSet( IO::cout.os(IO::verbose) );
 
   return true;
 }
@@ -437,7 +437,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::UpdateStepElement(
 {
   CheckInitSetup();
 
-//  PrintActiveBeamToBeamContactSet(std::cout);
+  PrintActiveBeamContactSet( IO::cout.os(IO::standard) );
 
   nearby_elements_map_.clear();
   FindAndStoreNeighboringElements();
