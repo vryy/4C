@@ -1624,7 +1624,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
 
   // some screen output
   if ( GState().GetMyRank() == 0 )
-    std::cout << " beam to beam crosslinking half interaction distance " << global_half_interaction_distance << std::endl;
+    IO::cout(IO::verbose) << " beam to beam crosslinking half interaction distance "
+        << global_half_interaction_distance << IO::endl;
 
   half_interaction_distance = ( half_interaction_distance_ > half_interaction_distance ) ?
       half_interaction_distance_ : half_interaction_distance;

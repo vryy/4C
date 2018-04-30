@@ -578,7 +578,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::
 
   // some screen output
   if ( GState().GetMyRank() == 0 )
-    std::cout << "\n spherebeamlinking half interaction distance " << spherebeamlinking_half_interaction_distance_global << std::endl;
+    IO::cout(IO::verbose) << "\n spherebeamlinking half interaction distance "
+        << spherebeamlinking_half_interaction_distance_global << IO::endl;
 
 
   half_interaction_distance = ( spherebeamlinking_half_interaction_distance_global > half_interaction_distance ) ?

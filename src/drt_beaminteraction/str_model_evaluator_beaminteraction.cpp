@@ -839,9 +839,9 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepElement()
 
     if ( GState().GetMyRank() == 0 )
     {
-      IO::cout(IO::standard) << "\n************************************************\n" <<IO::endl;
-      IO::cout(IO::standard) << "Complete redistribution was done " <<  IO::endl;
-      IO::cout(IO::standard) << "\n************************************************\n" <<IO::endl;
+      IO::cout(IO::verbose) << "\n************************************************\n" <<IO::endl;
+      IO::cout(IO::verbose) << "Complete redistribution was done " <<  IO::endl;
+      IO::cout(IO::verbose) << "\n************************************************\n" <<IO::endl;
     }
   }
   else if ( binning_redist )
@@ -853,9 +853,9 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepElement()
 
     if ( GState().GetMyRank() == 0 )
     {
-      IO::cout(IO::standard) << "\n************************************************\n" <<IO::endl;
-      IO::cout(IO::standard) << " binning redistribution was done " <<IO::endl;
-      IO::cout(IO::standard) << "\n************************************************\n" <<IO::endl;
+      IO::cout(IO::verbose) << "\n************************************************\n" <<IO::endl;
+      IO::cout(IO::verbose) << " binning redistribution was done " <<IO::endl;
+      IO::cout(IO::verbose) << "\n************************************************\n" <<IO::endl;
     }
   }
 

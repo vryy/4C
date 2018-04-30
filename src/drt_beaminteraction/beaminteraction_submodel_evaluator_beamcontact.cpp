@@ -824,7 +824,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
 
     // some screen output
     if ( GState().GetMyRank() == 0 )
-      std::cout << " sphere to beam contact half interaction distance " << spherebeamlinking_half_interaction_distance_global << std::endl;
+      IO::cout(IO::verbose) << " sphere to beam contact half interaction distance "
+          << spherebeamlinking_half_interaction_distance_global << IO::endl;
   }
 
   // iii) beam to solid contact

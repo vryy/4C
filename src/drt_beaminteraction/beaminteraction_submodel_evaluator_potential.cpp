@@ -588,21 +588,26 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
   // nothing to do
 }
 
-/*-------------------------------------------------------------------------------*
- *-------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
     GetHalfInteractionDistance( double & half_interaction_distance )
 {
   CheckInitSetup();
 
-  // todo:
-  dserror("Adaptive Repartitioning not yet implemented for potential interactions. Add Calculation\n"
-      "of half interaction distance and you are good to go.");
+  if ( BeamPotentialParams().CutoffRadius() > 0.0 )
+  {
+    half_interaction_distance = 0.5 * BeamPotentialParams().CutoffRadius();
 
-  // some screen output
-  if ( GState().GetMyRank() == 0 )
-    std::cout << " beam potential half interaction distance " << -1.0 << std::endl;
-
+    if ( GState().GetMyRank() == 0 )
+      IO::cout(IO::verbose) << " beam potential half interaction distance "
+          << half_interaction_distance << IO::endl;
+  }
+  else
+  {
+    dserror("You have to set a cutoff radius for beam-to-? potential-based interactions in order "
+        "to use REPARTITIONSTRATEGY = Adaptive!");
+  }
 }
 
 /*-----------------------------------------------------------------------------------------------*
