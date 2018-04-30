@@ -187,7 +187,7 @@ void STR::MonitorDbc::CreateReactionMaps(
 
     const DRT::Node* node = discret.lRowNode( rlid );
 
-    for ( unsigned i = 0; i<onoff->size(); ++i )
+    for ( unsigned i = 0; i<DIM; ++i )
       if ( (*onoff)[i] == 1 )
         my_dofs[i].push_back( discret.Dof(node,i) );
   }
