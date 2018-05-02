@@ -41,6 +41,7 @@ namespace
 {
   void zeroMatrix (Epetra_SerialDenseMatrix &mat)
   {
+    // Fills a certain memory space (MxN) with zeros
     std::memset(mat.A(), 0, sizeof(double)*mat.M()*mat.N());
   }
 }
@@ -426,66 +427,127 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(
     Epetra_SerialDenseVector&            elevec1,
     Epetra_SerialDenseVector&            elevec2)
 {
+  // Create the necessary objects to the solution of the problem as the solver
+  // and the shape functions for both the interior, shapes_, and the trace, shapesface_.
   InitializeShapes(ele);
 
+  //Evaluate the element at the gauss points
   shapes_->Evaluate(*ele);
 
   // reshape elevec2 as matrix
   dsassert(elevec2.M() == 0 ||
            elevec2.M() == static_cast<int>((nsd_*nsd_+nsd_+1)*shapes_->ndofs_), "Wrong size in project vector 2");
 
-  // get function
+  // get initial function and current time
   const int *initfield = params.getPtr<int>("initfield");
   const int *startfunc = params.getPtr<int>("startfuncno");
   double *time = params.getPtr<double>("time");
 
+  // AVeraGePREssure is used to sum all the contributions of every point to the
+  // pressure and VOLume is used to compute the volume size
   double avgpre = 0., vol = 0.;
   if (elevec2.M() > 0)
   {
+    //Create the local matrix from starting at the addres where elevec2 is with the right shape
     Epetra_SerialDenseMatrix localMat(View, elevec2.A(), shapes_->ndofs_, shapes_->ndofs_, nsd_*nsd_+nsd_+1, false);
+    //Initialize matrix to zeros
     zeroMatrix(localMat);
 
     // create mass matrix for interior by looping over quadrature points
+    //nqpoints_ is the number of quadrature points
     for (unsigned int q=0; q<shapes_->nqpoints_; ++q )
     {
+      //jfac is a vector containing the jacobian times the weight of the quadrature points
       const double fac = shapes_->jfac(q);
+      //xyz is a vector containing the coordiantes of the quadrature points in real coordinates
       LINALG::Matrix<nsd_,1> xyz(false);
+      //Filling xyz with the values take from the element xyzreal matrix
       for (unsigned int d=0; d<nsd_; ++d)
         xyz(d) = shapes_->xyzreal(d,q);
+      //Declaring vectors for velocity and grad(u) as well as the pressure scalar value
       LINALG::Matrix<nsd_,1>    u(false);
       LINALG::Matrix<nsd_,nsd_> grad(true); //is not necessarily set in EvaluateAll
       double p;
+
       dsassert(initfield != NULL && startfunc != NULL,
                "initfield or startfuncno not set for initial value");
+
+      //This function returns the values of velocity, gradient and pressure from the given
+      //initial field that can be a know field or a user-defined one
       EvaluateAll(*startfunc, INPAR::FLUID::InitialField(*initfield), xyz, u, grad, p);
 
       // now fill the components in the one-sided mass matrix and the right hand side
+      //shapes_->ndofs_ gives the number of shape functions present in the element
+      // so here we are cycling through all the shape functions only once
+      // but the results are stored and later combined
       for (unsigned int i=0; i<shapes_->ndofs_; ++i) {
         // mass matrix part
+        //The two mass part are needed because of the presence of two shape
+        //functions in the integral and therefore we create one massPart that
+        //only contains the evaluation of the shape fucntion and one, massPartW,
+        //that contains also the contribution of quadrature weights.
+
+        //It has to be noticed that the mass matrix for the projection is the same for
+        //every field that is being projected and therefore it is only computed once.
+
+        //shfunct contains the evaluation of the sFUNCTION x*x+y*yhape functions in the quadrature points
+        //massPart is a temporary matrix without weights on all quadrature points
         localSolver_->massPart(i,q)  = shapes_->shfunct(i,q);
+        //massPartW is the mass matrix that has been weighted with quadrature weights given by fac
         localSolver_->massPartW(i,q) = shapes_->shfunct(i,q) * fac;
 
+        //RHS part
+        //We have to project every component of every field and therefore instead
+        //of having a vector as RHS we have a matrix. In this matrix, every column
+        //represent the RHS of a different projection problem.
+        // The index are:
+        // q for the quadrature points
+        // i cycles the shape functions
+        //RHS grad(u)
+        // for the gradient we have to cycle thrugh the spatial dimensions twice
         for (unsigned int d=0; d<nsd_; ++d)
           for (unsigned int e=0; e<nsd_; ++e)
             localMat(i,d*nsd_+e) += shapes_->shfunct(i,q) * grad(d,e) * fac;
+        //RHS velocity
+        //cycling through the spatial dimensions
         for (unsigned int d=0; d<nsd_; ++d)
           localMat(i,nsd_*nsd_+d) += shapes_->shfunct(i,q) * u(d) * fac;
+        //Rhs pressure
+        //pressure is a scalar therefore does not need a cycle
         localMat(i,nsd_*nsd_+nsd_) += shapes_->shfunct(i,q) * p * fac;
       }
 
+      //avgpre is a varible used to store the overall value of the pressure over
+      //the domain while vol is used to measure the domain itself
       avgpre += p * fac;
       vol += fac;
     }
+    //Instead of computing the integral of the product here we are multiplying
+    //the previously compute part of the integral to give the same result
+    //In this way we avoid a cycle through the shape functions
     localSolver_->massMat.Multiply('N', 'T', 1., localSolver_->massPart,localSolver_->massPartW, 0.);
 
+    //Creating and solving a system of the form Ax = b where
+    // A is a matrix and x and b are vectors
     // solve mass matrix system, return values in localMat = elevec2 correctly ordered
     Epetra_SerialDenseSolver inverseMass;
+    //Setting A matrix
     inverseMass.SetMatrix(localSolver_->massMat);
+    //localMat is, in this case, used both as the RHS and as the unknown vector
+    //localMat is placed in the memory where elevec2 was and therefore it takes
+    //its place as result vector
     inverseMass.SetVectors(localMat,localMat);
+    //Solving
     inverseMass.Solve();
   }
 
+  //Here we have the projection of the field on the trace
+  //mass is the mass matrix for the system to be solved
+  //the dimension of the mass matrix is given by the number of shape functions
   Epetra_SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
+  //TRaceVEC is the vector of the trace values
+  // instead of being a vector it is a matrix so that we use the same matrix
+  // to solve the projection problem on every component of the field
   Epetra_SerialDenseMatrix trVec(shapesface_->nfdofs_, nsd_);
   dsassert(elevec1.M() == static_cast<int>(nsd_*shapesface_->nfdofs_) ||
            elevec1.M() == 1+static_cast<int>(nfaces_*nsd_*shapesface_->nfdofs_), "Wrong size in project vector 1");
@@ -494,34 +556,69 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(
   Teuchos::Array<int> *functno = params.getPtr<Teuchos::Array<int> >("funct");
   Teuchos::Array<int> *onoff = params.getPtr<Teuchos::Array<int> >("onoff");
 
+  //Project the field for all the faces of the element
   for (unsigned int face=0; face<nfaces_; ++face)
   {
     // check whether we are in the project phase for all faces or for boundary values
     if (initfield == NULL) {
+      //We get here only if IT IS NOT an initial value but IT IS a time
+      //dependant boundary value. If we are here we only want the function to run
+      //for boundary faces specified in the faceConsider variable
       dsassert(faceConsider != NULL, "Unsupported operation");
       if (*faceConsider != face)
         continue;
     }
+
+    //the same function as before but for the trace elements
+    //This function updates for each face the values in shapesface_.
+    //While shapes_ only needs to be evaluated once, EvaluateFace needs to be
+    //used once for every face and therefore is in the for loop.
     shapesface_->EvaluateFace(*ele,face);
+
+    //Initializing the matrices
+    //It is necessary to create a matrix and a trVec for each face because the
+    //dimensions of each face can differ from the previous one and the jacobian
+    //contains the dimension of the face in it.
     zeroMatrix(mass);
     zeroMatrix(trVec);
 
-
+    //For each quadrature point we evaluate the velocity value and the shape functions
     for (unsigned int q=0; q<shapesface_->nqpoints_; ++q) {
+      //shapesface_->jfac contains the jacobian evaluated in the quadrature points
       const double fac = shapesface_->jfac(q);
+      //xyz is the vector containing the coordinates of the quadrature points
+      //(in local coordinates)
       LINALG::Matrix<nsd_,1> xyz(false);
+
+      //Taking the real coordinates of quadrature points of the current face
+      //from the shapesface_ utility
       for (unsigned int d=0; d<nsd_; ++d)
         xyz(d) = shapesface_->xyzreal(d,q);
+
+      //Creating the vector of trace velocities
+      //It is a nsd_ dimensional vector because we are working in a quadrature
+      //point and therefore we only have nds_ unknowns
       LINALG::Matrix<nsd_,1> u(false);
-      if (initfield != NULL)
+
+      //Deciding if we are initializing a field or if it is a time dependant
+      //boundary condition
+      if (initfield != NULL)    //Initial function
         EvaluateVelocity(*startfunc, INPAR::FLUID::InitialField(*initfield), xyz, u);
       else
       {
+        //This is used to project a function only on the boundary during the
+        //temporal evolution of the simulation. This is strictly connected to
+        //the first if of the loop, in fact, the condition is the same
+        //"initfield == NULL" and the face is a boundary face.
         dsassert(functno != NULL && time != NULL && onoff != NULL,
                  "No array with functions given");
         for (unsigned int d=0; d<nsd_; ++d) {
+          //Deciding if to use the function or not for the current component
           if ((*onoff)[d] == 0)
             continue;
+
+          //If we are using the function, evaluate it in the given coordinate
+          //for each component of the velocity field
           const int funct_num = (*functno)[d];
           if (funct_num > 0)
             u(d) = DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(d, xyz.A(), *time);
@@ -529,31 +626,48 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(
       }
 
       // now fill the components in the mass matrix and the right hand side
+
+      //This is a more usual way to compute the mass matrix (double for loop)
       for (unsigned int i=0; i<shapesface_->nfdofs_; ++i)
       {
         // mass matrix
+        // Each entry is give by two shape functions and the jacobian computed
+        //in the quadrature point
         for (unsigned int j=0; j<shapesface_->nfdofs_; ++j)
           mass(i,j) += shapesface_->shfunct(i,q) * shapesface_->shfunct(j,q) * fac;
 
+        //RHS
+        //Each entry is give by the shape function, the value of the function
+        //and the jacobian computed in the quadrature point
         for (unsigned int d=0; d<nsd_; ++d)
           trVec(i,d) += shapesface_->shfunct(i,q) * u(d) * fac;
       }
     }
 
+    //Solving step, nothing fancy
     Epetra_SerialDenseSolver inverseMass;
     inverseMass.SetMatrix(mass);
+    //In this cas trVec is a proper vector and not a matrix used as multiple
+    //RHS vectors
     inverseMass.SetVectors(trVec,trVec);
     inverseMass.Solve();
 
-    if (initfield != NULL)
+    //In this case we fill elevec1 with the values of trVec because we have not
+    //defined trVec as a matrix beginning where elevec1 begins
+    if (initfield != NULL)  //This is for initial functions
       for (unsigned int d=0; d<nsd_; ++d)
         for (unsigned int i=0; i<shapesface_->nfdofs_; ++i)
+          //remember that "face" is an iterator index and therefore we are
+          //cycling through all the faces and all the entries of elevec1
+          //except for the first one where we will put the pressure average
           elevec1(1+face*shapesface_->nfdofs_*nsd_+d*shapesface_->nfdofs_+i) = trVec(i,d);
-    else
+    else    //This is only for boundary faces during time evolution
       for (unsigned int d=0; d<nsd_; ++d)
         for (unsigned int i=0; i<shapesface_->nfdofs_; ++i)
           elevec1(d*shapesface_->nfdofs_+i) = trVec(i,d);
-  }
+  }   //for over the faces
+  //here we are adding as the first element of elevec1 the value pressure
+  //averaged over the volume
   if (initfield != NULL)
     elevec1(0) = avgpre/vol;
 
@@ -569,38 +683,89 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(
     Epetra_SerialDenseVector&            elevec1)
 {
   InitializeShapes(ele);
+  //Check if the vector has the correct size
   dsassert(elevec1.M() == (int)nen_*(2*nsd_+1)+1, "Vector does not have correct size");
+
+  //Getting the connectivity matrix
+  //Contains the (local) coordinates of the nodes belonging to the element
   Epetra_SerialDenseMatrix locations = DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
+
+  //This vector will contain the values of the shape functions computed in a
+  //certain coordinate. In fact the lenght of the vector is given by the number
+  //of shape functions, that is the same of the number of degrees of freedom of
+  //an element.
   Epetra_SerialDenseVector values(shapes_->ndofs_);
 
   // get local solution values
+  //The vector "matrix_state" contains the interior velocity values following
+  //the local id numbers
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1,"intvelnp");
+  //Vector of the ids of the DOF for the element
   std::vector<int> localDofs = discretization.Dof(1, ele);
+  //SOLution VALUES
   std::vector<double> solvalues (localDofs.size());
 
+  //Filling every entry of the solvalue vector obtaining the values from the
+  //"matrix_state" vector.
   for (unsigned int i=0; i<solvalues.size(); ++i) {
+    //Finding the local id of the current "localDofs"
     const int lid = matrix_state->Map().LID(localDofs[i]);
+    //Saving the value of the "localDofs[i]" in the "solvalues" vector
     solvalues[i] = (*matrix_state)[lid];
   }
 
+  // EVALUATE SHAPE POLYNOMIALS IN NODE
+  //In hdg we can have several more points inside the element than in the
+  //"real" discretization and therefore it is necessary to compute the value
+  //that the internal solution takes in the node of the discretization.
+
+  //Cycling through all the "real" nodes of the element to get the coordinates
+  //Remember that the coordinates are the local ones.
   for (unsigned int i=0; i<nen_; ++i) {
-    // evaluate shape polynomials in node
+    //Cycling through the spatial dimensions to get the coordinates
     for (unsigned int idim=0;idim<nsd_;idim++)
       shapes_->xsi(idim) = locations(idim,i);
+
+    //Evaluating the polinomials in the point given by "shapes_->xsi".
+    //The polynomials are the internal ones.
+    //The result of the evaluation is given in "values".
     shapes_->polySpace_->Evaluate(shapes_->xsi,values);
 
     // compute values for velocity and pressure by summing over all basis functions
     for (unsigned int d=0; d<=nsd_; ++d) {
       double sum = 0;
+      //Cycling through all the shape functions
       for (unsigned int k=0; k<shapes_->ndofs_; ++k)
+        //The overall value in the chosen point is given by the sum of the
+        //values of the shape functions multiplied by their coefficients.
+        //The index starts from "nsd_*nsd_**shapes_->ndofs_" because the first
+        //entries in this vector are related to the velocity gradient, in fact,
+        //nsd_*nsd_ give the number of entries of the gradient matrix and this
+        //is multiplied by the number of nodes that are present in the element.
         sum += values(k) * solvalues[(nsd_*nsd_+d)*shapes_->ndofs_+k];
+      //sum contains the linear combination of the shape functions times the
+      //coefficients and its values are reordered in elevec1 grouped by
+      //component: the first component for every node, then the following
+      //component for the same nodes and so on for every component.
       elevec1(d*nen_+i) = sum;
     }
   }
 
   // get trace solution values
+  //Same as before bu this time the dimension is nsd_-1 because we went from
+  //the interior to the faces. We have to be careful because we are using a
+  //part of the previous vector. The coordinates are still in the local frame.
   locations = DRT::UTILS::getEleNodeNumbering_nodes_paramspace
                 (DRT::UTILS::DisTypeToFaceShapeType<distype>::shape);
+
+  //Storing the number of nodes for each face of the element as vector
+  //NumberCornerNodes
+  std::vector<int> ncn = DRT::UTILS::getNumberOfFaceElementCornerNodes(distype);
+  //NumberInternalNodes
+  std::vector<int> nin = DRT::UTILS::getNumberOfFaceElementInternalNodes(distype);
+
+  //Now the vector "matrix_state" contains the trace velocity values following
+  //the local id numbers
   matrix_state = discretization.GetState(0,"velnp");
 
   //we have always two dofsets
@@ -617,37 +782,69 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(
   Epetra_SerialDenseVector fvalues(shapesface_->nfdofs_);
   for (unsigned int f=0; f<nfaces_; ++f)
   {
-    LINALG::Matrix<nsd_-1,DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace>   xsishuffle(true);
+    //Checking how many nodes the face has
+    const int nfn = DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace;
 
-    for (int i=0; i<DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace; ++i)
+    //As already said, the dimension of the coordinate matrix is now nsd_-1
+    //times the number of nodes in the face.
+    LINALG::Matrix<nsd_-1,nfn>   xsishuffle(true);
+
+    //Cycling throught the nodes of the face to store the node positions in the
+    //correct order using xsishuffle as a temporary vector
+    for (int i=0; i<nfn; ++i)
     {
-           // evaluate shape polynomials in node
+      // cycling through the spatial dimensions
       for (unsigned int idim=0;idim<nsd_-1;idim++)
       {
+        //If the face belongs to the element being considered
         if(ele->Faces()[f]->ParentMasterElement() == ele)
           xsishuffle(idim,i) = locations(idim,i);
         else
+          //If the face does not belong to the element being considered it is
+          //necessary to change the ordering
           xsishuffle(idim,ele->Faces()[f]->GetLocalTrafoMap()[i]) = locations(idim,i);
       }
     }
 
-    for (int i=0; i<DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace; ++i)
+    //EVALUATE SHAPE POLYNOMIALS IN NODE
+    //Now that we have an ordered coordinates vector we can easily compute the
+    //values of the shape functions in the nodes.
+    for (int i=0; i<nfn; ++i)
     {
-      // evaluate shape polynomials in node
+      // Storing the actual coordinates of the current node
       for (unsigned int idim=0;idim<nsd_-1;idim++)
         shapesface_->xsi(idim) = xsishuffle(idim,i);
+      // Actually evaluating shape polynomials in node
       shapesface_->polySpace_->Evaluate(shapesface_->xsi,fvalues);
 
       // compute values for velocity and pressure by summing over all basis functions
       for (unsigned int d=0; d<nsd_; ++d) {
         double sum = 0;
         for (unsigned int k=0; k<shapesface_->nfdofs_; ++k)
+          //Linear combination of the values of the shape functions and
+          //relative weighting coefficients. The weighting coefficients are
+          //given by the value of the unknowns in the nodes.
           sum += fvalues(k) * solvalues[1+f*nsd_*shapesface_->nfdofs_+d*shapesface_->nfdofs_+k];
-        elevec1((nsd_+1+d)*nen_+shapesface_->faceNodeOrder[f][i]) = sum;
+        //Ordering the results of the interpolation in the vector being careful
+        //about the ordering of the nodes in the faces.
+        if (i<ncn[f])
+        {
+          elevec1((nsd_+1+d)*nen_+shapesface_->faceNodeOrder[f][i]) += sum/nsd_;
+        }
+        else if (i<nfn-nin[f])
+        {
+          elevec1((nsd_+1+d)*nen_+shapesface_->faceNodeOrder[f][i]) += sum/(nsd_-1);
+        }
+        else
+        {
+          elevec1((nsd_+1+d)*nen_+shapesface_->faceNodeOrder[f][i]) += sum;
+        }
       }
     }
   }
 
+  //The pressure average that is contained in solvalues[0] is moved in the last
+  //position of the vector
   elevec1((2*nsd_+1)*nen_) = solvalues[0];
 
 
@@ -1310,10 +1507,13 @@ ComputeInteriorMatrices(const Teuchos::RCP<MAT::Material> &mat,
                         const bool                         evaluateOnlyNonlinear)
 {
   const double invtimefac = 1.0/(fldparatimint_->TimeFac());
+  //Decide if the complete matrix has to be inverted
   if (evaluateOnlyNonlinear && stokes)
     return;
 
+  //Decide if the stokes part has to be inverted
   if (stokes)
+    //Only invert the convective part
     zeroMatrix(uuconv);
 
   // get constant dynamic viscosity
@@ -1321,6 +1521,7 @@ ComputeInteriorMatrices(const Teuchos::RCP<MAT::Material> &mat,
   const double viscosity = actmat->Viscosity();
   const double density = actmat->Density();
 
+  // The whole convective par thas to be recalculated
   if (!evaluateOnlyNonlinear) {
     zeroMatrix(fgMat);
     zeroMatrix(gfMat);
@@ -1328,6 +1529,7 @@ ComputeInteriorMatrices(const Teuchos::RCP<MAT::Material> &mat,
     zeroMatrix(fuMat);
     zeroMatrix(ufMat);
   }
+  // If only the convective part has to be recalculated do this
   else {
     std::memset(fuMat.A(),0,sizeof(double)*fuMat.M()*ndofs_*nsd_); // clear only velocity part
     for (int f=0; f<ufMat.N(); ++f)
@@ -1340,7 +1542,10 @@ ComputeInteriorMatrices(const Teuchos::RCP<MAT::Material> &mat,
   {
     if (!evaluateOnlyNonlinear) {
       for (unsigned int i=0; i<ndofs_; ++i)
+        //uuMat contains the shapes functions multiplied by the jacobian
+        //(the jacobian is also multiplied by the weighting functions)
         uuMat(nsd_*ndofs_,nsd_*ndofs_+i) += shapes_.shfunct(i,q) * shapes_.jfac(q);
+      //the last line of ufMat only contains the weighted jacobian determinant
       ufMat(nsd_*ndofs_,0) -= shapes_.jfac(q);
     }
 
@@ -1348,17 +1553,24 @@ ComputeInteriorMatrices(const Teuchos::RCP<MAT::Material> &mat,
     for (unsigned int i=0; i<ndofs_; ++i) {
       // mass matrix part (velocity and velocity gradient use the same mass matrix)
       massPart(i,q) = shapes_.shfunct(i,q);
+      //valf is stored because it is used twice
       const double valf = shapes_.shfunct(i,q) * shapes_.jfac(q);
       massPartW(i,q) = valf;
 
       // gradient of shape functions
       for (unsigned int d=0; d<nsd_; ++d) {
         if (!evaluateOnlyNonlinear) {
+          //saves the derivative of the shapes functions
+          //Carefull about how the values are stored (the indices)
           const double vald = shapes_.shderxy(i*nsd_+d,q);
           gradPart (d*ndofs_+i,q) = vald;
         }
 
+        //if the problem is not a stokes problem it is necessary to take care
+        //of the density
         if (!stokes)
+          //this comes from the convective part and therefore it is needed to
+          //multiply the matrix by the velocity terms
           uPart(d*ndofs_+i,q) = -valf * velnp(d,q) * density;
       }
     }
@@ -1366,12 +1578,17 @@ ComputeInteriorMatrices(const Teuchos::RCP<MAT::Material> &mat,
 
   // multiply matrices to perform summation over quadrature points
   if (!evaluateOnlyNonlinear) {
+    //multiplication of the shapes functions times the shapes functions weighted
     massMat.Multiply('N', 'T', 1., massPart, massPartW, 0.);
+    //multiplication of the shapes functions derivatices
+    //times the shapes functions weighted
     guMat.Multiply('N', 'T', 1., gradPart, massPartW, 0.);
     ugMat = guMat;
+    //scalar multiplication of the matrix times the viscosity
     ugMat.Scale(viscosity);
   }
   if (!stokes) {
+    //this matrix is the nonlinear part of the problem
     uuconv.Multiply('N', 'T', 1., gradPart, uPart, 0.);
 
     // compute convection: Need to add diagonal part and transpose off-diagonal blocks
