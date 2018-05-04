@@ -2361,59 +2361,59 @@ void MAT::PlasticElastHyper::EvaluateIsotropicPrincPlast(
     const LINALG::Matrix<8,1>& delta
     )
 {
-    // derivative of PK2 w.r.t. inverse plastic deformation gradient
+  // derivative of PK2 w.r.t. inverse plastic deformation gradient
   AddRightNonSymmetricHolzapfelProduct(dPK2dFpinvIsoprinc,id2_,invpldefgrd_,gamma(0));
   AddRightNonSymmetricHolzapfelProduct(dPK2dFpinvIsoprinc,CpiC_,invpldefgrd_,gamma(1));
-    dPK2dFpinvIsoprinc.MultiplyNT(delta(0),Cpi_,CFpi_,1.);
-    dPK2dFpinvIsoprinc.MultiplyNT(delta(1),Cpi_,CFpiCe_,1.);
-    dPK2dFpinvIsoprinc.MultiplyNT(delta(1),CpiCCpi_,CFpi_,1.);
-    dPK2dFpinvIsoprinc.MultiplyNT(delta(2),Cpi_,CFpiCei_,1.);
-    dPK2dFpinvIsoprinc.MultiplyNT(delta(2),ircg_,CFpi_,1.);
-    dPK2dFpinvIsoprinc.MultiplyNT(delta(3),CpiCCpi_,CFpiCe_,1.);
-    dPK2dFpinvIsoprinc.MultiplyNT(delta(4),CpiCCpi_,CFpiCei_,1.);
-    dPK2dFpinvIsoprinc.MultiplyNT(delta(4),ircg_,CFpiCe_,1.);
-    dPK2dFpinvIsoprinc.MultiplyNT(delta(5),ircg_,CFpiCei_,1.);
-    AddRightNonSymmetricHolzapfelProduct(dPK2dFpinvIsoprinc,id2_,FpiCe_,0.5*delta(7));
+  dPK2dFpinvIsoprinc.MultiplyNT(delta(0),Cpi_,CFpi_,1.);
+  dPK2dFpinvIsoprinc.MultiplyNT(delta(1),Cpi_,CFpiCe_,1.);
+  dPK2dFpinvIsoprinc.MultiplyNT(delta(1),CpiCCpi_,CFpi_,1.);
+  dPK2dFpinvIsoprinc.MultiplyNT(delta(2),Cpi_,CFpiCei_,1.);
+  dPK2dFpinvIsoprinc.MultiplyNT(delta(2),ircg_,CFpi_,1.);
+  dPK2dFpinvIsoprinc.MultiplyNT(delta(3),CpiCCpi_,CFpiCe_,1.);
+  dPK2dFpinvIsoprinc.MultiplyNT(delta(4),CpiCCpi_,CFpiCei_,1.);
+  dPK2dFpinvIsoprinc.MultiplyNT(delta(4),ircg_,CFpiCe_,1.);
+  dPK2dFpinvIsoprinc.MultiplyNT(delta(5),ircg_,CFpiCei_,1.);
+  AddRightNonSymmetricHolzapfelProduct(dPK2dFpinvIsoprinc,id2_,FpiCe_,0.5*delta(7));
 
-    // Mandel stress
-    LINALG::Matrix<6,1> Mv;
-    Mv.Update(gamma(0),Ce_);
-    Mv.Update(gamma(1),Ce2_,1.);
-    Mv.Update(gamma(2),id2V_,1.);
-    for (int i=0; i<3; i++) MandelStressIsoprinc(i,i) += Mv(i);
-    MandelStressIsoprinc(0,1) += Mv(3);
-    MandelStressIsoprinc(1,0) += Mv(3);
-    MandelStressIsoprinc(1,2) += Mv(4);
-    MandelStressIsoprinc(2,1) += Mv(4);
-    MandelStressIsoprinc(0,2) += Mv(5);
-    MandelStressIsoprinc(2,0) += Mv(5);
+  // Mandel stress
+  LINALG::Matrix<6,1> Mv;
+  Mv.Update(gamma(0),Ce_);
+  Mv.Update(gamma(1),Ce2_,1.);
+  Mv.Update(gamma(2),id2V_,1.);
+  for (int i=0; i<3; i++) MandelStressIsoprinc(i,i) += Mv(i);
+  MandelStressIsoprinc(0,1) += Mv(3);
+  MandelStressIsoprinc(1,0) += Mv(3);
+  MandelStressIsoprinc(1,2) += Mv(4);
+  MandelStressIsoprinc(2,1) += Mv(4);
+  MandelStressIsoprinc(0,2) += Mv(5);
+  MandelStressIsoprinc(2,0) += Mv(5);
 
-    // derivative of Mandel stress w.r.t. GL
-    AddSymmetricHolzapfelProduct(dMdCisoprinc,invpldefgrd_,invpldefgrd_,.5*gamma(0));
-    AddSymmetricHolzapfelProduct(dMdCisoprinc,invpldefgrd_,FpiCe_,gamma(1));
-    dMdCisoprinc.MultiplyNT(delta(0),Ce_,Cpi_,1.);
-    dMdCisoprinc.MultiplyNT(delta(1),Ce_,CpiCCpi_,1.);
-    dMdCisoprinc.MultiplyNT(delta(1),Ce2_,Cpi_,1.);
-    dMdCisoprinc.MultiplyNT(delta(2),Ce_,ircg_,1.);
-    dMdCisoprinc.MultiplyNT(delta(2),id2V_,Cpi_,1.);
-    dMdCisoprinc.MultiplyNT(delta(3),Ce2_,CpiCCpi_,1.);
-    dMdCisoprinc.MultiplyNT(delta(4),Ce2_,ircg_,1.);
-    dMdCisoprinc.MultiplyNT(delta(4),id2V_,CpiCCpi_,1.);
-    dMdCisoprinc.MultiplyNT(delta(5),id2V_,ircg_,1.);
+  // derivative of Mandel stress w.r.t. GL
+  AddSymmetricHolzapfelProduct(dMdCisoprinc,invpldefgrd_,invpldefgrd_,.5*gamma(0));
+  AddSymmetricHolzapfelProduct(dMdCisoprinc,invpldefgrd_,FpiCe_,gamma(1));
+  dMdCisoprinc.MultiplyNT(delta(0),Ce_,Cpi_,1.);
+  dMdCisoprinc.MultiplyNT(delta(1),Ce_,CpiCCpi_,1.);
+  dMdCisoprinc.MultiplyNT(delta(1),Ce2_,Cpi_,1.);
+  dMdCisoprinc.MultiplyNT(delta(2),Ce_,ircg_,1.);
+  dMdCisoprinc.MultiplyNT(delta(2),id2V_,Cpi_,1.);
+  dMdCisoprinc.MultiplyNT(delta(3),Ce2_,CpiCCpi_,1.);
+  dMdCisoprinc.MultiplyNT(delta(4),Ce2_,ircg_,1.);
+  dMdCisoprinc.MultiplyNT(delta(4),id2V_,CpiCCpi_,1.);
+  dMdCisoprinc.MultiplyNT(delta(5),id2V_,ircg_,1.);
 
-    // derivative of Mandel stress w.r.t. inverse plastic deformation gradient
-    AddRightNonSymmetricHolzapfelProduct(dMdFpinvIsoprinc,FpiTC_,id2_,gamma(0));
-    AddRightNonSymmetricHolzapfelProduct(dMdFpinvIsoprinc,FpiTC_,CeM_,gamma(1));
-    AddRightNonSymmetricHolzapfelProduct(dMdFpinvIsoprinc,CeFpiTC_,id2_,gamma(1));
-    dMdFpinvIsoprinc.MultiplyNT(delta(0),Ce_,CFpi_,1.);
-    dMdFpinvIsoprinc.MultiplyNT(delta(1),Ce_,CFpiCe_,1.);
-    dMdFpinvIsoprinc.MultiplyNT(delta(1),Ce2_,CFpi_,1.);
-    dMdFpinvIsoprinc.MultiplyNT(delta(2),Ce_,CFpiCei_,1.);
-    dMdFpinvIsoprinc.MultiplyNT(delta(2),id2V_,CFpi_,1.);
-    dMdFpinvIsoprinc.MultiplyNT(delta(3),Ce2_,CFpiCe_,1.);
-    dMdFpinvIsoprinc.MultiplyNT(delta(4),Ce2_,CFpiCei_,1.);
-    dMdFpinvIsoprinc.MultiplyNT(delta(4),id2V_,CFpiCe_,1.);
-    dMdFpinvIsoprinc.MultiplyNT(delta(5),id2V_,CFpiCei_,1.);
+  // derivative of Mandel stress w.r.t. inverse plastic deformation gradient
+  AddRightNonSymmetricHolzapfelProduct(dMdFpinvIsoprinc,FpiTC_,id2_,gamma(0));
+  AddRightNonSymmetricHolzapfelProduct(dMdFpinvIsoprinc,FpiTC_,CeM_,gamma(1));
+  AddRightNonSymmetricHolzapfelProduct(dMdFpinvIsoprinc,CeFpiTC_,id2_,gamma(1));
+  dMdFpinvIsoprinc.MultiplyNT(delta(0),Ce_,CFpi_,1.);
+  dMdFpinvIsoprinc.MultiplyNT(delta(1),Ce_,CFpiCe_,1.);
+  dMdFpinvIsoprinc.MultiplyNT(delta(1),Ce2_,CFpi_,1.);
+  dMdFpinvIsoprinc.MultiplyNT(delta(2),Ce_,CFpiCei_,1.);
+  dMdFpinvIsoprinc.MultiplyNT(delta(2),id2V_,CFpi_,1.);
+  dMdFpinvIsoprinc.MultiplyNT(delta(3),Ce2_,CFpiCe_,1.);
+  dMdFpinvIsoprinc.MultiplyNT(delta(4),Ce2_,CFpiCei_,1.);
+  dMdFpinvIsoprinc.MultiplyNT(delta(4),id2V_,CFpiCe_,1.);
+  dMdFpinvIsoprinc.MultiplyNT(delta(5),id2V_,CFpiCei_,1.);
 
   return ;
 }
