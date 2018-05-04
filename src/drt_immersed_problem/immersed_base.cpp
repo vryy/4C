@@ -98,16 +98,18 @@ void IMMERSED::ImmersedBase::BuildConditionDofMap(
     if(node_ptr==NULL)
       dserror("Could not get node with id %d",nodeid);
 
-    // get dofs
-    std::vector<int> dofs = dis->Dof(0,node_ptr);
-
-    for (int dim=0;dim<numdof;++dim)
+    if(dis->NodeRowMap()->LID(nodeid) != -1)
     {
-      // if not already in original dirich map
-      if(cond_dofmap_orig->LID(dofs[dim]) == -1)
-        mydirichdofs.push_back(dofs[dim]);
-    }
+      // get dofs
+      std::vector<int> dofs = dis->Dof(0,node_ptr);
 
+      for (int dim=0;dim<numdof;++dim)
+      {
+        // if not already in original dirich map
+        if(cond_dofmap_orig->LID(dofs[dim]) == -1)
+          mydirichdofs.push_back(dofs[dim]);
+      }
+    } // if my node
   } // loop over all conditioned nodes
 
   int nummydirichvals = mydirichdofs.size();

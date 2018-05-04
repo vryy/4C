@@ -158,6 +158,9 @@ void IMMERSED::ImmersedPartitionedMultiphysics::CFIOperator()
        3,
        cellstructure_->Dispnp());
 
+   // set state in nox and gobal state object
+   cellstructure_->SetState(cellstructure_->WriteAccessDispnp());
+
    // apply Dirichlet to ECM structure
    ApplyDirichlet(
        poroscatra_subproblem_->PoroField()->StructureField(),
