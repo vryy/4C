@@ -115,6 +115,10 @@ public:
   void SetHeightField(const int nds,
       Teuchos::RCP<const Epetra_Vector> height);
 
+  //!set the time derivative of the height (film thickness) by OST
+  void SetHeightDotField(const int nds,
+        Teuchos::RCP<const Epetra_Vector> heightdot);
+
   //! set average tangential interface velocity for Reynolds equation
   void SetAverageVelocityField(const int nds,
       Teuchos::RCP<const Epetra_Vector> av_vel);

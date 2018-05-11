@@ -86,7 +86,14 @@ EHL::Base::Base(const Epetra_Comm& comm,
   structure_->Setup();
   lubrication_ =  Teuchos::rcp(new ADAPTER::LubricationBaseAlgorithm());
   lubrication_->Setup(*lubricationtimeparams,lubricationparams,problem->SolverParams(linsolvernumber),lubrication_disname,isale);
-}
+
+  //Structure displacement at the lubricated interface
+  Teuchos::RCP<Epetra_Vector> disp = LINALG::CreateVector(*(structdis->DofRowMap()), true);
+
+  mortaradapter_->Integrate(disp,Dt());
+  //the film thickness initialization for very first time step
+  heightold_ = mortaradapter_->Nodal_Gap();
+  }
 
 /*----------------------------------------------------------------------*
  | read restart information for given time step   (public) wirtz 12/15  |
@@ -105,6 +112,7 @@ void EHL::Base::ReadRestart( int restart )
     mortaradapter_->Interface()->ExportNodalNormals();
     mortaradapter_->Interface()->StoreToOld(MORTAR::StrategyBase::n_old);
     mortaradapter_->Integrate(structure_->Dispnp(),Dt());
+    heightold_ = mortaradapter_->Nodal_Gap();
   }
 
   return;
@@ -232,6 +240,9 @@ void EHL::Base::SetStructSolution(Teuchos::RCP<const Epetra_Vector> disp)
 
   //Provide the gap at the interface
   SetHeightField();
+
+  //provide the heightdot (time derivative of the gap)
+  SetHeightDot();
 
   // Create DBC map for unprojectable nodes
   SetupUnprojectableDBC();
@@ -445,6 +456,27 @@ void EHL::Base::SetHeightField()
 }
 
 /*----------------------------------------------------------------------*
+ | set time derivative of film height on lubrication field   Faraji 03/18|
+ *----------------------------------------------------------------------*/
+void EHL::Base::SetHeightDot()
+{
+  Teuchos::RCP<Epetra_Vector> heightdot = Teuchos::rcp(new Epetra_Vector(*(mortaradapter_->Nodal_Gap())));
+  Teuchos::RCP<const Epetra_Vector> heightnp = mortaradapter_->Nodal_Gap();
+
+  heightdot->Update(-1.0/Dt(),*heightold_,1.0/Dt());
+
+  Teuchos::RCP<Epetra_Vector>  discretegap = LINALG::CreateVector(*(slaverowmapextr_->Map(0)), true);
+  //get the weighted heightdot and store it in slave dof map (for each node, the scalar value is stored in the 0th dof)
+  int err = slavemaptransform_->Multiply(false,*heightdot,*discretegap);
+  if (err!=0) dserror("error while transforming map of weighted gap");
+  //store discrete heightDot in lubrication disp dof map (its the film height time derivative)
+  Teuchos::RCP<Epetra_Vector> heightdotSet = ada_strDisp_to_lubDisp_->MasterToSlave(discretegap);
+
+  //provide film height time derivative to lubrication discretization
+  lubrication_->LubricationField()->SetHeightDotField(1,heightdotSet);
+}
+
+/*----------------------------------------------------------------------*
  | set structure mesh displacement on lubrication field     wirtz 03/15 |
  *----------------------------------------------------------------------*/
 void EHL::Base::SetMeshDisp( Teuchos::RCP<const Epetra_Vector> disp )
@@ -599,7 +631,7 @@ void EHL::Base::SetupFieldCoupling(const std::string struct_disname, const std::
       *lubrinodes,
       ndim,
       true,
-      1.e-3,
+      1.e-8,
       0,
       1);
 
@@ -611,7 +643,7 @@ void EHL::Base::SetupFieldCoupling(const std::string struct_disname, const std::
       *lubricationdis->NodeRowMap(),
       1,
       true,
-      1.e-3,
+      1.e-8,
       0,
       1);
 
@@ -623,7 +655,7 @@ void EHL::Base::SetupFieldCoupling(const std::string struct_disname, const std::
         *lubricationdis->NodeRowMap(),
         1,
         true,
-        1.e-8);
+        1.e-3);
 
   //Setup of transformation matrix: slave node map <-> slave disp dof map
   slavemaptransform_ = Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap,81,false,false));
@@ -660,6 +692,7 @@ void EHL::Base::SetupFieldCoupling(const std::string struct_disname, const std::
  *----------------------------------------------------------------------*/
 void EHL::Base::Update()
 {
+  heightold_ = mortaradapter_->Nodal_Gap();
   mortaradapter_->Interface()->SetState(MORTAR::state_old_displacement,*StructureField()->Dispnp());
   mortaradapter_->Interface()->StoreToOld(MORTAR::StrategyBase::n_old);
   StructureField()->Update();

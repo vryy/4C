@@ -199,6 +199,11 @@ namespace ELEMENTS
       double&             heightint      //!< lubrication height at Int point
     );
 
+    //! Calculate the heightDot (time derivative) of the film-thickness at the Int point
+    virtual void CalcHeightDotAtIntPoint(
+      double&             heightdotint  //!< lubrication heightDot at Int point
+    );
+
     //! Calculate the average velocity of the contacting bodies at the Int point
     virtual void CalcAvrVelAtIntPoint(
       LINALG::Matrix<nsd_,1>&    avrvel      //!< average surface velocity at Int point
@@ -331,6 +336,13 @@ namespace ELEMENTS
         const LINALG::Matrix<nsd_,1>  velocity
     );
 
+    //! calculation of Squeeze contribution to RHS matrix
+    virtual void CalcRhsSqz(
+            Epetra_SerialDenseVector&     erhs,
+            const double                  rhsfac,
+            const double                  heightdot
+    );
+
     /*========================================================================*/
     //! @name parameter lists
     /*========================================================================*/
@@ -368,6 +380,9 @@ namespace ELEMENTS
     //!  array for element nodal film height at time n+1, (same scalar value for all space dimensions)
     LINALG::Matrix<nsd_,nen_>  eheinp_;
 
+    //! array for the element nodal film height time derivative at time n+1,
+    LINALG::Matrix<nsd_,nen_> eheidotnp_;
+
     //! Average tangential interface velocity
     LINALG::Matrix<nsd_,nen_> eAvTangVel_;
 
@@ -392,7 +407,8 @@ namespace ELEMENTS
     int eid_;
     //! current element
     DRT::Element* ele_;
-
+    //! time step
+    double Dt_;
 
   };
 

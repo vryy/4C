@@ -128,6 +128,9 @@ namespace EHL
     Teuchos::RCP<ADAPTER::Coupling> ada_strDisp_to_lubPres_;
     Teuchos::RCP<ADAPTER::Coupling> ada_lubPres_to_lubDisp_;
 
+    //! height old vector to calculate the time derivative of height (Squeeze term)
+    Teuchos::RCP<const Epetra_Vector> heightold_;
+
 
     /// setup adapters for EHL on boundary
     virtual void SetupFieldCoupling(const std::string struct_disname, const std::string lubrication_disname);
@@ -155,6 +158,9 @@ namespace EHL
 
     /// set film height of the lubrication field
     void SetHeightField() ;
+
+    //set Time derivative of height (squeeze term)
+    void SetHeightDot();
 
     // Create DBC map for unprojectable nodes
     void SetupUnprojectableDBC();

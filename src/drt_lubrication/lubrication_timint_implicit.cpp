@@ -287,6 +287,7 @@ void LUBRICATION::TimIntImpl::TimeLoop()
     //                  set the auxiliary dofs
     // -------------------------------------------------------------------
     SetHeightField(1,Teuchos::null);
+    SetHeightDotField(1,Teuchos::null);
     SetAverageVelocityField(1,Teuchos::null);
 
     // -------------------------------------------------------------------
@@ -517,7 +518,8 @@ void LUBRICATION::TimIntImpl::AddCavitationPenalty()
 
 
 /*----------------------------------------------------------------------*
- | contains the assembly process for matrix and rhs         wirtz 11/15 |
+ | contains the assembly process for matrix and rhs
+  for elements                                              wirtz 11/15 |
  *----------------------------------------------------------------------*/
 void LUBRICATION::TimIntImpl::AssembleMatAndRHS()
 {
@@ -538,6 +540,9 @@ void LUBRICATION::TimIntImpl::AssembleMatAndRHS()
 
   // action for elements
   eleparams.set<int>("action",LUBRICATION::calc_mat_and_rhs);
+
+  //time step set up
+  eleparams.set<double>("delta time",dta_ );
 
   // provide bool whether ale or not, i.e. if the mesh is displaced
   eleparams.set<bool>("isale",isale_);
@@ -773,6 +778,20 @@ void LUBRICATION::TimIntImpl::SetHeightField(const int nds,
   if (gap == Teuchos::null)
     dserror("Gap vector is empty.");
   discret_->SetState(nds,"height",gap);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | Set nodal value of film height time derivative(hdot)    Faraji 03/18 |
+   at time n+1
+ *----------------------------------------------------------------------*/
+void LUBRICATION::TimIntImpl::SetHeightDotField(const int nds,
+    Teuchos::RCP<const Epetra_Vector> heightdot)
+{
+  if (heightdot == Teuchos::null)
+    dserror("hdot vector is empty.");
+  discret_->SetState(nds,"heightdot",heightdot);
 
   return;
 }
@@ -1182,10 +1201,10 @@ void LUBRICATION::TimIntImpl::Evaluate()
  | residual pressures                                                   |
  *----------------------------------------------------------------------*/
 void LUBRICATION::TimIntImpl::UpdateIterIncrementally(
-  const Teuchos::RCP<const Epetra_Vector> prei  //!< input residual temperatures
+  const Teuchos::RCP<const Epetra_Vector> prei  //!< input residual pressures
   )
 {
-  // select residual temperatures
+  // select residual pressures
   if (prei != Teuchos::null)
     // tempi_ = \f$\Delta{T}^{<k>}_{n+1}\f$
     prei_->Update(1.0, *prei, 0.0);  // set the new solution we just got

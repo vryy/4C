@@ -48,7 +48,9 @@ DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::LubricationEleCalc(const std
     xjm_(true),     // initialized to zero
     xij_(true),     // initialized to zero
     eheinp_(true),
+    eheidotnp_(true),
     edispnp_(true),
+    Dt_(0.0),
     viscmanager_(Teuchos::rcp(new LubricationEleViscManager())),           // viscosity manager for viscosity
     lubricationvarmanager_(Teuchos::rcp(new LubricationEleInternalVariableManager<nsd_,nen_>())),   // internal variable manager
     eid_(0),
@@ -170,6 +172,10 @@ int DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::EvaluateEHLMon(
   if(SetupCalc(ele,discretization) == -1)
     return 0;
 
+  //set time step as a class member
+  double dt = params.get<double>("delta time");
+  Dt_= dt;
+
   //--------------------------------------------------------------------------------
   // extract element based or nodal values
   //--------------------------------------------------------------------------------
@@ -277,7 +283,6 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::ExtractElementAndNodeVa
     xyze_ += edispnp_;
   }
 
-
   //3. Extract the film height at the element nodes
 
   // get number of dofset associated with height dofs
@@ -299,6 +304,26 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::ExtractElementAndNodeVa
 
   // extract local height from global state vector
   DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_,nen_> >(*height,eheinp_,la[ndsheight].lm_);
+
+  //3.1. Extract the film height time derivative at the element node
+  const int ndsheightdot = 1;
+
+  // get the global vector containing the heightdots
+    Teuchos::RCP<const Epetra_Vector> heightdot = discretization.GetState(ndsheightdot,"heightdot");
+    if(heightdot == Teuchos::null)
+      dserror("Cannot get state vector heightdot");
+
+    // determine number of heightdot related dofs per node
+    const int numheightdotdofpernode = la[ndsheightdot].lm_.size()/nen_;
+
+    // construct location vector for heightdot related dofs
+    std::vector<int> lmheightdot(nsd_*nen_,-1);
+    for (int inode=0; inode<nen_; ++inode)
+      for (int idim=0; idim<nsd_; ++idim)
+        lmheightdot[inode*nsd_+idim] = la[ndsheightdot].lm_[inode*numheightdotdofpernode+idim];
+
+    // extract local height from global state vector
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_,nen_> >(*heightdot,eheidotnp_,la[ndsheightdot].lm_);
 
   //4. Extract the pressure field at the element nodes
 
@@ -356,6 +381,10 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::Sysmat(
     double heightint(0.0);
     CalcHeightAtIntPoint(heightint);
 
+    // calculate heightDot (i.e. the distance of the contacting bodies) at Integration point
+    double heightdotint(0.0);
+    CalcHeightDotAtIntPoint(heightdotint);
+
     // calculate average surface velocity of the contacting bodies at Integration point
     LINALG::Matrix<nsd_,1> avrvel(true); //average surface velocity, initialized to zero
     CalcAvrVelAtIntPoint(avrvel);
@@ -385,6 +414,9 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::Sysmat(
     //2.2) calculation of Wedge contribution of rhs matrix
 
     CalcRhsWdg(erhs,rhsfac,heightint,avrvel);
+
+    //2.3) calculation of squeeze contribution to RHS matrix
+    CalcRhsSqz(erhs, rhsfac, heightdotint);
 
   }// end loop Gauss points
 
@@ -467,6 +499,15 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::MatrixforEHLMon(
         ematheight(vi,(ui*nsd_)) += fac * val * funct_(ui);
       }
     }//end loop for linearization of Couette term wrt the film height
+
+    //Linearization of Squeeze term wrt the film height
+    for (int vi=0; vi<nen_; vi++)
+    {
+      for (int ui=0; ui<nen_; ui++)
+      {
+        ematheight(vi,(ui*nsd_)) -= fac * (1.0/Dt_) * funct_(ui) * funct_(vi);
+      }
+    }//end loop for linearization of Squeeze term wrt the film height
 
     //Linearization of Couette term wrt the velocities
     for (int vi=0; vi<nen_; vi++)
@@ -649,6 +690,26 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalcRhsWdg(
   return;
 }
 
+/*------------------------------------------------------------------- *
+ |  calculation of Squeeze rhs matrix                         Faraji  |
+ *--------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalcRhsSqz(
+  Epetra_SerialDenseVector&     erhs,
+  const double                  rhsfac,
+  const double                  heightdot
+  )
+{
+  // Squeeze rhs term
+  const double fac_rhs_sqz = rhsfac * heightdot;
+
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    erhs[vi] += fac_rhs_sqz * funct_(vi);
+  }
+  return;
+}
+
 /*----------------------------------------------------------------------*
  | evaluate shape functions and derivatives at int. point   wirtz 10/15 |
  *----------------------------------------------------------------------*/
@@ -793,6 +854,23 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalcHeightAtIntPoint(
 
   return;
 } //ReynoldsEleCalc::CalcHeightAtIntPoint
+
+/*-----------------------------------------------------------------------*
+  |  get the lubrication heightDot interpolated at the Int Point    Faraji|
+  *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalcHeightDotAtIntPoint(
+  double&             heightdotint      //!< lubrication heightDot at Int point
+  )
+{
+  // interpolate the heightDot at the integration point
+  for (int j = 0; j<nen_; j++)
+  {
+    heightdotint += funct_(j)*eheidotnp_(0,j);//Note that the same value is stored for all space dimensions
+  }
+
+  return;
+}
 
 /*-----------------------------------------------------------------------*
   |  get the average velocity of the contacting bodies interpolated at   |
