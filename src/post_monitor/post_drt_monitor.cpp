@@ -1806,7 +1806,7 @@ void ThermoMonWriter::WriteThrResult(
 PostField* TsiStructMonWriter::GetFieldPtr(PostProblem& problem)
 {
   // get pointer to discretisation of actual field
-  PostField* myfield = problem.get_discretization(0);
+  PostField* myfield = problem.get_discretization(1);
   if (myfield->name() != "structure")
     dserror("Fieldtype of field 1 is not structure.");
   return myfield;
@@ -1826,7 +1826,7 @@ void TsiStructMonWriter::WriteHeader(std::ofstream& outfile)
 PostField* TsiThermoMonWriter::GetFieldPtr(PostProblem& problem)
 {
   // get pointer to discretisation of actual field
-  PostField* myfield = problem.get_discretization(1);
+  PostField* myfield = problem.get_discretization(0);
   if (myfield->name() != "thermo")
     dserror("Fieldtype of field 2 is not thermo.");
   return myfield;
