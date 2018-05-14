@@ -74,6 +74,19 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::PoroFluidMultiphaseWrapper::DofRowMap(un
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> ADAPTER::PoroFluidMultiphaseWrapper::ArteryDofRowMap() const
+{
+  return porofluid_->ArteryDofRowMap();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::PoroFluidMultiphaseWrapper::ArteryPorofluidSysmat() const
+{
+  return porofluid_->ArteryPorofluidSysmat();
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Discretization> ADAPTER::PoroFluidMultiphaseWrapper::Discretization() const
 {
   return porofluid_->Discretization();
@@ -231,6 +244,12 @@ Teuchos::RCP<const Epetra_Vector>  ADAPTER::PoroFluidMultiphaseWrapper::RHS() co
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector>  ADAPTER::PoroFluidMultiphaseWrapper::ArteryPorofluidRHS() const
+{
+  return porofluid_->ArteryPorofluidRHS();
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void ADAPTER::PoroFluidMultiphaseWrapper::UpdateIter(const Teuchos::RCP<const Epetra_Vector> inc)
 {
   porofluid_->UpdateIter(inc);
@@ -270,4 +289,10 @@ void ADAPTER::PoroFluidMultiphaseWrapper::AssembleFluidStructCouplingMat(Teuchos
 void ADAPTER::PoroFluidMultiphaseWrapper::AssembleFluidScatraCouplingMat(Teuchos::RCP< LINALG::SparseOperator> k_pfs)
 {
   return porofluid_->AssembleFluidScatraCouplingMat(k_pfs);
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<ADAPTER::ArtNet> ADAPTER::PoroFluidMultiphaseWrapper::ArtNetTimInt()
+{
+  return porofluid_->ArtNetTimInt();
 }

@@ -33,6 +33,11 @@ namespace DRT
   class Discretization;
 }
 
+namespace SCATRA
+{
+  class MeshtyingStrategyArtery;
+}
+
 namespace POROMULTIPHASESCATRA
 {
 
@@ -129,6 +134,13 @@ namespace POROMULTIPHASESCATRA
 
     Epetra_Time timertimestep_; //!< timer for measurement of duration of one time-step
     double dttimestep_; //!< duration of one time step
+
+  protected:
+
+    // do we perform coupling with 1D artery
+    const bool artery_coupl_;
+
+    Teuchos::RCP<SCATRA::MeshtyingStrategyArtery> scatramsht_;
 
   }; //PoroMultiPhaseScaTraBase
 

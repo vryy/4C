@@ -133,11 +133,23 @@ Teuchos::RCP<ADAPTER::PoroMultiPhase> POROMULTIPHASE::UTILS::CreatePoroMultiPhas
   }
   case INPAR::POROMULTIPHASE::solscheme_twoway_monolithic:
   {
-    // call constructor
-    algo =
-        Teuchos::rcp(new POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay(
-                comm,
-                timeparams));
+    const bool artery_coupl = DRT::INPUT::IntegralValue<int>(timeparams,"ARTERY_COUPLING");
+    if(!artery_coupl)
+    {
+      // call constructor
+      algo =
+          Teuchos::rcp(new POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay(
+                  comm,
+                  timeparams));
+    }
+    else
+    {
+      // call constructor
+      algo =
+          Teuchos::rcp(new POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling(
+                  comm,
+                  timeparams));
+    }
     break;
   }
   default:

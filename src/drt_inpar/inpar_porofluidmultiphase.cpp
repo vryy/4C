@@ -178,5 +178,24 @@ void INPAR::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
                                  gradreco_l2     // pressure edge-based stabilization as ghost penalty around cut elements
                                ),
                                &porofluidmultiphasedyn);
+
+  // coupling with 1D artery network active
+  BoolParameter("ARTERY_COUPLING","No","Coupling with 1D blood vessels.",&porofluidmultiphasedyn);
+
+  // ----------------------------------------------------------------------
+  // artery mesh tying
+  Teuchos::ParameterList& porofluidmultiphasemshtdyn = porofluidmultiphasedyn.sublist("ARTERY MESHTYING",false,
+    "Parameters for artery mesh tying"
+    );
+
+  // coupled artery dofs for mesh tying
+  setNumericStringParameter("COUPLEDDOFS_ART","-1.0",
+                            "coupled artery dofs for mesh tying",
+                            &porofluidmultiphasemshtdyn);
+
+  // coupled porofluid dofs for mesh tying
+  setNumericStringParameter("COUPLEDDOFS_PORO","-1.0",
+                            "coupled porofluid dofs for mesh tying",
+                            &porofluidmultiphasemshtdyn);
 }
 

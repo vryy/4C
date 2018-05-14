@@ -110,6 +110,9 @@ public:
   /// dof map of vector of unknowns
   virtual Teuchos::RCP<const Epetra_Map> FluidDofRowMap() const = 0;
 
+  /// dof map of vector of unknowns of artery field
+  virtual Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const = 0;
+
   /// return fluid flux
   virtual Teuchos::RCP<const Epetra_MultiVector> FluidFlux() const =0;
 
@@ -157,6 +160,9 @@ public:
 
   //! build the block null spaces
   virtual void BuildBlockNullSpaces(Teuchos::RCP<LINALG::Solver>& solver) = 0;
+
+  //! build the block null spaces
+  virtual void BuildArteryBlockNullSpace(Teuchos::RCP<LINALG::Solver>& solver, const int& arteryblocknum) = 0;
 
 };
 }

@@ -174,6 +174,9 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::ComputeTimeDerivative()
  *----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::TimIntOneStepTheta::Update()
 {
+  // call base class
+  POROFLUIDMULTIPHASE::TimIntImpl::Update();
+
   // compute time derivative at time n+1
   ComputeTimeDerivative();
 
@@ -206,6 +209,10 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::OutputRestart()
  -----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::TimIntOneStepTheta::ReadRestart(const int step)
 {
+
+  // call base class
+  POROFLUIDMULTIPHASE::TimIntImpl::ReadRestart(step);
+
   Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
   reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,step));
 

@@ -25,6 +25,7 @@ in a subclass derived from an abstract, purely virtual interface class.
 #include "scatra_timint_elch.H"
 #include "scatra_timint_implicit.H"
 #include "scatra_timint_meshtying_strategy_s2i.H"
+#include "scatra_timint_meshtying_strategy_artery.H"
 
 #include "../drt_lib/drt_discret.H"
 
@@ -1030,6 +1031,123 @@ bool SCATRA::ConvCheckStrategyPoroMultiphaseScatra::AbortNonlinIter(
   // compute L2 norm of concentration increment vector
   double conc_inc_L2(0.);
   scatratimint.Increment()->Norm2(&conc_inc_L2);
+
+  // safety checks
+  if(std::isnan(conc_state_L2) or std::isnan(conc_res_Rms) or std::isnan(conc_inc_L2))
+    dserror("Calculated vector norm for concentration is not a number!");
+  if(std::isinf(conc_state_L2) or std::isinf(conc_res_Rms) or std::isinf(conc_inc_L2))
+    dserror("Calculated vector norm for concentration is infinity!");
+
+  // care for the case that nothing really happens in the concentration field
+  if(conc_state_L2 < 1.e-5)
+    conc_state_L2 = 1.;
+
+  // special case: very first iteration step --> solution increment is not yet available
+  if(itnum == 1)
+  {
+    if(mypid == 0)
+    {
+      // print header of convergence table to screen
+      std::cout << "+------------+-------------------+--------------+-------------------+--------------+" << std::endl;
+      std::cout << "|- step/max -|- tol-res  [norm] -|-- con-res ---|- tol-inc  [norm] -|-- con-inc ---|" << std::endl;
+
+      // print first line of convergence table to screen
+      std::cout << "|  " << std::setw(3) << itnum << "/" << std::setw(3) << itmax_ << "   | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << ittol_ << "[Rms ]  | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << conc_res_Rms << "   | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << ittol_ << "[ L2 ]  |      --      | (      --     ,te="
+                << std::setw(10) << std::setprecision(3) << std::scientific << scatratimint.DtEle() << ")" << std::endl;
+    }
+  }
+
+  // ordinary case: later iteration steps --> solution increment can be printed and convergence check should be done
+  else
+  {
+    if(mypid == 0)
+      // print current line of convergence table to screen
+      std::cout << "|  " << std::setw(3) << itnum << "/" << std::setw(3) << itmax_ << "   | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << ittol_ << "[Rms ]  | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << conc_res_Rms << "   | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << ittol_ << "[ L2 ]  | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << conc_inc_L2/conc_state_L2 << "   | (ts="
+                << std::setw(10) << std::setprecision(3) << std::scientific << scatratimint.DtSolve() << ",te="
+                << std::setw(10) << std::setprecision(3) << std::scientific << scatratimint.DtEle() << ")" << std::endl;
+
+    // convergence check
+    if(conc_res_Rms <= ittol_ and conc_inc_L2/conc_state_L2 <= ittol_)
+    {
+      if(mypid == 0)
+        // print finish line of convergence table to screen
+        std::cout << "+------------+-------------------+--------------+-------------------+--------------+" << std::endl;
+
+      return true;
+    }
+  }
+
+  // abort iteration when there is nothing more to do --> better robustness
+  // absolute tolerance determines whether residual is already zero
+  // prevents additional solver calls that will not improve the solution anymore
+  if(conc_res_Rms < abstolres_)
+  {
+    if(mypid == 0)
+      // print finish line of convergence table to screen
+      std::cout << "+------------+-------------------+--------------+-------------------+--------------+" << std::endl;
+
+    return true;
+  }
+
+  // output warning in case maximum number of iteration steps is reached without convergence, and proceed to next time step
+  if(itnum == itmax_)
+  {
+    if (mypid == 0)
+    {
+      std::cout << "+---------------------------------------------------------------+" << std::endl;
+      std::cout << "|       >>>>>> Newton-Raphson iteration did not converge!       |" << std::endl;
+      std::cout << "+---------------------------------------------------------------+" << std::endl;
+    }
+
+    return true;
+  }
+
+  // return maximum residual value for adaptivity of linear solver tolerance
+  actresidual = std::max(conc_res_Rms,conc_inc_L2/conc_state_L2);
+  // proceed with next iteration step
+  return false;
+} // SCATRA::ConvCheckStrategyStd::AbortNonlinIter()
+
+/*-------------------------------------------------------------------------*
+ | perform convergence check for Newton-Raphson iteration kremheller 12/17 |
+ *------------------------------------------------------------------------*/
+bool SCATRA::ConvCheckStrategyPoroMultiphaseScatraArtMeshTying::AbortNonlinIter(
+    const ScaTraTimIntImpl&   scatratimint,   //!< scalar transport time integrator
+    double&                   actresidual     //!< return maximum current residual value
+    ) const
+{
+  // extract processor ID
+  const int mypid = scatratimint.Discretization()->Comm().MyPID();
+
+  // extract current Newton-Raphson iteration step
+  const int itnum = scatratimint.IterNum();
+
+  // compute L2 norm of concentration state vector
+  // TODO: actually here the combined phinp should be taken
+  double conc_state_L2(0.0);
+  scatratimint.Phinp()->Norm2(&conc_state_L2);
+
+  // get mesh tying strategy
+  Teuchos::RCP<SCATRA::MeshtyingStrategyArtery> scatramsht =
+      Teuchos::rcp_dynamic_cast<SCATRA::MeshtyingStrategyArtery>(scatratimint.Strategy());
+  if(scatramsht == Teuchos::null)
+    dserror("cast to Meshtying strategy failed!");
+
+  // compute Rms norm of concentration residual vector
+  double conc_res_Rms(0.);
+  scatramsht->CoupledRHS()->Norm2(&conc_res_Rms);
+  conc_res_Rms/=sqrt(scatramsht->CoupledRHS()->GlobalLength());
+
+  // compute L2 norm of concentration increment vector
+  double conc_inc_L2(0.);
+  scatramsht->CombinedIncrement()->Norm2(&conc_inc_L2);
 
   // safety checks
   if(std::isnan(conc_state_L2) or std::isnan(conc_res_Rms) or std::isnan(conc_inc_L2))

@@ -257,7 +257,7 @@ namespace ELEMENTS
     virtual double EvalShapeFuncAndDerivsAtEleCenter();
 
     //! evaluate shape functions and their derivatives at current integration point
-    double EvalShapeFuncAndDerivsAtIntPoint(
+    virtual double EvalShapeFuncAndDerivsAtIntPoint(
       const DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, //!< integration points
       const int                                        iquad      //!< id of current Gauss point
     );

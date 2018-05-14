@@ -19,9 +19,9 @@
 
 #include "fluidimplicitintegration.H"
 
-namespace ART
+namespace ADAPTER
 {
-  class ArtNetExplicitTimeInt;
+  class ArtNet;
 }
 namespace AIRWAY
 {
@@ -152,7 +152,7 @@ protected:
   Teuchos::RCP<UTILS::Fluid_couplingWrapperBase> coupled3D_redDbc_art_;
 
   /// 1D arterial network time integration
-  Teuchos::RCP<ART::ArtNetExplicitTimeInt>   ART_exp_timeInt_;
+  Teuchos::RCP<ADAPTER::ArtNet>   ART_timeInt_;
 
   /// bio related, 3D to reduced-D coupling
   Teuchos::RCP<UTILS::Fluid_couplingWrapperBase> coupled3D_redDbc_airways_;

@@ -6,7 +6,6 @@
 \level 3
 
 *----------------------------------------------------------------------*/
-#ifdef D_ARTNET
 #ifndef ARTERY_H
 #define ARTERY_H
 
@@ -19,7 +18,7 @@
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
-
+#include "../drt_inpar/inpar_bio.H"
 
 // forward declarations
 struct _MATERIAL;
@@ -33,10 +32,6 @@ class Discretization;
 
 namespace ELEMENTS
 {
-// forward declarations
-class ArteryExpInterface;
-template <DRT::Element::DiscretizationType distype> class ArteryLinExp;
-
 
 class ArteryType : public DRT::ElementType
 {
@@ -74,10 +69,6 @@ private:
 class Artery : public DRT::Element
 {
 public:
-
-  //! @name Friends
-  friend class ArteryExpInterface;
-  friend class ArteryLinExp<DRT::Element::line2>;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -176,7 +167,29 @@ public:
   number of degrees of freedom per node along the way for each of it's nodes
   separately.
   */
-  virtual int NumDofPerNode(const DRT::Node& node) const {return 2;}
+  virtual int NumDofPerNode(const DRT::Node& node) const {
+    switch(impltype_)
+    {
+    case INPAR::ARTDYN::impltype_lin_exp:
+    {
+      return 2;
+      break;
+    }
+    case INPAR::ARTDYN::impltype_pressure_based:
+    {
+      return 1;
+      break;
+    }
+    default:
+    {
+      dserror("Defined problem type %d does not exist!!", impltype_);
+      break;
+    }
+    }
+
+    return 0;
+
+  }
 
   /*!
   \brief Get number of degrees of freedom per element
@@ -295,6 +308,12 @@ public:
                                 std::vector<int>&         lm,
                                 Epetra_SerialDenseVector& elevec1);
 
+  /*!
+  \brief return implementation type (physics)
+
+  */
+  INPAR::ARTDYN::ImplType ImplType(){return impltype_;}
+
 
   //@}
 
@@ -303,27 +322,16 @@ public:
 
   bool IsAle() const { return is_ale_; }
 
+  DRT::UTILS::GaussRule1D GaussRule() const { return gaussrule_; }
+
+
   //@}
 
 
 private:
 
-  //! action parameters recognized by Artery
-  enum ActionType
-  {
-    none,
-    calc_sys_matrix_rhs,
-    get_initail_artery_state,
-    solve_riemann_problem,
-    set_term_bc,
-    set_scatra_term_bc,
-    calc_postpro_vals,
-    calc_scatra_sys_matrix_rhs,
-    calc_scatra_from_scatra_fb,
-    evaluate_wf_wb,
-    evaluate_scatra_analytically
-  };
-
+  //! implementation type (physics)
+  INPAR::ARTDYN::ImplType impltype_;
 
   //! Gaussrule
   DRT::UTILS::GaussRule1D                         gaussrule_;
@@ -369,4 +377,3 @@ private:
 
 
 #endif  // #ifndef ARTERY_H
-#endif  // #ifdef D_ARTNET

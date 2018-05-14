@@ -90,6 +90,12 @@ namespace POROMULTIPHASE
     /// dof map of vector of unknowns of fluid field
     virtual Teuchos::RCP<const Epetra_Map> FluidDofRowMap() const;
 
+    /// dof map of vector of unknowns of artery field
+    virtual Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const;
+
+    /// system matrix of coupled artery porofluid problem
+    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ArteryPorofluidSysmat() const;
+
     //! access to structural field
     const Teuchos::RCP<ADAPTER::Structure>& StructureField(){return structure_;}
 
@@ -143,6 +149,10 @@ namespace POROMULTIPHASE
     virtual void BuildBlockNullSpaces(Teuchos::RCP<LINALG::Solver>& solver)
     {dserror("BuildBlockNullSpaces() only available for monolithic schemes!"); return;};
 
+    //! build the block null spaces
+    virtual void BuildArteryBlockNullSpace(Teuchos::RCP<LINALG::Solver>& solver, const int& arteryblocknum)
+    {dserror("BuildArteryBlockNullSpace() only available for monolithic schemes!"); return;};
+
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
     virtual void Evaluate(
         Teuchos::RCP<const Epetra_Vector> sx,
@@ -194,6 +204,9 @@ namespace POROMULTIPHASE
     Teuchos::RCP<Epetra_Vector> struct_zeros_;
     //! here the computation of the structure can be skipped, this is helpful if only fluid-scatra coupling should be calculated
     bool solve_structure_;
+
+    /// coupling with 1D artery network
+    const bool artery_coupl_;
 
     /// Print user output that structure field is disabled
     void PrintStructureDisabledInfo() ;

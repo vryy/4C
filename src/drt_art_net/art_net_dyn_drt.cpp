@@ -11,7 +11,6 @@
 \level 3
 
 *----------------------------------------------------------------------*/
-#ifdef D_ARTNET
 
 #include <ctime>
 #include <cstdlib>
@@ -22,13 +21,15 @@
 
 #include "art_net_dyn_drt.H"
 #include "artery_resulttest.H"
+#include "../drt_adapter/ad_art_net.H"
+#include "art_net_utils.H"
 
 #include "../drt_lib/drt_resulttest.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
 #include "../drt_inpar/drt_validparameters.H"
 
-
+#include "../drt_lib/drt_utils_createdis.H"
 
 /*----------------------------------------------------------------------*
  * Main control routine for arterial network including various solvers:
@@ -41,7 +42,7 @@ void dyn_art_net_drt()
   dyn_art_net_drt(false);
 }
 
-Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
+Teuchos::RCP<ADAPTER::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
 {
   if(DRT::Problem::Instance()->DoesExistDis("artery")==false)
   {
@@ -59,12 +60,19 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
     return Teuchos::null;
   }
 
+  // define the discretization names
+  const std::string artery_disname = "artery";
+  const std::string scatra_disname = "artery_scatra";
+
+  // access the problem
+  DRT::Problem* problem = DRT::Problem::Instance();
+
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
   Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
 
-  actdis = DRT::Problem::Instance()->GetDis("artery");
+  actdis = problem->GetDis(artery_disname);
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
@@ -88,9 +96,7 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
   // -------------------------------------------------------------------
   // set some pointers and variables
   // -------------------------------------------------------------------
-  // const Teuchos::ParameterList& probsize = DRT::Problem::Instance()->ProblemSizeParams();
-  //  const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
-  const Teuchos::ParameterList& artdyn   = DRT::Problem::Instance()->ArterialDynamicParams();
+  const Teuchos::ParameterList& artdyn       = problem->ArterialDynamicParams();
 
   if (actdis->Comm().MyPID()==0)
     DRT::INPUT::PrintDefaultParameters(IO::cout, artdyn);
@@ -103,43 +109,40 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
   // check if the solver has a valid solver number
   if (linsolvernumber == (-1))
     dserror("no linear solver defined. Please set LINEAR_SOLVER in ARTERIAL DYNAMIC to a valid number!");
-  Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp( new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
-                                                       actdis->Comm(),
-                                                       DRT::Problem::Instance()->ErrorFile()->Handle()),false );
-  actdis->ComputeNullSpaceIfNecessary(solver->Params());
-
-  // -------------------------------------------------------------------
-  // set parameters in list required for all schemes
-  // -------------------------------------------------------------------
-  Teuchos::ParameterList arterytimeparams;
-
-  // -------------------------------------- number of degrees of freedom
-  // number of degrees of freedom
-  const int ndim = DRT::Problem::Instance()->NDim();
-  arterytimeparams.set<int>              ("number of degrees of freedom" ,2*ndim);
-
-  // -------------------------------------------------- time integration
-  // the default time step size
-  arterytimeparams.set<double>           ("time step size"           ,artdyn.get<double>("TIMESTEP"));
-  // maximum number of timesteps
-  arterytimeparams.set<int>              ("max number timesteps"     ,artdyn.get<int>("NUMSTEP"));
-
-  // ----------------------------------------------- restart and output
-  // restart
-  arterytimeparams.set                  ("write restart every"       ,artdyn.get<int>("RESTARTEVRY"));
-  // solution output
-  arterytimeparams.set                  ("write solution every"      ,artdyn.get<int>("RESULTSEVRY"));
 
   // solution output
   if (artdyn.get<std::string>("SOLVESCATRA")=="yes")
   {
-    std::cout<<"Scatra will be solved"<<std::endl;
-    arterytimeparams.set ("solve scatra", true);
+    if (actdis->Comm().MyPID()==0)
+    {
+      std::cout << "<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>" << std::endl;
+      std::cout << "<  ARTERY:  ScaTra coupling present  >" << std::endl;
+      std::cout << "<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>" << std::endl;
+    }
+    Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis(scatra_disname);
+    // fill scatra discretization by cloning artery discretization
+    DRT::UTILS::CloneDiscretization<ART::ArteryScatraCloneStrategy>(actdis,scatradis);
+    scatradis->FillComplete();
+
+    // the problem is one way coupled, scatra needs only artery
+
+    // build a proxy of the structure discretization for the scatra field
+    Teuchos::RCP<DRT::DofSetInterface> arterydofset = actdis->GetDofSetProxy();
+
+    // check if ScatraField has 2 discretizations, so that coupling is possible
+    if (scatradis->AddDofSet(arterydofset) != 1)
+      dserror("unexpected dof sets in scatra field");
+
+    scatradis->FillComplete(true,false,false);
   }
   else
   {
-    std::cout<<"Scatra will not be solved"<<std::endl;
-    arterytimeparams.set ("solve scatra", false);
+    if (actdis->Comm().MyPID()==0)
+    {
+      std::cout << "<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>" << std::endl;
+      std::cout << "<  ARTERY: no ScaTra coupling present  >" << std::endl;
+      std::cout << "<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>" << std::endl;
+    }
   }
 
   // flag for writing the hemodynamic physiological results
@@ -148,20 +151,35 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
   //                       arteries.
   //  int init = DRT::INPUT::IntegralValue<int> (artdyn,"INITIALFIELD");
 
-  //------------------------------------------------------------------
-  // create all vectors and variables associated with the time
-  // integration (call the constructor);
-  // the only parameter from the list required here is the number of
-  // velocity degrees of freedom
-  //------------------------------------------------------------------
-  Teuchos::RCP<ART::ArtNetExplicitTimeInt> artnetexplicit
-    =
-    Teuchos::rcp(new ART::ArtNetExplicitTimeInt(actdis,*solver,arterytimeparams,*output),false);
+  // -------------------------------------------------------------------
+  // algorithm construction depending on
+  // time-integration (or stationary) scheme
+  // -------------------------------------------------------------------
+  INPAR::ARTDYN::TimeIntegrationScheme timintscheme =
+    DRT::INPUT::IntegralValue<INPAR::ARTDYN::TimeIntegrationScheme>(artdyn,"DYNAMICTYP");
+
+  // build art net time integrator
+  Teuchos::RCP<ADAPTER::ArtNet> artnettimint = ART::UTILS::CreateAlgorithm(
+        timintscheme,
+        actdis,
+        linsolvernumber,
+        artdyn,
+        artdyn,
+        DRT::Problem::Instance()->ErrorFile()->Handle(),
+        output
+        );
+
+  // initialize
+  artnettimint->Init(
+      artdyn,
+      artdyn,
+      scatra_disname
+      );
 
   // Initialize state save vectors
   if (CoupledTo3D)
   {
-    artnetexplicit->InitSaveState();
+    artnettimint->InitSaveState();
   }
 
   // initial field from restart or calculated by given function
@@ -169,38 +187,34 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
   if (restart && !CoupledTo3D)
   {
     // read the restart information, set vectors and variables
-    artnetexplicit->ReadRestart(restart);
+    artnettimint->ReadRestart(restart);
   }
   else
   {
     // artnetexplicit.SetInitialData(init,startfuncno);
   }
 
-  arterytimeparams.set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
+  // assign materials
+  // note: to be done after potential restart, as in ReadRestart()
+  //       the secondary material is destroyed
+  if (artdyn.get<std::string>("SOLVESCATRA")=="yes")
+    ART::UTILS::AssignMaterialPointers(artery_disname,scatra_disname);
 
   if (!CoupledTo3D)
   {
     // call time-integration (or stationary) scheme
     Teuchos::RCP<Teuchos::ParameterList> param_temp;
-    artnetexplicit->Integrate(CoupledTo3D,param_temp);
+    artnettimint->Integrate(CoupledTo3D,param_temp);
 
-    /*
-    Teuchos::RCP<DRT::ResultTest> resulttest
-      = Teuchos::rcp(new ART::ArteryResultTest(*artnetexplicit));
-    DRT::Problem::Instance()->AddFieldTest(resulttest);
-    DRT::Problem::Instance()->TestAll(actdis->Comm());
-    */
-    artnetexplicit->TestResults();
+    // result test
+    artnettimint->TestResults();
 
-    return artnetexplicit;
+    return artnettimint;
     //    return  Teuchos::null;
   }
   else
   {
-    return artnetexplicit;
+    return artnettimint;
   }
 
 } // end of dyn_art_net_drt()
-
-
-#endif //#ifdef D_ARTNET

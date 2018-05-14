@@ -32,6 +32,7 @@
 #include "scatra_ele_calc_poro_reac_ECM.H"
 #include "scatra_ele_calc_poro_reac.H"
 #include "scatra_ele_calc_multiporo_reac.H"
+#include "scatra_ele_calc_artery.H"
 #include "scatra_ele_calc_aniso.H"
 #include "scatra_ele_calc_cardiac_monodomain.H"
 #include "scatra_ele_calc_elch_diffcond_sti_thermo.H"
@@ -383,7 +384,8 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
         problem != INPAR::SCATRA::impltype_cardiac_monodomain and
         problem != INPAR::SCATRA::impltype_advreac and
         problem != INPAR::SCATRA::impltype_lsreinit and
-        problem != INPAR::SCATRA::impltype_bondreac)
+        problem != INPAR::SCATRA::impltype_bondreac and
+        problem != INPAR::SCATRA::impltype_one_d_artery)
       dserror("ImplType '%s' not implemented for transport on manifolds!",SCATRA::ImplTypeToString(problem).c_str());
 
   switch(problem)
@@ -507,6 +509,11 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
   case INPAR::SCATRA::impltype_bondreac:
   {
     return DRT::ELEMENTS::ScaTraEleCalcBondReac<distype,probdim>::Instance(numdofpernode,numscal,disname);
+        break;
+  }
+  case INPAR::SCATRA::impltype_one_d_artery:
+  {
+    return DRT::ELEMENTS::ScaTraEleCalcArtery<distype,probdim>::Instance(numdofpernode,numscal,disname);
         break;
   }
   default:

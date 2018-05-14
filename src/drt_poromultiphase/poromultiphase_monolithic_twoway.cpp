@@ -17,6 +17,7 @@
 
 #include "../drt_adapter/ad_porofluidmultiphase_wrapper.H"
 #include "../drt_adapter/ad_str_wrapper.H"
+#include "../drt_adapter/ad_art_net.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
 #include "../drt_inpar/inpar_solver.H"
@@ -147,22 +148,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Init(
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystem()
 {
   // -------------------------------------------------------------create combined map
-  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
-
-  vecSpaces.push_back(StructDofRowMap());
-
-  vecSpaces.push_back(FluidDofRowMap());
-
-  if (vecSpaces[0]->NumGlobalElements() == 0)
-    dserror("No structure equation. Panic.");
-  if (vecSpaces[1]->NumGlobalElements() == 0)
-    dserror("No fluid equation. Panic.");
-
-    // full Poromultiphase-elasticity-map
-  fullmap_ = LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
-
-  // full Poromultiphase-elasticity-blockmap
-  blockrowdofmap_->Setup(*fullmap_, vecSpaces);
+  SetupMaps();
 
   // check global map extractor
   blockrowdofmap_->CheckForValidMapExtractor();
@@ -175,6 +161,9 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystem()
   systemmatrix_ = Teuchos::rcp(
       new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
           *Extractor(), *Extractor(), 81, false, true));
+
+  // Initialize rhs
+  rhs_ = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
 
   k_sf_ = Teuchos::rcp(
       new LINALG::SparseMatrix(*(StructDofRowMap()), 81, true, true));
@@ -204,6 +193,32 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystem()
       break;
     }
   }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | setup the map                                       kremheller 04/18 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupMaps()
+{
+
+  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
+
+  vecSpaces.push_back(StructDofRowMap());
+
+  vecSpaces.push_back(FluidDofRowMap());
+
+  if (vecSpaces[0]->NumGlobalElements() == 0)
+    dserror("No structure equation. Panic.");
+  if (vecSpaces[1]->NumGlobalElements() == 0)
+    dserror("No fluid equation. Panic.");
+
+    // full Poromultiphase-elasticity-map
+  fullmap_ = LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
+
+  // full Poromultiphase-elasticity-blockmap
+  blockrowdofmap_->Setup(*fullmap_, vecSpaces);
 
   return;
 }
@@ -1121,13 +1136,23 @@ Teuchos::RCP<const Epetra_Map> POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::D
 }
 
 /*----------------------------------------------------------------------*
- | setup RHS (like fsimon)                             kremheller 01/12  |
+ | setup RHS (like fsimon)                             kremheller 03/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupRHS()
 {
-  // create full monolithic rhs vector
-  if(rhs_==Teuchos::null)
-    rhs_ = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
+  // get structure part
+  Teuchos::RCP<Epetra_Vector> str_rhs = SetupStructurePartofRHS();
+
+  // fill the Poroelasticity rhs vector rhs_ with the single field rhss
+  SetupVector(*rhs_, str_rhs, FluidField()->RHS());
+
+} // SetupRHS()
+
+/*----------------------------------------------------------------------*
+ | setup RHS (like fsimon)                             kremheller 05/18 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupStructurePartofRHS()
+{
   // Copy from TSI
   Teuchos::RCP<Epetra_Vector> str_rhs = struct_zeros_;
   if(solve_structure_)
@@ -1135,10 +1160,9 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupRHS()
   if (locsysman_!=Teuchos::null)
     locsysman_->RotateGlobalToLocal(str_rhs);
 
-  // fill the Poroelasticity rhs vector rhs_ with the single field rhss
-  SetupVector(*rhs_, str_rhs, FluidField()->RHS());
+  return str_rhs;
 
-} // SetupRHS()
+}
 
 /*----------------------------------------------------------------------*
  | setup vector of the structure and fluid field         kremheller 03/17|
@@ -1465,3 +1489,182 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroFDCheck()
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ | constructor                                         kremheller 05/18 |
+ *----------------------------------------------------------------------*/
+POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::PoroMultiPhaseMonolithicTwoWayArteryCoupling(
+    const Epetra_Comm& comm,
+    const Teuchos::ParameterList& globaltimeparams):
+    PoroMultiPhaseMonolithicTwoWay(comm, globaltimeparams)
+{
+
+  blockrowdofmap_artporo_ = Teuchos::rcp(new LINALG::MultiMapExtractor);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | setup the map                                       kremheller 04/18 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::SetupMaps()
+{
+
+  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
+
+  vecSpaces.push_back(StructDofRowMap());
+
+  vecSpaces.push_back(FluidDofRowMap());
+
+  vecSpaces.push_back(ArteryDofRowMap());
+
+  if (vecSpaces[0]->NumGlobalElements() == 0)
+    dserror("No structure equation. Panic.");
+  if (vecSpaces[1]->NumGlobalElements() == 0)
+    dserror("No fluid equation. Panic.");
+  if (vecSpaces[2]->NumGlobalElements() == 0)
+    dserror("No fluid equation. Panic.");
+
+    // full Poromultiphase-elasticity-map
+  fullmap_ = LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
+
+  // full Poromultiphase-elasticity-blockmap
+  blockrowdofmap_->Setup(*fullmap_, vecSpaces);
+
+  // full map of artery and poromulti DOFs
+  fullmap_artporo_ = LINALG::MultiMapExtractor::MergeMaps({vecSpaces[1], vecSpaces[2]});
+
+  // full artery-poromulti-blockmap
+  blockrowdofmap_artporo_->Setup(*fullmap_artporo_, {vecSpaces[1], vecSpaces[2]});
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | extract field vectors for calling Evaluate() of the  kremheller 04/18|
+ | single fields                                                        |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::ExtractFieldVectors(
+    Teuchos::RCP<const Epetra_Vector> x,
+    Teuchos::RCP<const Epetra_Vector>& sx,
+    Teuchos::RCP<const Epetra_Vector>& fx)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::ExtractFieldVectors");
+
+  // process structure unknowns of the first field
+  sx = Extractor()->ExtractVector(x, 0);
+
+  // process artery and porofluid unknowns
+  Teuchos::RCP<const Epetra_Vector> porofluid = Extractor()->ExtractVector(x, 1);
+  Teuchos::RCP<const Epetra_Vector> artery    = Extractor()->ExtractVector(x, 2);
+
+  Teuchos::RCP<Epetra_Vector> dummy = Teuchos::rcp(new Epetra_Vector(*fullmap_artporo_));
+
+  blockrowdofmap_artporo_->InsertVector(porofluid, 0, dummy);
+  blockrowdofmap_artporo_->InsertVector(artery, 1, dummy);
+
+  fx = dummy;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | setup system matrix of poromultiphase-elasticity with artery         |
+ | coupling                                           kremheller 05/18  |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
+{
+
+  PoroMultiPhaseMonolithicTwoWay::SetupSystemMatrix(mat);
+
+  // pure artery part
+  mat.Assign(2, 2, LINALG::View, ArteryPorofluidSysmat()->Matrix(1,1));
+  // artery-porofluid part
+  mat.Assign(2, 1, LINALG::View, ArteryPorofluidSysmat()->Matrix(1,0));
+  // porofluid-artery part
+  mat.Assign(1, 2, LINALG::View, ArteryPorofluidSysmat()->Matrix(0,1));
+
+  // Debug: matlab output of system matrix
+  bool matlab = false;
+  if (matlab)
+  {
+    std::string filename = "../o/mymatrix.dat";
+    LINALG::PrintBlockMatrixInMatlabFormat(filename, mat);
+    dserror("exit");
+  }
+
+  return;
+
+}
+
+/*----------------------------------------------------------------------*
+ | setup rhs of poromultiphase-elasticity with artery coupling          |
+ |                                                    kremheller 05/18  |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::SetupRHS()
+{
+  // get structure part
+  Teuchos::RCP<Epetra_Vector> str_rhs = SetupStructurePartofRHS();
+
+  // insert and scale
+  Extractor()->InsertVector(*str_rhs, 0, *rhs_);
+  rhs_->Scale(-1.0);
+
+  // insert artery part and porofluid part
+  Extractor()->InsertVector(*(blockrowdofmap_artporo_->ExtractVector(FluidField()->ArteryPorofluidRHS(), 0)), 1, *rhs_);
+  Extractor()->InsertVector(*(blockrowdofmap_artporo_->ExtractVector(FluidField()->ArteryPorofluidRHS(), 1)), 2, *rhs_);
+
+  return;
+}
+
+/*-----------------------------------------------------------------------/
+|  build the combined dbcmap                           kremheller 05/18  |
+/-----------------------------------------------------------------------*/
+void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::BuildCombinedDBCMap()
+{
+
+  PoroMultiPhaseMonolithicTwoWay::BuildCombinedDBCMap();
+
+  const Teuchos::RCP<const Epetra_Map> artcondmap
+  = FluidField()->ArtNetTimInt()->GetDBCMapExtractor()->CondMap();
+
+  // merge them
+  combinedDBCMap_= LINALG::MergeMap(combinedDBCMap_, artcondmap, false);
+
+  return;
+}
+/*----------------------------------------------------------------------------*
+ | build null space for artery block of global system matrix kremheller 05/18 |
+ *--------------------------------------------------------------------------- */
+void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::BuildArteryBlockNullSpace(
+    Teuchos::RCP<LINALG::Solver>& solver,
+    const int&                    arteryblocknum
+)
+{
+  // equip smoother for fluid matrix block with empty parameter sublists to trigger null space computation
+  Teuchos::ParameterList& blocksmootherparams3 = solver->Params().sublist("Inverse"+std::to_string(arteryblocknum));
+  blocksmootherparams3.sublist("Aztec Parameters");
+  blocksmootherparams3.sublist("MueLu Parameters");
+
+  // build null space of complete discretization
+  FluidField()->ArtNetTimInt()->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams3);
+  // fix the null space if some DOFs are condensed out
+  LINALG::Solver::FixMLNullspace("Artery",*(FluidField()->ArtNetTimInt()->Discretization()->DofRowMap(0)), *(FluidField()->ArteryDofRowMap()),blocksmootherparams3);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | Create linear (iterative) solver                    kremheller 05/18 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::CreateLinearSolver(
+    const Teuchos::ParameterList& solverparams,
+    const int                     solvertype
+    )
+{
+  PoroMultiPhaseMonolithicTwoWay::CreateLinearSolver(solverparams, solvertype);
+
+  // build also the artery null space
+  BuildArteryBlockNullSpace(solver_, 3);
+}
+

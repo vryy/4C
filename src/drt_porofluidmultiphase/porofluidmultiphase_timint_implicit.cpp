@@ -18,7 +18,8 @@
 
 #include "../drt_porofluidmultiphase/porofluidmultiphase_resulttest.H"
 
-
+#include "porofluidmultiphase_meshtying_strategy_std.H"
+#include "porofluidmultiphase_meshtying_strategy_artery.H"
 #include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele_action.H"
 #include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele.H"
 #include "../drt_mat/fluidporo_multiphase.H"
@@ -250,6 +251,14 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Init(
   // -------------------------------------------------------------------
   SetElementGeneralParameters();
 
+  // -------------------------------------------------------------------
+  // build mesh tying strategy
+  // -------------------------------------------------------------------
+  if(DRT::INPUT::IntegralValue<int>(params_,"ARTERY_COUPLING"))
+    strategy_ = Teuchos::rcp(new POROFLUIDMULTIPHASE::MeshtyingStrategyArtery(this, params_, poroparams_));
+  else
+    strategy_ = Teuchos::rcp(new POROFLUIDMULTIPHASE::MeshtyingStrategyStd(this, params_, poroparams_));
+
   return;
 } // TimIntImpl::Init()
 
@@ -320,6 +329,9 @@ void POROFLUIDMULTIPHASE::TimIntImpl::PrepareTimeLoop()
     EvaluateErrorComparedToAnalyticalSol();
   }
 
+  // do the same also for meshtying
+  strategy_->PrepareTimeLoop();
+
   return;
 } // POROFLUIDMULTIPHASE::TimIntImpl::PrepareTimeLoop
 
@@ -358,6 +370,9 @@ void POROFLUIDMULTIPHASE::TimIntImpl::PrepareTimeStep()
   // Neumann(n + alpha_f)
   ApplyDirichletBC(time_,phinp_,Teuchos::null);
   ApplyNeumannBC(neumann_loads_);
+
+  // do the same also for meshtying
+  strategy_->PrepareTimeStep();
 
   return;
 } // TimIntImpl::PrepareTimeStep
@@ -455,6 +470,15 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Solve()
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | contains the call of linear/nonlinear solver             vuong 08/16 |
+ *----------------------------------------------------------------------*/
+void POROFLUIDMULTIPHASE::TimIntImpl::Update()
+{
+
+  strategy_->Update();
+}
+
 
 /*----------------------------------------------------------------------*
  | apply moving mesh data                                   vuong 08/16 |
@@ -500,6 +524,9 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Output()
   // solution output and potentially restart data and/or flux data
   if (DoOutput())
   {
+    // do the same for the strategy
+    strategy_->Output();
+
     // step number and time (only after that data output is possible)
     output_->NewStep(step_,time_);
 
@@ -527,6 +554,30 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Output()
 Teuchos::RCP<const Epetra_Map> POROFLUIDMULTIPHASE::TimIntImpl::DofRowMap(unsigned nds) const
 {
   return Teuchos::rcp(discret_->DofRowMap(nds),false);
+}
+
+/*----------------------------------------------------------------------*
+ | output of solution vector to BINIO                       vuong 08/16 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> POROFLUIDMULTIPHASE::TimIntImpl::ArteryDofRowMap() const
+{
+  return strategy_->ArteryDofRowMap();
+}
+
+/*-----------------------------------------------------------------------*
+ | access to block system matrix of artery poro problem kremheller 05/18 |
+ *-----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> POROFLUIDMULTIPHASE::TimIntImpl::ArteryPorofluidSysmat() const
+{
+  return strategy_->ArteryPorofluidSysmat();
+}
+
+/*----------------------------------------------------------------------*
+ | return artery residual for coupled system           kremheller 05/18 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> POROFLUIDMULTIPHASE::TimIntImpl::ArteryPorofluidRHS() const
+{
+  return strategy_->ArteryPorofluidRHS();
 }
 
 
@@ -801,37 +852,49 @@ void POROFLUIDMULTIPHASE::TimIntImpl::NonlinearSolve()
     // initialize increment vector
     increment_->PutScalar(0.0);
 
-    {
-      // get cpu time
-      const double tcpusolve=Teuchos::Time::wallTime();
-
-      // time measurement: call linear solver
-      TEUCHOS_FUNC_TIME_MONITOR("POROFLUIDMULTIPHASE:       + call linear solver");
-
-      // do adaptive linear solver tolerance (not in first solve)
-      if (isadapttol && iternum_>1)
-      {
-        solver_->AdaptTolerance(ittolres_,actresidual,adaptolbetter);
-      }
-
-      // strategy_->Solve(solver_,sysmat_,increment_,residual_,phinp_,iternum_,projector_);
-      solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,1,Teuchos::null);
-
-      solver_->ResetTolerance();
-
-      // end time measurement for solver
-      double mydtsolve=Teuchos::Time::wallTime()-tcpusolve;
-      discret_->Comm().MaxAll(&mydtsolve,&dtsolve_,1);
-    }
+    LinearSolve(isadapttol, actresidual, adaptolbetter);
 
     //------------------------------------------------ update solution vector
-    UpdateIter(increment_);
+    UpdateIter(strategy_->CombinedIncrement(increment_));
 
   } // nonlinear iteration
 
   return;
 } // TimIntImpl::NonlinearSolve
 
+/*--------------------------------------------------------------------------*
+ | solve linear system of equations                        kremheller 04/18 |
+ *--------------------------------------------------------------------------*/
+void POROFLUIDMULTIPHASE::TimIntImpl::LinearSolve(
+    bool   isadapttol,
+    double actresidual,
+    double adaptolbetter
+    )
+{
+
+  // get cpu time
+  const double tcpusolve=Teuchos::Time::wallTime();
+
+  // time measurement: call linear solver
+  TEUCHOS_FUNC_TIME_MONITOR("POROFLUIDMULTIPHASE:       + call linear solver");
+
+  // do adaptive linear solver tolerance (not in first solve)
+  if (isadapttol && iternum_>1)
+  {
+    solver_->AdaptTolerance(ittolres_,actresidual,adaptolbetter);
+  }
+
+  strategy_->LinearSolve(solver_,sysmat_,increment_,residual_);
+  //solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,1,Teuchos::null);
+
+  solver_->ResetTolerance();
+
+  // end time measurement for solver
+  double mydtsolve=Teuchos::Time::wallTime()-tcpusolve;
+  discret_->Comm().MaxAll(&mydtsolve,&dtsolve_,1);
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  | check if to stop the nonlinear iteration                 vuong 08/16 |
@@ -843,9 +906,10 @@ bool POROFLUIDMULTIPHASE::TimIntImpl::AbortNonlinIter(
     double& actresidual)
 {
   //----------------------------------------------------- compute norms
-  double preresnorm = UTILS::CalculateVectorNorm(vectornormfres_, residual_);
-  double incprenorm = UTILS::CalculateVectorNorm(vectornorminc_, increment_);
-  double prenorm    = UTILS::CalculateVectorNorm(vectornorminc_, phinp_);
+  double preresnorm;
+  double incprenorm;
+  double prenorm;
+  strategy_->CalculateNorms(preresnorm, incprenorm, prenorm, increment_);
 
   // care for the case that nothing really happens in the pressure
   if (prenorm < 1e-5)
@@ -953,24 +1017,6 @@ bool POROFLUIDMULTIPHASE::TimIntImpl::AbortNonlinIter(
 
   return false;
 } // TimIntImpl::AbortNonlinIter
-
-
-/*----------------------------------------------------------------------*
- | Calculate problem specific norm                          vuong 08/16 |
- *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntImpl::CalcProblemSpecificNorm(
-    double& preresnorm,
-    double& incprenorm_L2,
-    double& prenorm_L2,
-    double& preresnorminf)
-{
-  residual_ ->Norm2(&preresnorm);
-  increment_->Norm2(&incprenorm_L2);
-  phinp_    ->Norm2(&prenorm_L2);
-  residual_ ->NormInf(&preresnorminf);
-
-  return;
-}
 
 /*----------------------------------------------------------------------*
  | Print Header to screen                              kremheller 05/17 |
@@ -1434,6 +1480,9 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Evaluate()
   // Apply Dirichlet Boundary Condition
   PrepareSystemForNewtonSolve();
 
+  // evaluate mesh tying
+  strategy_->Evaluate();
+
 }
 
 /*----------------------------------------------------------------------*
@@ -1521,12 +1570,13 @@ void POROFLUIDMULTIPHASE::TimIntImpl::PrepareSystemForNewtonSolve()
 void POROFLUIDMULTIPHASE::TimIntImpl::UpdateIter(
     const Teuchos::RCP<const Epetra_Vector> inc)
 {
+  Teuchos::RCP<const Epetra_Vector> extractedinc = strategy_->ExtractAndUpdateIter(inc);
   // store incremental vector to be available for convergence check
   // if incremental vector is received from outside for coupled problem
-  increment_->Update(1.0,*inc,0.0);
+  increment_->Update(1.0,*extractedinc,0.0);
 
   // update scalar values by adding increments
-  phinp_->Update(1.0,*inc,1.0);
+  phinp_->Update(1.0,*extractedinc,1.0);
 
   // compute time derivative at time n+1
   ComputeTimeDerivative();
@@ -1679,8 +1729,18 @@ void POROFLUIDMULTIPHASE::TimIntImpl::SetInitialField(
  *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::ResultTest> POROFLUIDMULTIPHASE::TimIntImpl::CreateFieldTest()
 {
+  strategy_->CreateFieldTest();
   return Teuchos::rcp(new POROFLUIDMULTIPHASE::ResultTest(*this));
 
+}
+
+/*----------------------------------------------------------------------*
+ |  read restart data                                  kremheller 04/18 |
+ -----------------------------------------------------------------------*/
+void POROFLUIDMULTIPHASE::TimIntImpl::ReadRestart(const int step)
+{
+  strategy_->ReadRestart(step);
+  return;
 }
 
 /*--------------------------------------------------------------------*
@@ -1961,4 +2021,12 @@ void POROFLUIDMULTIPHASE::TimIntImpl::FDCheck()
   AssembleMatAndRHS();
 
   return;
+}
+
+/*----------------------------------------------------------------*
+ | return arterial network time integrator       kremheller 04/18 |
+ *----------------------------------------------------------------*/
+Teuchos::RCP<ADAPTER::ArtNet> POROFLUIDMULTIPHASE::TimIntImpl::ArtNetTimInt()
+{
+  return strategy_->ArtNetTimInt();
 }

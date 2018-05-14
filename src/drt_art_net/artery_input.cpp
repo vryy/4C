@@ -7,7 +7,6 @@
 \maintainer Lena Yoshihara
 
 *----------------------------------------------------------------------*/
-#ifdef D_ARTNET
 
 #include "artery.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -63,7 +62,18 @@ bool DRT::ELEMENTS::Artery::ReadElement(const std::string& eletype,
     dserror("Reading of ART element failed: Gaussrule for line not supported!\n");
   }
 
+  // read artery implementation type
+  std::string impltype;
+  linedef->ExtractString("TYPE",impltype);
+
+  if(impltype == "Undefined")
+    impltype_ = INPAR::ARTDYN::impltype_undefined;
+  else if(impltype == "LinExp")
+    impltype_ = INPAR::ARTDYN::impltype_lin_exp;
+  else if(impltype == "PressureBased")
+    impltype_ = INPAR::ARTDYN::impltype_pressure_based;
+  else
+    dserror("Invalid implementation type for ARTERY elements!");
+
   return true;
 }
-
-#endif  // #ifdef D_ARTNET

@@ -8,7 +8,6 @@
 \maintainer Lena Yoshihara
 
 *----------------------------------------------------------------------*/
-#ifdef D_ARTNET
 
 #include "artery.H"
 #include "../drt_lib/drt_discret.H"
@@ -62,12 +61,14 @@ void DRT::ELEMENTS::ArteryType::SetupElementDefinition( std::map<std::string,std
     .AddIntVector("LINE2",2)
     .AddNamedInt("MAT")
     .AddNamedInt("GP")
+    .AddNamedString("TYPE")
     ;
 
   defs["LIN2"]
     .AddIntVector("LIN2",2)
     .AddNamedInt("MAT")
     .AddNamedInt("GP")
+    .AddNamedString("TYPE")
     ;
 }
 
@@ -77,6 +78,7 @@ void DRT::ELEMENTS::ArteryType::SetupElementDefinition( std::map<std::string,std
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Artery::Artery(int id, int owner) :
 DRT::Element(id,owner),
+impltype_(INPAR::ARTDYN::impltype_undefined),
 is_ale_(false),
 data_()
 {
@@ -91,6 +93,7 @@ data_()
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Artery::Artery(const DRT::ELEMENTS::Artery& old) :
 DRT::Element(old),
+impltype_(old.impltype_),
 gaussrule_(old.gaussrule_),
 is_ale_(old.is_ale_),
 data_(old.data_)
@@ -140,6 +143,7 @@ void DRT::ELEMENTS::Artery::Pack(DRT::PackBuffer& data) const
   Element::Pack(data);
   // Gaussrule
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
+  AddtoPack(data,impltype_);
   // is_ale_
   //  AddtoPack(data,is_ale_);
 
@@ -171,6 +175,7 @@ void DRT::ELEMENTS::Artery::Unpack(const std::vector<char>& data)
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);
   gaussrule_ = GaussRule1D(gausrule_integer); //explicit conversion from integer to enum
+  impltype_ = static_cast<INPAR::ARTDYN::ImplType>(ExtractInt(position,data));
   // is_ale_
   //  ExtractfromPack(position,data,is_ale_);
 
@@ -204,6 +209,3 @@ void DRT::ELEMENTS::Artery::Print(std::ostream& os) const
 
   return;
 }
-
-
-#endif  // #ifdef D_ARTNET

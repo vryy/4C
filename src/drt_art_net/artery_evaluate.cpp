@@ -7,11 +7,13 @@
 \level 3
 
 *----------------------------------------------------------------------*/
-#ifdef D_ARTNET
-
 
 #include "artery.H"
-#include "artery_lin_exp.H"
+#include "artery_ele_action.H"
+#include "artery_ele_factory.H"
+#include "artery_ele_interface.H"
+#include "artery_ele_calc_lin_exp.H"
+#include "../drt_inpar/inpar_bio.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
@@ -20,6 +22,7 @@
 #include "../linalg/linalg_utils.H"
 #include "../drt_mat/cnst_1d_art.H"
 #include "../drt_mat/matlist.H"
+
 
 #include <Epetra_SerialDenseSolver.h>
 
@@ -39,154 +42,75 @@ int DRT::ELEMENTS::Artery::Evaluate(Teuchos::ParameterList& params,
                                     Epetra_SerialDenseVector& elevec2,
                                     Epetra_SerialDenseVector& elevec3)
 {
-  DRT::ELEMENTS::Artery::ActionType act = Artery::none;
-
-  // get the action required
-  std::string action = params.get<std::string>("action","none");
-  if (action == "none") dserror("No action supplied");
-  else if (action == "calc_sys_matrix_rhs")
-    act = Artery::calc_sys_matrix_rhs;
-  else if (action == "get_initail_artery_state")
-    act = Artery::get_initail_artery_state;
-  else if (action == "solve_riemann_problem")
-    act = Artery::solve_riemann_problem;
-  else if (action == "set_term_bc")
-    act = Artery::set_term_bc;
-  else if (action == "set_scatra_term_bc")
-    act = Artery::set_scatra_term_bc;
-  else if (action == "calc_postprocessing_values")
-    act = Artery::calc_postpro_vals;
-  else if (action == "calc_scatra_sys_matrix_rhs")
-    act = Artery::calc_scatra_sys_matrix_rhs;
-  else if (action == "calc_scatra_from_scatra_fb")
-     act = Artery::calc_scatra_from_scatra_fb;
-  else if(action == "evaluate_wf_wb")
-     act = Artery::evaluate_wf_wb;
-  else if(action == "evaluate_scatra_analytically")
-     act = Artery::evaluate_scatra_analytically;
-  else
-  {
-
-    char errorout[200];
-    sprintf(errorout,"Unknown type of action (%s) for 1D_Artery",action.c_str());
-
-    dserror(errorout);
-  }
-
-/*
-Here must add the steps for evaluating an element
-*/
+  // check for the action parameter
+  const ARTERY::Action action = DRT::INPUT::get<ARTERY::Action>(params,"action");
+  /*
+  Here must add the steps for evaluating an element
+  */
   Teuchos::RCP<MAT::Material> mat = Material();
 
-  switch(act)
+  switch(action)
   {
-    case calc_sys_matrix_rhs:
+    case ARTERY::calc_sys_matrix_rhs:
     {
-      return DRT::ELEMENTS::ArteryExpInterface::Expl(this)->Evaluate(this,
-                                                                        params,
-                                                                        discretization,
-                                                                        lm,
-                                                                        elemat1,
-                                                                        elemat2,
-                                                                        elevec1,
-                                                                        elevec2,
-                                                                        elevec3,
-                                                                        mat);
-    }
-    break;
-    case get_initail_artery_state:
-    {
-      DRT::ELEMENTS::ArteryExpInterface::Expl(this)->Initial(this,
-                                                             params,
-                                                             discretization,
-                                                             lm,
-                                                             mat);
 
+     return DRT::ELEMENTS::ArtNetFactory::ProvideImpl(Shape(),impltype_,discretization.Name())->Evaluate(
+              this,
+              params,
+              discretization,
+              lm,
+              elemat1,
+              elemat2,
+              elevec1,
+              elevec2,
+              elevec3,
+              mat
+              );
     }
     break;
-    case set_term_bc:
+    case ARTERY::calc_scatra_sys_matrix_rhs:
     {
-      DRT::ELEMENTS::ArteryExpInterface::Expl(this)->EvaluateTerminalBC(this,
-                                                                        params,
-                                                                        discretization,
-                                                                        lm,
-                                                                        mat);
-
+      return DRT::ELEMENTS::ArtNetFactory::ProvideImpl(Shape(),impltype_,discretization.Name())->ScatraEvaluate(
+               this,
+               params,
+               discretization,
+               lm,
+               elemat1,
+               elemat2,
+               elevec1,
+               elevec2,
+               elevec3,
+               mat
+               );
+      break;
     }
-    break;
-    case set_scatra_term_bc:
+    case ARTERY::get_initial_artery_state:
+    case ARTERY::set_term_bc:
+    case ARTERY::set_scatra_term_bc:
+    case ARTERY::set_scatra_bc:
+    case ARTERY::solve_riemann_problem:
+    case ARTERY::calc_postpro_vals:
+    case ARTERY::calc_scatra_from_scatra_fb:
+    case ARTERY::evaluate_wf_wb:
+    case ARTERY::evaluate_scatra_analytically:
     {
-      DRT::ELEMENTS::ArteryExpInterface::Expl(this)->EvaluateScatraBC(this,
-                                                                        params,
-                                                                        discretization,
-                                                                        lm,
-                                                                        mat);
-
+      return DRT::ELEMENTS::ArtNetFactory::ProvideImpl(Shape(),impltype_,discretization.Name())->EvaluateService(
+               this,
+               action,
+               params,
+               discretization,
+               lm,
+               elemat1,
+               elemat2,
+               elevec1,
+               elevec2,
+               elevec3,
+               mat
+               );
     }
     break;
-    case solve_riemann_problem:
-    {
-      DRT::ELEMENTS::ArteryExpInterface::Expl(this)->SolveRiemann(this,
-                                                                  params,
-                                                                  discretization,
-                                                                  lm,
-                                                                  mat);
-
-    }
-    break;
-    case calc_postpro_vals:
-    {
-      DRT::ELEMENTS::ArteryExpInterface::Expl(this)->CalcPostprocessingValues(this,
-                                                                              params,
-                                                                              discretization,
-                                                                              lm,
-                                                                              mat);
-
-    }
-    break;
-  case calc_scatra_sys_matrix_rhs:
-  {
-    return DRT::ELEMENTS::ArteryExpInterface::Expl(this)->ScatraEvaluate(this,
-                                                                         params,
-                                                                         discretization,
-                                                                         lm,
-                                                                         elemat1,
-                                                                        elemat2,
-                                                                         elevec1,
-                                                                         elevec2,
-                                                                         elevec3,
-                                                                         mat);
-  }
-  break;
-  case  calc_scatra_from_scatra_fb:
-  {
-    DRT::ELEMENTS::ArteryExpInterface::Expl(this)->CalcScatraFromScatraFW(this,
-                                                                          params,
-                                                                          discretization,
-                                                                          lm,
-                                                                          mat);
-  }
-  break;
-  case evaluate_wf_wb:
-  {
-    DRT::ELEMENTS::ArteryExpInterface::Expl(this)->EvaluateWfAndWb(this,
-                                                                   params,
-                                                                   discretization,
-                                                                   lm,
-                                                                   mat);
-  }
-  break;
-  case evaluate_scatra_analytically:
-  {
-    DRT::ELEMENTS::ArteryExpInterface::Expl(this)-> SolveScatraAnalytically(this,
-                                                                   params,
-                                                                   discretization,
-                                                                   lm,
-                                                                   mat);
-  }
-  break;
-  default:
-      dserror("Unkown type of action for Artery");
+    default:
+      dserror("Unkown type of action %d for Artery", action);
   }// end of switch(act)
 
 
@@ -256,6 +180,3 @@ bool DRT::ELEMENTS::Artery::isHigherOrderElement(
   }
   return hoel;
 }
-
-
-#endif  // #ifdef D_ARTNET

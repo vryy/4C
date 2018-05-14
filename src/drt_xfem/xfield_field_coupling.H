@@ -185,7 +185,8 @@ namespace XFieldField {
         const Teuchos::RCP<const Epetra_Map>& slavenodemap,
         const Teuchos::RCP<const Epetra_Map>& permmasternodemap,
         const Teuchos::RCP<const Epetra_Map>& permslavenodemap,
-        const int& numdof,
+        const std::vector<int>& masterdofs,
+        const std::vector<int>& slavedofs,
         const int nds_master=0,
         const int nds_slave=0);
 

@@ -34,11 +34,6 @@
 #cmakedefine D_THERMO
 #endif
 
-#ifndef D_ARTNET
-#cmakedefine D_ARTNET
-#endif
-
-
 #ifndef BINIO
 #cmakedefine BINIO
 #endif

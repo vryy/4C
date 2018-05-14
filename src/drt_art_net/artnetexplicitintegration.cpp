@@ -18,6 +18,7 @@
 #include <stdio.h>
 
 #include "../drt_art_net/artnetexplicitintegration.H"
+#include "artery_ele_action.H"
 
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -44,47 +45,43 @@
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
 ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(Teuchos::RCP<DRT::Discretization>  actdis,
-                                                  LINALG::Solver  &         solver,
-                                                  Teuchos::ParameterList&   params,
+                                                  const int linsolvernumber,
+                                                  const Teuchos::ParameterList& probparams,
+                                                  const Teuchos::ParameterList& artparams,
+                                                  FILE* errfile,
                                                   IO::DiscretizationWriter& output)
-  :
-  // call constructor for "nontrivial" objects
-  discret_(actdis),
-  solver_ (solver),
-  params_ (params),
-  output_ (output),
-  time_(0.0),
-  step_(0),
-  uprestart_(params.get("write restart every", -1)),
-  upres_(params.get("write solution every", -1)),
-  solvescatra_(params.get("solve scatra", false)),
-  coupledTo3D_(false)
+  : TimInt(actdis, linsolvernumber, probparams, artparams, errfile, output)
 {
   //  exit(1);
-  // -------------------------------------------------------------------
-  // get the processor ID from the communicator
-  // -------------------------------------------------------------------
-  myrank_  = discret_->Comm().MyPID();
 
+} // ArtNetExplicitTimeInt::ArtNetExplicitTimeInt
+
+
+
+/*----------------------------------------------------------------------*
+ | Initialize the time integration.                                     |
+ |                                                          ismail 12/09|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void ART::ArtNetExplicitTimeInt::Init(
+    const Teuchos::ParameterList& globaltimeparams,
+    const Teuchos::ParameterList& arteryparams,
+    const std::string& scatra_disname
+    )
+{
   // time measurement: initialization
   if(!coupledTo3D_)
   {
     TEUCHOS_FUNC_TIME_MONITOR(" + initialization");
   }
 
-  // -------------------------------------------------------------------
-  // get the basic parameters first
-  // -------------------------------------------------------------------
-  // time-step size
-  dtp_ = dta_ = params_.get<double>("time step size");
-  // maximum number of timesteps
-  stepmax_  = params_.get<int>   ("max number timesteps");
-  // maximum simulation time
-  maxtime_  = dtp_*double(stepmax_);
-
+  // call base class
+  TimInt::Init(globaltimeparams, arteryparams, scatra_disname);
 
   // ensure that degrees of freedom in the discretization have been set
-  if (!discret_->Filled() || !actdis->HaveDofs()) discret_->FillComplete();
+  if (!discret_->Filled() || !discret_->HaveDofs()) discret_->FillComplete();
 
   // -------------------------------------------------------------------
   // Force the reducesd 1d arterial network discretization to run on
@@ -203,7 +200,7 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(Teuchos::RCP<DRT::Discretizati
     Wfn_ ->Update(1.0,*Wfo_,0.0);
     Wbn_ ->Update(1.0,*Wbo_,0.0);
     //eleparams.set("lmowner",lmowner);
-    eleparams.set("action","get_initail_artery_state");
+    eleparams.set<int>("action",ARTERY::get_initial_artery_state);
     discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
   }
@@ -279,158 +276,7 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(Teuchos::RCP<DRT::Discretizati
   std::cout<<*Wfnp_<<std::endl;
 #endif
 
-} // ArtNetExplicitTimeInt::ArtNetExplicitTimeInt
-
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | Start the time integration.                                          |
- |                                                          ismail 12/09|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::ArtNetExplicitTimeInt::Integrate()
-{
-  Teuchos::RCP<Teuchos::ParameterList> param;
-  Integrate(false, param);
-} // ArtNetExplicitTimeInt::Integrate
-
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | Start the time integration.                                          |
- |                                                          ismail 06/09|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::ArtNetExplicitTimeInt::Integrate(bool CoupledTo3D,
-                                           Teuchos::RCP<Teuchos::ParameterList> CouplingParams)
-{
-  coupledTo3D_ = CoupledTo3D;
-  if (CoupledTo3D && CouplingParams.get() == NULL)
-  {
-    dserror("Coupling parameter list is not allowed to be empty, If a 3-D/reduced-D coupling is defined\n");
-  }
-
-  TimeLoop(CoupledTo3D,CouplingParams);
-
-  // print the results of time measurements
-  if (!coupledTo3D_)
-  {
-    Teuchos::TimeMonitor::summarize();
-  }
-
-  return;
-} // ArtNetExplicitTimeInt::Integrate
-
-
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | contains the time loop                                   ismail 06/09|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::ArtNetExplicitTimeInt::TimeLoop(bool CoupledTo3D,
-                                          Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
-{
-  coupledTo3D_ = CoupledTo3D;
-  // time measurement: time loop
-  if(!coupledTo3D_)
-  {
-    TEUCHOS_FUNC_TIME_MONITOR(" + time loop");
-  }
-
-  while (step_<stepmax_ and time_<maxtime_)
-  {
-    PrepareTimeStep();
-    // -------------------------------------------------------------------
-    //                       output to screen
-    // -------------------------------------------------------------------
-    if (myrank_==0)
-    {
-      if(!coupledTo3D_)
-      {
-        printf("TIME: %11.4E/%11.4E  DT = %11.4E   Solving Artery    STEP = %4d/%4d \n",
-               time_,maxtime_,dta_,step_,stepmax_);
-      }
-      else
-      {
-         printf("SUBSCALE_TIME: %11.4E/%11.4E  SUBSCALE_DT = %11.4E   Solving Artery    SUBSCALE_STEP = %4d/%4d \n",
-               time_,maxtime_,dta_,step_,stepmax_);
-      }
-    }
-
-    Solve(CouplingTo3DParams);
-
-    // -------------------------------------------------------------------
-    //                         Solve for the scalar transport
-    // -------------------------------------------------------------------
-    if (solvescatra_)
-    {
-      SolveScatra();
-    }
-
-
-    // -------------------------------------------------------------------
-    //                         update solution
-    //        current solution becomes old solution of next timestep
-    // -------------------------------------------------------------------
-    TimeUpdate();
-
-    // -------------------------------------------------------------------
-    //  lift'n'drag forces, statistics time sample and output of solution
-    //  and statistics
-    // -------------------------------------------------------------------
-    if (!CoupledTo3D)
-    {
-      Output(CoupledTo3D,CouplingTo3DParams);
-    }
-
-    // -------------------------------------------------------------------
-    //                       update time step sizes
-    // -------------------------------------------------------------------
-    dtp_ = dta_;
-
-    // -------------------------------------------------------------------
-    //                    stop criterium for timeloop
-    // -------------------------------------------------------------------
-    if (CoupledTo3D)
-    {
-      break;
-    }
-  }
-
-} // ArtNetExplicitTimeInt::TimeLoop
-
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | setup the variables to do a new time step                ismail 06/09|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::ArtNetExplicitTimeInt::PrepareTimeStep()
-{
-  // -------------------------------------------------------------------
-  //              set time dependent parameters
-  // -------------------------------------------------------------------
-  step_ += 1;
-  time_ += dta_;
-}
-
+} // ArtNetExplicitTimeInt::Init
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -476,7 +322,7 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
     Teuchos::ParameterList eleparams;
 
     // action for elements
-    eleparams.set("action","calc_sys_matrix_rhs");
+    eleparams.set<int>("action",ARTERY::calc_sys_matrix_rhs);
     eleparams.set("time step size",dta_);
 
     // other parameters that might be needed by the elements
@@ -504,7 +350,7 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
     Teuchos::ParameterList eleparams;
 
     // action for elements
-    eleparams.set("action","solve_riemann_problem");
+    eleparams.set<int>("action",ARTERY::solve_riemann_problem);
 
     // set vecotr values needed by elements
     discret_->ClearState();
@@ -533,7 +379,7 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
     Teuchos::ParameterList eleparams;
 
     // action for elements
-    eleparams.set("action","set_term_bc");
+    eleparams.set<int>("action",ARTERY::set_term_bc);
 
     // set vecotr values needed by elements
     discret_->ClearState();
@@ -598,7 +444,7 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
 
 #endif
     // call solver
-    solver_.Solve(sysmat_->EpetraOperator(),qanp_,rhs_,true,true);
+    solver_->Solve(sysmat_->EpetraOperator(),qanp_,rhs_,true,true);
   }
 
 
@@ -615,7 +461,7 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
     Teuchos::ParameterList eleparams;
 
     // action for elements
-    eleparams.set("action","evaluate_wf_wb");
+    eleparams.set<int>("action",ARTERY::evaluate_wf_wb);
 
     // set vecotr values needed by elements
     discret_->ClearState();
@@ -644,7 +490,7 @@ void ART::ArtNetExplicitTimeInt::SolveScatra()
     Teuchos::ParameterList eleparams;
 
     // action for elements
-    eleparams.set("action","calc_scatra_sys_matrix_rhs");
+    eleparams.set<int>("action",ARTERY::calc_scatra_sys_matrix_rhs);
     eleparams.set("time step size",dta_);
 
     // other parameters that might be needed by the elements
@@ -698,7 +544,7 @@ void ART::ArtNetExplicitTimeInt::SolveScatra()
     Teuchos::ParameterList eleparams;
 
     // action for elements
-    eleparams.set("action","set_scatra_term_bc");
+    eleparams.set<int>("action",ARTERY::set_scatra_term_bc);
 
     // set vecotr values needed by elements
     discret_->ClearState();
@@ -723,7 +569,7 @@ void ART::ArtNetExplicitTimeInt::SolveScatra()
     Teuchos::ParameterList eleparams;
 
     // action for elements
-    eleparams.set("action","evaluate_scatra_analytically");
+    eleparams.set<int>("action",ARTERY::evaluate_scatra_analytically);
 
     // set vecotr values needed by elements
     discret_->ClearState();
@@ -747,7 +593,7 @@ void ART::ArtNetExplicitTimeInt::SolveScatra()
     Teuchos::ParameterList eleparams;
 
     // action for elements
-    eleparams.set("action","set_scatra_term_bc");
+    eleparams.set<int>("action",ARTERY::set_scatra_term_bc);
 
     // set vecotr values needed by elements
     discret_->ClearState();
@@ -764,34 +610,6 @@ void ART::ArtNetExplicitTimeInt::SolveScatra()
   scatraO2np_->Update(1.0,*scatra_bcval_ ,1.0);
 #endif
 }
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | call elements to calculate system matrix/rhs and assemble            |
- | this function will be kept empty untill further use     ismail 07/09 |
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::ArtNetExplicitTimeInt::AssembleMatAndRHS()
-{
-
-  dtele_    = 0.0;
-  dtfilter_ = 0.0;
-  // time measurement: element
-  if(!coupledTo3D_)
-  {
-    TEUCHOS_FUNC_TIME_MONITOR("      + element calls");
-  }
-
-  // get cpu time
-  //  const double tcpu=Teuchos::Time::wallTime();
-
-} // ArtNetExplicitTimeInt::AssembleMatAndRHS
-
-
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1181,7 +999,7 @@ void ART::ArtNetExplicitTimeInt::CalcPostprocessingValues()
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  eleparams.set("action","calc_postprocessing_values");
+  eleparams.set<int>("action",ARTERY::calc_postpro_vals);
 
   // set vecotr values needed by elements
   discret_->ClearState();
@@ -1210,7 +1028,7 @@ void ART::ArtNetExplicitTimeInt::CalcPostprocessingValues()
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  eleparams.set("action","calc_postprocessing_values");
+  eleparams.set<int>("action",ARTERY::calc_postpro_vals);
 
   // set vecotr values needed by elements
   discret_->ClearState();
@@ -1244,7 +1062,7 @@ void ART::ArtNetExplicitTimeInt::CalcScatraFromScatraFW(
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  eleparams.set("action","calc_scatra_from_scatra_fb");
+  eleparams.set<int>("action",ARTERY::calc_scatra_from_scatra_fb);
 
   // set vecotr values needed by elements
   discret_->ClearState();
@@ -1257,7 +1075,16 @@ void ART::ArtNetExplicitTimeInt::CalcScatraFromScatraFW(
 
 void ART::ArtNetExplicitTimeInt::TestResults()
 {
-    Teuchos::RCP<DRT::ResultTest> resulttest = Teuchos::rcp(new ART::ArteryResultTest(*(this)));
+    Teuchos::RCP<DRT::ResultTest> resulttest = CreateFieldTest();
     DRT::Problem::Instance()->AddFieldTest(resulttest);
     DRT::Problem::Instance()->TestAll(discret_->Comm());
+}
+
+/*----------------------------------------------------------------------*
+ | create result test for this field                   kremheller 03/18 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::ResultTest> ART::ArtNetExplicitTimeInt::CreateFieldTest()
+{
+  return Teuchos::rcp(new ART::ArteryResultTest(*(this)));
+
 }

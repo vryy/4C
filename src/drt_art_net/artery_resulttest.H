@@ -10,8 +10,6 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef D_ARTNET
-
 #ifndef ART_NET_RESULTTEST_H
 #define ART_NET_RESULTTEST_H
 
@@ -20,7 +18,6 @@
 #include <Epetra_MultiVector.h>
 
 #include "../drt_lib/drt_resulttest.H"
-#include "artnetexplicitintegration.H"
 
 namespace DRT
 {
@@ -31,6 +28,7 @@ namespace ART{
 
 // forward declaration
   class ArtNetExplicitTimeInt;
+  class ArtNetImplStationary;
 
 /*!
   \brief artnet specific result test class
@@ -47,6 +45,11 @@ public:
   */
   ArteryResultTest(ArtNetExplicitTimeInt& art_net);
 
+  /*!
+  \brief constructor
+  */
+  ArteryResultTest(ArtNetImplStationary& art_net);
+
 
   /// our version of nodal value tests
   /*!
@@ -59,12 +62,10 @@ private:
   /// Teuchos::RCP to scalar transport discretization
   Teuchos::RCP<DRT::Discretization> dis_;
   /// Teuchos::RCP to solution vector
-  Teuchos::RCP<Epetra_Vector>       mysol_;
+  Teuchos::RCP<const Epetra_Vector>       mysol_;
 
 };
 
 } // namespace ART
 
 #endif //ART_NET_RESULTTEST_H
-
-#endif //#ifdef D_ARTNET

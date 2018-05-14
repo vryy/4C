@@ -24,6 +24,11 @@
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra/scatra_timint_poromulti.H"
 
+#include "../drt_adapter/ad_art_net.H"
+#include "../drt_adapter/ad_porofluidmultiphase_wrapper.H"
+
+#include "../drt_scatra/scatra_timint_meshtying_strategy_artery.H"
+
 /*----------------------------------------------------------------------*
  | constructor                                              vuong 08/16  |
  *----------------------------------------------------------------------*/
@@ -36,7 +41,8 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::PoroMultiPhaseScaTraBase(
     fluxreconmethod_(INPAR::POROFLUIDMULTIPHASE::gradreco_none),
     ndsporofluid_scatra_(-1),
     timertimestep_(comm),
-    dttimestep_(0.0)
+    dttimestep_(0.0),
+    artery_coupl_(DRT::INPUT::IntegralValue<int>(globaltimeparams,"ARTERY_COUPLING"))
 {
 
 }
@@ -138,11 +144,30 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
       scatra_disname,
       true);
 
+  // do we perform coupling with 1D artery
+  if(artery_coupl_)
+  {
+    // get mesh tying strategy
+    scatramsht_ =
+        Teuchos::rcp_dynamic_cast<SCATRA::MeshtyingStrategyArtery>(scatra_->ScaTraField()->Strategy());
+    if(scatramsht_ == Teuchos::null)
+      dserror("cast to Meshtying strategy failed!");
+
+    scatramsht_->SetArteryTimeIntegrator(PoroField()->FluidField()->ArtNetTimInt());
+  }
+
   // only now we must call Setup() on the scatra time integrator.
   // all objects relying on the parallel distribution are
   // created and pointers are set.
   // calls Setup() on the scatra time integrator inside.
   scatra_->ScaTraField()->Setup();
+
+  // do we perform coupling with 1D artery
+  if(artery_coupl_)
+  {
+    // this check can only be performed after calling setup
+    scatramsht_->CheckInitialFields();
+  }
 
   //done.
   return;
@@ -158,8 +183,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ReadRestart( int restart )
     // read restart data for structure field (will set time and step internally)
     poromulti_->ReadRestart(restart);
 
-    // read restart data for fluid field (will set time and step internally)
+    // read restart data for scatra field (will set time and step internally)
     scatra_->ScaTraField()->ReadRestart(restart);
+    if(artery_coupl_)
+      scatramsht_->ArtScatraField()->ReadRestart(restart);
 
     // reset time and step for the global algorithm
     SetTimeStep(scatra_->ScaTraField()->Time(), restart);
@@ -211,6 +238,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::PrepareTimeStep(bool printh
 
   SetPoroSolution();
   scatra_->ScaTraField()->PrepareTimeStep();
+  if(artery_coupl_)
+    scatramsht_->ArtScatraField()->PrepareTimeStep();
   // set structure-based scalar transport values
   SetScatraSolution();
 
@@ -231,6 +260,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::PrepareTimeLoop()
   // initial output for scatra field
   SetPoroSolution();
   scatra_->ScaTraField()->Output();
+  if(artery_coupl_)
+    scatramsht_->ArtScatraField()->Output();
+
   return;
 }
 
@@ -241,9 +273,17 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::UpdateAndOutput()
 {
   poromulti_->UpdateAndOutput();
 
+  // scatra field
   scatra_->ScaTraField()->Update();
   scatra_->ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
   scatra_->ScaTraField()->Output();
+  // artery scatra field
+  if(artery_coupl_)
+  {
+    scatramsht_->ArtScatraField()->Update();
+    scatramsht_->ArtScatraField()->EvaluateErrorComparedToAnalyticalSol();
+    scatramsht_->ArtScatraField()->Output();
+  }
   if (Comm().MyPID()==0)
   {
     std::cout<<"Finished POROMULTIPHASESCATRA STEP " << std::setw(5) << std::setprecision(4) << std::scientific << Step() << "/"
@@ -291,6 +331,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetPoroSolution()
         poromulti_->FluidFlux(),
         1
         );
+
+  if(artery_coupl_)
+    scatramsht_->SetArteryPressure();
 
 }
 

@@ -33,7 +33,7 @@ namespace LINALG
 namespace POROMULTIPHASESCATRA
 {
 
-  //! Base class of all solid-scatra algorithms
+  //! monolithic coupling algorithm of poromultiphasescatra framework
   class PoroMultiPhaseScaTraMonolithicTwoWay : public PoroMultiPhaseScaTraMonolithic
   {
   public:
@@ -82,19 +82,22 @@ namespace POROMULTIPHASESCATRA
     Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const {return combinedDBCMap_;};
 
 
-  private:
+  protected:
 
     // Setup Newton-Raphson iteration
     void SetupNewton();
 
+    // Setup full map
+    virtual void SetupMaps();
+
     // Setup monolithic rhs-vector
-    void SetupRHS();
+    virtual void SetupRHS();
 
     //! build the combined dirichletbcmap
-    void BuildCombinedDBCMap();
+    virtual void BuildCombinedDBCMap();
 
     //! build the block null spaces
-    void BuildBlockNullSpaces();
+    virtual void BuildBlockNullSpaces();
 
     //! create the linear solver
     void CreateLinearSolver(const Teuchos::ParameterList& solverparams, const int solvertype);
@@ -127,7 +130,7 @@ namespace POROMULTIPHASESCATRA
         );
 
     //! setup monolithic system matrix
-    void SetupSystemMatrix();
+    virtual void SetupSystemMatrix();
 
     //! print header
     void PrintHeader();
@@ -165,6 +168,9 @@ namespace POROMULTIPHASESCATRA
     // update the single fields after convergence
     void UpdateFieldsAfterConvergence();
 
+    // update the scatra field
+    virtual void UpdateScatra(Teuchos::RCP<const Epetra_Vector> scatrainc);
+
     //! return structure fluid coupling sparse matrix
     Teuchos::RCP<LINALG::SparseMatrix> PoroFluidScatraCouplingMatrix();
 
@@ -173,6 +179,9 @@ namespace POROMULTIPHASESCATRA
 
     //! return scatra fluid coupling sparse matrix
     Teuchos::RCP<LINALG::SparseMatrix> ScatraPoroFluidCouplingMatrix();
+
+    //! evaluate scatra field
+    virtual void EvaluateScatra();
 
     //! evaluate porofluid-scatra coupling sparse matrix
     void ApplyPoroFluidScatraCouplMatrix(Teuchos::RCP< LINALG::SparseOperator> k_pfs);
@@ -282,6 +291,87 @@ namespace POROMULTIPHASESCATRA
 
 
   }; //PoroMultiPhaseScatraMonolithic
+
+  //! monolithic coupling algorithm of poromultiphasescatra framework coupled with 1D artery network
+  class PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling : public PoroMultiPhaseScaTraMonolithicTwoWay
+  {
+  public:
+
+    /// create using a Epetra_Comm
+    PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling(
+        const Epetra_Comm& comm,
+        const Teuchos::ParameterList& globaltimeparams);
+
+    /// virtual destructor
+    virtual ~PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling(){};
+
+  private:
+
+    // Setup full map
+    virtual void SetupMaps();
+
+    // update the scatra field
+    virtual void UpdateScatra(Teuchos::RCP<const Epetra_Vector> scatrainc);
+
+    //! extract the field vectors from a given composed vector.
+    /*!
+     x is the sum of all increments up to this point.
+     \param x   (i) composed vector that contains all field vectors
+     \param stx (o) structural vector (e.g. displacements)
+     \param flx (o) fluid vector (primary variables of fluid field, i.e. pressures or saturations) and
+                    pressures of artery network
+     \param scx (o) scatra vector (primary variables of scatra field, i.e. mass fraction)
+                    and mass fractions in 1D artery network
+     */
+    virtual void ExtractFieldVectors(
+        Teuchos::RCP<const Epetra_Vector> x,
+        Teuchos::RCP<const Epetra_Vector>& stx,
+        Teuchos::RCP<const Epetra_Vector>& flx,
+        Teuchos::RCP<const Epetra_Vector>& scx);
+
+    //! setup monolithic system matrix
+    virtual void SetupSystemMatrix();
+
+    // Setup monolithic rhs-vector
+    virtual void SetupRHS();
+
+    //! evaluate scatra field
+    virtual void EvaluateScatra();
+
+    //! build the combined dirichletbcmap
+    virtual void BuildCombinedDBCMap();
+
+    /// setup
+    virtual void SetupSystem();
+
+    //! return arteryscatra-artery coupling sparse matrix
+    Teuchos::RCP<LINALG::SparseMatrix> ArteryScatraArteryCouplingMatrix();
+
+    //! evaluate arteryscatra-artery coupling sparse matrix
+    void ApplyArteryScatraArteryCouplMatrix(Teuchos::RCP< LINALG::SparseOperator> k_asa);
+
+    //! build the block null spaces
+    virtual void BuildBlockNullSpaces();
+
+    //! dof row map (not splitted), only artery and porofluid
+    Teuchos::RCP<Epetra_Map> fullmap_artporo_;
+
+    //! dof row map splitted in (field) blocks, only artery and porofluid
+    Teuchos::RCP<LINALG::MultiMapExtractor> blockrowdofmap_artporo_;
+
+    //! dof row map (not splitted), only artery and artery-scatra
+    Teuchos::RCP<Epetra_Map> fullmap_artscatra_;
+
+    //! dof row map splitted in (field) blocks, only artery and artery-scatra
+    Teuchos::RCP<LINALG::MultiMapExtractor> blockrowdofmap_artscatra_;
+
+    //! artscatra-artery coupling matrix
+    Teuchos::RCP<LINALG::SparseOperator> k_asa_;
+
+    //! flag if nodal coupling active or not
+    bool nodal_coupl_inactive_;
+
+  }; //PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling
 
 
 }

@@ -17,6 +17,7 @@
 #include "poromultiphase_scatra_monolithic_twoway.H"
 
 #include "../drt_poromultiphase/poromultiphase_utils.H"
+#include "../drt_art_net/art_net_utils.H"
 
 #include "../drt_poroelast/poroelast_utils.H"
 
@@ -62,11 +63,23 @@ POROMULTIPHASESCATRA::UTILS::CreatePoroMultiPhaseScatraAlgorithm(
   }
   case INPAR::POROMULTIPHASESCATRA::solscheme_twoway_monolithic:
   {
-    // call constructor
-    algo =
-        Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay(
-                comm,
-                timeparams));
+    const bool artery_coupl = DRT::INPUT::IntegralValue<int>(timeparams,"ARTERY_COUPLING");
+    if(!artery_coupl)
+    {
+      // call constructor
+      algo =
+          Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay(
+                        comm,
+                        timeparams));
+    }
+    else
+    {
+      // call constructor
+      algo =
+          Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling(
+                        comm,
+                        timeparams));
+    }
     break;
   }
   default:
@@ -89,11 +102,15 @@ void POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAndFieldCoupling(
     int& ndsporo_disp,
     int& ndsporo_vel,
     int& ndsporo_solidpressure,
-    int& ndsporofluid_scatra)
+    int& ndsporofluid_scatra,
+    const bool artery_coupl)
 {
   // Scheme   : the structure discretization is received from the input.
   //            Then, a poro fluid disc. is cloned.
   //            Then, a scatra disc. is cloned.
+
+  // If artery coupling is present:
+  // artery_scatra discretization is cloned from artery discretization
 
   POROMULTIPHASE::UTILS::SetupDiscretizationsAndFieldCoupling(
       comm,
@@ -140,6 +157,27 @@ void POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAndFieldCoupling(
   fluiddis->FillComplete(true,false,false);
   scatradis->FillComplete(true,false,false);
 
+  if(artery_coupl)
+  {
+    Teuchos::RCP<DRT::Discretization> artdis       = problem->GetDis("artery");
+    Teuchos::RCP<DRT::Discretization> artscatradis = problem->GetDis("artery_scatra");
+
+    if(!artdis->Filled())
+      artdis->FillComplete();
+
+    // fill artery scatra discretization by cloning artery discretization
+    DRT::UTILS::CloneDiscretization<ART::ArteryScatraCloneStrategy>(artdis,artscatradis);
+    artscatradis->FillComplete();
+
+    Teuchos::RCP<DRT::DofSetInterface> arterydofset = artdis->GetDofSetProxy();
+
+    // check if ScatraField has 2 discretizations, so that coupling is possible
+    if (artscatradis->AddDofSet(arterydofset) != 1)
+      dserror("unexpected dof sets in artscatra field");
+
+    artscatradis->FillComplete(true,false,false);
+  }
+
   return;
 }
 
@@ -149,7 +187,8 @@ void POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAndFieldCoupling(
 void POROMULTIPHASESCATRA::UTILS::AssignMaterialPointers(
     const std::string& struct_disname,
     const std::string& fluid_disname,
-    const std::string& scatra_disname)
+    const std::string& scatra_disname,
+    const bool artery_coupl)
 {
   POROMULTIPHASE::UTILS::AssignMaterialPointers(
       struct_disname,
@@ -163,6 +202,14 @@ void POROMULTIPHASESCATRA::UTILS::AssignMaterialPointers(
 
   POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis,scatradis);
   POROELAST::UTILS::SetMaterialPointersMatchingGrid(fluiddis,scatradis);
+
+  if(artery_coupl)
+  {
+    Teuchos::RCP<DRT::Discretization> arterydis    = problem->GetDis("artery");
+    Teuchos::RCP<DRT::Discretization> artscatradis = problem->GetDis("artery_scatra");
+
+    ART::UTILS::SetMaterialPointersMatchingGrid(arterydis,artscatradis);
+  }
 }
 
 /*----------------------------------------------------------------------*

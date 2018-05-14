@@ -31,10 +31,6 @@ This is the enumeration of all types of different integration schemes
 </pre>
 
 *-----------------------------------------------------------------------*/
-typedef enum _ARTNET_DYNTYPE
-{
-  typ_tay_gal=0
-} _ARTNET_DYNTYPE;
 
 
 /*!----------------------------------------------------------------------
@@ -62,6 +58,29 @@ namespace INPAR
 {
   namespace ARTDYN
   {
+
+  enum TimeIntegrationScheme
+  {
+    tay_gal,
+    stationary
+  };
+
+  /// initial field for artery problem
+  enum InitialField
+  {
+    initfield_zero_field,
+    initfield_field_by_function,
+    initfield_field_by_condition
+  };
+
+  //! element implementation type
+  enum ImplType
+  {
+    impltype_undefined,
+    impltype_lin_exp,
+    impltype_pressure_based
+  };
+
     /// set the arterial dynamic parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
   }

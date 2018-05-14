@@ -69,6 +69,12 @@ namespace ADAPTER {
     /// access dof row map
     Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds=0) const;
 
+    /// access dof row map
+    Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const;
+
+    /// access coupled system matrix
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> ArteryPorofluidSysmat() const;
+
     /// direct access to discretization
     Teuchos::RCP<DRT::Discretization> Discretization() const;
 
@@ -141,6 +147,9 @@ namespace ADAPTER {
     //! right-hand side alias the dynamic force residual
     Teuchos::RCP<const Epetra_Vector> RHS() const;
 
+    //! right-hand side alias the dynamic force residual for coupled system
+    Teuchos::RCP<const Epetra_Vector> ArteryPorofluidRHS() const;
+
     //! iterative update of phinp
     virtual void UpdateIter(const Teuchos::RCP<const Epetra_Vector> inc);
 
@@ -162,6 +171,8 @@ namespace ADAPTER {
     /// direct access to system matrix
     virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
 
+    // return arterial network time integrator
+    virtual Teuchos::RCP<ADAPTER::ArtNet> ArtNetTimInt();
 
   private:
 

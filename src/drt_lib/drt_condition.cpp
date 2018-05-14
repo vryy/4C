@@ -198,6 +198,8 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==ArtJunctionCond)               os << "Artery junction boundary condition";
   else if (Type()==ArtWriteGnuplotCond)           os << "Artery write gnuplot format condition";
   else if (Type()==ArtPrescribedCond)             os << "Artery prescribed boundary condition";
+  else if (Type()==ArtPorofluidCouplingCond)      os << "Artery-Porofluid coupling condition";
+  else if (Type()==ArtScatraCouplingCond)         os << "Artery-Scatra coupling condition";
   else if (Type()==ArtRfCond)                     os << "Artery reflective boundary condition";
   else if (Type()==ArtWkCond)                     os << "Artery windkessel boundary condition";
   else if (Type()==StructAleCoupling)             os << "Structure - ALE coupling condition";

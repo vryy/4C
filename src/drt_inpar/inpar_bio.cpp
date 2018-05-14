@@ -28,15 +28,18 @@ void INPAR::ARTDYN::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   setStringToIntegralParameter<int>("DYNAMICTYP","ExpTaylorGalerkin",
                                "Explicit Taylor Galerkin Scheme",
                                tuple<std::string>(
-                                 "ExpTaylorGalerkin"
+                                 "ExpTaylorGalerkin",
+                                 "Stationary"
                                  ),
                                tuple<int>(
-                                typ_tay_gal
+                                tay_gal,
+                                stationary
                                 ),
                                &andyn);
 
   DoubleParameter("TIMESTEP",0.01,"Time increment dt",&andyn);
   IntParameter("NUMSTEP",0,"Number of Time Steps",&andyn);
+  DoubleParameter("MAXTIME",1000.0,"total simulation time",&andyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&andyn);
   IntParameter("RESULTSEVRY",1,"Increment for writing solution",&andyn);
   setStringToIntegralParameter<int>("SOLVESCATRA",
@@ -53,6 +56,23 @@ void INPAR::ARTDYN::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   // number of linear solver used for arterial dynamics
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for arterial dynamics",&andyn);
+
+  // initial function number
+  IntParameter("INITFUNCNO",-1,"function number for artery initial field",&andyn);
+
+  // type of initial field
+  setStringToIntegralParameter<int>("INITIALFIELD","zero_field",
+                               "Initial Field for artery problem",
+                               tuple<std::string>(
+                                 "zero_field",
+                                 "field_by_function",
+                                 "field_by_condition"
+                                 ),
+                               tuple<int>(
+                                   initfield_zero_field,
+                                   initfield_field_by_function,
+                                   initfield_field_by_condition),
+                               &andyn);
 }
 
 
@@ -232,6 +252,51 @@ void INPAR::ARTNET::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Cond
     art_scatra_bc->AddComponent(artscatracomponents[i]);
 
   condlist.push_back(art_scatra_bc);
+
+  /*--------------------------------------------------------------------*/
+  // 1D artery-to-porofluid coupling BC
+  std::vector<Teuchos::RCP<ConditionComponent> > artcoupcomponents;
+
+  Teuchos::RCP<ConditionDefinition> artcoup =
+    Teuchos::rcp(new ConditionDefinition("DESIGN NODE 1D ARTERY TO POROFLUID COUPLING CONDITIONS",
+                                         "ArtPorofluidCouplCon",
+                                         "Artery coupling with porofluid",
+                                         DRT::Condition::ArtPorofluidCouplingCond,
+                                         true,
+                                         DRT::Condition::Point));
+
+  artcoupcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("COUPID")));
+  artcoupcomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
+
+  for (unsigned i=0; i<artcoupcomponents.size(); ++i)
+  {
+    artcoup->AddComponent(artcoupcomponents[i]);
+  }
+
+  condlist.push_back(artcoup);
+
+  /*--------------------------------------------------------------------*/
+  // 1D artery-to-scatra coupling BC
+  std::vector<Teuchos::RCP<ConditionComponent> > artscatracoupcomponents;
+
+  Teuchos::RCP<ConditionDefinition> artscatracoup =
+    Teuchos::rcp(new ConditionDefinition("DESIGN NODE 1D ARTERY TO SCATRA COUPLING CONDITIONS",
+                                         "ArtScatraCouplCon",
+                                         "Artery coupling with porofluid",
+                                         DRT::Condition::ArtScatraCouplingCond,
+                                         true,
+                                         DRT::Condition::Point));
+
+  artscatracoupcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("COUPID")));
+  artscatracoupcomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
+
+  for (unsigned i=0; i<artscatracoupcomponents.size(); ++i)
+  {
+    artscatracoup->AddComponent(artscatracoupcomponents[i]);
+  }
+
+  condlist.push_back(artscatracoup);
+
 }
 
 

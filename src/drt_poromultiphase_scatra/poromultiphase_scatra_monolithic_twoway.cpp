@@ -37,6 +37,9 @@
 #include "../linalg/linalg_solver.H"
 #include "../drt_inpar/inpar_solver.H"
 
+#include "../drt_scatra/scatra_timint_meshtying_strategy_artery.H"
+#include "../drt_adapter/ad_art_net.H"
+
 #include "../linalg/linalg_utils.H"
 
 /*----------------------------------------------------------------------*
@@ -148,31 +151,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupSystem()
   //setup the poro subsystem first
   PoroField()->SetupSystem();
 
-  // create combined map
-  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
-
-  {
-    vecSpaces.push_back(PoroField()->StructDofRowMap());
-    vecSpaces.push_back(PoroField()->FluidDofRowMap());
-    const Epetra_Map* dofrowmapscatra = (ScatraAlgo()->ScaTraField()->Discretization())->DofRowMap(0);
-    vecSpaces.push_back(Teuchos::rcp(dofrowmapscatra,false));
-  }
-
-  if (vecSpaces[0]->NumGlobalElements() == 0)
-    dserror("No poro structure equation. Panic.");
-  if (vecSpaces[1]->NumGlobalElements() == 0)
-    dserror("No poro fluid equation. Panic.");
-  if (vecSpaces[2]->NumGlobalElements()==0)
-    dserror("No scatra equation. Panic.");
-
-  // full fluid-structure-scatra-map
-  fullmap_ = LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
-
-  // full Poromultiphase-elasticity-blockmap
-  blockrowdofmap_->Setup(*fullmap_, vecSpaces);
-
-  // check global map extractor
-  blockrowdofmap_->CheckForValidMapExtractor();
+  // -------------------------------------------------------------create combined map
+  SetupMaps();
 
   //-----------------------------------build map of global dofs with DBC
   BuildCombinedDBCMap();
@@ -225,6 +205,41 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupSystem()
       break;
     }
   }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | setup the map                                       kremheller 04/18 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupMaps()
+{
+
+  // create combined map
+  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
+
+  {
+    vecSpaces.push_back(PoroField()->StructDofRowMap());
+    vecSpaces.push_back(PoroField()->FluidDofRowMap());
+    const Epetra_Map* dofrowmapscatra = (ScatraAlgo()->ScaTraField()->Discretization())->DofRowMap(0);
+    vecSpaces.push_back(Teuchos::rcp(dofrowmapscatra,false));
+  }
+
+  if (vecSpaces[0]->NumGlobalElements() == 0)
+    dserror("No poro structure equation. Panic.");
+  if (vecSpaces[1]->NumGlobalElements() == 0)
+    dserror("No poro fluid equation. Panic.");
+  if (vecSpaces[2]->NumGlobalElements()==0)
+    dserror("No scatra equation. Panic.");
+
+  // full fluid-structure-scatra-map
+  fullmap_ = LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
+
+  // full Poromultiphase-elasticity-blockmap
+  blockrowdofmap_->Setup(*fullmap_, vecSpaces);
+
+  // check global map extractor
+  blockrowdofmap_->CheckForValidMapExtractor();
 
   return;
 }
@@ -425,7 +440,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::Evaluate(Teucho
   ExtractFieldVectors(x, porostructinc, porofluidinc, scatrainc);
 
   // (1) Newton update of the scatra field
-  ScatraAlgo()->ScaTraField()->UpdateIter(scatrainc);
+  UpdateScatra(scatrainc);
 
   // (2) set scatra solution on fluid field
   SetScatraSolution();
@@ -437,7 +452,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::Evaluate(Teucho
   SetPoroSolution();
 
   // (5) access ScaTra problem to build scatra-scatra block
-  ScatraAlgo()->ScaTraField()->PrepareLinearSolve();
+  EvaluateScatra();
 
   // (6) Build the monolithic system matrix
   SetupSystemMatrix();
@@ -606,6 +621,16 @@ Teuchos::RCP<LINALG::SparseMatrix> POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMon
 }
 
 /*----------------------------------------------------------------------*
+ | evaluate scatra field                               kremheller 05/18 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::EvaluateScatra()
+{
+  ScatraAlgo()->ScaTraField()->PrepareLinearSolve();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  | evaluate porofluid-scatra coupling sparse matrix    kremheller 06/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::ApplyPoroFluidScatraCouplMatrix(
@@ -741,10 +766,18 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::UpdateFieldsAft
   ExtractFieldVectors(iterinc_, porostructinc, porofluidinc, scatrainc);
 
   // update ScaTra field
-  ScatraAlgo()->ScaTraField()->UpdateIter(scatrainc);
+  UpdateScatra(scatrainc);
 
   // update structure and fluid field
   PoroField()->UpdateFieldsAfterConvergence(porostructinc, porofluidinc);
+}
+/*----------------------------------------------------------------------*
+ | update scatra field                               kremheller 05/18   |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::UpdateScatra(Teuchos::RCP<const Epetra_Vector> scatrainc)
+{
+  ScatraAlgo()->ScaTraField()->UpdateIter(scatrainc);
+
 }
 
 /*----------------------------------------------------------------------*
@@ -1215,6 +1248,17 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::PoroMultiPhaseS
   std::cout << "structure field has " << dof_struct << " DOFs" << std::endl;
   std::cout << "fluid field has " << dof_fluid << " DOFs" << std::endl;
   std::cout << "scatra field has " << dof_scatra << " DOFs" << std::endl;
+  if(artery_coupl_)
+  {
+    int dof_artery    = (PoroField()->FluidField()->ArteryDofRowMap()->NumGlobalElements());
+    int dof_artscatra = (scatramsht_->ArtScatraField()->DofRowMap()->NumGlobalElements());
+    std::cout << "artery field has " << dof_artery << " DOFs" << std::endl;
+    std::cout << "artery-scatra field has " << dof_artscatra << " DOFs" << std::endl;
+
+    std::cout << "\n\n============================================================\n"
+                     "WARNING: THIS FD CHECK DOES NOT WORK FOR NODE BASED COUPLING\n"
+                     "============================================================\n\n";
+  }
 
   Teuchos::RCP<Epetra_Vector> iterinc = Teuchos::null;
   iterinc = LINALG::CreateVector(*DofRowMap(), true);
@@ -1462,6 +1506,332 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::PoroMultiPhaseS
   }
   else
     dserror("PoroFDCheck failed");
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | constructor                                         kremheller 05/18 |
+ *----------------------------------------------------------------------*/
+POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling(
+    const Epetra_Comm& comm,
+    const Teuchos::ParameterList& globaltimeparams):
+    PoroMultiPhaseScaTraMonolithicTwoWay(comm, globaltimeparams)
+{
+
+  blockrowdofmap_artscatra_ = Teuchos::rcp(new LINALG::MultiMapExtractor);
+  blockrowdofmap_artporo_   = Teuchos::rcp(new LINALG::MultiMapExtractor);
+  nodal_coupl_inactive_ = false;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | setup the fully monolithic fluid-structure-scatra system (called in  |
+ | poromultiphase_scatra_dyn.cpp)                      kremheller 05/18 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::SetupSystem()
+{
+  PoroMultiPhaseScaTraMonolithicTwoWay::SetupSystem();
+
+  //! arteryscatra-artery coupling matrix, this matrix has the full map of all coupled + uncoupled DOFs
+  k_asa_ = Teuchos::rcp(new LINALG::SparseMatrix(
+                      *(scatramsht_->ArtScatraField()->Discretization()->DofRowMap()), 81, true, true));
+
+  //! simple check if nodal coupling active or not, if condensed and un-condensed dofrowmaps have equal size
+  nodal_coupl_inactive_ = ((PoroField()->ArteryDofRowMap()->NumGlobalElements() ==
+                             PoroField()->FluidField()->ArtNetTimInt()->Discretization()->DofRowMap(0)->NumGlobalElements()))
+                        && (scatramsht_->ArtScatraDofRowMap()->NumGlobalElements()==
+                              scatramsht_->ArtScatraField()->Discretization()->DofRowMap(0)->NumGlobalElements());
+}
+/*----------------------------------------------------------------------*
+ | setup the map                                       kremheller 04/18 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::SetupMaps()
+{
+
+  // create combined map
+  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
+
+  {
+    vecSpaces.push_back(PoroField()->StructDofRowMap());
+    vecSpaces.push_back(PoroField()->FluidDofRowMap());
+    const Epetra_Map* dofrowmapscatra = (ScatraAlgo()->ScaTraField()->Discretization())->DofRowMap(0);
+    vecSpaces.push_back(Teuchos::rcp(dofrowmapscatra,false));
+    vecSpaces.push_back(PoroField()->ArteryDofRowMap());
+    vecSpaces.push_back(scatramsht_->ArtScatraDofRowMap());
+  }
+
+  if (vecSpaces[0]->NumGlobalElements() == 0)
+    dserror("No poro structure equation. Panic.");
+  if (vecSpaces[1]->NumGlobalElements() == 0)
+    dserror("No poro fluid equation. Panic.");
+  if (vecSpaces[2]->NumGlobalElements()==0)
+    dserror("No scatra equation. Panic.");
+  if (vecSpaces[3]->NumGlobalElements()==0)
+    dserror("No artery equation. Panic.");
+  if (vecSpaces[4]->NumGlobalElements()==0)
+    dserror("No artery scatra equation. Panic.");
+
+  // full fluid-structure-scatra-artery-arteryscatra map
+  fullmap_ = LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
+
+  // full Poromultiphasescatra block map coupled with artery network
+  blockrowdofmap_->Setup(*fullmap_, vecSpaces);
+
+  // check global map extractor
+  blockrowdofmap_->CheckForValidMapExtractor();
+
+  // full porofluid-artery map
+  fullmap_artporo_ = LINALG::MultiMapExtractor::MergeMaps({vecSpaces[1], vecSpaces[3]});
+
+  // full porofluid-artery blockmap
+  blockrowdofmap_artporo_->Setup(*fullmap_artporo_, {vecSpaces[1], vecSpaces[3]});
+
+  // full artery-arteryscatra map
+  fullmap_artscatra_ = LINALG::MultiMapExtractor::MergeMaps({vecSpaces[2], vecSpaces[4]});
+
+  // full artery-arteryscatra blockmap
+  blockrowdofmap_artscatra_->Setup(*fullmap_artscatra_, {vecSpaces[2], vecSpaces[4]});
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | update scatra field                               kremheller 05/18   |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::UpdateScatra(Teuchos::RCP<const Epetra_Vector> scatrainc)
+{
+  ScatraAlgo()->ScaTraField()->UpdateIter(blockrowdofmap_artscatra_->ExtractVector(scatrainc,0));
+  scatramsht_->UpdateArtScatraIter(scatrainc);
+
+}
+
+/*----------------------------------------------------------------------*
+ | extract field vectors for calling Evaluate() of the  kremheller 05/18|
+ | single fields                                                        |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::ExtractFieldVectors(
+    Teuchos::RCP<const Epetra_Vector> x,
+    Teuchos::RCP<const Epetra_Vector>& stx,
+    Teuchos::RCP<const Epetra_Vector>& flx,
+    Teuchos::RCP<const Epetra_Vector>& scx)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::ExtractFieldVectors");
+
+  // process strucuture unknowns
+  stx = blockrowdofmap_->ExtractVector(x, 0);
+
+  // process artery and porofluid unknowns
+  Teuchos::RCP<const Epetra_Vector> porofluid = Extractor()->ExtractVector(x, 1);
+  Teuchos::RCP<const Epetra_Vector> artery    = Extractor()->ExtractVector(x, 3);
+
+  Teuchos::RCP<Epetra_Vector> dummy1 = Teuchos::rcp(new Epetra_Vector(*fullmap_artporo_));
+
+  // build the combined increment of porofluid and artery
+  blockrowdofmap_artporo_->InsertVector(porofluid, 0, dummy1);
+  blockrowdofmap_artporo_->InsertVector(artery, 1, dummy1);
+
+  flx = dummy1;
+
+  // process scatra and artery scatra unknowns of the third field
+  Teuchos::RCP<const Epetra_Vector> scatra    = Extractor()->ExtractVector(x, 2);
+  Teuchos::RCP<const Epetra_Vector> artscatra = Extractor()->ExtractVector(x, 4);
+
+  Teuchos::RCP<Epetra_Vector> dummy2 = Teuchos::rcp(new Epetra_Vector(*fullmap_artscatra_));
+
+  // build the combined increment of artery and artery-scatra
+  blockrowdofmap_artscatra_->InsertVector(scatra, 0, dummy2);
+  blockrowdofmap_artscatra_->InsertVector(artscatra, 1, dummy2);
+
+  scx = dummy2;
+
+}
+/*----------------------------------------------------------------------*
+ | setup monolithic system matrix                      kremheller 06/17 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::SetupSystemMatrix()
+{
+
+  PoroMultiPhaseScaTraMonolithicTwoWay::SetupSystemMatrix();
+
+  // --------------------------------------------------------------------------- artery-porofluid
+  // get matrix block
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> mat_pp = PoroField()->BlockSystemMatrix();
+
+  // artery part
+  systemmatrix_->Assign(3,3,LINALG::View,mat_pp->Matrix(2,2));
+  // artery-porofluid part
+  systemmatrix_->Assign(3, 1, LINALG::View, mat_pp->Matrix(2,1));
+  // porofluid-artery part
+  systemmatrix_->Assign(1, 3, LINALG::View, mat_pp->Matrix(1,2));
+
+  // -------------------------------------------------------------------------arteryscatra-scatra
+  // arteryscatra part
+  systemmatrix_->Assign(4,4, LINALG::View, scatramsht_->CombinedSystemMatrix()->Matrix(1,1));
+  // scatra-arteryscatra part
+  systemmatrix_->Assign(2,4, LINALG::View, scatramsht_->CombinedSystemMatrix()->Matrix(0,1));
+  // arteryscatra-scatra part
+  systemmatrix_->Assign(4,2, LINALG::View, scatramsht_->CombinedSystemMatrix()->Matrix(1,0));
+
+  if(nodal_coupl_inactive_)
+  {
+    // create empty matrix
+    Teuchos::RCP<LINALG::SparseMatrix> k_asa = ArteryScatraArteryCouplingMatrix();
+
+    // call the scatra-elements and calculate the off-diagonal structure matrix block
+    ApplyArteryScatraArteryCouplMatrix(k_asa);
+
+    // apply DBC's also on off-diagonal scatra-fluid coupling block (main-diagonal blocks have already been set, either in
+    // poromultielast_monolithic.cpp or in the respective evalute calls)
+    k_asa->ApplyDirichlet(*scatramsht_->ArtScatraField()->DirichMaps()->CondMap(),false);
+
+    // arteryscatra-scatra part
+    systemmatrix_->Assign(4,3, LINALG::View, *k_asa);
+  }
+
+  systemmatrix_->Complete();
+
+  // Debug: matlab output of system matrix
+  bool matlab = false;
+  if (matlab)
+  {
+    std::string filename = "../o/mymatrix.dat";
+    LINALG::PrintBlockMatrixInMatlabFormat(filename, *systemmatrix_);
+    dserror("exit");
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | setup monolithic system matrix                      kremheller 06/17 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::SetupRHS()
+{
+  // create full monolithic rhs vector
+  if(rhs_==Teuchos::null)
+    rhs_ = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
+
+  // structure
+  Extractor()->InsertVector(*(PoroField()->Extractor()->ExtractVector(PoroField()->RHS(),0)), 0, *rhs_);
+  // porofluid
+  Extractor()->InsertVector(*(PoroField()->Extractor()->ExtractVector(PoroField()->RHS(),1)), 1, *rhs_);
+  // scatra
+  Extractor()->InsertVector(*(blockrowdofmap_artscatra_->ExtractVector(scatramsht_->CoupledRHS(), 0)) , 2, *rhs_);
+
+  // artery
+  Extractor()->InsertVector(*(PoroField()->Extractor()->ExtractVector(PoroField()->RHS(),2)), 3, *rhs_);
+  // arteryscatra
+  Extractor()->InsertVector(*(blockrowdofmap_artscatra_->ExtractVector(scatramsht_->CoupledRHS(), 1)) , 4, *rhs_);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | get scatra-fluid coupling sparse matrix             kremheller 05/18 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::EvaluateScatra()
+{
+  PoroMultiPhaseScaTraMonolithicTwoWay::EvaluateScatra();
+  scatramsht_->SetupSystem(ScatraAlgo()->ScaTraField()->SystemMatrix(), ScatraAlgo()->ScaTraField()->Residual());
+
+  return;
+}
+
+/*-----------------------------------------------------------------------/
+|  build the combined dbcmap                            kremheller 05/18 |
+/-----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::BuildCombinedDBCMap()
+{
+  PoroMultiPhaseScaTraMonolithicTwoWay::BuildCombinedDBCMap();
+
+  const Teuchos::RCP<const Epetra_Map> artscatracondmap =
+      scatramsht_->ArtScatraField()->DirichMaps()->CondMap();
+
+  combinedDBCMap_ = LINALG::MergeMap(combinedDBCMap_, artscatracondmap, false);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | get arteryscatra-artery coupling sparse matrix      kremheller 05/18 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix> POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::ArteryScatraArteryCouplingMatrix()
+{
+  Teuchos::RCP<LINALG::SparseMatrix> sparse = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(k_asa_);
+  if(sparse==Teuchos::null)
+    dserror("cast to LINALG::SparseMatrix failed!");
+
+  return sparse;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate arteryscatra-artery coupling sparse matrix kremheller 05/18 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::ApplyArteryScatraArteryCouplMatrix(
+    Teuchos::RCP< LINALG::SparseOperator> k_asa //!< off-diagonal tangent matrix term
+  )
+{
+  // create the parameters for the discretization
+  Teuchos::ParameterList sparams_artery;
+
+  k_asa->Zero();
+
+  sparams_artery.set<int>("action", SCATRA::calc_scatra_mono_odblock_fluid);
+  // other parameters that might be needed by the elements
+  sparams_artery.set("delta time", Dt());
+  sparams_artery.set("total time", Time());
+
+  scatramsht_->ArtScatraField()->Discretization()->ClearState();
+  scatramsht_->ArtScatraField()->Discretization()->SetState(0,"phinp",scatramsht_->ArtScatraField()->Phinp());
+  scatramsht_->ArtScatraField()->Discretization()->SetState(0,"hist",scatramsht_->ArtScatraField()->Hist());
+  scatramsht_->ArtScatraField()->Discretization()->SetState(1,"one_d_artery_pressure",PoroField()->FluidField()->ArtNetTimInt()->Pressurenp());
+
+
+  // build specific assemble strategy for mechanical-fluid system matrix
+  DRT::AssembleStrategy artscatrastrategy_artery(
+      0,               // scatradofset for row
+      1,               // arterydofset for column
+      k_asa,          // scatra-structure coupling matrix
+      Teuchos::null ,
+      Teuchos::null ,
+      Teuchos::null,
+      Teuchos::null
+  );
+
+  scatramsht_->ArtScatraField()->Discretization()->Evaluate(sparams_artery, artscatrastrategy_artery);
+
+  //complete
+  k_asa->Complete(
+      PoroField()->FluidField()->ArtNetTimInt()->SystemMatrix()->RangeMap(), scatramsht_->ArtScatraField()->SystemMatrix()->RangeMap());
+
+  scatramsht_->ArtScatraField()->Discretization()->ClearState();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate arteryscatra-artery coupling sparse matrix kremheller 05/18 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::BuildBlockNullSpaces()
+{
+
+  // base class -> structure, porofluid, scatra
+  PoroMultiPhaseScaTraMonolithicTwoWay::BuildBlockNullSpaces();
+
+  // artery
+  PoroField()->BuildArteryBlockNullSpace(solver_, 4);
+
+  // artery-scatra
+  Teuchos::ParameterList& blocksmootherparams5 = solver_->Params().sublist("Inverse5");
+  blocksmootherparams5.sublist("Aztec Parameters");
+  blocksmootherparams5.sublist("MueLu Parameters");
+
+  // build null space of complete discretization
+  scatramsht_->ArtScatraField()->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams5);
+  // fix the null space if some DOFs are condensed out
+  LINALG::Solver::FixMLNullspace("ArteryScatra",*(scatramsht_->ArtScatraField()->Discretization()->DofRowMap(0)), *(scatramsht_->ArtScatraDofRowMap()),blocksmootherparams5);
 
   return;
 }

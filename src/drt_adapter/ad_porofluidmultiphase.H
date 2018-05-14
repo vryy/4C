@@ -40,6 +40,9 @@ namespace Teuchos
 // Algorithm adapter classes for use in multi-field problems
 namespace ADAPTER {
 
+  // forward declaration
+  class ArtNet;
+
   /// basic multiphase porous flow adapter
   class PoroFluidMultiphase
   {
@@ -68,6 +71,9 @@ namespace ADAPTER {
 
     /// access dof row map
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds=0) const=0;
+
+    /// access dof row map of artery discretization
+    virtual Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const=0;
 
     /// direct access to discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization() const=0;
@@ -135,6 +141,9 @@ namespace ADAPTER {
     //! right-hand side alias the dynamic force residual
     virtual Teuchos::RCP<const Epetra_Vector> RHS() const=0;
 
+    //! right-hand side alias the dynamic force residual for coupled system
+    virtual Teuchos::RCP<const Epetra_Vector> ArteryPorofluidRHS() const=0;
+
     //! iterative update of phinp
     virtual void UpdateIter(const Teuchos::RCP<const Epetra_Vector> inc)=0;
 
@@ -155,6 +164,12 @@ namespace ADAPTER {
 
     //! direct access to system matrix
     virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() = 0;
+
+    //! direct access to block system matrix of artery poro problem
+    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ArteryPorofluidSysmat() const = 0;
+
+    // return arterial network time integrator
+    virtual Teuchos::RCP<ADAPTER::ArtNet> ArtNetTimInt() = 0;
 
 
   }; // class PoroFluidMultiphase

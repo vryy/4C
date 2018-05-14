@@ -284,6 +284,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--POROELASTICITY DYNAMIC", *list);
   reader.ReadGidSection("--POROSCATRA CONTROL", *list);
   reader.ReadGidSection("--POROFLUIDMULTIPHASE DYNAMIC", *list);
+  reader.ReadGidSection("--POROFLUIDMULTIPHASE DYNAMIC/ARTERY MESHTYING", *list);
   reader.ReadGidSection("--POROMULTIPHASE DYNAMIC", *list);
   reader.ReadGidSection("--POROMULTIPHASE DYNAMIC/PARTITIONED", *list);
   reader.ReadGidSection("--POROMULTIPHASE DYNAMIC/MONOLITHIC", *list);
@@ -315,6 +316,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/STABILIZATION", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/S2I COUPLING", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/VARIATIONAL", *list);
+  reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/ARTERY MESHTYING", *list);
   reader.ReadGidSection("--STI DYNAMIC", *list);
   reader.ReadGidSection("--STI DYNAMIC/MONOLITHIC", *list);
   reader.ReadGidSection("--STI DYNAMIC/PARTITIONED", *list);
@@ -1054,6 +1056,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   Teuchos::RCP<DRT::Discretization> cellscatradis   = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> fluidscatradis  = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> structscatradis = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> artscatradis    = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> arterydis       = Teuchos::null; //_1D_ARTERY_
   Teuchos::RCP<DRT::Discretization> airwaydis       = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> optidis         = Teuchos::null;
@@ -1660,12 +1663,25 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     // create empty discretizations
     arterydis = Teuchos::rcp(new DRT::Discretization("artery",reader.Comm()));
 
+    // create empty discretizations
+    if(distype == "Nurbs")
+    {
+      dserror("Nurbs Discretization not possible for artery");
+    }
+    else
+    {
+      scatradis     = Teuchos::rcp(new DRT::Discretization("artery_scatra",reader.Comm()));
+    }
+
+    AddDis("artery",           arterydis);
+    AddDis("artery_scatra",    scatradis);
+
     // create discretization writer - in constructor set into and owned by corresponding discret
     arterydis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(arterydis)));
-
-    AddDis("artery", arterydis);
+    scatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatradis)));
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
 
     break;
   }
@@ -1743,6 +1759,14 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS")));
 
+    if (DRT::INPUT::IntegralValue<bool>(PoroMultiPhaseDynamicParams(),"ARTERY_COUPLING"))
+    {
+      arterydis = Teuchos::rcp(new DRT::Discretization("artery"   ,reader.Comm()));
+      arterydis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(arterydis)));
+      AddDis("artery",        arterydis);
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
+    }
+
     break;
   }
   case prb_poromultiphasescatra:
@@ -1773,6 +1797,20 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS")));
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
+
+    if (DRT::INPUT::IntegralValue<bool>(PoroMultiPhaseScatraDynamicParams(),"ARTERY_COUPLING"))
+    {
+      arterydis = Teuchos::rcp(new DRT::Discretization("artery"   ,reader.Comm()));
+      arterydis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(arterydis)));
+      AddDis("artery",        arterydis);
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
+
+      artscatradis = Teuchos::rcp(new DRT::Discretization("artery_scatra"   ,reader.Comm()));
+      artscatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(artscatradis)));
+      AddDis("artery_scatra", artscatradis);
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(artscatradis, reader, "--TRANSPORT ELEMENTS")));
+    }
+
     break;
   }
   case prb_porofluidmultiphase:
@@ -1794,6 +1832,13 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS")));
 
+    if (DRT::INPUT::IntegralValue<bool>(PoroFluidMultiPhaseDynamicParams(),"ARTERY_COUPLING"))
+    {
+      arterydis = Teuchos::rcp(new DRT::Discretization("artery"   ,reader.Comm()));
+      arterydis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(arterydis)));
+      AddDis("artery", arterydis);
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
+    }
     break;
   }
   case prb_fpsi:

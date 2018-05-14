@@ -537,6 +537,22 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
    // this parameter defines the numerical value, if stabilization with numerical values is used
    DoubleParameter("TAU_VALUE",0.0,"Numerical value for tau for stabilization",&scatradyn_stab);
+
+   // ----------------------------------------------------------------------
+   // artery mesh tying
+   Teuchos::ParameterList& scatradyn_art = scatradyn.sublist("ARTERY MESHTYING",false,
+     "Parameters for artery mesh tying"
+     );
+
+   // coupled artery dofs for mesh tying
+   setNumericStringParameter("COUPLEDDOFS_ARTSCATRA","-1.0",
+                             "coupled artery dofs for mesh tying",
+                             &scatradyn_art);
+
+   // coupled porofluid dofs for mesh tying
+   setNumericStringParameter("COUPLEDDOFS_SCATRA","-1.0",
+                             "coupled porofluid dofs for mesh tying",
+                             &scatradyn_art);
 }
 
 

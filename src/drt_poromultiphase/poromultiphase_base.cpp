@@ -41,7 +41,8 @@ POROMULTIPHASE::PoroMultiPhaseBase::PoroMultiPhaseBase(
     structure_(Teuchos::null),
     fluid_(Teuchos::null),
     struct_zeros_(Teuchos::null),
-    solve_structure_(true)
+    solve_structure_(true),
+    artery_coupl_(DRT::INPUT::IntegralValue<int>(globaltimeparams,"ARTERY_COUPLING"))
 {
 
 }
@@ -307,6 +308,22 @@ Teuchos::RCP<const Epetra_Map> POROMULTIPHASE::PoroMultiPhaseBase::StructDofRowM
 Teuchos::RCP<const Epetra_Map> POROMULTIPHASE::PoroMultiPhaseBase::FluidDofRowMap() const
 {
   return fluid_->DofRowMap();
+}
+
+/*------------------------------------------------------------------------*
+ | coupled artery-porofluid system matrix                kremheller 05/18 |
+ *------------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> POROMULTIPHASE::PoroMultiPhaseBase::ArteryPorofluidSysmat() const
+{
+  return fluid_->ArteryPorofluidSysmat();
+}
+
+/*------------------------------------------------------------------------*
+ | dof map of vector of unknowns of artery field         kremheller 05/18 |
+ *------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> POROMULTIPHASE::PoroMultiPhaseBase::ArteryDofRowMap() const
+{
+  return fluid_->ArteryDofRowMap();
 }
 
 /*------------------------------------------------------------------------*

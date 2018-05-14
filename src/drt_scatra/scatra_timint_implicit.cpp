@@ -27,6 +27,7 @@
 #include "scatra_timint_meshtying_strategy_fluid.H"
 #include "scatra_timint_meshtying_strategy_s2i.H"
 #include "scatra_timint_meshtying_strategy_std.H"
+#include "scatra_timint_meshtying_strategy_artery.H"
 #include "turbulence_hit_initial_scalar_field.H"
 #include "turbulence_hit_scalar_forcing.H"
 
@@ -124,6 +125,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   fssgd_(DRT::INPUT::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params,"FSSUGRDIFF")),
   turbmodel_(INPAR::FLUID::no_model),
   s2icoupling_(actdis->GetCondition("S2ICoupling") != NULL),
+  arterycoupling_(DRT::INPUT::IntegralValue<int>(problem_->PoroMultiPhaseScatraDynamicParams(),"ARTERY_COUPLING") && actdis->Name() == "scatra"),
   heteroreaccoupling_(actdis->GetCondition("ScatraHeteroReactionSlave") != NULL),
   macro_scale_(problem_->Materials()->FirstIdByType(INPAR::MAT::m_scatra_multiscale) != -1 or problem_->Materials()->FirstIdByType(INPAR::MAT::m_newman_multiscale) != -1),
   micro_scale_(probnum != 0),
@@ -2396,6 +2398,9 @@ void SCATRA::ScaTraTimIntImpl::CreateMeshtyingStrategy()
   // scatra-scatra interface coupling
   else if(heteroreaccoupling_)
     strategy_ = Teuchos::rcp(new HeterogeneousReactionStrategy(this));
+
+  else if(arterycoupling_)
+    strategy_ = Teuchos::rcp(new MeshtyingStrategyArtery(this));
 
   // standard case without meshtying
   else

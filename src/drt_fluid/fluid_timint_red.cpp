@@ -17,7 +17,7 @@
 #include "fluid_timint_red.H"
 #include "fluid_coupling_red_models.H"
 #include "fluid_volumetric_surfaceFlow_condition.H"
-#include "../drt_art_net/artnetexplicitintegration.H"
+#include "../drt_adapter/ad_art_net.H"
 #include "fluid_meshtying.H"
 #include "../drt_lib/drt_locsys.H"
 #include "../drt_io/io.H"
@@ -36,7 +36,7 @@ FLD::TimIntRedModels::TimIntRedModels(
     : FluidImplicitTimeInt(actdis,solver,params,output,alefluid),
       traction_vel_comp_adder_bc_(Teuchos::null),
       coupled3D_redDbc_art_(Teuchos::null),
-      ART_exp_timeInt_(Teuchos::null),
+      ART_timeInt_(Teuchos::null),
       coupled3D_redDbc_airways_(Teuchos::null),
       airway_imp_timeInt_(Teuchos::null),
       vol_surf_flow_bc_(Teuchos::null),
@@ -77,24 +77,24 @@ void FLD::TimIntRedModels::Init()
   if (params_->get<std::string>("Strong 3D_redD coupling","no") == "yes")   strong_redD_3d_coupling_ = true;
 
   {
-    ART_exp_timeInt_ = dyn_art_net_drt(true);
+    ART_timeInt_ = dyn_art_net_drt(true);
     // Check if one-dimensional artery network problem exist
-    if (ART_exp_timeInt_ != Teuchos::null)
+    if (ART_timeInt_ != Teuchos::null)
     {
-      IO::DiscretizationWriter output_redD(ART_exp_timeInt_->Discretization());
+      IO::DiscretizationWriter output_redD(ART_timeInt_->Discretization());
       discret_->ClearState();
       discret_->SetState("velaf", zeros_);
       if (alefluid_)
       {
         discret_->SetState("dispnp", dispnp_);
       }
-      coupled3D_redDbc_art_=   Teuchos::rcp(new  UTILS::Fluid_couplingWrapper<ART::ArtNetExplicitTimeInt>
+      coupled3D_redDbc_art_=   Teuchos::rcp(new  UTILS::Fluid_couplingWrapper<ADAPTER::ArtNet>
                                    ( discret_,
-                                     ART_exp_timeInt_->Discretization(),
-                                     ART_exp_timeInt_,
+                                     ART_timeInt_->Discretization(),
+                                     ART_timeInt_,
                                      output_redD,
                                      dta_,
-                                     ART_exp_timeInt_->Dt()));
+                                     ART_timeInt_->Dt()));
     }
 
 
@@ -133,7 +133,7 @@ void FLD::TimIntRedModels::Init()
   if (locsysman_ != Teuchos::null) {
 
     // Models
-    if ((ART_exp_timeInt_ != Teuchos::null) or (airway_imp_timeInt_ != Teuchos::null)) {
+    if ((ART_timeInt_ != Teuchos::null) or (airway_imp_timeInt_ != Teuchos::null)) {
       dserror("No problem types involving airways are supported for use with locsys conditions!");
     }
   }
@@ -162,7 +162,7 @@ void FLD::TimIntRedModels::DoProblemSpecificBoundaryConditions()
   }
 
   // Check if one-dimensional artery network problem exist
-  if (ART_exp_timeInt_ != Teuchos::null)
+  if (ART_timeInt_ != Teuchos::null)
   {
     coupled3D_redDbc_art_->EvaluateDirichlet(velnp_, *(dbcmaps_->CondMap()), time_);
   }
@@ -196,7 +196,7 @@ void FLD::TimIntRedModels::Update3DToReducedMatAndRHS()
   }
 
   // Check if one-dimensional artery network problem exist
-  if (ART_exp_timeInt_ != Teuchos::null)
+  if (ART_timeInt_ != Teuchos::null)
   {
     if (strong_redD_3d_coupling_)
     {
@@ -252,7 +252,7 @@ void FLD::TimIntRedModels::OutputReducedD()
   {
     // write reduced model problem
     // Check if one-dimensional artery network problem exist
-    if (ART_exp_timeInt_ != Teuchos::null)
+    if (ART_timeInt_ != Teuchos::null)
     {
       Teuchos::RCP<Teuchos::ParameterList> redD_export_params;
       redD_export_params = Teuchos::rcp(new Teuchos::ParameterList());
@@ -262,7 +262,7 @@ void FLD::TimIntRedModels::OutputReducedD()
       redD_export_params->set<int>("uprestart",uprestart_);
       redD_export_params->set<double>("time",time_);
 
-      ART_exp_timeInt_->Output(true, redD_export_params);
+      ART_timeInt_->Output(true, redD_export_params);
     }
 
     // Check if one-dimensional artery network problem exist
@@ -294,7 +294,7 @@ void FLD::TimIntRedModels::ReadRestart(int step)
   traction_vel_comp_adder_bc_->ReadRestart(reader);
 
   // Read restart of one-dimensional arterial network
-  if (ART_exp_timeInt_ != Teuchos::null)
+  if (ART_timeInt_ != Teuchos::null)
   {
     coupled3D_redDbc_art_->ReadRestart(reader);
   }
@@ -315,9 +315,9 @@ void FLD::TimIntRedModels::ReadRestart(int step)
 void FLD::TimIntRedModels::ReadRestartReducedD(int step)
 {
   // Check if one-dimensional artery network problem exist
-  if (ART_exp_timeInt_ != Teuchos::null)
+  if (ART_timeInt_ != Teuchos::null)
   {
-    ART_exp_timeInt_->ReadRestart(step,true);
+    ART_timeInt_->ReadRestart(step,true);
   }
 
   // Check if one-dimensional artery network problem exist
@@ -366,7 +366,7 @@ void FLD::TimIntRedModels::Output()
     if (uprestart_ != 0 && step_%uprestart_ == 0) //add restart data
     {
       // Check if one-dimensional artery network problem exist
-      if (ART_exp_timeInt_ != Teuchos::null)
+      if (ART_timeInt_ != Teuchos::null)
       {
         coupled3D_redDbc_art_->WriteRestart(*output_);
       }
@@ -382,7 +382,7 @@ void FLD::TimIntRedModels::Output()
   {
     // write reduced model problem
     // Check if one-dimensional artery network problem exist
-    if (ART_exp_timeInt_ != Teuchos::null)
+    if (ART_timeInt_ != Teuchos::null)
     {
       coupled3D_redDbc_art_->WriteRestart(*output_);
     }
@@ -480,7 +480,7 @@ void FLD::TimIntRedModels::PrepareTimeStep()
     discret_->SetState("dispnp", dispnp_);
 
   // Check if one-dimensional artery network problem exist
-  if (ART_exp_timeInt_ != Teuchos::null)
+  if (ART_timeInt_ != Teuchos::null)
   {
     coupled3D_redDbc_art_->SaveState();
     coupled3D_redDbc_art_->FlowRateCalculation(time_,dta_);

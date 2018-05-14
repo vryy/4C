@@ -26,6 +26,7 @@
 #include "../drt_lib/drt_discret.H"
 
 #include "../drt_adapter/ad_porofluidmultiphase.H"
+#include "../drt_adapter/ad_art_net.H"
 
 #include "../drt_inpar/inpar_porofluidmultiphase.H"
 
@@ -56,12 +57,20 @@ namespace LINALG
   class KrylovProjector;
 }
 
+namespace ADAPTER
+{
+  class ArtNet;
+}
+
 
 /*==========================================================================*/
 //! Algorithm and time integration classes for porous multiphase flow problems
 /*==========================================================================*/
 namespace POROFLUIDMULTIPHASE
 {
+
+//forward declaration
+class MeshtyingStrategyBase;
 
 /*!
  * \brief implicit time integration for porous multiphase flow problems
@@ -118,7 +127,7 @@ public:
   virtual void CalcInitialTimeDerivative();
 
   //! read restart data
-  virtual void ReadRestart(int step) = 0;
+  virtual void ReadRestart(int step);
 
   /// create result test for porous fluid field
   Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
@@ -136,7 +145,7 @@ public:
 
   //! update the solution after convergence of the nonlinear iteration.
   virtual void Update(
-  ) = 0;
+  );
 
   ///  compute time derivative
   virtual void ComputeTimeDerivative() =0;
@@ -171,7 +180,7 @@ public:
   virtual void PrintTimeStepInfo();
 
   //! iterative update of phinp
-  void UpdateIter(
+  virtual void UpdateIter(
     const Teuchos::RCP<const Epetra_Vector> inc //!< increment vector for phi
   );
 
@@ -191,11 +200,20 @@ public:
   //! right-hand side alias the dynamic force residual
   Teuchos::RCP<const Epetra_Vector> RHS() const { return residual_; }
 
+  //! right-hand side alias the dynamic force residual for coupled system
+  Teuchos::RCP<const Epetra_Vector> ArteryPorofluidRHS() const;
+
   //! return discretization
   Teuchos::RCP<DRT::Discretization> Discretization() const { return discret_; }
 
   //! access dof row map
   Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) const;
+
+  //! access dof row map
+  Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const;
+
+  //! direct access to block system matrix of artery poro problem
+  virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ArteryPorofluidSysmat() const;
 
   //! output solution and restart data to file
   virtual void Output();
@@ -342,13 +360,12 @@ protected:
     double& actresidual     //!< return value of the current residual
   );
 
-  //! Calculate problem specific norm
-  virtual void CalcProblemSpecificNorm(
-      double& preresnorm,
-      double& incprenorm_L2,
-      double& prenorm_L2,
-      double& preresnorminf
-  );
+  //! linear solve
+  virtual void LinearSolve(
+      bool   isadapttol,
+      double actresidual,
+      double adaptolbetter
+      );
 
   //! reconstruct pressures and saturation from current solution
   void ReconstructPressuresAndSaturations();
@@ -394,6 +411,9 @@ protected:
 
   //! print finish line of convergence table to screen
   virtual void PrintConvergenceFinishLine();
+
+  // return arterial network time integrator
+  virtual Teuchos::RCP<ADAPTER::ArtNet> ArtNetTimInt();
 
   /*========================================================================*/
   //! @name Time, time-step and related methods
@@ -612,6 +632,9 @@ protected:
 
   //! nonlinear iteration increment vector
   Teuchos::RCP<Epetra_Vector> increment_;
+
+  //! meshtying strategy (includes standard case without meshtying)
+  Teuchos::RCP<POROFLUIDMULTIPHASE::MeshtyingStrategyBase> strategy_;
 
   /*========================================================================*/
 

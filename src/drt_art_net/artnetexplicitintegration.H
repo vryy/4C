@@ -28,7 +28,6 @@
 
 
 #include "Teuchos_RCP.hpp"
-#include "Teuchos_ParameterList.hpp"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
@@ -67,7 +66,9 @@
 #include <ctime>
 #include <cstdlib>
 #include <iostream>
-#include <Teuchos_TimeMonitor.hpp>
+
+#include "art_net_timint.H"
+
 
 
 /// artery algorithms
@@ -79,7 +80,7 @@ namespace ART
 
 \author ismail (ismail@lnm.mw.tum.de)
 */
-class ArtNetExplicitTimeInt
+class ArtNetExplicitTimeInt : public TimInt
 {
   //friend class ArtNetResultTest;
 
@@ -91,8 +92,10 @@ public:
 
   */
   ArtNetExplicitTimeInt(Teuchos::RCP<DRT::Discretization>  dis,
-                       LINALG::Solver&            solver,
-                       Teuchos::ParameterList&    params,
+                       const int linsolvernumber,
+                       const Teuchos::ParameterList& probparams,
+                       const Teuchos::ParameterList& artparams,
+                       FILE* errfile,
                        IO::DiscretizationWriter&  output);
 
 
@@ -103,27 +106,17 @@ public:
   virtual ~ArtNetExplicitTimeInt();
 
   /*!
-  \brief start time loop for startingalgo, normal problems and restarts
+  \brief Initialization
 
   */
-  void Integrate();
+  void Init(
+      const Teuchos::ParameterList& globaltimeparams,
+      const Teuchos::ParameterList& arteryparams,
+      const std::string&            scatra_disname
+      );
 
-  /*!
-  \brief start time loop for startingalgo, normal problems and restarts
-
-  */
-  void Integrate(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams);
-
-  /*!
-  \brief Do time integration (time loop)
-
-  */
-  void TimeLoop(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams);
-
-
-
-  /// setup the variables to do a new time step
-  void PrepareTimeStep();
+  // create field test
+  Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
 
   /*!
@@ -170,12 +163,6 @@ public:
   */
   void Output(bool               CoupledTo3D,
               Teuchos::RCP<Teuchos::ParameterList> CouplingParams);
-
-  /*!
-  \brief Assembling of the RHS Vector and the LHS Matrix
-
-  */
-  void AssembleMatAndRHS();
 
   /*!
   \brief Test results
@@ -230,81 +217,19 @@ public:
   const Teuchos::RCP<const Epetra_Vector> InvDirichlet();
 
   Teuchos::RCP<LINALG::SparseMatrix> MassMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(massmat_); }
-  Teuchos::RCP<DRT::Discretization > Discretization() { return discret_; }
-
-  double  Dt()   const { return dta_; }
-
-  double  Time() const { return time_; }
-  int     Step() const { return step_; }
-
-  int     Itemax() const { return params_.get<int>("max nonlin iter steps"); }
-  void    SetItemax(int itemax) { params_.set<int>("max nonlin iter steps", itemax); }
 
   //@}
 
 
 protected:
 
-  //! @name general algorithm parameters
-  //! arterial network discretization
-  Teuchos::RCP<DRT::Discretization>      discret_;
-  LINALG::Solver&               solver_;
-  Teuchos::ParameterList&                params_;
-  IO::DiscretizationWriter&     output_;
-  //! the processor ID from the communicator
-  int                           myrank_;
-
-  //@}
-
-  //! @name time stepping variables
-  double  time_;    ///< physical time
-  int     step_;    ///< timestep
-  int     stepmax_; ///< maximal number of timesteps
-  double  maxtime_; ///< maximal physical computation time
-  //@}
-
-
-  /// constant density extracted from element material for incompressible flow
-  double density_;
-
-  //! @name restart variables
-  int uprestart_;
-  int upres_;
-  //@}
-
-  //! @name time step sizes
-  double dta_;
-  double dtp_;
-
-  //@}
-
-  /// cpu-time measures
-  double  dtele_;
-  double  dtfilter_;
-  double  dtsolve_;
-
   /// (standard) mass matrix
   Teuchos::RCP<LINALG::SparseOperator> massmat_;
-
-  /// (standard) system matrix
-  Teuchos::RCP<LINALG::SparseOperator> sysmat_;
-
-  /// maps for extracting Dirichlet and free DOF sets
-  Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
-
-  /// rhs: right hand side vector
-  Teuchos::RCP<Epetra_Vector>    rhs_;
-
-  /// (scatra) system matrix
-  Teuchos::RCP<LINALG::SparseOperator> scatra_sysmat_;
 
   /// maps for scatra Dirichlet and free DOF sets
   Teuchos::RCP<Epetra_Vector>    nodeIds_;
   Teuchos::RCP<Epetra_Vector>    scatra_bcval_;
   Teuchos::RCP<Epetra_Vector>    scatra_dbctog_;
-
-  /// rhs: right hand side vector of scatra
-  Teuchos::RCP<Epetra_Vector>    scatra_rhs_;
 
   //! @name Volumetric Flow rate and Cross-Sectional area at time n+1, n and n-1
   Teuchos::RCP<Epetra_Vector>    qanp_;
@@ -358,7 +283,6 @@ protected:
   Teuchos::RCP<Epetra_Vector>    scatraCO2wbnp_;
 
   Teuchos::RCP<Epetra_Vector>    export_scatra_;
-  bool solvescatra_;
   //@}
 
   //! @name saving state vectors
@@ -400,10 +324,6 @@ protected:
 
   //! @name A condition to export 1D arteries as a gnuplot format
   Teuchos::RCP<UTILS::ArtWriteGnuplotWrapper> artgnu_;
-  //@}
-
-  //!
-  bool coupledTo3D_;
   //@}
 
   //@}

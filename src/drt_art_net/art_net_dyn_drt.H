@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file art_net_dyn_drt.H
-\brief Control routine for arterial network (time) integration.
+\brief Main control routine for all arterial network solvers.
 
 \maintainer Lena Yoshihara
 
@@ -15,13 +15,13 @@
 #include "Teuchos_RCP.hpp"
 
 // forward declaration
-namespace ART{
- class ArtNetExplicitTimeInt;
+namespace ADAPTER {
+  class ArtNet;
 }
 
 void dyn_art_net_drt();
 
-Teuchos::RCP<ART::ArtNetExplicitTimeInt>  dyn_art_net_drt(bool CoupledTo3D);
+Teuchos::RCP<ADAPTER::ArtNet>  dyn_art_net_drt(bool CoupledTo3D);
 
 
 #endif  /* #ifndef ART_NET_DYN_DRT_H */

@@ -220,6 +220,11 @@ const std::string ImplTypeToString(const INPAR::SCATRA::ImplType impltype)
     impltypestring = "Chemical diffusion under a variational setting";
     break;
   }
+  case INPAR::SCATRA::impltype_one_d_artery:
+  {
+    impltypestring = "Scalar Transport in 1D artery";
+    break;
+  }
   case INPAR::SCATRA::impltype_undefined:
   {
     impltypestring = "Undefined";

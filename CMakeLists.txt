@@ -830,6 +830,9 @@ set(OBJS_DRT_INPAR
 )
 set(OBJS_DRT_ARTNET
   src/drt_art_net/art_net_dyn_drt.cpp
+  src/drt_art_net/art_net_utils.cpp
+  src/drt_art_net/art_net_timint.cpp
+  src/drt_art_net/art_net_impl_stationary.cpp
   src/drt_art_net/artnetexplicitintegration.cpp
 )
 
@@ -867,13 +870,16 @@ set(OBJS_POST_DRT_MONITOR
   src/post_monitor/post_drt_monitor.cpp
 )
 set(OBJS_DRT_ARTNET_LIB
+  src/drt_art_net/artery.cpp
+  src/drt_art_net/artery_ele_calc_lin_exp.cpp
+  src/drt_art_net/artery_ele_calc_pres_based.cpp
+  src/drt_art_net/artery_ele_factory.cpp
+  src/drt_art_net/artery_evaluate.cpp
+  src/drt_art_net/artery_ele_calc.cpp
   src/drt_art_net/art_junction.cpp
   src/drt_art_net/art_terminal_bc.cpp
   src/drt_art_net/art_write_gnuplot.cpp
-  src/drt_art_net/artery.cpp
-  src/drt_art_net/artery_evaluate.cpp
   src/drt_art_net/artery_input.cpp
-  src/drt_art_net/artery_lin_exp.cpp
   src/drt_art_net/artery_resulttest.cpp
 )
 set(OBJS_FILTER_COMMON
@@ -1167,6 +1173,7 @@ set(OBJS_DRT_SCATRA
   src/drt_scatra/scatra_timint_meshtying_strategy_std.cpp
   src/drt_scatra/scatra_timint_meshtying_strategy_std_elch.cpp
   src/drt_scatra/scatra_timint_meshtying_strategy_std_var_chemdiff.cpp 
+  src/drt_scatra/scatra_timint_meshtying_strategy_artery.cpp
   src/drt_scatra/scatra_timint_elch.cpp
   src/drt_scatra/scatra_timint_elch_scheme.cpp
   src/drt_scatra/scatra_timint_poromulti.cpp
@@ -1371,6 +1378,7 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_calc_poro.cpp
   src/drt_scatra_ele/scatra_ele_calc_poro_reac.cpp
   src/drt_scatra_ele/scatra_ele_calc_multiporo_reac.cpp
+  src/drt_scatra_ele/scatra_ele_calc_artery.cpp
   src/drt_scatra_ele/scatra_ele_calc_poro_reac_ECM.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_general.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_stabilization.cpp
@@ -2399,6 +2407,8 @@ set(OBJS_DRT_POROFLUIDMULTIPHASE
   src/drt_porofluidmultiphase/porofluidmultiphase_dyn.cpp
   src/drt_porofluidmultiphase/porofluidmultiphase_timint_implicit.cpp
   src/drt_porofluidmultiphase/porofluidmultiphase_timint_ost.cpp
+  src/drt_porofluidmultiphase/porofluidmultiphase_meshtying_strategy_std.cpp
+  src/drt_porofluidmultiphase/porofluidmultiphase_meshtying_strategy_artery.cpp
   src/drt_porofluidmultiphase/porofluidmultiphase_resulttest.cpp
   src/drt_porofluidmultiphase/porofluidmultiphase_utils.cpp
 )
@@ -2417,6 +2427,10 @@ set(OBJS_DRT_POROMULTIPHASE
   src/drt_poromultiphase_scatra/poromultiphase_scatra_base.cpp
   src/drt_poromultiphase_scatra/poromultiphase_scatra_partitioned_twoway.cpp
   src/drt_poromultiphase_scatra/poromultiphase_scatra_monolithic_twoway.cpp
+)
+
+set(OBJS_DRT_POROMULTIPHASE_ART_COUPL
+  src/drt_poromultiphase_scatra/poromultiphase_scatra_artery_coupling_nodebased.cpp
 )
 
 set(OBJS_DRT_FPSI
@@ -2525,11 +2539,6 @@ option (D_THERMO      "thermal elements" ON)
 if (D_THERMO)
   add_definitions("-DD_THERMO")
 endif(D_THERMO)
-
-option (D_ARTNET      "1D Arterial network elements" OFF)
-if (D_ARTNET)
-  add_definitions("-DD_ARTNET")
-endif(D_ARTNET)
 
 option (D_ALE_BFLOW   "ALE deformation included in flow calculation" OFF)
 if (D_ALE_BFLOW)
@@ -2738,6 +2747,7 @@ add_library(drt_lib_inpar ${OBJS_DRT_INPAR})
 add_library(drt_lib_constraint ${OBJS_DRT_CONSTRAINT_LIB})
 add_library(drt_lib_contact ${OBJS_DRT_CONTACT_LIB} ${OBJS_DRT_BEAMCONTACT_LIB})
 add_library(drt_lib_beaminteraction ${OBJS_DRT_BEAMINTERACTION_LIB})
+add_library(drt_lib_poromulti_art_coupl ${OBJS_DRT_POROMULTIPHASE_ART_COUPL})
 add_library(drt_lib_xfem ${OBJS_DRT_XFEM})
 add_library(drt_lib_io ${OBJS_DRT_IO_LIB})
 #add_library(drt_lib_fluid ${OBJS_DRT_FLUID_LIB})
@@ -2765,6 +2775,7 @@ set(SUPPORT_LIBRARIES
   drt_lib_constraint
   drt_lib_contact
   drt_lib_beaminteraction
+  drt_lib_poromulti_art_coupl
   # Libraries needed by elements
   drt_lib_surfstress
   drt_lib_xfem

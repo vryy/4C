@@ -1052,6 +1052,9 @@ protected:
   //! flag for scatra-scatra interface coupling
   const bool s2icoupling_;
 
+  //! flag for artery-scatra interface coupling
+  const bool arterycoupling_;
+
   //! flag for scatra-scatra heterogeneous reaction coupling
   const bool heteroreaccoupling_;
 

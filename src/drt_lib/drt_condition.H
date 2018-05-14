@@ -211,6 +211,8 @@ public:
     ArtJunctionCond,
     ArtWriteGnuplotCond,
     ArtPrescribedCond,
+    ArtPorofluidCouplingCond,
+    ArtScatraCouplingCond,
     ArtRfCond,
     ArtWkCond,
     StructAleCoupling,

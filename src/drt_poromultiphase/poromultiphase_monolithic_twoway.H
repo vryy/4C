@@ -108,7 +108,7 @@ namespace POROMULTIPHASE
     //! unique map of all dofs that should be constrained with DBC
     Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const {return combinedDBCMap_;};
 
-  private:
+  protected:
 
     //! Newton output to screen
     virtual void NewtonOutput();
@@ -117,12 +117,14 @@ namespace POROMULTIPHASE
     virtual void NewtonErrorCheck();
 
     //! build the combined dirichletbcmap
-    void BuildCombinedDBCMap();
+    virtual void BuildCombinedDBCMap();
 
     //! full monolithic dof row map
     Teuchos::RCP<const Epetra_Map> DofRowMap();
 
     virtual void SetupRHS();
+
+    virtual Teuchos::RCP<Epetra_Vector> SetupStructurePartofRHS();
 
     //! build block vector from field vectors, e.g. rhs, increment vector
     void SetupVector(Epetra_Vector &f, //!< vector of length of all dofs
@@ -147,6 +149,9 @@ namespace POROMULTIPHASE
 
     /// setup composed system matrix from field solvers
     virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat) ;
+
+    /// setup composed system matrix from field solvers
+    virtual void SetupMaps() ;
 
     //Setup solver for monolithic system
     virtual bool SetupSolver();
@@ -191,7 +196,7 @@ namespace POROMULTIPHASE
         ) const;
 
     //! Create the linear solver
-    void CreateLinearSolver(const Teuchos::ParameterList& solverparams,const int solvertype);
+    virtual void CreateLinearSolver(const Teuchos::ParameterList& solverparams,const int solvertype);
 
     //! Setup Newton-Raphson
     void SetupNewton();
@@ -300,6 +305,59 @@ namespace POROMULTIPHASE
     INPAR::POROMULTIPHASE::FDCheck fdcheck_;
 
   }; //PoroMultiPhasePartitioned
+
+  //! Base class of all solid-scatra algorithms
+  class PoroMultiPhaseMonolithicTwoWayArteryCoupling : public PoroMultiPhaseMonolithicTwoWay
+  {
+  public:
+    /// create using a Epetra_Comm
+    PoroMultiPhaseMonolithicTwoWayArteryCoupling(
+        const Epetra_Comm& comm,
+        const Teuchos::ParameterList& globaltimeparams);
+
+    /// virtual destructor
+    virtual ~PoroMultiPhaseMonolithicTwoWayArteryCoupling(){};
+
+    //! extract the field vectors from a given composed vector.
+    /*!
+     x is the sum of all increments up to this point.
+     \param x  (i) composed vector that contains all field vectors
+     \param sx (o) structural vector (e.g. displacements)
+     \param fx (o) fluid vector (primary variables of fluid field, i.e. pressures or saturations)
+                   and artery pressure
+     */
+    virtual void ExtractFieldVectors(
+        Teuchos::RCP<const Epetra_Vector> x,
+        Teuchos::RCP<const Epetra_Vector>& sx,
+        Teuchos::RCP<const Epetra_Vector>& fx);
+
+  protected:
+
+    /// setup composed system matrix from field solvers
+    virtual void SetupMaps() ;
+
+    /// setup composed system matrix from field solvers
+    virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat) ;
+
+    /// setup global rhs
+    virtual void SetupRHS();
+
+    //! build the combined dirichletbcmap
+    virtual void BuildCombinedDBCMap();
+
+    //! Create the linear solver
+    virtual void CreateLinearSolver(const Teuchos::ParameterList& solverparams,const int solvertype);
+
+    //! build the block null spaces
+    virtual void BuildArteryBlockNullSpace(Teuchos::RCP<LINALG::Solver>& solver, const int& arteryblocknum);
+
+    //! dof row map (not splitted)
+    Teuchos::RCP<Epetra_Map> fullmap_artporo_;
+
+    //! dof row map splitted in (field) blocks
+    Teuchos::RCP<LINALG::MultiMapExtractor> blockrowdofmap_artporo_;
+
+  };
 
 
 }

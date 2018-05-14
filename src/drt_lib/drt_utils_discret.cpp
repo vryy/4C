@@ -32,6 +32,7 @@ void DRT::UTILS::EvaluateInitialField(
   if (fieldstring=="Pressure" && (int)locids.size()!=1) invalid = true;
   if (fieldstring=="Temperature" && (int)locids.size()!=1) invalid = true;
   if (fieldstring=="Porosity" && (int)locids.size()!=1) invalid = true;
+  if (fieldstring=="Artery" && (int)locids.size()!=1) invalid = true;
   if (invalid) dserror("ERROR: Invalid input to EvaluateInitialField().");
 
   // get initial field conditions

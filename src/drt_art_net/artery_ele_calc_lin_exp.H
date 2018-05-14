@@ -1,9 +1,9 @@
 
 /*----------------------------------------------------------------------*/
 /*!
-\file artery_lin_exp.H
+\file artery_ele_calc_lin_exp.H
 
-\brief Internal implementation of artery_lin_exp element
+\brief Internal implementation of LinExp artery element
 
 \maintainer Lena Yoshihara
 
@@ -12,111 +12,20 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef D_ARTNET
-
-
 #ifndef ARTERY_LIN_EXP_H
 #define ARTERY_LIN_EXP_H
 
 #include "artery.H"
+#include "artery_ele_action.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../linalg/linalg_fixedsizematrix.H"
+#include "artery_ele_calc.H"
 
 
 namespace DRT
 {
 namespace ELEMENTS
 {
-  /// Interface base class for artery_lin_exp
-  /*!
-    This class exists to provide a common interface for all template
-    versions of artery_lin_exp. The only function
-    this class actually defines is Expl, which returns a pointer to
-    the appropriate version of artery_lin_exp.
-   */
-  class ArteryExpInterface
-  {
-  public:
-    /// Empty constructor
-    ArteryExpInterface() {}
-    /// Empty destructor
-    virtual ~ArteryExpInterface() {}
-    /// Evaluate the element
-    virtual int Evaluate(Artery*                   ele,
-                         Teuchos::ParameterList&   params,
-                         DRT::Discretization&      discretization,
-                         std::vector<int>&         lm,
-                         Epetra_SerialDenseMatrix& elemat1_epetra,
-                         Epetra_SerialDenseMatrix& elemat2_epetra,
-                         Epetra_SerialDenseVector& elevec1_epetra,
-                         Epetra_SerialDenseVector& elevec2_epetra,
-                         Epetra_SerialDenseVector& elevec3_epetra,
-                         Teuchos::RCP<MAT::Material> mat) = 0;
-
-    virtual int ScatraEvaluate(Artery*                   ele,
-                         Teuchos::ParameterList&   params,
-                         DRT::Discretization&      discretization,
-                         std::vector<int>&         lm,
-                         Epetra_SerialDenseMatrix& elemat1_epetra,
-                         Epetra_SerialDenseMatrix& elemat2_epetra,
-                         Epetra_SerialDenseVector& elevec1_epetra,
-                         Epetra_SerialDenseVector& elevec2_epetra,
-                         Epetra_SerialDenseVector& elevec3_epetra,
-                         Teuchos::RCP<MAT::Material> mat) = 0;
-
-    virtual void Initial(Artery*                                  ele,
-                         Teuchos::ParameterList&                           params,
-                         DRT::Discretization&                     discretization,
-                         std::vector<int>&                        lm,
-                         Teuchos::RCP<const MAT::Material>        material)=0;
-
-    virtual void EvaluateTerminalBC(Artery*                       ele,
-                                    Teuchos::ParameterList&       params,
-                                    DRT::Discretization&          discretization,
-                                    std::vector<int>&             lm,
-                                    Teuchos::RCP<MAT::Material>    mat) = 0;
-
-    virtual void EvaluateScatraBC(Artery*                       ele,
-                                    Teuchos::ParameterList&       params,
-                                    DRT::Discretization&          discretization,
-                                    std::vector<int>&             lm,
-                                    Teuchos::RCP<MAT::Material>    mat) = 0;
-
-    virtual void CalcPostprocessingValues(Artery*                       ele,
-                                          Teuchos::ParameterList&       params,
-                                          DRT::Discretization&          discretization,
-                                          std::vector<int>&             lm,
-                                          Teuchos::RCP<MAT::Material>    mat) = 0;
-
-    virtual void CalcScatraFromScatraFW(  Artery*                      ele,
-                                          Teuchos::ParameterList&      params,
-                                          DRT::Discretization&         discretization,
-                                          std::vector<int>&            lm,
-                                          Teuchos::RCP<MAT::Material>   material) =0;
-
-    virtual bool SolveRiemann(Artery*                             ele,
-                              Teuchos::ParameterList&             params,
-                              DRT::Discretization&                discretization,
-                              std::vector<int>&                   lm,
-                              Teuchos::RCP<const MAT::Material>   mat) = 0;
-
-    virtual void EvaluateWfAndWb(  Artery*                      ele,
-                                          Teuchos::ParameterList&      params,
-                                          DRT::Discretization&         discretization,
-                                          std::vector<int>&            lm,
-                                          Teuchos::RCP<MAT::Material>   material) =0;
-
-    virtual void SolveScatraAnalytically(  Artery*                      ele,
-                                          Teuchos::ParameterList&      params,
-                                          DRT::Discretization&         discretization,
-                                          std::vector<int>&            lm,
-                                          Teuchos::RCP<MAT::Material>   material) =0;
-
-    /// Internal implementation class for artery element
-    static ArteryExpInterface* Expl(DRT::ELEMENTS::Artery* art);
-
-  };
-
 
   /// Internal artery implementation
   /*!
@@ -131,14 +40,27 @@ namespace ELEMENTS
   */
 
   template <DRT::Element::DiscretizationType distype>
-  class ArteryLinExp: public ArteryExpInterface
+  class ArteryEleCalcLinExp: public ArteryEleCalc<distype>
   {
-  public:
-    /// Constructor
-    explicit ArteryLinExp();
+  private:
 
-    //! number of nodes
-    static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    typedef ArteryEleCalc<distype> my;
+
+    /// private constructor, since we are a Singleton.
+    ArteryEleCalcLinExp(const int numdofpernode, const std::string& disname);
+  public:
+
+    /// virtual destructor
+    virtual ~ArteryEleCalcLinExp() {};
+
+    //! Singleton access method
+    static ArteryEleCalcLinExp<distype> * Instance(
+        const int numdofpernode,
+        const std::string& disname,
+        const ArteryEleCalcLinExp* delete_me=NULL);
+
+    /// called upon destruction
+    virtual void Done();
 
     /// Evaluate
     /*!
@@ -166,6 +88,18 @@ namespace ELEMENTS
                          Epetra_SerialDenseVector& elevec3_epetra,
                          Teuchos::RCP<MAT::Material> mat);
 
+    virtual int EvaluateService(Artery*                    ele,
+                                const ARTERY::Action       action,
+                                Teuchos::ParameterList&    params,
+                                DRT::Discretization&       discretization,
+                                std::vector<int>&          lm,
+                                Epetra_SerialDenseMatrix&  elemat1_epetra,
+                                Epetra_SerialDenseMatrix&  elemat2_epetra,
+                                Epetra_SerialDenseVector&  elevec1_epetra,
+                                Epetra_SerialDenseVector&  elevec2_epetra,
+                                Epetra_SerialDenseVector&  elevec3_epetra,
+                                Teuchos::RCP<MAT::Material> mat);
+
     /*!
       \brief calculate element matrix and rhs
 
@@ -181,21 +115,21 @@ namespace ELEMENTS
       \param dt               (i) timestep
       */
     void Sysmat(Artery*                                  ele,
-                const LINALG::Matrix<iel,1>&             eqnp,
-                const LINALG::Matrix<iel,1>&             eareanp,
-                LINALG::Matrix<2*iel,2*iel>&             estif,
-                LINALG::Matrix<2*iel,    1>&             eforce,
+                const LINALG::Matrix<my::iel_,1>&             eqnp,
+                const LINALG::Matrix<my::iel_,1>&             eareanp,
+                LINALG::Matrix<2*my::iel_,2*my::iel_>&             estif,
+                LINALG::Matrix<2*my::iel_,    1>&             eforce,
                 Teuchos::RCP<const MAT::Material>        material,
                 double                                   dt);
 
     void ScatraSysmat(Artery*                                  ele,
-                      const LINALG::Matrix<2*iel,1>&             escatran,
-                      const LINALG::Matrix<iel,1>&             eqnp,
-                      const LINALG::Matrix<iel,1>&             eqn,
-                      const LINALG::Matrix<iel,1>&             eareanp,
-                      const LINALG::Matrix<iel,1>&             earean,
-                      LINALG::Matrix<2*iel,2*iel>&             estif,
-                      LINALG::Matrix<2*iel,  1>&             eforce,
+                      const LINALG::Matrix<2*my::iel_,1>&             escatran,
+                      const LINALG::Matrix<my::iel_,1>&             eqnp,
+                      const LINALG::Matrix<my::iel_,1>&             eqn,
+                      const LINALG::Matrix<my::iel_,1>&             eareanp,
+                      const LINALG::Matrix<my::iel_,1>&             earean,
+                      LINALG::Matrix<2*my::iel_,2*my::iel_>&             estif,
+                      LINALG::Matrix<2*my::iel_,  1>&             eforce,
                       Teuchos::RCP<const MAT::Material>        material,
                       double                                   dt);
 
@@ -275,35 +209,21 @@ namespace ELEMENTS
 #endif
 
   private:
-    //! array for shape functions
-    LINALG::Matrix<iel,1> funct_;
-    //! array for shape function derivatives w.r.t s
-    LINALG::Matrix<1,iel> deriv_;
-    //! transposed array for shape function derivatives w.r.t s
-    LINALG::Matrix<iel,1> tderiv_;
-    //! transposed jacobian "dx/ds"
-    LINALG::Matrix<1,1> xjm_;
-    //! inverse of transposed jacobian "ds/dx"
-    LINALG::Matrix<1,1> xji_;
     //! nodal volumetric flow rate at time step "n"
-    LINALG::Matrix<iel,1> qn_;
+    LINALG::Matrix<my::iel_,1> qn_;
     //! nodal cross-sectional area at time step "n"
-    LINALG::Matrix<iel,1> an_;
-    //! global derivatives of shape functions w.r.t s
-    LINALG::Matrix<2,iel> derxy_;
+    LINALG::Matrix<my::iel_,1> an_;
     //! vector containing the initial cross-sectional area at the element nodes
-    LINALG::Matrix<iel,1> area0_;
+    LINALG::Matrix<my::iel_,1> area0_;
     //! vector containing the initial thickness at the element nodes
-    LINALG::Matrix<iel,1> th_;
+    LINALG::Matrix<my::iel_,1> th_;
     //! vector containing the initial Youngs modulus at the element nodes
-    LINALG::Matrix<iel,1> young_;
+    LINALG::Matrix<my::iel_,1> young_;
     //! vector containing the fixed external pressure
-    LINALG::Matrix<iel,1> pext_;
+    LINALG::Matrix<my::iel_,1> pext_;
   };
 
 }
 }
-
-#endif
 
 #endif

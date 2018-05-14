@@ -1,0 +1,67 @@
+/*--------------------------------------------------------------------------*/
+/*!
+\file artery_ele_factory.H
+
+\brief Factory of artery elements
+
+<pre>
+\level 3
+
+\maintainer Johannes Kremheller
+            kremheller@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+</pre>
+*/
+/*--------------------------------------------------------------------------*/
+
+
+#ifndef SRC_DRT_ART_NET_ARTERY_ELE_FACTORY_H_
+#define SRC_DRT_ART_NET_ARTERY_ELE_FACTORY_H_
+
+#include "../drt_inpar/inpar_bio.H"
+
+#include "../drt_lib/drt_element.H"
+
+#include "artery_ele_interface.H"
+
+namespace DRT
+{
+
+namespace ELEMENTS
+{
+
+// forward declaration
+class ArteryEleInterface;
+
+class ArtNetFactory
+{
+public:
+  //! ctor
+  ArtNetFactory(){ return; }
+
+  //! dtor
+  virtual ~ArtNetFactory(){ return; }
+
+  //! ProvideImpl
+  static ArteryEleInterface* ProvideImpl(
+    DRT::Element::DiscretizationType distype,
+    INPAR::ARTDYN::ImplType problem,
+    const std::string& disname);
+
+private:
+  //! define ArteryEle instances dependent on problem
+  template<DRT::Element::DiscretizationType distype>
+  static ArteryEleInterface* DefineProblemType(
+    INPAR::ARTDYN::ImplType problem,
+    const std::string& disname);
+
+
+}; // end class ArtNetFactory
+
+} // end ELEMENTS
+
+} // end DRT
+
+
+
+#endif /* SRC_DRT_ART_NET_ARTERY_ELE_FACTORY_H_ */

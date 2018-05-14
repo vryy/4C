@@ -61,6 +61,9 @@ void INPAR::POROMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLi
                                 ),
                               &poromultiphasedyn);
 
+  // coupling with 1D artery network active
+  BoolParameter("ARTERY_COUPLING","No","Coupling with 1D blood vessels.",&poromultiphasedyn);
+
   // ----------------------------------------------------------------------
   // (2) monolithic parameters
   Teuchos::ParameterList& poromultiphasedynmono = poromultiphasedyn.sublist("MONOLITHIC",false,

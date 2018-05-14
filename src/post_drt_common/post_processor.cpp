@@ -55,7 +55,6 @@ void runEnsightVtuFilter(PostProblem    &problem)
         PostField* alefield = problem.get_discretization(2);
         AleFilter alewriter(alefield, basename);
         alewriter.WriteFiles();
-#ifdef D_ARTNET
         // 1d artery
         if (problem.num_discr()== 4)
         {
@@ -63,7 +62,6 @@ void runEnsightVtuFilter(PostProblem    &problem)
           StructureFilter writer(field, basename, problem.stresstype(), problem.straintype());
           writer.WriteFiles();
         }
-#endif //D_ARTNET
         if (problem.num_discr() > 2 and problem.get_discretization(2)->name()=="xfluid")
         {
           std::string basename = problem.outname();
@@ -223,12 +221,10 @@ void runEnsightVtuFilter(PostProblem    &problem)
       if (problem.num_discr()== 2)
       {
         // 1d artery
-#ifdef D_ARTNET
         std::string basename = problem.outname();
         PostField* field = problem.get_discretization(1);
         StructureFilter writer(field, basename, problem.stresstype(), problem.straintype());
         writer.WriteFiles();
-#endif //D_ARTNET
         if (problem.get_discretization(1)->name()=="xfluid")
         {
           std::string basename = problem.outname();
@@ -359,9 +355,20 @@ void runEnsightVtuFilter(PostProblem    &problem)
     }
     case prb_porofluidmultiphase:
     {
+        std::string basename = problem.outname();
+
         PostField* field = problem.get_discretization(0);
         PoroFluidMultiPhaseFilter writer(field, problem.outname());
         writer.WriteFiles();
+
+        // write output for artery
+        if (problem.num_discr() == 2)
+        {
+          PostField* field = problem.get_discretization(1);
+          //AnyFilter writer(field, problem.outname());
+          StructureFilter writer(field, basename, problem.stresstype(), problem.straintype());
+          writer.WriteFiles();
+        }
         break;
     }
     case prb_poromultiphase:
@@ -375,6 +382,14 @@ void runEnsightVtuFilter(PostProblem    &problem)
       PostField* fluidfield = problem.get_discretization(1);
       PoroFluidMultiPhaseFilter fluidwriter(fluidfield, basename);
       fluidwriter.WriteFiles();
+      if (problem.num_discr() == 3)
+      {
+        // artery
+        PostField* field = problem.get_discretization(2);
+        //AnyFilter writer(field, problem.outname());
+        StructureFilter writer(field, basename, problem.stresstype(), problem.straintype());
+        writer.WriteFiles();
+      }
       break;
     }
     case prb_poromultiphasescatra:
@@ -389,9 +404,46 @@ void runEnsightVtuFilter(PostProblem    &problem)
       PoroFluidMultiPhaseFilter fluidwriter(fluidfield, basename);
       fluidwriter.WriteFiles();
 
-      PostField* scatrafield = problem.get_discretization(2);
-      ScaTraFilter scatrawriter(scatrafield, basename);
-      scatrawriter.WriteFiles();
+      // no artery discretization
+      if(problem.num_discr() == 3)
+      {
+        PostField* scatrafield = problem.get_discretization(2);
+        ScaTraFilter scatrawriter(scatrafield, basename);
+        scatrawriter.WriteFiles();
+      }
+      else if (problem.num_discr() == 4)
+      {
+        // artery
+        PostField* field = problem.get_discretization(2);
+        //AnyFilter writer(field, problem.outname());
+        StructureFilter writer(field, basename, problem.stresstype(), problem.straintype());
+        writer.WriteFiles();
+
+        // scatra
+        PostField* scatrafield = problem.get_discretization(3);
+        ScaTraFilter scatrawriter(scatrafield, basename);
+        scatrawriter.WriteFiles();
+      }
+      else if (problem.num_discr() == 5)
+      {
+        // artery
+        PostField* field = problem.get_discretization(2);
+        //AnyFilter writer(field, problem.outname());
+        StructureFilter writer(field, basename, problem.stresstype(), problem.straintype());
+        writer.WriteFiles();
+
+        // artery scatra
+        PostField* artscatrafield = problem.get_discretization(3);
+        ScaTraFilter artscatrawriter(artscatrafield, basename);
+        artscatrawriter.WriteFiles();
+
+        // scatra
+        PostField* scatrafield = problem.get_discretization(4);
+        ScaTraFilter scatrawriter(scatrafield, basename);
+        scatrawriter.WriteFiles();
+      }
+      else
+        dserror("wrong number of discretizations");
       break;
     }
     case prb_var_chemdiff:
@@ -623,6 +675,14 @@ void runEnsightVtuFilter(PostProblem    &problem)
       //AnyFilter writer(field, problem.outname());
       StructureFilter writer(field, basename, problem.stresstype(), problem.straintype());
       writer.WriteFiles();
+
+      // write output for scatra
+      if (problem.num_discr() == 2)
+      {
+        PostField* scatrafield = problem.get_discretization(1);
+        ScaTraFilter scatrawriter(scatrafield, basename);
+        scatrawriter.WriteFiles();
+      }
 
       break;
     }

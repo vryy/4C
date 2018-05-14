@@ -209,7 +209,8 @@ namespace INPAR
       impltype_std_hdg,
       impltype_cardiac_monodomain_hdg,
       impltype_bondreac,
-      impltype_variational_diffusion
+      impltype_variational_diffusion,
+      impltype_one_d_artery
     };
 
     /// type of method for improving consistency of stabilized methods

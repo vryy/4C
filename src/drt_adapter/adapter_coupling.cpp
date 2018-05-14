@@ -47,11 +47,18 @@ void ADAPTER::Coupling::SetupConditionCoupling(
     const DRT::Discretization& slavedis,
     Teuchos::RCP<const Epetra_Map> slavecondmap,
     const std::string& condname,
-    const int numdof,
+    const std::vector<int>& masterdofs,
+    const std::vector<int>& slavedofs,
     bool matchall,
     const int nds_master,
-    const int nds_slave)
+    const int nds_slave
+)
 {
+  const int numdof        = masterdofs.size();
+  const int numdof_slave  = slavedofs.size();
+  if(numdof != numdof_slave)
+    dserror("Received %d master DOFs, but %d slave DOFs", numdof, numdof_slave);
+
   std::vector<int> masternodes;
   DRT::UTILS::FindConditionedNodes(masterdis,condname,masternodes);
   std::vector<int> slavenodes;
@@ -69,7 +76,7 @@ void ADAPTER::Coupling::SetupConditionCoupling(
     dserror("got %d master nodes but %d slave nodes for coupling",
             mastercount,slavecount);
 
-  SetupCoupling(masterdis, slavedis, masternodes, slavenodes, numdof, matchall,1.0e-3,nds_master,nds_slave);
+  SetupCoupling(masterdis, slavedis, masternodes, slavenodes, masterdofs, slavedofs, matchall,1.0e-3,nds_master,nds_slave);
 
   // test for completeness
   if (static_cast<int>(masternodes.size())*numdof != masterdofmap_->NumMyElements())
@@ -98,9 +105,96 @@ void ADAPTER::Coupling::SetupConditionCoupling(
 
   slavedofmap_ = slavecondmap;
   slaveexport_ = Teuchos::rcp(new Epetra_Export(*permslavedofmap_, *slavedofmap_));
+
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::Coupling::SetupConditionCoupling(
+    const DRT::Discretization& masterdis,
+    Teuchos::RCP<const Epetra_Map> mastercondmap,
+    const DRT::Discretization& slavedis,
+    Teuchos::RCP<const Epetra_Map> slavecondmap,
+    const std::string& condname,
+    const int numdof,
+    bool matchall,
+    const int nds_master,
+    const int nds_slave)
+{
+  SetupConditionCoupling(
+      masterdis,
+      mastercondmap,
+      slavedis,
+      slavecondmap,
+      condname,
+      BuildDofVectorFromNumDof(numdof),
+      BuildDofVectorFromNumDof(numdof),
+      matchall,
+      nds_master,
+      nds_slave
+      );
+}
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::Coupling::SetupCoupling(
+    const DRT::Discretization& masterdis,
+    const DRT::Discretization& slavedis,
+    const std::vector<int>& masternodes,
+    const std::vector<int>& slavenodes,
+    const std::vector<int>& masterdofs,
+    const std::vector<int>& slavedofs,
+    const bool matchall,
+    const double tolerance,
+    const int nds_master,
+    const int nds_slave
+    )
+{
+  std::vector<int> patchedmasternodes(masternodes);
+  std::vector<int> permslavenodes;
+  MatchNodes(masterdis, slavedis, patchedmasternodes, permslavenodes, slavenodes, matchall, tolerance);
+
+  // Epetra maps in original distribution
+
+  Teuchos::RCP<Epetra_Map> masternodemap =
+    Teuchos::rcp(new Epetra_Map(-1, patchedmasternodes.size(), &patchedmasternodes[0], 0, masterdis.Comm()));
+
+  Teuchos::RCP<Epetra_Map> slavenodemap =
+    Teuchos::rcp(new Epetra_Map(-1, slavenodes.size(), &slavenodes[0], 0, slavedis.Comm()));
+
+  Teuchos::RCP<Epetra_Map> permslavenodemap =
+    Teuchos::rcp(new Epetra_Map(-1, permslavenodes.size(), &permslavenodes[0], 0, slavedis.Comm()));
+
+  FinishCoupling(masterdis, slavedis, masternodemap, slavenodemap, permslavenodemap, masterdofs, slavedofs,nds_master,nds_slave);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::Coupling::SetupCoupling(
+    const DRT::Discretization& masterdis,
+    const DRT::Discretization& slavedis,
+    const std::vector<int>& masternodes,
+    const std::vector<int>& slavenodes,
+    const int numdof,
+    const bool matchall,
+    const double tolerance,
+    const int nds_master,
+    const int nds_slave)
+{
+
+  SetupCoupling(
+      masterdis,
+      slavedis,
+      masternodes,
+      slavenodes,
+      BuildDofVectorFromNumDof(numdof),
+      BuildDofVectorFromNumDof(numdof),
+      matchall,
+      tolerance,
+      nds_master,
+      nds_slave
+      );
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -189,38 +283,6 @@ void ADAPTER::Coupling::SetupConstrainedConditionCoupling(
 void ADAPTER::Coupling::SetupCoupling(
     const DRT::Discretization& masterdis,
     const DRT::Discretization& slavedis,
-    const std::vector<int>& masternodes,
-    const std::vector<int>& slavenodes,
-    const int numdof,
-    const bool matchall,
-    const double tolerance,
-    const int nds_master,
-    const int nds_slave)
-{
-  std::vector<int> patchedmasternodes(masternodes);
-  std::vector<int> permslavenodes;
-  MatchNodes(masterdis, slavedis, patchedmasternodes, permslavenodes, slavenodes, matchall, tolerance);
-
-  // Epetra maps in original distribution
-
-  Teuchos::RCP<Epetra_Map> masternodemap =
-    Teuchos::rcp(new Epetra_Map(-1, patchedmasternodes.size(), &patchedmasternodes[0], 0, masterdis.Comm()));
-
-  Teuchos::RCP<Epetra_Map> slavenodemap =
-    Teuchos::rcp(new Epetra_Map(-1, slavenodes.size(), &slavenodes[0], 0, slavedis.Comm()));
-
-  Teuchos::RCP<Epetra_Map> permslavenodemap =
-    Teuchos::rcp(new Epetra_Map(-1, permslavenodes.size(), &permslavenodes[0], 0, slavedis.Comm()));
-
-  FinishCoupling(masterdis, slavedis, masternodemap, slavenodemap, permslavenodemap, numdof,nds_master,nds_slave);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void ADAPTER::Coupling::SetupCoupling(
-    const DRT::Discretization& masterdis,
-    const DRT::Discretization& slavedis,
     const Epetra_Map& masternodes,
     const Epetra_Map& slavenodes,
     const int numdof,
@@ -253,7 +315,7 @@ void ADAPTER::Coupling::SetupCoupling(
   Teuchos::RCP<Epetra_Map> permslavenodemap =
     Teuchos::rcp(new Epetra_Map(-1, permslavenodes.size(), &permslavenodes[0], 0, slavedis.Comm()));
 
-  FinishCoupling(masterdis, slavedis, masternodemap, slavenodemap, permslavenodemap, numdof, nds_master, nds_slave);
+  FinishCoupling(masterdis, slavedis, masternodemap, slavenodemap, permslavenodemap, BuildDofVectorFromNumDof(numdof), BuildDofVectorFromNumDof(numdof), nds_master, nds_slave);
 }
 
 
@@ -284,7 +346,7 @@ void ADAPTER::Coupling::SetupCoupling(
     Teuchos::rcp(new Epetra_Map(permslavenodemap));
 
   // build slave to master permutation and dof all maps
-  FinishCoupling(masterdis, slavedis, mymasternodemap, myslavenodemap, mypermslavenodemap, numdof);
+  FinishCoupling(masterdis, slavedis, mymasternodemap, myslavenodemap, mypermslavenodemap, BuildDofVectorFromNumDof(numdof), BuildDofVectorFromNumDof(numdof));
 }
 
 /*----------------------------------------------------------------------*/
@@ -372,7 +434,8 @@ void ADAPTER::Coupling::FinishCoupling(
     Teuchos::RCP<Epetra_Map> masternodemap,
     Teuchos::RCP<Epetra_Map> slavenodemap,
     Teuchos::RCP<Epetra_Map> permslavenodemap,
-    const int numdof,
+    const std::vector<int>& masterdofs,
+    const std::vector<int>& slavedofs,
     const int nds_master,
     const int nds_slave)
 {
@@ -409,7 +472,7 @@ void ADAPTER::Coupling::FinishCoupling(
   permmasternodevec = Teuchos::null;
 
   BuildDofMaps(masterdis,slavedis,masternodemap,slavenodemap,
-      permmasternodemap,permslavenodemap,numdof, nds_master, nds_slave);
+      permmasternodemap,permslavenodemap,masterdofs, slavedofs, nds_master, nds_slave);
 }
 
 /*----------------------------------------------------------------------*/
@@ -421,14 +484,33 @@ void ADAPTER::Coupling::BuildDofMaps(
     const Teuchos::RCP<const Epetra_Map>& slavenodemap,
     const Teuchos::RCP<const Epetra_Map>& permmasternodemap,
     const Teuchos::RCP<const Epetra_Map>& permslavenodemap,
-    const int& numdof,
+    const std::vector<int>& masterdofs,
+    const std::vector<int>& slavedofs,
     const int nds_master,
     const int nds_slave)
 {
   BuildDofMaps(masterdis, masternodemap, permmasternodemap, masterdofmap_,
-      permmasterdofmap_, masterexport_, numdof, nds_master);
+      permmasterdofmap_, masterexport_, masterdofs, nds_master);
   BuildDofMaps(slavedis,  slavenodemap,  permslavenodemap,  slavedofmap_,
-      permslavedofmap_,  slaveexport_, numdof, nds_slave);
+      permslavedofmap_,  slaveexport_, slavedofs, nds_slave);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::vector<int> ADAPTER::Coupling::BuildDofVectorFromNumDof(
+    const int numdof
+    )
+{
+  std::vector<int> dofvec;
+  if(numdof > 0)
+  {
+    dofvec.resize(numdof);
+    std::iota(dofvec.begin(), dofvec.end(), 0);
+  }
+  else
+    dofvec = {-1};
+
+  return dofvec;
 }
 
 
@@ -441,7 +523,7 @@ void ADAPTER::Coupling::BuildDofMaps(
     Teuchos::RCP<const Epetra_Map>& dofmap,
     Teuchos::RCP<const Epetra_Map>& permdofmap,
     Teuchos::RCP<Epetra_Export>& exporter,
-    const int numdof,
+    const std::vector<int>& coupled_dofs,
     const int nds) const
 {
   // communicate dofs
@@ -492,10 +574,15 @@ void ADAPTER::Coupling::BuildDofMaps(
     }
 
     const std::vector<int> dof = dis.Dof(nds,actnode);
+    const int numdof = coupled_dofs.size();
     if (numdof > static_cast<int>(dof.size()))
       dserror("got just %d dofs at node %d (lid=%d) but expected %d",dof.size(),nodes[i],i,numdof);
-    copy(&dof[0], &dof[0]+numdof, back_inserter(dofs[nodes[i]]));
-    copy(&dof[0], &dof[0]+numdof, back_inserter(dofmapvec));
+    for(int idof = 0; idof < numdof; idof++)
+    {
+      copy(&dof[0]+coupled_dofs[idof], &dof[0]+coupled_dofs[idof]+1, back_inserter(dofs[nodes[i]]));
+      copy(&dof[0]+coupled_dofs[idof], &dof[0]+coupled_dofs[idof]+1, back_inserter(dofmapvec));
+    }
+
   }
 
   std::vector<int>::const_iterator pos = std::min_element(dofmapvec.begin(), dofmapvec.end());

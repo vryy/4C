@@ -185,6 +185,12 @@ namespace ADAPTER
       Setup the whole thing. Find matching nodes via octtree and build
       appropriate dof maps.
 
+      first variant will couple the first numdof DOFs of both discretizations
+
+      second variant accepts two vectors to couple the DOFs specified in these
+      vectors, e.g. masterdofs = [0 3 5] and slavedofs = [1 2 4] will couple
+      DOF 0 (master) with DOF 1 slave, DOF 3 (master) with DOF 2 slave, etc.
+
      */
     void SetupConditionCoupling(const DRT::Discretization& masterdis,
                                 Teuchos::RCP<const Epetra_Map> mastercondmap,
@@ -192,6 +198,17 @@ namespace ADAPTER
                                 Teuchos::RCP<const Epetra_Map> slavecondmap,
                                 const std::string& condname,
                                 const int numdof,
+                                bool matchall=true,
+                                const int nds_master=0,
+                                const int nds_slave=0);
+
+    void SetupConditionCoupling(const DRT::Discretization& masterdis,
+                                Teuchos::RCP<const Epetra_Map> mastercondmap,
+                                const DRT::Discretization& slavedis,
+                                Teuchos::RCP<const Epetra_Map> slavecondmap,
+                                const std::string& condname,
+                                const std::vector<int>& masterdofs,
+                                const std::vector<int>& slavedofs,
                                 bool matchall=true,
                                 const int nds_master=0,
                                 const int nds_slave=0);
@@ -234,9 +251,28 @@ namespace ADAPTER
      *  \param slavedis    (i) slave side mesh
      *  \param masternodes (i) gids of nodes on master side to be coupled
      *  \param slavenodes  (i) gids of nodes on slave side to be coupled
-     *  \param numdof      (i) number of dofs per node to be coupled
+     *  \param masterdofs  (i) vector with DOF ids of master side to be coupled
+     *  \param slavedofs   (i) vector with DOF ids of side side to be coupled
      *  \param matchall    (i) flag indicating matching slave and master nodes
      *  \param tolerance   (i) tolerance for octree for node matching
+     */
+    void SetupCoupling(const DRT::Discretization& masterdis,
+        const DRT::Discretization& slavedis,
+        const std::vector<int>& masternodes,
+        const std::vector<int>& slavenodes,
+        const std::vector<int>& masterdofs,
+        const std::vector<int>& slavedofs,
+        const bool matchall=true,
+        const double tolerance=1.e-3,
+        const int nds_master=0,
+        const int nds_slave=0);
+
+    /*! \brief Setup coupling of given nodes
+     *
+     *  only difference to the variant above is that the first numdof
+     *  DOFs on both slave and master side will be coupled
+     *
+     *  \param numdof      (i) number of dofs per node to be coupled
      */
     void SetupCoupling(const DRT::Discretization& masterdis,
         const DRT::Discretization& slavedis,
@@ -483,9 +519,19 @@ namespace ADAPTER
         const Teuchos::RCP<const Epetra_Map>& slavenodemap,
         const Teuchos::RCP<const Epetra_Map>& permmasternodemap,
         const Teuchos::RCP<const Epetra_Map>& permslavenodemap,
-        const int& numdof,
+        const std::vector<int>& masterdofs,
+        const std::vector<int>& slavedofs,
         const int nds_master=0,
         const int nds_slave=0);
+
+    /*! \brief Helper function for creating vector from numdof
+     *
+     *  will return just an ascending vector [0, 1, ..., numdof-1]
+     *  if called with numdof > 0, otherwise will return [-1],
+     *  which is used inside xfield_field_coupling to determine
+     *  if base class is called
+     */
+    virtual std::vector<int> BuildDofVectorFromNumDof(const int numdof);
 
   private:
 
@@ -516,14 +562,15 @@ namespace ADAPTER
         Teuchos::RCP<Epetra_Map> masternodemap,
         Teuchos::RCP<Epetra_Map> slavenodemap,
         Teuchos::RCP<Epetra_Map> permslavenodemap,
-        const int numdof,
+        const std::vector<int>& masterdofs,
+        const std::vector<int>& slavedofs,
         const int nds_master=0,
         const int nds_slave=0);
 
     /// build dof maps from node maps
     /*!
-      \note It is assumed that the first ndim dofs of each
-      node are of interest.
+      \note It is assumed that the first numdof dofs of each
+      node as specified in vector coupled_dofs are of interest.
      */
     void BuildDofMaps(const DRT::DiscretizationInterface& dis,
         Teuchos::RCP<const Epetra_Map> nodemap,
@@ -531,7 +578,7 @@ namespace ADAPTER
         Teuchos::RCP<const Epetra_Map>& dofmap,
         Teuchos::RCP<const Epetra_Map>& permdofmap,
         Teuchos::RCP<Epetra_Export>& exporter,
-        const int numdof,
+        const std::vector<int>& coupled_dofs,
         const int nds=0) const;
 
   protected:

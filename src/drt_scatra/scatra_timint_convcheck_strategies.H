@@ -326,6 +326,40 @@ namespace SCATRA
 
       //! copy constructorexit
       ConvCheckStrategyPoroMultiphaseScatra(const ConvCheckStrategyPoroMultiphaseScatra& old);
-  }; // class ConvCheckStrategyStd
+  }; // class ConvCheckStrategyPoroMultiphaseScatra
+  /*!
+  \brief specific strategy for Newton-Raphson convergence check for Multiphase_Poroelasticity_ScaTra problems
+         with artery coupling
+         || delta phi|| / || phi || < tol    and    || res || / sqrt(totalnumdof) < tol
+         where phi are both artery_scatra and scatra DOFs and res is the combined residual
+
+  \author kremheller (kremheller@lnm.mw.tum.de)
+  */
+
+  class ConvCheckStrategyPoroMultiphaseScatraArtMeshTying : public ConvCheckStrategyBase
+  {
+    public:
+
+      //! constructor
+    ConvCheckStrategyPoroMultiphaseScatraArtMeshTying(
+          const Teuchos::ParameterList&   parameters   //!< parameter list for Newton-Raphson iteration
+          ) :
+      ConvCheckStrategyBase(parameters)
+      {return;};
+
+      //! destructor
+      virtual ~ConvCheckStrategyPoroMultiphaseScatraArtMeshTying(){return;};
+
+      //! perform convergence check for Newton-Raphson iteration
+      bool AbortNonlinIter(
+          const ScaTraTimIntImpl&   scatratimint,   //!< scalar transport time integrator
+          double&                   actresidual     //!< return maximum current residual value
+          ) const;
+
+    private:
+
+      //! copy constructorexit
+      ConvCheckStrategyPoroMultiphaseScatraArtMeshTying(const ConvCheckStrategyPoroMultiphaseScatra& old);
+  }; // class ConvCheckStrategyPoroMultiphaseScatra
 } // namespace SCATRA
 #endif // #ifndef SCATRA_TIMINT_CONVCHECK_STRATEGIES_H

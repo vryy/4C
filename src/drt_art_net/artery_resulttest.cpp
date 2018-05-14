@@ -14,6 +14,7 @@
 #include "artery_resulttest.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_discret.H"
+#include "art_net_impl_stationary.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -22,6 +23,16 @@ ART::ArteryResultTest::ArteryResultTest(ArtNetExplicitTimeInt& art_net)
 {
   dis_    = art_net.Discretization();
   mysol_  = art_net.QAnp();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+ART::ArteryResultTest::ArteryResultTest(ArtNetImplStationary& art_net)
+  : DRT::ResultTest("ARTNET")
+{
+  dis_          = art_net.Discretization();
+  mysol_        = art_net.Pressurenp();
+
 }
 
 /*----------------------------------------------------------------------*/
@@ -66,12 +77,13 @@ void ART::ArteryResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr,
       // test result value of single scalar field
       if (position=="area")
         result = (*mysol_)[pnpmap.LID(dis_->Dof(actnode,0))];
+      else if (position=="pressure")
+        result = (*mysol_)[pnpmap.LID(dis_->Dof(actnode,0))];
       else if (position=="flowrate")
         result = (*mysol_)[pnpmap.LID(dis_->Dof(actnode,1))];
-      // test result values for a system of scalars
       else
       {
-        dserror("Quantity '%s' not supported in result-test of red_airway transport problems", position.c_str());
+        dserror("Quantity '%s' not supported in result-test of artery transport problems", position.c_str());
       }
 
       nerr += CompareValues(result, "NODE", res);
