@@ -50,11 +50,11 @@ DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::LubricationEleCalc(const std
     eheinp_(true),
     eheidotnp_(true),
     edispnp_(true),
-    Dt_(0.0),
     viscmanager_(Teuchos::rcp(new LubricationEleViscManager())),           // viscosity manager for viscosity
     lubricationvarmanager_(Teuchos::rcp(new LubricationEleInternalVariableManager<nsd_,nen_>())),   // internal variable manager
     eid_(0),
-    ele_(NULL)
+    ele_(NULL),
+    Dt_(0.0)
 {
   dsassert(nsd_ >= nsd_ele_,"problem dimension has to be equal or larger than the element dimension!");
 
