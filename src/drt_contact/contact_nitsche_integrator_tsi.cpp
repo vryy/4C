@@ -178,30 +178,7 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
 
   double ws=0.;
   double wm=0.;
-  switch(nit_wgt_)
-  {
-  case INPAR::CONTACT::NitWgt_slave :
-    ws=1.;wm=0.;
-    pen/=dynamic_cast<CONTACT::CoElement&>(sele).TraceHE();
-    pet/=dynamic_cast<CONTACT::CoElement&>(sele).TraceHE();
-    break;
-  case INPAR::CONTACT::NitWgt_master:
-    ws=0.;wm=1.;
-    pen/=dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
-    pet/=dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
-    break;
-  case INPAR::CONTACT::NitWgt_harmonic:
-    ws=1./dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
-    wm=1./dynamic_cast<CONTACT::CoElement&>(sele).TraceHE();
-    ws/=(ws+wm);
-    wm=1.-ws;
-    pen=ws*pen/dynamic_cast<CONTACT::CoElement&>(sele).TraceHE()+wm*pen/dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
-    pet=ws*pet/dynamic_cast<CONTACT::CoElement&>(sele).TraceHE()+wm*pet/dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
-    break;
-  default: dserror("unknown Nitsche weighting"); break;
-  }
-  const double characteristic_timescale=1.;
-  pet*=characteristic_timescale/dt_;
+  CONTACT::UTILS::NitscheWeightsAndScaling(sele,mele,nit_wgt_,dt_,ws,wm,pen,pet);
 
   // variables for friction (declaration only)
   LINALG::Matrix<dim,1> t1, t2;
@@ -799,21 +776,7 @@ void CONTACT::CoIntegratorNitscheTsi::SoEleCauchy(
 {
   LINALG::Matrix<dim,1> pxsi(true);
   LINALG::Matrix<dim,dim> derivtravo_slave;
-  DRT::Element::DiscretizationType distype = moEle.ParentElement()->Shape();
-  switch (distype)
-  {
-  case DRT::Element::hex8:
-    SoEleGP<DRT::Element::hex8,dim>(moEle,gp_wgt,boundary_gpcoord,pxsi,derivtravo_slave);
-    break;
-  case DRT::Element::hex27:
-    SoEleGP<DRT::Element::hex27,dim>(moEle,gp_wgt,boundary_gpcoord,pxsi,derivtravo_slave);
-    break;
-  case DRT::Element::tet4:
-    SoEleGP<DRT::Element::tet4,dim>(moEle,gp_wgt,boundary_gpcoord,pxsi,derivtravo_slave);
-    break;
-  default:
-    dserror("Nitsche contact not implemented for used (bulk) elements");
-  }
+  CONTACT::UTILS::MapGPtoParent<dim>(moEle,boundary_gpcoord,gp_wgt,pxsi,derivtravo_slave);
 
   double sigma_nt;
   Epetra_SerialDenseMatrix dsntdd , d2sntdd2 , d2sntDdDn, d2sntDdDt, d2sntDdDpxi, d2sntDdDT, dsntdT;
