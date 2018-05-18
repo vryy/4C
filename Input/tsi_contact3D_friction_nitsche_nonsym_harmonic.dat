@@ -34,7 +34,7 @@ FRICTION             coulomb
 LINEAR_SOLVER        1
 STRATEGY             Nitsche
 PENALTYPARAM         5
-PENALTYPARAMTAN      1e-3
+PENALTYPARAMTAN      0.2
 NITSCHE_THETA        -1.0
 NITSCHE_WEIGHTING    slave // <-- since master side is rigid
 --------------------------------------------------MORTAR COUPLING

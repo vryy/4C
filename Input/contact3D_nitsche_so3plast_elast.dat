@@ -53,7 +53,7 @@ XML File                        = contact3D_nitsche_hex8_sym_coulomb_new_struc.x
 LINEAR_SOLVER             2
 STRATEGY                  Nitsche
 PENALTYPARAM              4
-PENALTYPARAMTAN           0.125
+PENALTYPARAMTAN           1
 NITSCHE_THETA             0.0
 NITSCHE_PENALTY_ADAPTIVE  yes
 NITSCHE_WEIGHTING         harmonic

@@ -44,7 +44,7 @@ PREDICT       TangDis
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER             1
 PENALTYPARAM              2e0
-PENALTYPARAMTAN           2e0
+PENALTYPARAMTAN           1e0
 NITSCHE_WEIGHTING         harmonic
 NITSCHE_THETA             1.0
 NITSCHE_PENALTY_ADAPTIVE  yes

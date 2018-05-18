@@ -685,9 +685,6 @@ void CONTACT::UTILS::NitscheWeightsAndScaling(
     break;
   default: dserror("unknown Nitsche weighting"); break;
   }
-  // todo remove this
-  const double characteristic_timescale=1.;
-  pet*=characteristic_timescale/dt;
 }
 
 template <int dim>
