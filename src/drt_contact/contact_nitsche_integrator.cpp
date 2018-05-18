@@ -1071,3 +1071,19 @@ void CONTACT::UTILS::RelVelInvariant<3>(
     const double
 );
 
+template
+void CONTACT::UTILS::MapGPtoParent<2>(
+    MORTAR::MortarElement& ,
+    double* ,
+    const double ,
+    LINALG::Matrix<2,1>& ,
+    LINALG::Matrix<2,2>& );
+
+template
+void CONTACT::UTILS::MapGPtoParent<3>(
+    MORTAR::MortarElement& ,
+    double* ,
+    const double ,
+    LINALG::Matrix<3,1>& ,
+    LINALG::Matrix<3,3>& );
+
