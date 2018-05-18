@@ -141,6 +141,15 @@ private:
         const double gap, const GEN::pairedvector<int,double>& dgapgp,
         double* gpn, std::vector<GEN::pairedvector<int,double> >& dnmap_unit,double* sxi, double* mxi);
 
+    template <DRT::Element::DiscretizationType parentdistype, int dim>
+    void inline SoEleGP(
+        MORTAR::MortarElement& sele,
+        const double wgt,
+        const double* gpcoord,
+        LINALG::Matrix<dim,1>& pxsi,
+        LINALG::Matrix<dim,dim>& derivtrafo
+  );
+
     template <int dim>
     void SoEleCauchy(
         MORTAR::MortarElement& moEle,
@@ -212,28 +221,10 @@ protected:
 
 namespace UTILS
 {
-// map local surface coordinate to local parent coordinate
 template <int dim>
-void MapGPtoParent(
-    MORTAR::MortarElement& moEle,
-    double* boundary_gpcoord,
-    const double wgt,
-    LINALG::Matrix<dim,1>& pxsi,
-    LINALG::Matrix<dim,dim>& derivtravo_slave);
-
-// templated version of MapGPtoParent
-template <DRT::Element::DiscretizationType parentdistype, int dim>
-void inline SoEleGP(
-    MORTAR::MortarElement& sele,
-    const double wgt,
-    const double* gpcoord,
-    LINALG::Matrix<dim,1>& pxsi,
-    LINALG::Matrix<dim,dim>& derivtrafo
-);
 
 // actually not the velocity but the displacement increment
 void RelVelInvariant(
-template <int dim>
     MORTAR::MortarElement& sele,
     const double* sxi,
     const std::vector<GEN::pairedvector<int,double> >& derivsxi,
@@ -289,18 +280,6 @@ void BuildTangentVectors(
     std::vector<GEN::pairedvector<int,double> >& dt1,
     double* t2p,
     std::vector<GEN::pairedvector<int,double> >& dt2
-    );
-
-// determine weights (harmonic/slave/master) and scale penalty
-void NitscheWeightsAndScaling(
-    MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele,
-    const INPAR::CONTACT::NitscheWeighting nit_wgt,
-    const double dt,
-    double& ws,
-    double& wm,
-    double& pen,
-    double& pet
     );
 }
 }

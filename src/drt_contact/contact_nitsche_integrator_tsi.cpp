@@ -178,7 +178,30 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
 
   double ws=0.;
   double wm=0.;
-  CONTACT::UTILS::NitscheWeightsAndScaling(sele,mele,nit_wgt_,dt_,ws,wm,pen,pet);
+  switch(nit_wgt_)
+  {
+  case INPAR::CONTACT::NitWgt_slave :
+    ws=1.;wm=0.;
+    pen/=dynamic_cast<CONTACT::CoElement&>(sele).TraceHE();
+    pet/=dynamic_cast<CONTACT::CoElement&>(sele).TraceHE();
+    break;
+  case INPAR::CONTACT::NitWgt_master:
+    ws=0.;wm=1.;
+    pen/=dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
+    pet/=dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
+    break;
+  case INPAR::CONTACT::NitWgt_harmonic:
+    ws=1./dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
+    wm=1./dynamic_cast<CONTACT::CoElement&>(sele).TraceHE();
+    ws/=(ws+wm);
+    wm=1.-ws;
+    pen=ws*pen/dynamic_cast<CONTACT::CoElement&>(sele).TraceHE()+wm*pen/dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
+    pet=ws*pet/dynamic_cast<CONTACT::CoElement&>(sele).TraceHE()+wm*pet/dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
+    break;
+  default: dserror("unknown Nitsche weighting"); break;
+  }
+  const double characteristic_timescale=1.;
+  pet*=characteristic_timescale/dt_;
 
   // variables for friction (declaration only)
   LINALG::Matrix<dim,1> t1, t2;

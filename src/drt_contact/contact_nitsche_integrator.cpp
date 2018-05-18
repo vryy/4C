@@ -155,7 +155,30 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(
 
     double ws=0.;
     double wm=0.;
-    CONTACT::UTILS::NitscheWeightsAndScaling(sele,mele,nit_wgt_,dt_,ws,wm,pen,pet);
+    switch(nit_wgt_)
+    {
+    case INPAR::CONTACT::NitWgt_slave :
+      ws=1.;wm=0.;
+      pen/=dynamic_cast<CONTACT::CoElement&>(sele).TraceHE();
+      pet/=dynamic_cast<CONTACT::CoElement&>(sele).TraceHE();
+      break;
+    case INPAR::CONTACT::NitWgt_master:
+      ws=0.;wm=1.;
+      pen/=dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
+      pet/=dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
+      break;
+    case INPAR::CONTACT::NitWgt_harmonic:
+      ws=1./dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
+      wm=1./dynamic_cast<CONTACT::CoElement&>(sele).TraceHE();
+      ws/=(ws+wm);
+      wm=1.-ws;
+      pen=ws*pen/dynamic_cast<CONTACT::CoElement&>(sele).TraceHE()+wm*pen/dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
+      pet=ws*pet/dynamic_cast<CONTACT::CoElement&>(sele).TraceHE()+wm*pet/dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
+      break;
+    default: dserror("unknown Nitsche weighting"); break;
+    }
+    const double characteristic_timescale=1.;
+    pet*=characteristic_timescale/dt_;
 
     // variables for friction (declaration only)
     LINALG::Matrix<dim,1> t1, t2;
@@ -375,7 +398,7 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType parentdistype, int dim>
-void inline CONTACT::UTILS::SoEleGP(
+void inline CONTACT::CoIntegratorNitsche::SoEleGP(
     MORTAR::MortarElement& sele,
     const double wgt,
     const double* gpcoord,
@@ -400,41 +423,6 @@ void inline CONTACT::UTILS::SoEleGP(
   // coordinates of the current integration point in parent coordinate system
   for (int idim=0;idim<dim ;idim++)
     pxsi(idim) = pqxg(0,idim);
-}
-
-
-template <int dim>
-void CONTACT::UTILS::MapGPtoParent(
-    MORTAR::MortarElement& moEle,
-    double* boundary_gpcoord,
-    const double wgt,
-    LINALG::Matrix<dim,1>& pxsi,
-    LINALG::Matrix<dim,dim>& derivtravo_slave)
-{
-  DRT::Element::DiscretizationType distype = moEle.ParentElement()->Shape();
-  switch (distype)
-  {
-  case DRT::Element::hex8:
-    CONTACT::UTILS::SoEleGP<DRT::Element::hex8,dim>(moEle,wgt,boundary_gpcoord,pxsi,derivtravo_slave);
-    break;
-  case DRT::Element::tet4:
-    CONTACT::UTILS::SoEleGP<DRT::Element::tet4,dim>(moEle,wgt,boundary_gpcoord,pxsi,derivtravo_slave);
-    break;
-  case DRT::Element::quad4:
-    CONTACT::UTILS::SoEleGP<DRT::Element::quad4,dim>(moEle,wgt,boundary_gpcoord,pxsi,derivtravo_slave);
-    break;
-  case DRT::Element::quad9:
-    CONTACT::UTILS::SoEleGP<DRT::Element::quad9,dim>(moEle,wgt,boundary_gpcoord,pxsi,derivtravo_slave);
-    break;
-  case DRT::Element::tri3:
-    CONTACT::UTILS::SoEleGP<DRT::Element::tri3,dim>(moEle,wgt,boundary_gpcoord,pxsi,derivtravo_slave);
-    break;
-  case DRT::Element::nurbs27:
-    CONTACT::UTILS::SoEleGP<DRT::Element::nurbs27,dim>(moEle,wgt,boundary_gpcoord,pxsi,derivtravo_slave);
-    break;
-  default:
-    dserror("Nitsche contact not implemented for used (bulk) elements");
-  }
 }
 
 
@@ -648,70 +636,6 @@ void CONTACT::CoIntegratorNitsche::IntegrateAdjointTest(
   return;
 }
 
-
-void CONTACT::UTILS::NitscheWeightsAndScaling(
-    MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele,
-    const INPAR::CONTACT::NitscheWeighting nit_wgt,
-    const double dt,
-    double& ws,
-    double& wm,
-    double& pen,
-    double& pet
-    )
-{
-  double he_slave=-1.;
-  double he_master=-1.;
-  if (sele.IsSlave() && !mele.IsSlave())
-  {
-    he_slave=dynamic_cast<CONTACT::CoElement&>(sele).TraceHE();
-    he_master=dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
-  }
-  else if (!sele.IsSlave() && mele.IsSlave())
-  {
-    he_slave=dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
-    he_master=dynamic_cast<CONTACT::CoElement&>(sele).TraceHE();
-  }
-  else
-    dserror("you should not be here");
-  switch(nit_wgt)
-  {
-  case INPAR::CONTACT::NitWgt_slave :
-  {
-    if (sele.IsSlave() && !mele.IsSlave())      {ws=1.;wm=0.;}
-    else if (!sele.IsSlave() && mele.IsSlave()) {ws=0.;wm=1.;}
-    else                                        dserror("you should not be here");
-    pen/=he_slave;
-    pet/=he_slave;
-  }
-  break;
-  case INPAR::CONTACT::NitWgt_master:
-  {
-    if (sele.IsSlave() && !mele.IsSlave())      {ws=0.;wm=1.;}
-    else if (!sele.IsSlave() && mele.IsSlave()) {ws=1.;wm=0.;}
-    else                                        dserror("you should not be here");
-    pen/=he_master;
-    pet/=he_master;
-  }
-  break;
-  case INPAR::CONTACT::NitWgt_harmonic:
-    ws=1./he_master;
-    wm=1./he_slave;
-    ws/=(ws+wm);
-    wm=1.-ws;
-    pen=ws*pen/he_slave+wm*pen/he_master;
-    pet=ws*pet/he_slave+wm*pet/he_master;
-    if (sele.IsSlave() && !mele.IsSlave())      {}
-    else if (!sele.IsSlave() && mele.IsSlave()) {double tmp=ws;ws=wm;wm=tmp;}
-    else                                        dserror("you should not be here");
-
-    break;
-  default: dserror("unknown Nitsche weighting"); break;
-  }
-  // todo remove this
-  const double characteristic_timescale=1.;
-  pet*=characteristic_timescale/dt;
-}
 
 template <int dim>
 void CONTACT::UTILS::RelVel(
