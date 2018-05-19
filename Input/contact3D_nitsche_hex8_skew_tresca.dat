@@ -43,8 +43,8 @@ MINITER      0
 PREDICT       TangDis
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER             1
-PENALTYPARAM              2e-2
-PENALTYPARAMTAN           1.333333333e-2
+PENALTYPARAM              2e-1
+PENALTYPARAMTAN           2e-1
 NITSCHE_WEIGHTING         slave
 NITSCHE_THETA             -1.0
 NITSCHE_PENALTY_ADAPTIVE  no
@@ -53,7 +53,7 @@ FRICTION                  Tresca
 -------------------------------------------------------------MORTAR COUPLING
 ALGORITHM                 gpts
 INTTYPE                   elements
-NUMGP_PER_DIM             2
+NUMGP_PER_DIM             1
 SEARCH_PARAM              0.3
 LM_DUAL_CONSISTENT        none
 // PARALLEL_REDIST           no
@@ -722,9 +722,9 @@ NODE       350 COORD  4.0000000000000000e+00  4.0000000000000000e+00  0.00000000
 ---------------------------------------------------ACOUSTIC ELEMENTS
 ---------------------------------------------------CELL ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 335 QUANTITY dispx VALUE 1.42168458828383071e+00 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 335 QUANTITY dispy VALUE -5.00122351804739643e-02 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 335 QUANTITY dispz VALUE -6.37256587324070867e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 335 QUANTITY dispx VALUE 1.27866422046255379e+0 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 335 QUANTITY dispy VALUE -5.17481126863635274e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 335 QUANTITY dispz VALUE -7.12612298555238222e-01 TOLERANCE 1e-10
 ---------------------------------------------------------------END
 // END
    65 SOLIDH8 HEX8  101 102 103 104 126 127 128 129    MAT 1 KINEM nonlinear EAS none

@@ -93,7 +93,7 @@ PTCDT                           1 // --> negative values trigger condition numbe
 FRICTION                    coulomb
 LINEAR_SOLVER               1
 STRATEGY                    Nitsche
-PENALTYPARAM                2e-1
+PENALTYPARAM                2e-2
 PENALTYPARAMTAN             2e-2
 NITSCHE_THETA               -1.0
 NITSCHE_THETA_2             0.0
@@ -105,7 +105,7 @@ ALGORITHM            gpts
 PARALLEL_REDIST      none
 INTTYPE              Segments // Elements // Segments
 TRIANGULATION        center
-NUMGP_PER_DIM        3
+NUMGP_PER_DIM        1
 LM_SHAPEFCN          dual
 SEARCH_ALGORITHM     BinaryTree
 SEARCH_PARAM         0.3e2
@@ -4609,9 +4609,9 @@ NODE      1730 COORD -4.6000000000000005e+00  1.0000000000000000e+00  5.00000000
    800 SOLIDH8PLAST HEX8  1643 1645 1646 1644 1725 1727 1728 1726    MAT 10 KINEM nonlinear EAS none FBAR no
    801 SOLIDH8PLAST HEX8  1645 1647 1648 1646 1727 1729 1730 1728    MAT 10 KINEM nonlinear EAS none FBAR no
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 1691 QUANTITY dispx VALUE 1.00730865223269447e-01 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 1691 QUANTITY dispy VALUE -1.99648367149260264e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 1691 QUANTITY dispx VALUE 9.90008466809887133e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 1691 QUANTITY dispy VALUE -1.99676730107491179e-01 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 1691 QUANTITY dispz VALUE 0.0 TOLERANCE 1e-14
-THERMAL   DIS thermo    NODE 1691 QUANTITY temp  VALUE 1.29131385299159906e-01 TOLERANCE 1e-10
+THERMAL   DIS thermo    NODE 1691 QUANTITY temp  VALUE 1.22459506308737406e-01 TOLERANCE 1e-10
 ---------------------------------------------------------------END
 // END
