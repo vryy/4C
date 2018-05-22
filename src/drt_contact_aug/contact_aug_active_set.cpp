@@ -308,7 +308,7 @@ CONTACT::AUG::ActiveSet::Merge( const std::vector<Status>& istatus ) const
             "status before you call this merge routine." );
         exit(EXIT_FAILURE);
       default:
-        dserror("Unknown active set status: %d", istatus );
+        dserror("Unknown active set status: %d", is );
         exit(EXIT_FAILURE);
     }
   }

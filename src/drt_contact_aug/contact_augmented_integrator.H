@@ -516,7 +516,7 @@ namespace AUG {
   {
   protected:
     typedef Integrator<probdim,slavetype,mastertype,IntPolicy> parent_type;
-    typedef parent_type::my my;
+    typedef IntPolicy my; // parent_type::my my;
   private:
     typedef parent_type::Evaluator class_type;
 
@@ -574,7 +574,7 @@ namespace AUG {
   protected:
     typedef Integrator<probdim,slavetype,mastertype,IntPolicy>::Evaluator base_type;
     typedef typename base_type::parent_type parent_type;
-    typedef typename base_type::my my;
+    typedef IntPolicy my; //base_type::my my;
   private:
     typedef typename parent_type::EvaluatorDeriv1stOnly class_type;
   public:
@@ -646,7 +646,7 @@ namespace AUG {
   private:
     typedef Integrator<probdim,slavetype,mastertype,IntPolicy>::EvaluatorDeriv1stOnly base_type;
     typedef typename base_type::parent_type parent_type;
-    typedef typename base_type::my my;
+    typedef IntPolicy my; // base_type::my my;
   private:
     typedef typename parent_type::EvaluatorFull class_type;
   public:
