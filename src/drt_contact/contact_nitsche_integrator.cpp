@@ -762,13 +762,13 @@ void CONTACT::UTILS::RelVelInvariant(
     }
   for (int d=0;d<dim;++d)
   {
-    relVel(d)-=n_old(d)*gap*fac; // check this sign
+    relVel(d)+=n_old(d)*gap*fac;
 
     for (int e=0;e<dim-1;++e)
       for (GEN::pairedvector<int,double>::const_iterator p=derivsxi[e].begin();p!=derivsxi[e].end();++p)
-        relVel_deriv[d][p->first]-=gap*d_n_old_dxi(d,e)*p->second*fac;
+        relVel_deriv[d][p->first]+=gap*d_n_old_dxi(d,e)*p->second*fac;
     for (GEN::pairedvector<int,double>::const_iterator p=deriv_gap.begin();p!=deriv_gap.end();++p)
-      relVel_deriv[d][p->first]-=n_old(d)*p->second*fac;
+      relVel_deriv[d][p->first]+=n_old(d)*p->second*fac;
   }
 }
 
