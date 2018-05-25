@@ -301,19 +301,19 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(
         }
 
         double tan_tr =            sqrt(
-            (cauchy_nt1_weighted_average-pet*vt1)*(cauchy_nt1_weighted_average-pet*vt1)
+            (cauchy_nt1_weighted_average+pet*vt1)*(cauchy_nt1_weighted_average+pet*vt1)
             +
-            (cauchy_nt2_weighted_average-pet*vt2)*(cauchy_nt2_weighted_average-pet*vt2));
+            (cauchy_nt2_weighted_average+pet*vt2)*(cauchy_nt2_weighted_average+pet*vt2));
 
         // stick
         if (tan_tr<fr)
         {
-          sigma_nt1_pen_vt1=cauchy_nt1_weighted_average-pet*vt1;
-          for (_CI p=dvt1.begin(); p!=dvt1.end();++p)                                                          d_sigma_nt1_pen_vt1[p->first]-=pet*p->second;
+          sigma_nt1_pen_vt1=cauchy_nt1_weighted_average+pet*vt1;
+          for (_CI p=dvt1.begin(); p!=dvt1.end();++p)                                                          d_sigma_nt1_pen_vt1[p->first]+=pet*p->second;
           for (_CI p=cauchy_nt1_weighted_average_deriv.begin();p!=cauchy_nt1_weighted_average_deriv.end();++p) d_sigma_nt1_pen_vt1[p->first]+=p->second;
 
-          sigma_nt2_pen_vt2=cauchy_nt2_weighted_average-pet*vt2;
-          for (_CI p=dvt2.begin(); p!=dvt2.end();++p)                                                          d_sigma_nt2_pen_vt2[p->first]-=pet*p->second;
+          sigma_nt2_pen_vt2=cauchy_nt2_weighted_average+pet*vt2;
+          for (_CI p=dvt2.begin(); p!=dvt2.end();++p)                                                          d_sigma_nt2_pen_vt2[p->first]+=pet*p->second;
           for (_CI p=cauchy_nt2_weighted_average_deriv.begin();p!=cauchy_nt2_weighted_average_deriv.end();++p) d_sigma_nt2_pen_vt2[p->first]+=p->second;
         }
         // slip
@@ -328,30 +328,30 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(
             for (_CI p=d_snn_av_pen_gap.begin();p!=d_snn_av_pen_gap.end();++p)
               tmp_d[p->first]+=-frcoeff_/tan_tr*p->second;
           for(_CI  p=cauchy_nt1_weighted_average_deriv.begin();p!=cauchy_nt1_weighted_average_deriv.end();++p)
-            tmp_d[p->first]+=-fr/(tan_tr*tan_tr*tan_tr)*(cauchy_nt1_weighted_average-pet*vt1)*p->second;
+            tmp_d[p->first]+=-fr/(tan_tr*tan_tr*tan_tr)*(cauchy_nt1_weighted_average+pet*vt1)*p->second;
           for(_CI p=dvt1.begin();p!=dvt1.end();++p)
-            tmp_d[p->first]+=-fr/(tan_tr*tan_tr*tan_tr)*(cauchy_nt1_weighted_average-pet*vt1)*(-pet)*p->second;
+            tmp_d[p->first]+=-fr/(tan_tr*tan_tr*tan_tr)*(cauchy_nt1_weighted_average+pet*vt1)*(+pet)*p->second;
 
           for(_CI  p=cauchy_nt2_weighted_average_deriv.begin();p!=cauchy_nt2_weighted_average_deriv.end();++p)
-            tmp_d[p->first]+=-fr/(tan_tr*tan_tr*tan_tr)*(cauchy_nt2_weighted_average-pet*vt2)*p->second;
+            tmp_d[p->first]+=-fr/(tan_tr*tan_tr*tan_tr)*(cauchy_nt2_weighted_average+pet*vt2)*p->second;
           for(_CI p=dvt2.begin();p!=dvt2.end();++p)
-            tmp_d[p->first]+=-fr/(tan_tr*tan_tr*tan_tr)*(cauchy_nt2_weighted_average-pet*vt2)*(-pet)*p->second;
+            tmp_d[p->first]+=-fr/(tan_tr*tan_tr*tan_tr)*(cauchy_nt2_weighted_average+pet*vt2)*(+pet)*p->second;
 
-          sigma_nt1_pen_vt1=fr/tan_tr*(cauchy_nt1_weighted_average-pet*vt1);
+          sigma_nt1_pen_vt1=fr/tan_tr*(cauchy_nt1_weighted_average+pet*vt1);
           for(_CI p=tmp_d.begin();p!=tmp_d.end();++p)
-            d_sigma_nt1_pen_vt1[p->first]+=p->second*(cauchy_nt1_weighted_average-pet*vt1);
+            d_sigma_nt1_pen_vt1[p->first]+=p->second*(cauchy_nt1_weighted_average+pet*vt1);
           for(_CI p=cauchy_nt1_weighted_average_deriv.begin();p!=cauchy_nt1_weighted_average_deriv.end();++p)
             d_sigma_nt1_pen_vt1[p->first]+=fr/tan_tr*p->second;
           for(_CI p=dvt1.begin();p!=dvt1.end();++p)
-            d_sigma_nt1_pen_vt1[p->first]+=-fr/tan_tr*pet*p->second;
+            d_sigma_nt1_pen_vt1[p->first]+=fr/tan_tr*pet*p->second;
 
-          sigma_nt2_pen_vt2=fr/tan_tr*(cauchy_nt2_weighted_average-pet*vt2);
+          sigma_nt2_pen_vt2=fr/tan_tr*(cauchy_nt2_weighted_average+pet*vt2);
           for(_CI p=tmp_d.begin();p!=tmp_d.end();++p)
-            d_sigma_nt2_pen_vt2[p->first]+=p->second*(cauchy_nt2_weighted_average-pet*vt2);
+            d_sigma_nt2_pen_vt2[p->first]+=p->second*(cauchy_nt2_weighted_average+pet*vt2);
           for(_CI p=cauchy_nt2_weighted_average_deriv.begin();p!=cauchy_nt2_weighted_average_deriv.end();++p)
             d_sigma_nt2_pen_vt2[p->first]+=fr/tan_tr*p->second;
           for(_CI p=dvt2.begin();p!=dvt2.end();++p)
-            d_sigma_nt2_pen_vt2[p->first]+=-fr/tan_tr*pet*p->second;
+            d_sigma_nt2_pen_vt2[p->first]+=fr/tan_tr*pet*p->second;
         }
 
         IntegrateTest<dim>(-theta_2_,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,sigma_nt1_pen_vt1,d_sigma_nt1_pen_vt1,t1,dt1);
@@ -744,31 +744,31 @@ void CONTACT::UTILS::RelVelInvariant(
   for (int i=0;i<sele.NumNode();++i)
     for (int d=0;d<dim;++d)
     {
-      relVel(d)-=sele.GetNodalCoordsOld(d,i)*sval(i)*fac;
+      relVel(d)+=sele.GetNodalCoordsOld(d,i)*sval(i)*fac;
 
       for (int e=0;e<dim-1;++e)
         for (GEN::pairedvector<int,double>::const_iterator p=derivsxi[e].begin();p!=derivsxi[e].end();++p)
-          relVel_deriv[d][p->first]-=sele.GetNodalCoordsOld(d,i)*sderiv(i,e)*p->second*fac;
+          relVel_deriv[d][p->first]+=sele.GetNodalCoordsOld(d,i)*sderiv(i,e)*p->second*fac;
     }
 
   for (int i=0;i<mele.NumNode();++i)
     for (int d=0;d<dim;++d)
     {
-      relVel(d)+=mele.GetNodalCoordsOld(d,i)*mval(i)*fac;
+      relVel(d)-=mele.GetNodalCoordsOld(d,i)*mval(i)*fac;
 
       for (int e=0;e<dim-1;++e)
         for (GEN::pairedvector<int,double>::const_iterator p=derivmxi[e].begin();p!=derivmxi[e].end();++p)
-          relVel_deriv[d][p->first]+=mele.GetNodalCoordsOld(d,i)*mderiv(i,e)*p->second*fac;
+          relVel_deriv[d][p->first]-=mele.GetNodalCoordsOld(d,i)*mderiv(i,e)*p->second*fac;
     }
   for (int d=0;d<dim;++d)
   {
-    relVel(d)+=n_old(d)*gap*fac;
+    relVel(d)-=n_old(d)*gap*fac; // check this sign
 
     for (int e=0;e<dim-1;++e)
       for (GEN::pairedvector<int,double>::const_iterator p=derivsxi[e].begin();p!=derivsxi[e].end();++p)
-        relVel_deriv[d][p->first]+=gap*d_n_old_dxi(d,e)*p->second*fac;
+        relVel_deriv[d][p->first]-=gap*d_n_old_dxi(d,e)*p->second*fac;
     for (GEN::pairedvector<int,double>::const_iterator p=deriv_gap.begin();p!=deriv_gap.end();++p)
-      relVel_deriv[d][p->first]+=n_old(d)*p->second*fac;
+      relVel_deriv[d][p->first]-=n_old(d)*p->second*fac;
   }
 }
 

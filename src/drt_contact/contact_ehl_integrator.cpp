@@ -235,7 +235,7 @@ void CONTACT::CoIntegratorEhl::GP_WeightedAvRelVel(
   GEN::pairedvector<int,double> dvt2(0);
 
   CONTACT::UTILS::BuildTangentVectors<dim>(normal,dnmap_unit,t1.A(),dt1,t2.A(),dt2);
-  CONTACT::UTILS::RelVelInvariant<dim>(sele,sxi,derivsxi,sval,sderiv,mele,mxi,derivmxi,mval,mderiv,gap,deriv_gap,relVel,relVel_deriv,.5);
+  CONTACT::UTILS::RelVelInvariant<dim>(sele,sxi,derivsxi,sval,sderiv,mele,mxi,derivmxi,mval,mderiv,gap,deriv_gap,relVel,relVel_deriv,-.5);
 
   CONTACT::UTILS::VectorScalarProduct<dim>(t1,dt1,relVel,relVel_deriv,vt1,dvt1);
   CONTACT::UTILS::VectorScalarProduct<dim>(t2,dt2,relVel,relVel_deriv,vt2,dvt2);
