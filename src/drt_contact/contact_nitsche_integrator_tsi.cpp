@@ -522,23 +522,24 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
     {
     case INPAR::CONTACT::NitThr_substitution:
     {
-      const double q1 =beta*(-snn_av_pen_gap)*(s_gp_temp-m_gp_temp);
+      const double beta_bar = beta*(-snn_av_pen_gap);
+      const double q1 =beta_bar*(s_gp_temp-m_gp_temp);
 
       GEN::pairedvector<int,double> d_q1_d(d_snn_av_pen_gap.size()+d_s_gp_temp_dd.size()+d_m_gp_temp_dd.size());
       for (_CI p=d_snn_av_pen_gap.begin();p!=d_snn_av_pen_gap.end();++p)
-        d_q1_d[p->first]-=beta*p->second*(s_gp_temp-m_gp_temp);
+        d_q1_d[p->first]+=beta*(-p->second)*(s_gp_temp-m_gp_temp);
       for (_CI p=d_s_gp_temp_dd.begin();p!=d_s_gp_temp_dd.end();++p)
-        d_q1_d[p->first]-=beta*snn_av_pen_gap*p->second;
+        d_q1_d[p->first]+=beta_bar*p->second;
       for (_CI p=d_m_gp_temp_dd.begin();p!=d_m_gp_temp_dd.end();++p)
-        d_q1_d[p->first]-=beta*snn_av_pen_gap*(-p->second);
+        d_q1_d[p->first]+=beta_bar*(-p->second);
 
       GEN::pairedvector<int,double> d_q1_T(cauchy_nn_weighted_average_deriv_T.size()+d_s_gp_temp_dT.size()+d_m_gp_temp_dT.size());
       for (_CI p=cauchy_nn_weighted_average_deriv_T.begin();p!=cauchy_nn_weighted_average_deriv_T.end();++p)
-        d_q1_T[p->first]-=beta*p->second*(s_gp_temp-m_gp_temp);
+        d_q1_T[p->first]+=beta*(-p->second)*(s_gp_temp-m_gp_temp);
       for (_CI p=d_s_gp_temp_dT.begin();p!=d_s_gp_temp_dT.end();++p)
-        d_q1_T[p->first]-=beta*snn_av_pen_gap*p->second;
+        d_q1_T[p->first]+=beta_bar*p->second;
       for (_CI p=d_m_gp_temp_dT.begin();p!=d_m_gp_temp_dT.end();++p)
-        d_q1_T[p->first]-=beta*snn_av_pen_gap*(-p->second);
+        d_q1_T[p->first]+=beta_bar*(-p->second);
 
       IntegrateThermalTest<dim>(+1.,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,q1,d_q1_d,d_q1_T);
       IntegrateThermalTest<dim>(-1.,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,q1,d_q1_d,d_q1_T);
@@ -625,14 +626,15 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
             sele.ParentElement()->NumNode()+mele.ParentElement()->NumNode());
 
         const double beta_bar = beta*(-snn_av_pen_gap);
-        test_val+=-(beta_bar)/(pen_thermo+beta_bar)            *qn_weighted_average;
+        test_val+=+(beta_bar)/(pen_thermo+beta_bar)            *qn_weighted_average;
         test_val+=+(beta_bar*pen_thermo)/(pen_thermo+beta_bar) *(s_gp_temp-m_gp_temp);
-        test_val+=+(beta_bar)/(pen_thermo+beta_bar)            *(1.-delta_c-ws_thermo)*diss;
+        test_val+=-(beta_bar)/(pen_thermo+beta_bar)            *(1.-delta_c-ws_thermo)*diss;
 
         for (_CI p=deriv_qn_weighted_average_d.begin();p!=deriv_qn_weighted_average_d.end();++p)
-          deriv_test_val_d[p->first]+=-(beta_bar)/(pen_thermo+beta_bar)*p->second;
+          deriv_test_val_d[p->first]+=+(beta_bar)/(pen_thermo+beta_bar)*p->second;
         for (_CI p=deriv_qn_weighted_average_T.begin();p!=deriv_qn_weighted_average_T.end();++p)
-          deriv_test_val_T[p->first]+=-(beta_bar)/(pen_thermo+beta_bar)*p->second;
+          deriv_test_val_T[p->first]+=+(beta_bar)/(pen_thermo+beta_bar)*p->second;
+
         for (_CI p=d_s_gp_temp_dd.begin();p!=d_s_gp_temp_dd.end();++p)
           deriv_test_val_d[p->first]+=+(beta_bar*pen_thermo)/(pen_thermo+beta_bar)*p->second;
         for (_CI p=d_m_gp_temp_dd.begin();p!=d_m_gp_temp_dd.end();++p)
@@ -641,26 +643,27 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
           deriv_test_val_T[p->first]+=+(beta_bar*pen_thermo)/(pen_thermo+beta_bar)*p->second;
         for (_CI p=d_m_gp_temp_dT.begin();p!=d_m_gp_temp_dT.end();++p)
           deriv_test_val_T[p->first]+=+(beta_bar*pen_thermo)/(pen_thermo+beta_bar)*(-p->second);
+
         for (_CI p=d_diss_d.begin();p!=d_diss_d.end();++p)
-          deriv_test_val_d[p->first]+=+(beta_bar)/(pen_thermo+beta_bar)*(1.-delta_c-ws_thermo)*p->second;
+          deriv_test_val_d[p->first]+=-(beta_bar)/(pen_thermo+beta_bar)*(1.-delta_c-ws_thermo)*p->second;
         for (_CI p=d_diss_T.begin();p!=d_diss_T.end();++p)
-          deriv_test_val_T[p->first]+=+(beta_bar)/(pen_thermo+beta_bar)*(1.-delta_c-ws_thermo)*p->second;
+          deriv_test_val_T[p->first]+=-(beta_bar)/(pen_thermo+beta_bar)*(1.-delta_c-ws_thermo)*p->second;
 
         for (_CI p=d_snn_av_pen_gap.begin();p!=d_snn_av_pen_gap.end();++p)
           deriv_test_val_d[p->first]+=
               beta*(-p->second)/(std::pow(pen_thermo+beta_bar,2.))*
           (
-           -pen_thermo            *qn_weighted_average
+           +pen_thermo            *qn_weighted_average
            +pen_thermo*pen_thermo *(s_gp_temp-m_gp_temp)
-           +pen_thermo            *(1.-delta_c-ws_thermo)*diss
+           -pen_thermo            *(1.-delta_c-ws_thermo)*diss
            );
         for (_CI p=cauchy_nn_weighted_average_deriv_T.begin();p!=cauchy_nn_weighted_average_deriv_T.end();++p)
           deriv_test_val_T[p->first]+=
               beta*(-p->second)/(std::pow(pen_thermo+beta_bar,2.))*
           (
-              -pen_thermo            *qn_weighted_average
+              +pen_thermo            *qn_weighted_average
               +pen_thermo*pen_thermo *(s_gp_temp-m_gp_temp)
-              +pen_thermo            *(1.-delta_c-ws_thermo)*diss
+              -pen_thermo            *(1.-delta_c-ws_thermo)*diss
            );
 
         IntegrateThermalTest<dim>(+1.,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,test_val,deriv_test_val_d,deriv_test_val_T);
@@ -684,21 +687,23 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
 
         const double beta_bar = beta*(-snn_av_pen_gap);
         test_val+=-(1.)/(pen_thermo+beta_bar)       *qn_weighted_average;
-        test_val+=-(beta_bar)/(pen_thermo+beta_bar) *(s_gp_temp-m_gp_temp);
+        test_val+=+(beta_bar)/(pen_thermo+beta_bar) *(s_gp_temp-m_gp_temp);
         test_val+=+(1.)/(pen_thermo+beta_bar)       *(1.-delta_c-ws_thermo)*diss;
 
         for (_CI p=deriv_qn_weighted_average_d.begin();p!=deriv_qn_weighted_average_d.end();++p)
           deriv_test_val_d[p->first]+=-(1.)/(pen_thermo+beta_bar)*p->second;
         for (_CI p=deriv_qn_weighted_average_T.begin();p!=deriv_qn_weighted_average_T.end();++p)
           deriv_test_val_T[p->first]+=-(1.)/(pen_thermo+beta_bar)*p->second;
+
         for (_CI p=d_s_gp_temp_dd.begin();p!=d_s_gp_temp_dd.end();++p)
-          deriv_test_val_d[p->first]+=-(beta_bar)/(pen_thermo+beta_bar)*p->second;
+          deriv_test_val_d[p->first]+=+(beta_bar)/(pen_thermo+beta_bar)*p->second;
         for (_CI p=d_s_gp_temp_dT.begin();p!=d_s_gp_temp_dT.end();++p)
-          deriv_test_val_T[p->first]+=-(beta_bar)/(pen_thermo+beta_bar)*p->second;
+          deriv_test_val_T[p->first]+=+(beta_bar)/(pen_thermo+beta_bar)*p->second;
         for (_CI p=d_m_gp_temp_dd.begin();p!=d_m_gp_temp_dd.end();++p)
-          deriv_test_val_d[p->first]+=-(beta_bar)/(pen_thermo+beta_bar)*(-p->second);
+          deriv_test_val_d[p->first]+=+(beta_bar)/(pen_thermo+beta_bar)*(-p->second);
         for (_CI p=d_m_gp_temp_dT.begin();p!=d_m_gp_temp_dT.end();++p)
-          deriv_test_val_T[p->first]+=-(beta_bar)/(pen_thermo+beta_bar)*(-p->second);
+          deriv_test_val_T[p->first]+=+(beta_bar)/(pen_thermo+beta_bar)*(-p->second);
+
         for (_CI p=d_diss_d.begin();p!=d_diss_d.end();++p)
           deriv_test_val_d[p->first]+=+(1.)/(pen_thermo+beta_bar)*p->second;
         for (_CI p=d_diss_T.begin();p!=d_diss_T.end();++p)
@@ -708,7 +713,7 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
           deriv_test_val_d[p->first]+=
               (
                   +1.*qn_weighted_average
-                  -pen_thermo*(s_gp_temp-m_gp_temp)
+                  +pen_thermo*(s_gp_temp-m_gp_temp)
                   -1.*(1.-delta_c-ws_thermo)*diss
               )/std::pow(pen_thermo+beta_bar,2)*beta*(-p->second);
 
@@ -716,7 +721,7 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
           deriv_test_val_T[p->first]+=
               (
                   +1.*qn_weighted_average
-                  -pen_thermo*(s_gp_temp-m_gp_temp)
+                  +pen_thermo*(s_gp_temp-m_gp_temp)
                   -1.*(1.-delta_c-ws_thermo)*diss
               )/std::pow(pen_thermo+beta_bar,2)*beta*(-p->second);
 

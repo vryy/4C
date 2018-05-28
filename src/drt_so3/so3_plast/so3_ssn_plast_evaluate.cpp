@@ -3118,7 +3118,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::HeatFlux(
   if (NumMaterial()<2)
     dserror("where's my second material");
   Teuchos::RCP<MAT::FourierIso> mat_thr = Teuchos::rcp_dynamic_cast<MAT::FourierIso>(Material(1),true);
-  const double k0=-mat_thr->Conductivity();
+  const double k0=mat_thr->Conductivity();
 
   std::vector<double> vel(0);
   FillPositionArrays(disp,vel,temp);
