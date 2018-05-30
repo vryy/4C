@@ -705,9 +705,9 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
           deriv_test_val_T[p->first]+=+(beta_bar)/(pen_thermo+beta_bar)*(-p->second);
 
         for (_CI p=d_diss_d.begin();p!=d_diss_d.end();++p)
-          deriv_test_val_d[p->first]+=+(1.)/(pen_thermo+beta_bar)*p->second;
+          deriv_test_val_d[p->first]+=+(1.)/(pen_thermo+beta_bar)*(1.-delta_c-ws_thermo)*p->second;
         for (_CI p=d_diss_T.begin();p!=d_diss_T.end();++p)
-          deriv_test_val_T[p->first]+=+(1.)/(pen_thermo+beta_bar)*p->second;
+          deriv_test_val_T[p->first]+=+(1.)/(pen_thermo+beta_bar)*(1.-delta_c-ws_thermo)*p->second;
 
         for (_CI p=d_snn_av_pen_gap.begin();p!=d_snn_av_pen_gap.end();++p)
           deriv_test_val_d[p->first]+=
