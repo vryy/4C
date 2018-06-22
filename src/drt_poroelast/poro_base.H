@@ -232,6 +232,9 @@ namespace POROELAST
       // TODO: delete this once unused!!
       const bool oldstructimint_;
 
+      // flag indicating if nitsche contact is active
+      bool nit_contact_;
+
     private:
 
       //! setup of everything, that is needed for the volumetric coupling

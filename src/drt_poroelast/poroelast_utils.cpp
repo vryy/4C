@@ -375,14 +375,15 @@ void POROELAST::UTILS::CreateVolumeGhosting(DRT::Discretization& idiscret)
     POROELAST::UTILS::SetMaterialPointersMatchingGrid(voldis[0], voldis[1]);
 
   //3 Reconnect Face Element -- Porostructural Parent Element Pointers!
-    POROELAST::UTILS::ReconnectParentPointers(idiscret, *voldis[0]);
+    POROELAST::UTILS::ReconnectParentPointers(idiscret, *voldis[0],&(*voldis[1]));
 }
 
 /*----------------------------------------------------------------------*
  | Reconnect Face Element - Parent Element Pointers! (public) ager 12/16|
  *----------------------------------------------------------------------*/
 void POROELAST::UTILS::ReconnectParentPointers(DRT::Discretization& idiscret,
-                                               DRT::Discretization& voldiscret)
+                                               DRT::Discretization& voldiscret,
+                                               DRT::Discretization* voldiscret2)
 {
   const Epetra_Map* ielecolmap = idiscret.ElementColMap();
   const Epetra_Map* elecolmap = voldiscret.ElementColMap();
@@ -405,6 +406,19 @@ void POROELAST::UTILS::ReconnectParentPointers(DRT::Discretization& idiscret,
     if (!vele) dserror("ERROR: Cannot find element with gid %", volgid);
 
     faceele->SetParentMasterElement(vele,faceele->FaceParentNumber());
+
+    if (voldiscret2)
+    {
+      const Epetra_Map* elecolmap2 = voldiscret2->ElementColMap();
+      if (elecolmap2->LID(volgid) == -1) //Volume Discretization has not Element
+        faceele->SetParentSlaveElement(NULL,-1);
+      else
+      {
+        DRT::Element* vele = voldiscret2->gElement(volgid);
+        if (!vele) dserror("ERROR: Cannot find element with gid %", volgid);
+        faceele->SetParentSlaveElement(vele,faceele->FaceParentNumber());
+      }
+    }
   }
 }
 

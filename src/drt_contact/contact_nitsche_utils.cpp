@@ -18,44 +18,46 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType parent_distype>
-template<int num_dof_per_node>
+template<int num_dof_per_node,int num_dof_per_node_to_assemble>
 void MORTAR::MortarElementNitscheData<parent_distype>::AssembleRHS(
     MORTAR::MortarElement* mele,
     const LINALG::Matrix<
-      DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement*num_dof_per_node,1>& rhs,
+    DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement*num_dof_per_node_to_assemble,1>& rhs,
+    std::vector<int>& dofs,
     Teuchos::RCP<Epetra_FEVector> fc)
 {
   const int nen = DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement;
-  const int nsd = DRT::UTILS::DisTypeToDim<parent_distype>::dim;
+  //const int nsd = DRT::UTILS::DisTypeToDim<parent_distype>::dim;
 
-  if (num_dof_per_node>nsd)
-    dserror("num_dof_per_node > nsd");
+  if (num_dof_per_node_to_assemble*nen>dofs.size())
+    dserror("num_dof_per_node_to_assemble*nen>dofs.size() %d > %d",num_dof_per_node*nen,dofs.size());
 
   if (fc!=Teuchos::null)
     for (int n=0;n<nen;++n)
-      fc->SumIntoGlobalValues(num_dof_per_node,&mele->MoData().ParentDof().at(n*nsd),&rhs.A()[n*num_dof_per_node]);
+      fc->SumIntoGlobalValues(num_dof_per_node_to_assemble,&dofs.at(n*num_dof_per_node),&rhs.A()[n*num_dof_per_node_to_assemble]);
 
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType parent_distype>
-template<int num_dof_per_node>
+template<int num_dof_per_node,int num_dof_per_node_to_assemble>
 void MORTAR::MortarElementNitscheData<parent_distype>::AssembleMatrix(
     MORTAR::MortarElement* mele,
-    const std::unordered_map<int,LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement*num_dof_per_node,1> >& k,
+    const std::unordered_map<int,LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement*num_dof_per_node_to_assemble,1> >& k,
+    std::vector<int>& dofs,
     Teuchos::RCP<LINALG::SparseMatrix> kc)
 {
   const int nen = DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement;
-  const int nsd = DRT::UTILS::DisTypeToDim<parent_distype>::dim;
+  //const int nsd = DRT::UTILS::DisTypeToDim<parent_distype>::dim;
 
   if (kc!=Teuchos::null)
     for (typename std::unordered_map<
-        int,LINALG::Matrix<nen*num_dof_per_node,1>
+        int,LINALG::Matrix<nen*num_dof_per_node_to_assemble,1>
         >::const_iterator p=k.begin();p!=k.end();++p)
       for (int n=0;n<nen;++n)
         for (int d=0;d<num_dof_per_node;++d)
-          kc->FEAssemble(p->second(n*num_dof_per_node+d),mele->MoData().ParentDof()[n*nsd+d],p->first);
+          if (fabs(p->second(n*num_dof_per_node_to_assemble+d)) > 1e-16) kc->FEAssemble(p->second(n*num_dof_per_node_to_assemble+d),dofs.at(n*num_dof_per_node+d),p->first);
 }
 
 
@@ -68,11 +70,17 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleRHS(
   switch(row)
   {
   case DRT::UTILS::block_displ:
-    AssembleRHS<DRT::UTILS::DisTypeToDim<parent_distype>::dim>(mele,rhs_,fc);
+    AssembleRHS<DRT::UTILS::DisTypeToDim<parent_distype>::dim>(mele,rhs_,mele->MoData().ParentDof(),fc);
     break;
   case DRT::UTILS::block_temp:
-    AssembleRHS<1>(mele,tsi_data_.rhs_t_,fc);
+    AssembleRHS<DRT::UTILS::DisTypeToDim<parent_distype>::dim,1>(mele,tsi_data_.rhs_t_,mele->MoData().ParentDof(),fc);
     break;
+  case DRT::UTILS::block_porofluid:
+  {
+    if (mele->MoData().ParentPFDof().size()) //not if the parent is an impermeable element
+      AssembleRHS<DRT::UTILS::DisTypeToDim<parent_distype>::dim+1>(mele,poro_data_.rhs_p_,mele->MoData().ParentPFDof(),fc);
+    break;
+  }
   default: dserror("unknown row");
   }
 }
@@ -86,16 +94,26 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleMatrix(
   switch(block)
   {
   case DRT::UTILS::block_displ_displ:
-    AssembleMatrix<DRT::UTILS::DisTypeToDim<parent_distype>::dim>(mele,k_,kc);
+    AssembleMatrix<DRT::UTILS::DisTypeToDim<parent_distype>::dim>(mele,k_,mele->MoData().ParentDof(),kc);
     break;
   case DRT::UTILS::block_displ_temp:
-    AssembleMatrix<DRT::UTILS::DisTypeToDim<parent_distype>::dim>(mele,tsi_data_.k_dt_,kc);
+    AssembleMatrix<DRT::UTILS::DisTypeToDim<parent_distype>::dim>(mele,tsi_data_.k_dt_,mele->MoData().ParentDof(),kc);
     break;
   case DRT::UTILS::block_temp_displ:
-    AssembleMatrix<1>(mele,tsi_data_.k_td_,kc);
+    AssembleMatrix<DRT::UTILS::DisTypeToDim<parent_distype>::dim,1>(mele,tsi_data_.k_td_,mele->MoData().ParentDof(),kc);
     break;
   case DRT::UTILS::block_temp_temp:
-    AssembleMatrix<1>(mele,tsi_data_.k_tt_,kc);
+    AssembleMatrix<DRT::UTILS::DisTypeToDim<parent_distype>::dim,1>(mele,tsi_data_.k_tt_,mele->MoData().ParentDof(),kc);
+  case DRT::UTILS::block_displ_porofluid:
+    AssembleMatrix<DRT::UTILS::DisTypeToDim<parent_distype>::dim>(mele,poro_data_.k_dp_,mele->MoData().ParentDof(),kc);
+    break;
+  case DRT::UTILS::block_porofluid_displ:
+    if (mele->MoData().ParentPFDof().size()) //not if the parent is an impermeable element
+      AssembleMatrix<DRT::UTILS::DisTypeToDim<parent_distype>::dim+1>(mele,poro_data_.k_pd_,mele->MoData().ParentPFDof(),kc);
+    break;
+  case DRT::UTILS::block_porofluid_porofluid:
+    if (mele->MoData().ParentPFDof().size()) //not if the parent is an impermeable element
+      AssembleMatrix<DRT::UTILS::DisTypeToDim<parent_distype>::dim+1>(mele,poro_data_.k_pp_,mele->MoData().ParentPFDof(),kc);
   break;
   default: dserror("unknown matrix block"); break;
   }

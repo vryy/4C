@@ -980,7 +980,7 @@ protected:
   \brief Calculate Determinate of the Deformation Gradient at GP
 
   */
-  double inline DetDeformationGradient(
+  double DetDeformationGradient(
       MORTAR::MortarElement& sele,
       double& wgt,
       double* gpcoord,
@@ -991,7 +991,7 @@ protected:
 
   */
   template <DRT::Element::DiscretizationType parentdistype, int dim>
-  double inline TDetDeformationGradient(
+  double TDetDeformationGradient(
       MORTAR::MortarElement& sele,
       double& wgt,
       double* gpcoord,

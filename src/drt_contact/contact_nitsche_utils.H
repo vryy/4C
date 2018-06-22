@@ -56,6 +56,15 @@ public:
   virtual double* k_td(int col, int dof)=0;
   virtual double* k_dt(int col)=0;
   virtual double* k_dt(int col, int dof)=0;
+
+  virtual double* rhs_p(int dof)=0;
+  virtual double* rhs_p()=0;
+  virtual double* k_pp(int col)=0;
+  virtual double* k_pp(int col, int dof)=0;
+  virtual double* k_pd(int col)=0;
+  virtual double* k_pd(int col, int dof)=0;
+  virtual double* k_dp(int col)=0;
+  virtual double* k_dp(int col, int dof)=0;
 };
 
 template<DRT::Element::DiscretizationType parent_distype>
@@ -77,6 +86,25 @@ public:
   std::unordered_map<int,LINALG::Matrix<num_parent_disp_dof,1> > k_dt_;
 };
 
+template<DRT::Element::DiscretizationType parent_distype>
+class MortarElementNitscheDataPoro
+{
+public:
+  void Clear(){rhs_p_.Clear();k_pp_.clear();k_pd_.clear();k_dp_.clear();}
+
+  static const int num_parent_disp_dof =
+      DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement
+        *DRT::UTILS::DisTypeToDim<parent_distype>::dim;
+  static const int num_parent_pf_dof =
+      DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement
+        *(DRT::UTILS::DisTypeToDim<parent_distype>::dim+1);
+
+  LINALG::Matrix<num_parent_pf_dof,1> rhs_p_;
+  std::unordered_map<int,LINALG::Matrix<num_parent_pf_dof,1> > k_pp_;
+  std::unordered_map<int,LINALG::Matrix<num_parent_pf_dof,1> > k_pd_;
+  std::unordered_map<int,LINALG::Matrix<num_parent_disp_dof,1> > k_dp_;
+};
+
 
 template<DRT::Element::DiscretizationType parent_distype>
 class MortarElementNitscheData : public MortarElementNitscheContainer
@@ -96,6 +124,15 @@ public:
   virtual double* k_dt(int col) {return tsi_data_.k_dt_[col].A();}
   virtual double* k_dt(int col, int dof) {return &tsi_data_.k_dt_[col](dof);}
 
+  virtual double* rhs_p(int dof) {return &poro_data_.rhs_p_(dof);}
+  virtual double* rhs_p() {return poro_data_.rhs_p_.A();}
+  virtual double* k_pp(int col) {return poro_data_.k_pp_[col].A();}
+  virtual double* k_pp(int col, int dof) {return &poro_data_.k_pp_[col](dof);}
+  virtual double* k_pd(int col) {return poro_data_.k_pd_[col].A();}
+  virtual double* k_pd(int col, int dof) {return &poro_data_.k_pd_[col](dof);}
+  virtual double* k_dp(int col) {return poro_data_.k_dp_[col].A();}
+  virtual double* k_dp(int col, int dof) {return &poro_data_.k_dp_[col](dof);}
+
   virtual void AssembleRHS(
       MORTAR::MortarElement* mele,
       DRT::UTILS::VecBlockType row,
@@ -106,20 +143,22 @@ public:
       DRT::UTILS::MatBlockType block,
       Teuchos::RCP<LINALG::SparseMatrix> kc);
 
-  template<int num_dof_per_node>
+  template<int num_dof_per_node, int num_dof_per_node_to_assemble=num_dof_per_node>
   void AssembleRHS(
       MORTAR::MortarElement* mele,
-      const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement*num_dof_per_node,1>& rhs,
+      const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement*num_dof_per_node_to_assemble,1>& rhs,
+      std::vector<int>& dofs,
       Teuchos::RCP<Epetra_FEVector> fc);
 
-  template<int num_dof_per_node>
+  template<int num_dof_per_node, int num_dof_per_node_to_assemble=num_dof_per_node>
   void AssembleMatrix(
       MORTAR::MortarElement* mele,
-      const std::unordered_map<int,LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement*num_dof_per_node,1> >& k,
+      const std::unordered_map<int,LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement*num_dof_per_node_to_assemble,1> >& k,
+      std::vector<int>& dofs,
       Teuchos::RCP<LINALG::SparseMatrix> kc);
 
 
-  virtual void Clear(){rhs_.Clear();k_.clear();tsi_data_.Clear();}
+  virtual void Clear(){rhs_.Clear();k_.clear(); tsi_data_.Clear(); poro_data_.Clear();}
 
 private:
   LINALG::Matrix<
@@ -131,6 +170,7 @@ private:
     *
     DRT::UTILS::DisTypeToDim<parent_distype>::dim,1> > k_;
   MORTAR::MortarElementNitscheDataTsi<parent_distype> tsi_data_;
+  MORTAR::MortarElementNitscheDataPoro<parent_distype> poro_data_;
 };
 
 }

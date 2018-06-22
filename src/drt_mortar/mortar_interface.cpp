@@ -657,7 +657,7 @@ void MORTAR::MortarInterface::FillComplete(int maxdof, bool newghosting)
   //ghost also parent elements according to the ghosting strategy of the interface (atm just for poro)
   if (newghosting && poro_)
     POROELAST::UTILS::CreateVolumeGhosting(Discret());
-  if (imortar_.isParameter("STRATEGY"))
+  else if (imortar_.isParameter("STRATEGY"))
     if (newghosting && DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_,"ALGORITHM")==INPAR::MORTAR::algorithm_gpts)
       CreateVolumeGhosting();
 

@@ -56,9 +56,12 @@ void CONTACT::CoNitscheStrategy::ApplyForceStiffCmt(
           interface_[i]->Discret().ElementColMap()->GID(e)));
       mele->GetNitscheContainer().AssembleRHS(mele,DRT::UTILS::block_displ,fc);
       mele->GetNitscheContainer().AssembleMatrix(mele,DRT::UTILS::block_displ_displ,kc);
-      mele->GetNitscheContainer().Clear();
     }
   }
+
+  // now we also did this state
+  curr_state_eval_=true;
+
   if(fc->GlobalAssemble(Add,false)!=0) dserror("GlobalAssemble failed");
   // add negative contact force here since the time integrator handed me a rhs!
   if (f->Update(-1.,*fc,1.)) dserror("update went wrong");
@@ -156,7 +159,7 @@ void CONTACT::CoNitscheStrategy::SetParentState(const enum MORTAR::StateType& st
   Teuchos::RCP<DRT::Discretization> dis = DRT::Problem::Instance()->GetDis("structure");
   if (dis==Teuchos::null)
     dserror("didn't get my discretization");
-  if (statename==MORTAR::state_new_displacement)
+  if (statename==MORTAR::state_new_displacement || statename==MORTAR::state_svelocity)
   {
     Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*dis->DofColMap(),true));
     LINALG::Export(vec,*global);
@@ -182,8 +185,22 @@ void CONTACT::CoNitscheStrategy::SetParentState(const enum MORTAR::StateType& st
         std::vector<double> myval;
         DRT::UTILS::ExtractMyValues(*global,myval,lm);
 
-        ele->MoData().ParentDisp() = myval;
-        ele->MoData().ParentDof() = lm;
+        switch (statename)
+        {
+          case MORTAR::state_new_displacement:
+          {
+            ele->MoData().ParentDisp() = myval;
+            ele->MoData().ParentDof() = lm;
+            break;
+          }
+          case MORTAR::state_svelocity:
+          {
+            ele->MoData().ParentVel() = myval;
+            break;
+          }
+          default:
+            dserror("unknown statename");
+        }
       }
     }
   }
@@ -250,13 +267,29 @@ void CONTACT::CoNitscheStrategy::Integrate(CONTACT::ParamsInterface& cparams)
 
   return;
 }
+
 Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategy::CreateRhsBlockPtr(
      const enum DRT::UTILS::VecBlockType& bt) const
 {
   if (curr_state_eval_==false)
     dserror("you didn't evaluate this contact state first");
+  Teuchos::RCP<Epetra_FEVector> fc;
+  switch (bt)  //we need to setup vectors accoring to their row map
+  {
+    case DRT::UTILS::block_porofluid:
+    {
+      fc=Teuchos::rcp(new Epetra_FEVector(*DRT::Problem::Instance()->
+          GetDis("porofluid")->DofRowMap()));
+      break;
+    }
+    default:
+    {
+      fc=Teuchos::rcp(new Epetra_FEVector(*DRT::Problem::Instance()->
+          GetDis("structure")->DofRowMap()));
+      break;
+    }
+  }
 
-  Teuchos::RCP<Epetra_FEVector> fc=Teuchos::rcp(new Epetra_FEVector(curr_state_->Map()));
   for (int i = 0; i < (int) interface_.size(); ++i)
     for (int e=0;e<interface_[i]->Discret().ElementColMap()->NumMyElements();++e)
     {
@@ -276,6 +309,8 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategy::GetRhsBlockPtr(
     dserror("you didn't evaluate this contact state first");
   if (bt==DRT::UTILS::block_displ )
     return Teuchos::rcp(new Epetra_Vector(Copy,*(fc_),0));
+  else
+    dserror("GetRhsBlockPtr: your type is no treated properly!");
 
   return Teuchos::null;
 }
@@ -286,9 +321,23 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::CreateMatrixBlock
   if (curr_state_eval_==false)
     dserror("you didn't evaluate this contact state first");
 
-  Teuchos::RCP<LINALG::SparseMatrix> kc = Teuchos::rcp(new LINALG::SparseMatrix(
-      *Teuchos::rcpFromRef<const Epetra_Map>(*DRT::Problem::Instance()->
-          GetDis("structure")->DofRowMap()),100,true,false,LINALG::SparseMatrix::FE_MATRIX));
+  Teuchos::RCP<LINALG::SparseMatrix> kc;
+  switch (bt) //we need to setup matrixes accoring to their row map
+  {
+    case DRT::UTILS::block_porofluid_displ:
+    case DRT::UTILS::block_porofluid_porofluid:
+    {
+      kc = Teuchos::rcp(new LINALG::SparseMatrix(*Teuchos::rcpFromRef<const Epetra_Map>(*DRT::Problem::Instance()->
+              GetDis("porofluid")->DofRowMap()),100,true,false,LINALG::SparseMatrix::FE_MATRIX));
+      break;
+    }
+    default:
+    {
+      kc = Teuchos::rcp(new LINALG::SparseMatrix(*Teuchos::rcpFromRef<const Epetra_Map>(*DRT::Problem::Instance()->
+              GetDis("structure")->DofRowMap()),100,true,false,LINALG::SparseMatrix::FE_MATRIX));
+      break;
+    }
+  }
 
   for (int i = 0; i < (int) interface_.size(); ++i)
     for (int e=0;e<interface_[i]->Discret().ElementColMap()->NumMyElements();++e)
@@ -297,8 +346,33 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::CreateMatrixBlock
           interface_[i]->Discret().ElementColMap()->GID(e)));
       mele->GetNitscheContainer().AssembleMatrix(mele,bt,kc);
     }
-  if(dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true,Add))
-    dserror("GlobalAssemble(...) failed");
+  switch (bt) //we need to treat matrixes with different row and col map seperately
+  {
+    case DRT::UTILS::block_porofluid_displ:
+    {
+      if(dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(
+          *DRT::Problem::Instance()->GetDis("structure")->DofRowMap(), //col map
+          *DRT::Problem::Instance()->GetDis("porofluid")->DofRowMap(), //row map
+          true,Add))
+        dserror("GlobalAssemble(...) failed");
+      break;
+    }
+    case DRT::UTILS::block_displ_porofluid:
+    {
+      if(dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(
+          *DRT::Problem::Instance()->GetDis("porofluid")->DofRowMap(), //col map
+          *DRT::Problem::Instance()->GetDis("structure")->DofRowMap(), //row map
+          true,Add))
+        dserror("GlobalAssemble(...) failed");
+      break;
+    }
+    default:
+    {
+      if(dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true,Add))
+        dserror("GlobalAssemble(...) failed");
+      break;
+    }
+  }
 
   return kc;
 }
@@ -312,6 +386,8 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::GetMatrixBlockPtr
 
   if (bt==DRT::UTILS::block_displ_displ)
     return kc_;
+  else
+    dserror("GetMatrixBlockPtr: your type is no treated properly!");
 
   return Teuchos::null;
 }

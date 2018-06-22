@@ -12755,7 +12755,7 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_LIN(
 /*-----------------------------------------------------------------------------*
  |  Calculate Determinate of the Deformation Gradient at GP          ager 10/14|
  *----------------------------------------------------------------------------*/
-double inline CONTACT::CoIntegrator::DetDeformationGradient(
+double CONTACT::CoIntegrator::DetDeformationGradient(
     MORTAR::MortarElement& sele,
     double& wgt,
     double* gpcoord,
@@ -12784,7 +12784,7 @@ double inline CONTACT::CoIntegrator::DetDeformationGradient(
  |  modified by h.Willmann 2015                                                  |
  *-------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType parentdistype, int dim>
-double inline CONTACT::CoIntegrator::TDetDeformationGradient(
+double CONTACT::CoIntegrator::TDetDeformationGradient(
     MORTAR::MortarElement& sele,
     double& wgt,
     double* gpcoord,

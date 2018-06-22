@@ -316,7 +316,7 @@ void POROELAST::PoroBase::Update()
   // TODO: clean up as soon as old time integration is unused!
   if(oldstructimint_)
     if (StructureField()->MeshtyingContactBridge()!= Teuchos::null)
-       if (StructureField()->MeshtyingContactBridge()->HaveContact())
+       if (StructureField()->MeshtyingContactBridge()->HaveContact() && !nit_contact_)
          (static_cast<CONTACT::PoroLagrangeStrategy&>(StructureField()->MeshtyingContactBridge()->ContactManager()->GetStrategy())).UpdatePoroContact();
 }
 

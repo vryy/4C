@@ -105,7 +105,8 @@ void CreateVolumeGhosting(DRT::Discretization& idiscret); //redistributed interf
  exist already.
  */
  void ReconnectParentPointers(DRT::Discretization& idiscret,
-                             DRT::Discretization& voldiscret);
+                             DRT::Discretization& voldiscret,
+                             DRT::Discretization* voldiscret2 = NULL);
 
 //! Determine norm of vector
 double CalculateVectorNorm(const enum INPAR::POROELAST::VectorNorm norm, //!< norm to use

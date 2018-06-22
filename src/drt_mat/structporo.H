@@ -352,6 +352,14 @@ namespace MAT
                                  const int eleGID)
       {mat_->EvaluateGEMM(stress,cmat,density,glstrain_m,glstrain_new,glstrain_old,rcg_new,rcg_old,eleGID);};
 
+      /// Evaluate Cauchy
+      virtual void EvaluateCauchy(
+          const LINALG::Matrix<3,3>& b, const LINALG::Matrix<3,1>& n, const LINALG::Matrix<3,1>& t, double& snt,
+          LINALG::Matrix<6,1>* dsntdb, LINALG::Matrix<6,6>* d2sntdb2, LINALG::Matrix<6,3>* d2sntDbDn, LINALG::Matrix<6,3>* d2sntDbDt,
+          LINALG::Matrix<3,1>* dsntdn, LINALG::Matrix<3,1>* dsntdt, const int eleGID, const double* temp =NULL,
+          double* dsntdT=NULL, LINALG::Matrix<6,1>* d2sntDbDT=NULL)
+      {mat_->EvaluateCauchy(b,n,t,snt,dsntdb,d2sntdb2,d2sntDbDn,d2sntDbDt,dsntdn,dsntdt,eleGID,temp,dsntdT,d2sntDbDT);}
+
       //@}
 
       /// Return material density (if provided by the specific material)

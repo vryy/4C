@@ -31,13 +31,16 @@ namespace UTILS {
   /// enum, which specifies the desired matrix block for the different models
   enum MatBlockType
   {
-    block_displ_displ,   ///< Kdd block (structural block)
-    block_displ_lm,      ///< Kdz block (of the corresponding model evaluator)
-    block_lm_displ,      ///< Kzd block (of the corresponding model evaluator)
-    block_lm_lm,         ///< Kzz block (of the corresponding model evaluator)
-    block_temp_temp,     ///< Ktt block (thermal block)
-    block_temp_displ,    ///< Ktd block (structure-thermo-coupling)
-    block_displ_temp,    ///< Kdt block (thermo-structure-coupling)
+    block_displ_displ,            ///< Kdd block (structural block)
+    block_displ_lm,               ///< Kdz block (of the corresponding model evaluator)
+    block_lm_displ,               ///< Kzd block (of the corresponding model evaluator)
+    block_lm_lm,                  ///< Kzz block (of the corresponding model evaluator)
+    block_temp_temp,              ///< Ktt block (thermal block)
+    block_temp_displ,             ///< Ktd block (structure-thermo-coupling)
+    block_displ_temp,             ///< Kdt block (thermo-structure-coupling)
+    block_porofluid_porofluid,    ///< Kpp block (porofluid-porofluid)
+    block_porofluid_displ,        ///< Kpd block (porofluid-structure)
+    block_displ_porofluid         ///< Kdp block (structure-porofluid)
   };
 
   //! map matrix block type enum to std::string
@@ -59,6 +62,12 @@ namespace UTILS {
         return "block_temp_displ";
       case block_displ_temp:
         return "block_displ_temp";
+      case block_porofluid_porofluid:
+        return "block_porofluid_porofluid";
+      case block_porofluid_displ:
+        return "block_porofluid_displ";
+      case block_displ_porofluid:
+        return "block_displ_porofluid";
       default:
         return "unknown matrix block type";
     }
@@ -70,6 +79,7 @@ namespace UTILS {
     block_displ,      ///< displacement block (structural block)
     block_constraint, ///< lagrange multiplier/constraint block of the corresponding model
     block_temp,       ///< temperature block (thermal block)
+    block_porofluid,  ///< porofluid block (porofluid block)
   };
 
   //! map vector block type enum to std::string
@@ -83,6 +93,8 @@ namespace UTILS {
         return "block_constraint";
       case block_temp:
         return "block_temp";
+      case block_porofluid:
+        return "block_porofluid";
       default:
         return "unknown vector block type";
     }

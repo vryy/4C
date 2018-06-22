@@ -18,8 +18,9 @@
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_serialdensematrix.H"
 
-#include "../drt_fluid_ele/fluid_ele_boundary_parent_calc.H"
 #include "../drt_contact/contact_nitsche_utils.H"
+
+#include "../drt_mat/material.H"
 
 #include "../drt_so3/so_surface.H"
 #include <Teuchos_RCP.hpp>
@@ -1636,6 +1637,7 @@ void MORTAR::MortarElement::EstimateNitscheTraceMaxEigenvalueCombined()
   traceHE_=1./surf->EstimateNitscheTraceMaxEigenvalueCombined(MoData().ParentDisp());
 
   if (ParentElement()->NumMaterial()>1)
+    if (ParentElement()->Material(1)->MaterialType()== INPAR::MAT::m_th_fourier_iso)
     traceHCond_=1./surf->EstimateNitscheTraceMaxEigenvalueTSI(MoData().ParentDisp());
 }
 

@@ -1426,8 +1426,6 @@ public:
       parent_id_ = master->Id();
   }
 
-protected:
-
   /*!
   \brief Set the slave element this face element is connected to
 
@@ -1436,7 +1434,8 @@ protected:
   It allows that elements and faces are created separately and be combined later
   on the way.
 
-  \param master: second parent element when there already is a master element
+  \param slave: second parent element when there already is a master element
+  \param lface_slave: local number of face within slave element
   */
   void SetParentSlaveElement(DRT::Element* slave,
                              const int     lface_slave)
@@ -1444,6 +1443,8 @@ protected:
     parent_slave_ = slave;
     lface_slave_  = lface_slave;
   }
+
+protected:
 
   /*!
   \brief Set the slave element this face element is connected to

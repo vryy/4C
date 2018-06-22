@@ -24,6 +24,7 @@
 #include "contact_tsi_interface.H"
 #include "contact_penalty_strategy.H"
 #include "contact_nitsche_strategy.H"
+#include "contact_nitsche_strategy_poro.H"
 #include "contact_defines.H"
 #include "friction_node.H"
 #include "contact_strategy_factory.H"
@@ -602,7 +603,7 @@ CONTACT::CoManager::CoManager(
                 isslave[j],
                 nurbs));
 
-        if (cparams.get<int>("PROBTYPE")==INPAR::CONTACT::poro)
+        if (cparams.get<int>("PROBTYPE")==INPAR::CONTACT::poro && algo != INPAR::MORTAR::algorithm_gpts)
           SetPoroParentElement(slavetype, mastertype, cele, ele);
 
         if (algo == INPAR::MORTAR::algorithm_gpts)
@@ -634,7 +635,7 @@ CONTACT::CoManager::CoManager(
     //-------------------- finalize the contact interface construction
     interface->FillComplete(maxdof);
 
-    if (cparams.get<int>("PROBTYPE")==INPAR::CONTACT::poro)
+    if (cparams.get<int>("PROBTYPE")==INPAR::CONTACT::poro && algo != INPAR::MORTAR::algorithm_gpts)
       FindPoroInterfaceTypes(poromaster, poroslave, structmaster, structslave, slavetype, mastertype);
 
   } // for (int i=0; i<(int)contactconditions.size(); ++i)
@@ -730,15 +731,30 @@ CONTACT::CoManager::CoManager(
   else if (algo == INPAR::MORTAR::algorithm_gpts &&
       (stype==INPAR::CONTACT::solution_nitsche || stype==INPAR::CONTACT::solution_penalty ))
   {
-    strategy_ = Teuchos::rcp(new CoNitscheStrategy(
-        data_ptr,
-        Discret().DofRowMap(),
-        Discret().NodeRowMap(),
-        cparams,
-        interfaces,
-        dim, comm_,
-        alphaf,
-        maxdof));
+    if (cparams.get<int>("PROBTYPE")==INPAR::CONTACT::poro && stype==INPAR::CONTACT::solution_nitsche)
+    {
+      strategy_ = Teuchos::rcp(new CoNitscheStrategyPoro(
+          data_ptr,
+          Discret().DofRowMap(),
+          Discret().NodeRowMap(),
+          cparams,
+          interfaces,
+          dim, comm_,
+          alphaf,
+          maxdof));
+    }
+    else
+    {
+      strategy_ = Teuchos::rcp(new CoNitscheStrategy(
+          data_ptr,
+          Discret().DofRowMap(),
+          Discret().NodeRowMap(),
+          cparams,
+          interfaces,
+          dim, comm_,
+          alphaf,
+          maxdof));
+    }
   }
   else if (stype == INPAR::CONTACT::solution_augmented)
   {
@@ -1138,8 +1154,8 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     if (contact.get<double>("PENALTYPARAM") <= 0.0)
       dserror("ERROR: Penalty parameter eps = 0, must be greater than 0");
 
-    if (problemtype!=prb_structure)
-      dserror("ERROR: GPTS algorithm only tested for structural problems");
+    if (problemtype!=prb_structure && problemtype!=prb_poroelast)
+      dserror("ERROR: GPTS algorithm only tested for structural and poroelastic problems");
 
     if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") != INPAR::WEAR::wear_none)
       dserror("GPTS algorithm not implemented for wear");

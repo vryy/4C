@@ -166,6 +166,12 @@ public:
   virtual std::vector<double>& ParentDisp() {return parentdisp_; }
 
   /*!
+  \brief Return Parent velocity vector
+
+  */
+  virtual std::vector<double>& ParentVel() {return parentvel_; }
+
+  /*!
   \brief Return Parent element degrees of freedom
 
   */
@@ -176,6 +182,24 @@ public:
 
   */
   virtual std::vector<double>& ParentTemp() {return parenttemp_; }
+
+  /*!
+  \brief Return Parent poro pressure vector
+
+  */
+  virtual std::vector<double>& ParentPFPres() {return parentpfpres_; }
+
+  /*!
+  \brief Return Parent poro velocity vector
+
+  */
+  virtual std::vector<double>& ParentPFVel() {return parentpfvel_; }
+
+  /*!
+  \brief Return Parent Poro Fluid element degrees of freedom
+
+  */
+  virtual std::vector<int>& ParentPFDof() {return parentpfdofs_; }
 
   //@}
 
@@ -200,11 +224,23 @@ protected:
   // Displacement of Parent Element
   std::vector<double> parentdisp_;
 
+  // Velocity of Parent Element
+  std::vector<double> parentvel_;
+
   // Displacement Parent element degrees of freedom
   std::vector<int> parentdofs_;
 
   // Temperature of Parent Element
   std::vector<double> parenttemp_;
+
+  // Poro Pressure of Parent Element
+  std::vector<double> parentpfpres_;
+
+  // Poro Vel of Parent Element
+  std::vector<double> parentpfvel_;
+
+  // Poro Fluid Parent element degrees of freedom
+  std::vector<int> parentpfdofs_;
 
 }; // class MortarEleDataContainer
 
