@@ -56,7 +56,7 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleMatrix(
         int,LINALG::Matrix<nen*num_dof_per_node_to_assemble,1>
         >::const_iterator p=k.begin();p!=k.end();++p)
       for (int n=0;n<nen;++n)
-        for (int d=0;d<num_dof_per_node;++d)
+        for (int d=0;d<num_dof_per_node_to_assemble;++d)
           if (fabs(p->second(n*num_dof_per_node_to_assemble+d)) > 1e-16) kc->FEAssemble(p->second(n*num_dof_per_node_to_assemble+d),dofs.at(n*num_dof_per_node+d),p->first);
 }
 

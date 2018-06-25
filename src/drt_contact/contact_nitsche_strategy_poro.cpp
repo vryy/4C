@@ -110,7 +110,7 @@ void CONTACT::CoNitscheStrategyPoro::SetParentState(const enum MORTAR::StateType
             std::vector<double> vel;
             std::vector<double> pres;
 
-            for (uint n = 0; n < ele->ParentSlaveElement()->NumNode(); ++n)
+            for (int n = 0; n < ele->ParentSlaveElement()->NumNode(); ++n)
             {
               for (uint dim = 0; dim < 3; ++dim)
               {
