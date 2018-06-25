@@ -201,6 +201,10 @@ public:
 
   void SetInputControlFile(Teuchos::RCP<IO::InputControl>& input){inputcontrol_ = input;}
 
+  ///manipulate problem type
+  //needed for forward problem calculations in inverse analysis
+  void SetProblemType(PROBLEM_TYP targettype);
+
   //@}
 
   /// @name General query methods

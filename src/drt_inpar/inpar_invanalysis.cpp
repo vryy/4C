@@ -22,6 +22,9 @@
 #include "inpar_structure.H"
 #include "../drt_lib/drt_conditiondefinition.H"
 
+#include "../drt_lib/drt_globalproblem_enums.H"
+#include "inpar_problemtype.H"
+
 
 void INPAR::INVANA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
@@ -112,6 +115,30 @@ void INPAR::INVANA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   setNumericStringParameter("STARTVALUESFORPATCHES","1.0",
                   "startvalues for the patches, only needed for Uniform Patches",
                   &iap);
+
+  {
+    Teuchos::Array<std::string> name;
+    Teuchos::Array<int> label;
+
+    // fill the arrays
+    {
+      std::map<std::string,PROBLEM_TYP> map = DRT::StringToProblemTypeMap();
+      std::map<std::string,PROBLEM_TYP>::const_iterator i;
+      for (i = map.begin(); i != map.end();++i)
+      {
+        name. push_back(i->first);
+        label.push_back(i->second);
+      }
+    }
+
+    setStringToIntegralParameter<int>(
+      "FORWARD_PROBLEMTYP",
+      "Structure",
+      "defines which forward problem type is used for inverse analysis",
+      name,
+      label,
+      &iap);
+  }
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& statinvp = list->sublist("STAT INVERSE ANALYSIS",false,"");

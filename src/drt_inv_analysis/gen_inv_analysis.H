@@ -4,7 +4,7 @@
 
 \brief gen inv analysis
 
-\level 1
+\level 2
 
 \maintainer Harald Willmann
             willmann@lnm.mw.tum.de
@@ -19,6 +19,8 @@
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
+
+#include "../drt_inpar/inpar_problemtype.H"
 
 // forward declarations
 
@@ -150,6 +152,9 @@ private:
   int np_;                          // number of fitted parameters (default 3, 4 with kappa)
   int nmp_;                         // total number of measured dofs
 
+//  forward problem type given in dat-file FORWARD_PROBLEMTYP
+  PROBLEM_TYP forward_prb_type_;
+
   /// variables of multiple inverse analysis
   bool spec_inv_ana_mult_; // define if multiple inverse analysis is used
   int nmp_mult_;      //number of all measured dofs of every experiment
@@ -240,6 +245,9 @@ private:
   };
   DEFINE_PATCHES which_patches_;
 
+  //check whether we have to reset history parameters with this bool
+  bool materialhashistory_;
+
 public:
 
   /// standard constructor
@@ -267,6 +275,9 @@ public:
 
   /// Calculate the new dof vector for comparison with the experimental data
   Epetra_SerialDenseVector CalcCvector(bool outputtofile);
+
+  /// Calculate the new dof vector for comparison with the experimental data from a FSI problem
+  Epetra_SerialDenseVector CalcCvectorFSI(bool outputtofile, int iLMstep);
 
   /// NP Calculate the new dof vector for comparison with the experimental data
   Epetra_SerialDenseVector CalcCvector(bool outputtofile,Teuchos::RCP<COMM_UTILS::NestedParGroup> group);

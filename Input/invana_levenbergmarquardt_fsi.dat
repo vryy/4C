@@ -1,0 +1,286 @@
+// Maintainer: Harald Willmann
+//             willmann@lnm.mw.tum.de
+//             http://www.lnm.mw.tum.de
+//             089 - 289-15255
+==================================================================
+                  General Data File BACI
+==================================================================
+-------------------------------------------------------------TITLE
+created by pre_exodus
+------------------------------------------------------PROBLEM SIZE
+//ELEMENTS    18
+//NODES       35
+DIM           2
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Inverse_Analysis//Fluid_Structure_Interaction, Inverse_Analysis
+RESTART                         0
+--------------------------------------------------------------------------IO
+STRUCT_STRESS                   Cauchy
+OUTPUT_BIN                      yes//yes, no
+----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   1
+DYNAMICTYP                      GenAlpha//Statics,GenAlpha,OneStepTheta
+NLNSOL                          fullnewton
+PREDICT                         ConstDis
+TIMESTEP                        2.0
+-------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+GENAVG                          TrLike
+BETA                            0.5
+GAMMA                           1.0
+ALPHA_M                         0.1
+ALPHA_F                         0.1
+---------------------------------------------------INVERSE ANALYSIS
+INV_ANALYSIS                    gen
+//SPECIAL_INV_ANALYSIS            none
+INV_ANA_TOL                     0.00000001
+INV_ANA_MAX_RUN                 3
+INV_ALPHA                       0.0
+INV_BETA                        0.001
+INV_INITREG                     1.0
+UPDATE_REG                      GRAD//GRAD, RES
+MONITORFILE                     invana_levenbergmarquardt_fsi.monitor
+INV_LIST                        3
+NEW_FILES                       no//yes, no
+PARAM_BOUNDS                    yes
+FORWARD_PROBLEMTYP              Fluid_Structure_Interaction//Structure, Fluid_Structure_Interaction
+---------------------------------------------------------------FLUID DYNAMIC
+LINEAR_SOLVER                   1
+TIMEINTEGR                      One_Step_Theta//Stationary,One_Step_Theta
+THETA                           0.66
+NONLINITER                      Newton // fixed_point_like
+PHYSICAL_TYPE                   Incompressible //Stokes
+TIMESTEP                        2.0
+NONLINEARBC                     yes
+PREDICTOR                       steady_state//constant_acceleration
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+STABTYPE                        residual_based
+//TDS                             quasistatic
+DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall //Hughes_Franca_Balestra_wo_dt//
+CHARELELENGTH_PC                root_of_volume
+TRANSIENT                       no_transient
+SUPG                            yes  //no
+PSPG                            yes
+VSTAB                           no_vstab // vstab_gls
+GRAD_DIV                        yes
+CROSS-STRESS                    no_cross
+REYNOLDS-STRESS                 no_reynolds
+-----------------------------------------------------------------ALE DYNAMIC
+LINEAR_SOLVER                   1
+ALE_TYPE                        solid
+UPDATEMATRIX                    yes
+TIMESTEP                        2.0
+-----------------------------------------------------------------FSI DYNAMIC
+MAXTIME                         6.0
+TIMESTEP                        2.0
+NUMSTEP                         100
+RESULTSEVRY                     1
+RESTARTEVRY                     10
+COUPALGO                        iter_monolithicfluidsplit//iter_stagg_AITKEN_rel_param,iter_monolithicfluidsplit,iter_monolithicstructuresplit
+//PREDICTOR                       d(n)+dt*v(n)+0.5*dt^2*a(n)
+SECONDORDER                     yes
+VERBOSITY                       subproblem//full,low
+-----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
+//ADAPTIVEDIST                    0.001
+BASETOL                         1.0e-12
+CONVTOL                         1.0e-12
+ITEMAX                          40
+LINEARBLOCKSOLVER               PreconditionedKrylov//PreconditionedKrylov,FSIAMG
+SHAPEDERIVATIVES                Yes//No
+TOL_DIS_INC_INF                 1e-4
+TOL_DIS_INC_L2                  1e-4
+TOL_DIS_RES_INF                 1e-6
+TOL_DIS_RES_L2                  1e-6
+TOL_FSI_INC_INF                 1e-4
+TOL_FSI_INC_L2                  1e-4
+TOL_FSI_RES_INF                 1e-6
+TOL_FSI_RES_L2                  1e-6
+TOL_PRE_INC_INF                 1e-4
+TOL_PRE_INC_L2                  1e-4
+TOL_PRE_RES_INF                 1e-6
+TOL_PRE_RES_L2                  1e-6
+TOL_VEL_INC_INF                 1e-4
+TOL_VEL_INC_L2                  1e-4
+TOL_VEL_RES_INF                 1e-6
+TOL_VEL_RES_L2                  1e-6
+--------------------------------------------------------------------SOLVER 1
+SOLVER                          UMFPACK
+//-----------------------------------------------------UMFPACK SOLVER
+//VERBOSITY                       10
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_fluid DYNVISCOSITY 0.001 DENSITY 0.001
+MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 0.001
+MAT 3 ELAST_CoupNeoHooke YOUNG 1000.0 NUE 0.2
+MAT 4 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 1.0
+--------------------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2 // 2 wenn negative jacobian, 4 sonst
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION 10*(y-1)*(1-cos(t*pi))
+----------------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 6.0 100.0 DESCRIPTION (1-cos(t/6*pi))*0.5 1.0
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 4
+NDLINE  8
+NDSURF  0
+NDVOL   0
+------------------------------------DESIGN POINT DIRICH CONDITIONS
+DPOINT 2
+// FSI_pl_fluid
+E 1 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+// FSI_pr_fluid
+E 2 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+// FSI_pl_bf
+//E 3 - NUMDOF 2 ONOFF 0 0 VAL 0.0 0.0 FUNCT 0 0
+// FSI_pr_bf
+//E 4 - NUMDOF 2 ONOFF 0 0 VAL 0.0 0.0 FUNCT 0 0
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
+DLINE  6
+// inflow
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL -500.0 0.0 0.0 FUNCT 2 0 0
+// outflow
+E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+// wall
+E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+// structwall
+E 5 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
+// structwall_rechts
+E 7 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
+// structwall_links
+E 8 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
+-------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
+DLINE  3
+// inflow
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0  FUNCT 0 0
+// outflow
+E 2 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
+// wall
+E 3 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
+-------------------------------DESIGN FSI COUPLING LINE CONDITIONS
+DLINE  2
+// FSI_fluid
+E 4 - 1
+// FSI_biofilm
+E 6 - 1
+-----FLUID NEUMANN INFLOW LINE CONDITIONS
+DLINE 1
+// outflow
+E 2 -
+----------------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS structure NODE 31 QUANTITY dispx VALUE -1.06728817629340486e-01 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 31 QUANTITY dispy VALUE -3.80951992298062120e-02 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 32 QUANTITY dispx VALUE -1.16101976768223675e-01 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 32 QUANTITY dispy VALUE  1.19011814807475046e-02 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 35 QUANTITY dispx VALUE -1.81534336162542720e-01 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 35 QUANTITY dispy VALUE -5.18012263431588769e-03 TOLERANCE 1e-12
+-----------------------------------------------DNODE-NODE TOPOLOGY
+NODE    14 DNODE 1
+NODE    11 DNODE 2
+NODE    23 DNODE 3
+NODE    26 DNODE 4
+-----------------------------------------------DLINE-NODE TOPOLOGY
+NODE    8 DLINE 1
+NODE    9 DLINE 1
+NODE    11 DLINE 1
+NODE    1 DLINE 2
+NODE    4 DLINE 2
+NODE    14 DLINE 2
+NODE    1 DLINE 3
+NODE    2 DLINE 3
+NODE    5 DLINE 3
+NODE    7 DLINE 3
+NODE    8 DLINE 3
+NODE    17 DLINE 3
+NODE    19 DLINE 3
+NODE    11 DLINE 4
+NODE    12 DLINE 4
+NODE    13 DLINE 4
+NODE    14 DLINE 4
+NODE    15 DLINE 4
+NODE    18 DLINE 4
+NODE    21 DLINE 4
+NODE    22 DLINE 5
+NODE    25 DLINE 5
+NODE    27 DLINE 5
+NODE    28 DLINE 5
+NODE    30 DLINE 5
+NODE    33 DLINE 5
+NODE    34 DLINE 5
+NODE    23 DLINE 6
+NODE    24 DLINE 6
+NODE    26 DLINE 6
+NODE    29 DLINE 6
+NODE    31 DLINE 6
+NODE    32 DLINE 6
+NODE    35 DLINE 6
+NODE    26 DLINE 7
+NODE    27 DLINE 7
+NODE    22 DLINE 8
+NODE    23 DLINE 8
+-----------------------------------------------DSURF-NODE TOPOLOGY
+------------------------------------------------DVOL-NODE TOPOLOGY
+-------------------------------------------------------NODE COORDS
+NODE         1 COORD  0.0000000000000000e+00  1.0000000000000000e+00  0.0000000000000000e+00
+NODE         2 COORD  3.3333333333333348e-01  1.0000000000000000e+00  0.0000000000000000e+00
+NODE         3 COORD  3.4131760281941903e-01  6.6041900413977150e-01  0.0000000000000000e+00
+NODE         4 COORD  0.0000000000000000e+00  5.9999999999999998e-01  0.0000000000000000e+00
+NODE         5 COORD  6.6666666666666674e-01  1.0000000000000000e+00  0.0000000000000000e+00
+NODE         6 COORD  6.7284280267850805e-01  7.3357264873811001e-01  0.0000000000000000e+00
+NODE         7 COORD  1.6666666666666667e+00  1.0000000000000000e+00  0.0000000000000000e+00
+NODE         8 COORD  2.0000000000000000e+00  1.0000000000000000e+00  0.0000000000000000e+00
+NODE         9 COORD  2.0000000000000000e+00  6.0000000000000009e-01  0.0000000000000000e+00
+NODE        10 COORD  1.6565543977787482e+00  6.3415942838143580e-01  0.0000000000000000e+00
+NODE        11 COORD  2.0000000000000000e+00  2.0000000000000001e-01  0.0000000000000000e+00
+NODE        12 COORD  1.6310107993315115e+00  2.1072606013725548e-01  0.0000000000000000e+00
+NODE        13 COORD  3.5943985435716402e-01  2.8477674784584034e-01  0.0000000000000000e+00
+NODE        14 COORD  0.0000000000000000e+00  2.0000000000000001e-01  0.0000000000000000e+00
+NODE        15 COORD  6.7918173882770050e-01  4.6827361930477834e-01  0.0000000000000000e+00
+NODE        16 COORD  1.0054808178735613e+00  7.7727975784265602e-01  0.0000000000000000e+00
+NODE        17 COORD  1.0000000000000000e+00  1.0000000000000000e+00  0.0000000000000000e+00
+NODE        18 COORD  1.0146082199325979e+00  5.9700988759680984e-01  0.0000000000000000e+00
+NODE        19 COORD  1.3333333333333335e+00  1.0000000000000000e+00  0.0000000000000000e+00
+NODE        20 COORD  1.3260523433518094e+00  7.0432812490843721e-01  0.0000000000000000e+00
+NODE        21 COORD  1.3059764700274905e+00  3.7507388949889148e-01  0.0000000000000000e+00
+NODE        22 COORD  0.0000000000000000e+00  0.0000000000000000e+00  0.0000000000000000e+00
+NODE        23 COORD  0.0000000000000000e+00  2.0000000000000001e-01  0.0000000000000000e+00
+NODE        24 COORD  3.5943985435716402e-01  2.8477674784584034e-01  0.0000000000000000e+00
+NODE        25 COORD  3.3333333333333331e-01  0.0000000000000000e+00  0.0000000000000000e+00
+NODE        26 COORD  2.0000000000000000e+00  2.0000000000000001e-01  0.0000000000000000e+00
+NODE        27 COORD  2.0000000000000000e+00  0.0000000000000000e+00  0.0000000000000000e+00
+NODE        28 COORD  1.6666666666666665e+00  0.0000000000000000e+00  0.0000000000000000e+00
+NODE        29 COORD  1.6310107993315115e+00  2.1072606013725548e-01  0.0000000000000000e+00
+NODE        30 COORD  1.3333333333333333e+00  0.0000000000000000e+00  0.0000000000000000e+00
+NODE        31 COORD  1.3059764700274905e+00  3.7507388949889148e-01  0.0000000000000000e+00
+NODE        32 COORD  6.7918173882770050e-01  4.6827361930477834e-01  0.0000000000000000e+00
+NODE        33 COORD  6.6666666666666663e-01  0.0000000000000000e+00  0.0000000000000000e+00
+NODE        34 COORD  1.0000000000000000e+00  0.0000000000000000e+00  0.0000000000000000e+00
+NODE        35 COORD  1.0146082199325979e+00  5.9700988759680984e-01  0.0000000000000000e+00
+------------------------------------------------STRUCTURE ELEMENTS
+   1  WALL QUAD4  24 23 22 25    MAT 2 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
+   2  WALL QUAD4  28 27 26 29    MAT 2 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
+   3  WALL QUAD4  30 28 29 31    MAT 2 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
+   4  WALL QUAD4  32 24 25 33    MAT 2 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
+   5  WALL QUAD4  32 33 34 35    MAT 2 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
+   6  WALL QUAD4  30 31 35 34    MAT 2 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
+----------------------------------------------------FLUID ELEMENTS
+   7 FLUID QUAD4  3 2 1 4    MAT 1 NA ALE
+   8 FLUID QUAD4  6 5 2 3    MAT 1 NA ALE
+   9 FLUID QUAD4  9 8 7 10    MAT 1 NA ALE
+   10 FLUID QUAD4  11 9 10 12    MAT 1 NA ALE
+   11 FLUID QUAD4  4 14 13 3    MAT 1 NA ALE
+   12 FLUID QUAD4  15 6 3 13    MAT 1 NA ALE
+   13 FLUID QUAD4  5 6 16 17    MAT 1 NA ALE
+   14 FLUID QUAD4  15 18 16 6    MAT 1 NA ALE
+   15 FLUID QUAD4  19 17 16 20    MAT 1 NA ALE
+   16 FLUID QUAD4  7 19 20 10    MAT 1 NA ALE
+   17 FLUID QUAD4  20 21 12 10    MAT 1 NA ALE
+   18 FLUID QUAD4  16 18 21 20    MAT 1 NA ALE
+------------------------------------------------------ALE ELEMENTS
+------------------------------------------------LUBRICATION ELEMENTS
+------------------------------------------------TRANSPORT ELEMENTS
+------------------------------------------------TRANSPORT2 ELEMENTS
+---------------------------------------------------THERMO ELEMENTS
+---------------------------------------------------ACOUSTIC ELEMENTS
+---------------------------------------------------CELL ELEMENTS
+---------------------------------------------------CELLSCATRA ELEMENTS
+---------------------------------------------------------------END
+// END

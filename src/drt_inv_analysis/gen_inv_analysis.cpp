@@ -4,7 +4,7 @@
 
 \brief gen inv analysis
 
-\level 1
+\level 2
 
 \maintainer Harald Willmann
  */
@@ -57,6 +57,9 @@
 #include "../drt_matelast/visco_isoratedep.H"
 #include "../drt_matelast/visco_genmax.H"
 #include "../drt_matelast/visco_fract.H"
+
+#include "../drt_adapter/ad_str_fsiwrapper.H"
+
 #include "../drt_structure/strtimint_create.H"
 #include "../drt_structure/strtimint.H"
 #include "../drt_stru_multi/microstatic.H"
@@ -71,14 +74,48 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_comm/comm_utils.H"
 #include "../drt_inpar/inpar_invanalysis.H"
+#include "../drt_inpar/inpar_fsi.H"
 
 #include "../drt_adapter/ad_str_factory.H"
 #include "../drt_adapter/ad_str_structure_new.H"
 #include "../drt_adapter/ad_str_structure.H"
+#include "../drt_adapter/ad_ale_fsi.H"
+#include "../drt_adapter/ad_fld_fluid_fsi.H"
 
+#include "../drt_structure/stru_aux.H"
 
+#include "../drt_fsi/fsi_monolithic.H"
+//#include "../drt_adapter/adapter_coupling.H"
+//#include "../drt_adapter/ad_str_wrapper.H"
+
+#include "../drt_ale/ale_utils_clonestrategy.H"
+#include "../drt_lib/drt_utils_createdis.H"
+#include "../drt_fsi/fsi_utils.H"
+#include "../drt_fsi/fsi_monolithicfluidsplit.H"
+#include "../drt_fsi/fsi_monolithicstructuresplit.H"
+#include "../drt_fsi/fsi_lungmonolithic.H"
+#include "../drt_fsi/fsi_lungmonolithic_fluidsplit.H"
+#include "../drt_fsi/fsi_lungmonolithic_structuresplit.H"
+#include "../drt_fsi/fsi_constrmonolithic_fluidsplit.H"
+#include "../drt_fsi/fsi_constrmonolithic_structuresplit.H"
+#include "../drt_fsi/fsi_mortarmonolithic_fluidsplit.H"
+#include "../drt_fsi/fsi_mortarmonolithic_structuresplit.H"
+#include "../drt_fsi/fsi_fluidfluidmonolithic_structuresplit_nonox.H"
+#include "../drt_fsi/fsi_fluidfluidmonolithic_fluidsplit_nonox.H"
+#include "../drt_fsi/fsi_fluidfluidmonolithic_structuresplit.H"
+#include "../drt_fsi/fsi_fluidfluidmonolithic_fluidsplit.H"
+#include "../drt_fsi/fsi_slidingmonolithic_fluidsplit.H"
+#include "../drt_fsi/fsi_slidingmonolithic_structuresplit.H"
+#include "../drt_fsi/fsi_dirichletneumann.H"
+#include "../drt_fsi/fsi_dirichletneumannslideale.H"
+#include "../drt_fsi/fsi_dirichletneumann_volcoupl.H"
+
+#include "../drt_binstrategy/binning_strategy.H"
 
 #include "../drt_structure/stru_resulttest.H"
+//#include "../linalg/linalg_mapextractor.H"
+
+#include "../drt_fluid/fluid_utils_mapextractor.H"
 
 
 
@@ -100,6 +137,8 @@ STR::GenInvAnalysis::GenInvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
   //  tolerance for the curve fitting
   tol_ = iap.get<double>("INV_ANA_TOL");
 
+  forward_prb_type_ = DRT::INPUT::IntegralValue<PROBLEM_TYP>(iap,"FORWARD_PROBLEMTYP");
+  materialhashistory_ = false;
   /* this is how a monitor file should look like:
 
 steps 25 nnodes 5
@@ -230,7 +269,7 @@ steps 25 nnodes 5
   error_grad_  = 1.0E6;
   error_grad_o_= 1.0E6;
 
-  // trainings parameter
+  // training parameter
   mu_ = iap.get<double>("INV_INITREG");
   mu_o_ = mu_;
   kappa_multi_=1.0;
@@ -370,7 +409,7 @@ void STR::GenInvAnalysis::Integrate()
       printf("Measured parameters nmp_ %d # parameters to fit np_ %d\n",nmp_,np_);
     }
 
-    // pertubation of material parameter (should be relativ to the value that is perturbed)
+    // perturbation of material parameter (should be relative to the value that is perturbed)
     std::vector<double> perturb(np_,0.0);
     double alpha = iap.get<double>("INV_ALPHA");
     double beta  = iap.get<double>("INV_BETA");
@@ -419,21 +458,42 @@ void STR::GenInvAnalysis::Integrate()
 
       // put perturbed material parameters to material laws
       discret_->Comm().Broadcast(&p_cur[0],p_cur.Length(),0);
+
       SetParameters(p_cur);
 
       // compute nonlinear problem and obtain computed displacements
       // output at the last step
       Epetra_SerialDenseVector cvector;
-      cvector = CalcCvector(outputtofile);
 
+      switch(forward_prb_type_)
+      {
+        case prb_structure:
+        {
+          cvector = CalcCvector(outputtofile);
+          break;
+        }
+        case prb_fsi:
+        {
+          cvector = CalcCvectorFSI(outputtofile,i);
+          break;
+        }
+        default:
+        {
+          dserror("Chosen FORWARD_PROBLEMTYP not considered for inverse analysis");
+          break;
+        }
+      }
       // copy displacements to sensitivity matrix
       if (!myrank)
         for (int j=0; j<nmp_;j++)
           cmatrix(j,i) = cvector[j];
 
-      Teuchos::ParameterList p;
-      p.set("action","calc_struct_reset_all");
-      discret_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+      if(materialhashistory_)
+      {
+        Teuchos::ParameterList p;
+        p.set("action","calc_struct_reset_all");
+        discret_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+      }
     }
 
     discret_->Comm().Barrier();
@@ -486,8 +546,8 @@ void STR::GenInvAnalysis::NPIntegrate()
   const int groupid  = group->GroupId();
   const int ngroup   = group->NumGroups();
 
-  // make some plausability checks:
-  // number of groups must be divide by the number of material parameters np_+1
+  // make some plausibility checks:
+  // number of groups must be divisible by the number of material parameters np_+1
   if (ngroup % (np_ + 1) != 0)
     dserror("# groups (%d) must divide by # material parameters + 1 (%d) ",ngroup,np_+1);
 
@@ -521,7 +581,7 @@ void STR::GenInvAnalysis::NPIntegrate()
     }
     gcomm->Barrier();
 
-    // pertubation of material parameter (should be relativ to the value that is perturbed)
+    // perturbation of material parameter (should be relative to the value that is perturbed)
     std::vector<double> perturb(np_,0.0);
     double alpha = iap.get<double>("INV_ALPHA");
     double beta  = iap.get<double>("INV_BETA");
@@ -999,14 +1059,14 @@ void STR::GenInvAnalysis::CalcNewParameters(
     // compute residual displacement (measured vs. computed)
     for (int i=0; i<nmp; i++)
       rcurve[i] = mcurve[i] - ccurve[i];
-    // multiple invers analysis: both parts already normalized
+    // multiple inverse analysis: both parts already normalized
   }
 
   //calculating J.T*J
   sto.Multiply('T','N',1.0,J,J,0.0);
 
   // calculating  J.T*J + mu*diag(J.T*J)
-  // do regularization by adding artifical mass on the main diagonal
+  // do regularization by adding artificial mass on the main diagonal
   for (int i=0; i<np_; i++)
     sto(i,i) += mu_*sto(i,i);
 
@@ -1030,22 +1090,23 @@ void STR::GenInvAnalysis::CalcNewParameters(
   else
     error_   = rcurve.Norm2()/sqrt(nmp);
 
+  //get jacobian:
+  Epetra_SerialDenseVector Ji(np_);
+  for (int i=0; i<np_; i++)
+    for (int j=0; j<nmp+nmp_volexp_; j++)
+      Ji[i]+= rcurve[j]*J(j,i);
+
+  error_grad_ = Ji.Norm2();
+
+  if (!numb_run_) error_grad_o_ = error_grad_;
+  //Adjust training parameter based on gradient
+  // check for a descent step in general
+
   // Gradient based update of mu based on
   //Kelley, C. T., Liao, L. Z., Qi, L., Chu, M. T., Reese, J. P., & Winton, C. (2009)
   //Projected pseudotransient continuation. SIAM Journal on Numerical Analysis, 46(6), 3071.
   if(reg_update_ == grad_based)
   {
-    //get jacobian:
-    Epetra_SerialDenseVector Ji(np_);
-    for (int i=0; i<np_; i++)
-      for (int j=0; j<nmp+nmp_volexp_; j++)
-        Ji[i]+= rcurve[j]*J(j,i);
-
-    error_grad_ = Ji.Norm2();
-
-    if (!numb_run_) error_grad_o_ = error_grad_;
-    //Adjust training parameter based on gradient
-    // check for a descent step in general
     if (error_ < error_o_)
     {
       //update mu_ only if error in df/dp decreases
@@ -1090,7 +1151,7 @@ void STR::GenInvAnalysis::CalcNewParameters(
   if (check_neg_params_)
     CheckOptStep();
 
-  // the parameter alpha of the fractional visocelasticity model needs to be smaller then 1
+  // the parameter alpha of the fractional viscoelasticity model needs to be smaller then 1
   // apply constrain just, if viscofract material is used (otherwise the position is by default 9999)
   if (viscofract_alpha_position_ != 9999)
     ConstrainAlpha();
@@ -1207,7 +1268,313 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
   return cvector;
 }
 
+/*----------------------------------------------------------------------*/
+/* FSI Method                                               HaWi 06/18  */
+/* mainly a reduced and adapted copy of fsi_ale_drt()                   */
+/*----------------------------------------------------------------------*/
+Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvectorFSI(bool outputtofile, int iLMstep)
+{
+  int myrank = discret_->Comm().MyPID();
 
+    DRT::Problem* problem = DRT::Problem::Instance();
+
+    problem->SetProblemType(forward_prb_type_);
+
+    Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
+    const Epetra_Comm& comm = structdis->Comm();
+
+    // make sure the three discretizations are filled in the right order
+    // this creates dof numbers with
+    //
+    //       structure dof < fluid dof < ale dof
+    //
+    // We rely on this ordering in certain non-intuitive places!
+
+    //look into problem to check for available discretizations
+//    std::cout << "///////XXXX/////// problem->GetDisNames()" << std::endl;
+//    const std::vector<std::string> disnames = problem->GetDisNames();
+//
+//    std::vector<std::string >::const_iterator iter;
+//    for (iter = disnames.begin(); iter != disnames.end(); ++iter)
+//    {
+//      std::cout << *iter << std::endl;
+//    }
+    // use the same control file for every run since usually the last one is of interest
+    structdis->Writer()->OverwriteResultFile();
+
+    structdis->FillComplete();
+
+    problem->GetDis("fluid")->FillComplete();
+
+    problem->GetDis("ale")->FillComplete();
+
+    // get discretizations
+    Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
+    Teuchos::RCP<DRT::Discretization> aledis = problem->GetDis("ale");
+
+    //i guess it was not meant to be, but it works. suggestions for improvement are welcome
+    //without these lines multiple evaluation of this FSI method does produce an error,
+    //when you ask for binary output, which usually isnt of great interest for inverse analysis
+    fluiddis->Writer()->OverwriteResultFile();
+    aledis->Writer()->OverwriteResultFile();
+
+    // create ale elements if the ale discretization is empty
+    if (aledis->NumGlobalNodes() == 0) // empty ale discretization
+    {
+      DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis, aledis);
+      aledis->FillComplete();
+      // setup material in every ALE element
+      Teuchos::ParameterList params;
+      params.set<std::string>("action", "setup_material");
+      aledis->Evaluate(params);
+    }
+    else if(iLMstep!=0 or numb_run_!=0)
+    {
+      //here we do not need a new ale discretization as it was generated in the first forward run
+    }
+    else  // filled ale discretization (i.e. read from input file)
+    {
+      if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis,aledis))
+        dserror("Fluid and ALE nodes have the same node numbers. "
+            "This it not allowed since it causes problems with Dirichlet BCs. "
+            "Use either the ALE cloning functionality or ensure non-overlapping node numbering!");
+
+      if(    (not DRT::INPUT::IntegralValue<bool>(problem->FSIDynamicParams(),"MATCHGRID_FLUIDALE"))
+          or (not DRT::INPUT::IntegralValue<bool>(problem->FSIDynamicParams(),"MATCHGRID_STRUCTALE")) )
+      {
+        // create vector of discr.
+        std::vector<Teuchos::RCP<DRT::Discretization> > dis;
+        dis.push_back(structdis);
+        dis.push_back(fluiddis);
+        dis.push_back(aledis);
+
+        std::vector<Teuchos::RCP<Epetra_Map> > stdelecolmap;
+        std::vector<Teuchos::RCP<Epetra_Map> > stdnodecolmap;
+
+        // redistribute discr. with help of binning strategy
+        if(structdis->Comm().NumProc()>1)
+        {
+          // binning strategy is created and parallel redistribution is performed
+          Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
+              Teuchos::rcp(new BINSTRATEGY::BinningStrategy());
+          binningstrategy->Init(dis);
+          binningstrategy->WeightedPartitioning(dis,stdelecolmap,stdnodecolmap);
+        }
+      }
+    }
+
+    //invana vector
+    int writestep=0;
+    Epetra_SerialDenseVector cvector(nmp_);
+
+    const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
+    FSI_COUPLING coupling = DRT::INPUT::IntegralValue<FSI_COUPLING>(fsidyn, "COUPALGO");
+    switch (coupling)
+    {
+      case fsi_pseudo_structureale:
+      case fsi_iter_fluidfluid_monolithicfluidsplit_nonox:
+      case fsi_iter_fluidfluid_monolithicstructuresplit_nonox:
+      {
+        dserror("FSI coupling algorithm not covered for inverse analysis");
+        break;
+      }
+      case fsi_iter_monolithicfluidsplit:
+      case fsi_iter_monolithicstructuresplit:
+      case fsi_iter_lung_monolithicstructuresplit:
+      case fsi_iter_lung_monolithicfluidsplit:
+      case fsi_iter_constr_monolithicfluidsplit:
+      case fsi_iter_constr_monolithicstructuresplit:
+      case fsi_iter_mortar_monolithicstructuresplit:
+      case fsi_iter_mortar_monolithicfluidsplit:
+      case fsi_iter_fluidfluid_monolithicfluidsplit:
+      case fsi_iter_fluidfluid_monolithicstructuresplit:
+      case fsi_iter_sliding_monolithicfluidsplit:
+      case fsi_iter_sliding_monolithicstructuresplit:
+      {
+        // monolithic solver settings
+        const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
+
+        Teuchos::RCP<FSI::Monolithic> fsi;
+
+        INPAR::FSI::LinearBlockSolver linearsolverstrategy
+          = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+
+        // call constructor to initialize the base class
+        if (coupling==fsi_iter_monolithicfluidsplit)
+        {
+          fsi = Teuchos::rcp(new FSI::MonolithicFluidSplit(comm, fsidyn));
+        }
+        else if (coupling==fsi_iter_monolithicstructuresplit)
+        {
+          fsi = Teuchos::rcp(new FSI::MonolithicStructureSplit(comm, fsidyn));
+        }
+        else if (coupling==fsi_iter_lung_monolithicstructuresplit)
+        {
+          fsi = Teuchos::rcp(new FSI::LungMonolithicStructureSplit(comm, fsidyn));
+        }
+        else if (coupling==fsi_iter_lung_monolithicfluidsplit)
+        {
+          fsi = Teuchos::rcp(new FSI::LungMonolithicFluidSplit(comm, fsidyn));
+        }
+        else if (coupling==fsi_iter_constr_monolithicfluidsplit)
+        {
+          fsi = Teuchos::rcp(new FSI::ConstrMonolithicFluidSplit(comm, fsidyn));
+        }
+        else if (coupling==fsi_iter_constr_monolithicstructuresplit)
+        {
+          fsi = Teuchos::rcp(new FSI::ConstrMonolithicStructureSplit(comm, fsidyn));
+        }
+        else if (coupling==fsi_iter_mortar_monolithicstructuresplit)
+        {
+          fsi = Teuchos::rcp(new FSI::MortarMonolithicStructureSplit(comm, fsidyn));
+        }
+        else if (coupling==fsi_iter_mortar_monolithicfluidsplit)
+        {
+          fsi = Teuchos::rcp(new FSI::MortarMonolithicFluidSplit(comm, fsidyn));
+        }
+        else if ( coupling==fsi_iter_fluidfluid_monolithicfluidsplit)
+        {
+          fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicFluidSplit(comm,fsidyn));
+        }
+        else if ( coupling==fsi_iter_fluidfluid_monolithicstructuresplit)
+        {
+          fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicStructureSplit(comm,fsidyn));
+        }
+        else if (coupling==fsi_iter_sliding_monolithicfluidsplit)
+        {
+          fsi = Teuchos::rcp(new FSI::SlidingMonolithicFluidSplit(comm, fsidyn));
+        }
+        else if (coupling==fsi_iter_sliding_monolithicstructuresplit)
+        {
+          fsi = Teuchos::rcp(new FSI::SlidingMonolithicStructureSplit(comm, fsidyn));
+        }
+        else
+        {
+          dserror("Cannot find appropriate monolithic solver for coupling %d and linear strategy %d", coupling, linearsolverstrategy);
+        }
+
+        // read the restart information, set vectors and variables ---
+        // be careful, dofmaps might be changed here in a Redistribute call
+        const int restart = DRT::Problem::Instance()->Restart();
+        if (restart)
+        {
+          fsi->ReadRestart(restart);
+        }
+
+        // now do the coupling setup and create the combined dofmap
+        fsi->SetupSystem();
+
+        // possibly redistribute domain decomposition
+        {
+          const INPAR::FSI::Redistribute redistribute = DRT::INPUT::IntegralValue<
+            INPAR::FSI::Redistribute>(fsimono, "REDISTRIBUTE");
+
+          const double weight1 = fsimono.get<double>("REDIST_WEIGHT1");
+          const double weight2 = fsimono.get<double>("REDIST_WEIGHT2");
+          if (redistribute == INPAR::FSI::Redistribute_structure
+              or redistribute == INPAR::FSI::Redistribute_fluid)
+          {
+            // redistribute either structure or fluid domain
+            fsi->RedistributeDomainDecomposition(redistribute, coupling, weight1,
+                weight2, comm,0);
+
+            // do setup again after redistribution
+            fsi->SetupSystem();
+
+            const double secweight1 = fsidyn.sublist("MONOLITHIC SOLVER").get<double>(
+                "REDIST_SECONDWEIGHT1");
+            const double secweight2 = fsidyn.sublist("MONOLITHIC SOLVER").get<double>(
+                "REDIST_SECONDWEIGHT2");
+            if (secweight1 != -1.0)
+            {
+              // redistribute either structure or fluid domain
+              fsi->RedistributeDomainDecomposition(redistribute, coupling, secweight1,
+                secweight2, comm,0);
+
+              // do setup again after redistribution
+              fsi->SetupSystem();
+            }
+          }
+          else if (redistribute==INPAR::FSI::Redistribute_both)
+          {
+
+            int numproc = comm.NumProc();
+
+            // redistribute both structure and fluid domain
+            fsi->RedistributeDomainDecomposition(INPAR::FSI::Redistribute_structure,
+                coupling, weight1, weight2, comm, numproc/2);
+
+            // do setup again after redistribution (do this again here in between because the P matrix changed!)
+            fsi->SetupSystem();
+            fsi->RedistributeDomainDecomposition(INPAR::FSI::Redistribute_fluid,
+                coupling, weight1, weight2, comm, numproc/2);
+
+            // do setup again after redistribution
+            fsi->SetupSystem();
+
+          }
+          else if (redistribute==INPAR::FSI::Redistribute_monolithic)
+          {
+            fsi->RedistributeMonolithicGraph(coupling, comm);
+
+            // do setup again after redistribution
+            fsi->SetupSystem();
+          }
+        }
+
+        // here we go...
+//        fsi->Timeloop(fsi);, which is split up here to extract nodal displacements for inverse analysis
+        fsi->PrepareTimeloop();
+
+        while (fsi->NotFinished())
+        {
+          fsi->PrepareTimeStep();
+          fsi->TimeStep(fsi);
+          fsi->PrepareOutput();
+          fsi->Update();
+          if (outputtofile) fsi->Output();
+
+          // get current time
+          double time = fsi->Time();
+
+          // get the displacements of the monitored timesteps
+          {
+            if (abs(time-timesteps_[writestep]) < 1.0e-5)
+            {
+              Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve(*(fsi->StructureField()->Dispnp()));
+              if (!myrank)
+                for (int j=0; j<ndofs_; ++j)
+                  cvector[writestep*ndofs_+j] = cvector_arg[j];
+              writestep+=1;
+            }
+
+            // check if timestepsize is smaller than the tolerance above
+            const double deltat = fsi->Dt();
+            if (deltat < 1.0e-5)
+              dserror("your time step size is too small, you will have problems with the monitored steps, thus adapt the tolerance");
+          }
+        }
+
+        break;
+      }
+      default:
+      {
+        dserror("FSI coupling algorithm not covered for inverse analysis");
+        break;
+      }
+    }
+
+  Teuchos::TimeMonitor::summarize(std::cout, false, true, false);
+
+  if (!(writestep*ndofs_==nmp_))
+  {
+    std::cout<<"# of timesteps extracted from the simulation: "<<writestep<<std::endl;
+    dserror("# of monitored timesteps does not match # of timesteps extracted from the simulation ");
+  }
+  problem->SetProblemType(prb_invana);
+
+  return cvector;
+}
 /*----------------------------------------------------------------------*/
 /* nested parallelity version of the same method            mwgee 05/12 */
 Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(
@@ -1675,6 +2042,7 @@ void STR::GenInvAnalysis::ReadInParameters()
       break;
       case INPAR::MAT::m_constraintmixture:
       {
+        materialhashistory_ = true;
         if (mymatset.size()==0 or mymatset.find(actmat->Id())!=mymatset.end())
         {
           MAT::PAR::ConstraintMixture* params = dynamic_cast<MAT::PAR::ConstraintMixture*>(actmat->Parameter());
@@ -1691,6 +2059,7 @@ void STR::GenInvAnalysis::ReadInParameters()
       break;
       case INPAR::MAT::m_growth_iso_stress:
       {
+        materialhashistory_ = true;
         if (mymatset.size()==0 or mymatset.find(actmat->Id())!=mymatset.end())
         {
           MAT::PAR::GrowthLawIsoStress* params = dynamic_cast<MAT::PAR::GrowthLawIsoStress*>(actmat->Parameter());
@@ -1749,8 +2118,8 @@ void STR::GenInvAnalysis::ReadInParameters()
               const MAT::ELASTIC::PAR::CoupNeoHooke* params2 = dynamic_cast<const MAT::ELASTIC::PAR::CoupNeoHooke*>(actelastmat->Parameter());
               int j = p_.Length();
               p_.Resize(j+2);
-              p_[j] = params2->c_;
-              p_[j+1] = params2->beta_;
+              p_[j] = params2->youngs_;
+              p_[j+1] = params2->nue_;
               break;
             }
             case INPAR::MAT::mes_coupblatzko:
@@ -1938,6 +2307,7 @@ void STR::GenInvAnalysis::ReadInParameters()
       }
       case INPAR::MAT::m_viscoelasthyper:
       {
+        materialhashistory_ = true;
         MAT::PAR::ViscoElastHyper* params = dynamic_cast<MAT::PAR::ViscoElastHyper*>(actmat->Parameter());
         if (!params) dserror("Cannot cast material parameters");
         const int nummat               = params->nummat_;
@@ -2464,8 +2834,8 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
           {
             MAT::ELASTIC::PAR::CoupNeoHooke* params2 =
                 dynamic_cast<MAT::ELASTIC::PAR::CoupNeoHooke*>(actelastmat->Parameter());
-            params2->SetC(abs(p_cur(j)));
-            params2->SetBeta(abs(p_cur(j+1)));
+            params2->SetC(abs(p_cur(j))/(4*(1+abs(p_cur(j+1)))));
+            params2->SetBeta(abs(p_cur(j+1))/(1-2*abs(p_cur(j+1))));
             j = j+2;
             break;
           }
@@ -3055,7 +3425,7 @@ void STR::GenInvAnalysis::InitPatches()
             neighbouringelements.push_back(node_ele[id_ele]->Id());
             if (node_ele[id_ele]->Owner() != myrank)
             {
-              // store the two coordinates and send them later to the different procs
+              // store the two coordinates and send them to the different procs later
               ghostelements.push_back(gid);
               ghostelements.push_back(node_ele[id_ele]->Id());
               // catch case when one node has ghostelements from two different procs

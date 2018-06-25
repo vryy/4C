@@ -58,6 +58,7 @@
 #include "../drt_io/io_pstream.H"
 #include "../drt_io/io_control.H"
 #include "../drt_inpar/inpar_mlmc.H"
+#include "../drt_inpar/inpar_invanalysis.H"
 
 /*----------------------------------------------------------------------*/
 // the instances
@@ -1513,7 +1514,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   }
 
   case prb_structure:
-  case prb_invana:
   {
     if(distype == "Nurbs")
     {
@@ -1532,6 +1532,20 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     nodereader.AddAdvancedReader(structdis, reader, "STRUCTURE",
         DRT::INPUT::IntegralValue<INPAR::GeometryType>(StructuralDynamicParams(),"GEOMETRY"), 0);
 
+    break;
+  }
+
+  case prb_invana:
+  {
+    //for multifield inverse analysis there must be more than the structure discretization
+    if (DRT::INPUT::IntegralValue<INPAR::STR::InvAnalysisType>(InverseAnalysisParams(),"INV_ANALYSIS")!= INPAR::STR::inv_none)
+      SetProblemType(DRT::INPUT::IntegralValue<PROBLEM_TYP>(InverseAnalysisParams(),"FORWARD_PROBLEMTYP"));
+    else
+      SetProblemType(prb_structure);
+
+    ReadFields(reader);
+
+    SetProblemType(prb_invana);
     break;
   }
 
@@ -2802,3 +2816,12 @@ void DRT::Problem::SetRestartStep(int r)
 
   restartstep_ = r;
 }
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::Problem::SetProblemType(PROBLEM_TYP targettype)
+{
+  probtype_=targettype;
+}
+

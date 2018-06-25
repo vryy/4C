@@ -1,0 +1,6 @@
+steps 1 nnodes 3
+30 2 0 1
+31 2 0 1
+34 2 0 1
+#mind element counting difference to datfile, dataset aquired with E=700, nue=0.3
+6.000000e+00 -1.067288e-01 -3.809520e-02 -1.161020e-01 1.190118e-02 -1.815343e-01 -5.180123e-03
