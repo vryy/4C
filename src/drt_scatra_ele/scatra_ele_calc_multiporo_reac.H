@@ -477,9 +477,7 @@ public:
        difftensorsfluid_[k].Scale(phasemanager_->RelPermeability(k)/phasemanager_->DynViscosity(k, abspressuregrad_[k],ndsscatra_porofluid_));
 
        // Insert Darcy's law: porosity*S^\pi*(v^\pi - v_s) = - k/\mu * grad p
-       // additional scaling with density since
-       // \rho*porosity*S^\pi*(v^\pi - v_s) = - rho*k/\mu * grad p
-       multiconvelint_[k].Multiply(-phasemanager_->Density(k),difftensorsfluid_[k],pressuregrad_[k]);
+       multiconvelint_[k].Multiply(-1.0,difftensorsfluid_[k],pressuregrad_[k]);
 
        // phase pressure
        pressure_[k] = phasemanager_->Pressure(k);
@@ -505,9 +503,7 @@ public:
        difftensorsfluid_[k].Scale(1.0/phasemanager_->DynViscosityVolFracPressure(k - numfluidphases, -1.0,ndsscatra_porofluid_)); // -1.0 --> don't need abspressgrad
 
        // Insert Darcy's law: porosity*(v^\pi - v_s) = - k/\mu * grad p
-       // additional scaling with density since
-       // \rho*porosity*(v^\pi - v_s) = - rho*k/\mu * grad p
-       multiconvelint_[k].Multiply(-density_[k],difftensorsfluid_[k],pressuregrad_[k]);
+       multiconvelint_[k].Multiply(-1.0,difftensorsfluid_[k],pressuregrad_[k]);
 
        // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
        multiconv_[k].MultiplyTN(derxy,multiconvelint_[k]);
@@ -546,7 +542,7 @@ public:
       for (int k = 0; k < numfluidphases; ++k)
       {
         // convective velocity
-        multiconvelint_[k].Multiply(phasemanager_->Density(k),econvelnp[k],funct);
+        multiconvelint_[k].Multiply(1.0,econvelnp[k],funct);
         // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
         multiconv_[k].MultiplyTN(derxy,multiconvelint_[k]);
       }

@@ -1681,7 +1681,8 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorReac<nsd,nen>::EvaluateMatrixAn
         {
           const int fui = ui*numdofpernode+idof;
 
-          mymat(fvi,fui) += vfunct*phasemanager.ReacDeriv(curphase,idof);
+          // rhs ---> -
+          mymat(fvi,fui) -= vfunct*phasemanager.ReacDeriv(curphase,idof);
         }
       }
     }
@@ -1722,7 +1723,8 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorReac<nsd,nen>::EvaluateVectorAn
   for (int vi=0; vi<nen; ++vi)
   {
     const int fvi = vi*numdofpernode+phasetoadd;
-    myvec[fvi] -= vrhs*funct(vi);
+    // rhs ---> +
+    myvec[fvi] += vrhs*funct(vi);
   }
   return;
 }
@@ -1770,7 +1772,8 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorReac<nsd,nen>::EvaluateMatrixOD
   // linearization of mesh motion (Jacobian)
   // 1) linearization of fac +
   // 2) possible linearization w.r.t porosity
-  EvaluatorBase<nsd,nen>::CalcLinFacODMesh(mymat,funct,derxy,vrhs,numdofpernode,phasetoadd);
+  // rhs ---> -
+  EvaluatorBase<nsd,nen>::CalcLinFacODMesh(mymat,funct,derxy,-1.0*vrhs,numdofpernode,phasetoadd);
 
   return;
 }
@@ -1814,7 +1817,8 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorReac<nsd,nen>::EvaluateMatrixOD
       for (int iscal=0; iscal<numscal; ++iscal)
       {
         const int fui = ui*numscal+iscal;
-        mymat(fvi,fui) += vfunct*phasemanager.ReacDerivScalar(curphase,iscal);
+        // rhs ---> -
+        mymat(fvi,fui) -= vfunct*phasemanager.ReacDerivScalar(curphase,iscal);
       }
     }
   }
@@ -5065,7 +5069,8 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracReac<nsd,nen>::EvaluateM
             {
               const int fui = ui*numdofpernode+idof;
 
-              mymat(fvi,fui) += vfunct*phasemanager.ReacDeriv(ivolfrac,idof);
+              // rhs ---> -
+              mymat(fvi,fui) -= vfunct*phasemanager.ReacDeriv(ivolfrac,idof);
             }
           }
         }
@@ -5112,7 +5117,8 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracReac<nsd,nen>::EvaluateV
       for (int vi=0; vi<nen; ++vi)
       {
         const int fvi = vi*numdofpernode+ivolfrac;
-        myvec[fvi] -= vrhs*funct(vi);
+        // rhs ---> +
+        myvec[fvi] += vrhs*funct(vi);
       }
     }
   }
@@ -5170,7 +5176,8 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracReac<nsd,nen>::EvaluateM
       // linearization of mesh motion (Jacobian)
       // 1) linearization of fac +
       // 2) possible linearization w.r.t porosity
-      EvaluatorBase<nsd,nen>::CalcLinFacODMesh(mymat,funct,derxy,vrhs,numdofpernode,ivolfrac);
+      // rhs ---> -
+      EvaluatorBase<nsd,nen>::CalcLinFacODMesh(mymat,funct,derxy,-1.0*vrhs,numdofpernode,ivolfrac);
 
     }
   }
@@ -5220,7 +5227,8 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracReac<nsd,nen>::EvaluateM
           for (int iscal=0; iscal<numscal; ++iscal)
           {
             const int fui = ui*numscal+iscal;
-            mymat(fvi,fui) += vfunct*phasemanager.ReacDerivScalar(ivolfrac,iscal);
+            // rhs ---> -
+            mymat(fvi,fui) -= vfunct*phasemanager.ReacDerivScalar(ivolfrac,iscal);
           }
         }
       }
@@ -5855,7 +5863,8 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureReac<nsd,nen>::E
             {
               const int fui = ui*numdofpernode+idof;
 
-              mymat(fvi,fui) += vfunct*phasemanager.ReacDeriv(ivolfracpress,idof);
+              // rhs ---> -
+              mymat(fvi,fui) -= vfunct*phasemanager.ReacDeriv(ivolfracpress,idof);
             }
           }
         }
@@ -5905,7 +5914,8 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureReac<nsd,nen>::E
       for (int vi=0; vi<nen; ++vi)
       {
         const int fvi = vi*numdofpernode+ivolfracpress;
-        myvec[fvi] -= vrhs*funct(vi);
+        // rhs ---> +
+        myvec[fvi] += vrhs*funct(vi);
       }
     }
   }
@@ -5966,7 +5976,8 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureReac<nsd,nen>::E
       // linearization of mesh motion (Jacobian)
       // 1) linearization of fac +
       // 2) possible linearization w.r.t porosity
-      EvaluatorBase<nsd,nen>::CalcLinFacODMesh(mymat,funct,derxy,vrhs,numdofpernode,ivolfracpress);
+      // rhs ---> -
+      EvaluatorBase<nsd,nen>::CalcLinFacODMesh(mymat,funct,derxy,-1.0*vrhs,numdofpernode,ivolfracpress);
 
     }
   }
@@ -6018,7 +6029,8 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureReac<nsd,nen>::E
           for (int iscal=0; iscal<numscal; ++iscal)
           {
             const int fui = ui*numscal+iscal;
-            mymat(fvi,fui) += vfunct*phasemanager.ReacDerivScalar(ivolfracpress,iscal);
+            // rhs ---> -
+            mymat(fvi,fui) -= vfunct*phasemanager.ReacDerivScalar(ivolfracpress,iscal);
           }
         }
       }

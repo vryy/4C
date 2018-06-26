@@ -186,7 +186,7 @@ public:
     for (int k = 0; k < my::numscal_; ++k)
     {
       // overwrite convective term
-      // - rho * k/\mu*grad p * grad phi
+      // - k/\mu*grad p * grad phi
       my::conv_phi_[k] = my::convelint_.Dot(my::gradphi_[k]);
     }
 
@@ -207,11 +207,6 @@ public:
 
     //here we rely that the Artery material has been added as second material
     arterymat_ = Teuchos::rcp_dynamic_cast<MAT::Cnst_1d_art>(ele->Material(ndsscatra_artery_));
-
-    if(arterymat_->Density() != 1.0)
-      dserror("Density unequal 1.0 is not tested, see comment!");
-    // not sure if stabilization works correctly with density != 1.0 since additional
-    // scaling of quantity dens2taufac with densnp in CalcMatTransConvDiffStab
 
     materialset_ = true;
   }

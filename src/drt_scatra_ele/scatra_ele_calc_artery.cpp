@@ -117,11 +117,11 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype,probdim>::Materials(
     const Teuchos::RCP<const MAT::ScatraMat>& actmat
       = Teuchos::rcp_dynamic_cast<const MAT::ScatraMat>(material);
 
-    densn  = VarManager()->Dens();
-    densam = VarManager()->Dens();
-    densnp = VarManager()->Dens();
+    densn  = 1.0;
+    densam = 1.0;
+    densnp = 1.0;
 
-    my::diffmanager_->SetIsotropicDiff(actmat->Diffusivity()*VarManager()->Dens(),k);
+    my::diffmanager_->SetIsotropicDiff(actmat->Diffusivity(),k);
 
     break;
   }

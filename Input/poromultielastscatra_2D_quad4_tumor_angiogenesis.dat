@@ -27,6 +27,7 @@ Oxygen in NV
 
 Angiogenesis takes place from a blood vessel on the right with
 varying blood pressure
+Units are g, mm, s
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    200
 //NODES       402
@@ -103,32 +104,32 @@ SOLVER                          UMFPACK                       // Aztec_MSR vm3 S
 -------------------------------------------------------------------MATERIALS
 MAT 2 MAT_FluidPoroMultiPhaseReactions LOCAL No PERMEABILITY 1.0e-9 NUMMAT 5 MATIDS 10 11 12 13 14 NUMFLUIDPHASES 3 NUMREAC 3 REACIDS 20 21 22 END
 
-MAT 20 MAT_FluidPoroSingleReaction NUMSCAL 4 TOTALNUMDOF 5 NUMVOLFRAC 1 SCALE 0 -1 1 0 0 COUPLING scalar_by_function FUNCTID 14 // tumor growth
-MAT 21 MAT_FluidPoroSingleReaction NUMSCAL 4 TOTALNUMDOF 5 NUMVOLFRAC 1 SCALE 0 0 -1 0 0 COUPLING scalar_by_function FUNCTID 19 // fluid extravasion and lymphatic drainage
-MAT 22 MAT_FluidPoroSingleReaction NUMSCAL 4 TOTALNUMDOF 5 NUMVOLFRAC 1 SCALE 0 0 0 0 1 COUPLING scalar_by_function FUNCTID 20  // fluid extravasion
+MAT 20 MAT_FluidPoroSingleReaction NUMSCAL 4 TOTALNUMDOF 5 NUMVOLFRAC 1 SCALE 0 1 -1 0 0 COUPLING scalar_by_function FUNCTID 14 // tumor growth
+MAT 21 MAT_FluidPoroSingleReaction NUMSCAL 4 TOTALNUMDOF 5 NUMVOLFRAC 1 SCALE 0 0 1 0 0 COUPLING scalar_by_function FUNCTID 19 // fluid extravasion and lymphatic drainage
+MAT 22 MAT_FluidPoroSingleReaction NUMSCAL 4 TOTALNUMDOF 5 NUMVOLFRAC 1 SCALE 0 0 0 0 -1 COUPLING scalar_by_function FUNCTID 20  // fluid extravasion
 
-MAT 10 MAT_FluidPoroSinglePhase DOFTYPEID 101 VISCOSITYLAWID 104 DENSITYLAWID 103 DENSITY 1.0 RELPERMEABILITYLAWID 105
+MAT 10 MAT_FluidPoroSinglePhase DOFTYPEID 101 VISCOSITYLAWID 104 DENSITYLAWID 103 DENSITY 1.0e-3 RELPERMEABILITYLAWID 105
 MAT 101 MAT_FluidPoroSinglePhaseDofDiffPressure NUMDOF 3 PRESCOEFF 1 0 -1 END PHASELAWID 102
 MAT 102 MAT_PhaseLawConstraint
 MAT 103 MAT_PoroDensityLawExp BULKMODULUS 1e15
 MAT 104 MAT_FluidPoroViscosityLawConstant VALUE 20.0
 MAT 105 MAT_FluidPoroRelPermeabilityLawExp EXP 2.0 MIN_SAT 0.0
 
-MAT 11 MAT_FluidPoroSinglePhase DOFTYPEID 111 VISCOSITYLAWID 114 DENSITYLAWID 113 DENSITY 1.0 RELPERMEABILITYLAWID 115
+MAT 11 MAT_FluidPoroSinglePhase DOFTYPEID 111 VISCOSITYLAWID 114 DENSITYLAWID 113 DENSITY 1.0e-3 RELPERMEABILITYLAWID 115
 MAT 111 MAT_FluidPoroSinglePhaseDofDiffPressure NUMDOF 3 PRESCOEFF -1 1 0 END PHASELAWID 112
 MAT 112 MAT_PhaseLawTangent NUMDOF 3 PRESCOEFF -1 1 0 END RELTENSION -3.389830508475e-3 EXP 1.0 SATURATION_0 0.0
 MAT 113 MAT_PoroDensityLawExp BULKMODULUS 1e15
 MAT 114 MAT_FluidPoroViscosityLawConstant VALUE 20.0
 MAT 115 MAT_FluidPoroRelPermeabilityLawExp EXP 2.0 MIN_SAT 0.0
 
-MAT 12 MAT_FluidPoroSinglePhase DOFTYPEID 121 VISCOSITYLAWID 124 DENSITYLAWID 123 DENSITY 1.0 RELPERMEABILITYLAWID 125
+MAT 12 MAT_FluidPoroSinglePhase DOFTYPEID 121 VISCOSITYLAWID 124 DENSITYLAWID 123 DENSITY 1.0e-3 RELPERMEABILITYLAWID 125
 MAT 121 MAT_FluidPoroSinglePhaseDofPressure PHASELAWID 122
 MAT 122 MAT_PhaseLawTangent NUMDOF 3 PRESCOEFF 1 0 -1 END RELTENSION 1.694915254237e-3 EXP 1.0 SATURATION_0 1.0
 MAT 123 MAT_PoroDensityLawExp BULKMODULUS 1e15
 MAT 124 MAT_FluidPoroViscosityLawConstant VALUE 0.01
 MAT 125 MAT_FluidPoroRelPermeabilityLawExp EXP 4.0 MIN_SAT 0.0
 
-MAT 13 MAT_FluidPoroSingleVolFrac DENSITY 1.0 DIFFUSIVITY 0.5e-8 AddScalarDependentFlux YES NUMSCAL 4 SCALARDIFFS 0.0 0.0 -10000.0 0.0 OMEGA_HALF 1.0 1.0 1.0e-10 1.0
+MAT 13 MAT_FluidPoroSingleVolFrac DENSITY 1.0e-3 DIFFUSIVITY 0.5e-8 AddScalarDependentFlux YES NUMSCAL 4 SCALARDIFFS 0.0 0.0 -10000.0 0.0 OMEGA_HALF 1.0 1.0 1.0e-10 1.0
 
 MAT 14 MAT_FluidPoroVolFracPressure PERMEABILITY 1.0e-8 VISCOSITYLAWID 141 MIN_VOLFRAC 1.0e-3
 MAT 141 MAT_FluidPoroViscosityLawConstant VALUE 1.0
@@ -175,23 +176,23 @@ COMPONENT 1 FUNCTION 0.0
 COMPONENT 2 FUNCTION 0.0
 COMPONENT 3 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT4 // - w^TAF * M^v->l_leak
-VARFUNCTION -phi3*4.2e-7*(VFP1-p3-1333.0)*VF1
+VARFUNCTION phi3*4.2e-10*(VFP1-p3-1333.0)*VF1
 ----------------------------------------------------------------------FUNCT5  // production of necrotic cells
-VARFUNCTION (-1e-5*(phi1-1.0e-6)/(4.2e-6-1.0e-6)*heaviside(-(phi1-1.0e-6)/(4.2e-6-1.0e-6)))*(1-phi2) NUMCONSTANTS 3 CONSTANTS p2 0.0 porosity 0.0 S2 0.0
+VARFUNCTION (-1e-8*(phi1-1.0e-6)/(4.2e-6-1.0e-6)*heaviside(-(phi1-1.0e-6)/(4.2e-6-1.0e-6)))*(1-phi2) NUMCONSTANTS 3 CONSTANTS p2 0.0 porosity 0.0 S2 0.0
 ----------------------------------------------------------------------FUNCT6 // transcapillary exchange of oxygen
-VARFUNCTION ((phi4-phi1)*4.2e-7*(VFP1-p3-1333.0)+0.2*heaviside(-(phi1-phi4))*(phi4-phi1))*VF1
+VARFUNCTION ((phi4-phi1)*4.2e-10*(VFP1-p3-1333.0)+2.0e-4*heaviside(-(phi1-phi4))*(phi4-phi1))*VF1
 ----------------------------------------------------------------------FUNCT7  // phi_necro*(tumor cells <--> IF)
-VARFUNCTION ((1e-5*(phi1-1.0e-6)/(4.2e-6-1.0e-6)*heaviside((phi1-1.0e-6)/(4.2e-6-1.0e-6)))*(1-phi2))*phi2 NUMCONSTANTS 3 CONSTANTS p2 0.0 porosity 0.0 S2 0.0
+VARFUNCTION ((1e-8*(phi1-1.0e-6)/(4.2e-6-1.0e-6)*heaviside((phi1-1.0e-6)/(4.2e-6-1.0e-6)))*(1-phi2))*phi2 NUMCONSTANTS 3 CONSTANTS p2 0.0 porosity 0.0 S2 0.0
 ----------------------------------------------------------------------FUNCT8
 COMPONENT 0 FUNCTION 4.2e-6
 COMPONENT 1 FUNCTION 0.0
 COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT9 // phi_oxy*(tumor cells <--> IF)
-VARFUNCTION ((1e-5*(phi1-1.0e-6)/(4.2e-6-1.0e-6)*heaviside((phi1-1.0e-6)/(4.2e-6-1.0e-6)))*(1-phi2)*S2/S3)*phi1 NUMCONSTANTS 3 CONSTANTS p2 0.0 S2 0.0 S3 0.0
+VARFUNCTION ((1e-8*(phi1-1.0e-6)/(4.2e-6-1.0e-6)*heaviside((phi1-1.0e-6)/(4.2e-6-1.0e-6)))*(1-phi2)*S2/S3)*phi1 NUMCONSTANTS 3 CONSTANTS p2 0.0 S2 0.0 S3 0.0
 ----------------------------------------------------------------------FUNCT10 // production of TAF
-VARFUNCTION 1.0e-6*heaviside(4.0e-6-phi1)*(0.5+0.5*cos(pi*phi1/4.0e-6))*(1-phi2)*S2*porosity
+VARFUNCTION 1.0e-9*heaviside(4.0e-6-phi1)*(0.5+0.5*cos(pi*phi1/4.0e-6))*(1-phi2)*S2*porosity
 ----------------------------------------------------------------------FUNCT11 // phi_TAF*(tumor cells <--> IF)
-VARFUNCTION ((4.0e-5*(phi1-1.0e-6)/(4.2e-6-1.0e-6)*heaviside((phi1-1.0e-6)/(4.2e-6-1.0e-6)))*(1-phi2)*S2)*phi3*porosity NUMCONSTANTS 3 CONSTANTS p2 0.0 S2 0.0 S3 0.0
+VARFUNCTION ((4.0e-8*(phi1-1.0e-6)/(4.2e-6-1.0e-6)*heaviside((phi1-1.0e-6)/(4.2e-6-1.0e-6)))*(1-phi2)*S2)*phi3*porosity NUMCONSTANTS 3 CONSTANTS p2 0.0 S2 0.0 S3 0.0
 ----------------------------------------------------------------------FUNCT12
 COMPONENT 0 FUNCTION 191.7026207774473
 COMPONENT 1 FUNCTION 0.0
@@ -204,43 +205,43 @@ COMPONENT 1 FUNCTION 0.0
 COMPONENT 2 FUNCTION 0.0
 COMPONENT 3 FUNCTION 4.2e-6
 ----------------------------------------------------------------------FUNCT14
-POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE NUMPARAMS 5 PARAMS gamma_T_growth 4.0e-5 w_nl_crit 1.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9
+POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE NUMPARAMS 5 PARAMS gamma_T_growth 4.0e-8 w_nl_crit 1.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9
 ----------------------------------------------------------------------FUNCT15
-POROMULTIPHASESCATRA_FUNCTION NECROSIS_LAW_HEAVISIDE NUMPARAMS 5 PARAMS gamma_t_necr 1.0e-5 w_nl_crit 1.0e-6 w_nl_env 4.2e-6 delta_a_t 0.0 p_t_crit 1.0e9
+POROMULTIPHASESCATRA_FUNCTION NECROSIS_LAW_HEAVISIDE NUMPARAMS 5 PARAMS gamma_t_necr 1.0e-8 w_nl_crit 1.0e-6 w_nl_env 4.2e-6 delta_a_t 0.0 p_t_crit 1.0e9
 ----------------------------------------------------------------------FUNCT16
-POROMULTIPHASESCATRA_FUNCTION OXYGEN_CONSUMPTION_LAW_HEAVISIDE NUMPARAMS 5 PARAMS gamma_nl_growth 2e-7 gamma_0_nl 3e-7 w_nl_crit 1.0e-6 w_nl_env 4.2e-6 p_t_crit 1.0e9
+POROMULTIPHASESCATRA_FUNCTION OXYGEN_CONSUMPTION_LAW_HEAVISIDE NUMPARAMS 5 PARAMS gamma_nl_growth 2e-10 gamma_0_nl 3e-10 w_nl_crit 1.0e-6 w_nl_env 4.2e-6 p_t_crit 1.0e9
 ----------------------------------------------------------------------FUNCT17
-POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE_OXY NUMPARAMS 5 PARAMS gamma_T_growth 4.0e-5 w_nl_crit 1.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9
+POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE_OXY NUMPARAMS 5 PARAMS gamma_T_growth 4.0e-8 w_nl_crit 1.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9
 ----------------------------------------------------------------------FUNCT18
-POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE_NECRO NUMPARAMS 5 PARAMS gamma_T_growth 4.0e-5 w_nl_crit 1.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9
+POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE_NECRO NUMPARAMS 5 PARAMS gamma_T_growth 4.0e-8 w_nl_crit 1.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9
 ----------------------------------------------------------------------FUNCT19 // 1st term: fluid extravasion and 2nd term: lymphatic drainage
-VARFUNCTION 4.2e-7*(VFP1-p3-1333.0)*VF1-2.0e-5*heaviside(p3)*p3*(1.0-p2/500.0)*heaviside(1.0-p2/500.0)
+VARFUNCTION 4.2e-10*(VFP1-p3-1333.0)*VF1-2.0e-8*heaviside(p3)*p3*(1.0-p2/500.0)*heaviside(1.0-p2/500.0)
 ----------------------------------------------------------------------FUNCT20 // fluid extravasion
-VARFUNCTION 4.2e-7*(VFP1-p3-1333.0)*VF1
+VARFUNCTION 4.2e-10*(VFP1-p3-1333.0)*VF1
 ----------------------------------------------------------------------FUNCT21 // diffusive part of transcapillary exchange of oxygen -1 into balance of oxygen (species in volume fraction)
-VARFUNCTION 0.2*heaviside(-(phi1-phi4))*(phi4-phi1)*VF1
+VARFUNCTION 2.0e-4*heaviside(-(phi1-phi4))*(phi4-phi1)*VF1
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 4
 NDLINE  12
 NDSURF  3
 NDVOL   0
 -------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 28 QUANTITY dispx VALUE -5.71505903991942951e-03 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 310 QUANTITY dispx VALUE -3.08419907208346000e-03 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 278 QUANTITY dispx VALUE 4.19295811959206864e-05 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 28 QUANTITY dispx VALUE -5.71505903957185077e-03 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 310 QUANTITY dispx VALUE -3.08419907199766969e-03 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 278 QUANTITY dispx VALUE 4.19295813153596096e-05 TOLERANCE 1e-12
 POROFLUIDMULTIPHASE DIS porofluid NODE 40 QUANTITY pressure5 VALUE 0.0 TOLERANCE 1e-14 // Dirich Value directly left of developing angio
-POROFLUIDMULTIPHASE DIS porofluid NODE 34 QUANTITY pressure5 VALUE 2.65565589544751992e+03 TOLERANCE 1e-09
-POROFLUIDMULTIPHASE DIS porofluid NODE 34 QUANTITY phi4 VALUE 2.14979883512496275e-03  TOLERANCE 1e-12
-POROFLUIDMULTIPHASE DIS porofluid NODE 40 QUANTITY phi4 VALUE 6.08797459572342752e-04 TOLERANCE 1e-14  // Dirich Value directly left of developing angio
-POROFLUIDMULTIPHASE DIS porofluid NODE 282 QUANTITY saturation2 VALUE 3.27961148848496087e-01 TOLERANCE 1e-14
-POROFLUIDMULTIPHASE DIS porofluid NODE 282 QUANTITY pressure3 VALUE 4.52353344724293685e-03 TOLERANCE 1e-12
-POROFLUIDMULTIPHASE DIS porofluid NODE 16 QUANTITY pressure3 VALUE 4.30687496755634169e-01 TOLERANCE 1e-12
-POROFLUIDMULTIPHASE DIS porofluid NODE 272 QUANTITY pressure2 VALUE 4.69752378820042395e+02 TOLERANCE 1e-09
-SCATRA DIS scatra NODE 58 QUANTITY phi1 VALUE 1.64103559528917016e-06 TOLERANCE 1e-12
-SCATRA DIS scatra NODE 282 QUANTITY phi2 VALUE 1.33901897942753700e-01  TOLERANCE 1e-12
-SCATRA DIS scatra NODE 272 QUANTITY phi3 VALUE 1.57171701099958119e-11 TOLERANCE 1e-15
-SCATRA DIS scatra NODE 40 QUANTITY phi4 VALUE 3.36094344490226160e-10 TOLERANCE 1e-15
-SCATRA DIS scatra NODE 22 QUANTITY phi4 VALUE 3.65824253537805220e-06 TOLERANCE 1e-12
+POROFLUIDMULTIPHASE DIS porofluid NODE 34 QUANTITY pressure5 VALUE 2.65565589544784507e+03 TOLERANCE 1e-09
+POROFLUIDMULTIPHASE DIS porofluid NODE 34 QUANTITY phi4 VALUE 2.14979883504111185e-03 TOLERANCE 1e-12
+POROFLUIDMULTIPHASE DIS porofluid NODE 40 QUANTITY phi4 VALUE 6.08797459557369595e-04 TOLERANCE 1e-14  // Dirich Value directly left of developing angio
+POROFLUIDMULTIPHASE DIS porofluid NODE 282 QUANTITY saturation2 VALUE 3.27961148848362583e-01 TOLERANCE 1e-14
+POROFLUIDMULTIPHASE DIS porofluid NODE 282 QUANTITY pressure3 VALUE 4.52353344552586939e-03 TOLERANCE 1e-12
+POROFLUIDMULTIPHASE DIS porofluid NODE 16 QUANTITY pressure3 VALUE 4.30687496726845531e-01 TOLERANCE 1e-12
+POROFLUIDMULTIPHASE DIS porofluid NODE 272 QUANTITY pressure2 VALUE 4.69752378819795467e+02 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 58 QUANTITY phi1 VALUE 1.64103559524321227e-06 TOLERANCE 1e-12
+SCATRA DIS scatra NODE 282 QUANTITY phi2 VALUE 1.33901897944515319e-01 TOLERANCE 1e-12
+SCATRA DIS scatra NODE 272 QUANTITY phi3 VALUE 1.57171701099059820e-11 TOLERANCE 1e-15
+SCATRA DIS scatra NODE 40 QUANTITY phi4 VALUE 3.36094344480843088e-10 TOLERANCE 1e-15
+SCATRA DIS scatra NODE 22 QUANTITY phi4 VALUE 3.65824253537155291e-06 TOLERANCE 1e-12
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  2
 // curve_right

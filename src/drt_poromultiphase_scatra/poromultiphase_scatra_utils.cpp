@@ -272,38 +272,21 @@ double POROMULTIPHASESCATRA::UTILS::CalculateVectorNorm(
 void POROMULTIPHASESCATRA::PrintLogo()
 {
  std::cout << "This is a Porous Media problem with multiphase flow and deformation and scalar transport" << std::endl;
- std::cout << "       .--..--..--..--..--..--. " << std::endl;
- std::cout << "      .'  \\  (`._   (_)     _   \\ " << std::endl;
- std::cout << "     .'    |  '._)         (_)  | " << std::endl;
- std::cout << "     \\ _.')\\      .----..---.   / " << std::endl;
- std::cout << "     |(_.'  |    /    .-\\-.  \\  | " << std::endl;
- std::cout << "     \\     0|    |   ( O| O) | o| " << std::endl;
- std::cout << "      |  _  |  .--.____.'._.-.  | " << std::endl;
- std::cout << "      \\ (_) | o         -` .-`  | " << std::endl;
- std::cout << "       |    \\   |`-._ _ _ _ _\\ / " << std::endl;
- std::cout << "       \\    |   |  `. |_||_|   | " << std::endl;
- std::cout << "       | o  |    \\_      \\     |                       -.   .-.         \\" << std::endl;
- std::cout << "       |.-.  \\     `--..-'   O |                       `.`-' .'          \\" << std::endl;
- std::cout << "     _.'  .' |     `-.-'      /-.____________________   ' .-' ------------o" << std::endl;
- std::cout << "   .' `-.` '.|='=.='=.='=.='=|._/___________________ `-'.'               /" << std::endl;
- std::cout << "   `-._  `.  |________/\\_____|                      `-.'                /" << std::endl;
- std::cout << "      .'   ).| '=' '='\\/ '=' | " << std::endl;
- std::cout << "      `._.`  '---------------' " << std::endl;
- std::cout << "            //___\\   //___\\ " << std::endl;
- std::cout << "              ||       || " << std::endl;
- std::cout << "              ||_.-.   ||_.-. " << std::endl;
- std::cout << "              ||       || " << std::endl;
- std::cout << "              ||_.-.   ||_.-. " << std::endl;
- std::cout << "              ||       || " << std::endl;
- std::cout << "              ||_.-.   ||_.-. " << std::endl;
- std::cout << "              ||       || " << std::endl;
- std::cout << "              ||_.-.   ||_.-. " << std::endl;
- std::cout << "             (_.--__) (_.--__) " << std::endl;
- std::cout << "                |         | " << std::endl;
- std::cout << "                |         | " << std::endl;
- std::cout << "              \\   /     \\   / " << std::endl;
- std::cout << "               \\ /       \\ / " << std::endl;
- std::cout << "                .         . " << std::endl;
+ std::cout << "" << std::endl;
+ std::cout << "              +----------+" << std::endl;
+ std::cout << "              |  Krebs-  |" << std::endl;
+ std::cout << "              |  Modell  |" << std::endl;
+ std::cout << "              +----------+" << std::endl;
+ std::cout << "              |          |" << std::endl;
+ std::cout << "              |          |" << std::endl;
+ std::cout << " /\\           |          /\\" << std::endl;
+ std::cout << "( /   @ @    (|)        ( /   @ @    ()" << std::endl;
+ std::cout << " \\  __| |__  /           \\  __| |__  /" << std::endl;
+ std::cout << "  \\/   \"   \\/             \\/   \"   \\/" << std::endl;
+ std::cout << " /-|       |-\\           /-|       |-\\" << std::endl;
+ std::cout << "/ /-\\     /-\\ \\         / /-\\     /-\\ \\" << std::endl;
+ std::cout << " / /-`---'-\\ \\           / /-`---'-\\ \\" << std::endl;
+ std::cout << "  /         \\             /         \\" << std::endl;
 
   return;
 

@@ -81,7 +81,7 @@ SOLVER                          UMFPACK                       // Aztec_MSR vm3 S
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_FluidPoroMultiPhaseReactions LOCAL No PERMEABILITY 1.0 NUMMAT 7 MATIDS 10 20 30 40 50 60 70 NUMFLUIDPHASES 3 NUMREAC 1 REACIDS 15 END
 
-MAT 15 MAT_FluidPoroSingleReaction NUMSCAL 4 TOTALNUMDOF 7 NUMVOLFRAC 2 SCALE 0 1 -1 0 1 0 -1 COUPLING scalar_by_function FUNCTID 3
+MAT 15 MAT_FluidPoroSingleReaction NUMSCAL 4 TOTALNUMDOF 7 NUMVOLFRAC 2 SCALE 0 -1 1 0 -1 0 1 COUPLING scalar_by_function FUNCTID 3
 
 MAT 10 MAT_FluidPoroSinglePhase DOFTYPEID 100 VISCOSITYLAWID 103 DENSITYLAWID 102 DENSITY 1.0 RELPERMEABILITYLAWID 104
 MAT 100 MAT_FluidPoroSinglePhaseDofPressure PHASELAWID 101

@@ -455,7 +455,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoroFluid(
   double d_eff = 0.0;
   if(VarManager()->EvaluateScalar(k))
   {
-    porosity = VarManager()->FluidPhaseManager()->Porosity()*VarManager()->Saturation(k)*VarManager()->Density(k);
+    porosity = VarManager()->FluidPhaseManager()->Porosity()*VarManager()->Saturation(k);
     d_eff = std::pow(VarManager()->FluidPhaseManager()->Porosity()*VarManager()->Saturation(k),actmat->Delta());
   }
 
@@ -497,7 +497,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoroVolFrac(
   double d_eff = 0.0;
   if(VarManager()->EvaluateScalar(k))
   {
-    porosity = VarManager()->VolFrac(k)*VarManager()->Density(k);
+    porosity = VarManager()->VolFrac(k);
     d_eff = 1.0;
   }
 
@@ -624,8 +624,8 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::GetRhsInt(
     const int    k        //!< index of current scalar
     )
 {
-  // only difference is that there is no scaling with density
-  advreac::GetRhsInt(rhsint,1.0,k);
+  // only difference is the inverse scaling with density
+  advreac::GetRhsInt(rhsint,1.0/VarManager()->Density(k),k);
 
 }
 
@@ -644,8 +644,8 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatReact(
   const LINALG::Matrix<my::nen_,1>&      diff
   )
 {
-  // only difference is that there is no scaling with density
-  advreac::CalcMatReact(emat,k,timefacfac,timetaufac,taufac,1.0,sgconv,diff);
+  // only difference is the inverse scaling with density
+  advreac::CalcMatReact(emat,k,timefacfac,timetaufac,taufac,1.0/VarManager()->Density(k),sgconv,diff);
 
 }
 
@@ -901,7 +901,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcConvODMesh(
 
         // TODO: anisotropic difftensor and
         //       non-constant viscosity (because of pressure gradient, probably not really necessary)
-        const double vrhs = rhsfac*1.0/J*difftensor(0,0)*(-1.0)*VarManager()->Density(k);
+        const double vrhs = rhsfac*1.0/J*difftensor(0,0)*(-1.0);
 
         for (unsigned ui = 0; ui < my::nen_; ++ui)
         {
@@ -957,7 +957,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcConvODMesh(
 
         // TODO: anisotropic difftensor and
         //       non-constant viscosity (because of pressure gradient, probably not really necessary)
-        const double vrhs = rhsfac*1.0/J*difftensor(0,0)*(-1.0)*VarManager()->Density(k);
+        const double vrhs = rhsfac*1.0/J*difftensor(0,0)*(-1.0);
 
         for (unsigned ui = 0; ui < my::nen_; ++ui)
         {
@@ -1085,7 +1085,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcHistAndSourceODMesh
       {
         const int fvi = vi*my::numdofpernode_+k;
         //TODO: gen-alpha
-        const double v = my::funct_(vi)*poroderiv*my::scatraparatimint_->TimeFac()*fac*(-1.0);
+        const double v = my::funct_(vi)*poroderiv*my::scatraparatimint_->TimeFac()*fac*(-1.0)/VarManager()->Density(k);
 
         for (unsigned ui=0; ui<my::nen_; ++ui)
         {
@@ -1210,7 +1210,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConvODFluid(
     for (unsigned vi=0; vi<my::nen_; ++vi)
     {
       const int fvi = vi*my::numdofpernode_+k;
-      const double v =  rhsfac*my::funct_(vi)*(-1.0)*VarManager()->Density(k);
+      const double v =  rhsfac*my::funct_(vi)*(-1.0);
 
       for (unsigned ui=0; ui<my::nen_; ++ui)
       {
@@ -1397,7 +1397,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcHistAndSourceODFlui
       {
         const int fvi = vi*my::numdofpernode_+k;
         //TODO: gen-alpha?
-        const double v = my::funct_(vi)*my::scatraparatimint_->TimeFac()*fac*(-1.0);
+        const double v = my::funct_(vi)*my::scatraparatimint_->TimeFac()*fac*(-1.0)/VarManager()->Density(k);
 
         for (unsigned ui=0; ui<my::nen_; ++ui)
         {
