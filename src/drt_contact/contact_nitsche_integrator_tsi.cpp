@@ -820,8 +820,9 @@ void CONTACT::CoIntegratorNitscheTsi::SoEleCauchy(
     for (GEN::pairedvector<int,double>::const_iterator p=direction_deriv[d].begin();p!=direction_deriv[d].end();++p)
       deriv_sigma_nt_d[p->first]+=dsntdt(d)*p->second*w;
 
-  for (int i=0;i<moEle.ParentElement()->NumNode();++i)
-    deriv_sigma_nt_T[moEle.MoData().ParentDof()[i*dim+0]]+=dsntdT(i,0)*w;
+  if (moEle.MoData().ParentTempDof().size()!=0)
+    for (int i=0;i<moEle.ParentElement()->NumNode();++i)
+      deriv_sigma_nt_T[moEle.MoData().ParentTempDof().at(i)]+=dsntdT(i,0)*w;
 
   if (abs(theta_)>1.e-12)
   {
@@ -978,12 +979,13 @@ void CONTACT::CoIntegratorNitscheTsi::BuildAdjointTestTsi(
     const Epetra_SerialDenseMatrix& d2sntDdDT,
     GEN::pairedvector<int,LINALG::SerialDenseVector>& deriv_adjoint_test_T)
 {
-  for (int p=0;p<moEle.ParentElement()->NumNode();++p)
-  {
-    LINALG::SerialDenseVector& at=deriv_adjoint_test_T[moEle.MoData().ParentDof()[p*dim+0]];
-    for (int i=0;i<moEle.ParentElement()->NumNode()*dim;++i)
-      at(i)+=fac*d2sntDdDT(i,p);
-  }
+  if (moEle.MoData().ParentTempDof().size())
+    for (int p=0;p<moEle.ParentElement()->NumNode();++p)
+    {
+      LINALG::SerialDenseVector& at=deriv_adjoint_test_T[moEle.MoData().ParentTempDof()[p]];
+      for (int i=0;i<moEle.ParentElement()->NumNode()*dim;++i)
+        at(i)+=fac*d2sntDdDT(i,p);
+    }
 }
 
 template <int dim>
@@ -1013,7 +1015,10 @@ void CONTACT::CoIntegratorNitscheTsi::SetupGpTemp(
   d_temp_dT.resize(val.Length());
   d_temp_dT.clear();
   for (int i=0;i<moEle.NumNode();++i)
-    d_temp_dT[dynamic_cast<MORTAR::MortarNode*>(moEle.Nodes()[i])->Dofs()[0]]=val(i);
+    d_temp_dT[moEle.MoData().ParentTempDof().at(
+                DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
+                    moEle.ParentElement()->Shape(),moEle.FaceParentNumber(),i))
+             ]=val(i);
 
   int deriv_size=0.;
   for (int i=0;i<dim-1;++i)
@@ -1170,7 +1175,7 @@ void CONTACT::CoIntegratorNitscheTsi::SoEleCauchyHeatflux(
       dq_dd[p->first]+=dq_dn(d)*p->second*w;
 
   for (int i=0;i<moEle.ParentElement()->NumNode();++i)
-    dq_dT[moEle.MoData().ParentDof().at(i*dim)]+=w*dq_dT_ele(i,0);
+    dq_dT[moEle.MoData().ParentTempDof().at(i)]+=w*dq_dT_ele(i,0);
 
   if (abs(theta_thermo_)>1.e-12)
     BuildAdjointTestThermo<dim>(moEle,w,dq_dT_ele,d2q_dT_dd,d2q_dT_dn,d2q_dT_dpxi,normal_deriv,boundary_gpcoord_lin,derivtravo_slave,

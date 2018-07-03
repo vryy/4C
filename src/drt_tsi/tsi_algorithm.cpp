@@ -456,8 +456,6 @@ void TSI::Algorithm::GetContactStrategy()
         StructureField()->ModelEvaluator(INPAR::STR::model_contact));
     contact_strategy_nitsche_ = Teuchos::rcp_dynamic_cast<CONTACT::CoNitscheStrategyTsi>(
         a.StrategyPtr(),false);
-    contact_strategy_nitsche_->SetAlphafThermo(DRT::Problem::Instance()->ThermalDynamicParams());
-    contact_strategy_nitsche_->SetCoupling(coupST_);
     contact_strategy_nitsche_->EnableRedistribution();
 
     thermo_->SetNitscheContactStrategy(contact_strategy_nitsche_);

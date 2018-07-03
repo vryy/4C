@@ -184,6 +184,14 @@ public:
   virtual std::vector<double>& ParentTemp() {return parenttemp_; }
 
   /*!
+  \brief Return Parent element temperature degrees of freedom
+         (To not have to use the thermo-discretization in contact,
+          we use the first displacement dof)
+
+  */
+  virtual std::vector<int>& ParentTempDof() {return parenttempdofs_; }
+
+  /*!
   \brief Return Parent poro pressure vector
 
   */
@@ -232,6 +240,11 @@ protected:
 
   // Temperature of Parent Element
   std::vector<double> parenttemp_;
+
+  // Temperature Parent element degrees of freedom
+  // (To not have to use the thermo-discretization in contact,
+  //  we use the first displacement dof)
+  std::vector<int> parenttempdofs_;
 
   // Poro Pressure of Parent Element
   std::vector<double> parentpfpres_;

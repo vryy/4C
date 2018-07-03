@@ -88,14 +88,6 @@ public:
   virtual void SetParentState(const enum MORTAR::StateType& statename,
       const Epetra_Vector& vec);
 
-  void SetCoupling(Teuchos::RCP<ADAPTER::Coupling> coupST){coupST_=coupST;};
-
-  /*!
-   \brief Set time integration parameter from Thermo time integration
-
-   */
-  void SetAlphafThermo(const Teuchos::ParameterList& tdyn);
-
   virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
      const enum DRT::UTILS::VecBlockType& bt) const;
 
@@ -116,17 +108,23 @@ protected:
   CoNitscheStrategyTsi operator = (const CoNitscheStrategyTsi& old);
   CoNitscheStrategyTsi(const CoNitscheStrategyTsi& old);
 
-  //time integration
-  double thermo_alpha_;
+  // create an appropriate vector for the RHS
+  virtual Teuchos::RCP<Epetra_FEVector> SetupRhsBlockVec(
+       const enum DRT::UTILS::VecBlockType& bt)const;
+
+  // create an appropriate matrix block
+  virtual Teuchos::RCP<LINALG::SparseMatrix> SetupMatrixBlockPtr(
+      const enum DRT::UTILS::MatBlockType& bt);
+
+  // complete matrix block with correct maps
+  virtual void CompleteMatrixBlockPtr(
+      const enum DRT::UTILS::MatBlockType& bt,
+      Teuchos::RCP<LINALG::SparseMatrix> kc);
 
   // do not reditribute (during constructor phase)
   bool fix_redistribution_;
 
   Teuchos::RCP<Epetra_Vector> curr_state_temp_;
-
-  // pointer to TSI coupling object
-  Teuchos::RCP<ADAPTER::Coupling> coupST_;
-
 
   Teuchos::RCP<Epetra_FEVector> ft_;
   Teuchos::RCP<LINALG::SparseMatrix> ktt_;

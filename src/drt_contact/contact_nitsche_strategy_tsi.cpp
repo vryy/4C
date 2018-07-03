@@ -70,13 +70,13 @@ void CONTACT::CoNitscheStrategyTsi::SetState(const enum MORTAR::StateType& state
 void CONTACT::CoNitscheStrategyTsi::SetParentState(const enum MORTAR::StateType& statename,
     const Epetra_Vector& vec)
 {
-  Teuchos::RCP<DRT::Discretization> dis = DRT::Problem::Instance()->GetDis("structure");
-  if (dis==Teuchos::null)
-    dserror("didn't get my discretization");
-
   if (statename==MORTAR::state_temperature)
   {
-    Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*dis->DofColMap(),true));
+    Teuchos::RCP<DRT::Discretization> disT = DRT::Problem::Instance()->GetDis("thermo");
+    if (disT.is_null())
+      dserror("set state temperature, but no thermo-discretization???");
+
+    Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*disT->DofColMap(),true));
     LINALG::Export(vec,*global);
 
     //set state on interfaces
@@ -93,25 +93,16 @@ void CONTACT::CoNitscheStrategyTsi::SetParentState(const enum MORTAR::StateType&
           dserror("basic element not found");
 
         MORTAR::MortarElement* ele = dynamic_cast<MORTAR::MortarElement*>(idiscret_.gElement(gid));
+        DRT::Element* ele_parentT = disT->gElement(ele->ParentElementId());
 
-        if (ele==NULL)
-          dserror("element not found");
-
-        if (ele->ParentElement()==NULL)
-          dserror("parent element not set");
-
-        if (ele->ParentElement()->NumNode()==0)
-          dserror("parent element nodes not set");
-
-        // since contact can't handle multiple dofsets, temperatures are associated with first dof of each node
-        std::vector<int> lm(ele->ParentElement()->NumNode());
-        for (int n=0;n<ele->ParentElement()->NumNode();++n)
-          lm.at(n)=dis->Dof(0,ele->ParentElement()->Nodes()[n],0);
+        std::vector<int> lm, lmowner, lmstride;
+        ele_parentT->LocationVector(*disT,lm,lmowner,lmstride);
 
         std::vector<double> myval;
         DRT::UTILS::ExtractMyValues(*global,myval,lm);
 
         ele->MoData().ParentTemp() = myval;
+        ele->MoData().ParentTempDof()=lm;
       }
     }
   }
@@ -145,32 +136,25 @@ void CONTACT::CoNitscheStrategyTsi::UpdateTraceIneqEtimates()
         continue;
       mele->EstimateNitscheTraceMaxEigenvalueCombined();
     }
-
-  // add estimate for thermo-penalty
-//  dserror("not yet implemented");
   return;
 }
 
-
-void CONTACT::CoNitscheStrategyTsi::SetAlphafThermo(const Teuchos::ParameterList& tdyn)
+Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategyTsi::SetupRhsBlockVec(
+     const enum DRT::UTILS::VecBlockType& bt) const
 {
-  INPAR::THR::DynamicType dyn_type = DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn,"DYNAMICTYP");
-  switch (dyn_type)
+  switch (bt)
   {
-  case INPAR::THR::dyna_genalpha:
-    thermo_alpha_ = tdyn.sublist("GENALPHA").get<double>("ALPHA_F");
-    break;
-  case INPAR::THR::dyna_onesteptheta:
-    thermo_alpha_ = tdyn.sublist("ONESTEPTHETA").get<double>("THETA");
-    break;
-  case INPAR::THR::dyna_statics:
-    thermo_alpha_ = 1.;
+  case DRT::UTILS::block_temp:
+    return Teuchos::rcp(new Epetra_FEVector(*DRT::Problem::Instance()->
+        GetDis("thermo")->DofRowMap()));
     break;
   default:
-    dserror("unknown thermal time integration type");
+    return CONTACT::CoNitscheStrategy::SetupRhsBlockVec(bt);
+    break;
   }
-  return;
+  return Teuchos::null;
 }
+
 Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategyTsi::GetRhsBlockPtr(
      const enum DRT::UTILS::VecBlockType& bt) const
 {
@@ -184,6 +168,56 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategyTsi::GetRhsBlockPtr(
   }
 }
 
+Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategyTsi::SetupMatrixBlockPtr(
+    const enum DRT::UTILS::MatBlockType& bt)
+{
+  switch (bt)
+  {
+  case DRT::UTILS::block_displ_temp:
+    return Teuchos::rcp(new LINALG::SparseMatrix(*Teuchos::rcpFromRef<const Epetra_Map>(*DRT::Problem::Instance()->
+        GetDis("structure")->DofRowMap()),100,true,false,LINALG::SparseMatrix::FE_MATRIX));
+    break;
+  case DRT::UTILS::block_temp_displ:
+  case DRT::UTILS::block_temp_temp:
+    return Teuchos::rcp(new LINALG::SparseMatrix(*Teuchos::rcpFromRef<const Epetra_Map>(*DRT::Problem::Instance()->
+        GetDis("thermo")->DofRowMap()),100,true,false,LINALG::SparseMatrix::FE_MATRIX));
+    break;
+  default:
+    return CONTACT::CoNitscheStrategy::SetupMatrixBlockPtr(bt);
+    break;
+  }
+  return Teuchos::null;
+}
+
+void CONTACT::CoNitscheStrategyTsi::CompleteMatrixBlockPtr(
+    const enum DRT::UTILS::MatBlockType& bt,
+    Teuchos::RCP<LINALG::SparseMatrix> kc)
+{
+  switch (bt)
+  {
+  case DRT::UTILS::block_displ_temp:
+    if(dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(
+        *DRT::Problem::Instance()->GetDis("thermo"   )->DofRowMap(), //col map
+        *DRT::Problem::Instance()->GetDis("structure")->DofRowMap(), //row map
+        true,Add))
+      dserror("GlobalAssemble(...) failed");
+    break;
+  case DRT::UTILS::block_temp_displ:
+    if(dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(
+        *DRT::Problem::Instance()->GetDis("structure")->DofRowMap(), //col map
+        *DRT::Problem::Instance()->GetDis("thermo"   )->DofRowMap(), //row map
+        true,Add))
+      dserror("GlobalAssemble(...) failed");
+    break;
+  case DRT::UTILS::block_temp_temp:
+    if(dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true,Add))
+      dserror("GlobalAssemble(...) failed");
+    break;
+  default:
+    CONTACT::CoNitscheStrategy::CompleteMatrixBlockPtr(bt,kc);
+    break;
+  }
+}
 
 Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategyTsi::GetMatrixBlockPtr(
     const enum DRT::UTILS::MatBlockType& bt,
@@ -206,47 +240,10 @@ void CONTACT::CoNitscheStrategyTsi::Integrate(CONTACT::ParamsInterface& cparams)
 {
   CONTACT::CoNitscheStrategy::Integrate(cparams);
 
-  if (coupST_==Teuchos::null)
-  {
-#ifdef DEBUG
-    std::cout<<"\nWARNING: we are skipping the assembly of TSI coupling matrices in CONTACT::CoNitscheStrategyTsi::Integrate\n"
-        "We do this, since the coupling object is not set. This may happen during constructor phases.\n"
-        "If this warning appears long after the construction, you're in big trouble.\n" << std::endl;
-#endif
-    return;
-  }
-
-  Teuchos::RCP<Epetra_FEVector> ft_s = CreateRhsBlockPtr(DRT::UTILS::block_temp);
-  Teuchos::RCP<Epetra_FEVector> ft_s_exp = Teuchos::rcp(new Epetra_FEVector(*(coupST_->MasterDofMap())));
-  LINALG::Export(*ft_s,*ft_s_exp);
-  ft_=coupST_->MasterToSlave(ft_s_exp);
-
-  Teuchos::RCP<LINALG::SparseMatrix> tmp=CreateMatrixBlockPtr(DRT::UTILS::block_temp_temp);
-  ktt_=Teuchos::rcp(new LINALG::SparseMatrix(*coupST_->SlaveDofMap(),81,true,false));
-  FSI::UTILS::MatrixRowColTransform()(
-      *tmp,1.,
-      ADAPTER::CouplingMasterConverter(*coupST_),
-      ADAPTER::CouplingMasterConverter(*coupST_),
-      *ktt_,true,false);
-  ktt_->Complete();
-
-  tmp=CreateMatrixBlockPtr(DRT::UTILS::block_temp_displ);
-  ktd_=Teuchos::rcp(new LINALG::SparseMatrix(*coupST_->SlaveDofMap(),81,true,false));
-  FSI::UTILS::MatrixRowTransform()(
-      *tmp,1.,
-      ADAPTER::CouplingMasterConverter(*coupST_),
-      *ktd_,true);
-  ktd_->Complete(*DRT::Problem::Instance()->GetDis("structure")->DofColMap(),*coupST_->SlaveDofMap());
-
-  tmp=CreateMatrixBlockPtr(DRT::UTILS::block_displ_temp);
-  kdt_=Teuchos::rcp(new LINALG::SparseMatrix(tmp->RowMap(),81,true,false));
-  FSI::UTILS::MatrixColTransform()(
-      tmp->RowMap(),
-      tmp->ColMap(),
-      *tmp,1.,
-      ADAPTER::CouplingMasterConverter(*coupST_),
-      *kdt_,true,false);
-  kdt_->Complete(*coupST_->SlaveDofMap(),*DRT::Problem::Instance()->GetDis("structure")->DofRowMap());
+  ft_ = CreateRhsBlockPtr(DRT::UTILS::block_temp);
+  ktt_=CreateMatrixBlockPtr(DRT::UTILS::block_temp_temp);
+  ktd_=CreateMatrixBlockPtr(DRT::UTILS::block_temp_displ);
+  kdt_=CreateMatrixBlockPtr(DRT::UTILS::block_displ_temp);
 
   return;
 }

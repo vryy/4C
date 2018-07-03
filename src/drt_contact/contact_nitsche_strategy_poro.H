@@ -97,6 +97,18 @@ protected:
   CoNitscheStrategyPoro operator = (const CoNitscheStrategyPoro& old);
   CoNitscheStrategyPoro(const CoNitscheStrategyPoro& old);
 
+  // create an appropriate vector for the RHS
+  virtual Teuchos::RCP<Epetra_FEVector> SetupRhsBlockVec(
+       const enum DRT::UTILS::VecBlockType& bt)const;
+
+  // create an appropriate matrix block
+  virtual Teuchos::RCP<LINALG::SparseMatrix> SetupMatrixBlockPtr(
+      const enum DRT::UTILS::MatBlockType& bt);
+
+  // complete matrix block with correct maps
+  virtual void CompleteMatrixBlockPtr(
+      const enum DRT::UTILS::MatBlockType& bt,
+      Teuchos::RCP<LINALG::SparseMatrix> kc);
 
   bool no_penetration_;
   double dd_dv_;

@@ -179,9 +179,22 @@ protected:
     return interface_;
   }
 
-
+  // fill RHS vector of block
   virtual Teuchos::RCP<Epetra_FEVector> CreateRhsBlockPtr(
-     const enum DRT::UTILS::VecBlockType& bt)const;
+       const enum DRT::UTILS::VecBlockType& bt)const;
+
+  // create an appropriate vector for the RHS
+  virtual Teuchos::RCP<Epetra_FEVector> SetupRhsBlockVec(
+       const enum DRT::UTILS::VecBlockType& bt)const;
+
+  // create an appropriate matrix block
+  virtual Teuchos::RCP<LINALG::SparseMatrix> SetupMatrixBlockPtr(
+      const enum DRT::UTILS::MatBlockType& bt);
+
+  // complete matrix block with correct maps
+  virtual void CompleteMatrixBlockPtr(
+      const enum DRT::UTILS::MatBlockType& bt,
+      Teuchos::RCP<LINALG::SparseMatrix> kc);
 
   virtual Teuchos::RCP<LINALG::SparseMatrix> CreateMatrixBlockPtr(
       const enum DRT::UTILS::MatBlockType& bt);

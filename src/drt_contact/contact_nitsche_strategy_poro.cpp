@@ -132,6 +132,22 @@ void CONTACT::CoNitscheStrategyPoro::SetParentState(const enum MORTAR::StateType
   return;
 }
 
+Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategyPoro::SetupRhsBlockVec(
+     const enum DRT::UTILS::VecBlockType& bt) const
+{
+  switch (bt)
+  {
+  case DRT::UTILS::block_porofluid:
+    return Teuchos::rcp(new Epetra_FEVector(*DRT::Problem::Instance()->
+        GetDis("porofluid")->DofRowMap()));
+    break;
+  default:
+    return CONTACT::CoNitscheStrategy::SetupRhsBlockVec(bt);
+    break;
+  }
+  return Teuchos::null;
+}
+
 Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategyPoro::GetRhsBlockPtr(
      const enum DRT::UTILS::VecBlockType& bp) const
 {
@@ -145,6 +161,56 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategyPoro::GetRhsBlockPtr
   }
 }
 
+Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategyPoro::SetupMatrixBlockPtr(
+    const enum DRT::UTILS::MatBlockType& bt)
+{
+  switch (bt)
+  {
+  case DRT::UTILS::block_displ_porofluid:
+    return Teuchos::rcp(new LINALG::SparseMatrix(*Teuchos::rcpFromRef<const Epetra_Map>(*DRT::Problem::Instance()->
+        GetDis("structure")->DofRowMap()),100,true,false,LINALG::SparseMatrix::FE_MATRIX));
+    break;
+  case DRT::UTILS::block_porofluid_displ:
+  case DRT::UTILS::block_porofluid_porofluid:
+    return Teuchos::rcp(new LINALG::SparseMatrix(*Teuchos::rcpFromRef<const Epetra_Map>(*DRT::Problem::Instance()->
+        GetDis("porofluid")->DofRowMap()),100,true,false,LINALG::SparseMatrix::FE_MATRIX));
+    break;
+  default:
+    return CONTACT::CoNitscheStrategy::SetupMatrixBlockPtr(bt);
+    break;
+  }
+  return Teuchos::null;
+}
+
+void CONTACT::CoNitscheStrategyPoro::CompleteMatrixBlockPtr(
+    const enum DRT::UTILS::MatBlockType& bt,
+    Teuchos::RCP<LINALG::SparseMatrix> kc)
+{
+  switch (bt)
+  {
+  case DRT::UTILS::block_displ_porofluid:
+    if(dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(
+        *DRT::Problem::Instance()->GetDis("porofluid")->DofRowMap(), //col map
+        *DRT::Problem::Instance()->GetDis("structure")->DofRowMap(), //row map
+        true,Add))
+      dserror("GlobalAssemble(...) failed");
+    break;
+  case DRT::UTILS::block_porofluid_displ:
+    if(dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(
+        *DRT::Problem::Instance()->GetDis("structure")->DofRowMap(), //col map
+        *DRT::Problem::Instance()->GetDis("porofluid")->DofRowMap(), //row map
+        true,Add))
+      dserror("GlobalAssemble(...) failed");
+    break;
+  case DRT::UTILS::block_porofluid_porofluid:
+    if(dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true,Add))
+      dserror("GlobalAssemble(...) failed");
+    break;
+  default:
+    CONTACT::CoNitscheStrategy::CompleteMatrixBlockPtr(bt,kc);
+    break;
+  }
+}
 
 Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategyPoro::GetMatrixBlockPtr(
     const enum DRT::UTILS::MatBlockType& bp) const

@@ -143,17 +143,17 @@ public:
       DRT::UTILS::MatBlockType block,
       Teuchos::RCP<LINALG::SparseMatrix> kc);
 
-  template<int num_dof_per_node, int num_dof_per_node_to_assemble=num_dof_per_node>
+  template<int num_dof_per_node>
   void AssembleRHS(
       MORTAR::MortarElement* mele,
-      const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement*num_dof_per_node_to_assemble,1>& rhs,
+      const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement*num_dof_per_node,1>& rhs,
       std::vector<int>& dofs,
       Teuchos::RCP<Epetra_FEVector> fc);
 
-  template<int num_dof_per_node, int num_dof_per_node_to_assemble=num_dof_per_node>
+  template<int num_dof_per_node>
   void AssembleMatrix(
       MORTAR::MortarElement* mele,
-      const std::unordered_map<int,LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement*num_dof_per_node_to_assemble,1> >& k,
+      const std::unordered_map<int,LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement*num_dof_per_node,1> >& k,
       std::vector<int>& dofs,
       Teuchos::RCP<LINALG::SparseMatrix> kc);
 
