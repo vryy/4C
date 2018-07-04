@@ -176,7 +176,7 @@ void CONTACT::CoIntegratorNitschePoro::GPTS_forces(
 
   SoEleCauchy<dim>(sele,sxi,dsxi,wgt,slave_normal,deriv_slave_normal,normal,dnmap_unit,ws,
       cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv_d,cauchy_nn_weighted_average_deriv_p);
-  SoEleCauchy<dim>(mele,mxi,dmxi,wgt,master_normal,deriv_master_normal,normal,dnmap_unit,wm,
+  SoEleCauchy<dim>(mele,mxi,dmxi,wgt,master_normal,deriv_master_normal,normal,dnmap_unit,-wm,
       cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv_d,cauchy_nn_weighted_average_deriv_p);
 
   const double snn_av_pen_gap = cauchy_nn_weighted_average+pen*gap;
@@ -192,21 +192,9 @@ void CONTACT::CoIntegratorNitschePoro::GPTS_forces(
     // test in normal contact direction
     IntegrateTest<dim>(-1.,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,snn_av_pen_gap,d_snn_av_pen_gap,cauchy_nn_weighted_average_deriv_p,normal,dnmap_unit);
     IntegrateTest<dim>(+1.,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,snn_av_pen_gap,d_snn_av_pen_gap,cauchy_nn_weighted_average_deriv_p,normal,dnmap_unit);
-  }
 
-
-  LINALG::Matrix<3,1> tmp;
-  tmp.CrossProduct(slave_normal,master_normal);
-  double direction_corr=tmp.Norm2();
-  double scalefac = std::max(sele.MaxEdgeSize(),mele.MaxEdgeSize())*direction_corr*0.1;
-
-  if (gap<scalefac)//gap < 1e-2 <--thats an alternative strategy when using higher values of the Nitsche penalty parameter
-  {
-    double ffac = 1.0-gap/scalefac;
-    if (ffac > 1) ffac = 1;
-
-    IntegratePoroNoOutFlow<dim>(-ffac,sele,sxi,sval,sderiv,jac,jacintcellmap,wgt,normal,dnmap_unit,mele,mval);
-    IntegratePoroNoOutFlow<dim>(+ffac,mele,mxi,mval,mderiv,jac,jacintcellmap,wgt,normal,dnmap_unit,sele,sval);
+    IntegratePoroNoOutFlow<dim>(-1,sele,sxi,sval,sderiv,jac,jacintcellmap,wgt,normal,dnmap_unit,mele,mval);
+    IntegratePoroNoOutFlow<dim>(+1,mele,mxi,mval,mderiv,jac,jacintcellmap,wgt,normal,dnmap_unit,sele,sval);
   }
   return;
 }
@@ -340,8 +328,7 @@ void CONTACT::CoIntegratorNitschePoro::IntegratePoroNoOutFlow(
     }
   }
 
-
-  double val = fac*jac*wgt;//*1./dv_dd_;
+  double val = fac*jac*wgt/dv_dd_;//*1./dv_dd_;
   for (int i=0;i<ele.NumNode();++i)
   {
     int pi = DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(ele.ParentElement()->Shape(),ele.FaceParentNumber(),i);
