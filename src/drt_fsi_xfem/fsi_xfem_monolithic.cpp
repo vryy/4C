@@ -1785,14 +1785,17 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
   //----------------------------------------------
   // create direct solver for merged block matrix
   //----------------------------------------------
-  if( solvertype == INPAR::SOLVER::umfpack )
+  if( solvertype == INPAR::SOLVER::umfpack  || solvertype == INPAR::SOLVER::superlu )
   {
     if (Comm().MyPID() == 0) std::cout << "Merged XFSI block matrix is used!\n" << std::endl;
 
     merge_fsi_blockmatrix_ = true;
 
     Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
-    solverparams->set("solver","umfpack");
+    if ( solvertype == INPAR::SOLVER::umfpack )
+      solverparams->set("solver","umfpack");
+    else if ( solvertype == INPAR::SOLVER::superlu )
+      solverparams->set("solver","superlu");
 
     solver_ = Teuchos::rcp(new LINALG::Solver( solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle() ));
 

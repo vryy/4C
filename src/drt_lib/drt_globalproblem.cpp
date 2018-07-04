@@ -1225,7 +1225,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     // create discretization writer - in constructor set into and owned by corresponding discret
     structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
     AddDis("structure", structdis);
-    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+    nodereader.AddAdvancedReader(structdis, reader, "STRUCTURE",
+        DRT::INPUT::IntegralValue<INPAR::GeometryType>(StructuralDynamicParams(),"GEOMETRY"), 0);
 
     if(DRT::INPUT::IntegralValue<int>(XFluidDynamicParams().sublist("GENERAL"),"XFLUIDFLUID"))
     {
