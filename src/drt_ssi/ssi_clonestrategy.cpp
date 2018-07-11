@@ -61,6 +61,8 @@ std::map<std::string,std::string> SSI::ScatraStructureCloneStrategy::ConditionsT
   // cell cycling conditions
   conditions_to_copy.insert(std::pair<std::string,std::string>("CCCVCycling","CCCVCycling"));
   conditions_to_copy.insert(std::pair<std::string,std::string>("CCCVHalfCycle","CCCVHalfCycle"));
+  // convective heat transfer conditions (Newton's law of heat transfer)
+  conditions_to_copy.insert(std::pair<std::string,std::string>("TransportThermoConvections","TransportThermoConvections"));
 
   return conditions_to_copy;
 }
@@ -122,7 +124,8 @@ if (
     (mtype != INPAR::MAT::m_electrode) &&
     (mtype != INPAR::MAT::m_matlist) &&
     (mtype != INPAR::MAT::m_matlist_reactions) &&
-    (mtype != INPAR::MAT::m_myocard)
+    (mtype != INPAR::MAT::m_myocard) &&
+    (mtype != INPAR::MAT::m_thermostvenant)
    )
   dserror("Material with ID %d is not admissible for scalar transport elements",matid);
 }

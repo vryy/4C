@@ -1148,8 +1148,8 @@ void SCATRA::ScaTraTimIntImpl::EvaluateConvectiveHeatTransfer(
     Teuchos::RCP<LINALG::SparseOperator> matrix,
     Teuchos::RCP<Epetra_Vector>          rhs)
 {
-  // time measurement: evaluate condition 'ThermoConvections'
-  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'ThermoConvections'");
+  // time measurement: evaluate condition 'TransportThermoConvections'
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'TransportThermoConvections'");
 
   // create parameter list
   Teuchos::ParameterList condparams;
@@ -1157,13 +1157,16 @@ void SCATRA::ScaTraTimIntImpl::EvaluateConvectiveHeatTransfer(
   // action for elements
   condparams.set<int>("action",SCATRA::bd_calc_convective_heat_transfer);
 
+  // provide displacement field in case of ALE
+  if (isale_) condparams.set<int>("ndsdisp",nds_disp_);
+
   // clear state
   discret_->ClearState();
 
   // add element parameters and vectors according to time-integration scheme
   AddTimeIntegrationSpecificVectors();
 
-  std::string condstring("ThermoConvections");
+  std::string condstring("TransportThermoConvections");
   discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,condstring);
   discret_->ClearState();
 

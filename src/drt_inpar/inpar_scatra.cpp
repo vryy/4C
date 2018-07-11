@@ -802,6 +802,58 @@ void INPAR::SCATRA::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Cond
   condlist.push_back(surftransportneumanninflow);
 
   /*--------------------------------------------------------------------*/
+  // Scatra convective heat transfer (Newton's law of heat transfer)
+
+  std::vector<Teuchos::RCP<ConditionComponent> > transportthermoconvectcomponents;
+
+  // decide here if approximation is sufficient
+  // --> Tempn (old temperature T_n)
+  // or if the exact solution is needed
+  // --> Tempnp (current temperature solution T_n+1) with linearisation
+  transportthermoconvectcomponents.push_back(
+    Teuchos::rcp(
+      new StringConditionComponent(
+        "temperature state","Tempnp",
+        Teuchos::tuple<std::string>("Tempnp","Tempn"),
+        Teuchos::tuple<std::string>("Tempnp","Tempn"))));
+  // heat transfer coefficient h
+  transportthermoconvectcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("coeff")));
+  transportthermoconvectcomponents.push_back(Teuchos::rcp(new RealConditionComponent("coeff")));
+  // surrounding (fluid) temperature T_oo
+  transportthermoconvectcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("surtemp")));
+  transportthermoconvectcomponents.push_back(Teuchos::rcp(new RealConditionComponent("surtemp")));
+  // time curve to increase the surrounding (fluid) temperature T_oo in time
+  transportthermoconvectcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("surtempfunct")));
+  transportthermoconvectcomponents.push_back(Teuchos::rcp(new IntConditionComponent("surtempfunct",true,true)));
+  // time curve to increase the complete boundary condition, i.e., the heat flux
+  transportthermoconvectcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("funct")));
+  transportthermoconvectcomponents.push_back(Teuchos::rcp(new IntConditionComponent("funct",true,true)));
+
+  Teuchos::RCP<ConditionDefinition> linetransportthermoconvect =
+    Teuchos::rcp(new ConditionDefinition("TRANSPORT THERMO CONVECTION LINE CONDITIONS",
+                                         "TransportThermoConvections",
+                                         "Line Transport Thermo Convections",
+                                         DRT::Condition::TransportThermoConvections,
+                                         true,
+                                         DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surftransportthermoconvect =
+    Teuchos::rcp(new ConditionDefinition("TRANSPORT THERMO CONVECTION SURF CONDITIONS",
+                                         "TransportThermoConvections",
+                                         "Surface Transport Thermo Convections",
+                                         DRT::Condition::TransportThermoConvections,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  for (unsigned i=0; i<transportthermoconvectcomponents.size(); ++i)
+  {
+    linetransportthermoconvect->AddComponent(transportthermoconvectcomponents[i]);
+    surftransportthermoconvect->AddComponent(transportthermoconvectcomponents[i]);
+  }
+
+  condlist.push_back(linetransportthermoconvect);
+  condlist.push_back(surftransportthermoconvect);
+
+  /*--------------------------------------------------------------------*/
   // Macro-micro coupling condition for micro scale in multi-scale scalar transport problems
   {
     // condition definition

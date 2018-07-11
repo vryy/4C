@@ -229,6 +229,7 @@ public:
     VolumetricSurfaceFlowCond,
     VolumetricFlowBorderNodes,
     ThermoConvections,
+    TransportThermoConvections,
     S2ICoupling,
     S2ICouplingGrowth,
     S2ICouplingPartitioning,

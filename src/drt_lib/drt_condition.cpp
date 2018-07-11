@@ -216,6 +216,7 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==VolumetricFlowBorderNodes)     os << "Border Nodes of the volumetric flow Surface";
   else if (Type()==VolSTCLayer)                   os << "Number of current STC layer";
   else if (Type()==ThermoConvections)             os << "ThermoConvections boundary condition: ";
+  else if (Type()==TransportThermoConvections)    os << "Transport ThermoConvections boundary condition: ";
   else if (Type()==FSICouplingCenterDisp)         os << "Sliding ALE Center Disp condition";
   else if (Type()==FSICouplingNoSlide)            os << "Do not consider these nodes for sliding ALE";
   else if (Type()==RobinSpringDashpot)            os << "Robin Spring Dashpot Condition";

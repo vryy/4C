@@ -263,8 +263,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
 
     // get condition
     Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition");
-    if (cond == Teuchos::null)
-      dserror("Cannot access condition 'ThermoConvections'!");
+    if (cond == Teuchos::null) dserror("Cannot access condition 'TransportThermoConvections'!");
 
     // get heat transfer coefficient and surrounding temperature
     const double heatranscoeff = cond->GetDouble("coeff");
