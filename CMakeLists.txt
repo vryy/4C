@@ -407,6 +407,7 @@ if (FFTW_FOUND)
   link_directories(${FFTW_LIBRARY_DIRS})
   set(LIBRARIES ${LIBRARIES} ${FFTW_LIBRARIES} )
   add_definitions("-DHAVE_FFTW")  # HAVE_FFTW preprocessor flag for BACI
+  set(HAVE_FFTW ON)
 else()
   message("WW *************************************************************")
   message("WW Warning: FFTW not found. no FFTW support in BACI.")
