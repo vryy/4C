@@ -45,6 +45,7 @@
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/permeablefluid.H"
 #include "../drt_mat/sutherland.H"
+#include "../drt_mat/tempdepwater.H"
 #include "../drt_mat/cavitationfluid.H"
 #include "../drt_mat/yoghurt.H"
 #include "../drt_mat/fluidporo.H"
@@ -2321,8 +2322,20 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::GetDensity(
 
     // compute density at n+alpha_F or n+1 based on temperature
     // and thermodynamic pressure
-
     densaf_ = actmat->ComputeDensity(tempaf,thermpressaf);
+
+    // set density factor for Neumann boundary conditions to density for present material
+    densfac_ = densaf_;
+  }
+  else if (material->MaterialType() == INPAR::MAT::m_tempdepwater)
+  {
+    const MAT::TempDepWater* actmat = static_cast<const MAT::TempDepWater*>(material.get());
+
+    // compute temperature at n+alpha_F or n+1
+    const double tempaf = funct_.Dot(escaaf);
+
+    // compute density at n+alpha_F or n+1 based on temperature
+    densaf_ = actmat->ComputeDensity(tempaf);
 
     // set density factor for Neumann boundary conditions to density for present material
     densfac_ = densaf_;

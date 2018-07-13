@@ -45,6 +45,7 @@
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/permeablefluid.H"
 #include "../drt_mat/sutherland.H"
+#include "../drt_mat/tempdepwater.H"
 
 #include "../drt_inpar/inpar_fpsi.H"
 #include "../drt_inpar/inpar_material.H"
@@ -5857,6 +5858,16 @@ else if (material->MaterialType() == INPAR::MAT::m_sutherland)
   // and thermodynamic pressure
   densaf_ = actmat->ComputeDensity(pscaaf,thermpressaf);
 
+}
+else if (material->MaterialType() == INPAR::MAT::m_tempdepwater)
+{
+  const MAT::TempDepWater* actmat = static_cast<const MAT::TempDepWater*>(material.get());
+
+  // compute viscosity
+  visc_ = actmat->ComputeViscosity(pscaaf);
+
+  // compute density at n+alpha_F or n+1 based on temperature
+  densaf_ = actmat->ComputeDensity(pscaaf);
 }
 else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
 {

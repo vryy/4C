@@ -34,7 +34,8 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   Teuchos::ParameterList& fdyn = list->sublist("FLUID DYNAMIC",false,"");
 
-  // physical type of fluid flow (incompressible, varying density, loma, Boussinesq approximation)
+  // physical type of fluid flow (incompressible, varying density, loma, Boussinesq approximation,
+  // temperature-dependent water)
   setStringToIntegralParameter<int>("PHYSICAL_TYPE","Incompressible",
                                     "Physical Type",
                                     tuple<std::string>(
@@ -42,6 +43,7 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                       "Artificial_compressibility",
                                       "Varying_density",
                                       "Loma",
+                                      "Temp_dep_water",
                                       "Boussinesq",
                                       "Topology_optimization",
                                       "Stokes",
@@ -52,6 +54,7 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                       artcomp,
                                       varying_density,
                                       loma,
+                                      tempdepwater,
                                       boussinesq,
                                       topopt,
                                       stokes,

@@ -330,6 +330,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
      mat->MaterialType() == INPAR::MAT::m_myocard or
      mat->MaterialType() == INPAR::MAT::m_mixfrac or
      mat->MaterialType() == INPAR::MAT::m_sutherland or
+     mat->MaterialType() == INPAR::MAT::m_tempdepwater or
      mat->MaterialType() == INPAR::MAT::m_arrhenius_pv or
      mat->MaterialType() == INPAR::MAT::m_ferech_pv or
      mat->MaterialType() == INPAR::MAT::m_ion or

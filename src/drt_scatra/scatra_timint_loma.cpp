@@ -13,6 +13,7 @@
 
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/sutherland.H"
+#include "../drt_mat/tempdepwater.H"
 
 #include "../drt_scatra_ele/scatra_ele_action.H"
 
@@ -100,8 +101,15 @@ void SCATRA::ScaTraTimIntLoma::SetInitialThermPressure()
   }
   else
   {
-    dserror("No Sutherland material found for initial setting of thermodynamic pressure!");
-    //thermpressn_ = 0.0;
+    // No Sutherland material found -> now check for temperature-dependent water,
+    // which is allowed to be used in TFSI
+    int id = problem_->Materials()->FirstIdByType(INPAR::MAT::m_tempdepwater);
+    if (id !=-1) // i.e., temperature-dependent water found
+    {
+      // set thermodynamic pressure to zero once and for all
+      thermpressn_ = 0.0;
+    }
+    else dserror("Neiter Sutherland material nor temperature-dependent water found for initial setting of thermodynamic pressure!");
   }
 
   // initialize also value at n+1
@@ -128,6 +136,10 @@ void SCATRA::ScaTraTimIntLoma::SetInitialThermPressure()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntLoma::ComputeInitialThermPressureDeriv()
 {
+  // check for temperature-dependent water, which is allowed to be used in TFSI
+  int id = problem_->Materials()->FirstIdByType(INPAR::MAT::m_tempdepwater);
+  if (id !=-1) dserror("Temperature-dependent water found for initial computation of derivative of thermodynamic pressure -> Set 'CONSTHERMPRES' to 'YES' in FS3I input section!");
+
   // define element parameter list
   Teuchos::ParameterList eleparams;
 
@@ -216,6 +228,10 @@ void SCATRA::ScaTraTimIntLoma::ComputeInitialThermPressureDeriv()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntLoma::ComputeInitialMass()
 {
+  // check for temperature-dependent water, which is allowed to be used in TFSI
+  int id = problem_->Materials()->FirstIdByType(INPAR::MAT::m_tempdepwater);
+  if (id !=-1) dserror("Temperature-dependent water found for initial computation of mass -> Set 'CONSTHERMPRES' to 'YES' in FS3I input section!");
+
   // set scalar values needed by elements
   discret_->ClearState();
   discret_->SetState("phinp",phin_);

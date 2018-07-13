@@ -478,6 +478,21 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
+  // material for temperature-dependent water according to VDI Waermeatlas
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_tempdepwater",
+                                            "material for temperature-dependent water",
+                                            INPAR::MAT::m_tempdepwater));
+
+    AddNamedReal(m,"CRITPRESS","critical pressure (Pa)");
+    AddNamedReal(m,"CRITTEMP","critical temperature (K)");
+    AddNamedReal(m,"SHC","specific heat capacity at constant pressure (J/(kg*K))");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // material according to Sutherland law with Arrhenius-type chemical
   // kinetics (species)
   {

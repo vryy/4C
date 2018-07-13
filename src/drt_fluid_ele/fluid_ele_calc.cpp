@@ -48,6 +48,7 @@
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/permeablefluid.H"
 #include "../drt_mat/sutherland.H"
+#include "../drt_mat/tempdepwater.H"
 #include "../drt_mat/cavitationfluid.H"
 #include "../drt_mat/yoghurt.H"
 #include "../drt_mat/matlist.H"
@@ -2011,6 +2012,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SetConvectiveVelint(
   case INPAR::FLUID::artcomp:
   case INPAR::FLUID::varying_density:
   case INPAR::FLUID::loma:
+  case INPAR::FLUID::tempdepwater:
   case INPAR::FLUID::boussinesq:
   case INPAR::FLUID::topopt:
   {
@@ -2408,6 +2410,52 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::GetMaterialParams(
     // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
     const double scatrabodyforce = funct_.Dot(escabofoaf);
     scarhs_ += scatrabodyforce/actmat->Shc();
+  }
+  else if (material->MaterialType() == INPAR::MAT::m_tempdepwater)
+  {
+    const MAT::TempDepWater* actmat = static_cast<const MAT::TempDepWater*>(material.get());
+
+    // compute temperature at n+alpha_F or n+1 and check whether it is positive
+    const double tempaf = funct_.Dot(escaaf);
+    if (tempaf < 0.0)
+      dserror("Negative temperature in Fluid temperature-dependent water evaluation!");
+
+    // compute temperature-dependent viscosity
+    visc = actmat->ComputeViscosity(tempaf);
+
+    // compute temperature-dependent diffusivity
+    diffus_ = actmat->ComputeDiffusivity(tempaf);
+
+    // compute temperature-dependent density at n+alpha_F or n+1
+    densaf = actmat->ComputeDensity(tempaf);
+
+    if (fldparatimint_->IsGenalpha())
+    {
+      // compute temperature at n+alpha_M
+      const double tempam = funct_.Dot(escaam);
+
+      // compute density at n+alpha_M based on temperature
+      densam = actmat->ComputeDensity(tempam);
+    }
+    else
+    {
+      // set density at n+1 at location n+alpha_M as well
+      densam = densaf;
+
+      if (not fldparatimint_->IsStationary())
+      {
+        // compute temperature at n
+        const double tempn = funct_.Dot(escaam);
+
+        // compute density at n based on temperature at n
+        densn = actmat->ComputeDensity(tempn);
+      }
+    }
+
+    // second part of right-hand side for scalar equation: body force
+    // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+    const double scatrabodyforce = funct_.Dot(escabofoaf);
+    scarhs_ = scatrabodyforce/actmat->Shc();
   }
   else if (material->MaterialType() == INPAR::MAT::m_cavitation)
   {

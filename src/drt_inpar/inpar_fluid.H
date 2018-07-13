@@ -27,7 +27,8 @@ namespace INPAR
 
   namespace FLUID
   {
-    //! physical type of the fluid flow (incompressible, Boussinesq approximation, varying density, loma)
+    //! physical type of the fluid flow (incompressible, Boussinesq approximation, varying density, loma,
+    //! temperature-dependent water)
     enum PhysicalType
     {
       physicaltype_undefined,
@@ -36,6 +37,7 @@ namespace INPAR
       boussinesq,
       varying_density,
       loma,
+      tempdepwater,
       poro,
       poro_p1,
       topopt,

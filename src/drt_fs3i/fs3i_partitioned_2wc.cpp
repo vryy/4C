@@ -111,6 +111,9 @@ void FS3I::PartFS3I_2WC::InitialCalculations()
 
   // set initial value of thermodynamic pressure in fluid-based scalar
   // transport
+  // for constant thermodynamic pressure in low-Mach-number flow and
+  // for temperature-dependent water, thermodynamic pressure is set
+  // to a constant here and never touched again
   Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())->SetInitialThermPressure();
 
   // energy conservation: compute initial time derivative of therm. pressure

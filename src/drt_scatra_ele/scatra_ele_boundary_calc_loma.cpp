@@ -24,6 +24,7 @@
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/mixfrac.H"
 #include "../drt_mat/sutherland.H"
+#include "../drt_mat/tempdepwater.H"
 #include "../drt_mat/thermostvenantkirchhoff.H"
 #include "../drt_mat/yoghurt.H"
 
@@ -315,6 +316,19 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::GetDensity(
 
     // compute density based on temperature and thermodynamic pressure
     density = static_cast<const MAT::Sutherland*>(material.get())->ComputeDensity(temp,thermpress_);
+
+    break;
+  }
+
+  case INPAR::MAT::m_tempdepwater:
+  {
+    // compute temperature and check whether it is positive
+    const double temp = my::funct_.Dot(ephinp[k]);
+    if (temp < 0.0)
+      dserror("Negative temperature in ScaTra temperature-dependent water density evaluation on boundary!");
+
+    // compute density based on temperature
+    density = static_cast<const MAT::TempDepWater*>(material.get())->ComputeDensity(temp);
 
     break;
   }

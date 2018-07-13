@@ -32,6 +32,7 @@
 
 #include "../drt_mat/mixfrac.H"
 #include "../drt_mat/sutherland.H"
+#include "../drt_mat/tempdepwater.H"
 #include "../drt_mat/arrhenius_spec.H"
 #include "../drt_mat/arrhenius_temp.H"
 #include "../drt_mat/arrhenius_pv.H"
@@ -131,6 +132,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::Materials(
     MatMixFrac(material,k,densn,densnp,densam,visc);
   else if (material->MaterialType() == INPAR::MAT::m_sutherland)
    MatSutherland(material,k,densn,densnp,densam,visc);
+  else if (material->MaterialType() == INPAR::MAT::m_tempdepwater)
+   MatTempDepWater(material,k,densn,densnp,densam,visc);
   else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
     MatArrheniusPV(material,k,densn,densnp,densam,visc);
   else if (material->MaterialType() == INPAR::MAT::m_arrhenius_spec)
@@ -254,6 +257,61 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatSutherland(
 
   // factor for density gradient
   densgradfac_[0] = -densnp/tempnp;
+
+  // get also fluid viscosity if subgrid-scale velocity is to be included
+  // or multifractal subgrid-scales are used
+  if (my::scatrapara_->RBSubGrVel() or my::turbparams_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
+    visc = actmat->ComputeViscosity(tempnp);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | material temperature-dependent water                        vg 07/18 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatTempDepWater(
+  const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
+  const int                               k,        //!< id of current scalar
+  double&                                 densn,    //!< density at t_(n)
+  double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
+  double&                                 densam,   //!< density at t_(n+alpha_M)
+  double&                                 visc      //!< fluid viscosity
+  )
+{
+  const Teuchos::RCP<const MAT::TempDepWater>& actmat
+    = Teuchos::rcp_dynamic_cast<const MAT::TempDepWater>(material);
+
+  // get specific heat capacity at constant pressure
+  shc_ = actmat->Shc();
+
+  // compute temperature at n+1 or n+alpha_F and check whether it is positive
+  const double tempnp = my::scatravarmanager_->Phinp(0);
+  if (tempnp < 0.0)
+    dserror("Negative temperature in ScaTra Sutherland material evaluation!");
+
+  // compute diffusivity
+  my::diffmanager_->SetIsotropicDiff(actmat->ComputeDiffusivity(tempnp),k);
+
+  // compute density at n+1 or n+alpha_F based on temperature
+  densnp = actmat->ComputeDensity(tempnp);
+
+  if (my::scatraparatimint_->IsGenAlpha())
+  {
+    // compute density at n+alpha_M
+    const double tempam = my::funct_.Dot(ephiam_[0]);
+    densam = actmat->ComputeDensity(tempam);
+
+    if (not my::scatraparatimint_->IsIncremental())
+    {
+      // compute density at n (thermodynamic pressure approximated at n+alpha_M)
+      const double tempn = my::scatravarmanager_->Phin(0);
+      densn = actmat->ComputeDensity(tempn);
+    }
+    else densn = 1.0;
+  }
+  else densam = densnp;
 
   // get also fluid viscosity if subgrid-scale velocity is to be included
   // or multifractal subgrid-scales are used

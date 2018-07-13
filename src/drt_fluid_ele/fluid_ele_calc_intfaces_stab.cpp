@@ -2281,6 +2281,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::SetCon
   case INPAR::FLUID::artcomp:
   case INPAR::FLUID::varying_density:
   case INPAR::FLUID::loma:
+  case INPAR::FLUID::tempdepwater:
   case INPAR::FLUID::boussinesq:
   case INPAR::FLUID::topopt:
   {

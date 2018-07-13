@@ -48,6 +48,7 @@
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/permeablefluid.H"
 #include "../drt_mat/sutherland.H"
+#include "../drt_mat/tempdepwater.H"
 #include "../drt_mat/yoghurt.H"
 #include "../drt_mat/matlist.H"
 
@@ -2513,6 +2514,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SetConvectiveVelintN(
   case INPAR::FLUID::artcomp:
   case INPAR::FLUID::varying_density:
   case INPAR::FLUID::loma:
+  case INPAR::FLUID::tempdepwater:
   case INPAR::FLUID::boussinesq:
   case INPAR::FLUID::topopt:
   {

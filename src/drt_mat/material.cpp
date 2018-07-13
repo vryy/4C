@@ -48,6 +48,7 @@
 #include "myocard.H"
 #include "mixfrac.H"
 #include "sutherland.H"
+#include "tempdepwater.H"
 #include "arrhenius_spec.H"
 #include "arrhenius_temp.H"
 #include "arrhenius_pv.H"
@@ -377,6 +378,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::Sutherland(curmat));
     MAT::PAR::Sutherland* params = static_cast<MAT::PAR::Sutherland*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_tempdepwater:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::TempDepWater(curmat));
+    MAT::PAR::TempDepWater* params = static_cast<MAT::PAR::TempDepWater*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_arrhenius_spec:

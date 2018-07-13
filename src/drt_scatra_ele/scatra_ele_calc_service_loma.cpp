@@ -23,6 +23,7 @@
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/arrhenius_temp.H"
 #include "../drt_mat/sutherland.H"
+#include "../drt_mat/tempdepwater.H"
 
 #include "scatra_ele.H"
 #include "scatra_ele_action.H"
@@ -196,6 +197,10 @@ double DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetDensity(
     const double thermpress = params.get<double>("thermpress");
 
     density = Teuchos::rcp_dynamic_cast<const MAT::Sutherland>(material)->ComputeDensity(tempnp,thermpress);
+  }
+  else if (material->MaterialType() == INPAR::MAT::m_tempdepwater)
+  {
+    density = Teuchos::rcp_dynamic_cast<const MAT::TempDepWater>(material)->ComputeDensity(tempnp);
   }
   else if (material->MaterialType() == INPAR::MAT::m_matlist)
   {

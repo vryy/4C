@@ -3317,7 +3317,8 @@ void FLD::FluidImplicitTimeInt::Output()
     //output_->WriteVector("residual", trueresidual_);
     if (alefluid_) output_->WriteVector("dispnp", dispnp_);
 
-    if (physicaltype_ == INPAR::FLUID::varying_density or physicaltype_ == INPAR::FLUID::boussinesq)
+    if (physicaltype_ == INPAR::FLUID::varying_density or physicaltype_ == INPAR::FLUID::boussinesq or
+        physicaltype_ == INPAR::FLUID::tempdepwater)
     {
       Teuchos::RCP<Epetra_Vector> scalar_field = velpressplitter_->ExtractCondVector(scaaf_);
       output_->WriteVector("scalar_field", scalar_field);

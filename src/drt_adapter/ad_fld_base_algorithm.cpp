@@ -349,14 +349,16 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
   // -------------------------------------------------------------------
   Teuchos::RCP<Teuchos::ParameterList> fluidtimeparams = Teuchos::rcp(new Teuchos::ParameterList());
 
-  // physical type of fluid flow (incompressible, Boussinesq Approximation, varying density, loma, poro)
+  // physical type of fluid flow (incompressible, Boussinesq Approximation, varying density, loma, temperature-dependent water, poro)
   fluidtimeparams->set<int>("Physical Type",
       DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE"));
   // and  check correct setting
-  if ((probtype == prb_thermo_fsi or probtype == prb_loma) and
-      DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE")
-      != INPAR::FLUID::loma)
-    dserror("Input parameter PHYSICAL_TYPE in section FLUID DYNAMIC needs to be 'Loma' for low-Mach-number flow and Thermo-fluid-structure interaction!");
+  if (probtype == prb_loma and DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE") != INPAR::FLUID::loma)
+    dserror("Input parameter PHYSICAL_TYPE in section FLUID DYNAMIC needs to be 'Loma' for low-Mach-number flow!");
+  if ((probtype == prb_thermo_fsi) and
+      (DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE") != INPAR::FLUID::loma and
+       DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE") != INPAR::FLUID::tempdepwater))
+    dserror("Input parameter PHYSICAL_TYPE in section FLUID DYNAMIC needs to be 'Loma' or 'Temp_dep_water' for Thermo-fluid-structure interaction!");
   if (( probtype == prb_poroelast
         or probtype == prb_poroscatra
         or probtype == prb_fpsi
@@ -886,22 +888,34 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
     case prb_thermo_fsi:
     {
       Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
-      if(timeint == INPAR::FLUID::timeint_afgenalpha
+      if (DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE") == INPAR::FLUID::tempdepwater)
+      {
+         if(timeint == INPAR::FLUID::timeint_afgenalpha
          or timeint == INPAR::FLUID::timeint_npgenalpha)
-        tmpfluid = Teuchos::rcp(new FLD::TimIntLomaGenAlpha(actdis, solver, fluidtimeparams, output, isale));
-      else if(timeint == INPAR::FLUID::timeint_one_step_theta)
-        tmpfluid = Teuchos::rcp(new FLD::TimIntLomaOst(actdis, solver, fluidtimeparams, output, isale));
-      else if(timeint == INPAR::FLUID::timeint_bdf2)
-        tmpfluid = Teuchos::rcp(new FLD::TimIntLomaBDF2(actdis, solver, fluidtimeparams, output, isale));
+           tmpfluid = Teuchos::rcp(new FLD::TimIntGenAlpha(actdis, solver, fluidtimeparams, output, isale));
+         else if(timeint == INPAR::FLUID::timeint_one_step_theta)
+           tmpfluid = Teuchos::rcp(new FLD::TimIntOneStepTheta(actdis, solver, fluidtimeparams, output, isale));
+         else if(timeint == INPAR::FLUID::timeint_bdf2)
+           tmpfluid = Teuchos::rcp(new FLD::TimIntBDF2(actdis, solver, fluidtimeparams, output, isale));
+         else dserror("Unknown time integration for this fluid problem type\n");
+      }
       else
-        dserror("Unknown time integration for this fluid problem type\n");
+      {
+         if(timeint == INPAR::FLUID::timeint_afgenalpha
+         or timeint == INPAR::FLUID::timeint_npgenalpha)
+           tmpfluid = Teuchos::rcp(new FLD::TimIntLomaGenAlpha(actdis, solver, fluidtimeparams, output, isale));
+         else if(timeint == INPAR::FLUID::timeint_one_step_theta)
+           tmpfluid = Teuchos::rcp(new FLD::TimIntLomaOst(actdis, solver, fluidtimeparams, output, isale));
+         else if(timeint == INPAR::FLUID::timeint_bdf2)
+           tmpfluid = Teuchos::rcp(new FLD::TimIntLomaBDF2(actdis, solver, fluidtimeparams, output, isale));
+         else dserror("Unknown time integration for this fluid problem type\n");
+      }
 
-      const Teuchos::ParameterList& fsidyn =
-          DRT::Problem::Instance()->FSIDynamicParams();
+      const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
       int coupling = DRT::INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
 
       if ( coupling == fsi_iter_sliding_monolithicfluidsplit
-          or coupling == fsi_iter_sliding_monolithicstructuresplit)
+        or coupling == fsi_iter_sliding_monolithicstructuresplit)
         fluid_ = Teuchos::rcp(new FluidFSIMsht(tmpfluid,actdis,solver,fluidtimeparams,output,isale,dirichletcond));
       else
         fluid_ = Teuchos::rcp(new FluidFSI(tmpfluid,actdis,solver,fluidtimeparams,output,isale,dirichletcond));
@@ -1166,7 +1180,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   // -------------------------------------------------------------------
   Teuchos::RCP<Teuchos::ParameterList> fluidtimeparams = Teuchos::rcp(new Teuchos::ParameterList());
 
-  // physical type of fluid flow (incompressible, Boussinesq Approximation, varying density, loma)
+  // physical type of fluid flow (incompressible, Boussinesq Approximation, varying density, loma, temperature-dependent water)
   fluidtimeparams->set<int>("Physical Type",
       DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE"));
 
