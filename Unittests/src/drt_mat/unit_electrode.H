@@ -373,7 +373,7 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
 
       // define results and tolerances for cathode materials
       const double results_cathode_csv[] = {-3.97916196311376825587e-04,-1.82254204470957764054e-04,-1.19179495232888516508e-03};
-      const double tolerances_cathode_csv[] = {1.e-20,1.e-20,1.e-19};
+      const double tolerances_cathode_csv[] = {1.e-16,1.e-16,1.e-16};
       const double results_cathode_redlichkister[] = {-5.87374545823974372749e-02,-4.59544093325152322449e-02,-2.40034452721541273490e-02};
       const double tolerances_cathode_redlichkister[] = {1.e-18,1.e-18,1.e-18};
       const double results_cathode_taralov[] = {-4.61526542535566619563e+00,-3.29033139167962890639e-03,-3.97138702703261764482e-02};
@@ -415,7 +415,7 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
 
       // define results and tolerances for cathode materials
       const double results_cathode_csv[] = {1.63562986543888766237e-06,1.43228888999912318160e-07,-1.10872570647637550212e-05};
-      const double tolerances_cathode_csv[] = {1.e-22,1.e-23,1.e-21};
+      const double tolerances_cathode_csv[] = {1.e-16,1.e-16,1.e-16};
       const double results_cathode_redlichkister[] = {1.41256487214221678611e-02,5.72637600860917590773e-03,-7.56499159049272597299e-03};
       const double tolerances_cathode_redlichkister[] = {1.e-18,1.e-19,1.e-19};
       const double results_cathode_taralov[] = {3.89765224056106092121e+01,-7.34373323389212427637e-03,-2.27647861985425976894e-02};
