@@ -21,6 +21,7 @@
 #include "cut_test_utils.H"
 
 #include <iterator>
+#include <cmath>
 
 #define PRECISION24
 //#define GMSH_OUTPUT_LSNOLOC_CUT_TEST
@@ -286,7 +287,7 @@ void Test_LevelSetCut_Tesselation_and_DD_same_VC(std::vector<int> nids,std::vect
       std::cout << "\t difference: " << fabs(tessVol[i]-dirDivVol[i]);// << "\n";
       error = true;
     }
-    else if(isnan(tessVol[i]) or isnan(dirDivVol[i]))
+    else if(std::isnan(tessVol[i]) or std::isnan(dirDivVol[i]))
       error = true;
     std::cout << "\n";
   }
