@@ -2,11 +2,12 @@
 
 BACI ("Bavarian Advanced Computational Initiative") is a parallel multiphsycis research code 
 to address a plethora of physical problems by means of _computational mechanics_. 
-Large parts of BACI are based on finite element methods (FEM), \
+
+Large parts of BACI are based on finite element methods (FEM), 
 but alternative discretization methods such as discontinuous Galerkin methods (DG), 
 particle methods and mesh-free methods have also been successfully integrated. 
-The research software is implemented throughout in object-oriented programming (C++) 
-using modern software design and is parallelized with MPI for distributed memory hardware architectures.
+The research software is implemented throughout in object-oriented programming (```C++```) 
+using modern software design and is parallelized with ```MPI``` for distributed memory hardware architectures.
 
 ## Contents
 
