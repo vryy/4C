@@ -6,15 +6,14 @@ to address a plethora of physical problems by means of _computational mechanics_
 Large parts of BACI are based on finite element methods (FEM), 
 but alternative discretization methods such as discontinuous Galerkin methods (DG), 
 particle methods and mesh-free methods have also been successfully integrated. 
-The research software is implemented throughout in object-oriented programming (```C++```) 
-using modern software design and is parallelized with ```MPI``` for distributed memory hardware architectures.
+The research software is implemented throughout in object-oriented programming (C++) 
+using modern software design and is parallelized with MPI for distributed memory hardware architectures.
 
 ## Contents
 
 1. [Getting Up and Running with BACI](#getting-up-and-running-with-baci)
    1. [Clone the Repository](#clone-the-repository)
    1. [Set Up the Environment](#set-up-the-environment)
-   1. [Set Up your Compiler Toolchain](#set-up-your-compiler-toolchain)
    1. [Configure and Build](#configure-and-build)
    1. [Updating BACI](#updating-baci)
 1. [Where to Ask Questions](#where-to-ask-questions)
@@ -23,7 +22,7 @@ using modern software design and is parallelized with ```MPI``` for distributed 
 
 ## Getting Up and Running with BACI
 
-### Clone the Repositories
+### Clone the Repository
 
 ```bash
 cd <someBaseDir>
@@ -53,13 +52,15 @@ and some are optional, e.g.
 - FFTW
 
 Often, a pre-compiled version of Trilinos and set of TPLs is available at your institute.
-Look into the build configuration files in ```buildconfig/``` or ask your colleagures for further information.
+Look into the build configuration files in ```buildconfig/``` or ask your colleagues for further information.
+
+[↑ Contents](#contents)
 
 ### Configure and Build
 
 #### Create the Build Directory
 
-BACI enforces an out-of-source build. 
+BACI enforces an out-of-source build, i.e. your build directory may not be localted inside the source code directory.
 
 ```bash
 cd ${WORKSPACE}
@@ -85,7 +86,7 @@ make -j <numProcs> |& tee make$(date +%y%m%d%H%M%N).log
 
 where `<numProcs>` is the number of processors you want to use.
 
-> **Note:**  After the first build, it is not always necessary to rerun the configure script&mdash;only the `make` command is required.  Reconfiguring is required when new files have been added and no changes are made to the `CMakeLists.txt` files.  If changes are made to a `CMakeLists.txt` file, then calling `make` will *automatically* reconfigure as part of the build process.
+> **Note:**  After the first build, it is not always necessary to rerun the configure script &mdash; only the `make` command is required.  Reconfiguring is required when new files have been added and no changes are made to the `CMakeLists.txt` files.  If changes are made to a `CMakeLists.txt` file, then calling `make` will *automatically* reconfigure as part of the build process.
 
 #### Run the Unit Tests
 
@@ -113,7 +114,7 @@ git pull
 
 ## Where to Ask Questions
 
-If you need help with BACI, feel free to ask questions by [creating a GitLab issue](https://gitlab.lrz.de/baci/baci/issues).  Use an issue template to pre-populate the *Description* field, giving you instructions on submitting the issue.
+If you need help with BACI, feel free to ask questions by [creating a GitLab issue](https://gitlab.lrz.de/baci/baci/issues).  Use an issue template from the dropdown menu to pre-populate the *Description* field, giving you instructions on submitting the issue.
 
 [↑ Contents](#contents)
 
