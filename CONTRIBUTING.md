@@ -94,9 +94,9 @@ then use `git rebase -i` to reorganize your commits before sharing.
 
 #### Commit Messages
 
-Make sure your commit messages reference the appropriate GitLab issue numbers using the `#<issueNumber>` syntax.
-The first line of the commit message should be a descriptive title, limited to 50 characters.
-This is then followed by a blank line, and then the rest of the commit message is a description of the changes, 
+* Make sure your commit messages reference the appropriate GitLab issue numbers using the `#<issueNumber>` syntax.
+* The **first line** of the commit message should be a descriptive title, **limited to 50 characters**.
+* This is then followed by a blank line, and then the rest of the commit message is a description of the changes, 
 limited to 72 characters wide.
 
 [↑ Contents](#contents)
@@ -111,7 +111,7 @@ Please see [this wiki page](https://gitlab.lrz.de/baci/baci/wiki/Doxygen) for ou
 ### Update your Branch
 
 While working on your feature in your local `<branchName>` branch in `baci`, other commits will likely make it into the remote `master` branch.  
-There are a variety of ways to merge these changes into your local feature branch. 
+There are a variety of ways to incorporate these changes into your local feature branch. 
 Our preferred possibility is
 ```bash
 git checkout master 
@@ -165,7 +165,7 @@ that is not necessarily meant for review yet.
 If you are working on a feature addition that is fairly substantial (say greater than a month of work), 
 consider creating WIP MRs.  These can be reviewed, but then you can close them without merging in the changes.
 When work is complete, create a MR that includes all the changes, 
-and mention all the sub-MRs that have already been reviewed in the *Description*.
+and mention all the sub-WIP-MRs that have already been reviewed in the *Description*.
 This makes it easy for a reviewer to see that all the changes have already been reviewed along the way, 
 rather than having to look at the entire change set at once.
 
