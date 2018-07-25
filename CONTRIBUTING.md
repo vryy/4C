@@ -132,6 +132,11 @@ A small set of test cases can be run via `ctest -L minimal`.
 
 ## Merging Changes into `master`
 
+To merge changes into `master`, a feature branch needs to satisfy these conditions:
+* Passing code check, e.g. no trailing white spaces, proper Doxygen style, ...
+* No build errors and passing all tests
+* Passing code inspection by one of your fellow developers
+
 ### Create a Merge Request
 
 When your changes are ready to be integrated into `baci`'s `master` branch,
@@ -144,14 +149,25 @@ move the issue card from **In Progress** to **Under Review** on our
       * source branch: `<branchName>`
       * target branch: `master`
    * On the new merge request creation page, select a merge request template from the dropdown menu to pre-populate the *Description* field with some text. Follow the instructions in that template to give us as much information as you can such that we can review and approve the issue as soon as it is practicable.
+* Trigger the execution of the test suite manually:
+   * Go to BACI's [CI/CD](https://gitlab.lrz.de/baci/baci/pipelines) page
+   * Select your branch `<branchName>` and start pipeline
 
 [↑ Contents](#contents)
 
 #### Work-in-Progress Merge Requests
 
-If work on an issue is not yet complete, but you'd like to get another set of eyes on your work sooner rather than later, you can create a "work-in-progress" merge request.  Simply begin the Title with "[WIP] " and that will indicate to the team that this is ongoing work that is not necessarily meant for review yet.
+If work on an issue is not yet complete, but you'd like to get another set of eyes on your work sooner rather than later,
+you can create a "work-in-progress" merge request.
+Simply begin the *Title* with "[WIP] " and that will indicate to the team that this is ongoing work 
+that is not necessarily meant for review yet.
 
-If you are working on a feature addition that is fairly substantial (say greater than a month of work), consider creating WIP MRs.  These can be reviewed, but then you can close them without merging in the changes.  When work is complete, create a MR that includes all the changes, and in the Description mention all the sub-MRs that have already been reviewed.  This makes it easy for a reviewer to see that all the changes have already been reviewed along the way, rather than having to look at the entire change set at once.
+If you are working on a feature addition that is fairly substantial (say greater than a month of work), 
+consider creating WIP MRs.  These can be reviewed, but then you can close them without merging in the changes.
+When work is complete, create a MR that includes all the changes, 
+and mention all the sub-MRs that have already been reviewed in the *Description*.
+This makes it easy for a reviewer to see that all the changes have already been reviewed along the way, 
+rather than having to look at the entire change set at once.
 
 [↑ Contents](#contents)
 
