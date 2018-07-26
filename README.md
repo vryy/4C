@@ -26,15 +26,20 @@ using modern software design and is parallelized with MPI for distributed memory
 
 ```bash
 cd <someBaseDir>
-git clone git@gitlab.lrz.de:baci/baci.git
-cd baci
+mkdir <sourceDir>
+git clone git@gitlab.lrz.de:baci/baci.git <sourceDir>
+cd <sourceDir>
 ```
+
+where `<someBaseDir>` is some directory on your machine and `<sourceDir>` will contain the BACI source code.
 
 Your directory tree should look like the following:
 ```
 <someBaseDir>/
-  baci
+  <sourceDir>
 ```
+
+Feel free to choose your own names for the source and build folders.
 
 [↑ Contents](#contents)
 
@@ -50,6 +55,7 @@ Some further third party libraries (TPLs) are mandatory, e.g.
 
 and some are optional, e.g.
 - FFTW
+- [deal.II](www.dealii.org)
 
 Often, a pre-compiled version of Trilinos and set of TPLs is available at your institute.
 Look into the build configuration files in ```buildconfig/``` or ask your colleagues for further information.
@@ -60,20 +66,23 @@ Look into the build configuration files in ```buildconfig/``` or ask your collea
 
 #### Create the Build Directory
 
-BACI enforces an out-of-source build, i.e. your build directory may not be localted inside the source code directory.
+BACI enforces an out-of-source build, i.e. your build directory may not be located inside the source code directory.
 
 ```bash
-cd ${WORKSPACE}
-mkdir baci-${COMPILE_TYPE}-${BUILD_TYPE}
-cd baci-${COMPILE_TYPE}-${BUILD_TYPE}
+cd <someBaseDir>
+mkdir <buildDir>
+cd <buildDir>
 ```
+
+where `<buildDir>` is your build directory.
 
 #### Configure
 
 Run
+
 ```bash
-cd ${WORKSPACE}/baci-${COMPILE_TYPE}-${BUILD_TYPE}
-<someBaseDir>/baci/do-configure | tee config$(date +%y%m%d%H%M%N).log
+cd <someBaseDir>/<buildDir>
+<someBaseDir>/<sourceDir>/do-configure | tee config$(date +%y%m%d%H%M%N).log
 ```
 
 > **Note:**  When you see `command |& tee something$(date +%y%m%d%H%M%N).log`, that is just a means of running a command and sending the output both to the screen and to a timestamped log file.  This is by no means necessary, but if you run into problems, having these timestamped log files can be quite useful in debugging what's gone wrong.
@@ -88,7 +97,7 @@ where `<numProcs>` is the number of processors you want to use.
 
 > **Note:**  After the first build, it is not always necessary to rerun the configure script &mdash; only the `make` command is required.  Reconfiguring is required when new files have been added and no changes are made to the `CMakeLists.txt` files.  If changes are made to a `CMakeLists.txt` file, then calling `make` will *automatically* reconfigure as part of the build process.
 
-#### Run the Unit Tests
+#### Run the Tests
 
 To verify that the build was successful, run the minimal set of tests via
 ```bash
@@ -106,7 +115,8 @@ ctest
 
 Any time you need to grab the latest from BACI:
 ```bash
-cd ${WORKSPACE}/baci
+cd <someBaseDir>/<sourceDir>
+git checkout master
 git pull
 ```
 
