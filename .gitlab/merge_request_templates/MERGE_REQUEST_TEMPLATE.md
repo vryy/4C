@@ -70,7 +70,7 @@ If you are unsure about any of these, please ask; we are here to help.
 - [ ] I have added tests to cover my changes.
 - [ ] All new and existing tests passed.
 - [ ] No new compiler warnings were introduced.
-- [ ] These changes break backwards compatibility.
+- [ ] These changes maintain backwards compatibility.
 
 ## Additional Information
 <!--- Anything else we need to know in evaluating this merge request? -->
