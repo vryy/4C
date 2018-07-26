@@ -43,7 +43,6 @@ such that the issue can be understood by your fellow developers and can be tackl
 
 Issues begin their life in the **Backlog** of our [Kanban board](https://gitlab.lrz.de/baci/baci/boards)
 and then move through the board from left to right.
-When enough information has been gathered and work is ready to begin on an issue, drag it to the **Ready** column.
 If at any point in an issue's life it becomes blocked by something (either another BACI issue, or perhaps something external), 
 move the issue card into the **Blocked** column to indicate that work can't proceed until something else is dealt with.
 
