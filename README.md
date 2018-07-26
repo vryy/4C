@@ -32,14 +32,13 @@ cd <sourceDir>
 ```
 
 where `<someBaseDir>` is some directory on your machine and `<sourceDir>` will contain the BACI source code.
+You can choose names and locations of these directories freely.
 
 Your directory tree should look like the following:
 ```
 <someBaseDir>/
   <sourceDir>
 ```
-
-Feel free to choose your own names for the source and build folders.
 
 [↑ Contents](#contents)
 
