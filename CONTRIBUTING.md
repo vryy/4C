@@ -63,6 +63,8 @@ git checkout master
 git pull
 ```
 
+where `<path/to/baci-source-code>` is the location of your local BACI repository, i.e. the BACI source code.
+
 You want to do this before starting work on a new feature branch.
 
 [↑ Contents](#contents)
@@ -121,6 +123,9 @@ git rebase master
 ```
 though there are others that are equally valid.
 
+It might happen, that conflicts arise during the `git rebase master` operation.
+Resolve each conflict, then continue with `git rebase --continue`.
+
 [↑ Contents](#contents)
 
 ### Test your Changes
@@ -148,7 +153,7 @@ move the issue card from **In Progress** to **Under Review** on our
    * Be sure you choose:
       * source branch: `<branchName>`
       * target branch: `master`
-   * On the new merge request creation page, select a merge request template from the dropdown menu to pre-populate the *Description* field with some text. Follow the instructions in that template to give us as much information as you can such that we can review and approve the issue as soon as it is practicable.
+   * On the new merge request creation page, select a merge request template from the dropdown menu to pre-populate the *Description* field with some text. Follow the instructions in that template to give us as much information as you can such that we can review and approve the merge request as soon as it is practicable.
 * Trigger the execution of the test suite manually:
    * Go to BACI's [CI/CD](https://gitlab.lrz.de/baci/baci/pipelines) page
    * Select your branch `<branchName>` and start pipeline
@@ -159,7 +164,7 @@ move the issue card from **In Progress** to **Under Review** on our
 
 If work on an issue is not yet complete, but you'd like to get another set of eyes on your work sooner rather than later,
 you can create a "work-in-progress" merge request.
-Simply begin the *Title* with "[WIP] " and that will indicate to the team that this is ongoing work 
+Simply begin the *Title* with `WIP:` and that will indicate to the team that this is ongoing work 
 that is not necessarily meant for review yet.
 
 If you are working on a feature addition that is fairly substantial (say greater than a month of work), 
@@ -181,7 +186,9 @@ At this point you'll enter into a stage where you and various BACI developers wi
 
 Before a MR is merged, we recommend using `git rebase -i` to squash your feature branch into the smallest number of logical commits.  Much of the time this will just mean a single commit, but you may wish to keep more than one &mdash; for instance, have the majority of your feature addition in one commit, but keep some performance tweaks separate in another commit, in case it becomes necessary to revert the performance tweaks later while keeping the rest of the feature.
 
-Once the feature branch is ready to be merged, use the "Rebase and merge" button on the MR page on GitLab.  If you don't see this button, click the arrow on the right of the "Merge" button and select "Rebase and merge" from the dropdown list.  This allows us to maintain a cleaner git history.
+Once the feature branch is ready to be merged, use the "Merge" button on the MR page on GitLab.
+
+> **Note** Only master users can merge into the `master` branch.
 
 If your MR *Description* has some form of "closes #\<issueNumber\>" in it somewhere, merging the MR will automatically close the associated issue, which will move the issue card from **Under Review** to **Done** on the [Kanban board](https://gitlab.lrz.de/baci/baci/boards). If not, you'll need to make this move manually and adapt each issues' labels manually.
 
