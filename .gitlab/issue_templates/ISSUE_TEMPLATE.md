@@ -24,31 +24,32 @@ Report, Documentation, Feature Request, etc.
 -->
 
 <!---
-Boards: Make sure your issues will show up in the Backlog of our issue board.
+Boards: Make sure your issue will show up in the "Backlog" of our issue board. 
+Drag it to the "In Progress" list when you start working on the issue.
 -->
 
 ## Expectations
 <!---
-Tell us what you think should happen, how you think things should work, what
+Tell everybody what you think should happen, how you think things should work, what
 you would like to see in the documentation, etc.
 -->
 
 ## Current Behavior
 <!---
-Tell us how the current behavior fails to meet your expectations in some way.
+Tell everybody how the current behavior fails to meet your expectations in some way.
 -->
 
 ## Motivation and Context
 <!---
 How has this expectation failure affected you?  What are you trying to
 accomplish?  Why do we need to address this?  What does it have to do with
-anything?  Providing context helps us come up with a solution that is most
+anything?  Providing context helps everybody come up with a solution that is most
 useful in the real world.
 -->
 
 ## Definition of Done
 <!---
-Tell us what needs to happen.  If necessary, give us a task list along the
+Tell everybody what needs to happen.  If necessary, give a task list along the
 lines of:
 - [ ] First do this.
 - [ ] Then do that.
@@ -72,7 +73,7 @@ this issue.  Include code to reproduce, if relevant.
 
 ## Your Environment
 <!---
-Include relevant details about your environment such that we can replicate this
+Include relevant details about your environment such that everybody can replicate this
 issue.
 -->
 - **Relevant repo SHA1s:**
@@ -82,7 +83,7 @@ issue.
 
 ## Related Issues
 <!---
-If applicable, let us know how this bug is related to any other open issues:
+If applicable, let everybody know how this is related to any other open issues:
 -->
 * Blocks
 * Is blocked by
@@ -94,7 +95,7 @@ If applicable, let us know how this bug is related to any other open issues:
 
 ## Additional Information
 <!---
-Anything else that might be helpful for us to know in addressing this issue:
+Anything else that might be helpful to know in addressing this issue:
 * Configure log file:
 * Build log file:
 * Test log file:
