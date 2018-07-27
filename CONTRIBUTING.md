@@ -182,7 +182,7 @@ Before a MR is merged, we recommend using `git rebase -i` to squash your feature
 
 Once the feature branch is ready to be merged, use the "Merge" button on the MR page on GitLab.
 
-> **Note** Only master users can merge into the `master` branch.
+> **Note** Only Maintainers can merge into the `master` branch.
 
 If your MR *Description* has some form of "closes #\<issueNumber\>" in it somewhere, merging the MR will automatically close the associated issue, which will move the issue card from **Under Review** to **Done** on the [Kanban board](https://gitlab.lrz.de/baci/baci/boards). If not, you'll need to make this move manually and adapt each issues' labels manually.
 
