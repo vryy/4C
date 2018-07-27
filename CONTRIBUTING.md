@@ -5,8 +5,15 @@ Do ensure you are familiar with all the information in our [README.md](https://g
 
 > **Note:**  By contributing to BACI, you implicitly agree to our [contributor license agreement](https://gitlab.lrz.de/baci/baci/blob/master/ContributorLicenseAgreement.md).
 
+BACI development is strongly based on the [GitHub Flow](https://guides.github.com/introduction/flow/index.html) which is a branch-based workflow involving only two types of branches: the `master` branch and `feature` branches.
+
+The most important rules are: 
+- Anything in the `master` branch is always deployable, i.e. considered stable.
+- Development (and bugfixes) are carried out in `feature` branches.
+
+To incorporate a `feature` branch into the `master` branch, BACI employs GitLab's *merge request (MR)* mechanism resulting in a *merge commit*.
+
 ### Contents
-1. [BACI Workflow](#baci-workflow)
 1. [Create a GitLab Issue](#create-a-gitlab-issue)
 1. [Work an Issue](#work-an-issue)
    1. [Update the Main Development Branch](#update-the-main-development-branch)
@@ -20,26 +27,14 @@ Do ensure you are familiar with all the information in our [README.md](https://g
    1. [Merging a Merge Request](#merging-a-merge-request)
 1. [Final Clean-Up](#final-clean-up)
 
-## BACI Workflow
-
-BACI development is strongly based on the [GitHub Flow](https://guides.github.com/introduction/flow/index.html) which is a branch-based workflow involving only two types of branches: the `master` branch and `feature` branches.
-
-The most important rules are: 
-- Anything in the `master` branch is always deployable, i.e. considered stable.
-- Development (and bugfixes) are carried out in `feature` branches.
-
-To incorporate a `feature` branch into the `master` branch, BACI employs GitLab's *merge request (MR)* mechanism resulting in a *merge commit*.
-
-[↑ Contents](#contents)
-
 ## Create a GitLab Issue
 
 Navigate to BACI's [GitLab Issues page](https://gitlab.lrz.de/baci/baci/issues) and create a new issue.
 The issue can be used for any number of things &mdash; reporting a bug, suggesting an enhancement, posing a question, etc.
 On the new issue creation page, select an issue template from the drop down menu
 to pre-populate the *Description* field with some text.
-Follow the instructions in that template to give us as much information as you can
-such that the issue can be understood by your fellow developers and can be tackled as soon as it is practicable.
+Follow the instructions in that template to give your fellow developers as much information as you can
+such that the issue can be understood and tackled as soon as it is practicable.
 
 Issues begin their life in the **Backlog** of our [Kanban board](https://gitlab.lrz.de/baci/baci/boards)
 and then move through the board from left to right.
@@ -152,7 +147,7 @@ move the issue card from **In Progress** to **Under Review** on our
    * Be sure you choose:
       * source branch: `<branchName>`
       * target branch: `master`
-   * On the new merge request creation page, select a merge request template from the dropdown menu to pre-populate the *Description* field with some text. Follow the instructions in that template to give us as much information as you can such that we can review and approve the merge request as soon as it is practicable.
+   * On the new merge request creation page, select a merge request template from the dropdown menu to pre-populate the *Description* field with some text. Follow the instructions in that template to give as much information as you can such that the merge request can be reviewed and accepted as soon as it is practicable.
 * Trigger the execution of the test suite manually:
    * Go to BACI's [CI/CD](https://gitlab.lrz.de/baci/baci/pipelines) page
    * Select your branch `<branchName>` and start pipeline
