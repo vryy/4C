@@ -12,6 +12,7 @@ using modern software design and is parallelized with MPI for distributed memory
 ## Contents
 
 1. [Getting Up and Running with BACI](#getting-up-and-running-with-baci)
+   1. [First-Time Setup of Git](#first-time-setup-of-git)
    1. [Clone the Repository](#clone-the-repository)
    1. [Set Up the Environment](#set-up-the-environment)
    1. [Configure and Build](#configure-and-build)
@@ -21,6 +22,39 @@ using modern software design and is parallelized with MPI for distributed memory
 1. [License](#license)
 
 ## Getting Up and Running with BACI
+
+### First-Time Setup of Git
+You have to complete the following steps only once on your computer.
+##### Your Identity
+The first thing you should do in Git is setting your identity, i.e., your username and email address. This is important because every Git commit you create uses this information, and once a commit is finished this information is unchangeable.
+Please set your username to your full name, i.e., first name followed by last name,
+and your email address to your institute email address with the following commands:
+
+```bash
+git config --global user.name "Max Mustermann"
+git config --global user.email mustermann@lnm.mw.tum.de
+```
+> **Note:** You may want to use a different name or email address for other projects your are working on. For that purpose, you can run the above commands without the `--global` option when you are in a project folder.
+
+##### Your Text Editor
+You can configure the default text editor that will be used whenever you need to write a message in Git.
+The following command will set your default text editor to `kwrite`, a gui-based editor.
+
+```bash
+git config --global core.editor kwrite
+```
+
+> **Note:** Another popular choice is `vim`.
+
+If you choose not to set a specific editor, Git will use your system’s default editor.
+
+##### Check Your Settings
+To confirm the correct setup of Git, you may check your configuration settings with:
+
+```bash
+git config --list
+```
+[↑ Contents](#contents)
 
 ### Clone the Repository
 
