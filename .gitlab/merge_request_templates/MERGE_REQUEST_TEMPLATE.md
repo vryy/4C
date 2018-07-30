@@ -47,7 +47,7 @@ Go over all the following points, and put an `x` in all the boxes that apply. If
 -->
 - [ ] My commit messages mention the appropriate GitLab issue numbers.
 - [ ] My change requires a change to the documentation.
-- [ ] I have updated the documentation accordingly.
+- [ ] I have updated the Doxygen documentation accordingly.
 - [ ] I have read the [code contribution guidelines](../blob/master/CONTRIBUTING.md) for this project.
 - [ ] I have added tests to cover my changes.
 - [ ] All new and existing tests passed.
