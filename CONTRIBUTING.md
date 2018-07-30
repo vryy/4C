@@ -21,6 +21,7 @@ To incorporate a `feature` branch into the `master` branch, BACI employs GitLab'
    1. [Integrate changes from `master` into your feature branch](#integrate-changes-from-master-into-your-feature-branch)
    1. [Test your Changes](#test-your-changes)
 1. [Merging Changes into `master`](#merging-changes-into-master)
+   1. [Push your branch to GitLab](#push-your-branch-to-gitlab)
    1. [Create a Merge Request](#create-a-merge-request)
    1. [Feedback](#feedback)
    1. [Merging a Merge Request](#merging-a-merge-request)
@@ -110,14 +111,16 @@ While working on your feature in your local `<branchName>` branch in `baci`, oth
 git checkout master 
 git pull
 git checkout <branchName>
-git rebase master
+git merge master
 ```
 though there are others that are equally valid.
 
-> **Note:** It might happen that conflicts arise during the `git rebase master` operation.
-Resolve each conflict, then continue with `git rebase --continue`.
+> **Note:** It might happen that conflicts arise during the `git merge master` operation. After seeing a conflict, you can do two things:
+>
+> * Decide not to merge. Run `git merge --abort` to abort the merge operation and to restore your version of the code (without incorporating changes from `master`).
+> * Resolve the conflicts. Git will mark the conflicts in the working tree. Edit the files into shape and `git add` them to the index. Use `git commit` to seal the deal.
 
-> **Note:** You might want to do this on a regular basis to ease resolving of possible conflicts.
+> **Note:** You might want to integrate changes from `master` on a regular basis to ease resolving of possible conflicts.
 
 [↑ Contents](#contents)
 
@@ -135,13 +138,20 @@ To merge changes into `master`, a feature branch needs to satisfy these conditio
 * No build errors and passing all tests
 * Passing code inspection by one of your fellow developers
 
+### Push your branch to GitLab
+
+To publish your changes and make them available to others, you have to push them to GitLab. Before pushing your branch to GitLab, we recommend using `git rebase -i` to squash the commits on your feature branch into the smallest number of logical commits.  Much of the time this will just mean a single commit, but you may wish to keep more than one &mdash; for instance, have the majority of your feature addition in one commit, but keep some performance tweaks separate in another commit, in case it becomes necessary to revert the performance tweaks later while keeping the rest of the feature.
+
+Push your local feature branch up to the remote with `git push --set-upstream origin <branchName>`.
+
+> **Important**: Use `git rebase -i` only on commits that haven't been pushed to the remote, yet. 
+
 ### Create a Merge Request
 
 When your changes are ready to be integrated into `baci`'s `master` branch,
 move the issue card from **In Progress** to **Under Review** on our 
 [Kanban board](https://gitlab.lrz.de/baci/baci/boards) and then:
 
-*  Push your local feature branch up to the remote with `git push --set-upstream origin <branchName>`.
 *  Navigate to BACI on GitLab and [create a new merge request](https://gitlab.lrz.de/baci/baci/merge_requests/new):
    * Be sure you choose:
       * source branch: `<branchName>`
@@ -176,8 +186,6 @@ At this point you'll enter into a stage where you and various BACI developers wi
 [↑ Contents](#contents)
 
 ### Merging a Merge Request
-
-Before a merge request is merged, we recommend using `git rebase -i` to squash your feature branch into the smallest number of logical commits.  Much of the time this will just mean a single commit, but you may wish to keep more than one &mdash; for instance, have the majority of your feature addition in one commit, but keep some performance tweaks separate in another commit, in case it becomes necessary to revert the performance tweaks later while keeping the rest of the feature.
 
 Once the feature branch is ready to be merged, use the "Merge" button on the merge request page on GitLab.
 
