@@ -11,15 +11,14 @@ The most important rules are:
 - Anything in the `master` branch is always deployable, i.e. considered stable.
 - Development (and bugfixes) are carried out in `feature` branches.
 
-To incorporate a `feature` branch into the `master` branch, BACI employs GitLab's *merge request (MR)* mechanism resulting in a *merge commit*.
+To incorporate a `feature` branch into the `master` branch, BACI employs GitLab's *merge request* mechanism resulting in a *merge commit*.
 
 ### Contents
 1. [Create a GitLab Issue](#create-a-gitlab-issue)
 1. [Work an Issue](#work-an-issue)
-   1. [Update the Main Development Branch](#update-the-main-development-branch)
    1. [Create a Feature Branch](#create-a-feature-branch)
    1. [Make your Changes](#make-your-changes)
-   1. [Update your Branch](#update-your-branch)
+   1. [Integrate changes from `master` into your feature branch](#integrate-changes-from-master-into-your-feature-branch)
    1. [Test your Changes](#test-your-changes)
 1. [Merging Changes into `master`](#merging-changes-into-master)
    1. [Create a Merge Request](#create-a-merge-request)
@@ -48,27 +47,24 @@ move the issue card into the **Blocked** column to indicate that work can't proc
 When work commences on an issue, move the issue card to the **In Progress** column of our [Kanban board](https://gitlab.lrz.de/baci/baci/boards). 
 Then the workflow to use is the following:
 
-### Update the Main Development Branch
+### Create a Feature Branch
 
 To keep your local `master` branch in `baci` up-to-date with the remote `master`:
+
 ```bash
 cd <path/to/baci-source-code>
 git checkout master
 git pull
 ```
 
-where `<path/to/baci-source-code>` is the location of your local BACI repository, i.e. the BACI source code.
-
-You want to do this before starting work on a new feature branch.
-
-[↑ Contents](#contents)
-
-### Create a Feature Branch
+where `<path/to/baci-source-code>` is the location of your local BACI repository, i.e. the BACI source code. 
 
 Create a local branch off of `master` in `baci` on which to make your changes:
+
+
 ```bash
-git checkout master
-git checkout -b <branchName>
+git branch <branchName>
+git checkout <branchName>
 ```
 
 `<branchName>` can be whatever you like, though we have some recommendations:
@@ -76,11 +72,14 @@ git checkout -b <branchName>
 *  Make the branch name descriptive; that is, avoid `fixSomeStuff`, `performanceTweaks`, and generic names along those lines.
 *  To indicate your branch is intended solely for your own use, include your username in the branch name somehow, as in `<username>-<restOfBranchName>` or `<restOfBranchName>-<username>`.
 
+> **Note:** Use `git branch` to list all available branches.
+
 [↑ Contents](#contents)
 
 ### Make your Changes
 
-Do whatever work is necessary to address the issue you're tackling.
+* Do whatever work is necessary to address the issue you're tackling.
+* Commit your changes locally.
 
 > **Note:** Break your work into logical, compilable commits.
 Feel free to commit small chunks early and often in your local repository and 
@@ -100,15 +99,13 @@ limited to 72 characters wide.
 #### Doxygen
 
 BACI uses [Doxygen](http://www.stack.nl/~dimitri/doxygen/index.html) to generate documentation from annotated source code.
-Please see [this wiki page](https://gitlab.lrz.de/baci/baci/wiki/Doxygen) for our Doxygen guidelines.
+Please see [this wiki page](https://gitlab.lrz.de/baci/baci/wikis/Doxygen) for our Doxygen guidelines.
 
 [↑ Contents](#contents)
 
-### Update your Branch
+### Integrate changes from `master` into your feature branch
 
-While working on your feature in your local `<branchName>` branch in `baci`, other commits will likely make it into the remote `master` branch.  
-There are a variety of ways to incorporate these changes into your local feature branch. 
-Our preferred possibility is
+While working on your feature in your local `<branchName>` branch in `baci`, other commits will likely make it into the remote `master` branch.  There are a variety of ways to incorporate these changes into your local feature branch. Our preferred possibility is
 ```bash
 git checkout master 
 git pull
@@ -117,8 +114,10 @@ git rebase master
 ```
 though there are others that are equally valid.
 
-It might happen, that conflicts arise during the `git rebase master` operation.
+> **Note:** It might happen that conflicts arise during the `git rebase master` operation.
 Resolve each conflict, then continue with `git rebase --continue`.
+
+> **Note:** You might want to do this on a regular basis to ease resolving of possible conflicts.
 
 [↑ Contents](#contents)
 
@@ -162,9 +161,9 @@ Simply begin the *Title* with `WIP:` and that will indicate to the team that thi
 that is not necessarily meant for review yet.
 
 If you are working on a feature addition that is fairly substantial (say greater than a month of work), 
-consider creating WIP MRs.  These can be reviewed, but then you can close them without merging in the changes.
-When work is complete, create a MR that includes all the changes, 
-and mention all the sub-WIP-MRs that have already been reviewed in the *Description*.
+consider creating a WIP merge request.  These can be reviewed, but then you can close them without merging in the changes.
+When work is complete, create a merge request that includes all the changes, 
+and mention all the sub-WIP-merge-requests that have already been reviewed in the *Description*.
 This makes it easy for a reviewer to see that all the changes have already been reviewed along the way, 
 rather than having to look at the entire change set at once.
 
@@ -178,13 +177,13 @@ At this point you'll enter into a stage where you and various BACI developers wi
 
 ### Merging a Merge Request
 
-Before a MR is merged, we recommend using `git rebase -i` to squash your feature branch into the smallest number of logical commits.  Much of the time this will just mean a single commit, but you may wish to keep more than one &mdash; for instance, have the majority of your feature addition in one commit, but keep some performance tweaks separate in another commit, in case it becomes necessary to revert the performance tweaks later while keeping the rest of the feature.
+Before a merge request is merged, we recommend using `git rebase -i` to squash your feature branch into the smallest number of logical commits.  Much of the time this will just mean a single commit, but you may wish to keep more than one &mdash; for instance, have the majority of your feature addition in one commit, but keep some performance tweaks separate in another commit, in case it becomes necessary to revert the performance tweaks later while keeping the rest of the feature.
 
-Once the feature branch is ready to be merged, use the "Merge" button on the MR page on GitLab.
+Once the feature branch is ready to be merged, use the "Merge" button on the merge request page on GitLab.
 
 > **Note** Only Maintainers can merge into the `master` branch.
 
-If your MR *Description* has some form of "closes #\<issueNumber\>" in it somewhere, merging the MR will automatically close the associated issue, which will move the issue card from **Under Review** to **Done** on the [Kanban board](https://gitlab.lrz.de/baci/baci/boards). If not, you'll need to make this move manually and adapt each issues' labels manually.
+If your merge request *Description* has some form of "closes #\<issueNumber\>" in it somewhere, merging the merge request will automatically close the associated issue, which will move the issue card from **Under Review** to **Done** on the [Kanban board](https://gitlab.lrz.de/baci/baci/boards). If not, you'll need to make this move manually and adapt each issues' labels manually.
 
 [↑ Contents](#contents)
 
