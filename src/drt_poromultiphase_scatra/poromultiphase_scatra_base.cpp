@@ -333,7 +333,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetPoroSolution()
         );
 
   if(artery_coupl_)
+  {
     scatramsht_->SetArteryPressure();
+    scatramsht_->ApplyMeshMovement(poromulti_->StructDispnp());
+  }
 
 }
 
@@ -343,6 +346,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetPoroSolution()
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetScatraSolution()
 {
   poromulti_->SetScatraSolution(ndsporofluid_scatra_,scatra_->ScaTraField()->Phinp());
+  if(artery_coupl_)
+    poromulti_->FluidField()->ArtNetTimInt()->Discretization()->SetState(2, "one_d_artery_phinp",scatramsht_->ArtScatraField()->Phinp());
   return;
 }
 

@@ -37,6 +37,7 @@ namespace ADAPTER
 namespace POROMULTIPHASESCATRA
 {
 class PoroMultiPhaseScaTraBase;
+class PoroMultiPhaseScaTraArtCouplBase;
 
 /// POROMULTIPHASE::UTILS: Random stuff that might be helpful when dealing with poromultiphase problems
 namespace UTILS
@@ -69,6 +70,17 @@ CreatePoroMultiPhaseScatraAlgorithm(
     INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields solscheme, //!< solution scheme to build (i)
     const Teuchos::ParameterList& timeparams, //!< problem parameters (i)
     const Epetra_Comm& comm //!< communicator(i)
+    );
+
+/// create coupling strategy for coupling with 1D network depending on input file
+Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase>
+CreateAndInitArteryCouplingStrategy(
+    Teuchos::RCP<DRT::Discretization>  arterydis,
+    Teuchos::RCP<DRT::Discretization>  contdis,
+    const Teuchos::ParameterList&      meshtyingparams,
+    const std::string&                 condname,
+    const std::string&                 artcoupleddofname,
+    const std::string&                 contcoupleddofname
     );
 
 //! Determine norm of vector

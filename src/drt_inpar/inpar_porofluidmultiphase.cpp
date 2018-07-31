@@ -16,6 +16,7 @@
 #include "drt_validparameters.H"
 
 #include "inpar_porofluidmultiphase.H"
+#include "inpar_bio.H"
 
 void INPAR::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
@@ -184,9 +185,33 @@ void INPAR::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
 
   // ----------------------------------------------------------------------
   // artery mesh tying
-  Teuchos::ParameterList& porofluidmultiphasemshtdyn = porofluidmultiphasedyn.sublist("ARTERY MESHTYING",false,
+  Teuchos::ParameterList& porofluidmultiphasemshtdyn = porofluidmultiphasedyn.sublist("ARTERY COUPLING",false,
     "Parameters for artery mesh tying"
     );
+
+  // penalty parameter
+  DoubleParameter("PENALTY", 1000.0, "Penalty parameter for line-based coupling", &porofluidmultiphasemshtdyn);
+
+  setStringToIntegralParameter<int>("ARTERY_COUPLING_METHOD",
+                               "None",
+                               "Coupling method for artery coupling.",
+                               tuple<std::string>(
+                                 "None",
+                                 "Nodal",
+                                  "GPTS",
+                                 "MP"),
+                               tuple<std::string>(
+                                 "none",
+                                 "Nodal Coupling",
+                                 "Gauss-Point-To-Segment Approach",
+                                 "Mortar Penalty Approach"),
+                               tuple<int>(
+                                 INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::none,       // none
+                                 INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::nodal,      // Nodal Coupling
+                                 INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::gpts,       // Gauss-Point-To-Segment Approach
+                                 INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp          // Mortar Penalty Approach
+                               ),
+                               &porofluidmultiphasemshtdyn);
 
   // coupled artery dofs for mesh tying
   setNumericStringParameter("COUPLEDDOFS_ART","-1.0",
@@ -197,5 +222,28 @@ void INPAR::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
   setNumericStringParameter("COUPLEDDOFS_PORO","-1.0",
                             "coupled porofluid dofs for mesh tying",
                             &porofluidmultiphasemshtdyn);
+
+  // functions for coupling (artery part)
+  setNumericStringParameter("REACFUNCT_ART","-1",
+                            "functions for coupling (artery part)",
+                            &porofluidmultiphasemshtdyn);
+
+  // scale for coupling (artery part)
+  setNumericStringParameter("SCALEREAC_ART","0",
+                            "scale for coupling (artery part)",
+                            &porofluidmultiphasemshtdyn);
+
+  // functions for coupling (porofluid part)
+  setNumericStringParameter("REACFUNCT_CONT","-1",
+                            "functions for coupling (porofluid part)",
+                            &porofluidmultiphasemshtdyn);
+
+  // scale for coupling (porofluid part)
+  setNumericStringParameter("SCALEREAC_CONT","0",
+                            "scale for coupling (porofluid part)",
+                            &porofluidmultiphasemshtdyn);
+
+  // Flag if artery elements are evaluated in reference or current configuration
+  BoolParameter("EVALUATE_IN_REF_CONFIG","yes","Flag if artery elements are evaluated in reference or current configuration",&porofluidmultiphasemshtdyn);
 }
 

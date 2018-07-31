@@ -16,6 +16,9 @@
 #include "poromultiphase_scatra_partitioned_twoway.H"
 #include "poromultiphase_scatra_monolithic_twoway.H"
 
+#include "poromultiphase_scatra_artery_coupling_nodebased.H"
+#include "poromultiphase_scatra_artery_coupling_linebased.H"
+
 #include "../drt_poromultiphase/poromultiphase_utils.H"
 #include "../drt_art_net/art_net_utils.H"
 
@@ -28,6 +31,10 @@
 #include "../drt_lib/drt_dserror.H"
 
 #include "../drt_lib/drt_utils_createdis.H"
+
+#include "../drt_inpar/inpar_bio.H"
+#include "../drt_lib/drt_dofset_predefineddofnumber.H"
+#include "../drt_lib/drt_utils_parallel.H"
 
 /*----------------------------------------------------------------------*
  | setup algorithm                                                      |
@@ -88,6 +95,64 @@ POROMULTIPHASESCATRA::UTILS::CreatePoroMultiPhaseScatraAlgorithm(
   }
 
   return algo;
+}
+
+/*----------------------------------------------------------------------*
+ | create coupling strategy to 1D network                               |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase>
+POROMULTIPHASESCATRA::UTILS::CreateAndInitArteryCouplingStrategy(
+    Teuchos::RCP<DRT::Discretization>  arterydis,
+    Teuchos::RCP<DRT::Discretization>  contdis,
+    const Teuchos::ParameterList&      meshtyingparams,
+    const std::string&                 condname,
+    const std::string&                 artcoupleddofname,
+    const std::string&                 contcoupleddofname
+    )
+{
+
+  // Creation of coupling strategy.
+  Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase> strategy;
+
+  INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod arterycoupl =
+    DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(meshtyingparams,"ARTERY_COUPLING_METHOD");
+
+  switch(arterycoupl)
+  {
+  case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::gpts:
+  case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp:
+  {
+    strategy = Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased(
+        arterydis,
+        contdis,
+        meshtyingparams,
+        condname,
+        artcoupleddofname,
+        contcoupleddofname));
+    break;
+  }
+  case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::nodal:
+  {
+    strategy = Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased(
+        arterydis,
+        contdis,
+        meshtyingparams,
+        condname,
+        artcoupleddofname,
+        contcoupleddofname));
+    break;
+  }
+  default:
+  {
+    dserror("Wrong type of artery-coupling strategy");
+    break;
+  }
+  }
+
+  strategy->Init();
+
+  return strategy;
+
 }
 
 
@@ -169,13 +234,45 @@ void POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAndFieldCoupling(
     DRT::UTILS::CloneDiscretization<ART::ArteryScatraCloneStrategy>(artdis,artscatradis);
     artscatradis->FillComplete();
 
-    Teuchos::RCP<DRT::DofSetInterface> arterydofset = artdis->GetDofSetProxy();
+    Teuchos::RCP<DRT::DofSetInterface> arterydofset    = artdis->GetDofSetProxy();
+    Teuchos::RCP<DRT::DofSetInterface> artscatradofset = artscatradis->GetDofSetProxy();
+
+    // curr_ele_length: defined as element-wise quantity
+    Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
+    dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber( 0, 1, 0, false ));
+    // add it to artery-scatra discretization
+    artscatradis->AddDofSet(dofsetaux);
 
     // check if ScatraField has 2 discretizations, so that coupling is possible
-    if (artscatradis->AddDofSet(arterydofset) != 1)
+    if (artscatradis->AddDofSet(arterydofset) != 2)
       dserror("unexpected dof sets in artscatra field");
 
+    // check if ArteryField has 2 discretizations, so that coupling is possible
+    if (artdis->AddDofSet(artscatradofset) != 2)
+      dserror("unexpected dof sets in artery field");
+
     artscatradis->FillComplete(true,false,false);
+
+    // get coupling method
+    INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod arterycoupl =
+      DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(problem->ScalarTransportDynamicParams().sublist("ARTERY COUPLING"),"ARTERY_COUPLING_METHOD");
+
+    switch(arterycoupl)
+    {
+    case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::gpts:
+    case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp:
+    {
+      // TODO: this is necessary to find all possible interactions.
+      //       presently, the artery discretization is much smaller than the
+      //       others, so it is not that much of a performance issue
+      //       is there a better way to do this?
+      DRT::UTILS::GhostDiscretizationOnAllProcs(artdis);
+      DRT::UTILS::GhostDiscretizationOnAllProcs(artscatradis);
+      break;
+    }
+    default:
+      break;
+    }
   }
 
   return;

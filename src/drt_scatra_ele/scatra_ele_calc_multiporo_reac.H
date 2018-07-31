@@ -1128,6 +1128,13 @@ public:
     return myaction_;
   };
 
+  //! get species type of scalar 'k'
+  MAT::ScatraMatMultiPoro::SpeciesType GetSpeciesType(const int k)
+  {
+    // return
+    return species_type_[k];
+  };
+
   //! return pressure gradient of current phase
   const LINALG::Matrix<NSD,1>& PressureGradient(const int curphase) const
   {

@@ -15,9 +15,6 @@
 #include "poromultiphase_scatra_artery_coupling_nodebased.H"
 #include "../drt_lib/drt_discret.H"
 
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <Teuchos_ParameterListExceptions.hpp>
-
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_lib/drt_condition_selector.H"
 #include "../drt_fsi/fsi_matrixtransform.H"
@@ -34,9 +31,27 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::PoroMultiPhaseScaTr
     const std::string&                 artcoupleddofname,
     const std::string&                 contcoupleddofname
     ):
-    arterydis_(arterydis),
-    contdis_(contdis),
+    PoroMultiPhaseScaTraArtCouplBase(arterydis, contdis, meshtyingparams, condname, artcoupleddofname, contcoupleddofname),
     condname_(condname)
+{
+
+  // user info
+  if(myrank_ == 0)
+  {
+    std::cout << "<                                                  >" << std::endl;
+    PrintOutCouplingMethod();
+    std::cout << "<                                                  >" << std::endl;
+    std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+    std::cout << "\n";
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | init the strategy                                 kremheller 07/18   |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::Init()
 {
 
   // ARTERY COUPLING CONDITIONS
@@ -69,39 +84,6 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::PoroMultiPhaseScaTr
 
   if (condIDs[0].size() != condIDs[1].size())
     dserror("Artery coupling conditions need to be defined on both discretizations");
-
-  // get the actual coupled DOFs  ----------------------------------------------------
-  // 1) 1D artery discretization
-  int    word1;
-  int dummy = 0;
-  std::istringstream coupled_art_dof_stream(Teuchos::getNumericStringParameter(meshtyingparams,artcoupleddofname));
-  while (coupled_art_dof_stream >> word1)
-  {
-    // check ascending order
-    if(dummy > 0)
-      if((int)(word1-1) <= coupleddofs_art_[dummy - 1])
-        dserror("DOFs have to be ordered in ascending order");
-    coupleddofs_art_.push_back((int)(word1-1));
-    dummy++;
-  }
-
-  // 2) 2D, 3D continuous field discretization
-  dummy = 0;
-  std::istringstream coupled_poro_dof_stream(Teuchos::getNumericStringParameter(meshtyingparams,contcoupleddofname));
-  while (coupled_poro_dof_stream >> word1)
-  {
-    // check ascending order
-    if(dummy > 0)
-      if((int)(word1-1) <= coupleddofs_cont_[dummy - 1])
-        dserror("DOFs have to be ordered in ascending order");
-    coupleddofs_cont_.push_back((int)(word1-1));
-    dummy++;
-  }
-
-  if(coupleddofs_cont_.size() != coupleddofs_art_.size())
-    dserror("size mismatch between COUPLEDDOFS_ART and COUPLEDDOFS_PORO");
-
-  num_coupled_dofs_ = coupleddofs_cont_.size();
 
   // -----------------------------------------------------------------------------------------------------------------
   // create map extractors needed for artery condition coupling --> continuous field part
@@ -187,24 +169,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::SetupMapExtrac
 }
 
 /*----------------------------------------------------------------------*
- | get the full DOF map                                kremheller 04/18 |
- *----------------------------------------------------------------------*/
-const Teuchos::RCP<const Epetra_Map>& POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::FullMap() const
-{
-
-  return globalex_->FullMap();
-}
-
-/*----------------------------------------------------------------------*
- | get the global extractor                            kremheller 04/18 |
- *----------------------------------------------------------------------*/
-const Teuchos::RCP<LINALG::MultiMapExtractor>&  POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::GlobalExtractor() const
-{
-
-  return globalex_;
-}
-
-/*----------------------------------------------------------------------*
  | setup the linear system of equations                kremheller 04/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::SetupSystem(
@@ -213,7 +177,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::SetupSystem(
     Teuchos::RCP<LINALG::SparseMatrix>          sysmat_cont,
     Teuchos::RCP<LINALG::SparseMatrix>          sysmat_art,
     Teuchos::RCP<const Epetra_Vector>           rhs_cont,
-    Teuchos::RCP<const Epetra_Vector>           rhs_art
+    Teuchos::RCP<const Epetra_Vector>           rhs_art,
+    Teuchos::RCP<const LINALG::MapExtractor>    dbcmap_cont,
+    Teuchos::RCP<const LINALG::MapExtractor>    dbcmap_art
     )
 {
 
@@ -376,7 +342,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::CheckDbcOnCoup
 
   if(intersect_dbc_coupled->NumGlobalElements() > 0)
   {
-    if(dis->Comm().MyPID() == 0)
+    if(myrank_ == 0)
     {
       std::cout << "\n\n";
       std::cout << "You cannot define DBC and nodal coupling conditions on the same node\n"
@@ -440,6 +406,31 @@ Teuchos::RCP<const Epetra_Map> POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCoup
 {
 
   return fullmap_;
+}
+
+/*----------------------------------------------------------------------*
+ | apply mesh movement                                 kremheller 06/18 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::ApplyMeshMovement(
+    Teuchos::RCP<const Epetra_Vector> disp
+    )
+{
+  if(!evaluate_in_ref_config_)
+    dserror("Evaluation in current configuration not possible for node-based coupling");
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | print out method                                    kremheller 06/18 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::PrintOutCouplingMethod() const
+{
+
+  std::cout << "<   Coupling-Method : Nodebased                    >" << std::endl;
+
+  return;
+
 }
 
 

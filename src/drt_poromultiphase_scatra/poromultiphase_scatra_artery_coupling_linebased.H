@@ -1,0 +1,273 @@
+/*----------------------------------------------------------------------*/
+/*!
+ \file poromultiphase_scatra_artery_coupling_linebased.H
+
+ \brief base algorithm for line-based (non-conforming) coupling between
+        poromultiphase_scatra-framework and flow in artery networks
+        including scalar transport
+
+   \level 3
+
+   \maintainer  Johannes Kremheller
+                kremheller@lnm.mw.tum.de
+                http://www.lnm.mw.tum.de
+ *----------------------------------------------------------------------*/
+
+#ifndef SRC_DRT_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_LINEBASED_H_
+#define SRC_DRT_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_LINEBASED_H_
+
+#include "poromultiphase_scatra_artery_coupling_base.H"
+#include "../drt_inpar/inpar_bio.H"
+
+#include <Epetra_Time.h>
+
+// forward declarations
+namespace DRT
+{
+  class Element;
+  class PoromultiphaseScatraArteryCouplingExchangeManager;
+}
+namespace LINALG
+{
+  class SerialDenseVector;
+}
+namespace POROMULTIPHASESCATRA
+{
+
+  // forward declaration
+  class PoroMultiPhaseScatraArteryCouplingPairBase;
+
+  //! Line based coupling between artery network and poromultiphasescatra algorithm
+  class PoroMultiPhaseScaTraArtCouplLineBased : public PoroMultiPhaseScaTraArtCouplBase
+  {
+
+  public:
+
+    /// create using a Epetra_Comm
+    PoroMultiPhaseScaTraArtCouplLineBased(
+        Teuchos::RCP<DRT::Discretization>  arterydis,
+        Teuchos::RCP<DRT::Discretization>  contdis,
+        const Teuchos::ParameterList&      meshtyingparams,
+        const std::string&                 condname,
+        const std::string&                 artcoupleddofname,
+        const std::string&                 contcoupleddofname
+   );
+
+    /// virtual destructor
+    virtual ~PoroMultiPhaseScaTraArtCouplLineBased(){}
+
+    // check if initial fields on coupled DOFs are equal
+    void CheckInitialFields(
+        Teuchos::RCP<const Epetra_Vector>      vec_cont,
+        Teuchos::RCP<const Epetra_Vector>      vec_art
+        );
+
+    //! access artery (1D) dof row map
+    Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const;
+
+    //! access full dof row map
+    Teuchos::RCP<const Epetra_Map> DofRowMap() const ;
+
+    //! set-up of global system of equations of coupled problem
+    void SetupSystem(
+        Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat,
+        Teuchos::RCP<Epetra_Vector>                 rhs,
+        Teuchos::RCP<LINALG::SparseMatrix>          sysmat_cont,
+        Teuchos::RCP<LINALG::SparseMatrix>          sysmat_art,
+        Teuchos::RCP<const Epetra_Vector>           rhs_cont,
+        Teuchos::RCP<const Epetra_Vector>           rhs_art,
+        Teuchos::RCP<const LINALG::MapExtractor>    dbcmap_cont,
+        Teuchos::RCP<const LINALG::MapExtractor>    dbcmap_art
+        );
+
+    /// setup global vector
+    /// (o)    vec:      combined vector containing both artery and continuous field quantities
+    /// (i)    vec_cont: vector containing quantities from continuous field
+    /// (i)    vec_art:  vector containing quantities from artery field
+    void SetupVector(
+        Teuchos::RCP<Epetra_Vector>                 vec,
+        Teuchos::RCP<const Epetra_Vector>           vec_cont,
+        Teuchos::RCP<const Epetra_Vector>           vec_art
+        );
+
+    /// extract single field vectors
+    /// (o)    vec:      combined vector containing both artery and continuous field quantities
+    /// (i)    vec_cont: vector containing quantities from continuous field
+    /// (i)    vec_art:  vector containing quantities from artery field
+    void ExtractSingleFieldVectors(
+      Teuchos::RCP<const Epetra_Vector>       globalvec,
+      Teuchos::RCP<const Epetra_Vector>&      vec_cont,
+      Teuchos::RCP<const Epetra_Vector>&      vec_art
+      );
+
+    //! set solution of fields
+    void SetSolutionVectors(
+        Teuchos::RCP<const Epetra_Vector>            phinp_cont,
+        Teuchos::RCP<const Epetra_Vector>            phinp_art);
+
+    /// init the strategy
+    void Init();
+
+    /// apply mesh movement (on artery elements)
+    void ApplyMeshMovement(
+      Teuchos::RCP<const Epetra_Vector>       disp);
+
+  private:
+
+    //! brute force search for interacting pairs
+    void BruteForceSearch();
+
+    //! compute search radius for brute force search
+    double ComputeSearchRadius();
+
+    //! get maximum nodal distance of an element
+    double GetMaxNodalDistance(DRT::Element* ele, Teuchos::RCP<DRT::Discretization> dis);
+
+    //! create interaction pairs
+    void CreateMeshTyingPairs();
+
+    //! pre-evaluate the pairs
+    void PreEvaluateMeshTyingPairs();
+
+    //! evaluate kappa
+    void EvaluateKappa();
+
+    //! fill the length not changed through deformation
+    void FillUnaffectedArteryLength();
+
+    //! create gid to seg
+    void CreateGIDToSegmentVector();
+
+    //! evaluate the pairs
+    void EvaluateMeshTyingPairs(
+        Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat,
+        Teuchos::RCP<Epetra_Vector>                 rhs,
+        Teuchos::RCP<LINALG::SparseMatrix>          sysmat_cont,
+        Teuchos::RCP<LINALG::SparseMatrix>          sysmat_art
+        );
+
+    //! assemble into force and stiffness matrix
+    void AssembleEleForceStiffIntoSystemVectorMatrix(
+        const int& ele1gid,
+        const int& ele2gid,
+        std::vector< LINALG::SerialDenseVector > const& elevec,
+        std::vector< std::vector< LINALG::SerialDenseMatrix > > const& elemat,
+        Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat,
+        Teuchos::RCP<Epetra_Vector>                 rhs,
+        Teuchos::RCP<LINALG::SparseMatrix>          sysmat_cont,
+        Teuchos::RCP<LINALG::SparseMatrix>          sysmat_art);
+
+    //! assemble into D and M (MP case)
+    void AssembleDM(
+        const int& ele1gid,
+        const int& ele2gid,
+        const LINALG::SerialDenseMatrix& D_ele,
+        const LINALG::SerialDenseMatrix& M_ele);
+
+    //! sum D and M into global force and stiffness matrix
+    void SumDMIntoGlobalForceStiff(
+        Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat,
+        Teuchos::RCP<Epetra_Vector>                 rhs,
+        Teuchos::RCP<LINALG::SparseMatrix>          sysmat_cont,
+        Teuchos::RCP<LINALG::SparseMatrix>          sysmat_art);
+
+    //! get the element phi
+    std::vector<double> GetElePhinp(
+        Teuchos::RCP<DRT::Discretization>  dis,
+        const int elegid,
+        Teuchos::RCP<const Epetra_Vector> phinp
+        );
+
+    //! check for duplicates
+    bool IsDuplicateSegment(
+        const std::vector<Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase> >& msht_elepairs,
+        const Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>                possible_duplicate
+        );
+
+    //! check for duplicates
+    bool IsIdenticalSegment(
+        const std::vector<Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase> >& msht_elepairs,
+        const int&    ele1gid,
+        const double& etaA,
+        const double& etaB,
+        int&          elepairID
+        );
+
+    //! return appropriate internal implementation class (acts as a simple factory)
+    static Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase> CreateNewArteryCouplingPair(
+        std::vector< DRT::Element const *> const& ele_ptrs);
+
+    //! print output of mesh tying pairs
+    void OutputSummary() const;
+
+    //! fill the vectors
+    void FillFunctionAndScaleVectors();
+
+    //! print out the coupling method
+    void PrintOutCouplingMethod() const;
+
+    //! the parameters
+    const Teuchos::ParameterList& meshtyingparams_;
+
+    //! have the managers been set?
+    bool porofluidmanagersset_;
+
+    //! result of brute force search
+    std::map< int, std::set<int> > nearbyelepairs_;
+
+   //! interacting pairs of artery and continuous-discretization elements
+   std::vector<Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase> > mesht_elepairs_;
+
+   //! phinp for continuous dis
+   Teuchos::RCP<const Epetra_Vector> phinp_cont_;
+
+   //! phinp for artery dis
+   Teuchos::RCP<const Epetra_Vector> phinp_art_;
+
+   //! phinp for continuous dis in col map format
+   Teuchos::RCP<Epetra_Vector> phinp_cont_colmap_;
+
+   //! phinp for artery dis in col map format
+   Teuchos::RCP<Epetra_Vector> phinp_art_colmap_;
+
+   //! zeros for continuous dis
+   Teuchos::RCP<const Epetra_Vector> zeros_cont_;
+
+   //! zeros for artery dis
+   Teuchos::RCP<const Epetra_Vector> zeros_art_;
+
+   //! scale and function-vector
+   std::vector<std::vector<int>> scale_vec_;
+   std::vector<std::vector<int>> funct_vec_;
+
+   //! type of coupling method
+   INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod coupling_method_;
+
+   //! mortar coupling matrices
+   Teuchos::RCP<LINALG::SparseMatrix> D_;
+   Teuchos::RCP<LINALG::SparseMatrix> M_;
+   Teuchos::RCP<Epetra_Vector> kappaInv_;
+
+   //! penalty parameter
+   double pp_;
+
+   //! length of artery elements unaffected by deformation
+   Teuchos::RCP<Epetra_Vector> unaffected_length_artery_;
+
+   //! length of artery elements in current configuration
+   Teuchos::RCP<Epetra_Vector> current_length_artery_;
+
+   //! gid to segment: stores [GID; [eta_a eta_b]_1, [eta_a eta_b]_2, ..., [eta_a eta_b]_n]
+   std::map<int, std::vector< double > > gid_to_segment_;
+
+   //! gid to segment length: stores [GID; seglength_1, seglength_2, ..., seglength_n]
+   std::map<int, std::vector< double > > gid_to_seglength_;
+
+   //! timer for measurement of duration of brute force search
+   Epetra_Time timersearch_;
+
+  };
+
+}
+
+#endif /* SRC_DRT_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_LINEBASED_H_ */

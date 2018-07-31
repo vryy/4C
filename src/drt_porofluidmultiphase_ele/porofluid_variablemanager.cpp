@@ -77,6 +77,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>::CreateVariab
   }
   // read data from scatra
   case POROFLUIDMULTIPHASE::get_access_from_scatra:
+  case POROFLUIDMULTIPHASE::get_access_from_artcoupling:
   {
     // NOTE: we do not need the variable manager struct here, since the call ExtractElementsAndNodeValues will
     //       otherwise also update the current configuration vector xyze_ with which it is called and scatra only

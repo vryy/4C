@@ -2434,7 +2434,10 @@ set(OBJS_DRT_POROMULTIPHASE
 )
 
 set(OBJS_DRT_POROMULTIPHASE_ART_COUPL
+  src/drt_poromultiphase_scatra/poromultiphase_scatra_artery_coupling_base.cpp
   src/drt_poromultiphase_scatra/poromultiphase_scatra_artery_coupling_nodebased.cpp
+  src/drt_poromultiphase_scatra/poromultiphase_scatra_artery_coupling_linebased.cpp
+  src/drt_poromultiphase_scatra/poromultiphase_scatra_artery_coupling_pair.cpp
 )
 
 set(OBJS_DRT_FPSI

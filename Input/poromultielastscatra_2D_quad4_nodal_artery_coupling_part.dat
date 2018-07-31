@@ -51,7 +51,8 @@ INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 FLUX_PROJ_METHOD                none
 FLUX_PROJ_SOLVER                2
------------------------------------POROFLUIDMULTIPHASE DYNAMIC/ARTERY MESHTYING
+-----------------------------------POROFLUIDMULTIPHASE DYNAMIC/ARTERY COUPLING
+ARTERY_COUPLING_METHOD          Nodal
 COUPLEDDOFS_ART                 1
 COUPLEDDOFS_PORO                5
 ---------------------------------------------POROMULTIPHASE DYNAMIC
@@ -86,7 +87,8 @@ SUGRVEL                         no
 ITEMAX                          10
 CONVTOL                         1e-8
 ABSTOLRES                       -1
------------------------------------SCALAR TRANSPORT DYNAMIC/ARTERY MESHTYING
+-----------------------------------SCALAR TRANSPORT DYNAMIC/ARTERY COUPLING
+ARTERY_COUPLING_METHOD          Nodal
 COUPLEDDOFS_ARTSCATRA           2 4
 COUPLEDDOFS_SCATRA              1 2
 ------------------------------------------------------------ARTERIAL DYNAMIC

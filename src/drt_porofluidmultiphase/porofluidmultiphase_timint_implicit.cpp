@@ -258,6 +258,8 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Init(
     strategy_ = Teuchos::rcp(new POROFLUIDMULTIPHASE::MeshtyingStrategyArtery(this, params_, poroparams_));
   else
     strategy_ = Teuchos::rcp(new POROFLUIDMULTIPHASE::MeshtyingStrategyStd(this, params_, poroparams_));
+  // check if initial fields match
+  strategy_->CheckInitialFields(phinp_);
 
   return;
 } // TimIntImpl::Init()
@@ -497,6 +499,9 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ApplyMeshMovement(
 
   // provide POROFLUIDMULTIPHASE discretization with displacement field
   SetState(nds_disp_,"dispnp",dispnp);
+
+  // apply mesh movement also on the strategy
+  strategy_->ApplyMeshMovement(dispnp);
 
   return;
 } // TimIntImpl::ApplyMeshMovement
@@ -1537,7 +1542,10 @@ void POROFLUIDMULTIPHASE::TimIntImpl::PrepareSystemForNewtonSolve()
           {
             // if not already in original dirich map     &&   if it is not a valid volume fraction pressure dof identified with < 1
             if(dbcmaps_->CondMap()->LID(dofs[idof]) == -1 && (int)(*valid_volfracpress_dofs_)[discret_->DofRowMap()->LID(dofs[idof])] < 1)
-              mydirichdofs.push_back(dofs[idof]);
+              if(not (std::find(mydirichdofs.begin(), mydirichdofs.end(), dofs[idof]) != mydirichdofs.end()))
+              {
+                mydirichdofs.push_back(dofs[idof]);
+              }
           }
         }
       }

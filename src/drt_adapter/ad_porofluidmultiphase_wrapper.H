@@ -114,6 +114,9 @@ namespace ADAPTER {
     //! return saturation field at time n+1
     Teuchos::RCP<const Epetra_Vector> Saturation() const;
 
+    //! return saturation field at time n+1
+    Teuchos::RCP<const Epetra_Vector> ValidVolFracPressDofs() const;
+
     //! return phase flux field at time n+1
     Teuchos::RCP<const Epetra_MultiVector> Flux() const;
 

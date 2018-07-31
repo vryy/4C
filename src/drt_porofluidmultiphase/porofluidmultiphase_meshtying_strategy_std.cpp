@@ -155,3 +155,23 @@ Teuchos::RCP<const Epetra_Vector> POROFLUIDMULTIPHASE::MeshtyingStrategyStd::Com
 
   return inc;
 }
+
+/*----------------------------------------------------------------------*
+ | check initial fields                                kremheller 06/18 |
+ *----------------------------------------------------------------------*/
+void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::CheckInitialFields(
+    Teuchos::RCP<const Epetra_Vector>      vec_cont
+    ) const
+{
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | apply mesh movement                                 kremheller 06/18 |
+ *----------------------------------------------------------------------*/
+void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::ApplyMeshMovement(
+    Teuchos::RCP<const Epetra_Vector> disp
+    ) const
+{
+  return;
+}

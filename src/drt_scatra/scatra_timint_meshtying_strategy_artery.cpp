@@ -21,6 +21,7 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_poromultiphase_scatra/poromultiphase_scatra_artery_coupling_nodebased.H"
+#include "../drt_poromultiphase_scatra/poromultiphase_scatra_utils.H"
 
 
 /*----------------------------------------------------------------------*
@@ -50,7 +51,7 @@ void SCATRA::MeshtyingStrategyArtery::InitMeshtying()
        INPAR::SCATRA::velocity_zero)
     dserror("set your velocity field to zero!");
 
-  // aretrey scatra problem
+  // artery scatra problem
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> art_scatra = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
 
   // initialize the base algo.
@@ -76,15 +77,23 @@ void SCATRA::MeshtyingStrategyArtery::InitMeshtying()
   artscatradis_ = artscatratimint_->Discretization();
   scatradis_    = scatratimint_->Discretization();
 
+  if(scatratimint_->Discretization()->Comm().MyPID() == 0)
+  {
+    std::cout << "\n";
+    std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+    std::cout << "<                                                  >" << std::endl;
+    std::cout << "< ScaTra-Coupling with 1D Artery Network activated >" << std::endl;
+  }
+
   // init the mesh tying object, which does all the work
-  arttoscatracoupling_ = Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased(
-          artscatradis_,
-          scatradis_,
-          myscatraparams.sublist("ARTERY MESHTYING"),
-          "ArtScatraCouplCon",
-          "COUPLEDDOFS_ARTSCATRA",
-          "COUPLEDDOFS_SCATRA"
-  ));
+  arttoscatracoupling_ = POROMULTIPHASESCATRA::UTILS::CreateAndInitArteryCouplingStrategy(
+      artscatradis_,
+      scatradis_,
+      myscatraparams.sublist("ARTERY COUPLING"),
+      "ArtScatraCouplCon",
+      "COUPLEDDOFS_ARTSCATRA",
+      "COUPLEDDOFS_SCATRA"
+    );
 
   return;
 }
@@ -94,15 +103,6 @@ void SCATRA::MeshtyingStrategyArtery::InitMeshtying()
  *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyArtery::SetupMeshtying()
 {
-
-  if(scatratimint_->Discretization()->Comm().MyPID() == 0)
-  {
-    std::cout << "\n";
-    std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
-    std::cout << "< ScaTra-Coupling with 1D Artery Network activated >" << std::endl;
-    std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
-    std::cout << "\n";
-  }
 
   // Initialize rhs vector
   rhs_ = Teuchos::rcp(new Epetra_Vector(*arttoscatracoupling_->FullMap(), true));
@@ -205,6 +205,8 @@ void SCATRA::MeshtyingStrategyArtery::Solve(
 
   SetupSystem(systemmatrix, residual);
 
+  comb_systemmatrix_->Complete();
+
   // solve
   comb_increment_->PutScalar(0.0);
   solver->Solve(comb_systemmatrix_->EpetraOperator(),comb_increment_,rhs_,true,iteration==1,projector);
@@ -231,13 +233,18 @@ void SCATRA::MeshtyingStrategyArtery::SetupSystem(
     ) const
 {
 
+  arttoscatracoupling_->SetSolutionVectors(scatratimint_->Phinp(), artscatratimint_->Phinp());
+
   arttoscatracoupling_->SetupSystem(
       comb_systemmatrix_,
       rhs_,
       Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix),
       artscatratimint_->SystemMatrix(),
       residual,
-      artscatratimint_->Residual());
+      artscatratimint_->Residual(),
+      scatratimint_->DirichMaps(),
+      artscatratimint_->DirichMaps()
+      );
 }
 
 /*-------------------------------------------------------------------------*
@@ -303,7 +310,19 @@ void SCATRA::MeshtyingStrategyArtery::PrepareTimeStep() const
 void SCATRA::MeshtyingStrategyArtery::SetArteryPressure() const
 {
 
-  artscatradis_->SetState(1,"one_d_artery_pressure",arttimint_->Pressurenp());
+  artscatradis_->SetState(2,"one_d_artery_pressure",arttimint_->Pressurenp());
+  return;
+}
+
+/*--------------------------------------------------------------------------*
+ | apply mesh movement on artery coupling                  kremheller 07/18 |
+ *--------------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyArtery::ApplyMeshMovement(
+    Teuchos::RCP<const Epetra_Vector> disp
+    )
+{
+
+  arttoscatracoupling_->ApplyMeshMovement(disp);
   return;
 }
 

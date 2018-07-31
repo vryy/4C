@@ -184,7 +184,6 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Sysmat(
 
   // set element data
   const int numnode = my::iel_;
-  const double L = my::CalculateEleLength(ele);
 
   // get pressure
   Teuchos::RCP<const Epetra_Vector> pressnp = discretization.GetState(0, "pressurenp");
@@ -194,6 +193,20 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Sysmat(
   // extract local values of pressure field from global state vector
   LINALG::Matrix<my::iel_,1> mypress(true);
   DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::iel_,1> >(*pressnp,mypress,lm);
+
+  double L;
+  // get current element length
+  if(discretization.HasState(1,"curr_ele_length"))
+  {
+    Teuchos::RCP<const Epetra_Vector> curr_length = discretization.GetState(1, "curr_ele_length");
+
+    const int lid = curr_length->Map().LID(ele->Id());
+    if (lid<0) dserror("Cannot find gid=%d in Epetra_Vector",ele->Id());
+
+    L = (*curr_length)[lid];
+  }
+  else
+    L = my::CalculateEleLength(ele);
 
   // check here, if we really have an artery !!
   if( material->MaterialType() != INPAR::MAT::m_cnst_art)

@@ -76,6 +76,13 @@ class MeshtyingStrategyStd : public MeshtyingStrategyBase
     //! access to global (combined) increment of coupled problem
     virtual Teuchos::RCP<const Epetra_Vector> CombinedIncrement(const Teuchos::RCP<const Epetra_Vector> inc) const;
 
+    // check if initial fields on coupled DOFs are equal
+    void CheckInitialFields(
+        Teuchos::RCP<const Epetra_Vector>      vec_cont
+        ) const;
+
+    //! apply the mesh movement
+    void ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> disp) const;
 };
 
 }

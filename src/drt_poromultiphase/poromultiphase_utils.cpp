@@ -24,7 +24,9 @@
 #include "poromultiphase_monolithic_twoway.H"
 
 #include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele.H"
+#include "../drt_porofluidmultiphase/porofluidmultiphase_utils.H"
 #include "../drt_poroelast/poroelast_utils.H"
+#include "../drt_inpar/inpar_bio.H"
 
 #include "../drt_lib/drt_utils_createdis.H"
 
@@ -41,11 +43,52 @@ void POROMULTIPHASE::UTILS::SetupDiscretizationsAndFieldCoupling(
 {
   // Scheme   : the structure discretization is received from the input.
   //            Then, a poro fluid disc. is cloned.
+  //            If an artery discretization with non-matching coupling is present, we first redistribute
 
   DRT::Problem* problem = DRT::Problem::Instance();
 
   //1.-Initialization.
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis(struct_disname);
+  // possible redistribution
+  if(DRT::Problem::Instance()->DoesExistDis("artery"))
+  {
+    Teuchos::RCP<DRT::Discretization> arterydis = Teuchos::null;
+    arterydis = DRT::Problem::Instance()->GetDis("artery");
+
+    // get coupling method
+    INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod arterycoupl =
+      DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(problem->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING"),"ARTERY_COUPLING_METHOD");
+
+    // curr_ele_length: defined as element-wise quantity
+    Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
+    dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber( 0, 1, 0, false ));
+    // add it to artery discretization
+    arterydis->AddDofSet(dofsetaux);
+
+    if (arterydis->NumGlobalNodes())
+    {
+      switch(arterycoupl)
+      {
+      case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::gpts:
+      case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp:
+      {
+        // if we have a PoroMultiphaseScatra-Problem, we can only ghost after defining all
+        // DofSets -> done in poromultiphase_scatra_utils.cpp
+        bool ghost_artery = true;
+        if(problem->ProblemType() == prb_poromultiphasescatra)
+          ghost_artery = false;
+        // redistribute discretizations
+        POROFLUIDMULTIPHASE::UTILS::RedistributeDiscretizations(structdis, arterydis, ghost_artery);
+        break;
+      }
+      default:
+      {
+        break;
+      }
+      }
+    }
+  }
+
   Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis(fluid_disname);
   if(!structdis->Filled())
     structdis->FillComplete();

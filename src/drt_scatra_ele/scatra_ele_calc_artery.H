@@ -202,11 +202,11 @@ public:
     if(ele->NumMaterial()<2)
       dserror("no second material available");
     // check for artery material
-    if(ele->Material(ndsscatra_artery_)->MaterialType() != INPAR::MAT::MaterialType::m_cnst_art)
-      dserror("Secondary material is not of type m_cnst_art, but %d", ele->Material(ndsscatra_artery_)->MaterialType());
+    if(ele->Material(1)->MaterialType() != INPAR::MAT::MaterialType::m_cnst_art)
+      dserror("Secondary material is not of type m_cnst_art, but %d", ele->Material(1)->MaterialType());
 
     //here we rely that the Artery material has been added as second material
-    arterymat_ = Teuchos::rcp_dynamic_cast<MAT::Cnst_1d_art>(ele->Material(ndsscatra_artery_));
+    arterymat_ = Teuchos::rcp_dynamic_cast<MAT::Cnst_1d_art>(ele->Material(1));
 
     materialset_ = true;
   }
@@ -245,11 +245,6 @@ private:
 
   //! check if artery material has been set
   bool materialset_;
-
-  //! dofset of artery field on scatra dis
-  // TODO: find a better way to do this
-  const int ndsscatra_artery_ = 1;
-
 };
 }
 }

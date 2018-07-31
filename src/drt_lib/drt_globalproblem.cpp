@@ -285,7 +285,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--POROELASTICITY DYNAMIC", *list);
   reader.ReadGidSection("--POROSCATRA CONTROL", *list);
   reader.ReadGidSection("--POROFLUIDMULTIPHASE DYNAMIC", *list);
-  reader.ReadGidSection("--POROFLUIDMULTIPHASE DYNAMIC/ARTERY MESHTYING", *list);
+  reader.ReadGidSection("--POROFLUIDMULTIPHASE DYNAMIC/ARTERY COUPLING", *list);
   reader.ReadGidSection("--POROMULTIPHASE DYNAMIC", *list);
   reader.ReadGidSection("--POROMULTIPHASE DYNAMIC/PARTITIONED", *list);
   reader.ReadGidSection("--POROMULTIPHASE DYNAMIC/MONOLITHIC", *list);
@@ -317,7 +317,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/STABILIZATION", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/S2I COUPLING", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/VARIATIONAL", *list);
-  reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/ARTERY MESHTYING", *list);
+  reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/ARTERY COUPLING", *list);
   reader.ReadGidSection("--STI DYNAMIC", *list);
   reader.ReadGidSection("--STI DYNAMIC/MONOLITHIC", *list);
   reader.ReadGidSection("--STI DYNAMIC/PARTITIONED", *list);

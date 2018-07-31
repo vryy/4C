@@ -18,6 +18,7 @@
 #include "inpar_fluid.H"
 #include "inpar_s2i.H"
 #include "inpar_thermo.H"
+#include "inpar_bio.H"
 
 #include "../drt_lib/drt_conditiondefinition.H"
 
@@ -540,9 +541,33 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
    // ----------------------------------------------------------------------
    // artery mesh tying
-   Teuchos::ParameterList& scatradyn_art = scatradyn.sublist("ARTERY MESHTYING",false,
+   Teuchos::ParameterList& scatradyn_art = scatradyn.sublist("ARTERY COUPLING",false,
      "Parameters for artery mesh tying"
      );
+
+   setStringToIntegralParameter<int>("ARTERY_COUPLING_METHOD",
+                                "None",
+                                "Coupling method for artery coupling.",
+                                tuple<std::string>(
+                                  "None",
+                                  "Nodal",
+                                   "GPTS",
+                                  "MP"),
+                                tuple<std::string>(
+                                  "none",
+                                  "Nodal Coupling",
+                                  "Gauss-Point-To-Segment Approach",
+                                  "Mortar Penalty Approach"),
+                                tuple<int>(
+                                  INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::none,       // none
+                                  INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::nodal,      // Nodal Coupling
+                                  INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::gpts,       // Gauss-Point-To-Segment Approach
+                                  INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp          // Mortar Penalty Approach
+                                ),
+                                &scatradyn_art);
+
+   // penalty parameter
+   DoubleParameter("PENALTY", 1000.0, "Penalty parameter for line-based coupling", &scatradyn_art);
 
    // coupled artery dofs for mesh tying
    setNumericStringParameter("COUPLEDDOFS_ARTSCATRA","-1.0",
@@ -553,6 +578,29 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
    setNumericStringParameter("COUPLEDDOFS_SCATRA","-1.0",
                              "coupled porofluid dofs for mesh tying",
                              &scatradyn_art);
+
+   // functions for coupling (arteryscatra part)
+   setNumericStringParameter("REACFUNCT_ART","-1",
+                             "functions for coupling (arteryscatra part)",
+                             &scatradyn_art);
+
+   // scale for coupling (arteryscatra part)
+   setNumericStringParameter("SCALEREAC_ART","0",
+                             "scale for coupling (arteryscatra part)",
+                             &scatradyn_art);
+
+   // functions for coupling (scatra part)
+   setNumericStringParameter("REACFUNCT_CONT","-1",
+                             "functions for coupling (scatra part)",
+                             &scatradyn_art);
+
+   // scale for coupling (scatra part)
+   setNumericStringParameter("SCALEREAC_CONT","0",
+                             "scale for coupling (scatra part)",
+                             &scatradyn_art);
+
+   // Flag if artery elements are evaluated in reference or current configuration
+   BoolParameter("EVALUATE_IN_REF_CONFIG","yes","Flag if artery elements are evaluated in reference or current configuration",&scatradyn_art);
 }
 
 

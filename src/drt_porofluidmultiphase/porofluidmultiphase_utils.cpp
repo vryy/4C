@@ -21,6 +21,7 @@
 #include "../drt_lib/drt_utils_createdis.H"
 
 #include "../drt_adapter/ad_porofluidmultiphase.H"
+#include "../drt_lib/drt_utils_parallel.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -157,6 +158,34 @@ Teuchos::RCP<ADAPTER::PoroFluidMultiphase> POROFLUIDMULTIPHASE::UTILS::CreateAlg
   }
 
   return algo;
+}
+
+/*--------------------------------------------------------------------------*
+ | redistribute cont- and artery-discretization by binning kremheller 06/18 |
+ *--------------------------------------------------------------------------*/
+void POROFLUIDMULTIPHASE::UTILS::RedistributeDiscretizations(
+    Teuchos::RCP<DRT::Discretization>                 contdis,
+    Teuchos::RCP<DRT::Discretization>                 artdis,
+    const bool                                        ghost_artdis
+    )
+{
+
+  contdis->FillComplete();
+  artdis->FillComplete();
+  // create vector of discr.
+  std::vector<Teuchos::RCP<DRT::Discretization> > dis;
+  dis.push_back(contdis);
+  dis.push_back(artdis);
+
+  DRT::UTILS::RedistributeDiscretizationsByBinning(dis,false);
+
+  // TODO: this is necessary to find all possible interactions.
+  //       presently, the artery discretization is much smaller than the
+  //       others, so it is not that much of a performance issue
+  if(ghost_artdis)
+    DRT::UTILS::GhostDiscretizationOnAllProcs(artdis);
+
+  return;
 }
 
 /*----------------------------------------------------------------------*

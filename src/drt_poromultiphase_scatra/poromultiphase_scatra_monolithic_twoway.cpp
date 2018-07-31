@@ -1786,14 +1786,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::A
   scatramsht_->ArtScatraField()->Discretization()->ClearState();
   scatramsht_->ArtScatraField()->Discretization()->SetState(0,"phinp",scatramsht_->ArtScatraField()->Phinp());
   scatramsht_->ArtScatraField()->Discretization()->SetState(0,"hist",scatramsht_->ArtScatraField()->Hist());
-  scatramsht_->ArtScatraField()->Discretization()->SetState(1,"one_d_artery_pressure",PoroField()->FluidField()->ArtNetTimInt()->Pressurenp());
-
+  scatramsht_->ArtScatraField()->Discretization()->SetState(2,"one_d_artery_pressure",PoroField()->FluidField()->ArtNetTimInt()->Pressurenp());
 
   // build specific assemble strategy for mechanical-fluid system matrix
   DRT::AssembleStrategy artscatrastrategy_artery(
       0,               // scatradofset for row
-      1,               // arterydofset for column
-      k_asa,          // scatra-structure coupling matrix
+      2,               // arterydofset for column
+      k_asa,           // scatra-artery coupling matrix
       Teuchos::null ,
       Teuchos::null ,
       Teuchos::null,

@@ -170,6 +170,13 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::PoroFluidMultiphaseWrapper::Saturatio
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::PoroFluidMultiphaseWrapper::ValidVolFracPressDofs() const
+{
+  return porofluid_->ValidVolFracPressDofs();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_MultiVector> ADAPTER::PoroFluidMultiphaseWrapper::Flux() const
 {
   return porofluid_->Flux();

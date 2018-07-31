@@ -286,6 +286,9 @@ public:
   //! return number of dof set associated with solid pressure
   int GetDofSetNumberOfSolidPressure() const {return nds_solidpressure_;};
 
+  //! return pressure field
+  Teuchos::RCP<const Epetra_Vector> ValidVolFracPressDofs() const { return valid_volfracpress_dofs_; }
+
 protected:
 
   /*========================================================================*/

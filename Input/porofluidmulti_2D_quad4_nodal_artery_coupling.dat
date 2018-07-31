@@ -47,7 +47,8 @@ FLUX_PROJ_METHOD                L2_projection
 FLUX_PROJ_SOLVER                2
 OUTPUT_POROSITY                 no
 ARTERY_COUPLING                 yes
------------------------------POROFLUIDMULTIPHASE DYNAMIC/ARTERY MESHTYING
+-----------------------------POROFLUIDMULTIPHASE DYNAMIC/ARTERY COUPLING
+ARTERY_COUPLING_METHOD          Nodal
 COUPLEDDOFS_ART                 1
 COUPLEDDOFS_PORO                5
 ------------------------------------------------------------ARTERIAL DYNAMIC

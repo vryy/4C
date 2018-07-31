@@ -76,6 +76,13 @@ Teuchos::RCP<ADAPTER::PoroFluidMultiphase> CreateAlgorithm(
     Teuchos::RCP<IO::DiscretizationWriter>            output              //!< output writer
     );
 
+/// redistribute the continous and artery-discretization
+void RedistributeDiscretizations(
+    Teuchos::RCP<DRT::Discretization>                 contdis,
+    Teuchos::RCP<DRT::Discretization>                 artdis,
+    const bool                                        ghost_artdis
+    );
+
 //! Determine norm of vector
 double CalculateVectorNorm(const enum INPAR::POROFLUIDMULTIPHASE::VectorNorm norm, //!< norm to use
     const Teuchos::RCP<const Epetra_Vector> vect //!< the vector of interest

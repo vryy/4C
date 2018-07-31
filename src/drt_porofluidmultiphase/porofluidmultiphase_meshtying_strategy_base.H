@@ -116,6 +116,14 @@ class MeshtyingStrategyBase
     //! access to global (combined) increment of coupled problem
     virtual Teuchos::RCP<const Epetra_Vector> CombinedIncrement(Teuchos::RCP<const Epetra_Vector> inc) const = 0;
 
+    // check if initial fields on coupled DOFs are equal
+    virtual void CheckInitialFields(
+        Teuchos::RCP<const Epetra_Vector>      vec_cont
+        ) const = 0;
+
+    //! apply the mesh movement
+    virtual void ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> disp) const = 0;
+
   protected:
 
     //! porofluid multi time integrator

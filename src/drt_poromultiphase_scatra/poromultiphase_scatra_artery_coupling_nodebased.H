@@ -15,16 +15,7 @@
 #ifndef SRC_DRT_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_NODEBASED_H_
 #define SRC_DRT_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_NODEBASED_H_
 
-#include "Teuchos_RCP.hpp"
-#include <Epetra_Vector.h>
-#include <Teuchos_ParameterList.hpp>
-#include "../linalg/linalg_utils.H"
-
-// forward declarations
-namespace DRT
-{
-  class Discretization;
-}
+#include "poromultiphase_scatra_artery_coupling_base.H"
 
 namespace ADAPTER
 {
@@ -47,7 +38,7 @@ namespace POROMULTIPHASESCATRA
 {
 
   //! Node based coupling between artery network and poromultiphasescatra algorithm
-  class PoroMultiPhaseScaTraArtCouplNodeBased
+  class PoroMultiPhaseScaTraArtCouplNodeBased : public PoroMultiPhaseScaTraArtCouplBase
   {
 
   public:
@@ -65,12 +56,6 @@ namespace POROMULTIPHASESCATRA
     /// virtual destructor
     virtual ~PoroMultiPhaseScaTraArtCouplNodeBased(){}
 
-    /// access to full map
-    const Teuchos::RCP<const Epetra_Map>& FullMap() const;
-
-    /// global extractor
-    const Teuchos::RCP<LINALG::MultiMapExtractor>& GlobalExtractor() const;
-
     //! set-up of global system of equations of coupled problem
     void SetupSystem(
         Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat,
@@ -78,7 +63,9 @@ namespace POROMULTIPHASESCATRA
         Teuchos::RCP<LINALG::SparseMatrix>          sysmat_cont,
         Teuchos::RCP<LINALG::SparseMatrix>          sysmat_art,
         Teuchos::RCP<const Epetra_Vector>           rhs_cont,
-        Teuchos::RCP<const Epetra_Vector>           rhs_art
+        Teuchos::RCP<const Epetra_Vector>           rhs_art,
+        Teuchos::RCP<const LINALG::MapExtractor>    dbcmap_cont,
+        Teuchos::RCP<const LINALG::MapExtractor>    dbcmap_art
         );
 
     /// setup global vector
@@ -113,6 +100,15 @@ namespace POROMULTIPHASESCATRA
     //! access full dof row map
     Teuchos::RCP<const Epetra_Map> DofRowMap() const;
 
+    /// init the strategy
+    void Init();
+
+    /// apply mesh movement (on artery elements)
+    void ApplyMeshMovement(
+      Teuchos::RCP<const Epetra_Vector>       disp);
+
+    //! print out the coupling method
+    void PrintOutCouplingMethod() const;
 
   private:
 
@@ -146,21 +142,8 @@ namespace POROMULTIPHASESCATRA
         const Teuchos::RCP<const Epetra_Map>&      coupleddofmap       //!< map with coupled DOFs
         );
 
-    //! artery (1D) discretization
-    Teuchos::RCP<DRT::Discretization>  arterydis_;
-    //! continous field (2D, 3D) discretization
-    Teuchos::RCP<DRT::Discretization>  contdis_;
-
     //! name of the condition
     const std::string condname_;
-
-    //! coupled dofs of the single fields
-    std::vector<int> coupleddofs_art_;
-    std::vector<int> coupleddofs_cont_;
-    int num_coupled_dofs_;
-
-    //! dof row map (not splitted)
-    Teuchos::RCP<Epetra_Map> fullmap_;
 
     //! dof row map splitted in (field) blocks
     Teuchos::RCP<LINALG::MultiMapExtractor> blockrowdofmap_;
@@ -168,9 +151,6 @@ namespace POROMULTIPHASESCATRA
     //! extractors for continous field and artery field, maps(0) -> Coupled Dofs, maps(1) uncoupled Dofs
     Teuchos::RCP<LINALG::MultiMapExtractor> contfieldex_;
     Teuchos::RCP<LINALG::MultiMapExtractor> artex_;
-
-    //! global extractor
-    Teuchos::RCP<LINALG::MultiMapExtractor>   globalex_;
 
     //! coupling adapter
     Teuchos::RCP<ADAPTER::Coupling> artcontfieldcoup_;

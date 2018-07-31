@@ -26,6 +26,8 @@ DRT::ELEMENTS::ScaTraEleCalcArtery<distype,probdim>::ScaTraEleCalcArtery(const i
 {
 
   // safety check
+  // Note: if higher order 1D elements should be used, the approach with adding the length from below
+  //        will not work anymore
   if(my::nen_ != 2)
     dserror("Only line2 elements supported so far, you have %d nodes, if called with 2D or 3D element, think again", my::nen_);
   // replace internal variable manager by internal variable manager for artery
@@ -191,14 +193,52 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype,probdim>::ExtractElementAndNodeV
   }
 
   //---------------------------------------------------------------------------------------------
+  //                                 CURRENT LENGTH
+  //---------------------------------------------------------------------------------------------
+  // extract element and node values of the artery
+  if(discretization.HasState(1,"curr_ele_length"))
+  {
+    Teuchos::RCP<const Epetra_Vector> curr_length = discretization.GetState(1, "curr_ele_length");
+    const int lid = curr_length->Map().LID(ele->Id());
+    if (lid<0) dserror("Cannot find gid=%d in Epetra_Vector",ele->Id());
+    const double curr_ele_length = (*curr_length)[lid];
+
+    static LINALG::Matrix<probdim,1> arteryrefpos0;
+    for (unsigned int d=0;d<probdim;++d)
+      arteryrefpos0(d) = my::xyze_(d,0);
+    static LINALG::Matrix<probdim,1> arteryrefpos1;
+    for (unsigned int d=0;d<probdim;++d)
+      arteryrefpos1(d) = my::xyze_(d,1);
+
+    static LINALG::Matrix<probdim,1> dist0;
+    dist0.Update(-1.0, arteryrefpos0, 1.0, arteryrefpos1, 0.0);
+    const double arteryreflength = dist0.Norm2();
+
+    // this is a hack
+    // will not work for anything else but line2 elements
+    // change in length is simply added to displacement of second node
+    for (unsigned int d=0;d<probdim;++d)
+    {
+      my::edispnp_(d, 0) = 0.0;
+      my::edispnp_(d, 1) = (curr_ele_length/arteryreflength - 1.0)*dist0(d);
+    }
+
+    my::UpdateNodeCoordinates();
+  }
+
+  int ndsscatra_artery = 1;
+  if(discretization.NumDofSets() == 3)
+    ndsscatra_artery = 2;
+
+  //---------------------------------------------------------------------------------------------
   //                                 ARTERY
   //---------------------------------------------------------------------------------------------
   // extract element and node values of the artery
-  if(discretization.HasState(1,"one_d_artery_pressure"))
+  if(discretization.HasState(ndsscatra_artery,"one_d_artery_pressure"))
   {
-    Teuchos::RCP<const Epetra_Vector> arterypn = discretization.GetState(1,"one_d_artery_pressure");
+    Teuchos::RCP<const Epetra_Vector> arterypn = discretization.GetState(ndsscatra_artery,"one_d_artery_pressure");
     //values of scatra field are always in first dofset
-    const std::vector<int>&    lm_artery = la[1].lm_;
+    const std::vector<int>&    lm_artery = la[ndsscatra_artery].lm_;
     DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*arterypn,earterypressurenp_,lm_artery);
   }
   else

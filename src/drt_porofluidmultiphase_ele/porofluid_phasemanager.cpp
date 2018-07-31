@@ -183,6 +183,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::WrapPhaseManager(
     break;
     }
   case POROFLUIDMULTIPHASE::calc_porosity:
+  case POROFLUIDMULTIPHASE::get_access_from_artcoupling:
   {
     // porosity (includes derivatves) needed
     phasemanager = Teuchos::rcp(new PhaseManagerDerivAndPorosity(corephasemanager));

@@ -20,6 +20,8 @@
 #include "porofluidmultiphase_timint_implicit.H"
 #include "porofluidmultiphase_timint_ost.H"
 
+#include "../drt_inpar/inpar_bio.H"
+
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_io/io.H"
@@ -37,6 +39,7 @@ void porofluidmultiphase_dyn(int restart)
   // define the discretization names
   const std::string fluid_disname = "porofluid";
   const std::string stuct_disname = "structure";
+  const std::string artery_disname = "artery";
 
   // access the communicator
   const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis(fluid_disname)->Comm();
@@ -64,10 +67,36 @@ void porofluidmultiphase_dyn(int restart)
   const int linsolvernumber = porodyn.get<int>("LINEAR_SOLVER");
 
   // -------------------------------------------------------------------
-  // access the discretization
+  // access the discretization(s)
   // -------------------------------------------------------------------
   Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
   actdis = DRT::Problem::Instance()->GetDis(fluid_disname);
+
+  if(DRT::Problem::Instance()->DoesExistDis(artery_disname))
+  {
+    Teuchos::RCP<DRT::Discretization> arterydis = Teuchos::null;
+    arterydis = DRT::Problem::Instance()->GetDis(artery_disname);
+    // get the coupling method
+    INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod arterycoupl =
+      DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(porodyn.sublist("ARTERY COUPLING"),"ARTERY_COUPLING_METHOD");
+    if (arterydis->NumGlobalNodes())
+    {
+      switch(arterycoupl)
+      {
+      case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::gpts:
+      case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp:
+      {
+        // call with true -> arterydis will be ghosted on all procs.
+        POROFLUIDMULTIPHASE::UTILS::RedistributeDiscretizations(actdis, arterydis, true);
+        break;
+      }
+      default:
+      {
+        break;
+      }
+      }
+    }
+  }
 
   // -------------------------------------------------------------------
   // assign dof set for solid pressures

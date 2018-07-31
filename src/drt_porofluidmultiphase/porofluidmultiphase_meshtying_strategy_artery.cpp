@@ -17,7 +17,8 @@
 #include "../drt_adapter/ad_art_net.H"
 #include "../drt_inpar/inpar_bio.H"
 #include "../drt_art_net/art_net_utils.H"
-#include "../drt_poromultiphase_scatra/poromultiphase_scatra_artery_coupling_nodebased.H"
+#include "../drt_poromultiphase_scatra/poromultiphase_scatra_artery_coupling_base.H"
+#include "../drt_poromultiphase_scatra/poromultiphase_scatra_utils.H"
 #include "../linalg/linalg_solver.H"
 #include "porofluidmultiphase_utils.H"
 
@@ -38,16 +39,6 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
     : MeshtyingStrategyBase(porofluidmultitimint, probparams, poroparams)
 {
   const Teuchos::ParameterList& artdyn       =  DRT::Problem::Instance()->ArterialDynamicParams();
-
-  // print user info
-  if(porofluidmultitimint->Discretization()->Comm().MyPID() == 0)
-  {
-    std::cout << "\n";
-    std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
-    std::cout << "<    Coupling with 1D Artery Network activated     >" << std::endl;
-    std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
-    std::cout << "\n";
-  }
 
   arterydis_ = DRT::Problem::Instance()->GetDis("artery");
 
@@ -81,15 +72,24 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
       "artery_scatra"
       );
 
+  // print user info
+  if(porofluidmultitimint->Discretization()->Comm().MyPID() == 0)
+  {
+    std::cout << "\n";
+    std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+    std::cout << "<                                                  >" << std::endl;
+    std::cout << "<    Coupling with 1D Artery Network activated     >" << std::endl;
+  }
+
   // initialize mesh tying object
-  arttoporofluidcoupling_ = Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased(
+  arttoporofluidcoupling_ = POROMULTIPHASESCATRA::UTILS::CreateAndInitArteryCouplingStrategy(
           arterydis_,
           porofluidmultitimint->Discretization(),
-          poroparams.sublist("ARTERY MESHTYING"),
+          poroparams.sublist("ARTERY COUPLING"),
           "ArtPorofluidCouplCon",
           "COUPLEDDOFS_ART",
           "COUPLEDDOFS_PORO"
-  ));
+  );
 
   // Initialize rhs vector
   rhs_ = Teuchos::rcp(new Epetra_Vector(*arttoporofluidcoupling_->FullMap(), true));
@@ -103,9 +103,6 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
   comb_systemmatrix_ = Teuchos::rcp(
       new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
           *arttoporofluidcoupling_->GlobalExtractor(), *arttoporofluidcoupling_->GlobalExtractor(), 81, false, true));
-
-  // check if initial fields match
-  arttoporofluidcoupling_->CheckInitialFields(porofluidmultitimint_->Phinp(), artnettimint_->Pressurenp());
 
   return;
 }
@@ -170,6 +167,8 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::LinearSolve(
     LINALG::PrintVectorInMatlabFormat(filename_vc, *rhs_, true);
     dserror("exit");
   }
+
+  comb_systemmatrix_->Complete();
 
   // merge blockmatrix to SparseMatrix
   Teuchos::RCP<LINALG::SparseMatrix> sparse = comb_systemmatrix_->Merge();
@@ -251,6 +250,8 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::Evaluate()
   // apply DBC
   artnettimint_->PrepareLinearSolve();
 
+  arttoporofluidcoupling_->SetSolutionVectors(porofluidmultitimint_->Phinp(), artnettimint_->Pressurenp());
+
   //SetupCoupledArteryPoroFluidSystem();
   arttoporofluidcoupling_->SetupSystem(
       comb_systemmatrix_,
@@ -258,7 +259,9 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::Evaluate()
       porofluidmultitimint_->SystemMatrix(),
       artnettimint_->SystemMatrix(),
       porofluidmultitimint_->RHS(),
-      artnettimint_->RHS()
+      artnettimint_->RHS(),
+      porofluidmultitimint_->GetDBCMapExtractor(),
+      artnettimint_->GetDBCMapExtractor()
       );
 
   return;
@@ -317,4 +320,26 @@ Teuchos::RCP<const Epetra_Vector> POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::
 {
 
   return comb_increment_;
+}
+
+/*----------------------------------------------------------------------*
+ | check initial fields                                kremheller 06/18 |
+ *----------------------------------------------------------------------*/
+void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::CheckInitialFields(
+    Teuchos::RCP<const Epetra_Vector>      vec_cont
+    ) const
+{
+  arttoporofluidcoupling_->CheckInitialFields(vec_cont, artnettimint_->Pressurenp());
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | apply mesh movement                                 kremheller 06/18 |
+ *----------------------------------------------------------------------*/
+void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::ApplyMeshMovement(
+    Teuchos::RCP<const Epetra_Vector> disp
+    ) const
+{
+  arttoporofluidcoupling_->ApplyMeshMovement(disp);
+  return;
 }

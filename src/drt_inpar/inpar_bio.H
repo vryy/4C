@@ -103,6 +103,15 @@ namespace INPAR
       SD
     };
 
+    //! type of coupling between artery network and poromultiphasescatra-framework
+    enum ArteryPoroMultiphaseScatraCouplingMethod
+    {
+      none,         // none
+      nodal,        // nodal
+      gpts,         // Gauss-Point-To-Segment
+      mp            // Mortar-Penalty
+    };
+
     /// set the artnet parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 

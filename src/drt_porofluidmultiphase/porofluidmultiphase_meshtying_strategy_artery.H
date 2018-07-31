@@ -20,7 +20,7 @@
 // forward declaration
 namespace POROMULTIPHASESCATRA
 {
-  class PoroMultiPhaseScaTraArtCouplNodeBased;
+  class PoroMultiPhaseScaTraArtCouplBase;
 }
 
 namespace POROFLUIDMULTIPHASE
@@ -97,6 +97,14 @@ class MeshtyingStrategyArtery : public MeshtyingStrategyBase
     //! get global (combined) increment of coupled problem
     virtual Teuchos::RCP<const Epetra_Vector> CombinedIncrement(const Teuchos::RCP<const Epetra_Vector> inc) const;
 
+    // check if initial fields on coupled DOFs are equal
+    void CheckInitialFields(
+        Teuchos::RCP<const Epetra_Vector>      vec_cont
+        ) const;
+
+    //! apply the mesh movement
+    void ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> disp) const;
+
   protected:
 
     //! artery time integration
@@ -106,7 +114,7 @@ class MeshtyingStrategyArtery : public MeshtyingStrategyBase
     Teuchos::RCP<DRT::Discretization> arterydis_;
 
     //! the mesh tying object
-    Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased> arttoporofluidcoupling_;
+    Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase> arttoporofluidcoupling_;
 
     //! block systemmatrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> comb_systemmatrix_;

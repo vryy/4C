@@ -42,7 +42,7 @@ namespace FSI
 
 namespace POROMULTIPHASESCATRA
 {
-  class PoroMultiPhaseScaTraArtCouplNodeBased;
+  class PoroMultiPhaseScaTraArtCouplBase;
 }
 
 namespace SCATRA
@@ -112,6 +112,11 @@ class MeshtyingStrategyArtery : public MeshtyingStrategyBase
     //! set the artery pressure
     void SetArteryPressure() const;
 
+    //! apply mesh movement
+    void ApplyMeshMovement(
+        Teuchos::RCP<const Epetra_Vector> disp
+        );
+
     //! block systemmatrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> CombinedSystemMatrix() {return comb_systemmatrix_;}
 
@@ -138,7 +143,7 @@ class MeshtyingStrategyArtery : public MeshtyingStrategyBase
     Teuchos::RCP<ADAPTER::ArtNet>                arttimint_;
 
     //! mesh tying object
-    Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased> arttoscatracoupling_;
+    Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase> arttoscatracoupling_;
 
     //! the two discretizations
     Teuchos::RCP<DRT::Discretization> artscatradis_;
