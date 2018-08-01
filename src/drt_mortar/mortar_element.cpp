@@ -296,7 +296,11 @@ void MORTAR::MortarElement::Unpack(const std::vector<char>& data)
   traceHCond_ = ExtractDouble(position, data);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    dserror(
+        "Mismatch in size of available data (size %d) vs. position pointer "
+        "of read data (size %d)",
+        (int)data.size(), position);
+
   return;
 }
 
