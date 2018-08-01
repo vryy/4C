@@ -65,27 +65,24 @@ void POROMULTIPHASE::UTILS::SetupDiscretizationsAndFieldCoupling(
     // add it to artery discretization
     arterydis->AddDofSet(dofsetaux);
 
-    if (arterydis->NumGlobalNodes())
+    switch(arterycoupl)
     {
-      switch(arterycoupl)
-      {
-      case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::gpts:
-      case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp:
-      {
-        // if we have a PoroMultiphaseScatra-Problem, we can only ghost after defining all
-        // DofSets -> done in poromultiphase_scatra_utils.cpp
-        bool ghost_artery = true;
-        if(problem->ProblemType() == prb_poromultiphasescatra)
-          ghost_artery = false;
-        // redistribute discretizations
-        POROFLUIDMULTIPHASE::UTILS::RedistributeDiscretizations(structdis, arterydis, ghost_artery);
-        break;
-      }
-      default:
-      {
-        break;
-      }
-      }
+    case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::gpts:
+    case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp:
+    {
+      // if we have a PoroMultiphaseScatra-Problem, we can only ghost after defining all
+      // DofSets -> done in poromultiphase_scatra_utils.cpp
+      bool ghost_artery = true;
+      if(problem->ProblemType() == prb_poromultiphasescatra)
+        ghost_artery = false;
+      // redistribute discretizations
+      POROFLUIDMULTIPHASE::UTILS::RedistributeDiscretizations(structdis, arterydis, ghost_artery);
+      break;
+    }
+    default:
+    {
+      break;
+    }
     }
   }
 

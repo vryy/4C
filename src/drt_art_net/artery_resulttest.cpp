@@ -78,7 +78,7 @@ void ART::ArteryResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr,
       if (position=="area")
         result = (*mysol_)[pnpmap.LID(dis_->Dof(actnode,0))];
       else if (position=="pressure")
-        result = (*mysol_)[pnpmap.LID(dis_->Dof(actnode,0))];
+        result = (*mysol_)[pnpmap.LID(dis_->Dof(0,actnode,0))];
       else if (position=="flowrate")
         result = (*mysol_)[pnpmap.LID(dis_->Dof(actnode,1))];
       else

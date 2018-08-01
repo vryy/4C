@@ -196,7 +196,7 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Sysmat(
 
   double L;
   // get current element length
-  if(discretization.HasState(1,"curr_ele_length"))
+  if(discretization.NumDofSets() > 1 && discretization.HasState(1,"curr_ele_length"))
   {
     Teuchos::RCP<const Epetra_Vector> curr_length = discretization.GetState(1, "curr_ele_length");
 

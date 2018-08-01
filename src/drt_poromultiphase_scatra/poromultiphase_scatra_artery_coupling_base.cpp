@@ -37,6 +37,10 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::PoroMultiPhaseScaTraArtC
     comm_(arterydis->Comm())
 {
 
+  // safety check
+  if(arterydis_->NumGlobalNodes() == 0)
+    dserror("artery discretization does not seem to have any nodes");
+
   // get the actual coupled DOFs  ----------------------------------------------------
   // 1) 1D artery discretization
   int    word1;

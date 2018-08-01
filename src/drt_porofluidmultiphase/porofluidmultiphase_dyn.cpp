@@ -79,22 +79,19 @@ void porofluidmultiphase_dyn(int restart)
     // get the coupling method
     INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod arterycoupl =
       DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(porodyn.sublist("ARTERY COUPLING"),"ARTERY_COUPLING_METHOD");
-    if (arterydis->NumGlobalNodes())
+    switch(arterycoupl)
     {
-      switch(arterycoupl)
-      {
-      case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::gpts:
-      case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp:
-      {
-        // call with true -> arterydis will be ghosted on all procs.
-        POROFLUIDMULTIPHASE::UTILS::RedistributeDiscretizations(actdis, arterydis, true);
-        break;
-      }
-      default:
-      {
-        break;
-      }
-      }
+    case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::gpts:
+    case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp:
+    {
+      // call with true -> arterydis will be ghosted on all procs.
+      POROFLUIDMULTIPHASE::UTILS::RedistributeDiscretizations(actdis, arterydis, true);
+      break;
+    }
+    default:
+    {
+      break;
+    }
     }
   }
 

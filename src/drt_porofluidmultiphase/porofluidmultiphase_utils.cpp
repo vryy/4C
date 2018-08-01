@@ -179,6 +179,11 @@ void POROFLUIDMULTIPHASE::UTILS::RedistributeDiscretizations(
 
   DRT::UTILS::RedistributeDiscretizationsByBinning(dis,false);
 
+  // safety check
+  // TODO: fix this!
+  if(artdis->NumMyRowNodes() == 0)
+    dserror("problem with parallel redistribution of artery discretization, one or more procs. does not have any row nodes");
+
   // TODO: this is necessary to find all possible interactions.
   //       presently, the artery discretization is much smaller than the
   //       others, so it is not that much of a performance issue
