@@ -48,7 +48,7 @@ Go over all the following points, and put an `x` in all the boxes that apply. If
 - [ ] My commit messages mention the appropriate GitLab issue numbers.
 - [ ] My change requires a change to the documentation.
 - [ ] I have updated the Doxygen documentation accordingly.
-- [ ] I have read the [code contribution guidelines](../blob/master/CONTRIBUTING.md) for this project.
+- [ ] I have read the [code contribution guidelines](https://gitlab.lrz.de/baci/baci/blob/master/CONTRIBUTING.md) for this project.
 - [ ] I have added tests to cover my changes.
 - [ ] All new and existing tests passed.
 - [ ] No new compiler warnings were introduced.
@@ -57,7 +57,7 @@ Go over all the following points, and put an `x` in all the boxes that apply. If
 ## Additional Information
 <!--- Anything else your fellow developers need to know in evaluating this merge request? -->
 
-## Interested Parties
+## Interested Parties / Possible Reviewers
 <!---
 If there's anyone you think should be looped in on this pull request, feel free to @mention them here.
 -->
