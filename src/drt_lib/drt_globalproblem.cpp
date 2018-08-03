@@ -356,6 +356,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--XFLUID DYNAMIC", *list);
   reader.ReadGidSection("--XFLUID DYNAMIC/GENERAL", *list);
   reader.ReadGidSection("--XFLUID DYNAMIC/STABILIZATION", *list);
+  reader.ReadGidSection("--XFLUID DYNAMIC/XFPSI MONOLITHIC", *list);
   reader.ReadGidSection("--LOMA CONTROL", *list);
   reader.ReadGidSection("--ELCH CONTROL", *list);
   reader.ReadGidSection("--ELCH CONTROL/DIFFCOND", *list);

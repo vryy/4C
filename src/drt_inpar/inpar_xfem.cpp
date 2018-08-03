@@ -259,6 +259,18 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   BoolParameter("XFF_EOS_PRES_EMB_LAYER","no","switch on/off edge-based pressure stabilization on interface-contributing elements of the embedded fluid",&xfluid_stab);
 
   BoolParameter("IS_PSEUDO_2D","no","modify viscous interface stabilization due to the vanishing polynomial in third dimension when using strong Dirichlet conditions to block polynomials in one spatial dimension",&xfluid_stab);
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& xfsi_monolithic = xfluid_dyn.sublist("XFPSI MONOLITHIC",false,"");
+
+  IntParameter("ITEMIN",1,"How many iterations are performed minimal",&xfsi_monolithic);
+  IntParameter("ITEMAX_OUTER",5,"How many outer iterations are performed maximal",&xfsi_monolithic);
+  BoolParameter("ND_NEWTON_DAMPING","no","Activate Newton damping based on residual and increment",&xfsi_monolithic);
+  DoubleParameter("ND_MAX_DISP_ITERINC", -1.0,"Maximal displacement increment to apply full newton --> otherwise damp newton",&xfsi_monolithic);
+  DoubleParameter("ND_MAX_VEL_ITERINC", -1.0,"Maximal fluid velocity increment to apply full newton --> otherwise damp newton",&xfsi_monolithic);
+  DoubleParameter("ND_MAX_PRES_ITERINC", -1.0,"Maximal fluid pressure increment to apply full newton --> otherwise damp newton",&xfsi_monolithic);
+  DoubleParameter("ND_MAX_PVEL_ITERINC", -1.0,"Maximal porofluid velocity increment to apply full newton --> otherwise damp newton",&xfsi_monolithic);
+  DoubleParameter("ND_MAX_PPRES_ITERINC", -1.0,"Maximal porofluid pressure increment to apply full newton --> otherwise damp newton",&xfsi_monolithic);
 }
 
 

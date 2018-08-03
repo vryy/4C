@@ -5,7 +5,8 @@
 // 089 - 289-15249
 //
 // compressible structure, solved monolithically via XFEM, tests the general monolithic process
-// full slip interface condition
+// Navier slip interface condition
+// Test Newton damping capapilities of XFSI/XFPI Algorithm
 ==================================================================
 General Data File BACI
 ==================================================================
@@ -87,7 +88,7 @@ RESTARTEVRY                     2
 COUPALGO                        iter_xfem_monolithic          //iter_stagg_AITKEN_rel_param // iter_stagg_MFNK_FSI ////iter_stagg_fixed_rel_param // //iter_stagg_fixed_rel_param //
 SECONDORDER                     No                            //No
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
-ITEMAX                          4
+ITEMAX                          6
 INFNORMSCALING                  no
 CONVTOL                         1.0E-12
 NORM_INC                        Rel                           // Abs // Mix
@@ -184,6 +185,10 @@ GHOST_PENALTY_FAC               0.05                          // in [0.1;0.5]
 GHOST_PENALTY_TRANSIENT_STAB    no
 GHOST_PENALTY_TRANSIENT_FAC     0.005                         // in [0.001;0.005]
 GHOST_PENALTY_2nd_STAB          no
+------------------------------------------------------XFLUID DYNAMIC/XFPSI MONOLITHIC
+ITEMAX_OUTER 10
+ND_NEWTON_DAMPING yes
+ND_MAX_PRES_ITERINC 5e-2
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 50.0 NUE 0.0 DENS 1.0

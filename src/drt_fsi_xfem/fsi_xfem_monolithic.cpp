@@ -63,6 +63,8 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
     : AlgorithmXFEM(comm, timeparams, type),
     fsidyn_(DRT::Problem::Instance()->FSIDynamicParams()),
     fsimono_(fsidyn_.sublist("MONOLITHIC SOLVER")),
+    xfluidparams_(DRT::Problem::Instance()->XFluidDynamicParams()),
+    xfpsimono_(xfluidparams_.sublist("XFPSI MONOLITHIC")),
     solveradapttol_(true),
     solveradaptolbetter_(fsimono_.get<double>("ADAPTIVEDIST")), // adaptive distance
     merge_fsi_blockmatrix_(false),
@@ -75,9 +77,9 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
     /// iteration counter
     iter_         (0),
     iter_outer_   (0),
-    itermin_      (0),
+    itermin_      (xfpsimono_.get<int>("ITEMIN")),
     itermax_      (fsimono_.get<int>("ITEMAX")),
-    itermax_outer_(5),
+    itermax_outer_(xfpsimono_.get<int>("ITEMAX_OUTER")),
     /// Convergence criterion and convergence tolerances for Newton scheme
     normtypeinc_  (DRT::INPUT::IntegralValue<INPAR::FSI::ConvNorm>(fsimono_,"NORM_INC")),
     normtypefres_ (DRT::INPUT::IntegralValue<INPAR::FSI::ConvNorm>(fsimono_,"NORM_RESF")),
@@ -99,10 +101,28 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
     TOL_VEL_RES_L2_  (fsimono_.get<double>("TOL_VEL_RES_L2")),
     TOL_VEL_RES_INF_ (fsimono_.get<double>("TOL_VEL_RES_INF")),
     TOL_VEL_INC_L2_  (fsimono_.get<double>("TOL_VEL_INC_L2")),
-    TOL_VEL_INC_INF_ (fsimono_.get<double>("TOL_VEL_INC_INF"))
+    TOL_VEL_INC_INF_ (fsimono_.get<double>("TOL_VEL_INC_INF")),
+    nd_newton_damping_((bool)DRT::INPUT::IntegralValue<int>(xfpsimono_,"ND_NEWTON_DAMPING")),
+    nd_newton_incmax_damping_(nd_newton_damping_),
+    nd_levels_(3),
+    nd_reduction_fac_(0.75),
+    nd_increase_fac_((1 - (1-nd_reduction_fac_)*0.5)),
+    nd_normrhs_old_(std::vector<double>(nd_levels_,1e200)),
+    nd_maxscaling_(1.0),
+    nd_max_incnorm_(std::vector<double>(5,-1.0))
 {
-  //TODO set some of these flags via the input file
+  if (nd_newton_damping_)
+  {
+      nd_max_incnorm_[0] = xfpsimono_.get<double>("ND_MAX_DISP_ITERINC");
+      nd_max_incnorm_[1] = xfpsimono_.get<double>("ND_MAX_VEL_ITERINC");
+      nd_max_incnorm_[2] = xfpsimono_.get<double>("ND_MAX_PRES_ITERINC");
+      nd_max_incnorm_[3] = xfpsimono_.get<double>("ND_MAX_PVEL_ITERINC");
+      nd_max_incnorm_[4] = xfpsimono_.get<double>("ND_MAX_PPRES_ITERINC");
+      if (!(nd_max_incnorm_[0] >0 ||nd_max_incnorm_[1] >0 ||nd_max_incnorm_[2] >0 || nd_max_incnorm_[3] >0 ||nd_max_incnorm_[4] >0))
+        nd_newton_incmax_damping_ = false;
+  }
 
+  //TODO set some of these flags via the input file
 
 //  const Teuchos::ParameterList& xdyn       = DRT::Problem::Instance()->XFEMGeneralParams();
 //  const Teuchos::ParameterList& xfluiddyn  = DRT::Problem::Instance()->XFluidDynamicParams();
@@ -903,7 +923,7 @@ bool FSI::MonolithicXFEM::Newton()
   // We want to make sure, that the loop is entered at least once!
   // We exit the loop if either the convergence criteria are met (checked in
   // Converged() method) OR the maximum number of inner iterations is exceeded!
-  while ( (iter_ == 1) or ( (not Converged()) and (iter_ <= itermax_) ) )
+  while ( (iter_ <= itermin_) or ( (not Converged()) and (iter_ <= itermax_)) )
   {
 //    std::cout << "Evaluate-Call " << "iter_ " << iter_ << "/" << itermax_ << std::endl;
 
@@ -2040,42 +2060,13 @@ void FSI::MonolithicXFEM::LinearSolve()
     );
   }  // MergeBlockMatrix
 
+  ApplyNewtonDamping();
+
   //TODO: can we do this?!
   // reset the solver (frees the pointer to the LINALG:: matrix' EpetraOperator and vectors also!)
   //std::cout << "reset the solver" << std::endl;
   solver_->Reset();
 
-//  {
-//
-//  std::cout << "------------------ before permuting the solution--------------------" << std::endl;
-//
-//  Teuchos::RCP<Epetra_Vector> f_rhs_tmp = Extractor().ExtractVector(rhs_, 1);
-//
-//  std::cout << "rhs at dof 33174: " <<  (*f_rhs_tmp)[f_rhs_tmp->Map().LID(33174)] << std::endl;
-//  std::cout << "rhs at dof 33175: " <<  (*f_rhs_tmp)[f_rhs_tmp->Map().LID(33175)] << std::endl;
-//  std::cout << "rhs at dof 33176: " <<  (*f_rhs_tmp)[f_rhs_tmp->Map().LID(33176)] << std::endl;
-//  std::cout << "rhs at dof 33177: " <<  (*f_rhs_tmp)[f_rhs_tmp->Map().LID(33177)] << std::endl;
-//
-//  std::cout << "rhs at dof 33178: " <<  (*f_rhs_tmp)[f_rhs_tmp->Map().LID(33178)] << std::endl;
-//  std::cout << "rhs at dof 33179: " <<  (*f_rhs_tmp)[f_rhs_tmp->Map().LID(33179)] << std::endl;
-//  std::cout << "rhs at dof 33180: " <<  (*f_rhs_tmp)[f_rhs_tmp->Map().LID(33180)] << std::endl;
-//  std::cout << "rhs at dof 33181: " <<  (*f_rhs_tmp)[f_rhs_tmp->Map().LID(33181)] << std::endl;
-//
-//  Teuchos::RCP<Epetra_Vector> f_iterinc_tmp = Extractor().ExtractVector(iterinc_, 1);
-//
-//  std::cout << "incr at dof 33174: " <<  (*f_iterinc_tmp)[f_iterinc_tmp->Map().LID(33174)] << std::endl;
-//  std::cout << "incr at dof 33175: " <<  (*f_iterinc_tmp)[f_iterinc_tmp->Map().LID(33175)] << std::endl;
-//  std::cout << "incr at dof 33176: " <<  (*f_iterinc_tmp)[f_iterinc_tmp->Map().LID(33176)] << std::endl;
-//  std::cout << "incr at dof 33177: " <<  (*f_iterinc_tmp)[f_iterinc_tmp->Map().LID(33177)] << std::endl;
-//
-//  std::cout << "incr at dof 33178: " <<  (*f_iterinc_tmp)[f_iterinc_tmp->Map().LID(33178)] << std::endl;
-//  std::cout << "incr at dof 33179: " <<  (*f_iterinc_tmp)[f_iterinc_tmp->Map().LID(33179)] << std::endl;
-//  std::cout << "incr at dof 33180: " <<  (*f_iterinc_tmp)[f_iterinc_tmp->Map().LID(33180)] << std::endl;
-//  std::cout << "incr at dof 33181: " <<  (*f_iterinc_tmp)[f_iterinc_tmp->Map().LID(33181)] << std::endl;
-//
-//  }
-
-  //TODO: check the GMSH-Debug-output (control via input file)
 #if 0
     {
       // DEBUG output
@@ -2103,36 +2094,6 @@ void FSI::MonolithicXFEM::LinearSolve()
   Extractor().InsertVector(*f_rhs_permuted, 1, *rhs_);
 
   //---------------------------------------------
-
-//  {
-//  std::cout << "------------------ after permuting the solution--------------------" << std::endl;
-//
-//  Teuchos::RCP<Epetra_Vector> f_rhs_tmp = Extractor().ExtractVector(rhs_, 1);
-//
-//  std::cout << "rhs at dof 33174: " <<  (*f_rhs_tmp)[f_rhs_tmp->Map().LID(33174)] << std::endl;
-//  std::cout << "rhs at dof 33175: " <<  (*f_rhs_tmp)[f_rhs_tmp->Map().LID(33175)] << std::endl;
-//  std::cout << "rhs at dof 33176: " <<  (*f_rhs_tmp)[f_rhs_tmp->Map().LID(33176)] << std::endl;
-//  std::cout << "rhs at dof 33177: " <<  (*f_rhs_tmp)[f_rhs_tmp->Map().LID(33177)] << std::endl;
-//
-//  std::cout << "rhs at dof 33178: " <<  (*f_rhs_tmp)[f_rhs_tmp->Map().LID(33178)] << std::endl;
-//  std::cout << "rhs at dof 33179: " <<  (*f_rhs_tmp)[f_rhs_tmp->Map().LID(33179)] << std::endl;
-//  std::cout << "rhs at dof 33180: " <<  (*f_rhs_tmp)[f_rhs_tmp->Map().LID(33180)] << std::endl;
-//  std::cout << "rhs at dof 33181: " <<  (*f_rhs_tmp)[f_rhs_tmp->Map().LID(33181)] << std::endl;
-//
-//  Teuchos::RCP<Epetra_Vector> f_iterinc_tmp = Extractor().ExtractVector(iterinc_, 1);
-//
-//  std::cout << "incr at dof 33174: " <<  (*f_iterinc_tmp)[f_iterinc_tmp->Map().LID(33174)] << std::endl;
-//  std::cout << "incr at dof 33175: " <<  (*f_iterinc_tmp)[f_iterinc_tmp->Map().LID(33175)] << std::endl;
-//  std::cout << "incr at dof 33176: " <<  (*f_iterinc_tmp)[f_iterinc_tmp->Map().LID(33176)] << std::endl;
-//  std::cout << "incr at dof 33177: " <<  (*f_iterinc_tmp)[f_iterinc_tmp->Map().LID(33177)] << std::endl;
-//
-//  std::cout << "incr at dof 33178: " <<  (*f_iterinc_tmp)[f_iterinc_tmp->Map().LID(33178)] << std::endl;
-//  std::cout << "incr at dof 33179: " <<  (*f_iterinc_tmp)[f_iterinc_tmp->Map().LID(33179)] << std::endl;
-//  std::cout << "incr at dof 33180: " <<  (*f_iterinc_tmp)[f_iterinc_tmp->Map().LID(33180)] << std::endl;
-//  std::cout << "incr at dof 33181: " <<  (*f_iterinc_tmp)[f_iterinc_tmp->Map().LID(33181)] << std::endl;
-//
-//  }
-
 
   if (Comm().MyPID() == 0) { std::cout << " Solved" <<  std::endl; }
 
@@ -2405,4 +2366,99 @@ void FSI::MonolithicXFEM::PrintNewtonIter()
    //
 
    SetTimeStep(FluidField()->Time(),FluidField()->Step());
+ }
+
+ /*----------------------------------------------------------------------*/
+ // If activated damp actual Newton increment
+ /*----------------------------------------------------------------------*/
+ void FSI::MonolithicXFEM::ApplyNewtonDamping()
+ {
+   if (!nd_newton_damping_) return;
+
+   // 1 // compute damping based on residual comparison
+   //get normrhs on all levels
+   for (int level = nd_levels_-1; level > 0; --level)
+     nd_normrhs_old_[level] = nd_normrhs_old_[level-1];
+   nd_normrhs_old_[0] = normrhs_;
+   rhs_->Norm2(&normrhs_);
+   bool scaleup = false;
+   bool scaledown = false;
+   if (iter_ == 1 && iter_outer_ == 1)
+     nd_act_scaling_ = nd_maxscaling_;
+   else if (nd_normrhs_old_[0] < normrhs_ && (iter_ >1 || iter_outer_ > 1))
+     scaledown = true;
+   else
+   {
+     scaleup = true;
+     for (int level = 1; level < nd_levels_; ++level)
+     {
+       if (nd_normrhs_old_[level] < nd_normrhs_old_[level-1] && (iter_ >level+1 || iter_outer_ > level+1))
+       {
+         if (Comm().MyPID() == 0) {std::cout << "==| Skip rescaling level " << level+1 <<" |==" << std::endl;}
+         scaleup = false;
+         break;
+       }
+     }
+   }
+
+   if (scaledown)
+     nd_act_scaling_ *= nd_reduction_fac_;
+   else if (scaleup && (nd_act_scaling_ < nd_increase_fac_))
+     nd_act_scaling_ /=nd_increase_fac_;
+   else if (scaleup)
+     nd_act_scaling_ = nd_maxscaling_;
+
+   // 2 // compute damping based on maximal increment value
+   nd_inc_scaling_ = 1.0;
+
+   if (nd_newton_incmax_damping_)
+   {
+     std::vector<double> incnorm;
+     incnorm.resize(5,-2.0); //disp, vel, p , porovel, porop
+     if (!StructurePoro()->isPoro())
+     {
+       if (nd_max_incnorm_[0]>0)
+         Extractor().ExtractVector(iterinc_, 0)->NormInf(&incnorm[0]);
+     }
+     else if (nd_max_incnorm_[0]>0 || nd_max_incnorm_[3]>0 || nd_max_incnorm_[4]>0 )
+     {
+       // build map extractors for velocity and pressure dofs
+       std::vector<Teuchos::RCP<const Epetra_Map> > fluidvelpres;
+       fluidvelpres.push_back(StructurePoro()->FluidField()->VelocityRowMap());
+       fluidvelpres.push_back(StructurePoro()->FluidField()->PressureRowMap());
+       LINALG::MultiMapExtractor fluidvelpresextract(*(StructurePoro()->FluidField()->DofRowMap()),fluidvelpres);
+       StructurePoro()->PoroField()->Extractor()->ExtractVector(Extractor().ExtractVector(iterinc_,0),0)->NormInf(&incnorm[0]);
+       fluidvelpresextract.ExtractVector(StructurePoro()->PoroField()->Extractor()->ExtractVector(Extractor().ExtractVector(iterinc_,0),1),0)->NormInf(&incnorm[3]);
+       fluidvelpresextract.ExtractVector(StructurePoro()->PoroField()->Extractor()->ExtractVector(Extractor().ExtractVector(iterinc_,0),1),1)->NormInf(&incnorm[4]);
+     }
+     if (nd_max_incnorm_[1]>0 || nd_max_incnorm_[2]>0)
+     {
+       // build map extractors for velocity and pressure dofs
+       std::vector<Teuchos::RCP<const Epetra_Map> > fluidvelpres;
+       fluidvelpres.push_back(FluidField()->VelocityRowMap());
+       fluidvelpres.push_back(FluidField()->PressureRowMap());
+       LINALG::MultiMapExtractor fluidvelpresextract(*(FluidField()->DofRowMap()),fluidvelpres);
+       fluidvelpresextract.ExtractVector(Extractor().ExtractVector(iterinc_,1),0)->NormInf(&incnorm[1]);// fluid velocity Dofs
+       fluidvelpresextract.ExtractVector(Extractor().ExtractVector(iterinc_,1),1)->NormInf(&incnorm[2]);// fluid pressure Dofs
+     }
+     for (int field = 0; field < 5; ++field)
+     {
+       if (incnorm[field] > nd_max_incnorm_[field] && nd_max_incnorm_[field]>0)
+         if (nd_max_incnorm_[field]/incnorm[field] < nd_inc_scaling_)
+           nd_inc_scaling_ = nd_max_incnorm_[field]/incnorm[field];
+     }
+   }
+
+   if (nd_act_scaling_ > nd_inc_scaling_)
+   {
+     if (Comm().MyPID() == 0) {std::cout << "==| Incremental Based Damping of Newton Scheme with scaling " << nd_inc_scaling_ <<"! |==" << std::endl;}
+     iterinc_->Scale(nd_inc_scaling_);
+   }
+   else if (nd_act_scaling_ < 1)
+   {
+     if (Comm().MyPID() == 0) {std::cout << "==| Residual Based Damping of Newton Scheme with scaling " << nd_act_scaling_ <<"! |==" << std::endl;}
+     iterinc_->Scale(nd_act_scaling_);
+   }
+
+   return;
  }

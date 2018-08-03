@@ -212,6 +212,9 @@ namespace FSI
     //! check convergence of Newton iteration
     bool Converged();
 
+    //! apply damping on newton scheme
+    void ApplyNewtonDamping();
+
     //@}
 
     //--------------------------------------------------------------------------//
@@ -276,6 +279,8 @@ namespace FSI
 
     const Teuchos::ParameterList& fsidyn_;  //!< FSI dynamic parameter list
     const Teuchos::ParameterList& fsimono_; //!< FSI-monolithic sublist
+    const Teuchos::ParameterList& xfluidparams_;  //!< XFLUID DYNAMIC parameter list
+    const Teuchos::ParameterList& xfpsimono_;  //!< XFPSI Monolithic parameter list
 
     //@}
 
@@ -452,6 +457,22 @@ namespace FSI
     const double TOL_VEL_RES_INF_;
     const double TOL_VEL_INC_L2_;
     const double TOL_VEL_INC_INF_;
+    //@}
+
+    //--------------------------------------------------------------------------//
+    //! @name Newton damping members
+      bool nd_newton_damping_;
+      bool nd_newton_incmax_damping_;
+      int nd_levels_;
+      double nd_reduction_fac_;
+      double nd_increase_fac_;
+      std::vector<double> nd_normrhs_old_;
+      double nd_maxscaling_;
+      //limiting value for maximal increment
+      std::vector<double> nd_max_incnorm_;
+      //scaling members
+      double nd_act_scaling_;
+      double nd_inc_scaling_;
     //@}
 
     //Map of Coupling Object for FS, FP, FA coupling, ...(Fluid, Structure, Poro, Ale)

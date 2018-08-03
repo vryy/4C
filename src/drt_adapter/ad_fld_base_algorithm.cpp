@@ -410,6 +410,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
 
     fluidtimeparams->sublist("XFLUID DYNAMIC/GENERAL")       = xfdyn.sublist("GENERAL");
     fluidtimeparams->sublist("XFLUID DYNAMIC/STABILIZATION") = xfdyn.sublist("STABILIZATION");
+    fluidtimeparams->sublist("XFLUID DYNAMIC/XFPSI MONOLITHIC") = xfdyn.sublist("XFPSI MONOLITHIC");
 
     fluidtimeparams->sublist("XFLUID DYNAMIC/GENERAL").set<std::string>("MONOLITHIC_XFFSI_APPROACH",xfdyn.sublist("GENERAL").get<std::string>("MONOLITHIC_XFFSI_APPROACH"));
     fluidtimeparams->sublist("XFLUID DYNAMIC/GENERAL").set<double>("XFLUIDFLUID_SEARCHRADIUS",  xfdyn.sublist("GENERAL").get<double>("XFLUIDFLUID_SEARCHRADIUS"));
