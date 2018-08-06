@@ -1,0 +1,236 @@
+#-------------------------------------------------------------------------------
+# Define global variables for all jobs
+#-------------------------------------------------------------------------------
+
+variables:
+    # Clone repository by default, file have changed attribute.
+    GIT_STRATEGY: clone
+    # If not called by a scheduler this variable has to be 0.
+    # 1: daily full
+    # 2: daily debug
+    GITLAB_SCHEDULER_TYPE: "0"
+
+
+#-------------------------------------------------------------------------------
+# Define the base jobs for testing
+#-------------------------------------------------------------------------------
+
+# This kind of job is started when something changes in the master branch.
+# Minimal tests are performed.
+.buildtest_minimal: &buildtest_minimal
+    stage: buildtest
+    variables:
+        # So the old build can be used again.
+        GIT_STRATEGY: fetch
+    script:
+        - "echo minimal test: triggered by change in master"
+        - ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -L minimal | tee ../buildtest_minimal.log
+    after_script:
+        # Write Selection of the output into the terminal and therefore to GITLAB
+        #- sed -n '/* Extra verbosity turned on/,/Test project /p' ../buildtest_minimal.log
+        # Output 200 lines for any failing test
+        #- grep -i -B 200 '\*\*\*Failed' ../buildtest_full.log
+        #- sed -n '/tests passed,/,//p' ../buildtest_minimal.log
+    only:
+        - master
+    except:
+        refs:
+            - scheduler
+            - web
+        variables:
+            - $GITLAB_SCHEDULER_TYPE == "1"
+            - $GITLAB_SCHEDULER_TYPE == "2"
+
+# This kind of job is started when a user triggers a job in the gitlab UI.
+# Full tests are performed.
+.buildtest_full: &buildtest_full
+    stage: buildtest
+    script:
+        - "echo full test: triggered by user with TEST_TAG=$TEST_TAG"
+        # Output to log because it is too much for the gitlab console.
+        - "ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -R $TEST_TAG> ../buildtest_full.log"
+    after_script:
+        # Write Selection of the output into the terminal and therefore to GITLAB
+        - sed -n '/* Extra verbosity turned on/,/Test project /p' ../buildtest_full.log
+        # Output 200 lines for any failing test
+        - "grep -B 200 '*Failed' ../buildtest_full.log || true"
+        - sed -n '/tests passed,/,//p' ../buildtest_full.log
+    only:
+        refs:
+            - web
+
+
+# This kind of job is started by a daily scheduler, with the variable
+# $GITLAB_SCHEDULER_TYPE = "1"
+# Full tests are performed.
+.buildtest_daily: &buildtest_daily
+    stage: buildtest
+    script:
+        - "echo full test: nightly test"
+        # Output to log because it is too much for the gitlab console.
+        - "ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV > ../buildtest_daily.log"
+    after_script:
+        # Write Selection of the output into the terminal and therefore to GITLAB
+        - sed -n '/* Extra verbosity turned on/,/Test project /p' ../buildtest_daily.log
+        # Output 200 lines for any failing test 
+        - "grep -B 200 '*Failed' ../buildtest_daily.log || true"
+        - sed -n '/tests passed,/,//p' ../buildtest_daily.log
+    only:
+        variables:
+            - $GITLAB_SCHEDULER_TYPE == "1"
+            
+# This kind of job is started by a daily scheduler, with the variable
+# $GITLAB_SCHEDULER_TYPE = "2"
+# Debug tests are performed.
+.buildtest_daily_debug: &buildtest_daily_debug
+    stage: buildtest
+    script:
+        - "echo full test: nightly test debug"
+        # Output to log because it is too much for the gitlab console.
+        - "ctest -S $CI_PROJECT_DIR/tests/testconfig/test_debug.cmake -VV > ../buildtest_daily_debug.log"
+    after_script:
+        # Write Selection of the output into the terminal and therefore to GITLAB
+        - sed -n '/* Extra verbosity turned on/,/Test project /p' ../buildtest_daily_debug.log
+        # Output 200 lines for any failing test
+        - "grep -B 200 '*Failed' ../buildtest_daily_debug.log || true"
+        - sed -n '/tests passed,/,//p' ../buildtest_daily_debug.log
+    only:
+        variables:
+            - $GITLAB_SCHEDULER_TYPE == "2"
+
+
+# This kind of job is started when something changes in the master branch.
+# Doxygen is build and moved to a folder with known path.
+.doxygen: &doxygen
+    stage: doxygen
+    script:
+        - "echo doxygen"
+        # Output to log because it is too much for the gitlab console.
+        - "ctest -S $CI_PROJECT_DIR/tests/testconfig/test_doxygen.cmake -VV > ../doxygen.log"
+        - "cp -r $CI_PROJECT_DIR/../baci-build/doc/html /home/gitlab-runner/."
+    after_script:
+        # Write Selection of the output into the terminal and therefore to GITLAB
+        - sed -n '/* Extra verbosity turned on/,/Test project /p' ../doxygen.log
+    only:
+        variables:
+            # Only build doxygen during nightly tests.
+            - $GITLAB_SCHEDULER_TYPE == "1"
+
+
+#-------------------------------------------------------------------------------
+# Stages during testing.
+#-------------------------------------------------------------------------------
+
+stages:
+    - checkcode
+    - buildtest
+    - doxygen
+
+
+#-------------------------------------------------------------------------------
+# Actual jobs for testing.
+#-------------------------------------------------------------------------------
+
+# ALL---------------------------------------------------------------------------
+
+checkcode:
+    stage: checkcode
+    script:
+        - "echo code check"
+    only:
+        - master
+        - web
+    except:
+        variables:
+            - $GITLAB_SCHEDULER_TYPE == "1"
+            - $GITLAB_SCHEDULER_TYPE == "2"
+    tags:
+        - all
+
+
+# IMCS--------------------------------------------------------------------------
+
+.imcs-buildtest_minimal:
+    << : *buildtest_minimal
+    tags:
+        - imcs
+
+.imcs-buildtest_full:
+    << : *buildtest_full
+    tags:
+        - imcs
+
+.lnm-buildtest_full:
+    << : *buildtest_full
+    tags:
+        - lnm
+
+
+.imcs-buildtest_daily:
+    << : *buildtest_daily
+    tags:
+        - imcs
+
+
+# LNM---------------------------------------------------------------------------
+
+lnm-buildtest_minimal:
+    << : *buildtest_minimal
+    variables:
+        CTEST_MAKE: "make full -j3"
+        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-minimal-GITLAB-TEST-PLEASEIGNORE"
+        CTEST_BUILD_CONFIG_GITLAB: "centos74_Q12015.config"
+        CTEST_DROP_SITE_CDASH_GITLAB: "0"
+        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
+        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
+    tags:
+        - lnm-test
+
+lnm-buildtest_full:
+    << : *buildtest_full
+    variables:
+        CTEST_MAKE: "make full -j3"
+        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-$TEST_TAG-GITLAB-TEST-PLEASEIGNORE"
+        CTEST_BUILD_CONFIG_GITLAB: "centos74_Q12015.config"
+        CTEST_DROP_SITE_CDASH_GITLAB: "0"
+        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
+        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
+    tags:
+        - lnm-test
+
+lnm-buildtest_daily:
+    << : *buildtest_daily
+    variables:
+        CTEST_MAKE: "make full -j3"
+        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-GITLAB-TEST-PLEASEIGNORE"
+        CTEST_BUILD_CONFIG_GITLAB: "centos74_Q12015.config"
+        CTEST_DROP_SITE_CDASH_GITLAB: "0"
+        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
+        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
+    tags:
+        - lnm-nightly1
+
+lnm-buildtest_daily_debug:
+    << : *buildtest_daily_debug
+    variables:
+        CTEST_MAKE: "make full -j3"
+        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015 DEBUG-GITLAB-TEST-PLEASEIGNORE"
+        CTEST_BUILD_CONFIG_GITLAB: "centos74_Q12015_nightlytest.config"
+        CTEST_DROP_SITE_CDASH_GITLAB: "0"
+        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
+        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
+    tags:
+        - lnm-nightly2
+
+lnm-doxygen:
+    << : *doxygen
+    variables:
+        CTEST_MAKE: "make documentation"
+        CTEST_BUILD_NAME_GITLAB: "Doxygen-GITLAB-TEST-PLEASEIGNORE"
+        CTEST_BUILD_CONFIG_GITLAB: "centos74_Q12015.config"
+        CTEST_DROP_SITE_CDASH_GITLAB: "0"
+        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
+        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
+    tags:
+        - lnm-nightly
+
