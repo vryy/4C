@@ -153,8 +153,10 @@ public:
   void SetInitialField(int startfuncno);
 
   /// set initial field by given light distribution
-  void SetInitialPhotoAcousticField(Teuchos::RCP<SCATRA::TimIntStationary> scatraalgo);
-
+  //void SetInitialPhotoAcousticField(Teuchos::RCP<SCATRA::TimIntStationary> scatraalgo);
+  void SetInitialPhotoAcousticField(Teuchos::RCP<Epetra_Vector> light,
+                                                        Teuchos::RCP<DRT::Discretization> scatradis,
+                                                        bool meshconform);
   /// run a complete simulation
   void Integrate();
 

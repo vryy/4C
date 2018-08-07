@@ -40,7 +40,7 @@ class PATMonitorManager
 {
   public:
   //! standard constructor
-  PATMonitorManager(Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Teuchos::ParameterList> params);
+  PATMonitorManager(Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Teuchos::ParameterList> params, int illusetup = 0);
 
   void EvaluateMonitorValues(double time, const std::vector<double> &point, double &value);
 

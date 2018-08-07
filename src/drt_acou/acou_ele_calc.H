@@ -218,6 +218,10 @@ namespace ELEMENTS
                        double  &p,
                        double  (&v)[nsd_]) const;
 
+      void EvaluateLight( double lightxyz[][nsd_], double values[], int numnode,
+          const double(&xyz)[nsd_], double &p,
+          double absorptioncoeff) const;
+
       // convention: we sort the entries in the matrices the following way:
       // first come the velocity gradients, then the velocities, and finally the pressure
       // we also build the matrix in a block-fashion, keeping the dofs for individual components

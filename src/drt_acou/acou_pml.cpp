@@ -889,7 +889,7 @@ void AttenuationPML<dim,Number>::read_pml_definition(std::string filename)
           << "// COMMENT ... \n"
           << "PML X0  1  0 0 N_VEC  1  0 0  WIDTH 1 SIGMA 10  FKT QUARTIC \n"
           << "PML X0  0  1 0 R_SPH  1       WIDTH 1 SIGMA 10  FKT HYPBERBOLIC \n"
-          << "PML X0  0  1 0 R_CYL  1       WIDTH 1 SIGMA 10  FKT SHIFTED_HYPBERBOLIC \n"
+          << "PML X0  0  1 0 R_CYL  1       WIDTH 1 SIGMA 10  FKT SHIFTED_HYPERBOLIC \n"
           << "PML X0  0  0 0 R_INV  1       WIDTH 1 SIGMA 10  FKT QUADRATIC \n"
           << std::endl;
       dserror("you have to use this notation");

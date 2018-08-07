@@ -58,6 +58,9 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   // photoacoustics
   BoolParameter("PHOTOACOU","No","Coupling with Scatra for Diffusive Light Transport",&acousticdyn);
   BoolParameter("MESHCONFORM","No","Conformity of scatra and acoustical mesh",&acousticdyn);
+  IntParameter("MINPATELEGID",-1,"minimum element gid of overlapping acou element",&acousticdyn);
+  IntParameter("MAXPATELEGID",-1,"maximum element gid of overlapping acou element",&acousticdyn);
+
 
   // local postprocessing and p-adaptivity
   BoolParameter("ERRORMAPS","No","Output of error maps obtained by local postprocessing",&acousticdyn);
@@ -112,6 +115,7 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                    "patoptisplit",
                    "patoptisplitacousplit",
                    "patoptisplitacouident",
+                   "patoptisplitacouidentsmart",
                    "patreduction"),
                  tuple<int>(
                    pat_none,
@@ -119,6 +123,7 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                    pat_optisplit,
                    pat_optisplitacousplit,
                    pat_optisplitacouident,
+                   pat_optisplitacouidentsmart,
                    pat_reduction),
                  &acousticdyn);
 
