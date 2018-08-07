@@ -66,6 +66,8 @@ namespace INPAR
       m_elpldamage,                            ///< elasto-plastic material with von Mises plasticity and damage
       m_ferech_pv,                             ///< material with simplified chemical kinetics due to Ferziger and Echekki (1993) with a modification by Poinsot and Veynante (2005) (progress variable)
       m_fluid,                                 ///< fluid
+      m_fluid_linear_density_viscosity,        ///< linear law (pressure-dependent) for the density and the viscosity
+      m_fluid_murnaghantait,                   ///< weakly compressible fluid according to Murnaghan-Tait
       m_fluidporo,                             ///< darcy fluid for poroelasticity problems
       m_fluidporo_singlephase,                 ///< single phase material for multiphase flow through porous medium
       m_fluidporo_singlevolfrac,               ///< single volume fraction material for multiphase flow through porous medium

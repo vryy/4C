@@ -128,6 +128,31 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   .AddNamedDouble("c1")
   ;
 
+  DRT::INPUT::LineDefinition channelweaklycompressible;
+  channelweaklycompressible
+  .AddTag("CHANNELWEAKLYCOMPRESSIBLE")
+  ;
+
+  DRT::INPUT::LineDefinition correctiontermchannelweaklycompressible;
+  correctiontermchannelweaklycompressible
+  .AddTag("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE")
+  ;
+
+  DRT::INPUT::LineDefinition channelweaklycompressiblefourier3;
+  channelweaklycompressiblefourier3
+  .AddTag("CHANNELWEAKLYCOMPRESSIBLEFOURIER3")
+  ;
+
+  DRT::INPUT::LineDefinition correctiontermchannelweaklycompressiblefourier3;
+  correctiontermchannelweaklycompressiblefourier3
+  .AddTag("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLEFOURIER3")
+  ;
+
+  DRT::INPUT::LineDefinition bodyforcechannelweaklycompressiblefourier3;
+  bodyforcechannelweaklycompressiblefourier3
+  .AddTag("BODYFORCECHANNELWEAKLYCOMPRESSIBLEFOURIER3")
+  ;
+
   DRT::INPUT::LineDefinition kimmoin;
   kimmoin
   .AddTag("KIM-MOIN")
@@ -285,6 +310,11 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(radiuslin);
   lines->Add(radiusquad);
   lines->Add(beltrami);
+  lines->Add(channelweaklycompressible);
+  lines->Add(correctiontermchannelweaklycompressible);
+  lines->Add(channelweaklycompressiblefourier3);
+  lines->Add(correctiontermchannelweaklycompressiblefourier3);
+  lines->Add(bodyforcechannelweaklycompressiblefourier3);
   lines->Add(kimmoin);
   lines->Add(bochevup);
   lines->Add(bochevrhs);
@@ -342,6 +372,26 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         function->ExtractDouble("c1",c1);
 
         functions_.push_back(Teuchos::rcp(new FLD::BeltramiFunction(c1)));
+      }
+      else if (function->HaveNamed("CHANNELWEAKLYCOMPRESSIBLE"))
+      {
+        functions_.push_back(Teuchos::rcp(new FLD::ChannelWeaklyCompressibleFunction()));
+      }
+      else if (function->HaveNamed("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE"))
+      {
+        functions_.push_back(Teuchos::rcp(new FLD::CorrectionTermChannelWeaklyCompressibleFunction()));
+      }
+      else if (function->HaveNamed("CHANNELWEAKLYCOMPRESSIBLEFOURIER3"))
+      {
+        functions_.push_back(Teuchos::rcp(new FLD::ChannelWeaklyCompressibleFourier3Function()));
+      }
+      else if (function->HaveNamed("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLEFOURIER3"))
+      {
+        functions_.push_back(Teuchos::rcp(new FLD::CorrectionTermChannelWeaklyCompressibleFourier3Function()));
+      }
+      else if (function->HaveNamed("BODYFORCECHANNELWEAKLYCOMPRESSIBLEFOURIER3"))
+      {
+        functions_.push_back(Teuchos::rcp(new FLD::BodyForceChannelWeaklyCompressibleFourier3Function()));
       }
       else if (function->HaveNamed("KIM-MOIN"))
       {
