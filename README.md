@@ -131,7 +131,7 @@ A specific build configuration file can be passed to the configure script via th
 ```bash
 <someBaseDir>/<sourceDir>/do-configure --config=<path/to/build-config-file>
 ``` 
-A bunch of helpful build configuration files are located in `<someBaseDir>/<sourceDir>/buildconfig/`.
+A bunch of supported build configuration files are located in `<someBaseDir>/<sourceDir>/buildconfig/`.
 
 #### Build
 
