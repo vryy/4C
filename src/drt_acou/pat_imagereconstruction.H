@@ -253,8 +253,6 @@ protected:
   std::vector<Teuchos::RCP<PATMonitorManager> > monitor_manager_;
   //@}
 
-  std::vector<double> computingtimes_;
-
   //! currentsequenzenumber
   int currentsequenzeiter_;
 

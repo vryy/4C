@@ -40,7 +40,6 @@
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_utils.H"
-#include <deal.II/base/timer.h>
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -90,8 +89,6 @@ write_baci_acou_output_(DRT::INPUT::IntegralValue<bool>(acouparams_->sublist("PA
 illusetup_(0),
 currentsequenzeiter_(0)
 {
-  computingtimes_.resize(23);
-
   // set time reversal to false
   acouparams_->set<bool>("timereversal",false);
   acouparams_->set<bool>("reduction",false);
@@ -363,43 +360,6 @@ void ACOU::PatImageReconstruction::Optimize()
 
   } while ( J_>tol_ && iter_<maxiter_ && success );
 
-  /*std::cout<<"SolveStandardScatra() "<<computingtimes_[1]<<" times"<<std::endl;
-  std::cout<<"  total evaluation time "<<computingtimes_[0]<<
-             " average "<<computingtimes_[0]/computingtimes_[1]<<std::endl;
-  std::cout<<"SolveStandardAcou() "<<computingtimes_[3]<<" times"<<std::endl;
-  std::cout<<"  total evaluation time "<<computingtimes_[2]<<
-             " average "<<computingtimes_[2]/computingtimes_[3]<<std::endl;
-  std::cout<<"EvalulateObjectiveFunction() "<<computingtimes_[5]<<" times"<<std::endl;
-  std::cout<<"  total evaluation time "<<computingtimes_[4]<<
-             " average "<<computingtimes_[4]/computingtimes_[5]<<std::endl;
-  std::cout<<"SolveAdjointAcou() "<<computingtimes_[7]<<" times"<<std::endl;
-  std::cout<<"  total evaluation time "<<computingtimes_[6]<<
-             " average "<<computingtimes_[6]/computingtimes_[7]<<std::endl;
-  std::cout<<"SolveAdjointScatra() "<<computingtimes_[9]<<" times"<<std::endl;
-  std::cout<<"  total evaluation time "<<computingtimes_[8]<<
-             " average "<<computingtimes_[8]/computingtimes_[9]<<std::endl;
-
-  std::cout<<"EvaluateGradient() "<<computingtimes_[11]<<" times"<<std::endl;
-  std::cout<<"  total evaluation time "<<computingtimes_[10]<<
-             " average "<<computingtimes_[10]/computingtimes_[11]<<std::endl;
-  std::cout<<"EvaluateReacGrad() "<<computingtimes_[13]<<" times"<<std::endl;
-  std::cout<<"  total evaluation time "<<computingtimes_[12]<<
-             " average "<<computingtimes_[12]/computingtimes_[13]<<std::endl;
-  std::cout<<"EvaluateDiffGrad() "<<computingtimes_[15]<<" times"<<std::endl;
-  std::cout<<"  total evaluation time "<<computingtimes_[14]<<
-             " average "<<computingtimes_[14]/computingtimes_[15]<<std::endl;
-  std::cout<<"EvaluateCGrad() "<<computingtimes_[17]<<" times"<<std::endl;
-  std::cout<<"  total evaluation time "<<computingtimes_[16]<<
-             " average "<<computingtimes_[16]/computingtimes_[17]<<std::endl;
-  std::cout<<"EvaluateCGrad() "<<computingtimes_[19]<<" times"<<std::endl;
-  std::cout<<"  total evaluation time "<<computingtimes_[18]<<
-             " average "<<computingtimes_[18]/computingtimes_[19]<<std::endl;
-
-  std::cout<<"ReduceBasis() "<<computingtimes_[21]<<" times"<<std::endl;
-  std::cout<<"  total evaluation time "<<computingtimes_[20]<<
-             " average "<<computingtimes_[20]/computingtimes_[21]<<std::endl;*/
-
-
   return;
 }
 
@@ -438,7 +398,6 @@ void ACOU::PatImageReconstruction::InitialRun()
 /*----------------------------------------------------------------------*/
 void ACOU::PatImageReconstruction::EvaluateReacGrad()
 {
-  Timer timer;
 
   // export solution vector to column map
   Teuchos::RCP<Epetra_Vector> phicol = LINALG::CreateVector(*scatra_discret_->DofColMap(),false);
@@ -498,8 +457,6 @@ void ACOU::PatImageReconstruction::EvaluateReacGrad()
 //    scatraoutput_->WriteVector("rea_coeff",reac_objgrad_);
 //    dserror("...");
 
-  computingtimes_[12] += timer.wall_time();
-  computingtimes_[13] += 1.;
   return;
 }
 
@@ -902,7 +859,6 @@ void ACOU::PatImageReconstructionOptiSplit::EvaluateGradient()
 /*----------------------------------------------------------------------*/
 void ACOU::PatImageReconstructionOptiSplit::EvaluateDiffGrad()
 {
-  Timer timer;
   // export solution vector to column map
   Teuchos::RCP<Epetra_Vector> phicol = LINALG::CreateVector(*scatra_discret_->DofColMap(),false);
   LINALG::Export(*phi_,*phicol);
@@ -948,9 +904,6 @@ void ACOU::PatImageReconstructionOptiSplit::EvaluateDiffGrad()
     diff_regula_->EvaluateGradient(diff_vals_,diff_objgrad_);
 
   ConvertGradient(scatra_discret_,diff_objgrad_);
-
-  computingtimes_[14] += timer.wall_time();
-  computingtimes_[15] += 1.;
 
   return;
 }
@@ -1643,8 +1596,6 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::SetRestartParameters(Teucho
 /*----------------------------------------------------------------------*/
 double ACOU::PatImageReconstructionOptiSplitAcouSplit::EvalulateObjectiveFunction()
 {
-  Timer timer;
-
   // evaluate error contribution
   error_ = monitor_manager_[currentsequenzeiter_]->EvaluateError();
   J_ = error_;
@@ -1663,17 +1614,12 @@ double ACOU::PatImageReconstructionOptiSplitAcouSplit::EvalulateObjectiveFunctio
   if(!myrank_)
     std::cout<<"objective function value "<<J_<<" error value "<<error_<<" regularization "<<J_-error_<<std::endl;
 
-  computingtimes_[4] += timer.wall_time();
-  computingtimes_[5] += 1.;
-
   return J_;
 }
 
 /*----------------------------------------------------------------------*/
 void ACOU::PatImageReconstructionOptiSplitAcouSplit::EvaluateGradient()
 {
-  Timer timer;
-
   // zero out gradient vector initially
   reac_objgrad_->Scale(0.0);
   diff_objgrad_->Scale(0.0);
@@ -1734,9 +1680,6 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::EvaluateGradient()
 //
 //  if(reducedbasis_ && setidsdiff != Teuchos::null) dserror("und stopp");
 
-  computingtimes_[10] += timer.wall_time();
-  computingtimes_[11] += 1.;
-
   return;
 }
 
@@ -1744,7 +1687,7 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::EvaluateGradient()
 /*----------------------------------------------------------------------*/
 void ACOU::PatImageReconstructionOptiSplitAcouSplit::ReduceBasis()
 {
-  Timer timer;
+
   // first part: reduce the basis of the absorption coefficient, it always uses its own gradient
   if(patchtype_==INPAR::ACOU::pat_patch_none)
     return;
@@ -1945,8 +1888,6 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::ReduceBasis()
     dserror("invalid patch build type");
 
   }
-  computingtimes_[20] += timer.wall_time();
-  computingtimes_[21] += 1.;
 
   return;
 }
@@ -2441,7 +2382,6 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::CheckNeighborsPatchReacVals
 /*----------------------------------------------------------------------*/
 void ACOU::PatImageReconstructionOptiSplitAcouSplit::EvaluateCGrad()
 {
-  Timer timer;
   // loop the col elements
   for (int i=0; i<acou_discret_->NumMyColElements(); i++)
   {
@@ -2461,16 +2401,12 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::EvaluateCGrad()
 
   ConvertGradient(acou_discret_,c_objgrad_);
 
-  computingtimes_[16] += timer.wall_time();
-  computingtimes_[17] += 1.;
-
   return;
 }
 
 /*----------------------------------------------------------------------*/
 void ACOU::PatImageReconstructionOptiSplitAcouSplit::EvaluateRhoGrad()
 {
-  Timer timer;
   // loop the col elements
   for (int i=0; i<acou_discret_->NumMyColElements(); i++)
   {
@@ -2489,8 +2425,6 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::EvaluateRhoGrad()
     rho_regula_->EvaluateGradient(rho_vals_,rho_objgrad_);
 
   ConvertGradient(acou_discret_,rho_objgrad_);
-  computingtimes_[18] += timer.wall_time();
-  computingtimes_[19] += 1.;
 
   return;
 }
@@ -4390,8 +4324,6 @@ const Teuchos::RCP<Epetra_MultiVector> ACOU::PatImageReconstruction::ElementMatV
 /*----------------------------------------------------------------------*/
 void ACOU::PatImageReconstruction::SolveStandardScatra()
 {
-  Timer timer;
-
   if(PARTIALILLU)
     scatraparams_->set<unsigned int>("illusetup",illusetup_);
 
@@ -4449,16 +4381,12 @@ void ACOU::PatImageReconstruction::SolveStandardScatra()
       break;
   }
 
-  computingtimes_[0] += timer.wall_time();
-  computingtimes_[1] += 1.;
-
   return;
 }
 
 /*----------------------------------------------------------------------*/
 void ACOU::PatImageReconstruction::SolveStandardAcou()
 {
-  Timer timer;
 
   if(!myrank_)
   {
@@ -4518,9 +4446,6 @@ void ACOU::PatImageReconstruction::SolveStandardAcou()
 
   ProblemSpecificOutput();
 
-  computingtimes_[2] += timer.wall_time();
-  computingtimes_[3] += 1.;
-
   return;
 }
 
@@ -4543,7 +4468,6 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::ProblemSpecificOutput()
 /*----------------------------------------------------------------------*/
 void ACOU::PatImageReconstruction::SolveAdjointAcou()
 {
-  Timer timer;
 
   if(!myrank_)
   {
@@ -4603,16 +4527,12 @@ void ACOU::PatImageReconstruction::SolveAdjointAcou()
   adjoint_psi_->PutScalar(0.0);
   acoualgo_->NodalPsiField(adjoint_psi_);
 
-  computingtimes_[6] += timer.wall_time();
-  computingtimes_[7] += 1.;
-
   return;
 }
 
 /*----------------------------------------------------------------------*/
 void ACOU::PatImageReconstruction::SolveAdjointScatra()
 {
-  Timer timer;
 
   // output for the user
   if(!myrank_)
@@ -4677,9 +4597,6 @@ void ACOU::PatImageReconstruction::SolveAdjointScatra()
   scatraoutput_->NewStep(1,1.0);
   scatraoutput_->WriteElementData(true);
   scatraoutput_->WriteVector("phinp",adjoint_phi_);*/
-
-  computingtimes_[8] += timer.wall_time();
-  computingtimes_[9] += 1.;
 
   return;
 }
