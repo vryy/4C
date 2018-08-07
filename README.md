@@ -127,6 +127,12 @@ cd <someBaseDir>/<buildDir>
 
 > **Note:**  When you see `command |& tee something$(date +%y%m%d%H%M%N).log`, that is just a means of running a command and sending the output both to the screen and to a timestamped log file.  This is by no means necessary, but if you run into problems, having these timestamped log files can be quite useful in debugging what's gone wrong.
 
+A specific build configuration file can be passed to the configure script via the command line argument `--config`, reading
+```bash
+<someBaseDir>/<sourceDir>/do-configure --config=<path/to/build-config-file>
+``` 
+A bunch of helpful build configuration files are located in `<someBaseDir>/<sourceDir>/buildconfig/`.
+
 #### Build
 
 ```bash
