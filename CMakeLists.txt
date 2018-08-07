@@ -526,6 +526,8 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/elchsinglemat.cpp
   src/drt_mat/electrode.cpp
   src/drt_mat/ferech_pv.cpp
+  src/drt_mat/fluid_linear_density_viscosity.cpp 
+  src/drt_mat/fluid_murnaghantait.cpp
   src/drt_mat/fluidporo.cpp
   src/drt_mat/fluidporo_singlephase.cpp
   src/drt_mat/fluidporo_singlephaseDof.cpp
@@ -1481,6 +1483,7 @@ set(OBJS_DRT_FLUID
   src/drt_fluid/fluidresulttest.cpp
   src/drt_fluid/fluid_timint.cpp
   src/drt_fluid/fluid_timint_hdg.cpp
+  src/drt_fluid/fluid_timint_stat_hdg.cpp
   src/drt_fluid/fluid_xwall.cpp
 )
 set(OBJS_DRT_FLUID_TURBULENCE

@@ -65,6 +65,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
   const LINALG::Matrix<nsd_,nen_>&              ebofon,
   const LINALG::Matrix<nsd_,nen_>&              eprescpgn,
   const LINALG::Matrix<nsd_,nen_>&              evelaf,
+  const LINALG::Matrix<nsd_,nen_>&              evelam,
   const LINALG::Matrix<nsd_,nen_>&              eveln,
   const LINALG::Matrix<nsd_,nen_>&              evelnp,
   const LINALG::Matrix<nsd_,nen_>&              fsevelaf,
@@ -72,6 +73,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
   const LINALG::Matrix<nsd_,nen_>&              evel_hat,
   const LINALG::Matrix<nsd_*nsd_,nen_>&         ereynoldsstress_hat,
   const LINALG::Matrix<nen_,1>&                 epreaf,
+  const LINALG::Matrix<nen_,1>&                 epream,
   const LINALG::Matrix<nen_,1>&                 epren,
   const LINALG::Matrix<nen_,1>&                 eprenp,
   const LINALG::Matrix<nsd_,nen_>&              eaccam,
@@ -143,7 +145,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
   if (not fldpara_->MatGp() or not fldpara_->TauGp())
   {
 
-    GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
+    GetMaterialParams(material,evelaf,epreaf,epream,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
 
     // calculate all-scale or fine-scale subgrid viscosity at element center
     visceff_ = visc_;
@@ -176,8 +178,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
     {
       // make sure to get material parameters at element center
       if (fldpara_->MatGp())
-        //GetMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,thermpressdtam,vol);
-        GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
+        //GetMaterialParams(material,evelaf,epreaf,epream,escaaf,escaam,thermpressaf,thermpressam,thermpressdtam,vol);
+        GetMaterialParams(material,evelaf,epreaf,epream,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
 
       // provide necessary velocities and gradients at element center
       velint_.Multiply(evelaf,funct_);
@@ -330,7 +332,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
     if (fldpara_->MatGp())
     {
 
-      GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
+      GetMaterialParams(material,evelaf,epreaf,epream,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
 
       // calculate all-scale or fine-scale subgrid viscosity at integration point
       visceff_ = visc_;
@@ -361,7 +363,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
         // make sure to get material parameters at gauss point
         if (not fldpara_->MatGp())
         {
-          // GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
+          // GetMaterialParams(material,evelaf,epreaf,epream,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
           // would overwrite materials at the element center, hence BGp() should always be combined with MatGp()
           dserror("evaluation of B and D at gauss-point should always be combined with evaluation material at gauss-point!");
         }
@@ -532,9 +534,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
              dserror("No material update in combination with smagorinsky model!");
 
           if (fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
-            UpdateMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,mfssgscaint_);
+            UpdateMaterialParams(material,evelaf,epreaf,epream,escaaf,escaam,thermpressaf,thermpressam,mfssgscaint_);
           else
-            UpdateMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,sgscaint_);
+            UpdateMaterialParams(material,evelaf,epreaf,epream,escaaf,escaam,thermpressaf,thermpressam,sgscaint_);
           visceff_ = visc_;
           if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::vreman)
             visceff_ += sgvisc_;

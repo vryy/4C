@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file fluid_ele_calc_hdg.H
 
 \brief main file containing routines for calculation of HDG fluid element
@@ -11,8 +12,8 @@
             http://www.lnm.mw.tum.de
             089 - 289-15235
 </pre>
-
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef FLUID_ELE_CALC_HDG_H
 #define FLUID_ELE_CALC_HDG_H
@@ -266,6 +267,12 @@ namespace ELEMENTS
                                          Epetra_SerialDenseVector&  elevec1_epetra
       ) {dserror("Not implemented!"); return;}
 
+    /// Evaluate the pressure average inside the element from an analytical expression
+    virtual int EvaluatePressureAverage(DRT::ELEMENTS::Fluid*         ele,
+                                        Teuchos::ParameterList&       params,
+                                        Teuchos::RCP<MAT::Material>&  mat,
+                                        Epetra_SerialDenseVector&     elevec);
+
     virtual ~FluidEleCalcHDG() {}
 
     /// Singleton access method
@@ -273,6 +280,20 @@ namespace ELEMENTS
 
     /// called upon destruction
     virtual void Done();
+
+    /// Print local residuals
+    void PrintLocalResiduals(DRT::ELEMENTS::Fluid* ele);
+
+    /// Print local variables
+    void PrintLocalVariables(DRT::ELEMENTS::Fluid* ele);
+
+    /// Print local correction term
+    void PrintLocalCorrection(DRT::ELEMENTS::Fluid*     ele,
+                              std::vector<double>     & interiorecorrectionterm);
+
+    /// Print local body force
+    void PrintLocalBodyForce(DRT::ELEMENTS::Fluid*     ele,
+                             std::vector<double>     & interiorebodyforce);
 
   private:
     /// private Constructor since we are a Singleton.
@@ -294,7 +315,10 @@ namespace ELEMENTS
                                    const std::vector<double>        & valn,
                                    const double                       avgPressure,
                                    const LINALG::Matrix<nsd_,nen_>  & ebodyforce,
-                                   const std::vector<double>         & intebodyforce);
+                                   const std::vector<double>        & intebodyforce,
+                                   Epetra_SerialDenseVector         & eleVec,
+                                   const std::vector<double>        & interiorecorrectionterm,
+                                   const std::vector<double>        & interiorebodyforce);
 
       void ComputeFaceResidual(const int                           face,
                                const Teuchos::RCP<MAT::Material> & mat,
@@ -322,9 +346,19 @@ namespace ELEMENTS
       void CondenseLocalPart(Epetra_SerialDenseMatrix &elemat,
                              Epetra_SerialDenseVector &elevec);
 
+      // compute the correction term on the rhs for the weakly compressible benchmark
+      void ComputeCorrectionTerm(std::vector<double>    & interiorecorrectionterm,
+                                 int                      corrtermfuncnum);
+
+      // compute the body force on the rhs for the weakly compressible benchmark
+      void ComputeBodyForce(std::vector<double>    & interiorebodyforce,
+                            int                      bodyforcefuncnum);
+
       const unsigned int ndofs_;
 
-      const bool stokes;
+      bool stokes;
+
+      bool weaklycompressible;
 
       // convention: we sort the entries in the matrices the following way:
       // first come the velocity gradients, then the velocities, and finally the pressure
@@ -362,6 +396,11 @@ namespace ELEMENTS
 
       Epetra_SerialDenseMatrix  velnp;     /// velocities evaluated on all quadrature points
       Epetra_SerialDenseMatrix  fvelnp;    /// trace velocities evaluated on all face quadrature points
+
+      Epetra_SerialDenseMatrix  uucomp;    /// compressibility matrix
+      Epetra_SerialDenseVector  presnp;    /// pressure evaluated on all quadrature points
+      Epetra_SerialDenseMatrix  gradpresnp;/// pressure gradient evaluated on all quadrature points
+      Epetra_SerialDenseVector  ifpresnp;  /// pressure evaluated on all face quadrature points
 
       Epetra_SerialDenseVector  gRes;      /// residual vector on velocity gradients
       Epetra_SerialDenseVector  upRes;     /// residual vector on velocity and pressure
@@ -408,12 +447,14 @@ namespace ELEMENTS
     LINALG::Matrix<nsd_,nen_> ebofoaf_;     /// body force (see fluid_ele_calc.cpp)
     LINALG::Matrix<nsd_,nen_> eprescpgaf_;  /// pressure gradient body force
     LINALG::Matrix<nen_,1>    escabofoaf_;  /// scalar body force for loma
-    std::vector<double> interiorebofoaf_; /// extracted local accelerations at n+alpha_f
+    std::vector<double> interiorebofoaf_;   /// extracted body force at n+alpha_f
 
+    std::vector<double> interiorecorrectionterm_; /// local correction term for the weakly compressible benchmark
+    std::vector<double> interiorebodyforce_;      /// local body force for the weakly compressible benchmark
 
     std::vector<double> traceVal_;    /// extracted values from trace solution vector at n+alpha_f
     std::vector<double> interiorVal_; /// extracted local values (velocity gradients, velocities, pressure) at n+alpha_f
-    std::vector<double> interiorAcc_; /// extracted local accelerations at n+alpha_f
+    std::vector<double> interiorAcc_; /// extracted local accelerations at n+alpha_m
 
     bool usescompletepoly_;
   };

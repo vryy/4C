@@ -35,6 +35,7 @@
 #include "../drt_inpar/inpar_topopt.H"
 
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_lib/drt_function.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/standardtypes_cpp.H"
@@ -46,6 +47,8 @@
 #include "../drt_mat/mixfrac.H"
 #include "../drt_mat/modpowerlaw.H"
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/fluid_linear_density_viscosity.H"
+#include "../drt_mat/fluid_murnaghantait.H"
 #include "../drt_mat/permeablefluid.H"
 #include "../drt_mat/sutherland.H"
 #include "../drt_mat/tempdepwater.H"
@@ -86,12 +89,16 @@ DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::FluidEleCalc():
     escabofon_(true),
     evelaf_(true),
     epreaf_(true),
+    evelam_(true),
+    epream_(true),
     evelnp_(true),
     eprenp_(true),
     eveln_(true),
     epren_(true),
     eaccam_(true),
     escadtam_(true),
+    eveldtam_(true),
+    epredtam_(true),
     escaaf_(true),
     escaam_(true),
     emhist_(true),
@@ -178,6 +185,14 @@ DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::FluidEleCalc():
     conv_scan_(0.0),
     scarhs_(0.0),
     sgscaint_(0.0),
+    // weakly_compressible-specific variables
+    preaf_(0.0),
+    pream_(0.0),
+    preconvfacaf_(0.0),   // initialized to 0.0 (filled in Fluid::GetMaterialParams)
+    tder_pre_(0.0),
+    predtfac_(0.0),       // initialized to 0.0 (filled in Fluid::GetMaterialParams)
+    grad_preaf_(true),
+    conv_preaf_(0.0),
     // turbulence-specific variables
     fsvelint_(true),
     mffsvelint_(true),
@@ -293,6 +308,20 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Evaluate(DRT::ELEMENTS::Fluid*
     tds_ = ele->TDS(); // store reference to the required tds element data
   }
 
+  // add correction term to RHS of continuity equation in order to match
+  // the approximated analytical solution of the channal_weakly_compressible problem
+  // given in "New analytical solutions for weakly compressible Newtonian
+  // Poiseuille flows with pressure-dependent viscosity"
+  // Kostas D. Housiadas, Georgios C. Georgiou
+  const Teuchos::ParameterList& fluidparams = DRT::Problem::Instance()->FluidDynamicParams();
+  int corrtermfuncnum = (fluidparams.get<int>("CORRTERMFUNCNO"));
+  ecorrectionterm_.Clear();
+  if (fldpara_->PhysicalType() == INPAR::FLUID::weakly_compressible_stokes &&
+      corrtermfuncnum > 0)
+  {
+    CorrectionTerm(ele,ecorrectionterm_);
+  }
+
   // ---------------------------------------------------------------------
   // get all general state vectors: velocity/pressure, scalar,
   // acceleration/scalar time derivative and history
@@ -302,12 +331,23 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Evaluate(DRT::ELEMENTS::Fluid*
   // generalized-alpha scheme and at time n+1 for all other schemes
   // ---------------------------------------------------------------------
   // fill the local element vector/matrix with the global values
-  // af_genalpha: velocity/pressure at time n+alpha_F
+  // af_genalpha: velocity/pressure at time n+alpha_F and n+alpha_M
   // np_genalpha: velocity at time n+alpha_F, pressure at time n+1
   // ost:         velocity/pressure at time n+1
   evelaf_.Clear();
   epreaf_.Clear();
   ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evelaf_, &epreaf_,"velaf");
+
+  evelam_.Clear();
+  epream_.Clear();
+  if (fldpara_->PhysicalType() == INPAR::FLUID::weakly_compressible && fldparatimint_->IsGenalpha())
+  {
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evelam_, &epream_,"velam");
+  }
+  if (fldpara_->PhysicalType() == INPAR::FLUID::weakly_compressible_stokes && fldparatimint_->IsGenalpha())
+  {
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evelam_, &epream_,"velam");
+  }
 
   // np_genalpha: additional vector for velocity at time n+1
   evelnp_.Clear();
@@ -322,6 +362,12 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Evaluate(DRT::ELEMENTS::Fluid*
   eaccam_.Clear();
   escadtam_.Clear();
   ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &eaccam_, &escadtam_,"accam");
+
+  // changing names for consistency
+  eveldtam_.Clear();
+  epredtam_.Clear();
+  eveldtam_ = eaccam_;
+  epredtam_ = escadtam_;
 
   escaaf_.Clear();
   ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, NULL, &escaaf_,"scaaf");
@@ -525,12 +571,16 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Evaluate(DRT::ELEMENTS::Fluid*
     elevec1,
     evelaf_,
     epreaf_,
+    evelam_,
+    epream_,
     eprenp_,
     evelnp_,
     escaaf_,
     emhist_,
     eaccam_,
     escadtam_,
+    eveldtam_,
+    epredtam_,
     escabofoaf_,
     escabofon_,
     eveln_,
@@ -578,12 +628,16 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Evaluate(
   LINALG::Matrix<(nsd_+1)*nen_,            1> & elevec1,
   const LINALG::Matrix<nsd_,nen_> &             evelaf,
   const LINALG::Matrix<nen_,1>    &             epreaf,
+  const LINALG::Matrix<nsd_,nen_> &             evelam,
+  const LINALG::Matrix<nen_,1>    &             epream,
   const LINALG::Matrix<nen_,1>    &             eprenp,
   const LINALG::Matrix<nsd_,nen_> &             evelnp,
   const LINALG::Matrix<nen_,1>    &             escaaf,
   const LINALG::Matrix<nsd_,nen_> &             emhist,
   const LINALG::Matrix<nsd_,nen_> &             eaccam,
   const LINALG::Matrix<nen_,1>    &             escadtam,
+  const LINALG::Matrix<nsd_,nen_> &             eveldtam,
+  const LINALG::Matrix<nen_,1>    &             epredtam,
   const LINALG::Matrix<nen_,1>    &             escabofoaf,
   const LINALG::Matrix<nen_,1>    &             escabofon,
   const LINALG::Matrix<nsd_,nen_> &             eveln,
@@ -665,6 +719,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Evaluate(
          ebofon,
          eprescpgn,
          evelaf,
+         evelam,
          eveln,
          evelnp,
          fsevelaf,
@@ -672,12 +727,15 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Evaluate(
          evel_hat,
          ereynoldsstress_hat,
          epreaf,
+         epream,
          epren,
          eprenp,
          eaccam,
          escaaf,
          escaam,
          escadtam,
+         eveldtam,
+         epredtam,
          escabofoaf,
          escabofon,
          emhist,
@@ -710,6 +768,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Evaluate(
            ebofon,
            eprescpgn,
            evelaf,
+           evelam,
            eveln,
            evelnp,
            fsevelaf,
@@ -717,6 +776,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Evaluate(
            evel_hat,
            ereynoldsstress_hat,
            epreaf,
+           epream,
            epren,
            eprenp,
            eaccam,
@@ -770,6 +830,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Sysmat(
     const LINALG::Matrix<nsd_,nen_>&              ebofon,
     const LINALG::Matrix<nsd_,nen_>&              eprescpgn,
     const LINALG::Matrix<nsd_,nen_>&              evelaf,
+    const LINALG::Matrix<nsd_,nen_>&              evelam,
     const LINALG::Matrix<nsd_,nen_>&              eveln,
     const LINALG::Matrix<nsd_,nen_>&              evelnp,
     const LINALG::Matrix<nsd_,nen_>&              fsevelaf,
@@ -777,12 +838,15 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Sysmat(
     const LINALG::Matrix<nsd_,nen_>&              evel_hat,
     const LINALG::Matrix<nsd_*nsd_,nen_>&         ereynoldsstress_hat,
     const LINALG::Matrix<nen_,1>&                 epreaf,
+    const LINALG::Matrix<nen_,1>&                 epream,
     const LINALG::Matrix<nen_,1>&                 epren,
     const LINALG::Matrix<nen_,1>&                 eprenp,
     const LINALG::Matrix<nsd_,nen_>&              eaccam,
     const LINALG::Matrix<nen_,1>&                 escaaf,
     const LINALG::Matrix<nen_,1>&                 escaam,
     const LINALG::Matrix<nen_,1>&                 escadtam,
+    const LINALG::Matrix<nsd_,nen_>&              eveldtam,
+    const LINALG::Matrix<nen_,1>&                 epredtam,
     const LINALG::Matrix<nen_,1>&                 escabofoaf,
     const LINALG::Matrix<nen_,1>&                 escabofon,
     const LINALG::Matrix<nsd_,nen_>&              emhist,
@@ -846,8 +910,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Sysmat(
   // get material parameters at element center
   if (not fldpara_->MatGp() or not fldpara_->TauGp())
   {
-
-    GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
+    GetMaterialParams(material,evelaf,epreaf,epream,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
 
     // calculate all-scale or fine-scale subgrid viscosity at element center
     visceff_ = visc_;
@@ -880,8 +943,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Sysmat(
     {
       // make sure to get material parameters at element center
       if (fldpara_->MatGp())
-        //GetMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,thermpressdtam,vol);
-        GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
+        //GetMaterialParams(material,evelaf,epreaf,epream,escaaf,escaam,thermpressaf,thermpressam,thermpressdtam,vol);
+        GetMaterialParams(material,evelaf,epreaf,epream,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
 
       // provide necessary velocities and gradients at element center
       velint_.Multiply(evelaf,funct_);
@@ -1022,8 +1085,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Sysmat(
 
     if (fldpara_->MatGp())
     {
-
-      GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
+      GetMaterialParams(material,evelaf,epreaf,epream,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
 
       // calculate all-scale or fine-scale subgrid viscosity at integration point
       visceff_ = visc_;
@@ -1054,7 +1116,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Sysmat(
         // make sure to get material parameters at gauss point
         if (not fldpara_->MatGp())
         {
-          // GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
+          // GetMaterialParams(material,evelaf,epreaf,epream,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
           // would overwrite materials at the element center, hence BGp() should always be combined with MatGp()
           dserror("evaluation of B and D at gauss-point should always be combined with evaluation material at gauss-point!");
         }
@@ -1193,9 +1255,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Sysmat(
              dserror("No material update in combination with smagorinsky model!");
 
           if (fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
-            UpdateMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,mfssgscaint_);
+            UpdateMaterialParams(material,evelaf,epreaf,epream,escaaf,escaam,thermpressaf,thermpressam,mfssgscaint_);
           else
-            UpdateMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,sgscaint_);
+            UpdateMaterialParams(material,evelaf,epreaf,epream,escaaf,escaam,thermpressaf,thermpressam,sgscaint_);
           visceff_ = visc_;
           if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::vreman)
             visceff_ += sgvisc_;
@@ -1216,6 +1278,19 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Sysmat(
       // add to residual of continuity equation
       conres_old_ -= rhscon_;
     }
+    else if (fldpara_->PhysicalType() == INPAR::FLUID::weakly_compressible or
+             fldpara_->PhysicalType() == INPAR::FLUID::weakly_compressible_stokes)
+    {
+      // update material parameters
+      UpdateMaterialParams(material,evelaf,epreaf,epream,escaaf,escaam,thermpressaf,thermpressam,sgscaint_);
+
+      // compute additional Galerkin terms on right-hand side of continuity equation
+      ComputeGalRHSContEqWeakComp(epreaf,epredtam,isale);
+
+      // add to residual of continuity equation
+      conres_old_ -= rhscon_;
+    }
+
 
     // set velocity-based momentum residual vectors to zero
     lin_resM_Du_.Clear();
@@ -1267,7 +1342,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Sysmat(
     //    standard Galerkin viscous part for low-Mach-number flow and
     //    right-hand-side part of standard Galerkin viscous term
     if (fldpara_->CStab() or
-        fldpara_->PhysicalType() == INPAR::FLUID::loma)
+            fldpara_->PhysicalType() == INPAR::FLUID::loma or
+            fldpara_->PhysicalType() == INPAR::FLUID::weakly_compressible or
+            fldpara_->PhysicalType() == INPAR::FLUID::weakly_compressible_stokes)
       ContStab( estif_u_,
                 velforce_,
                 fldparatimint_->TimeFac(),
@@ -1306,7 +1383,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Sysmat(
     // 8) additional standard Galerkin terms for low-Mach-number flow and
     //    artificial compressibility (only right-hand side in latter case)
     if (fldpara_->PhysicalType() == INPAR::FLUID::loma or
-        fldpara_->PhysicalType() == INPAR::FLUID::artcomp)
+        fldpara_->PhysicalType() == INPAR::FLUID::artcomp or
+        fldpara_->PhysicalType() == INPAR::FLUID::weakly_compressible or
+        fldpara_->PhysicalType() == INPAR::FLUID::weakly_compressible_stokes)
     {
       LomaGalPart(estif_q_u_,
                   preforce_,
@@ -1320,6 +1399,15 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Sysmat(
         not fldparatimint_->IsStationary())
       ArtCompPressureInertiaGalPartandContStab(estif_p_v_,
                                                ppmat_);
+
+    // 10) additional standard Galerkin term for temporal derivative of pressure
+    //     in case of weakly_compressible flow
+    if (fldpara_->PhysicalType() == INPAR::FLUID::weakly_compressible or
+        fldpara_->PhysicalType() == INPAR::FLUID::weakly_compressible_stokes)
+    {
+      WeakCompPressureInertiaGalPart(estif_p_v_,
+                                     ppmat_);
+    }
 
     //----------------------------------------------------------------------
     // compute second version of velocity-based momentum residual containing
@@ -1752,6 +1840,24 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::BodyForce(DRT::ELEMENTS::Flui
 }
 
 /*----------------------------------------------------------------------*
+ |  compute correction term at element nodes                            |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CorrectionTerm(
+  DRT::ELEMENTS::Fluid*               ele,
+  LINALG::Matrix<1,nen_>&             ecorrectionterm)
+{
+  // fill the element correction term
+  const Teuchos::ParameterList& fluidparams = DRT::Problem::Instance()->FluidDynamicParams();
+  int functnum = (fluidparams.get<int>("CORRTERMFUNCNO"));
+  if(functnum < 0) dserror("Please provide a correct function number");
+  for ( int i=0; i<nen_; ++i )
+  {
+    ecorrectionterm(i) = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,(ele->Nodes()[i])->X(),0.0);
+  }
+}
+
+/*----------------------------------------------------------------------*
  |  compute surface tension force                              mw 05/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
@@ -2009,6 +2115,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SetConvectiveVelint(
   switch (fldpara_->PhysicalType())
   {
   case INPAR::FLUID::incompressible:
+  case INPAR::FLUID::weakly_compressible:
   case INPAR::FLUID::artcomp:
   case INPAR::FLUID::varying_density:
   case INPAR::FLUID::loma:
@@ -2025,6 +2132,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SetConvectiveVelint(
     break;
   }
   case INPAR::FLUID::stokes:
+  case INPAR::FLUID::weakly_compressible_stokes:
   {
     convvelint_.Clear();
     break;
@@ -2072,6 +2180,8 @@ template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::Enrich
 void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::GetMaterialParams(
   Teuchos::RCP<const MAT::Material>  material,
   const LINALG::Matrix<nsd_,nen_>&   evelaf,
+  const LINALG::Matrix<nen_,1>&      epreaf,
+  const LINALG::Matrix<nen_,1>&      epream,
   const LINALG::Matrix<nen_,1>&      escaaf,
   const LINALG::Matrix<nen_,1>&      escaam,
   const LINALG::Matrix<nen_,1>&      escabofoaf,
@@ -2083,7 +2193,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::GetMaterialParams(
 )
 {
 
-  GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol,densam_,densaf_,densn_,visc_,viscn_,gamma_);
+  GetMaterialParams(material,evelaf,epreaf,epream,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol,densam_,densaf_,densn_,visc_,viscn_,gamma_);
 
 }
 
@@ -2095,6 +2205,8 @@ template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::Enrich
 void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::GetMaterialParams(
   Teuchos::RCP<const MAT::Material>  material,
   const LINALG::Matrix<nsd_,nen_>&   evelaf,
+  const LINALG::Matrix<nen_,1>&      epreaf,
+  const LINALG::Matrix<nen_,1>&      epream,
   const LINALG::Matrix<nen_,1>&      escaaf,
   const LINALG::Matrix<nen_,1>&      escaam,
   const LINALG::Matrix<nen_,1>&      escabofoaf,
@@ -2120,6 +2232,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::GetMaterialParams(
   scaconvfacaf_  = 0.0;
   scaconvfacn_   = 0.0;
   thermpressadd_ = 0.0;
+  preconvfacaf_  = 0.0;
+  predtfac_      = 0.0;
 
   if (material->MaterialType() == INPAR::MAT::m_fluid)
   {
@@ -2410,6 +2524,88 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::GetMaterialParams(
     // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
     const double scatrabodyforce = funct_.Dot(escabofoaf);
     scarhs_ += scatrabodyforce/actmat->Shc();
+  }else if (material->MaterialType() == INPAR::MAT::m_fluid_linear_density_viscosity)
+  {
+    const MAT::LinearDensityViscosity* actmat = static_cast<const MAT::LinearDensityViscosity*>(material.get());
+
+    double RefPressure           = actmat->RefPressure();        // reference pressure
+    double CoeffDensity          = actmat->CoeffDensity();       // density-pressure coefficient
+
+    // compute pressure at n+alpha_F or n+1
+    preaf_ = funct_.Dot(epreaf);
+
+    // compute density at n+alpha_F or n+1 based on pressure
+    densaf_ = actmat->ComputeDensity(preaf_);
+
+    // compute viscosity based on pressure
+    visc_ = actmat->ComputeViscosity(preaf_);
+
+    // factor for convective pressure term at n+alpha_F or n+1
+    preconvfacaf_ = - 1.0 / ((preaf_ - RefPressure) + 1.0 / CoeffDensity);
+
+    if (fldparatimint_->IsGenalpha())
+    {
+      // compute pressure at n+alpha_M
+      pream_ = funct_.Dot(epream);
+
+      // compute density at n+alpha_M based on pressure
+      densam_ = actmat->ComputeDensity(pream_);
+
+      // factor for pressure time derivative at n+alpha_M
+      predtfac_ = - 1.0 / ( (pream_ - RefPressure) + 1.0 / CoeffDensity);
+    }
+    else
+    {
+      // set density at n+1 at location n+alpha_M as well
+      densam_ = densaf_;
+
+      if (not fldparatimint_->IsStationary())
+      {
+        dserror("Genalpha is the only scheme implemented for weakly compressibility");
+      }
+    }
+  }
+  else if (material->MaterialType() == INPAR::MAT::m_fluid_murnaghantait)
+  {
+    const MAT::MurnaghanTaitFluid* actmat = static_cast<const MAT::MurnaghanTaitFluid*>(material.get());
+
+    double RefPressure           = actmat->RefPressure();        // reference pressure
+    double RefBulkModulus        = actmat->RefBulkModulus();     // reference bulk modulus
+    double MatParameter          = actmat->MatParameter();       // material parameter according to Murnaghan-Tait
+
+    // dynamic viscosity
+    visc = actmat->Viscosity();
+
+    // compute pressure at n+alpha_F or n+1
+    preaf_ = funct_.Dot(epreaf);
+
+    // compute density at n+alpha_F or n+1 based on pressure
+    densaf_ = actmat->ComputeDensity(preaf_);
+
+    // factor for convective pressure term at n+alpha_F or n+1
+    preconvfacaf_ = - 1.0 / (MatParameter * (preaf_ - RefPressure) + RefBulkModulus);
+
+    if (fldparatimint_->IsGenalpha())
+    {
+      // compute pressure at n+alpha_M
+      pream_ = funct_.Dot(epream);
+
+      // compute density at n+alpha_M based on pressure
+      densam_ = actmat->ComputeDensity(pream_);
+
+      // factor for pressure time derivative at n+alpha_M
+      predtfac_ = - 1.0 / (MatParameter * (pream_ - RefPressure) + RefBulkModulus);
+    }
+    else
+    {
+      // set density at n+1 at location n+alpha_M as well
+      densam_ = densaf_;
+
+      if (not fldparatimint_->IsStationary())
+      {
+        dserror("Genalpha is the only scheme implemented for weakly compressibility");
+      }
+    }
   }
   else if (material->MaterialType() == INPAR::MAT::m_tempdepwater)
   {
@@ -3997,7 +4193,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcDivEps(
   visc_old_.Clear();
 
   double prefac;
-  if(fldpara_->PhysicalType() == INPAR::FLUID::loma)
+  if(fldpara_->PhysicalType() == INPAR::FLUID::loma or
+     fldpara_->PhysicalType() == INPAR::FLUID::weakly_compressible or
+     fldpara_->PhysicalType() == INPAR::FLUID::weakly_compressible_stokes)
   //if(loma_)
   {
     prefac = 1.0/3.0;
@@ -4987,7 +5185,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ContStab(
     conti_stab_and_vol_visc_fac+=timefacfacpre*tau_(2);
     conti_stab_and_vol_visc_rhs-=rhsfac*tau_(2)*conres_old_;
   }
-  if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
+  if (fldpara_->PhysicalType() == INPAR::FLUID::loma or
+      fldpara_->PhysicalType() == INPAR::FLUID::weakly_compressible or
+      fldpara_->PhysicalType() == INPAR::FLUID::weakly_compressible_stokes)
   {
     conti_stab_and_vol_visc_fac-=(2.0/3.0)*visceff_*timefacfac;
     conti_stab_and_vol_visc_rhs+=(2.0/3.0)*rhsfac*visceff_*vdiv_;

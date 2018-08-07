@@ -87,7 +87,8 @@ enum Action {
     calc_dt_via_cfl,
     calc_mass_flow_periodic_hill,
     reset_immersed_ele,
-    calc_velgrad_ele_center
+    calc_velgrad_ele_center,
+    calc_pressure_average
 }; // enum Action
 
 /*--------------------------------------------------------------------------

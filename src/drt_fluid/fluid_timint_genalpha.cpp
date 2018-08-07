@@ -193,11 +193,13 @@ void FLD::TimIntGenAlpha::GenAlphaUpdateAcceleration()
   const double fact2 = 1.0 - (1.0/gamma_);
 
   // consider both velocity and pressure degrees of freedom in case of
-  // artificial compressibility or
+  // artificial compressibility or weakly_compressible or
   // extract and update only velocity degrees of freedom, since in
   // low-Mach-number flow, 'pressure' components are used to store
   // temporal derivatives of scalar/temperature values
-  if (physicaltype_ == INPAR::FLUID::artcomp)
+  if (physicaltype_ == INPAR::FLUID::artcomp or
+      physicaltype_ == INPAR::FLUID::weakly_compressible or
+      physicaltype_ == INPAR::FLUID::weakly_compressible_stokes)
   {
     accnp_->Update(fact2,*accn_,0.0);
     accnp_->Update(fact1,*velnp_,-fact1,*veln_,1.0);
@@ -233,11 +235,13 @@ void FLD::TimIntGenAlpha::GenAlphaIntermediateValues()
   //       (i)                     (i)
 
   // consider both velocity and pressure degrees of freedom in case of
-  // artificial compressibility or
+  // artificial compressibility or weakly_compressible or
   // extract and update only velocity degrees of freedom, since in
   // low-Mach-number flow, 'pressure' components are used to store
   // temporal derivatives of scalar/temperature values
-  if (physicaltype_ == INPAR::FLUID::artcomp)
+  if (physicaltype_ == INPAR::FLUID::artcomp or
+      physicaltype_ == INPAR::FLUID::weakly_compressible or
+      physicaltype_ == INPAR::FLUID::weakly_compressible_stokes)
   {
     accam_->Update((alphaM_),*accnp_,(1.0-alphaM_),*accn_,0.0);
   }
@@ -317,6 +321,7 @@ void FLD::TimIntGenAlpha::SetStateTimInt()
 {
 
   discret_->SetState("velaf",velaf_);
+  discret_->SetState("velam",velam_);
   if (timealgo_==INPAR::FLUID::timeint_npgenalpha)
     discret_->SetState("velnp",velnp_);
 

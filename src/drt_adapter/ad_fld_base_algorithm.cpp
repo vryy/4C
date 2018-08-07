@@ -52,6 +52,7 @@
 #include "../drt_fluid/fluid_timint_two_phase_ost.H"
 #include "../drt_fluid/fluid_timint_two_phase_stat.H"
 #include "../drt_fluid/fluid_timint_hdg.H"
+#include "../drt_fluid/fluid_timint_stat_hdg.H"
 #include "../drt_fluid_xfluid/xfluid.H"
 #include "../drt_fluid_xfluid/xfluidfluid.H"
 #include "../linalg/linalg_solver.H"
@@ -649,8 +650,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
     case prb_cavitation:
     {
       // HDG implements all time stepping schemes within gen-alpha
-      if (DRT::Problem::Instance()->SpatialApproximation() == "HDG")
+      if (DRT::Problem::Instance()->SpatialApproximation() == "HDG" && timeint != INPAR::FLUID::timeint_stationary)
         fluid_ = Teuchos::rcp(new FLD::TimIntHDG(actdis, solver, fluidtimeparams, output, isale));
+      else if (DRT::Problem::Instance()->SpatialApproximation() == "HDG" && timeint == INPAR::FLUID::timeint_stationary)
+        fluid_ = Teuchos::rcp(new FLD::TimIntStationaryHDG(actdis, solver, fluidtimeparams, output, isale));
       else if(timeint == INPAR::FLUID::timeint_stationary)
         fluid_ = Teuchos::rcp(new FLD::TimIntStationary(actdis, solver, fluidtimeparams, output, isale));
       else if(timeint == INPAR::FLUID::timeint_one_step_theta)

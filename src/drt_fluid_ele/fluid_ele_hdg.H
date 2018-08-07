@@ -1,17 +1,18 @@
+/*----------------------------------------------------------------------*/
 /*!
 \file fluid_ele_hdg.H
 
-Fluid element based on the hybridizable discontinuous Galerkin method instead
-of the usual Lagrangian polynomials for standard fluid elements
+\brief Fluid element based on the HDG method
 
-<pre>
-Maintainer: Martin Kronbichler
+\level 1
+
+\maintainer Martin Kronbichler
             kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15235
-</pre>
-
 */
+/*----------------------------------------------------------------------*/
+
 #ifndef DRT_FLUID_ELE_HDG_H
 #define DRT_FLUID_ELE_HDG_H
 
@@ -189,7 +190,7 @@ public:
   int NumDofPerElementAuxiliary() const
   {
     const int nsd_ = DRT::UTILS::getDimension(distype_);
-    return (nsd_*(nsd_+1)+1) * DRT::UTILS::getBasisSize(distype_, degree_, completepol_);
+    return (nsd_*(nsd_+1)+1) * DRT::UTILS::getBasisSize(distype_, degree_, completepol_) + 1;
   }
 
   //@}
