@@ -54,12 +54,12 @@ namespace ADAPTER
 
     The major part of this code is the Setup() method that gets the
     non-matching interface meshes on input, initializes the mortar
-    interface and computes the so-called coupling matrices D and M.
+    interface and computes the so-called coupling matrices \f$D\f$ and \f$M\f$.
 
     The actual coupling methods MasterToSlave() and SlaveToMaster()
     just evaluate one simple equation each, i.e. primal variables
     are projected from master to slave side via \f$D^{-1} M\f$ when
-    calling MasterToSlaver(), and dual variables are projected from
+    calling MasterToSlave(), and dual variables are projected from
     slave to master side via \f$M^T D^{-T}\f$ when calling SlaveToMaster().
 
     Whenever you want to add a new problem class, check whether you
@@ -72,10 +72,13 @@ namespace ADAPTER
     /// empty constructor
     CouplingMortar();
 
-    //! setup the machinery (generalized version)
-    /// master and slave discretizations are identical in case of sliding ALE or fluid/scatra
-    /// meshtying ALE discretization is Teuchos::null in case of sliding ALE or fluid/scatra
-    /// meshtying
+    /*! setup the machinery (generalized version)
+     *
+     *  \note
+     *  - Master and slave discretizations are identical in case of sliding ALE or fluid/scatra
+     * meshtying
+     *  - ALE discretization is Teuchos::null in case of sliding ALE or fluid/scatra meshtying
+     */
     void Setup(const Teuchos::RCP<DRT::Discretization>& masterdis,  ///< master discretization
         const Teuchos::RCP<DRT::Discretization>& slavedis,          ///< slave discretization
         const Teuchos::RCP<DRT::Discretization>& aledis,            ///< ALE discretization
@@ -88,10 +91,13 @@ namespace ADAPTER
         const int nds_slave = 0              ///< slave dofset number
     );
 
-    //! setup the machinery (generalized version)
-    /// master and slave discretizations are identical in case of sliding ALE or fluid/scatra
-    /// meshtying ALE discretization is Teuchos::null in case of sliding ALE or fluid/scatra
-    /// meshtying
+    /*! setup the machinery (generalized version)
+     *
+     *  \note
+     *  - Master and slave discretizations are identical in case of sliding ALE or fluid/scatra
+     * meshtying
+     *  - ALE discretization is Teuchos::null in case of sliding ALE or fluid/scatra meshtying
+     */
     void SetupInterface(
         const Teuchos::RCP<DRT::Discretization>& masterdis,  ///< master discretization
         const Teuchos::RCP<DRT::Discretization>& slavedis,   ///< slave discretization
@@ -119,16 +125,19 @@ namespace ADAPTER
             intcells  //!< vector of mortar integration cells
     );
 
-    /// filling matrices by using mortar interface using reference configuration
+    /// Compute mortar matrices by using mortar interface using reference configuration
     virtual void Evaluate();
 
-    /// filling matrices
-    virtual void Evaluate(Teuchos::RCP<Epetra_Vector> idisp);
+    /// Compute mortar matrices
+    virtual void Evaluate(Teuchos::RCP<Epetra_Vector> idisp  ///< [in] ??
+    );
 
-    /// filling matrices (case of transferring same dofs on two different meshes)
-    virtual void Evaluate(Teuchos::RCP<Epetra_Vector> idispma, Teuchos::RCP<Epetra_Vector> idispsl);
+    /// Compute mortar matrices (case of transferring same dofs on two different meshes)
+    virtual void Evaluate(Teuchos::RCP<Epetra_Vector> idispma,  ///< [in] ??
+        Teuchos::RCP<Epetra_Vector> idispsl                     ///< [in] ??
+    );
 
-    //! filling matrices, including mesh correction
+    //! Compute mortar matrices after performing a mesh correction step
     virtual void EvaluateWithMeshRelocation(
         Teuchos::RCP<DRT::Discretization> slavedis,  ///< slave discretization
         Teuchos::RCP<DRT::Discretization> aledis,    ///< ALE discretization
@@ -137,91 +146,126 @@ namespace ADAPTER
         bool slavewithale                            ///< flag defining if slave is ALE
     );
 
-    /// the mortar interface itself
+    //! Get the mortar interface itself
     Teuchos::RCP<MORTAR::MortarInterface> Interface() const { return interface_; }
 
+    //! Access to slave side mortar matrix \f$D\f$
     virtual Teuchos::RCP<LINALG::SparseMatrix> GetDMatrix() const
     {
       if (D_ == Teuchos::null) dserror("ERROR: D Matrix is null pointer!");
       return D_;
     };
 
+    //! Access to inverse of slave side mortar matrix \f$D^{-1}\f$
     virtual Teuchos::RCP<LINALG::SparseMatrix> GetDinvMatrix() const
     {
       if (Dinv_ == Teuchos::null) dserror("ERROR: DInv Matrix is null pointer!");
       return Dinv_;
     };
 
+    //! Access to master side mortar matrix \f$M\f$
     virtual Teuchos::RCP<LINALG::SparseMatrix> GetMMatrix() const
     {
       if (M_ == Teuchos::null) dserror("ERROR: M Matrix is null pointer!");
       return M_;
     };
 
+    //! Access to mortar projection operator \f$P\f$
     virtual Teuchos::RCP<LINALG::SparseMatrix> GetPMatrix() const
     {
       if (P_ == Teuchos::null) dserror("ERROR: P Matrix is null pointer!");
       return P_;
     };
 
+    /*! \brief Access to mortar projection operator \f$P\f$
+     *
+     *  \warning Redundant with GetPMatrix().
+     *
+     *  ToDo (mayr.mt) Remove this routine and replace its calls by GetPMatrix().
+     */
     virtual Teuchos::RCP<LINALG::SparseMatrix> GetMortarTrafo() const
     {
       if (P_ == Teuchos::null) dserror("ERROR: P Matrix is null pointer!");
       return P_;
     };
+
     /// @name Conversion between master and slave
     //@{
 
-    /// transfer a dof vector from master to slave
+    /*! \bfief Transfer a dof vector from master to slave
+     *
+     *  \return Slave vector
+     */
     Teuchos::RCP<Epetra_Vector> MasterToSlave(
-        Teuchos::RCP<Epetra_Vector> mv  ///< e.g. for FSI: structural interface displacements
+        Teuchos::RCP<Epetra_Vector> mv  ///< [in] master vector (to be transferred)
         ) const;
 
-    /// transfer a dof vector from master to slave
+    /*! \bfief Transfer a dof vector from master to slave
+     *
+     *  \return Slave vector
+     */
     Teuchos::RCP<Epetra_MultiVector> MasterToSlave(
-        Teuchos::RCP<Epetra_MultiVector> mv  ///< e.g. for FSI: structural interface displacements
+        Teuchos::RCP<Epetra_MultiVector> mv  ///< [in] master vector (to be transferred)
         ) const;
 
-    /// transfer a dof vector from master to slave (const version)
+    /*! \bfief Transfer a dof vector from master to slave (const version)
+     *
+     *  \return Slave vector
+     */
     Teuchos::RCP<Epetra_Vector> MasterToSlave(
-        Teuchos::RCP<const Epetra_Vector> mv  ///< e.g. for FSI: structural interface displacements
+        Teuchos::RCP<const Epetra_Vector> mv  ///< [in] master vector (to be transferred)
         ) const;
 
-    /// transfer a dof vector from master to slave (const version)
-    Teuchos::RCP<Epetra_MultiVector> MasterToSlave(Teuchos::RCP<const Epetra_MultiVector>
-            mv  ///< e.g. for FSI: structural interface displacements
+    /*! \bfief Transfer a dof vector from master to slave (const version)
+     *
+     *  \return Slave vector
+     */
+    Teuchos::RCP<Epetra_MultiVector> MasterToSlave(
+        Teuchos::RCP<const Epetra_MultiVector> mv  ///< [in] master vector (to be transferred)
         ) const;
 
-    /// transfer a dof vector from slave to master
+    /*! \brief Transfer a dof vector from slave to master
+     *
+     *  \return Master vector
+     */
     Teuchos::RCP<Epetra_Vector> SlaveToMaster(
-        Teuchos::RCP<Epetra_Vector> sv  ///< e.g. for FSI: fluid interface loads
+        Teuchos::RCP<Epetra_Vector> sv  ///< [in] slave vector (to be transferred)
         ) const;
 
-    /// transfer a dof vector from slave to master
+    /*! \brief Transfer a dof vector from slave to master
+     *
+     *  \return Master vector
+     */
     Teuchos::RCP<Epetra_MultiVector> SlaveToMaster(
-        Teuchos::RCP<Epetra_MultiVector> sv  ///< e.g. for FSI: fluid interface loads
+        Teuchos::RCP<Epetra_MultiVector> sv  ///< [in] slave vector (to be transferred)
         ) const;
 
-    /// transfer a dof vector from slave to master (const version)
+    /*! \brief Transfer a dof vector from slave to master (const version)
+     *
+     *  \return Master vector
+     */
     Teuchos::RCP<Epetra_Vector> SlaveToMaster(
-        Teuchos::RCP<const Epetra_Vector> sv  ///< e.g. for FSI: fluid interface loads
+        Teuchos::RCP<const Epetra_Vector> sv  ///< [in] slave vector (to be transferred)
         ) const;
 
-    /// transfer a dof vector from slave to master (const version)
+    /*! \brief Transfer a dof vector from slave to master (const version)
+     *
+     *  \return Master vector
+     */
     Teuchos::RCP<Epetra_MultiVector> SlaveToMaster(
-        Teuchos::RCP<const Epetra_MultiVector> sv  ///< e.g. for FSI: fluid interface loads
+        Teuchos::RCP<const Epetra_MultiVector> sv  ///< [in] slave vector (to be transferred)
         ) const;
 
     /// transfer a dof vector from master to slave
     void MasterToSlave(
-        Teuchos::RCP<const Epetra_MultiVector> mv,  ///< master vector (to be transferred)
-        Teuchos::RCP<Epetra_MultiVector> sv         ///< slave vector (containing result)
+        Teuchos::RCP<const Epetra_MultiVector> mv,  ///< [in] master vector (to be transferred)
+        Teuchos::RCP<Epetra_MultiVector> sv         ///< [out] slave vector (containing result)
         ) const;
 
     /// transfer a dof vector from slave to master
     void SlaveToMaster(
-        Teuchos::RCP<const Epetra_MultiVector> sv,  ///< slave vector (to be transferred)
-        Teuchos::RCP<Epetra_MultiVector> mv         ///< master vector (containing result)
+        Teuchos::RCP<const Epetra_MultiVector> sv,  ///< [in] slave vector (to be transferred)
+        Teuchos::RCP<Epetra_MultiVector> mv         ///< [out] master vector (containing result)
         ) const;
 
     //@}
@@ -229,10 +273,10 @@ namespace ADAPTER
     /** \name Coupled maps */
     //@{
 
-    /// the interface dof row map of the master side
+    /// Get the interface dof row map of the master side
     Teuchos::RCP<const Epetra_Map> MasterDofMap() const { return pmasterdofrowmap_; }
 
-    /// the interface dof row map of the slave side
+    /// Get the interface dof row map of the slave side
     Teuchos::RCP<const Epetra_Map> SlaveDofMap() const { return pslavedofrowmap_; }
 
     //@}
@@ -257,15 +301,24 @@ namespace ADAPTER
     //@}
 
    protected:
-    // create projection operator Dinv*M
+    /// Create mortar projection operator \f$P=D{^1}M\f$
     virtual void CreateP();
 
-    // check is slave dofs have dirichlet constraints
-    // this is not allows --> over constrained
+    /*! \brief Check if slave dofs have Dirichlet constraints
+     *
+     *  Slave DOFs are not allowed to carry Dirichlet boundary conditions to
+     *  avoid over-constraining the problem, cf. [1]
+     *
+     *  <h3> References </h3>
+     *  [1] Puso, M and Laursen, TA: Mesh tying on curved interfaces in 3D,
+     *      Engineering Computation, 20:305-319 (2003)
+     */
     void CheckSlaveDirichletOverlap(
-        const Teuchos::RCP<DRT::Discretization>& slavedis, const Epetra_Comm& comm);
+        const Teuchos::RCP<DRT::Discretization>& slavedis,  ///< [in] Slave discretization
+        const Epetra_Comm& comm                             ///< [in] Communicator
+    );
 
-    // back transformation to initial parallel distribution
+    /// back transformation to initial parallel distribution
     void MatrixRowColTransform();
 
     /// check setup call
@@ -279,28 +332,47 @@ namespace ADAPTER
 
    private:
     /// perform mesh relocation
-    void MeshRelocation(Teuchos::RCP<DRT::Discretization> slavedis,
-        Teuchos::RCP<DRT::Discretization> aledis, Teuchos::RCP<const Epetra_Map> masterdofrowmap,
-        Teuchos::RCP<const Epetra_Map> slavedofrowmap, Teuchos::RCP<Epetra_Vector>& idisp,
-        const Epetra_Comm& comm, bool slavewithale);
+    void MeshRelocation(Teuchos::RCP<DRT::Discretization> slavedis,  ///< [in] Slave discretization
+        Teuchos::RCP<DRT::Discretization> aledis,                    ///< [in] ALE discretization
+        Teuchos::RCP<const Epetra_Map>
+            masterdofrowmap,  ///< [in] DOF row map of master discretization
+        Teuchos::RCP<const Epetra_Map>
+            slavedofrowmap,                  ///< [in] DOF row map of slave discretization
+        Teuchos::RCP<Epetra_Vector>& idisp,  ///< [in] ALE displacements
+        const Epetra_Comm& comm,             ///< [in] Communicator
+        bool slavewithale                    ///< [in] Flag defining if slave is ALE
+    );
 
    protected:
-    bool issetup_;  ///< check for setup
+    /// Check for setup
+    bool issetup_;
 
-    Teuchos::RCP<MORTAR::MortarInterface> interface_;  ///< interface
-    Teuchos::RCP<const Epetra_Map>
-        masterdofrowmap_;  ///< map of master row dofs (after parallel redist.)
-    Teuchos::RCP<const Epetra_Map>
-        slavedofrowmap_;  ///< map of slave row dofs  (after parallel redist.)
-    Teuchos::RCP<const Epetra_Map>
-        pmasterdofrowmap_;  ///< map of master row dofs (before parallel redist.)
-    Teuchos::RCP<const Epetra_Map>
-        pslavedofrowmap_;  ///< map of slave row dofs  (before parallel redist.)
+    /// Interface
+    Teuchos::RCP<MORTAR::MortarInterface> interface_;
 
-    Teuchos::RCP<LINALG::SparseMatrix> D_;     ///< mortar matrix
-    Teuchos::RCP<LINALG::SparseMatrix> Dinv_;  ///< inverse of mortar matrix D_
-    Teuchos::RCP<LINALG::SparseMatrix> M_;     ///< mortar matrix
-    Teuchos::RCP<LINALG::SparseMatrix> P_;     ///< product of Dinv_ \times M_
+    /// Map of master row dofs (after parallel redist.)
+    Teuchos::RCP<const Epetra_Map> masterdofrowmap_;
+
+    /// Map of slave row dofs  (after parallel redist.)
+    Teuchos::RCP<const Epetra_Map> slavedofrowmap_;
+
+    /// Map of master row dofs (before parallel redist.)
+    Teuchos::RCP<const Epetra_Map> pmasterdofrowmap_;
+
+    /// Map of slave row dofs  (before parallel redist.)
+    Teuchos::RCP<const Epetra_Map> pslavedofrowmap_;
+
+    /// Slave side mortar matrix \f$D\f$
+    Teuchos::RCP<LINALG::SparseMatrix> D_;
+
+    /// Inverse \f$D^{-1}\f$ of slave side mortar matrix \f$D\f$
+    Teuchos::RCP<LINALG::SparseMatrix> Dinv_;
+
+    /// Master side mortar matrix \f$M\f$
+    Teuchos::RCP<LINALG::SparseMatrix> M_;
+
+    /// Mortar projection operator \f$P=\D^{-1}M\f$
+    Teuchos::RCP<LINALG::SparseMatrix> P_;
   };
 }  // namespace ADAPTER
 
