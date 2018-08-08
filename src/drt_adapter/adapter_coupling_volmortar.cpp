@@ -319,9 +319,9 @@ void ADAPTER::MortarVolCoupl::MasterToSlave(
     Teuchos::RCP<Epetra_MultiVector> sv) const
 {
 #ifdef DEBUG
-  if (not mv->Map().PointSameAs(P21_->RowMap()))
+  if (not mv->Map().PointSameAs(P21_->DomainMap()))
     dserror("master dof map vector expected");
-  if (not sv->Map().PointSameAs(P12_->RowMap()))
+  if (not sv->Map().PointSameAs(P21_->RowMap()))
     dserror("slave dof map vector expected");
   if (sv->NumVectors()!=mv->NumVectors())
     dserror("column number mismatch %d!=%d",sv->NumVectors(),mv->NumVectors());
