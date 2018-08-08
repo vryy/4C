@@ -131,6 +131,10 @@ void StructureFilter::WriteAllResults(PostField* field)
 
   // elastohydrodynamic lubrication
   writer_->WriteResult("fluid_force", "fluid_force", dofbased, field->problem()->num_dim());
+  writer_->WriteResult("normal_contact", "normal_contact", dofbased, field->problem()->num_dim());
+  writer_->WriteResult("tangential_contact", "tangential_contact", dofbased, field->problem()->num_dim());
+  writer_->WriteResult("active", "active", nodebased, 1);
+  writer_->WriteResult("slip", "slip", nodebased, 1);
 
   if (stresstype_!="none")
   {

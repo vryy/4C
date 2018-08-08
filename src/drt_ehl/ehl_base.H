@@ -131,6 +131,8 @@ namespace EHL
     //! height old vector to calculate the time derivative of height (Squeeze term)
     Teuchos::RCP<const Epetra_Vector> heightold_;
 
+    //! use of a dry contact model
+    bool dry_contact_;
 
     /// setup adapters for EHL on boundary
     virtual void SetupFieldCoupling(const std::string struct_disname, const std::string lubrication_disname);

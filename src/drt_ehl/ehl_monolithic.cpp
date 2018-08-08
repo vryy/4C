@@ -99,8 +99,6 @@ EHL::Monolithic::Monolithic(
   sdyn_(structparams),
   timernewton_(comm)
 {
-  SetupFieldCoupling(struct_disname, lubrication_disname);
-
   errfile_ = DRT::Problem::Instance()->ErrorFile()->Handle();
   if (errfile_)
     printerrfile_ = true;
@@ -441,6 +439,11 @@ void EHL::Monolithic::NewtonFull()
     // (STR/LUBRICATION)-RHS is put negative in PrepareSystemForNewtonSolve()
     SetupRHS();
 
+    if (dry_contact_)
+    {
+      mortaradapter_->CondenseContact(systemmatrix_,rhs_,StructureField()->Dispnp(),Dt());
+      ApplyDBC();
+    }
     // *********** time measurement ***********
     double dtcpu = timernewton_.WallTime();
     // *********** time measurement ***********
@@ -450,6 +453,15 @@ void EHL::Monolithic::NewtonFull()
     // *********** time measurement ***********
     dtsolve_ = timernewton_.WallTime() - dtcpu;
     // *********** time measurement ***********
+
+    // vector of displacement and pressure increments
+    Teuchos::RCP<Epetra_Vector> sx;
+    Teuchos::RCP<Epetra_Vector> lx;
+    // extract field vectors
+    ExtractFieldVectors(iterinc_,sx,lx);
+
+    if (dry_contact_)
+      mortaradapter_->RecoverCoupled(sx,lx);
 
     // reset solver tolerance
     solver_->ResetTolerance();
@@ -466,11 +478,6 @@ void EHL::Monolithic::NewtonFull()
     normlubricationrhs_ = CalculateVectorNorm(iternormlubrication_, lubricationrhs);
 
     // --------------------------------- build residual incremental norms
-    // vector of displacement and pressure increments
-    Teuchos::RCP<Epetra_Vector> sx;
-    Teuchos::RCP<Epetra_Vector> lx;
-    // extract field vectors
-    ExtractFieldVectors(iterinc_,sx,lx);
     norminc_ = CalculateVectorNorm(iternorm_, iterinc_);
     normdisi_ = CalculateVectorNorm(iternormstr_, sx);
     normprei_ = CalculateVectorNorm(iternormlubrication_, lx);
@@ -1315,6 +1322,14 @@ void EHL::Monolithic::PrintNewtonIterHeader(FILE* ofile)
     break;
   }  // switch (normtypeprei_)
 
+  if (mortaradapter_->HasContact())
+  {
+    oss << std::setw(16)<< "L2-Cont-Res";
+    oss << std::setw(16)<< "L2-Cont-Incr";
+    oss << std::setw(11)<< "#active";
+    oss << std::setw(10)<< "#slip";
+  }
+
   // add solution time
   oss << std::setw(12)<< "ts";
   oss << std::setw(12)<< "wct";
@@ -1451,6 +1466,15 @@ void EHL::Monolithic::PrintNewtonIterText(FILE* ofile)
     dserror("You should not turn up here.");
     break;
   }  // switch (normtypeprei_)
+
+
+  if (mortaradapter_->HasContact())
+  {
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << mortaradapter_->ContactRes();
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << mortaradapter_->ContactIncr();
+    oss << std::setw(11)<< mortaradapter_->ActiveContact();
+    oss << std::setw(10)<< mortaradapter_->SlipContact();
+  }
 
   // add solution time of to print to screen
   oss << std::setw(12) << std::setprecision(2) << std::scientific << dtsolve_;
@@ -2184,5 +2208,43 @@ void EHL::Monolithic::LinCouetteForcePres(
         false,-1.,1.);
     ds_dp->Complete(*d,*r);
   }
+}
+
+
+/*----------------------------------------------------------------------*
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+void EHL::Monolithic::ApplyDBC()
+{
+  Teuchos::RCP<LINALG::SparseMatrix> k_ss = Teuchos::rcp(new LINALG::SparseMatrix(systemmatrix_->Matrix(0,0).EpetraMatrix(),LINALG::Copy,true,false,LINALG::SparseMatrix::CRS_MATRIX));
+  Teuchos::RCP<LINALG::SparseMatrix> k_sl = Teuchos::rcp(new LINALG::SparseMatrix(systemmatrix_->Matrix(0,1)));
+  Teuchos::RCP<LINALG::SparseMatrix> k_ls = Teuchos::rcp(new LINALG::SparseMatrix(systemmatrix_->Matrix(1,0)));
+  Teuchos::RCP<LINALG::SparseMatrix> k_ll = Teuchos::rcp(new LINALG::SparseMatrix(systemmatrix_->Matrix(1,1)));
+  k_ss->ApplyDirichlet(*StructureField()->GetDBCMapExtractor()->CondMap(),true);
+  k_sl->ApplyDirichlet(*StructureField()->GetDBCMapExtractor()->CondMap(),false);
+  k_ls->ApplyDirichlet(*lubrication_->LubricationField()->GetDBCMapExtractor()->CondMap(),false);
+  k_ll->ApplyDirichlet(*lubrication_->LubricationField()->GetDBCMapExtractor()->CondMap(),true);
+
+  if (inf_gap_toggle_lub_!=Teuchos::null)
+  {
+    k_ls->ApplyDirichlet(inf_gap_toggle_lub_,false);
+    k_ll->ApplyDirichlet(inf_gap_toggle_lub_,true);
+  }
+
+  systemmatrix_->UnComplete();
+  systemmatrix_->Assign(0,0,LINALG::View,*k_ss);
+  systemmatrix_->Assign(0,1,LINALG::View,*k_sl);
+  systemmatrix_->Assign(1,0,LINALG::View,*k_ls);
+  systemmatrix_->Assign(1,1,LINALG::View,*k_ll);
+  systemmatrix_->Complete();
+
+
+  LINALG::ApplyDirichlettoSystem(rhs_,zeros_,*StructureField()->GetDBCMapExtractor()->CondMap());
+  LINALG::ApplyDirichlettoSystem(rhs_,zeros_,*lubrication_->LubricationField()->GetDBCMapExtractor()->CondMap());
+
+  if (inf_gap_toggle_lub_!=Teuchos::null)
+    for(int i=0;i<inf_gap_toggle_lub_->MyLength();++i)
+      if (abs(inf_gap_toggle_lub_->operator [](i))>1.e-12)
+        rhs_->ReplaceGlobalValue(inf_gap_toggle_lub_->Map().GID(i),0,0.);
 }
 

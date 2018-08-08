@@ -49,6 +49,9 @@ EHL::Partitioned::Partitioned(const Epetra_Comm& comm,
   itmax_ = ehlparams.get<int>("ITEMAX"); // default: =10
   ittol_ = ehlparamspart.get<double>("CONVTOL"); // default: =1e-6
 
+  // no dry contact in partitioned ehl
+  if(dry_contact_)
+    dserror("no dry contact model in partitioned ehl");
 }
 
 /*----------------------------------------------------------------------*

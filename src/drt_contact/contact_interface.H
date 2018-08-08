@@ -1030,6 +1030,38 @@ public:
                                Epetra_Vector& linslipRHSglobal);
 
   /*!
+    \brief Assemble linearization of regularized normal constraint
+  */
+  virtual void AssembleNormalContactRegularization(
+      LINALG::SparseMatrix& d_disp,
+      LINALG::SparseMatrix& d_lm,
+      Epetra_Vector& f);
+
+  /*!
+    \brief Assemble linearization of slip condition with regularized normal constraint
+  */
+  virtual void AssembleLinSlipNormalRegularization(
+      LINALG::SparseMatrix& linslipLMglobal,
+      LINALG::SparseMatrix& linslipDISglobal,
+      Epetra_Vector& linslipRHSglobal);
+
+
+  /*!
+  \brief Update active set and check for convergence
+
+  In this function we loop over all  slave nodes to check, whether the
+  assumption of them being active or inactive respectively has been correct.
+  If a single node changes state, the active set is adapted accordingly and the convegence
+  flag is kept on false. Here we have the semi-smooth Newton case
+  with one combined iteration loop for active set search and large
+  deformations. As a consequence this method is called AFTER each
+  (not yet converged) Newton step. If there is a change in the active
+  set or the residual and disp norm are still above their limits,
+  another Newton step has to be performed.
+  */
+  virtual bool UpdateActiveSetSemiSmooth();
+
+  /*!
   \brief Build active set (nodes / dofs) of this interface
 
   If the flag init==true, the active set is initialized (for t=0)
@@ -1275,6 +1307,11 @@ public:
     return *ctValues_;
   }
   //@}
+
+  inline bool IsFriction() const
+  {
+    return friction_;
+  }
 
   const CoInterface& GetMaSharingRefInterface() const;
 
