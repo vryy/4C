@@ -470,7 +470,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(
 
   // reshape elevec2 as matrix
   dsassert(elevec2.M() == 0 ||
-           elevec2.M() == static_cast<int>((nsd_*nsd_+nsd_+1)*shapes_->ndofs_), "Wrong size in project vector 2");
+           elevec2.M() == static_cast<int>((nsd_*nsd_+nsd_+1)*shapes_->ndofs_+1), "Wrong size in project vector 2");
 
   // get initial function and current time
   const int *initfield = params.getPtr<int>("initfield");
