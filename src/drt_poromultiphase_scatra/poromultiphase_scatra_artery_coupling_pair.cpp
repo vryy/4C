@@ -432,6 +432,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,dis
 
   // integration segment [eta_a, eta_b] is created
   CreateIntegrationSegment(validprojections);
+  // no projection found
+  if(!isactive_)
+  {
+    return;
+  }
 
   // get jacobian determinant
   const double determinant = (eta_b_ - eta_a_)/2.0;
@@ -1906,7 +1911,17 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,dis
         std::cout << "middle few could be projected" << std::endl;
       std::vector<double> intersections = GetAllInterSections();
       if(intersections.size() != 2)
-        dserror("found too many or less intersections");
+      {
+        // this could happen if element lies exactly diagonal in-between the elements of the 2D/3D domain
+        // and somehow one projection can still be found, then it is no problem because this element will not have
+        // to be evaluated anyhow
+        std::cout << "WARNING: Found degenerate case for artery element "<< Ele1GID() << " and continuous element "
+                     << Ele2GID() << ", read comment and check segments for these elements!" << std::endl;
+        if(THROW_ERR_AT_DEGENERATE_CASE)
+          dserror("found too many or less intersections");
+        isactive_ = false;
+        return;
+      }
       eta_a_ = intersections[0];
       eta_b_ = intersections[1];
     }
