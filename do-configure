@@ -124,6 +124,10 @@ fi
 # set valid folder for baci build
 BUILD_FOLDER=$BUILD_FOLDER_SAFE
 
+# Print source and build folder locations to screen
+echo "Source and build directory:"
+echo "-- Path to source code:    " $BACI_HOME
+echo "-- Path to build directory:" $BUILD_FOLDER
 
 ##############################################################
 # detect operating system
@@ -159,12 +163,15 @@ if [[ ! "$CONFIGURATION_FILE" ]]; then
       CONFIGURATION_FILE=$BACI_HOME/buildconfig/supermuc_thin.config
     fi
   else
-    echo "unknown or unsupported OS version! This is fatal!"
+    echo "Unknown or unsupported OS version! This is fatal!"
+    echo "Please provide a build configuration file via the command line option '--config'."
     exit
   fi
 else
-  echo "Configuration file:" $CONFIGURATION_FILE
+  echo "Configuration file has been provided by the user."
 fi
+
+echo "Configuration file:" $CONFIGURATION_FILE
 
 # remove CMakeCache.txt
 rm -f CMakeCache.txt
@@ -173,7 +180,8 @@ rm -f CMakeCache.txt
 if [[ -f $CONFIGURATION_FILE ]]; then
   . $CONFIGURATION_FILE
 else
-  echo "no configuration file found! This is fatal!"
+  echo "No configuration file found! This is fatal!"
+  echo "Please provide a build configuration file via the command line option '--config'."
   exit
 fi
 
@@ -249,6 +257,7 @@ $CMAKE_COMMAND \
     -D QHULL_LIBRARY_DIR:FILEPATH=$LIB_INSTALL_DIR \
     -D QHULL_INCLUDE_DIR:FILEPATH=$INCLUDE_INSTALL_DIR \
     -D MPI_DIR:FILEPATH=$MPIDIR \
+    -D MPI_RUN:FILEPATH=$MPIRUN \
     -D CUBIT_DIR:FILEPATH=$CUBIT_PATH \
     -D BLA_VENDOR:STRING=$BLA_VENDORSTRING \
     -D BLAS_LIBRARIES:FILEPATH=$BLAS_LIBS \

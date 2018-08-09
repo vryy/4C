@@ -29,6 +29,8 @@ def getCompilerPaths():
     with open(complicated_name_cpp,"w") as f:
       f.write("\n")
     os.system('g++ -v -E -P -dD '+complicated_name_cpp+' &> '+complicated_name_output)
+    import time
+    time.sleep(1)
     os.system('rm '+complicated_name_cpp)
 
     # parse output file and store compiler paths in set

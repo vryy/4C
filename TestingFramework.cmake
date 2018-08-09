@@ -2,11 +2,11 @@
 
 macro (baci_test arg nproc restart)
   add_test(NAME ${arg}-p${nproc}
-    COMMAND ${MPI_DIR}/bin/mpirun -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx)
+    COMMAND ${MPI_RUN} -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx)
 
   if (${restart})
     add_test(NAME ${arg}-p${nproc}-restart
-      COMMAND ${MPI_DIR}/bin/mpirun -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx restart=${restart})
+      COMMAND ${MPI_RUN} -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx restart=${restart})
   endif (${restart})
   if( "${ARGN}" STREQUAL "minimal")
     set_tests_properties ( ${arg}-p${nproc} PROPERTIES TIMEOUT 1000 LABELS minimal)
@@ -25,7 +25,7 @@ macro (baci_test_restartonly arg nproc restart)
   endif()
 
   add_test(NAME ${arg}-p${nproc}-restart
-    COMMAND ${MPI_DIR}/bin/mpirun -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx${IDENTIFIER} restart=${restart})
+    COMMAND ${MPI_RUN} -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx${IDENTIFIER} restart=${restart})
 
   set_tests_properties ( ${arg}-p${nproc}-restart PROPERTIES TIMEOUT 1000)
 endmacro (baci_test_restartonly)
@@ -33,11 +33,11 @@ endmacro (baci_test_restartonly)
 # Run test case for nested parallelism
 macro (baci_test_Nested_Par arg1 arg2 restart)
   add_test(NAME ${arg1}-nestedPar
-    COMMAND ${MPI_DIR}/bin/mpirun -np 3 $<TARGET_FILE:${baciname}> -ngroup=2 -glayout=1,2 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx ${PROJECT_SOURCE_DIR}/Input/${arg2}.dat xxxAdditional)
+    COMMAND ${MPI_RUN} -np 3 $<TARGET_FILE:${baciname}> -ngroup=2 -glayout=1,2 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx ${PROJECT_SOURCE_DIR}/Input/${arg2}.dat xxxAdditional)
 
   if (${restart})
     add_test(NAME ${arg1}-nestedPar-restart
-    COMMAND ${MPI_DIR}/bin/mpirun -np 3 $<TARGET_FILE:${baciname}> -ngroup=2 -glayout=1,2 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx restart=${restart} ${PROJECT_SOURCE_DIR}/Input/${arg2}.dat xxxAdditional restart=${restart})
+    COMMAND ${MPI_RUN} -np 3 $<TARGET_FILE:${baciname}> -ngroup=2 -glayout=1,2 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx restart=${restart} ${PROJECT_SOURCE_DIR}/Input/${arg2}.dat xxxAdditional restart=${restart})
   endif (${restart})
 
   set_tests_properties ( ${arg1}-nestedPar PROPERTIES TIMEOUT 200 )
@@ -46,7 +46,7 @@ endmacro (baci_test_Nested_Par)
 # Run test case for nested parallelism with multiple inverse analysis
 macro (baci_test_Nested_Par_MultipleInvana arg1 arg2)
   add_test(NAME ${arg1}-nestedPar-multiple-invana
-    COMMAND ${MPI_DIR}/bin/mpirun -np 4 $<TARGET_FILE:${baciname}> -ngroup=4 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx1  ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx2 ${PROJECT_SOURCE_DIR}/Input/${arg2}.dat xxx1 ${PROJECT_SOURCE_DIR}/Input/${arg2}.dat xxx2)
+    COMMAND ${MPI_RUN} -np 4 $<TARGET_FILE:${baciname}> -ngroup=4 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx1  ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx2 ${PROJECT_SOURCE_DIR}/Input/${arg2}.dat xxx1 ${PROJECT_SOURCE_DIR}/Input/${arg2}.dat xxx2)
 
     set_tests_properties ( ${arg1}-nestedPar-multiple-invana PROPERTIES TIMEOUT 200 )
 endmacro (baci_test_Nested_Par_MultipleInvana)
@@ -57,7 +57,7 @@ endmacro (baci_test_Nested_Par_MultipleInvana)
 # arg3 is the number of groups
 macro (baci_test_Nested_Par_CopyDat arg1 arg2 arg3)
   add_test(NAME ${arg1}-nestedPar_CopyDat-p${arg2}
-    COMMAND ${MPI_DIR}/bin/mpirun -np ${arg2} $<TARGET_FILE:${baciname}> -ngroup=${arg3} -nptype=copyDatFile ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx )
+    COMMAND ${MPI_RUN} -np ${arg2} $<TARGET_FILE:${baciname}> -ngroup=${arg3} -nptype=copyDatFile ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx )
     if( "${ARGN}" STREQUAL "minimal")
       set_tests_properties ( ${arg1}-nestedPar_CopyDat-p${arg2} PROPERTIES TIMEOUT 200 LABELS minimal)
     else ()
@@ -76,15 +76,15 @@ endmacro (baci_test_Nested_Par_CopyDat)
 macro (baci_test_Nested_Par_CopyDat_prepost arg1 arg2 arg3 arg4 arg5 restart)
   # precursor simulation
   add_test(NAME ${arg2}_precursor-p${arg4}
-    COMMAND ${MPI_DIR}/bin/mpirun -np ${arg4} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx)
+    COMMAND ${MPI_RUN} -np ${arg4} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx)
   # restart from precursor output
   add_test(NAME ${arg2}-p${arg4}
-    COMMAND ${MPI_DIR}/bin/mpirun -np ${arg4} $<TARGET_FILE:${baciname}> -ngroup=${arg5} -nptype=copyDatFile ${PROJECT_SOURCE_DIR}/Input/${arg2}.dat xxx)
+    COMMAND ${MPI_RUN} -np ${arg4} $<TARGET_FILE:${baciname}> -ngroup=${arg5} -nptype=copyDatFile ${PROJECT_SOURCE_DIR}/Input/${arg2}.dat xxx)
 
   # add postprocessing simulation in case
   if (NOT ${arg3} STREQUAL "")
     add_test(NAME ${arg2}_postprocess-p${arg4}
-      COMMAND ${MPI_DIR}/bin/mpirun -np ${arg4} $<TARGET_FILE:${baciname}> -ngroup=${arg5} -nptype=copyDatFile ${PROJECT_SOURCE_DIR}/Input/${arg3}.dat xxx restart=${restart})
+      COMMAND ${MPI_RUN} -np ${arg4} $<TARGET_FILE:${baciname}> -ngroup=${arg5} -nptype=copyDatFile ${PROJECT_SOURCE_DIR}/Input/${arg3}.dat xxx restart=${restart})
   endif(NOT ${arg3} STREQUAL "")
   if( "${ARGN}" STREQUAL "minimal")
     set_tests_properties ( ${arg2}_precursor-p${arg4} PROPERTIES TIMEOUT 200 LABELS minimal)
@@ -106,8 +106,8 @@ endmacro (baci_test_Nested_Par_CopyDat_prepost)
 macro (baci_framework_test arg nproc)
   set (RUNCUBIT ${CUBIT_DIR}/cubit\ -batch\ -nographics\ -nojournal\ ${PROJECT_SOURCE_DIR}/tests/framework-test/${arg}.jou)
   set (RUNPREEXODUS ./pre_exodus\ --exo=xxx_${arg}.e\ --bc=${PROJECT_SOURCE_DIR}/tests/framework-test/${arg}.bc\ --head=${PROJECT_SOURCE_DIR}/tests/framework-test/${arg}.head\ --dat=xxx.dat)
-  set (RUNBACI ${MPI_DIR}/bin/mpirun\ -np\ ${nproc}\ $<TARGET_FILE:${baciname}>\ xxx.dat\ xxx)
-  set (RUNPOSTFILTER ${MPI_DIR}/bin/mpirun\ -np\ ${nproc}\ ./post_drt_ensight\ --file=xxx)
+  set (RUNBACI ${MPI_RUN}\ -np\ ${nproc}\ $<TARGET_FILE:${baciname}>\ xxx.dat\ xxx)
+  set (RUNPOSTFILTER ${MPI_RUN}\ -np\ ${nproc}\ ./post_drt_ensight\ --file=xxx)
 
   add_test(NAME ${arg}-p${nproc}-fw
   COMMAND sh -c "${RUNCUBIT} && ${RUNPREEXODUS} && ${RUNBACI} && ${RUNPOSTFILTER}")
@@ -122,7 +122,7 @@ endmacro (baci_framework_test)
 
 # CUT TESTS
 macro (cut_test nproc)
-  set (RUNTESTS ${MPI_DIR}/bin/mpirun\ -np\ ${nproc}\ cut_test)
+  set (RUNTESTS ${MPI_RUN}\ -np\ ${nproc}\ cut_test)
   add_test(NAME test-p${nproc}-cut
   COMMAND sh -c "${RUNTESTS}")
   set_tests_properties ( test-p${nproc}-cut PROPERTIES TIMEOUT 1000 )
@@ -147,7 +147,7 @@ macro(post_processing arg nproc stresstype straintype startstep)
 
   # define macros for serial and parallel runs
   set(RUNPOSTFILTER_SER ./post_drt_ensight\ --file=xxx${IDENTIFIER}\ --output=xxx${IDENTIFIER}_SER_${arg}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep})
-  set(RUNPOSTFILTER_PAR ${MPI_DIR}/bin/mpirun\ -np\ ${nproc}\ ./post_drt_ensight\ --file=xxx${IDENTIFIER}\ --output=xxx${IDENTIFIER}_PAR_${arg}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep})
+  set(RUNPOSTFILTER_PAR ${MPI_RUN}\ -np\ ${nproc}\ ./post_drt_ensight\ --file=xxx${IDENTIFIER}\ --output=xxx${IDENTIFIER}_PAR_${arg}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep})
 
   # specify test case
   add_test(NAME ${arg}${IDENTIFIER}${FIELD}-p${nproc}-pp
