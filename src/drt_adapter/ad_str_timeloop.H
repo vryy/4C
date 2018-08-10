@@ -21,7 +21,16 @@
 
 namespace ADAPTER
 {
-  /// Just wrap, do nothing new, meant to be derived from
+  /*! \brief Time loop for stuctural simulations
+   *
+   *  This is a wrapper for the structural time integration which gives
+   *  fine-grained access into the time loop by various pre- and post-operators.
+   *
+   *  To perform such pre- and post-operations, just derive from this class and
+   *  overload the respective pre-/post-operator.
+   *
+   *  Implementations of pre-/post-operators in this class have to remain empty!
+   */
   class StructureTimeLoop : public StructureWrapper
   {
    public:

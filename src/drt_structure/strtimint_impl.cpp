@@ -326,6 +326,15 @@ int STR::TimIntImpl::IntegrateStep()
   return error;
 }
 
+void STR::TimIntImpl::Output(const bool forced_writerestart)
+{
+  PreOutput();
+  OutputStep(forced_writerestart);
+
+  // write Gmsh output
+  writeGmshStrucOutputStep();
+}
+
 /*----------------------------------------------------------------------------*
  | Create Edges of for discrete shell elements       mukherjee (public)  04/15|
  *-----------------------------------------------------------------------------*/
