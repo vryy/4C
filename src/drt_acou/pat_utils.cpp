@@ -1,17 +1,17 @@
 /*!----------------------------------------------------------------------
 \file pat_utils.cpp
 
-\brief ...to be done...
+\brief basic helper classes for image reconstruction
 
 \level 2
 
 <pre>
 \level 2
 
-\maintainer Svenja Schoeder
-            schoeder@lnm.mw.tum.de
+\maintainer Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15265
+            089 - 289-15235
 </pre>
 *----------------------------------------------------------------------*/
 
