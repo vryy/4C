@@ -16,6 +16,7 @@
 #define SRC_DRT_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_PAIR_H_
 
 #include "../linalg/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_porofluidmultiphase_ele/porofluid_variablemanager.H"
 #include "../drt_porofluidmultiphase_ele/porofluid_phasemanager.H"
@@ -85,11 +86,8 @@ namespace POROMULTIPHASESCATRA
         LINALG::SerialDenseMatrix* stiffmat22,
         LINALG::SerialDenseMatrix* D_ele,
         LINALG::SerialDenseMatrix* M_ele,
+        LINALG::SerialDenseVector* Kappa_ele,
         const std::vector<double>& segmentlengths) = 0;
-
-    //! evaluate kappa needed for mortar penalty case
-    virtual void EvaluateKappa(
-        LINALG::SerialDenseVector* kappa) = 0;
 
     //! reset state
     virtual void ResetState(
@@ -179,12 +177,9 @@ namespace POROMULTIPHASESCATRA
             LINALG::SerialDenseMatrix* stiffmat22,
             LINALG::SerialDenseMatrix* D_ele,
             LINALG::SerialDenseMatrix* M_ele,
+            LINALG::SerialDenseVector* Kappa_ele,
             const std::vector<double>& segmentlengths
             );
-
-    //! evaluate kappa needed for mortar penalty case
-    void EvaluateKappa(
-        LINALG::SerialDenseVector* kappa);
 
     //! beginning and end of integration segment
     double EtaA() const {return eta_a_;}
@@ -277,13 +272,15 @@ namespace POROMULTIPHASESCATRA
 
     //! evaluate the function coupling
     void EvaluateFunctionCoupling(
-        const std::vector<double>& segmentlengths,
-        LINALG::SerialDenseVector* forcevec1,
-        LINALG::SerialDenseVector* forcevec2,
-        LINALG::SerialDenseMatrix* stiffmat11,
-        LINALG::SerialDenseMatrix* stiffmat12,
-        LINALG::SerialDenseMatrix* stiffmat21,
-        LINALG::SerialDenseMatrix* stiffmat22);
+        const std::vector<double>&                eta,
+        const std::vector< std::vector<double> >& xi,
+        const std::vector<double>&                segmentlengths,
+        LINALG::SerialDenseVector*                forcevec1,
+        LINALG::SerialDenseVector*                forcevec2,
+        LINALG::SerialDenseMatrix*                stiffmat11,
+        LINALG::SerialDenseMatrix*                stiffmat12,
+        LINALG::SerialDenseMatrix*                stiffmat21,
+        LINALG::SerialDenseMatrix*                stiffmat22);
 
     //! evaluate stiffness for GPTS case
     void EvaluateGPTSStiff(
@@ -294,30 +291,36 @@ namespace POROMULTIPHASESCATRA
         const double& pp);
 
     //! evaluate mortar coupling matrices D and M
-    void EvaluateDM(
+    void EvaluateDMKappa(
         const double& w_gp,
         const LINALG::Matrix<1, numnodesart_>& N1,
         const LINALG::Matrix<1, numnodescont_>& N2,
-        const double& jacobi,
-        const double& pp);
+        const double& jacobi);
 
     //! evalute GPTS
     void EvaluateGPTS(
-        const int&                 dim1,
-        const int&                 dim2,
-        LINALG::SerialDenseVector* forcevec1,
-        LINALG::SerialDenseVector* forcevec2,
-        LINALG::SerialDenseMatrix* stiffmat11,
-        LINALG::SerialDenseMatrix* stiffmat12,
-        LINALG::SerialDenseMatrix* stiffmat21,
-        LINALG::SerialDenseMatrix* stiffmat22);
+        const std::vector<double>&                eta,
+        const std::vector< std::vector<double> >& xi,
+        const std::vector<double>&                segmentlengths,
+        const int&                                dim1,
+        const int&                                dim2,
+        LINALG::SerialDenseVector*                forcevec1,
+        LINALG::SerialDenseVector*                forcevec2,
+        LINALG::SerialDenseMatrix*                stiffmat11,
+        LINALG::SerialDenseMatrix*                stiffmat12,
+        LINALG::SerialDenseMatrix*                stiffmat21,
+        LINALG::SerialDenseMatrix*                stiffmat22);
 
     //! evaluate mortar coupling matrices D and M
-    void EvaluateDM(
-        const int&                 dim1,
-        const int&                 dim2,
-        LINALG::SerialDenseMatrix* D_ele,
-        LINALG::SerialDenseMatrix* M_ele);
+    void EvaluateDMKappa(
+        const std::vector<double>&                eta,
+        const std::vector< std::vector<double> >& xi,
+        const std::vector<double>&                segmentlengths,
+        const int&                                dim1,
+        const int&                                dim2,
+        LINALG::SerialDenseMatrix*                D_ele,
+        LINALG::SerialDenseMatrix*                M_ele,
+        LINALG::SerialDenseVector*                Kappa_ele);
 
     //! evaluate the function coupling
     void EvaluateFunctionCoupling(
@@ -367,7 +370,7 @@ namespace POROMULTIPHASESCATRA
 
     //! assemble the function coupling into stiffness matrix (2D/3D-part)
     void AssembleFunctionCouplingIntoForceStiffCont(
-        const int& i_cont,
+        const std::vector<int>& assembleInto,
         const double& w_gp,
         const LINALG::Matrix<1, numnodesart_>& N1,
         const LINALG::Matrix<1, numnodescont_>& N2,
@@ -441,10 +444,11 @@ namespace POROMULTIPHASESCATRA
         LINALG::SerialDenseMatrix& stiffmat21,
         LINALG::SerialDenseMatrix& stiffmat22);
 
-    //! update the D and M for MP
-    void UpdateDM(
+    //! update the D, M and Kappa for MP
+    void UpdateDMKappa(
         LINALG::SerialDenseMatrix& D_ele,
-        LINALG::SerialDenseMatrix& M_ele);
+        LINALG::SerialDenseMatrix& M_ele,
+        LINALG::SerialDenseVector& Kappa_ele);
 
     //! fill the function vector
     void FillFunctionVector(
@@ -459,6 +463,9 @@ namespace POROMULTIPHASESCATRA
 
     //! initialize names used in functions
     void InitializeFunctionNames();
+
+    //! initialize vector where to assemble continuous DOF functions into
+    void InitializeAssembleIntoContDofVector();
 
     //! get function
     DRT::UTILS::VariableExprFunction* Function(int functnum) const;
@@ -570,7 +577,8 @@ namespace POROMULTIPHASESCATRA
     //! length of integration segment int current configuration
     double curr_segment_length_;
 
-    //! check if constant part (i.e. GPTS and MP part) has already been evaluated
+    //! check if constant part (i.e. GPTS and MP part) has already been evaluated if integration
+    //  in reference configuration is performed
     bool constant_part_evaluated_ ;
 
     //! GPTS stiffness matrices
@@ -582,6 +590,7 @@ namespace POROMULTIPHASESCATRA
     // mortar coupling matrices
     LINALG::SerialDenseMatrix D_;
     LINALG::SerialDenseMatrix M_;
+    LINALG::SerialDenseVector Kappa_;
 
     // (dX/dxi)^-1
     std::vector<LINALG::Matrix<numdim_,numdim_>> invJ_;
@@ -627,6 +636,10 @@ namespace POROMULTIPHASESCATRA
     //! right hand side factors
     double timefacrhs_art_;
     double timefacrhs_cont_;
+
+    //! vector where to assemble rhs-(function) coupling into
+    //  summed up phase requires special treatment
+    std::vector<std::vector<int>> cont_dofs_to_assemble_functions_into_;
 
   };
 

@@ -228,7 +228,7 @@ void POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAndFieldCoupling(
     Teuchos::RCP<DRT::Discretization> artscatradis = problem->GetDis("artery_scatra");
 
     if(!artdis->Filled())
-      artdis->FillComplete();
+      dserror("artery discretization should be filled at this point");
 
     // fill artery scatra discretization by cloning artery discretization
     DRT::UTILS::CloneDiscretization<ART::ArteryScatraCloneStrategy>(artdis,artscatradis);

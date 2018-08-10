@@ -31,16 +31,16 @@
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::PoroMultiPhaseScaTraArtCouplLineBased(
     Teuchos::RCP<DRT::Discretization>  arterydis,
     Teuchos::RCP<DRT::Discretization>  contdis,
-    const Teuchos::ParameterList&      meshtyingparams,
+    const Teuchos::ParameterList&      couplingparams,
     const std::string&                 condname,
     const std::string&                 artcoupleddofname,
     const std::string&                 contcoupleddofname
     ):
-    PoroMultiPhaseScaTraArtCouplBase(arterydis, contdis, meshtyingparams, condname, artcoupleddofname, contcoupleddofname),
-    meshtyingparams_(meshtyingparams),
+    PoroMultiPhaseScaTraArtCouplBase(arterydis, contdis, couplingparams, condname, artcoupleddofname, contcoupleddofname),
+    couplingparams_(couplingparams),
     porofluidmanagersset_(false),
-    coupling_method_(DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(meshtyingparams,"ARTERY_COUPLING_METHOD")),
-    pp_(meshtyingparams.get<double>("PENALTY")),
+    coupling_method_(DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(couplingparams,"ARTERY_COUPLING_METHOD")),
+    pp_(couplingparams_.get<double>("PENALTY")),
     timersearch_(Comm())
 {
 
@@ -73,10 +73,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::Init()
   BruteForceSearch();
 
   // create the pairs
-  CreateMeshTyingPairs();
+  CreateCouplingPairs();
 
   // pre-evaluate the pairs
-  PreEvaluateMeshTyingPairs();
+  PreEvaluateCouplingPairs();
 
   // fill length of artery elements that is not influenced if the underlying
   // 2D/3D mesh moves (basically protruding artery elements or segments)
@@ -108,6 +108,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::Init()
   // -------------------------------------------------------------------
   D_ = Teuchos::rcp(new LINALG::SparseMatrix(*(arterydis_->DofRowMap()),27,false,true));
   M_ = Teuchos::rcp(new LINALG::SparseMatrix(*(arterydis_->DofRowMap()),27,false,true));
+  kappaInv_ = Teuchos::rcp(new Epetra_Vector(*arterydis_->DofRowMap(), true));
 
   // full map of continous and artery dofs
   std::vector<Teuchos::RCP<const Epetra_Map> > maps;
@@ -142,8 +143,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetupSystem(
 
   if(!porofluidmanagersset_)
   {
-    for(unsigned i = 0; i < mesht_elepairs_.size(); i++)
-      mesht_elepairs_[i]->SetupFluidManagersAndMaterials(contdis_->Name());
+    for(unsigned i = 0; i < coupl_elepairs_.size(); i++)
+      coupl_elepairs_[i]->SetupFluidManagersAndMaterials(contdis_->Name());
     porofluidmanagersset_ = true;
   }
 
@@ -156,7 +157,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetupSystem(
   // note: OD terms, i.e., (0,1) and (1,0) directly assembled into sysmat
   //       main-diag terms, i.e., (0,0) and (1,1) added into _cont and _art
   //       rhs is added into global rhs
-  EvaluateMeshTyingPairs(sysmat, rhs, sysmat_cont, sysmat_art);
+  EvaluateCouplingPairs(sysmat, rhs, sysmat_cont, sysmat_art);
 
   // add normal part to rhs
   rhs->Update(1.0, *globalex_->InsertVector(rhs_cont,0), 1.0);
@@ -289,7 +290,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::BruteForceSear
 /*----------------------------------------------------------------------*
  | create the pairs                                    kremheller 05/18 |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::CreateMeshTyingPairs()
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::CreateCouplingPairs()
 {
   // loop over pairs found by search
   std::map<int, std::set<int> >::const_iterator nearbyeleiter;
@@ -308,16 +309,16 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::CreateMeshTyin
       // construct, init and setup coupling pairs
       Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase> newpair =
           POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::CreateNewArteryCouplingPair(ele_ptrs);
-      newpair->Init(ele_ptrs, meshtyingparams_, coupleddofs_cont_, coupleddofs_art_, scale_vec_, funct_vec_);
+      newpair->Init(ele_ptrs, couplingparams_, coupleddofs_cont_, coupleddofs_art_, scale_vec_, funct_vec_);
 
       // add to list of current contact pairs
-      mesht_elepairs_.push_back(newpair);
+      coupl_elepairs_.push_back(newpair);
     }
   }
 
   // output
   int total_numactive_pairs = 0;
-  int numactive_pairs = static_cast<int>(mesht_elepairs_.size());
+  int numactive_pairs = static_cast<int>(coupl_elepairs_.size());
   Comm().SumAll(&numactive_pairs, &total_numactive_pairs, 1);
 
   if(myrank_ == 0)
@@ -328,77 +329,35 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::CreateMeshTyin
 /*----------------------------------------------------------------------*
  | pre-evaluate the pairs and sort out duplicates      kremheller 05/18 |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::PreEvaluateMeshTyingPairs()
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::PreEvaluateCouplingPairs()
 {
 
   // pre-evaluate
-  for(unsigned i = 0; i < mesht_elepairs_.size(); i++)
-    mesht_elepairs_[i]->PreEvaluate();
+  for(unsigned i = 0; i < coupl_elepairs_.size(); i++)
+    coupl_elepairs_[i]->PreEvaluate();
 
   // delete the inactive and duplicate pairs
-  std::vector<Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase> > active_msht_elepairs;
-  for(unsigned i = 0; i < mesht_elepairs_.size(); i++)
+  std::vector<Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase> > active_coupl_elepairs;
+  for(unsigned i = 0; i < coupl_elepairs_.size(); i++)
   {
-    if(mesht_elepairs_[i]->IsActive() && !IsDuplicateSegment(active_msht_elepairs, mesht_elepairs_[i]))
-      active_msht_elepairs.push_back(mesht_elepairs_[i]);
+    if(coupl_elepairs_[i]->IsActive() && !IsDuplicateSegment(active_coupl_elepairs, coupl_elepairs_[i]))
+      active_coupl_elepairs.push_back(coupl_elepairs_[i]);
   }
 
-  mesht_elepairs_ = active_msht_elepairs;
+  coupl_elepairs_ = active_coupl_elepairs;
 
   // output
   int total_numactive_pairs = 0;
-  int numactive_pairs = static_cast<int>(mesht_elepairs_.size());
+  int numactive_pairs = static_cast<int>(coupl_elepairs_.size());
   Comm().SumAll(&numactive_pairs, &total_numactive_pairs, 1);
   if(myrank_ == 0)
     std::cout << "Only "<< total_numactive_pairs << " Artery-to-PoroMultiphaseScatra coupling pairs (segments) are active" << std::endl;
-
-  // evaluate kappa
-  if(coupling_method_ == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp and num_coupled_dofs_ > 0)
-    EvaluateKappa();
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | evaluate kappa                                      kremheller 07/18 |
- *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::EvaluateKappa()
-{
-
-  LINALG::SerialDenseVector eleKappa;
-  kappaInv_ = Teuchos::rcp(new Epetra_Vector(*arterydis_->DofRowMap(), true));
-  for(unsigned i = 0; i < mesht_elepairs_.size(); i++)
-  {
-    // evaluate element kappa
-    mesht_elepairs_[i]->EvaluateKappa(&eleKappa);
-    const int artelegid = mesht_elepairs_[i]->Ele1GID();
-
-    const DRT::Element* ele1 = arterydis_->gElement(artelegid);
-    // get element location vector and ownerships
-    std::vector<int> lmrow1;
-    std::vector<int> lmrowowner1;
-    std::vector<int> lmstride;
-
-    // assemble
-    ele1->LocationVector(*arterydis_,lmrow1,lmrowowner1,lmstride);
-    kappaInv_->SumIntoGlobalValues(eleKappa.Length(),eleKappa.Values(),&lmrow1[0]);
-  }
-  // invert (pay attention to protruding elements)
-  for (int i=0;i<arterydis_->DofRowMap()->NumMyElements();++i)
-  {
-    const int artdofgid = arterydis_->DofRowMap()->GID(i);
-    const double kappaVal = (*kappaInv_)[kappaInv_->Map().LID(artdofgid)];
-    if(fabs(kappaVal) > KAPPAINVTOL)
-      kappaInv_->ReplaceGlobalValue(artdofgid,0,1.0/kappaVal);
-    else
-      kappaInv_->ReplaceGlobalValue(artdofgid,0,0.0);
-  }
 
   return;
 }
 
 /*------------------------------------------------------------------------*
- | fill the unaffected lenght and initialize curr length kremheller 05/18 |
+ | fill the unaffected length and initialize curr length kremheller 05/18 |
  *------------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillUnaffectedArteryLength()
 {
@@ -444,11 +403,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillUnaffected
   // subtract the segment lengths only if we evaluate in current configuration
   if(!evaluate_in_ref_config_)
   {
-    for(unsigned i = 0; i < mesht_elepairs_.size(); i++)
+    for(unsigned i = 0; i < coupl_elepairs_.size(); i++)
     {
-      double init_segment_length = mesht_elepairs_[i]->ApplyMeshMovement(Teuchos::null, contdis_);
+      double init_segment_length = coupl_elepairs_[i]->ApplyMeshMovement(Teuchos::null, contdis_);
       init_segment_length *= -1.0;
-      const int artelegid = mesht_elepairs_[i]->Ele1GID();
+      const int artelegid = coupl_elepairs_[i]->Ele1GID();
       if((arterydis_->gElement(artelegid))->Owner() == myrank_)
         unaffected_length_artery_->SumIntoGlobalValues(1,&(init_segment_length),&artelegid);
     }
@@ -466,11 +425,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::CreateGIDToSeg
 {
 
   // fill the GID-to-segment vector
-  for(unsigned i = 0; i < mesht_elepairs_.size(); i++)
+  for(unsigned i = 0; i < coupl_elepairs_.size(); i++)
   {
-    const int artelegid = mesht_elepairs_[i]->Ele1GID();
-    const double etaA = mesht_elepairs_[i]->EtaA();
-    const double etaB = mesht_elepairs_[i]->EtaB();
+    const int artelegid = coupl_elepairs_[i]->Ele1GID();
+    const double etaA = coupl_elepairs_[i]->EtaA();
+    const double etaB = coupl_elepairs_[i]->EtaB();
 
     gid_to_segment_[artelegid].push_back(etaA);
     gid_to_segment_[artelegid].push_back(etaB);
@@ -526,14 +485,14 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::CreateGIDToSeg
       const double etaB = segmentboundaries[iseg*2+1];
       gid_to_seglength_[artelegid][iseg] = initlength*(etaB - etaA)/2.0;
 
-      // return also id -> index in mesht_elepairs_ of this segment
-      if(IsIdenticalSegment(mesht_elepairs_,
+      // return also id -> index in coupl_elepairs_ of this segment
+      if(IsIdenticalSegment(coupl_elepairs_,
           artelegid,
           etaA,
           etaB,
           id)
           )
-        mesht_elepairs_[id]->SetSegmentID(iseg);
+        coupl_elepairs_[id]->SetSegmentID(iseg);
     }
   }
 
@@ -543,7 +502,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::CreateGIDToSeg
 /*----------------------------------------------------------------------*
  | evaluate the pairs                                  kremheller 05/18 |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::EvaluateMeshTyingPairs(
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::EvaluateCouplingPairs(
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat,
     Teuchos::RCP<Epetra_Vector>                 rhs,
     Teuchos::RCP<LINALG::SparseMatrix>          sysmat_cont,
@@ -556,6 +515,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::EvaluateMeshTy
   {
     D_->Zero();
     M_->Zero();
+    kappaInv_->PutScalar(0.0);
   }
 
   // resulting discrete element force vectors of the two interacting elements
@@ -568,6 +528,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::EvaluateMeshTy
   // element mortar coupling matrices
   LINALG::SerialDenseMatrix D_ele;
   LINALG::SerialDenseMatrix M_ele;
+  LINALG::SerialDenseVector Kappa_ele;
 
   // export from row to col
   if(contdis_->Name() == "porofluid")
@@ -578,17 +539,17 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::EvaluateMeshTy
     dserror("should not happen");
 
   // evaluate all pairs
-  for(unsigned i = 0; i < mesht_elepairs_.size(); i++)
+  for(unsigned i = 0; i < coupl_elepairs_.size(); i++)
   {
     // get element quantities
-    std::vector<double> contelephinp = GetElePhinp(contdis_, mesht_elepairs_[i]->Ele2GID(), phinp_cont_colmap_);
-    std::vector<double> artelephinp  = GetElePhinp(arterydis_, mesht_elepairs_[i]->Ele1GID(), phinp_art_colmap_);
+    std::vector<double> contelephinp = GetElePhinp(contdis_, coupl_elepairs_[i]->Ele2GID(), phinp_cont_colmap_);
+    std::vector<double> artelephinp  = GetElePhinp(arterydis_, coupl_elepairs_[i]->Ele1GID(), phinp_art_colmap_);
 
     // set on pairs
-    mesht_elepairs_[i]->ResetState(contelephinp, artelephinp, contdis_, arterydis_);
+    coupl_elepairs_[i]->ResetState(contelephinp, artelephinp, contdis_, arterydis_);
 
     // evaluate
-    mesht_elepairs_[i]->Evaluate(
+    coupl_elepairs_[i]->Evaluate(
             &eleforce[0],
             &eleforce[1],
             &elestiff[0][0],
@@ -597,11 +558,12 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::EvaluateMeshTy
             &elestiff[1][1],
             &D_ele,
             &M_ele,
-            gid_to_seglength_[mesht_elepairs_[i]->Ele1GID()]);
+            &Kappa_ele,
+            gid_to_seglength_[coupl_elepairs_[i]->Ele1GID()]);
 
     // assemble
-    AssembleEleForceStiffIntoSystemVectorMatrix(mesht_elepairs_[i]->Ele1GID(),
-                                                mesht_elepairs_[i]->Ele2GID(),
+    AssembleEleForceStiffIntoSystemVectorMatrix(coupl_elepairs_[i]->Ele1GID(),
+                                                coupl_elepairs_[i]->Ele2GID(),
                                                 eleforce,
                                                 elestiff,
                                                 sysmat,
@@ -609,12 +571,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::EvaluateMeshTy
                                                 sysmat_cont,
                                                 sysmat_art);
 
-    // in case of MP, assemble D and M
+    // in case of MP, assemble D, M and Kappa
     if(coupling_method_ == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp and num_coupled_dofs_ > 0)
-      AssembleDM(mesht_elepairs_[i]->Ele1GID(),
-                 mesht_elepairs_[i]->Ele2GID(),
-                 D_ele,
-                 M_ele);
+      AssembleDMKappa(coupl_elepairs_[i]->Ele1GID(),
+                      coupl_elepairs_[i]->Ele2GID(),
+                      D_ele,
+                      M_ele,
+                      Kappa_ele);
 
   }
 
@@ -670,13 +633,14 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::AssembleEleFor
 }
 
 /*----------------------------------------------------------------------*
- | assemble D and M into global D and M                kremheller 05/18 |
+ | assemble D, M and kappa into global D, M and kappa  kremheller 05/18 |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::AssembleDM(
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::AssembleDMKappa(
     const int& ele1gid,
     const int& ele2gid,
     const LINALG::SerialDenseMatrix& D_ele,
-    const LINALG::SerialDenseMatrix& M_ele)
+    const LINALG::SerialDenseMatrix& M_ele,
+    const LINALG::SerialDenseVector& Kappa_ele)
 {
 
   const DRT::Element* ele1 = arterydis_->gElement(ele1gid);
@@ -694,6 +658,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::AssembleDM(
 
   D_->Assemble(0, D_ele, lmrow1, lmrowowner1, lmrow1);
   M_->Assemble(0, M_ele, lmrow1, lmrowowner1, lmrow2);
+  kappaInv_->SumIntoGlobalValues(Kappa_ele.Length(),Kappa_ele.Values(),&lmrow1[0]);
 
   return;
 }
@@ -718,6 +683,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SumDMIntoGloba
     LINALG::PrintMatrixInMatlabFormat(filename_M, *(M_->EpetraMatrix()));
     dserror("exit");
   }
+
+  // invert
+  InvertKappa();
 
   // complete
   D_->Complete();
@@ -770,6 +738,26 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SumDMIntoGloba
 }
 
 /*----------------------------------------------------------------------*
+ | invert kappa vector                                 kremheller 08/18 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::InvertKappa()
+{
+
+  // invert (pay attention to protruding elements)
+  for (int i=0;i<arterydis_->DofRowMap()->NumMyElements();++i)
+  {
+    const int artdofgid = arterydis_->DofRowMap()->GID(i);
+    const double kappaVal = (*kappaInv_)[kappaInv_->Map().LID(artdofgid)];
+    if(fabs(kappaVal) > KAPPAINVTOL)
+      kappaInv_->ReplaceGlobalValue(artdofgid,0,1.0/kappaVal);
+    else
+      kappaInv_->ReplaceGlobalValue(artdofgid,0,0.0);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  | get element primary variable                        kremheller 05/18 |
  *----------------------------------------------------------------------*/
 std::vector<double> POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::GetElePhinp(
@@ -793,7 +781,7 @@ std::vector<double> POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased:
  | check for duplicate segment                         kremheller 05/18 |
  *----------------------------------------------------------------------*/
 bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::IsDuplicateSegment(
-    const std::vector<Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase> >& msht_elepairs,
+    const std::vector<Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase> >& coupl_elepairs,
     const Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>                possible_duplicate
     )
 {
@@ -806,14 +794,14 @@ bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::IsDuplicateSeg
   const int ele1gid = possible_duplicate->Ele1GID();
   int elepairID = -1;
 
-  return IsIdenticalSegment(msht_elepairs, ele1gid, eta_a, eta_b, elepairID);
+  return IsIdenticalSegment(coupl_elepairs, ele1gid, eta_a, eta_b, elepairID);
 }
 
 /*----------------------------------------------------------------------*
  | check for identical segment                         kremheller 05/18 |
  *----------------------------------------------------------------------*/
 bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::IsIdenticalSegment(
-    const std::vector<Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase> >& msht_elepairs,
+    const std::vector<Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase> >& coupl_elepairs,
     const int&    ele1gid,
     const double& etaA,
     const double& etaB,
@@ -821,12 +809,12 @@ bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::IsIdenticalSeg
     )
 {
 
-  for(unsigned i = 0; i < msht_elepairs.size(); i++)
+  for(unsigned i = 0; i < coupl_elepairs.size(); i++)
   {
     // first check if ele1-Gid is identical
-    if(ele1gid == msht_elepairs[i]->Ele1GID())
+    if(ele1gid == coupl_elepairs[i]->Ele1GID())
       // check if integration segment is the same
-      if(fabs(etaA-msht_elepairs[i]->EtaA()) < ETAABTOL && fabs(etaB-msht_elepairs[i]->EtaB()) < ETAABTOL)
+      if(fabs(etaA-coupl_elepairs[i]->EtaA()) < ETAABTOL && fabs(etaB-coupl_elepairs[i]->EtaB()) < ETAABTOL)
       {
         if(PROJOUTPUT)
           std::cout << "found duplicate integration segment" << std::endl;
@@ -1053,11 +1041,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::ApplyMeshMovem
     LINALG::Export( *disp, *dispnp_col );
     current_length_artery_->PutScalar(0.0);
     // apply movement on pairs and fill gid-to-seglength and current_length_artery_
-    for(unsigned i = 0; i < mesht_elepairs_.size(); i++)
+    for(unsigned i = 0; i < coupl_elepairs_.size(); i++)
     {
-      const double newsegmentlength = mesht_elepairs_[i]->ApplyMeshMovement(dispnp_col, contdis_);
-      const int artelegid = mesht_elepairs_[i]->Ele1GID();
-      const int segid = mesht_elepairs_[i]->GetSegmentID();
+      const double newsegmentlength = coupl_elepairs_[i]->ApplyMeshMovement(dispnp_col, contdis_);
+      const int artelegid = coupl_elepairs_[i]->Ele1GID();
+      const int segid = coupl_elepairs_[i]->GetSegmentID();
 
       gid_to_seglength_[artelegid][segid] = newsegmentlength;
 
@@ -1112,10 +1100,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::OutputSummary(
     std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << std::endl;
   }
   Comm().Barrier();
-  for(unsigned i = 0; i < mesht_elepairs_.size(); i++)
+  for(unsigned i = 0; i < coupl_elepairs_.size(); i++)
   {
-    std::cout << "Proc " << std::right << std::setw(2) << myrank_ << ": Artery-ele " << std::right << std::setw(5) << mesht_elepairs_[i]->Ele1GID() << ":   [" << std::left << std::setw(11) << mesht_elepairs_[i]->EtaA()
-       << "," << std::right << std::setw(11) << mesht_elepairs_[i]->EtaB() << "] <---> continuous-ele " << std::right << std::setw(7) << mesht_elepairs_[i]->Ele2GID() << std::endl;
+    std::cout << "Proc " << std::right << std::setw(2) << myrank_ << ": Artery-ele " << std::right << std::setw(5) << coupl_elepairs_[i]->Ele1GID() << ":   [" << std::left << std::setw(11) << coupl_elepairs_[i]->EtaA()
+       << "," << std::right << std::setw(11) << coupl_elepairs_[i]->EtaB() << "] <---> continuous-ele " << std::right << std::setw(7) << coupl_elepairs_[i]->Ele2GID() << std::endl;
   }
   Comm().Barrier();
   if(myrank_ == 0)
@@ -1135,20 +1123,20 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillFunctionAn
   // get the actual coupled DOFs  ----------------------------------------------------
   // 1) 1D artery discretization
   int    word1;
-  std::istringstream scale_art_stream(Teuchos::getNumericStringParameter(meshtyingparams_,"SCALEREAC_ART"));
+  std::istringstream scale_art_stream(Teuchos::getNumericStringParameter(couplingparams_,"SCALEREAC_ART"));
   while (scale_art_stream >> word1)
     scale_vec_[0].push_back((int)(word1));
 
-  std::istringstream funct_art_stream(Teuchos::getNumericStringParameter(meshtyingparams_,"REACFUNCT_ART"));
+  std::istringstream funct_art_stream(Teuchos::getNumericStringParameter(couplingparams_,"REACFUNCT_ART"));
   while (funct_art_stream >> word1)
     funct_vec_[0].push_back((int)(word1-1));
 
   // 2) 2D, 3D continuous field discretization
-  std::istringstream scale_cont_stream(Teuchos::getNumericStringParameter(meshtyingparams_,"SCALEREAC_CONT"));
+  std::istringstream scale_cont_stream(Teuchos::getNumericStringParameter(couplingparams_,"SCALEREAC_CONT"));
   while (scale_cont_stream >> word1)
     scale_vec_[1].push_back((int)(word1));
 
-  std::istringstream funct_cont_stream(Teuchos::getNumericStringParameter(meshtyingparams_,"REACFUNCT_CONT"));
+  std::istringstream funct_cont_stream(Teuchos::getNumericStringParameter(couplingparams_,"REACFUNCT_CONT"));
   while (funct_cont_stream >> word1)
     funct_vec_[1].push_back((int)(word1-1));
 

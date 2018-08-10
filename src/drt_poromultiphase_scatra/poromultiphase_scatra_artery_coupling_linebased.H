@@ -47,7 +47,7 @@ namespace POROMULTIPHASESCATRA
     PoroMultiPhaseScaTraArtCouplLineBased(
         Teuchos::RCP<DRT::Discretization>  arterydis,
         Teuchos::RCP<DRT::Discretization>  contdis,
-        const Teuchos::ParameterList&      meshtyingparams,
+        const Teuchos::ParameterList&      couplingparams,
         const std::string&                 condname,
         const std::string&                 artcoupleddofname,
         const std::string&                 contcoupleddofname
@@ -124,13 +124,10 @@ namespace POROMULTIPHASESCATRA
     double GetMaxNodalDistance(DRT::Element* ele, Teuchos::RCP<DRT::Discretization> dis);
 
     //! create interaction pairs
-    void CreateMeshTyingPairs();
+    void CreateCouplingPairs();
 
     //! pre-evaluate the pairs
-    void PreEvaluateMeshTyingPairs();
-
-    //! evaluate kappa
-    void EvaluateKappa();
+    void PreEvaluateCouplingPairs();
 
     //! fill the length not changed through deformation
     void FillUnaffectedArteryLength();
@@ -139,7 +136,7 @@ namespace POROMULTIPHASESCATRA
     void CreateGIDToSegmentVector();
 
     //! evaluate the pairs
-    void EvaluateMeshTyingPairs(
+    void EvaluateCouplingPairs(
         Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat,
         Teuchos::RCP<Epetra_Vector>                 rhs,
         Teuchos::RCP<LINALG::SparseMatrix>          sysmat_cont,
@@ -157,12 +154,13 @@ namespace POROMULTIPHASESCATRA
         Teuchos::RCP<LINALG::SparseMatrix>          sysmat_cont,
         Teuchos::RCP<LINALG::SparseMatrix>          sysmat_art);
 
-    //! assemble into D and M (MP case)
-    void AssembleDM(
+    //! assemble into D, M and kappa (MP case)
+    void AssembleDMKappa(
         const int& ele1gid,
         const int& ele2gid,
         const LINALG::SerialDenseMatrix& D_ele,
-        const LINALG::SerialDenseMatrix& M_ele);
+        const LINALG::SerialDenseMatrix& M_ele,
+        const LINALG::SerialDenseVector& Kappa_ele);
 
     //! sum D and M into global force and stiffness matrix
     void SumDMIntoGlobalForceStiff(
@@ -170,6 +168,9 @@ namespace POROMULTIPHASESCATRA
         Teuchos::RCP<Epetra_Vector>                 rhs,
         Teuchos::RCP<LINALG::SparseMatrix>          sysmat_cont,
         Teuchos::RCP<LINALG::SparseMatrix>          sysmat_art);
+
+    //! invert kappa
+    void InvertKappa();
 
     //! get the element phi
     std::vector<double> GetElePhinp(
@@ -180,13 +181,13 @@ namespace POROMULTIPHASESCATRA
 
     //! check for duplicates
     bool IsDuplicateSegment(
-        const std::vector<Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase> >& msht_elepairs,
+        const std::vector<Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase> >& coupl_elepairs,
         const Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>                possible_duplicate
         );
 
     //! check for duplicates
     bool IsIdenticalSegment(
-        const std::vector<Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase> >& msht_elepairs,
+        const std::vector<Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase> >& coupl_elepairs,
         const int&    ele1gid,
         const double& etaA,
         const double& etaB,
@@ -207,7 +208,7 @@ namespace POROMULTIPHASESCATRA
     void PrintOutCouplingMethod() const;
 
     //! the parameters
-    const Teuchos::ParameterList& meshtyingparams_;
+    const Teuchos::ParameterList& couplingparams_;
 
     //! have the managers been set?
     bool porofluidmanagersset_;
@@ -216,7 +217,7 @@ namespace POROMULTIPHASESCATRA
     std::map< int, std::set<int> > nearbyelepairs_;
 
    //! interacting pairs of artery and continuous-discretization elements
-   std::vector<Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase> > mesht_elepairs_;
+   std::vector<Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase> > coupl_elepairs_;
 
    //! phinp for continuous dis
    Teuchos::RCP<const Epetra_Vector> phinp_cont_;
