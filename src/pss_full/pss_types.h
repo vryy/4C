@@ -48,7 +48,6 @@ table. This table can be queried for those values quite easily.
 #include "../headers/standardtypes.h"
 #include "../headers/am.h"
 
-/*----------------------------------------------------------------------*/
 /*!
   \brief Types of the symbols we store in a map.
 
@@ -57,7 +56,6 @@ table. This table can be queried for those values quite easily.
   \author u.kue
   \date 08/04
 */
-/*----------------------------------------------------------------------*/
 typedef enum _SYMBOL_TYPES
 {
   sym_undefined,
@@ -68,7 +66,6 @@ typedef enum _SYMBOL_TYPES
 } SYMBOL_TYPES;
 
 
-/*----------------------------------------------------------------------*/
 /*!
   \brief Data struct of a map's symbol.
 
@@ -87,7 +84,6 @@ typedef enum _SYMBOL_TYPES
   \author u.kue
   \date 08/04
 */
-/*----------------------------------------------------------------------*/
 typedef struct _SYMBOL
 {
   /* put the union first to have the double value properly aligned */
@@ -102,7 +98,6 @@ typedef struct _SYMBOL
 } SYMBOL;
 
 
-/*----------------------------------------------------------------------*/
 /*!
   \brief A map node that contains a key and a symbol.
 
@@ -119,7 +114,6 @@ typedef struct _SYMBOL
   \author u.kue
   \date 08/04
 */
-/*----------------------------------------------------------------------*/
 typedef struct _MAP_NODE
 {
   CHAR* key;
@@ -130,7 +124,6 @@ typedef struct _MAP_NODE
 } MAP_NODE;
 
 
-/*----------------------------------------------------------------------*/
 /*!
   \brief The central map structure.
 
@@ -140,7 +133,6 @@ typedef struct _MAP_NODE
   \author u.kue
   \date 08/04
 */
-/*----------------------------------------------------------------------*/
 typedef struct _MAP
 {
   MAP_NODE root;
