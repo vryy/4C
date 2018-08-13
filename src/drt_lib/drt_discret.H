@@ -169,7 +169,10 @@ namespace DRT
     virtual inline const Epetra_Comm& Comm() const { return *comm_; }
 
     /*!
-    \brief Get communicator associated with this class
+    \brief Get output writer for this discretization
+
+    \warning This routine does not verify if a valid IO::DiscretizationWriter has
+    been set. If not, this will cause a segmentation fault.
     */
     virtual inline Teuchos::RCP<IO::DiscretizationWriter> Writer() const { return writer_; }
 
