@@ -127,7 +127,8 @@ void DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceGeneralFluidParameter(
   physicaltype_ = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params, "Physical Type");
   if ((physicaltype_ != INPAR::FLUID::incompressible)
       and (physicaltype_ != INPAR::FLUID::stokes)
-      and (physicaltype_ != INPAR::FLUID::oseen)) dserror("physical type is not supported for face stabilizations.");
+      and (physicaltype_ != INPAR::FLUID::oseen)
+      and (physicaltype_ != INPAR::FLUID::poro)) dserror("physical type is not supported for face stabilizations.");
 
   // get function number of given Oseen advective field if necessary
   if (physicaltype_==INPAR::FLUID::oseen)
@@ -265,6 +266,7 @@ bool DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceSpecificFluidXFEMParameter(
   // final decision which terms are assembled for the current face
   // set the values into the fldpara_intface_-list
 
+  EOS_whichtau_actual_ = EOS_whichtau_;
   if(face_type == INPAR::XFEM::face_type_std)
   {
     Set_Face_EOS_Pres        ((EOS_Pres()        == INPAR::FLUID::EOS_PRES_std_eos));
@@ -312,6 +314,18 @@ bool DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceSpecificFluidXFEMParameter(
     Set_Face_EOS_Conv_Cross  (false);
     Set_Face_EOS_Div_vel_jump(false);
     Set_Face_EOS_Div_div_jump(false);
+    Set_Face_GP_visc         (false);
+    Set_Face_GP_trans        (false);
+    Set_Face_GP_u_p_2nd      (false);
+  }
+  else if (face_type == INPAR::XFEM::face_type_porof)
+  {
+    EOS_whichtau_actual_ = INPAR::FLUID::EOS_tau_poroelast_fluid;
+    Set_Face_EOS_Pres        (true);
+    Set_Face_EOS_Conv_Stream (false);
+    Set_Face_EOS_Conv_Cross  (false);
+    Set_Face_EOS_Div_vel_jump(false);
+    Set_Face_EOS_Div_div_jump(true);
     Set_Face_GP_visc         (false);
     Set_Face_GP_trans        (false);
     Set_Face_GP_u_p_2nd      (false);

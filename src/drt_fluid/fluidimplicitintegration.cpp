@@ -63,6 +63,7 @@
 #include "../drt_mat/fluid_linear_density_viscosity.H"
 #include "../drt_mat/fluid_murnaghantait.H"
 #include "fluidimpedancecondition.H"
+#include "../drt_inpar/inpar_xfem.H" //for enums only
 
 // print error file for function EvaluateErrorComparedToAnalyticalSol()
 #include "../drt_io/io_control.H"
@@ -1814,7 +1815,11 @@ void FLD::FluidImplicitTimeInt::AssembleEdgeBasedMatandRHS()
        discret_->SetState("gridv", gridv_);
      }
 
-     facediscret_->EvaluateEdgeBased(sysmat_,residual_);
+     Teuchos::ParameterList params;
+     if (params_->sublist("RESIDUAL-BASED STABILIZATION").isParameter("POROUS-FLOW STABILIZATION"))
+       params.set<INPAR::XFEM::FaceType>("FaceType",INPAR::XFEM::face_type_porof);
+
+     facediscret_->EvaluateEdgeBased(sysmat_,residual_,params);
 
      discret_->ClearState();
   }

@@ -173,7 +173,8 @@ namespace INPAR
       face_type_std,
       face_type_ghost_penalty,
       face_type_ghost,
-      face_type_boundary_ghost_penalty
+      face_type_boundary_ghost_penalty,
+      face_type_porof
     };
 
 
@@ -260,7 +261,7 @@ namespace INPAR
       F_LB_Rhs, //Laplace Belatrami Term for traction jump master fluid sided (used only for two phase flow atm)
       X_LB_Rhs,  // ==||== slave fluid sided (used only for two phase flow atm)
       F_TJ_Rhs, //Traction jump term with given traction jump vector master fluid sided (used only for two phase flow atm)
-      X_TJ_Rhs, //Traction jump term with given traction jump vector slave fluid sided (used only for two phase flow atm)
+      X_TJ_Rhs //Traction jump term with given traction jump vector slave fluid sided (used only for two phase flow atm)
     };
 
     /// set the xfem parameters

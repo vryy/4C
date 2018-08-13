@@ -103,7 +103,8 @@ void DRT::DiscretizationFaces::CreateInternalFacesExtension(
  *----------------------------------------------------------------------*/
 void DRT::DiscretizationFaces::EvaluateEdgeBased(
         Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-        Teuchos::RCP<Epetra_Vector>          systemvector1
+        Teuchos::RCP<Epetra_Vector>          systemvector1,
+        Teuchos::ParameterList edgebasedparams
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR( "DRT::DiscretizationFaces::EvaluateEdgeBased" );
@@ -202,10 +203,6 @@ void DRT::DiscretizationFaces::EvaluateEdgeBased(
 
       // call the internal faces stabilization routine for the current side/surface
       TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: AssembleEdgeStabGhostPenalty" );
-
-
-      // call edge-based stabilization and ghost penalty
-      Teuchos::ParameterList edgebasedparams;
 
       // set action for elements
       edgebasedparams.set<int>("action",FLD::EOS_and_GhostPenalty_stabilization);

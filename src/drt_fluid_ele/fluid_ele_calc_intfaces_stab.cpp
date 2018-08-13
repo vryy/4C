@@ -39,6 +39,7 @@ Literature:
 #include "../drt_inpar/inpar_fluid.H"
 
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/fluidporo.H"
 #include "../drt_mat/matlist.H"
 
 #include "fluid_ele_calc_intfaces_stab.H"
@@ -1562,6 +1563,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GetEle
   //--------------------------------------------------
   //          GET MATERIAL DATA
   //--------------------------------------------------
+  reacoeff_= 0.0;
   if(material->MaterialType() == INPAR::MAT::m_fluid)
   {
 
@@ -1570,6 +1572,17 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GetEle
     kinvisc_ = actmat->Viscosity()/actmat->Density();
     density_ = actmat->Density();
 
+  }
+  else if (material->MaterialType() == INPAR::MAT::m_fluidporo)
+  {
+    const MAT::FluidPoro* actmat = static_cast<const MAT::FluidPoro*>(material.get());
+    // we need the kinematic viscosity (nu ~ m^2/s) here
+    kinvisc_ = actmat->Viscosity()/actmat->Density();
+    density_ = actmat->Density();
+
+
+    // calculate reaction coefficient
+    reacoeff_ = actmat->ComputeReactionCoeff()*dynamic_cast<MAT::PAR::FluidPoro*>(actmat->Parameter())->initialporosity_;
   }
   else if (material->MaterialType() == INPAR::MAT::m_matlist)
   {
@@ -3811,6 +3824,68 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Comput
     //-----------------------------------------------
     // pressure
     tau_p_ = gamma_p*p_hk_squared_*p_hk_ / regime_scaling;
+    }
+    break;
+    case INPAR::FLUID::EOS_tau_poroelast_fluid:
+    {
+      // this definition is derived form the following papers
+      // A. Massing, B. Schott, W.A. Wall
+      // "Cut finite element method for Oseen problem"
+      // E. Burman, P. Hansbo
+      // "Edge stabilization for the generalized Stokes problem: A continuous interior penalty method"
+      // Comput. Methods Appl. Mech. Engrg. 2006
+      // C. D'Angelo, P. Zunino
+      // "Numerical approximation with Nitsche's coupling of transient Stokes'/Darcy's flow problems applied to hemodynamics"
+      // Applied Numerical Mathematics 2012
+      // Braack et al. 2007
+      //"..."
+      // Burman hp
+
+      //-----------------------------------------------
+      // get the dimension and element-shape dependent stabilization scaling factors
+      // the polynomial degree is included directly in the computation of the respective stabilization scaling tau
+
+      if(nsd_ == 3)
+      {
+        // 3D pure tetrahedral element combinations
+        if (  (pdistype == DRT::Element::tet4  and ndistype == DRT::Element::tet4)
+           or (pdistype == DRT::Element::tet10 and ndistype == DRT::Element::tet10))
+        {
+          gamma_p= 0.01;
+        }
+        // 3D wedge/hexahedral elements
+        else gamma_p = 0.05;
+      }
+      else if(nsd_ == 2)
+      {
+        // 2D triangular elements combinations
+        if (   (pdistype == DRT::Element::tri3  and ndistype == DRT::Element::tri3)
+            or (pdistype == DRT::Element::tri6  and ndistype == DRT::Element::tri6))
+        {
+          gamma_p= 0.1;
+        }
+        // 2D quadrilateral elements
+        else gamma_p = 0.25;
+      }
+      else dserror("no valid dimension");
+
+      gamma_u   = gamma_p;
+      gamma_div = gamma_p*0.001;
+
+  //    double regime_scaling = reaccoeff;
+      double regime_scaling_wodt = (reacoeff_*p_hk_squared_/density_);
+
+      double regime_scaling_dt = regime_scaling_wodt;
+
+      regime_scaling_dt += p_hk_squared_ / (timefac * 12.0);
+
+      tau_u_ = 0.0;
+      //-----------------------------------------------
+      // divergence
+      tau_div_= gamma_div * regime_scaling_dt * p_hk_; // Braack et al. 2006
+      //-----------------------------------------------
+      // pressure
+      tau_p_ = gamma_p * p_hk_squared_*p_hk_ / regime_scaling_dt;
   }
   break;
   case INPAR::FLUID::EOS_tau_burman_fernandez:

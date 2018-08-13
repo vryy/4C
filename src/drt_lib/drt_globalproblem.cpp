@@ -1267,7 +1267,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   {
     structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
     fluiddis  = Teuchos::rcp(new DRT::DiscretizationXFEM("fluid"    ,reader.Comm()));
-    porofluiddis    = Teuchos::rcp(new DRT::Discretization("porofluid"      ,reader.Comm()));
+    porofluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("porofluid",reader.Comm()));
     aledis    = Teuchos::rcp(new DRT::Discretization("ale"      ,reader.Comm()));
 
     // create discretization writer - in constructor set into and owned by corresponding discret

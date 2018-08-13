@@ -384,7 +384,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
 
   // for poro problems, use POROUS-FLOW STABILIZATION
   if ((probtype == prb_poroelast or probtype == prb_poroscatra or probtype == prb_fpsi or probtype == prb_fps3i or probtype == prb_fpsi_xfem or probtype == prb_immersed_cell) and disname == "porofluid")
+  {
     fluidtimeparams->sublist("RESIDUAL-BASED STABILIZATION")    = fdyn.sublist("POROUS-FLOW STABILIZATION");
+    fluidtimeparams->sublist("RESIDUAL-BASED STABILIZATION").set<bool>("POROUS-FLOW STABILIZATION",true);
+  }
 
   // add some loma specific parameters
   // get also scatra stabilization sublist

@@ -133,7 +133,7 @@ public:
   //! Flag to define element length
   INPAR::FLUID::EOS_ElementLength EOS_element_length() const {return EOS_element_length_;};
   //! Flag to define tau for edge-based stabilization
-  INPAR::FLUID::EOS_TauType EOS_WhichTau() const {return EOS_whichtau_;};
+  INPAR::FLUID::EOS_TauType EOS_WhichTau() const {return EOS_whichtau_actual_;};
 
   bool Is_EOS_Pres() const {return EOS_pres_ != INPAR::FLUID::EOS_PRES_none;};
   //! Flag to (de)activate convective streamline stabilization
@@ -145,7 +145,7 @@ public:
   //! Flag to define element length
   bool Is_element_length() const {return EOS_element_length_;};
   //! Flag to define tau for edge-based stabilization
-  bool Is_WhichTau() const {return EOS_whichtau_;};
+  bool Is_WhichTau() const {return EOS_whichtau_actual_;};
 
   //! Flag to activate special least-squares condition for pseudo 2D examples where pressure level is determined via Krylov-projection
   bool presKrylov2Dz() const {return presKrylov2Dz_;};
@@ -250,6 +250,7 @@ protected:
 
   //! which EOS stabilization parameter definition
   INPAR::FLUID::EOS_TauType       EOS_whichtau_;
+  INPAR::FLUID::EOS_TauType       EOS_whichtau_actual_;
 
   //! which EOS characteristic element length definition
   INPAR::FLUID::EOS_ElementLength EOS_element_length_;
