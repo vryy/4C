@@ -209,7 +209,7 @@ void MORTAR::MortarElement::Pack(DRT::PackBuffer& data) const
   {
     // add normalfac
     AddtoPack(data, normalfac_);
-    // add normalfac
+    // add zero_sized_
     AddtoPack(data, zero_sized_);
     // knots
     int nr = mortarknots_.size();
@@ -263,7 +263,7 @@ void MORTAR::MortarElement::Unpack(const std::vector<char>& data)
   {
     // normalfac_
     normalfac_ = ExtractDouble(position, data);
-    // normalfac_
+    // zero_sized_
     zero_sized_ = ExtractInt(position, data);
     // knots
     int nr;
