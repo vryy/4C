@@ -137,6 +137,10 @@ namespace FSI
     //! extractor to communicate between full monolithic map and block maps of single fields
     const LINALG::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
 
+    //! extractor to communicate between full monolithic map and block maps of single fields
+    //! this extractor considere poro as one field
+    const LINALG::MultiMapExtractor& Extractor_MergedPoro() const { return blockrowdofmap_mergedporo_; }
+
     //@}
 
   private:
@@ -165,7 +169,8 @@ namespace FSI
 
     //! set full monolithic dof row map
     //! The block maps must be row maps by themselves and must not contain identical GIDs.
-    void SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps);
+    void SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps,
+        const std::vector<Teuchos::RCP<const Epetra_Map> >&  maps_mergedporo);
 
     //! Put two field vectors together to a monolithic vector
     //!
@@ -180,7 +185,7 @@ namespace FSI
     //! extract the two/three field vectors from a given composed vector
      /*!
        \param x  (i) composed vector that contains all field vectors
-       \param sx (o) structural displacements
+       \param sx (o) structural displacements and poro fluid velocity and pressure
        \param fx (o) fluid velocities and pressure
        \param ax (o) ale displacements
       */
@@ -325,6 +330,9 @@ namespace FSI
     //--------------------------------------------------------------------------//
     //! @name Global setup attributes
 
+    //! dofrowmap split in (field) blocks with merged poro (to avoid splitting and merging vector)
+    LINALG::MultiMapExtractor blockrowdofmap_mergedporo_;
+
     //! dofrowmap split in (field) blocks
     LINALG::MultiMapExtractor blockrowdofmap_;
 
@@ -399,11 +407,15 @@ namespace FSI
     double normstrrhsL2_;      //!< L2-norm of structural residual
     double normflvelrhsL2_;    //!< L2-norm of fluid velocity residual
     double normflpresrhsL2_;   //!< L2-norm of fluid pressure residual
+    double normpflvelrhsL2_;    //!< L2-norm of poro fluid velocity residual
+    double normpflpresrhsL2_;   //!< L2-norm of poro fluid pressure residual
 
     //--------------------------------------------------------------------------//
     double normstrincL2_;      //!< L2-norm of structural increment
     double normflvelincL2_;    //!< L2-norm of fluid velocity increment
     double normflpresincL2_;   //!< L2-norm of fluid pressure increment
+    double normpflvelincL2_;    //!< L2-norm of poro fluid velocity increment
+    double normpflpresincL2_;   //!< L2-norm of poro fluid pressure increment
     //--------------------------------------------------------------------------//
 
     //Inf-NORMS (split)
@@ -411,11 +423,15 @@ namespace FSI
     double normstrrhsInf_;     //!< Inf-norm of structural residual
     double normflvelrhsInf_;   //!< Inf-norm of fluid velocity residual
     double normflpresrhsInf_;  //!< Inf-norm of fluid pressure residual
+    double normpflvelrhsInf_;   //!< Inf-norm of poro fluid velocity residual
+    double normpflpresrhsInf_;  //!< Inf-norm of poro fluid pressure residual
 
     //--------------------------------------------------------------------------//
     double normstrincInf_;     //!< Inf-norm of structural increment
     double normflvelincInf_;   //!< Inf-norm of fluid velocity increment
     double normflpresincInf_;  //!< Inf-norm of fluid pressure increment
+    double normpflvelincInf_;   //!< Inf-norm of poro fluid velocity residual
+    double normpflpresincInf_;  //!< Inf-norm of poro fluid pressure residual
 
     //@}
 
