@@ -52,7 +52,7 @@ namespace UTILS
   class SpringDashpotNew
   {
    public:
-    // type of spring
+    //! Type of spring
     enum SpringType
     {
       xyz,            ///<
@@ -140,37 +140,79 @@ namespace UTILS
 
     Teuchos::RCP<DRT::Discretization> actdisc_;  ///< standard discretization
     Teuchos::RCP<DRT::Condition> spring_;        ///< spring dashpot condition
-    Teuchos::RCP<ADAPTER::CouplingNonLinMortar>
-        mortar_;  //< mortar interface in case of curnormal springs
 
-    // spring properties
-    const double stiff_tens_;  ///< spring stiffness when spring is in tension
-    const double stiff_comp_;  ///< spring stiffness when spring is in compression
-    const double offset_;      ///< spring offset
-    const double viscosity_;   ///< dashpot viscosity
-    const int coupling_;       ///< coupling id of reference DSURFACE
+    /// Mortar interface in case of curnormal springs
+    Teuchos::RCP<ADAPTER::CouplingNonLinMortar> mortar_;
 
-    // condition properties
-    const std::vector<int>* nodes_;  ///< condition nodes
-    std::map<int, double> area_;     ///< condition nodal area
+    //! @name Spring properties
+    //@{
 
-    // spring dashpot evaluation
-    std::map<int, double> gap0_;                  //< nodal gap in reference configuration
-    std::map<int, double> gap_;                   //< nodal gap in current configuration
-    std::map<int, double> gapdt_;                 //< nodal gap velocity in current configuration
-    std::map<int, std::map<int, double>> dgap_;   //< linearization of nodal gap
-    std::map<int, std::vector<double>> normals_;  //< nodal normal
-    std::map<int, std::vector<GEN::pairedvector<int, double>>>
-        dnormals_;  //< linearization of nodal normal
-    std::map<int, std::vector<double>>
-        springstress_;  //< nodal force applied by spring dashpot BC for output
-    std::map<int, std::vector<double>> offset_prestr_;  //< prestressing offset
+    //! Spring stiffness when spring is in tension
+    const double stiff_tens_;
 
-    // this is a pointer to the accumulated whole displacement vector of all last load steps
-    // has dimension of full problem
-    Teuchos::RCP<Epetra_Vector> offset_prestr_new_;  //< new prestressing offset
+    //! Spring stiffness when spring is in compression
+    const double stiff_comp_;
+
+    //! Spring offset
+    const double offset_;
+
+    //! Dashpot viscosity
+    const double viscosity_;
+
+    //! Coupling id of reference DSURFACE
+    const int coupling_;
+
+    //@}
+
+    //! @name Condition properties
+    //@{
+
+    //! Condition nodes
+    const std::vector<int>* nodes_;
+
+    //! Condition real area
+    std::map<int, double> area_;
+
+    //@}
+
+    //! @name Spring dashpot evaluation
+    //@{
+
+    //! Nodal gap in reference configuration
+    std::map<int, double> gap0_;
+
+    //! Nodal gap in current configuration
+    std::map<int, double> gap_;
+
+    //! Nodal gap velocity in current configuration
+    std::map<int, double> gapdt_;
+
+    //! Linearization of nodal gap
+    std::map<int, std::map<int, double>> dgap_;
+
+    //! Nodal normal
+    std::map<int, std::vector<double>> normals_;
+
+    //! Linearization of nodal normal
+    std::map<int, std::vector<GEN::pairedvector<int, double>>> dnormals_;
+
+    //! Nodal force applied by spring dashpot BC for output
+    std::map<int, std::vector<double>> springstress_;
+
+    //! Prestressing offset
+    std::map<int, std::vector<double>> offset_prestr_;
+
+    //@}
+
+    /*! \brief New prestressing offset
+     *
+     *  This is a pointer to the accumulated whole displacement vector of all last load steps
+     *  has dimension of full problem
+     */
+    Teuchos::RCP<Epetra_Vector> offset_prestr_new_;
 
    private:
+    //! Type of spring
     SpringType springtype_;
 
   };  // class
