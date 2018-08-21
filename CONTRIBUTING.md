@@ -157,6 +157,7 @@ move the issue card from **In Progress** to **Under Review** on our
       * source branch: `<branchName>`
       * target branch: `master`
    * On the new merge request creation page, select a merge request template from the dropdown menu to pre-populate the *Description* field with some text. Follow the instructions in that template to give as much information as you can such that the merge request can be reviewed and accepted as soon as it is practicable.
+   * To notify interested parties and possible reviewers about your merge request, @mention possible reviewers for this merge request as well as the maintainers of all the files you've touched in the *Interested Parties / Possible Reviewers* section of the *Description* field. 
 * Trigger the execution of the test suite manually:
    * Go to BACI's [CI/CD](https://gitlab.lrz.de/baci/baci/pipelines) page
    * Select your branch `<branchName>` and start pipeline

@@ -3,7 +3,7 @@ Provide a general summary of your changes in the Title above. Use the prefix "WI
 -->
 
 <!---
-Note that anything between these delimiters is a comment that will not appear in the pull request description once created.
+Note that anything between these delimiters is a comment that will not appear in the merge request description once created.
 -->
 
 <!---
@@ -11,7 +11,7 @@ Assignees:  If you know anyone who should likely handle bringing this merge requ
 -->
 
 <!---
-Labels:  Choose a label to indicate the type of issue, for instance, Bug Report, Documentation, Feature Request, etc.  Also choose either "Tests Passing", "Tests Failing", or "Not Tested" to indicate the state of this pull request's testing.
+Labels: Update the label of the issue(s) addressed by this merge request to "Under Review".
 -->
 
 ## Description
@@ -59,5 +59,5 @@ Go over all the following points, and put an `x` in all the boxes that apply. If
 
 ## Interested Parties / Possible Reviewers
 <!---
-If there's anyone you think should be looped in on this pull request, feel free to @mention them here.
+If there's anyone you think should be looped in on this pull request, feel free to @mention them here. In particular, @mention possible reviewers as well as the maintainers of all the files you've touched.
 -->
