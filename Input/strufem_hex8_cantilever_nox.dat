@@ -143,7 +143,7 @@ AZREUSE                         10
 AZDROP                          0.0
 IFPACKFILL                      1.0
 IFPACKGFILL                     0
-AZTOL                           1.0E-3
+AZTOL                           1.0E-5
 AZCONV                          AZ_r0
 AZITER                          1000
 AZSUB                           25
