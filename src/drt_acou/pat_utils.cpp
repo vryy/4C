@@ -1,17 +1,17 @@
 /*!----------------------------------------------------------------------
 \file pat_utils.cpp
 
-\brief ...to be done...
+\brief basic helper classes for image reconstruction
 
 \level 2
 
 <pre>
 \level 2
 
-\maintainer Svenja Schoeder
-            schoeder@lnm.mw.tum.de
+\maintainer Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15265
+            089 - 289-15235
 </pre>
 *----------------------------------------------------------------------*/
 
@@ -29,8 +29,12 @@
 #include "../drt_scatra_ele/scatra_ele_action.H"
 #include "../drt_io/io_control.H"
 
+bool TIMEWINDOW = false; //true;
+double TIMEWINDOW_BEGIN = 6.0;
+double TIMEWINDOW_END = 22.5;
+
 /*----------------------------------------------------------------------*/
-ACOU::PATMonitorManager::PATMonitorManager(Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Teuchos::ParameterList> params)
+ACOU::PATMonitorManager::PATMonitorManager(Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Teuchos::ParameterList> params, int illusetup)
 {
   discret_ = discret;
 
@@ -41,7 +45,16 @@ ACOU::PATMonitorManager::PATMonitorManager(Teuchos::RCP<DRT::Discretization> dis
   tomotype_ = DRT::INPUT::IntegralValue<INPAR::ACOU::TomographType>(params->sublist("PA IMAGE RECONSTRUCTION"),"TOMOGRAPHTYPE");
 
   // read monitor file
-  std::string monitorfilename = params->sublist("PA IMAGE RECONSTRUCTION").get<std::string>("MONITORFILE");
+  std::string monitorfilename;
+  if(illusetup==0)
+    monitorfilename = params->sublist("PA IMAGE RECONSTRUCTION").get<std::string>("MONITORFILE");
+  else if(illusetup == 1)
+    monitorfilename = "partial_illu_secondsetup.monitor"; //"partillu_coarse_fw_2ndillu.monitor";
+  else if(illusetup == 2)
+    monitorfilename = "partial_illu_thirdsetup.monitor";  //"partillu_coarse_fw_3rdillu.monitor";
+  else
+    dserror("PATMonitorManager only for three monitor files implemented");
+
   if (monitorfilename=="none.monitor")
     dserror("No monitor file provided but required for optoacoustic image reconstruction");
 
@@ -126,7 +139,7 @@ ACOU::PATMonitorManager::PATMonitorManager(Teuchos::RCP<DRT::Discretization> dis
   if(timesteps[0]>eps_) dserror("monitor file has to start at 0 but starts at %e",times_[0]);
   maxtime_ = std::min(params->get<int>("NUMSTEP")*dtacou_,params->get<double>("MAXTIME"));
   if(timesteps[nsteps-1]<maxtime_-eps_)
-    dserror("you only provide monitor values until %f but you want to simulate until %f.",timesteps[nsteps-1],maxtime_);
+    dserror("you only provide monitor values until %f but you want to simulate until %f. nsteps %f, nsteps x nmics %f",timesteps[nsteps-1],maxtime_,nsteps,nmics_*nsteps);
 
   // interpolate the read-in monitor values to the baci times
   for(unsigned int t=0; t<nsteps_; ++t)
@@ -134,7 +147,7 @@ ACOU::PATMonitorManager::PATMonitorManager(Teuchos::RCP<DRT::Discretization> dis
 
   if(dtacou_<timesteps[1]+eps_ && dtacou_>timesteps[1]-eps_) // no interpolation necessary, just copy data
   {
-    for(int i=0; i<mcurve.Length();++i)
+    for(unsigned int i=0; i<nmics_*nsteps_;++i)
       measurementvalues_[i] = mcurve[i];
   }
   else // time steps not equally sized
@@ -165,6 +178,7 @@ ACOU::PATMonitorManager::PATMonitorManager(Teuchos::RCP<DRT::Discretization> dis
     consider_impulse_response_ = false;
   if(consider_impulse_response_)
   {
+    //std::cout<<"consider_impulse_response_ "<<consider_impulse_response_<<std::endl;
     // get file name in which the impulse response is held
     std::string impulseresponsefilename = params->sublist("PA IMAGE RECONSTRUCTION").get<std::string>("IMPULSERESPONSE");
 
@@ -304,6 +318,9 @@ void ACOU::PATMonitorManager::SetCellIds(std::vector<int> cellidsin, std::vector
 /*----------------------------------------------------------------------*/
 void ACOU::PATMonitorManager::EvaluateMonitorValues(double time, const std::vector<double> &point, double &value)
 {
+  if(nmics_==0) // in computations with many processors this function might be called even though it is not relevant
+    return;
+
   time = maxtime_-time; // recalculate for adjoint evaluation
 
   // find closest microphone
@@ -311,57 +328,132 @@ void ACOU::PATMonitorManager::EvaluateMonitorValues(double time, const std::vect
   {
   case INPAR::ACOU::pat_circle: // every tomograph determines distances different, e.g. for this one the z-component does not matter
   {
-    double smallestdistance       = std::numeric_limits<double>::max();
-    double secondsmallestdistance = std::numeric_limits<double>::max();
-    unsigned int smallestdistindex       = -1;
-    unsigned int secondsmallestdistindex = -1;
-    for(unsigned int m=0; m<nmics_; ++m)
+    if(ndim_==2)
     {
-      double currentdistance = std::sqrt( (positions_[m*ndim_+0]-point[0])*(positions_[m*ndim_+0]-point[0])
-                                        + (positions_[m*ndim_+1]-point[1])*(positions_[m*ndim_+1]-point[1]));
-
-      if(currentdistance<smallestdistance)
+      double smallestdistance       = std::numeric_limits<double>::max();
+      double secondsmallestdistance = std::numeric_limits<double>::max();
+      unsigned int smallestdistindex       = -1;
+      unsigned int secondsmallestdistindex = -1;
+      for(unsigned int m=0; m<nmics_; ++m)
       {
-        smallestdistance = currentdistance;
-        smallestdistindex = m;
+        double currentdistance = std::sqrt( (positions_[m*ndim_+0]-point[0])*(positions_[m*ndim_+0]-point[0])
+                                          + (positions_[m*ndim_+1]-point[1])*(positions_[m*ndim_+1]-point[1]));
+
+        if(currentdistance<smallestdistance)
+        {
+          smallestdistance = currentdistance;
+          smallestdistindex = m;
+        }
       }
+      for(unsigned int m=0; m<nmics_; ++m)
+      {
+        double currentdistance = std::sqrt( (positions_[m*ndim_+0]-point[0])*(positions_[m*ndim_+0]-point[0])
+                                          + (positions_[m*ndim_+1]-point[1])*(positions_[m*ndim_+1]-point[1]));
+        if(currentdistance<secondsmallestdistance && currentdistance>smallestdistance-eps_ && m!=smallestdistindex)
+        {
+          secondsmallestdistance = currentdistance;
+          secondsmallestdistindex = m;
+        }
+      }
+
+      // interpolate the values in time and space
+      // first: evaluate in time
+      int index = std::round(time/dtacou_); // find time index
+
+      double value_time_smallestdistance = sourcevalues_[smallestdistindex+index*nmics_];
+      if(nmics_>1)
+      {
+        double value_time_secondsmallestdistance = sourcevalues_[secondsmallestdistindex+index*nmics_];
+
+        value_time_smallestdistance *= ngmics_/fullfacemeasure_;
+        value_time_secondsmallestdistance *= ngmics_/fullfacemeasure_;
+
+        // second: interpolate in space (this is tomograph specific!! this one does not care about z-component!)
+        value = secondsmallestdistance/(smallestdistance+secondsmallestdistance) * value_time_smallestdistance
+              + smallestdistance/(smallestdistance+secondsmallestdistance) * value_time_secondsmallestdistance;
+      }
+      else
+        value = value_time_smallestdistance * ngmics_ / fullfacemeasure_;
     }
-    for(unsigned int m=0; m<nmics_; ++m)
+    else if(ndim_==3)
     {
-      double currentdistance = std::sqrt( (positions_[m*ndim_+0]-point[0])*(positions_[m*ndim_+0]-point[0])
-                                        + (positions_[m*ndim_+1]-point[1])*(positions_[m*ndim_+1]-point[1]));
-      if(currentdistance<secondsmallestdistance && currentdistance>smallestdistance-eps_ && m!=smallestdistindex)
+      std::vector<double> alldistances(nmics_);
+
+      for(unsigned int m=0; m<nmics_; ++m)
       {
-        secondsmallestdistance = currentdistance;
-        secondsmallestdistindex = m;
+        alldistances[m] = std::sqrt( (positions_[m*ndim_+0]-point[0])*(positions_[m*ndim_+0]-point[0])
+                                   + (positions_[m*ndim_+1]-point[1])*(positions_[m*ndim_+1]-point[1])
+                                   + (positions_[m*ndim_+2]-point[2])*(positions_[m*ndim_+2]-point[2]));
       }
+
+      std::vector<unsigned int> indices(4);
+      double temp = std::numeric_limits<double>::max();
+      for(unsigned int m=0; m<nmics_; ++m)
+      {
+        double currentdistance = alldistances[m];
+        if(currentdistance<temp)
+        {
+          temp = currentdistance;
+          indices[0] = m;
+        }
+      }
+      temp = std::numeric_limits<double>::max();
+      for(unsigned int m=0; m<nmics_; ++m)
+      {
+        double currentdistance = alldistances[m];
+        if(currentdistance<temp && m!= indices[0])
+        {
+          temp = currentdistance;
+          indices[1] = m;
+        }
+      }
+      temp = std::numeric_limits<double>::max();
+      for(unsigned int m=0; m<nmics_; ++m)
+      {
+        double currentdistance = alldistances[m];
+        if(currentdistance<temp && m!= indices[0] && m!= indices[1])
+        {
+          temp = currentdistance;
+          indices[2] = m;
+        }
+      }
+      temp = std::numeric_limits<double>::max();
+      for(unsigned int m=0; m<nmics_; ++m)
+      {
+        double currentdistance = alldistances[m];
+        if(currentdistance<temp && m!= indices[0] && m!= indices[1] && m!= indices[2])
+        {
+          temp = currentdistance;
+          indices[3] = m;
+        }
+      }
+      std::vector<double> distances(4);
+      for(unsigned int i=0; i<4; ++i)
+        distances[i] = alldistances[indices[i]];
+      double sumdistances = distances[0]+distances[1]+distances[2]+distances[3];
+
+      // interpolate the values in time and space
+      // first: evaluate in time
+      int index = std::round(time/dtacou_); // find time index
+
+      std::vector<double> values_time(4);
+      for(unsigned int i=0; i<4; ++i)
+        values_time[i] = sourcevalues_[indices[i]+index*nmics_] * ngmics_ / fullfacemeasure_;
+      if(nmics_>1)
+      {
+        // second: interpolate in space (this is tomograph specific!! this one does not care about z-component!)
+        value = (sumdistances-distances[0])*values_time[0];
+        for(unsigned int i=1; i<4; ++i)
+          value += (sumdistances-distances[i])*values_time[i];
+        value /= (3.0*sumdistances);
+
+      }
+      else
+        value = sourcevalues_[indices[0]+index*nmics_] * ngmics_ / fullfacemeasure_;
     }
+    else
+      dserror("MonitorManager only implemented for 2D and 3D");
 
-    // interpolate the values in time and space
-    // first: evaluate in time
-    int index = std::round(time/dtacou_); // find time index
-
-    double value_time_smallestdistance = sourcevalues_[smallestdistindex+index*nmics_];
-    double value_time_secondsmallestdistance = sourcevalues_[secondsmallestdistindex+index*nmics_];
-
-    //value_time_smallestdistance /= facemeasures_[smallestdistindex];
-    //value_time_secondsmallestdistance /= facemeasures_[secondsmallestdistance];
-    value_time_smallestdistance *= ngmics_/fullfacemeasure_;
-    value_time_secondsmallestdistance *= ngmics_/fullfacemeasure_;
-
-    // second: interpolate in space (this is tomograph specific!! this one does not care about z-component!)
-    value = secondsmallestdistance/(smallestdistance+secondsmallestdistance) * value_time_smallestdistance
-          + smallestdistance/(smallestdistance+secondsmallestdistance) * value_time_secondsmallestdistance;
-
-
- /*   std::cout<<value_time_smallestdistance<<" "<<smallestdistance<<" "<<secondsmallestdistance<<" "<<value_time_secondsmallestdistance<<
-        " "<<" point "<<point[0]<<" "<<point[1]<<" closest value earlier "<<(simulatedvalues_[smallestdistindex+last_smaller_index*nmics_]-measurementvalues_[smallestdistindex+last_smaller_index*nmics_])
-                                                <<" closest value later  "<< (simulatedvalues_[smallestdistindex+first_larger_index*nmics_]-measurementvalues_[smallestdistindex+first_larger_index*nmics_])
-                                                <<" times "<<times_[last_smaller_index]<<" "<<times_[first_larger_index]<<" "<<time<<std::endl;
-    std::cout<<"second closest value earlier "<<(simulatedvalues_[secondsmallestdistindex+last_smaller_index*nmics_]-measurementvalues_[secondsmallestdistindex+last_smaller_index*nmics_])
-                                                <<" closest value later  "<< (simulatedvalues_[secondsmallestdistindex+first_larger_index*nmics_]-measurementvalues_[secondsmallestdistindex+first_larger_index*nmics_])
-                                                <<" times "<<times_[last_smaller_index]<<" "<<times_[first_larger_index]<<" "<<time<<" timequotient "<<(time-times_[last_smaller_index])/(times_[first_larger_index]-times_[last_smaller_index])<<std::endl;
-  */
   }
     break;
   default:
@@ -375,6 +467,7 @@ void ACOU::PATMonitorManager::EvaluateMonitorValues(double time, const std::vect
 void ACOU::PATMonitorManager::StoreForwardValues(const double time, const std::vector<double> values)
 {
   int index = std::round(time/dtacou_);
+
   for(unsigned int v=0; v<values.size(); ++v)
     simulatedvalues_[nmics_*index+v] = values[v];
   return;
@@ -395,6 +488,9 @@ void ACOU::PATMonitorManager::ConvolveSignals()
     // overwrite
     simulatedvalues_ = simulatedvalues_convolved;
 
+    for(unsigned int i=0; i<sourcevalues_.size(); ++i)
+      sourcevalues_[i] = 0.0;
+
     // adjoint convolution for source values
     for(unsigned m=0; m<nmics_; ++m)
       for(unsigned s=0; s<nsteps_; ++s)
@@ -404,8 +500,31 @@ void ACOU::PATMonitorManager::ConvolveSignals()
   else
   {
     // no convolution, only evaluation of source as difference
-    for(unsigned i=0; i<simulatedvalues_.size(); ++i)
-      sourcevalues_[i]= simulatedvalues_[i] - measurementvalues_[i];
+    if(TIMEWINDOW)
+    {
+      for(unsigned m=0; m<nmics_; ++m)
+        for(unsigned s=0; s<nsteps_; ++s)
+        {
+          unsigned i = nmics_*s+m;
+          if(s*dtacou_>=TIMEWINDOW_BEGIN && s*dtacou_<=TIMEWINDOW_END)
+            sourcevalues_[i]= simulatedvalues_[i] - measurementvalues_[i];
+          else
+          {
+            sourcevalues_[i]=0.0;
+            simulatedvalues_[i]=0.0;
+            measurementvalues_[i]=0.0;
+          }
+        }
+    }
+    else
+    {
+      for(unsigned i=0; i<simulatedvalues_.size(); ++i)
+      {
+        //if((simulatedvalues_[i]-measurementvalues_[i])>5e-3)
+        //  std::cout<<"i "<<i<<" simu "<<simulatedvalues_[i]<<" meas "<<measurementvalues_[i]<<" mic "<<i%nmics_<<" step "<<int(i/nmics_)<<" nmics "<<nmics_<<" at "<<positions_[(i%nmics_)*ndim_]<<" "<<positions_[(i%nmics_)*ndim_+1]<<" "<<positions_[(i%nmics_)*ndim_+2]<<std::endl;
+        sourcevalues_[i]= simulatedvalues_[i] - measurementvalues_[i];
+      }
+    }
   }
 
   return;
@@ -547,9 +666,9 @@ void ACOU::PATMonitorManager::WriteMonitorFileInvana(std::string filename)
 double ACOU::PATMonitorManager::EvaluateError()
 {
   double error = 0.0;
-  for(unsigned int m=0; m<simulatedvalues_.size(); ++m)
+  for(unsigned int m=0; m<sourcevalues_.size(); ++m)
     if(cellrowflag_[int(m%nmics_)])
-      error += (simulatedvalues_[m]-measurementvalues_[m]) * (simulatedvalues_[m]-measurementvalues_[m]);
+      error += sourcevalues_[m] * sourcevalues_[m];
 
 //  for(int t=0; t<times_.size(); ++t)
 //  {
@@ -834,7 +953,7 @@ bool ACOU::PATLineSearch::Run()
     }
   }
 
-  if(alpha_x_ != 0.0)
+  if(J_i_<J_0_) //if(alpha_x_ != 0.0)
   {
     if(!myrank_)
       std::cout<<"*************** line search succeeded"<<std::endl;
@@ -951,6 +1070,7 @@ double ACOU::PATLineSearch::Zoom(double alpha_lo, double alpha_hi, double J_alph
       {
         if(!myrank_)
           std::cout<<"*************** zoom condition 2 met, |\\/phi|_j "<<normgradphi_j<<", |\\/phi|_0 "<<normgradphi_0_<<std::endl;
+        J_i_ = J_j;
         return alpha_j;
       }
       else
@@ -975,7 +1095,10 @@ double ACOU::PATLineSearch::Zoom(double alpha_lo, double alpha_hi, double J_alph
   }
 
   if(J_j<J_0_) // line search does not fulfill both wolfe conditions but i would not call it fail anyhow
+  {
+    J_i_ = J_j;
     return alpha_j;
+  }
   else
    return 0.0;
 }

@@ -5,10 +5,10 @@
 <pre>
 \level 2
 
-\maintainer Svenja Schoeder
-            schoeder@lnm.mw.tum.de
+\maintainer Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15265
+            089 - 289-15235
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -40,7 +40,7 @@ class PATMonitorManager
 {
   public:
   //! standard constructor
-  PATMonitorManager(Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Teuchos::ParameterList> params);
+  PATMonitorManager(Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Teuchos::ParameterList> params, int illusetup = 0);
 
   void EvaluateMonitorValues(double time, const std::vector<double> &point, double &value);
 

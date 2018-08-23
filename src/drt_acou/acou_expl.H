@@ -5,10 +5,10 @@
 <pre>
 \level 2
 
-\maintainer Svenja Schoeder
-            schoeder@lnm.mw.tum.de
+\maintainer Luca Berardocco
+            berardoccoo@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15265
+            089 - 289-15244
 </pre>
 *----------------------------------------------------------------------*/
 
@@ -153,8 +153,10 @@ public:
   void SetInitialField(int startfuncno);
 
   /// set initial field by given light distribution
-  void SetInitialPhotoAcousticField(Teuchos::RCP<SCATRA::TimIntStationary> scatraalgo);
-
+  //void SetInitialPhotoAcousticField(Teuchos::RCP<SCATRA::TimIntStationary> scatraalgo);
+  void SetInitialPhotoAcousticField(Teuchos::RCP<Epetra_Vector> light,
+                                                        Teuchos::RCP<DRT::Discretization> scatradis,
+                                                        bool meshconform);
   /// run a complete simulation
   void Integrate();
 

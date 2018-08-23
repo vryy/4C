@@ -4558,7 +4558,7 @@ void FluidEleCalcXFEM<distype>::GetMaterialParametersVolumeCell( Teuchos::RCP<co
   //Get material from FluidEleCalc routine.
   // If non-constant density or viscosity wants to be calculated on the different sides. A review over how the scalar variables
   // are set at the surface should be made.
-  my::GetMaterialParams(material,my::evelaf_,my::escaaf_,my::escaam_,my::escabofoaf_,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol,densam,densaf,densn,viscaf,viscn,gamma);
+  my::GetMaterialParams(material,my::evelaf_,my::epreaf_,my::epream_,my::escaaf_,my::escaam_,my::escabofoaf_,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol,densam,densaf,densn,viscaf,viscn,gamma);
 
   return;
 

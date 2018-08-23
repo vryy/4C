@@ -3,9 +3,10 @@
 \file inpar_acou.H
 \level 2
 <pre>
-\maintainer Svenja Schoeder
-            schoeder@lnm.mw.tum.de
+\maintainer Luca Berardocco
+            berardoccoo@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
+            089 - 289-15244
 </pre>
 */
 
@@ -54,6 +55,7 @@ namespace INPAR
       pat_optisplit,  // for absorption and diffusion
       pat_optisplitacousplit, // for absorption diffusion, sos and density
       pat_optisplitacouident, // use optical parameters to identify acoustical ones (what julia fischer did in her master's thesis)
+      pat_optisplitacouidentsmart, // use optical parameters to identify acoustical ones but with advanced decisions for ambigious materials
       pat_reduction   // to reduce the computational domain on a ring (e.g. a mouse completely surrounded by lots of water)
     };
 

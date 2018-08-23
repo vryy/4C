@@ -322,6 +322,251 @@ private:
   double c1_;
 };
 
+/// special implementation for weakly compressible flow in a channel
+class ChannelWeaklyCompressibleFunction : public DRT::UTILS::Function
+{
+public:
+  /*!
+
+  \brief evaluate function at given position in space
+
+  \param index (i) index defines the function-component which will
+                   be evaluated
+  \param x     (i) The point in space in which the function will be
+                   evaluated
+
+  */
+  double Evaluate(const int index, const double* x, double t);
+
+  /*!
+
+  \brief evaluate first or second time derivative
+
+  \param index (i) index defines the function-component which will
+                   be evaluated
+  \param x     (i) The point in space in which the time derivative will
+                   be evaluated
+  \param t     (i) The point in time in which the time derivative will
+                   be evaluated
+  \param deg   (i) The degree of the time derivative
+
+  */
+  virtual std::vector<double> EvaluateTimeDerivative(const int      index, //< component of function
+                                                     const double*  x,     //< coordinates
+                                                     const double   t,     //< time
+                                                     const unsigned deg);  //< degree of maximal derivative
+
+  /*!
+
+  \brief Return the number of components of this spatial function
+  (This is a vector-valued function)
+
+  \return number of components (u,v,w,p)
+
+  */
+  virtual int NumberComponents()
+  {
+    return(3);
+  };
+
+};
+
+/// correction term for weakly compressible flow in a channel
+class CorrectionTermChannelWeaklyCompressibleFunction : public DRT::UTILS::Function
+{
+public:
+  /*!
+
+  \brief evaluate function at given position in space
+
+  \param index (i) index defines the function-component which will
+                   be evaluated
+  \param x     (i) The point in space in which the function will be
+                   evaluated
+
+  */
+  double Evaluate(const int index, const double* x, double t);
+
+  /*!
+
+  \brief evaluate first or second time derivative
+
+  \param index (i) index defines the function-component which will
+                   be evaluated
+  \param x     (i) The point in space in which the time derivative will
+                   be evaluated
+  \param t     (i) The point in time in which the time derivative will
+                   be evaluated
+  \param deg   (i) The degree of the time derivative
+
+  */
+  virtual std::vector<double> EvaluateTimeDerivative(const int      index, //< component of function
+                                                     const double*  x,     //< coordinates
+                                                     const double   t,     //< time
+                                                     const unsigned deg);  //< degree of maximal derivative
+
+  /*!
+
+  \brief Return the number of components of this spatial function
+  (This is a vector-valued function)
+
+  \return number of components (u,v,w,p)
+
+  */
+  virtual int NumberComponents()
+  {
+    return(1);
+  };
+
+};
+
+/// special implementation for weakly compressible flow in a channel with Fourier expansion up to 3rd order
+class ChannelWeaklyCompressibleFourier3Function : public DRT::UTILS::Function
+{
+public:
+  /*!
+
+  \brief evaluate function at given position in space
+
+  \param index (i) index defines the function-component which will
+                   be evaluated
+  \param x     (i) The point in space in which the function will be
+                   evaluated
+
+  */
+  double Evaluate(const int index, const double* x, double t);
+
+  /*!
+
+  \brief evaluate first or second time derivative
+
+  \param index (i) index defines the function-component which will
+                   be evaluated
+  \param x     (i) The point in space in which the time derivative will
+                   be evaluated
+  \param t     (i) The point in time in which the time derivative will
+                   be evaluated
+  \param deg   (i) The degree of the time derivative
+
+  */
+  virtual std::vector<double> EvaluateTimeDerivative(const int      index, //< component of function
+                                                     const double*  x,     //< coordinates
+                                                     const double   t,     //< time
+                                                     const unsigned deg);  //< degree of maximal derivative
+
+  /*!
+
+  \brief Return the number of components of this spatial function
+  (This is a vector-valued function)
+
+  \return number of components (u,v,w,p)
+
+  */
+  virtual int NumberComponents()
+  {
+    return(3);
+  };
+
+};
+
+/// body force for weakly compressible flow in a channel with Fourier expansion up to 3rd order
+class BodyForceChannelWeaklyCompressibleFourier3Function : public DRT::UTILS::Function
+{
+public:
+  /*!
+
+  \brief evaluate function at given position in space
+
+  \param index (i) index defines the function-component which will
+                   be evaluated
+  \param x     (i) The point in space in which the function will be
+                   evaluated
+
+  */
+  double Evaluate(const int index, const double* x, double t);
+
+  /*!
+
+  \brief evaluate first or second time derivative
+
+  \param index (i) index defines the function-component which will
+                   be evaluated
+  \param x     (i) The point in space in which the time derivative will
+                   be evaluated
+  \param t     (i) The point in time in which the time derivative will
+                   be evaluated
+  \param deg   (i) The degree of the time derivative
+
+  */
+  virtual std::vector<double> EvaluateTimeDerivative(const int      index, //< component of function
+                                                     const double*  x,     //< coordinates
+                                                     const double   t,     //< time
+                                                     const unsigned deg);  //< degree of maximal derivative
+
+  /*!
+
+  \brief Return the number of components of this spatial function
+  (This is a vector-valued function)
+
+  \return number of components (u,v,w,p)
+
+  */
+  virtual int NumberComponents()
+  {
+    return(1);
+  };
+
+};
+
+/// correction term for weakly compressible flow in a channel with Fourier expansion up to 3rd order
+class CorrectionTermChannelWeaklyCompressibleFourier3Function : public DRT::UTILS::Function
+{
+public:
+  /*!
+
+  \brief evaluate function at given position in space
+
+  \param index (i) index defines the function-component which will
+                   be evaluated
+  \param x     (i) The point in space in which the function will be
+                   evaluated
+
+  */
+  double Evaluate(const int index, const double* x, double t);
+
+  /*!
+
+  \brief evaluate first or second time derivative
+
+  \param index (i) index defines the function-component which will
+                   be evaluated
+  \param x     (i) The point in space in which the time derivative will
+                   be evaluated
+  \param t     (i) The point in time in which the time derivative will
+                   be evaluated
+  \param deg   (i) The degree of the time derivative
+
+  */
+  virtual std::vector<double> EvaluateTimeDerivative(const int      index, //< component of function
+                                                     const double*  x,     //< coordinates
+                                                     const double   t,     //< time
+                                                     const unsigned deg);  //< degree of maximal derivative
+
+  /*!
+
+  \brief Return the number of components of this spatial function
+  (This is a vector-valued function)
+
+  \return number of components (u,v,w,p)
+
+  */
+  virtual int NumberComponents()
+  {
+    return(1);
+  };
+
+};
+
 
 /// special implementation for 2d Kim-Moin flow
 class KimMoinFunction : public DRT::UTILS::Function

@@ -525,12 +525,12 @@ namespace
         (*pressure)[localIndex] += interpolVec(i+ndim*ele->NumNode());
         for (int d=0; d<ndim; ++d)
           (*tracevel)[d][localIndex] += interpolVec(i+(ndim+1+d)*ele->NumNode());
-
-        const int eleIndex = dis.ElementRowMap()->LID(ele->Id());
-        if (eleIndex >= 0)
-          (*cellPres)[eleIndex] += interpolVec((2*ndim+1)*ele->NumNode());
       }
+      const int eleIndex = dis.ElementRowMap()->LID(ele->Id());
+      if (eleIndex >= 0)
+        (*cellPres)[eleIndex] += interpolVec((2*ndim+1)*ele->NumNode());
     }
+
     for (int i=0; i<pressure->MyLength(); ++i) {
       (*pressure)[i] /= touchCount[i];
       for (int d=0; d<ndim; ++d)

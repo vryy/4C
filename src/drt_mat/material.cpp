@@ -92,6 +92,8 @@
 #include "beam_elasthyper_parameter.H"
 #include "crosslinkermat.H"
 #include "optimization_density.H"
+#include "fluid_murnaghantait.H"
+#include "fluid_linear_density_viscosity.H"
 #include "fluidporo.H"
 #include "fluidporo_singlephase.H"
 #include "fluidporo_multiphase.H"
@@ -154,6 +156,20 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::NewtonianFluid(curmat));
     MAT::PAR::NewtonianFluid* params = static_cast<MAT::PAR::NewtonianFluid*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_fluid_murnaghantait:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::MurnaghanTaitFluid(curmat));
+    MAT::PAR::MurnaghanTaitFluid* params = static_cast<MAT::PAR::MurnaghanTaitFluid*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_fluid_linear_density_viscosity:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::LinearDensityViscosity(curmat));
+    MAT::PAR::LinearDensityViscosity* params = static_cast<MAT::PAR::LinearDensityViscosity*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_stvenant:

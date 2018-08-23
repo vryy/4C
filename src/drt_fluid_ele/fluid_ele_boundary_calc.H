@@ -4,11 +4,13 @@
 
 \brief evaluation of fluid terms at integration points
 
+\level 1
+
 <pre>
-Maintainers: Ursula Rasthofer & Volker Gravemeier
-             {rasthofer,vgravem}@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15236/-245
+\maintainer Ursula Rasthofer & Volker Gravemeier
+            {rasthofer,vgravem}@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236/-245
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -357,7 +359,8 @@ protected:
   //! get density
   void GetDensity(Teuchos::RCP<const MAT::Material> material,      ///< reference pointer to material
                   const LINALG::Matrix<bdrynen_,1>& escaaf,        ///< scalar at time n+alpha_f / n+1
-                  const double                      thermpressaf); ///< thermodynamic pressure at time n+alpha_f / n+1
+                  const double                      thermpressaf,  ///< thermodynamic pressure at time n+alpha_f / n+1
+                  const LINALG::Matrix<bdrynen_,1>& epreaf);       ///< pressure at time n+alpha_f / n+1
 
 
   //! pointer to parameter list for time integration

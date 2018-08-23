@@ -19,6 +19,8 @@
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/fluid_murnaghantait.H"
+#include "../drt_mat/fluid_linear_density_viscosity.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -139,6 +141,558 @@ std::vector<double> FLD::BeltramiFunction::EvaluateTimeDerivative(const int     
     default:
       res[2] = 1.0;
     }
+  }
+
+  // error for higher derivatives
+  if (deg >= 3)
+  {
+    dserror("Higher time derivatives than second not supported!");
+  }
+
+  return res;
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double FLD::ChannelWeaklyCompressibleFunction::Evaluate(int index, const double* xp, double t)
+{
+  int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid_murnaghantait);
+  if (id==-1)
+  {
+  int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid_linear_density_viscosity);
+  if (id==-1) dserror("Fluid with Murnaghan-Tait equation of state or with "
+                      "linear law (pressure-dependent) for the density and the viscosity could not be found");
+  const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+  const MAT::PAR::LinearDensityViscosity* actmat = static_cast<const MAT::PAR::LinearDensityViscosity*>(mat);
+
+  double x = xp[0];
+  double y = xp[1];
+
+  double length = 10.0;
+  double radius = 1.0;
+  double aspect_ratio = radius/length;
+  double mean_velocity_channel_exit = 1.0;
+  double reference_viscosity = actmat->refviscosity_;
+  double reference_pressure = actmat->refpressure_;
+  double coefficient_density = actmat->coeffdensity_;
+  double coefficient_viscosity = actmat->coeffviscosity_;
+  double coefficient_density_adim = (3.0*coefficient_density*reference_viscosity*length*mean_velocity_channel_exit)/std::pow(radius,2.0);
+  double coefficient_viscosity_adim = (3.0*coefficient_viscosity*reference_viscosity*length*mean_velocity_channel_exit)/std::pow(radius,2.0);
+
+  // parameters according with the paper
+  double z = x / length;
+  double r = y / radius;
+  double alfa = aspect_ratio;
+  double beta = coefficient_viscosity_adim;
+  double epsilon = coefficient_density_adim;
+  double a = aspect_ratio;
+  double B = alfa*beta;
+  double lambda =     1.0                   +
+      (   1.0 /      5.0) * std::pow(B,2.0) +
+      (  11.0 /    175.0) * std::pow(B,4.0) +
+      ( 533.0 /  23625.0) * std::pow(B,6.0) +
+      (5231.0 / 606375.0) * std::pow(B,8.0);
+  double p_0_hat = std::cosh(alfa * beta * lambda * r) /
+      std::cosh(alfa * beta * lambda);
+  double u_r1_hat = -(11.0 * r * std::pow(1.0 - std::pow(r,2.0),2.0)) / 40.0 * std::pow(B,2.0) *
+      (
+                  1.0                                                                                                                                 +
+          ((    173.0 -       85.0 * std::pow(r,2.0))                                                              /       (770.0)) * std::pow(B,2.0) +
+          ((   5793.0 -     7190.0 * std::pow(r,2.0) +     3965.0 * std::pow(r,4.0))                               /     (83160.0)) * std::pow(B,4.0) +
+          ((7435723.0 - 16839665.0 * std::pow(r,2.0) + 16836225.0 * std::pow(r,4.0) - 5021275.0 * std::pow(r,6.0)) / (320166000.0)) * std::pow(B,6.0)
+      );
+  double u_r1_hat_first = (11.0*std::pow(B,2.0)*std::pow(std::pow(r,2.0)-1.0,2.0)*(((4099.0*std::pow(r,6.0))/261360.0-(32069.0*std::pow(r,4.0))/
+      609840.0+(3367933.0*std::pow(r,2.0))/64033200.0-7435723.0/320166000.0)*std::pow(B,6.0)+(-(793.0*std::pow(r,4.0))/
+      16632.0+(719.0*std::pow(r,2.0))/8316.0-1931.0/27720.0)*std::pow(B,4.0)+((17.0*std::pow(r,2.0))/154.0-173.0/770.0)*std::pow(B,2.0)-1.0))/40.0 +
+      (11.0*std::pow(B,2.0)*std::pow(r,2.0)*(std::pow(r,2.0)-1.0)*(((4099.0*std::pow(r,6.0))/261360.0-(32069.0*std::pow(r,4.0))/609840.0+
+      (3367933.0*std::pow(r,2.0))/64033200.0-7435723.0/320166000.0)*std::pow(B,6.0)+(-(793.0*std::pow(r,4.0))/16632.0+(719.0*
+      std::pow(r,2.0))/8316.0-1931.0/27720.0)*std::pow(B,4.0)+((17.0*std::pow(r,2.0))/154.0-173.0/770.0)*std::pow(B,2.0)-1.0))/10.0 +
+      (11.0*std::pow(B,2.0)*
+      r*std::pow(std::pow(r,2.0)-1.0,2.0)*(((4099.0*std::pow(r,5.0))/43560.0-(32069.0*std::pow(r,3.0))/152460.0+(3367933.0*r)/
+      32016600.0)*std::pow(B,6.0)+((719.0*r)/4158.0-(793.0*std::pow(r,3.0))/4158.0)*std::pow(B,4.0)+(17.0*r*std::pow(B,2.0))/77.0))/40.0;
+  double h = 1.0 / std::pow(beta,2.0) *
+      (
+                -1.0                                                                                                                                                         +
+          ((    11.0 -     10.0 * std::pow(r,2.0))                                                                                          /      (15.0)) * std::pow(B,2.0) +
+          ((   359.0 -    126.0 * std::pow(r,2.0) +      35.0 * std::pow(r,4.0))                                                            /    (1260.0)) * std::pow(B,4.0) +
+          (( 13761.0 -  17790.0 * std::pow(r,2.0) +   34125.0 * std::pow(r,4.0) -   17500.0 * std::pow(r,6.0))                              /   (94500.0)) * std::pow(B,6.0) +
+          ((225311.0 - 614515.0 * std::pow(r,2.0) + 1492755.0 * std::pow(r,4.0) - 1324785.0 * std::pow(r,6.0) + 394350.0 * std::pow(r,8.0)) / (3118500.0)) * std::pow(B,8.0)
+      );
+  double h_1 = 1.0 / std::pow(beta,2.0) *
+      (
+                -1.0                                                                                 +
+          ((    11.0 -     10.0)                                    /      (15.0)) * std::pow(B,2.0) +
+          ((   359.0 -    126.0 +      35.0)                        /    (1260.0)) * std::pow(B,4.0) +
+          (( 13761.0 -  17790.0 +   34125.0 -   17500.0)            /   (94500.0)) * std::pow(B,6.0) +
+          ((225311.0 - 614515.0 + 1492755.0 - 1324785.0 + 394350.0) / (3118500.0)) * std::pow(B,8.0)
+      );
+
+  LINALG::Matrix<2,1> u;
+  double              p;
+
+  u(0) = - (3.0 * std::log(p_0_hat)) / (std::pow(B,2.0) * lambda) +
+      epsilon *
+      (
+          (3 * (std::tanh(B * lambda) - r * std::tanh(B * lambda * r)) + std::log(std::pow(p_0_hat,3.0)) / (B * lambda)) /
+          (beta * (3 * std::tanh(B * lambda) - 2 * B)) +
+          (std::exp(lambda * beta * (1.0 - z))) / (lambda * beta) *
+          ((p_0_hat * std::log(std::pow(p_0_hat,3.0))) / (std::pow(B,2.0)) + u_r1_hat_first)
+      );
+  u(1) = epsilon * u_r1_hat * std::exp(lambda * beta * (1.0 - z));
+  p    = (p_0_hat * std::exp(lambda * beta * (1.0 - z)) - 1.0) / beta +
+      epsilon * p_0_hat * std::exp(lambda * beta * (1.0 - z)) *
+      (
+          (lambda * a * (1.0 - z + a * (r * std::tanh(B * lambda * r) - std::tanh(B * lambda)))) /
+          (3.0 * std::tanh(B * lambda) - 2.0 * B) +
+          p_0_hat * h * std::exp(lambda * beta * (1.0- z )) -
+          h_1
+      );
+
+  switch (index)
+  {
+  case 0:
+    return u(0)*mean_velocity_channel_exit;
+  case 1:
+    return u(1)*mean_velocity_channel_exit*radius/length;
+  case 2:
+    return p*(3.0*reference_viscosity*length*mean_velocity_channel_exit/std::pow(radius,2.0))+reference_pressure;
+
+  default:
+    return 1.0;
+  }
+  }
+  else
+  {
+    const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+    const MAT::PAR::MurnaghanTaitFluid* actmat = static_cast<const MAT::PAR::MurnaghanTaitFluid*>(mat);
+
+    if (actmat->matparameter_ != 1.0)
+    {
+      dserror("The analytical solution is only valid for material parameter = 1");
+    }
+
+    double x = xp[0];
+    double y = xp[1];
+
+    double length = 10.0;
+    double radius = 1.0;
+    double mean_velocity_channel_exit = 1.0;
+    double aspect_ratio = radius/length;
+    double viscosity = actmat->viscosity_;
+    double reference_pressure = actmat->refpressure_;
+    double reference_bulk_modulus = actmat->refbulkmodulus_;
+    double linear_coefficient_density = (3.0*(1.0/reference_bulk_modulus)*viscosity*length*mean_velocity_channel_exit)/std::pow(radius,2.0);
+
+    LINALG::Matrix<2,1> u;
+    double              p;
+    LINALG::Matrix<2,2> dervel;
+
+    u(0) = 3.0/2.0*(1.0-std::pow(y/radius,2.0))*(1.0+linear_coefficient_density*(x/length-1.0));
+    u(1) = 0.0;
+    p    = 1.0-x/length-linear_coefficient_density*(1.0/6.0*std::pow(aspect_ratio,2.0)*(std::pow(y/radius,2.0)-1.0)+1.0/2.0*std::pow(1.0-x/length,2.0));
+
+    dervel(0,0) = 3.0/2.0*(1.0-std::pow(y/radius,2.0))*linear_coefficient_density/length;
+    dervel(0,1) = -3.0/std::pow(radius,2.0)*y*(1.0+linear_coefficient_density*(x/length-1.0));
+    dervel(1,0) = 0.0;
+    dervel(1,1) = 0.0;
+
+    // scaling correctly the variables
+    u(0) = u(0)*mean_velocity_channel_exit;
+    u(1) = u(1)*mean_velocity_channel_exit*radius/length;
+    p    = p*(3.0*viscosity*length*mean_velocity_channel_exit/std::pow(radius,2.0))+reference_pressure;
+    dervel(0,0) = dervel(0,0)*mean_velocity_channel_exit;
+    dervel(0,1) = dervel(0,1)*mean_velocity_channel_exit;
+    dervel(1,0) = dervel(1,0)*mean_velocity_channel_exit*radius/length;
+    dervel(1,1) = dervel(1,1)*mean_velocity_channel_exit*radius/length;
+
+    switch (index)
+    {
+    case 0:
+      return u(0);
+    case 1:
+      return u(1);
+    case 2:
+      return p;
+    case 3:
+      return dervel(0,0);
+    case 4:
+      return dervel(0,1);
+    case 5:
+      return dervel(1,0);
+    case 6:
+      return dervel(1,1);
+
+    default:
+      return 1.0;
+    }
+  }
+
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::vector<double> FLD::ChannelWeaklyCompressibleFunction::EvaluateTimeDerivative(const int      index,
+                                                                                   const double*  xp,
+                                                                                   const double   t,
+                                                                                   const unsigned deg)
+{
+  // resulting vector holding
+  std::vector<double> res(deg+1);
+
+  // add the value at time t
+  res[0] = Evaluate(index,xp,t);
+
+  // add the 1st time derivative at time t
+  if (deg >= 1)
+  {
+    res[1] = 0.0;
+  }
+
+  // add the 2nd time derivative at time t
+  if (deg >= 2)
+  {
+    res[2] = 0.0;
+  }
+
+  // error for higher derivatives
+  if (deg >= 3)
+  {
+    dserror("Higher time derivatives than second not supported!");
+  }
+
+  return res;
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double FLD::CorrectionTermChannelWeaklyCompressibleFunction::Evaluate(int index, const double* xp, double t)
+{
+  int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid_murnaghantait);
+  if (id==-1)
+  {
+    int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid_linear_density_viscosity);
+    if (id==-1) dserror("Fluid with Murnaghan-Tait equation of state or with "
+        "linear law (pressure-dependent) for the density and the viscosity could not be found");
+    const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+    const MAT::PAR::LinearDensityViscosity* actmat = static_cast<const MAT::PAR::LinearDensityViscosity*>(mat);
+
+    double x = xp[0];
+    double y = xp[1];
+
+    if (actmat->coeffviscosity_ > 1.0e-5)
+    {
+      dserror("The correction term is only valid for viscosity coefficient -> 0");
+    }
+
+    double L = 10.0;
+    double R = 1.0;
+    double U = 1.0;
+    double mu = actmat->refviscosity_;
+    double K0 = 1.0 / actmat->coeffdensity_;
+
+    double Corrterm = ((162.0*std::pow(R,4.0)*std::pow(U,3.0)*std::pow(mu,2.0)*x-162.0*L*std::pow(R,4.0)*std::pow(U,3.0)*std::pow(mu,2.0)+162.0*L*std::pow(R,2.0)*std::pow(U,3.0)*
+        std::pow(mu,2.0)*std::pow(y,2.0)-162.0*std::pow(R,2.0)*std::pow(U,3.0)*std::pow(mu,2.0)*x*std::pow(y,2.0))*K0+243.0*std::pow(L,2.0)*std::pow(R,2.0)*std::pow(U,4.0)*std::pow(mu,3.0)-243.0*std::pow(L,2.0)*
+        std::pow(U,4.0)*std::pow(mu,3.0)*std::pow(y,2.0)-486.0*L*std::pow(R,2.0)*std::pow(U,4.0)*std::pow(mu,3.0)*x+486.0*L*std::pow(U,4.0)*std::pow(mu,3.0)*x*std::pow(y,2.0)-27.0*std::pow(R,4.0)*std::pow(U,4.0)*
+        std::pow(mu,3.0)+243.0*std::pow(R,2.0)*std::pow(U,4.0)*std::pow(mu,3.0)*std::pow(x,2.0)+54.0*std::pow(R,2.0)*std::pow(U,4.0)*std::pow(mu,3.0)*std::pow(y,2.0)-243.0*std::pow(U,4.0)*std::pow(mu,3.0)*std::pow(x,2.0)*std::pow(y,2.0)-
+        27.0*std::pow(U,4.0)*std::pow(mu,3.0)*std::pow(y,4.0))/(-4.0*std::pow(R,8.0)*std::pow(K0,3.0)+(12.0*std::pow(R,6.0)*U*mu*x-12.0*L*std::pow(R,6.0)*U*mu)*std::pow(K0,2.0)+
+        (18.0*std::pow(L,2.0)*std::pow(R,4.0)*std::pow(U,2.0)*std::pow(mu,2.0)-36.0*L*std::pow(R,4.0)*std::pow(U,2.0)*std::pow(mu,2.0)*x-6.0*std::pow(R,6.0)*std::pow(U,2.0)*std::pow(mu,2.0)+18.0*std::pow(R,4.0)*std::pow(U,2.0)*
+        std::pow(mu,2.0)*std::pow(x,2.0)+6.0*std::pow(R,4.0)*std::pow(U,2.0)*std::pow(mu,2.0)*std::pow(y,2.0))*K0);
+
+    switch (index)
+    {
+    case 0:
+      return Corrterm;
+
+    default:
+      return 0.0;
+    }
+
+  }
+  else
+  {
+    const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+    const MAT::PAR::MurnaghanTaitFluid* actmat = static_cast<const MAT::PAR::MurnaghanTaitFluid*>(mat);
+
+    if (actmat->matparameter_ != 1.0)
+    {
+      dserror("The correction term is only valid for material parameter = 1");
+    }
+
+    double x = xp[0];
+    double y = xp[1];
+
+    double L = 10.0;
+    double R = 1.0;
+    double U = 1.0;
+    double mu = actmat->viscosity_;
+    double K0 = actmat->refbulkmodulus_;
+
+    double Corrterm = ((162.0*std::pow(R,4.0)*std::pow(U,3.0)*std::pow(mu,2.0)*x-162.0*L*std::pow(R,4.0)*std::pow(U,3.0)*std::pow(mu,2.0)+162.0*L*std::pow(R,2.0)*std::pow(U,3.0)*
+        std::pow(mu,2.0)*std::pow(y,2.0)-162.0*std::pow(R,2.0)*std::pow(U,3.0)*std::pow(mu,2.0)*x*std::pow(y,2.0))*K0+243.0*std::pow(L,2.0)*std::pow(R,2.0)*std::pow(U,4.0)*std::pow(mu,3.0)-243.0*std::pow(L,2.0)*
+        std::pow(U,4.0)*std::pow(mu,3.0)*std::pow(y,2.0)-486.0*L*std::pow(R,2.0)*std::pow(U,4.0)*std::pow(mu,3.0)*x+486.0*L*std::pow(U,4.0)*std::pow(mu,3.0)*x*std::pow(y,2.0)-27.0*std::pow(R,4.0)*std::pow(U,4.0)*
+        std::pow(mu,3.0)+243.0*std::pow(R,2.0)*std::pow(U,4.0)*std::pow(mu,3.0)*std::pow(x,2.0)+54.0*std::pow(R,2.0)*std::pow(U,4.0)*std::pow(mu,3.0)*std::pow(y,2.0)-243.0*std::pow(U,4.0)*std::pow(mu,3.0)*std::pow(x,2.0)*std::pow(y,2.0)-
+        27.0*std::pow(U,4.0)*std::pow(mu,3.0)*std::pow(y,4.0))/(-4.0*std::pow(R,8.0)*std::pow(K0,3.0)+(12.0*std::pow(R,6.0)*U*mu*x-12.0*L*std::pow(R,6.0)*U*mu)*std::pow(K0,2.0)+
+        (18.0*std::pow(L,2.0)*std::pow(R,4.0)*std::pow(U,2.0)*std::pow(mu,2.0)-36.0*L*std::pow(R,4.0)*std::pow(U,2.0)*std::pow(mu,2.0)*x-6.0*std::pow(R,6.0)*std::pow(U,2.0)*std::pow(mu,2.0)+18.0*std::pow(R,4.0)*std::pow(U,2.0)*
+        std::pow(mu,2.0)*std::pow(x,2.0)+6.0*std::pow(R,4.0)*std::pow(U,2.0)*std::pow(mu,2.0)*std::pow(y,2.0))*K0);
+
+    switch (index)
+    {
+    case 0:
+      return Corrterm;
+
+    default:
+      return 0.0;
+    }
+  }
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::vector<double> FLD::CorrectionTermChannelWeaklyCompressibleFunction::EvaluateTimeDerivative(const int      index,
+                                                                                                 const double*  xp,
+                                                                                                 const double   t,
+                                                                                                 const unsigned deg)
+{
+  // resulting vector holding
+  std::vector<double> res(deg+1);
+
+  // add the value at time t
+  res[0] = Evaluate(index,xp,t);
+
+  // add the 1st time derivative at time t
+  if (deg >= 1)
+  {
+    res[1] = 0.0;
+  }
+
+  // add the 2nd time derivative at time t
+  if (deg >= 2)
+  {
+    res[2] = 0.0;
+  }
+
+  // error for higher derivatives
+  if (deg >= 3)
+  {
+    dserror("Higher time derivatives than second not supported!");
+  }
+
+  return res;
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double FLD::ChannelWeaklyCompressibleFourier3Function::Evaluate(int index, const double* xp, double t)
+{
+  int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid_murnaghantait);
+  const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+  const MAT::PAR::MurnaghanTaitFluid* actmat = static_cast<const MAT::PAR::MurnaghanTaitFluid*>(mat);
+
+  if (actmat->matparameter_ != 1.0)
+  {
+    dserror("The analytical solution is only valid for material parameter = 1");
+  }
+
+  double x = xp[0];
+  double y = xp[1];
+
+  double L = 10.0;
+  double R = 1.0;
+  double U = 1.0;
+  double mu = actmat->viscosity_;
+  double p0 = actmat->refpressure_;
+  double K0 = actmat->refbulkmodulus_;
+
+
+  LINALG::Matrix<2,1> u;
+  double              p;
+  LINALG::Matrix<2,2> dervel;
+
+  u(0) = (2.0*L*R*U-(3.0*(std::pow(L,2.0))*(std::pow(U,2.0))*mu)/(K0*R))/(2.0*L*R)+(3.0*U*std::cos((y*PI)/R)*(2.0*K0*(std::pow(R,2.0))-3.0*L*U*mu))/(K0*(std::pow(R,2.0))*(std::pow(PI,2.0)))-(3.0*U*std::cos((2.0*y*PI)/R)*(2.0*K0*(std::pow(R,2.0))-3.0*L*U*mu))/(4.0*K0*(std::pow(R,2.0))*(std::pow(PI,2.0)))+(U*std::cos((3.0*y*PI)/R)*(2.0*K0*(std::pow(R,2.0))-3.0*L*U*mu))/(3.0*K0*(std::pow(R,2.0))*(std::pow(PI,2.0)))-(3.0*L*(std::pow(U,2.0))*mu*std::sin((2.0*x*PI)/L))/(K0*(std::pow(R,2.0))*PI)-(3.0*L*(std::pow(U,2.0))*mu*std::sin((4.0*x*PI)/L))/(2.0*K0*(std::pow(R,2.0))*PI)-(L*(std::pow(U,2.0))*mu*std::sin((6.0*x*PI)/L))/(K0*(std::pow(R,2.0))*PI)-(18.0*L*(std::pow(U,2.0))*mu*std::cos((y*PI)/R)*std::sin((2.0*x*PI)/L))/(K0*(std::pow(R,2.0))*(std::pow(PI,3.0)))-(9.0*L*(std::pow(U,2.0))*mu*std::cos((y*PI)/R)*std::sin((4.0*x*PI)/L))/(K0*(std::pow(R,2.0))*(std::pow(PI,3.0)))+(9.0*L*(std::pow(U,2.0))*mu*std::cos((2.0*y*PI)/R)*std::sin((2.0*x*PI)/L))/(2.0*K0*(std::pow(R,2.0))*(std::pow(PI,3.0)))-(2.0*L*(std::pow(U,2.0))*mu*std::cos((3.0*y*PI)/R)*std::sin((2.0*x*PI)/L))/(K0*(std::pow(R,2.0))*(std::pow(PI,3.0)))-(6.0*L*(std::pow(U,2.0))*mu*std::cos((y*PI)/R)*std::sin((6.0*x*PI)/L))/(K0*(std::pow(R,2.0))*(std::pow(PI,3.0)))+(9.0*L*(std::pow(U,2.0))*mu*std::cos((2.0*y*PI)/R)*std::sin((4.0*x*PI)/L))/(4.0*K0*(std::pow(R,2.0))*(std::pow(PI,3.0)))-(L*(std::pow(U,2.0))*mu*std::cos((3.0*y*PI)/R)*std::sin((4.0*x*PI)/L))/(K0*(std::pow(R,2.0))*(std::pow(PI,3.0)))+(3.0*L*(std::pow(U,2.0))*mu*std::cos((2.0*y*PI)/R)*std::sin((6.0*x*PI)/L))/(2.0*K0*(std::pow(R,2.0))*(std::pow(PI,3.0)))-(2.0*L*(std::pow(U,2.0))*mu*std::cos((3.0*y*PI)/R)*std::sin((6.0*x*PI)/L))/(3.0*K0*(std::pow(R,2.0))*(std::pow(PI,3.0)));
+  u(1) = 0.0;
+  p    = (2.0*L*R*p0+(L*(std::pow(R,2.0))*(2.0*(std::pow(U,2.0))*(std::pow(mu,2.0))+3.0*K0*L*U*mu)-3.0*(std::pow(L,3.0))*(std::pow(U,2.0))*(std::pow(mu,2.0)))/(K0*(std::pow(R,3.0))))/(2.0*L*R)+(6.0*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((y*PI)/R))/(K0*(std::pow(R,2.0))*(std::pow(PI,2.0)))-(3.0*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((2.0*y*PI)/R))/(2.0*K0*(std::pow(R,2.0))*(std::pow(PI,2.0)))+(2.0*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((3.0*y*PI)/R))/(3.0*K0*(std::pow(R,2.0))*(std::pow(PI,2.0)))-(9.0*(std::pow(L,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((2.0*x*PI)/L))/(2.0*K0*(std::pow(R,4.0))*(std::pow(PI,2.0)))-(9.0*(std::pow(L,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((4.0*x*PI)/L))/(8.0*K0*(std::pow(R,4.0))*(std::pow(PI,2.0)))-((std::pow(L,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((6.0*x*PI)/L))/(2.0*K0*(std::pow(R,4.0))*(std::pow(PI,2.0)))+(3.0*L*U*mu*std::sin((2.0*x*PI)/L)*(2.0*K0*(std::pow(R,2.0))-3.0*L*U*mu))/(2.0*K0*(std::pow(R,4.0))*PI)+(3.0*L*U*mu*std::sin((4.0*x*PI)/L)*(2.0*K0*(std::pow(R,2.0))-3.0*L*U*mu))/(4.0*K0*(std::pow(R,4.0))*PI)+(L*U*mu*std::sin((6.0*x*PI)/L)*(2.0*K0*(std::pow(R,2.0))-3.0*L*U*mu))/(2.0*K0*(std::pow(R,4.0))*PI);
+
+  dervel(0,0) = (9.0*(std::pow(U,2.0))*mu*std::cos((2.0*x*PI)/L)*std::cos((2.0*y*PI)/R))/(K0*(std::pow(R,2.0))*(std::pow(PI,2.0)))-(6.0*(std::pow(U,2.0))*mu*std::cos((4.0*x*PI)/L))/(K0*(std::pow(R,2.0)))-(6.0*(std::pow(U,2.0))*mu*std::cos((6.0*x*PI)/L))/(K0*(std::pow(R,2.0)))-(36.0*(std::pow(U,2.0))*mu*std::cos((2.0*x*PI)/L)*std::cos((y*PI)/R))/(K0*(std::pow(R,2.0))*(std::pow(PI,2.0)))-(6.0*(std::pow(U,2.0))*mu*std::cos((2.0*x*PI)/L))/(K0*(std::pow(R,2.0)))-(36.0*(std::pow(U,2.0))*mu*std::cos((4.0*x*PI)/L)*std::cos((y*PI)/R))/(K0*(std::pow(R,2.0))*(std::pow(PI,2.0)))-(4.0*(std::pow(U,2.0))*mu*std::cos((2.0*x*PI)/L)*std::cos((3.0*y*PI)/R))/(K0*(std::pow(R,2.0))*(std::pow(PI,2.0)))+(9.0*(std::pow(U,2.0))*mu*std::cos((4.0*x*PI)/L)*std::cos((2.0*y*PI)/R))/(K0*(std::pow(R,2.0))*(std::pow(PI,2.0)))-(36.0*(std::pow(U,2.0))*mu*std::cos((6.0*x*PI)/L)*std::cos((y*PI)/R))/(K0*(std::pow(R,2.0))*(std::pow(PI,2.0)))-(4.0*(std::pow(U,2.0))*mu*std::cos((4.0*x*PI)/L)*std::cos((3.0*y*PI)/R))/(K0*(std::pow(R,2.0))*(std::pow(PI,2.0)))+(9.0*(std::pow(U,2.0))*mu*std::cos((6.0*x*PI)/L)*std::cos((2.0*y*PI)/R))/(K0*(std::pow(R,2.0))*(std::pow(PI,2.0)))-(4.0*(std::pow(U,2.0))*mu*std::cos((6.0*x*PI)/L)*std::cos((3.0*y*PI)/R))/(K0*(std::pow(R,2.0))*(std::pow(PI,2.0)));
+  dervel(0,1) = (3.0*U*std::sin((2.0*y*PI)/R)*(2.0*K0*(std::pow(R,2.0))-3.0*L*U*mu))/(2.0*K0*(std::pow(R,3.0))*PI)-(3.0*U*std::sin((y*PI)/R)*(2.0*K0*(std::pow(R,2.0))-3.0*L*U*mu))/(K0*(std::pow(R,3.0))*PI)-(U*std::sin((3.0*y*PI)/R)*(2.0*K0*(std::pow(R,2.0))-3.0*L*U*mu))/(K0*(std::pow(R,3.0))*PI)+(18.0*L*(std::pow(U,2.0))*mu*std::sin((2.0*x*PI)/L)*std::sin((y*PI)/R))/(K0*(std::pow(R,3.0))*(std::pow(PI,2.0)))-(9.0*L*(std::pow(U,2.0))*mu*std::sin((2.0*x*PI)/L)*std::sin((2.0*y*PI)/R))/(K0*(std::pow(R,3.0))*(std::pow(PI,2.0)))+(9.0*L*(std::pow(U,2.0))*mu*std::sin((4.0*x*PI)/L)*std::sin((y*PI)/R))/(K0*(std::pow(R,3.0))*(std::pow(PI,2.0)))+(6.0*L*(std::pow(U,2.0))*mu*std::sin((2.0*x*PI)/L)*std::sin((3.0*y*PI)/R))/(K0*(std::pow(R,3.0))*(std::pow(PI,2.0)))-(9.0*L*(std::pow(U,2.0))*mu*std::sin((4.0*x*PI)/L)*std::sin((2.0*y*PI)/R))/(2.0*K0*(std::pow(R,3.0))*(std::pow(PI,2.0)))+(6.0*L*(std::pow(U,2.0))*mu*std::sin((6.0*x*PI)/L)*std::sin((y*PI)/R))/(K0*(std::pow(R,3.0))*(std::pow(PI,2.0)))+(3.0*L*(std::pow(U,2.0))*mu*std::sin((4.0*x*PI)/L)*std::sin((3.0*y*PI)/R))/(K0*(std::pow(R,3.0))*(std::pow(PI,2.0)))-(3.0*L*(std::pow(U,2.0))*mu*std::sin((6.0*x*PI)/L)*std::sin((2.0*y*PI)/R))/(K0*(std::pow(R,3.0))*(std::pow(PI,2.0)))+(2.0*L*(std::pow(U,2.0))*mu*std::sin((6.0*x*PI)/L)*std::sin((3.0*y*PI)/R))/(K0*(std::pow(R,3.0))*(std::pow(PI,2.0)));
+  dervel(1,0) = 0.0;
+  dervel(1,1) = 0.0;
+
+  switch (index)
+  {
+  case 0:
+    return u(0);
+  case 1:
+    return u(1);
+  case 2:
+    return p;
+  case 3:
+    return dervel(0,0);
+  case 4:
+    return dervel(0,1);
+  case 5:
+    return dervel(1,0);
+  case 6:
+    return dervel(1,1);
+
+  default:
+    return 1.0;
+  }
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::vector<double> FLD::ChannelWeaklyCompressibleFourier3Function::EvaluateTimeDerivative(const int      index,
+                                                                                           const double*  xp,
+                                                                                           const double   t,
+                                                                                           const unsigned deg)
+{
+  // resulting vector holding
+  std::vector<double> res(deg+1);
+
+  // add the value at time t
+  res[0] = Evaluate(index,xp,t);
+
+  // add the 1st time derivative at time t
+  if (deg >= 1)
+  {
+    res[1] = 0.0;
+  }
+
+  // add the 2nd time derivative at time t
+  if (deg >= 2)
+  {
+    res[2] = 0.0;
+  }
+
+  // error for higher derivatives
+  if (deg >= 3)
+  {
+    dserror("Higher time derivatives than second not supported!");
+  }
+
+  return res;
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double FLD::CorrectionTermChannelWeaklyCompressibleFourier3Function::Evaluate(int index, const double* xp, double t)
+{
+  int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid_murnaghantait);
+  const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+  const MAT::PAR::MurnaghanTaitFluid* actmat = static_cast<const MAT::PAR::MurnaghanTaitFluid*>(mat);
+
+  if (actmat->matparameter_ != 1.0)
+  {
+    dserror("The correction term is only valid for material parameter = 1");
+  }
+
+  double x = xp[0];
+  double y = xp[1];
+
+  double L = 10.0;
+  double R = 1.0;
+  double U = 1.0;
+  double mu = actmat->viscosity_;
+  double K0 = actmat->refbulkmodulus_;
+
+  double Corrterm = ((216.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*(std::pow(PI,3.0))*std::sin((2.0*x*PI)/L)-648.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*(std::pow(PI,4.0))*std::cos((4.0*x*PI)/L)-648.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*(std::pow(PI,4.0))*std::cos((6.0*x*PI)/L)-648.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*(std::pow(PI,4.0))*std::cos((2.0*x*PI)/L)+108.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*(std::pow(PI,3.0))*std::sin((4.0*x*PI)/L)+72.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*(std::pow(PI,3.0))*std::sin((6.0*x*PI)/L)-3888.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*(std::pow(PI,2.0))*std::cos((2.0*x*PI)/L)*std::cos((y*PI)/R)+972.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*(std::pow(PI,2.0))*std::cos((2.0*x*PI)/L)*std::cos((2.0*y*PI)/R)-3888.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*(std::pow(PI,2.0))*std::cos((4.0*x*PI)/L)*std::cos((y*PI)/R)-432.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*(std::pow(PI,2.0))*std::cos((2.0*x*PI)/L)*std::cos((3.0*y*PI)/R)+972.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*(std::pow(PI,2.0))*std::cos((4.0*x*PI)/L)*std::cos((2.0*y*PI)/R)-3888.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*(std::pow(PI,2.0))*std::cos((6.0*x*PI)/L)*std::cos((y*PI)/R)-432.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*(std::pow(PI,2.0))*std::cos((4.0*x*PI)/L)*std::cos((3.0*y*PI)/R)+972.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*(std::pow(PI,2.0))*std::cos((6.0*x*PI)/L)*std::cos((2.0*y*PI)/R)-432.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*(std::pow(PI,2.0))*std::cos((6.0*x*PI)/L)*std::cos((3.0*y*PI)/R)-864.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*(std::pow(PI,3.0))*std::cos((2.0*x*PI)/L)*std::sin((2.0*x*PI)/L)-432.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*(std::pow(PI,3.0))*std::cos((2.0*x*PI)/L)*std::sin((4.0*x*PI)/L)-864.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*(std::pow(PI,3.0))*std::cos((4.0*x*PI)/L)*std::sin((2.0*x*PI)/L)-288.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*(std::pow(PI,3.0))*std::cos((2.0*x*PI)/L)*std::sin((6.0*x*PI)/L)-432.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*(std::pow(PI,3.0))*std::cos((4.0*x*PI)/L)*std::sin((4.0*x*PI)/L)-864.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*(std::pow(PI,3.0))*std::cos((6.0*x*PI)/L)*std::sin((2.0*x*PI)/L)-288.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*(std::pow(PI,3.0))*std::cos((4.0*x*PI)/L)*std::sin((6.0*x*PI)/L)-432.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*(std::pow(PI,3.0))*std::cos((6.0*x*PI)/L)*std::sin((4.0*x*PI)/L)-288.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*(std::pow(PI,3.0))*std::cos((6.0*x*PI)/L)*std::sin((6.0*x*PI)/L)+1296.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((y*PI)/R)*std::sin((2.0*x*PI)/L)+648.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((y*PI)/R)*std::sin((4.0*x*PI)/L)-324.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((2.0*y*PI)/R)*std::sin((2.0*x*PI)/L)+144.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((3.0*y*PI)/R)*std::sin((2.0*x*PI)/L)+432.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((y*PI)/R)*std::sin((6.0*x*PI)/L)-162.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((2.0*y*PI)/R)*std::sin((4.0*x*PI)/L)+72.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((3.0*y*PI)/R)*std::sin((4.0*x*PI)/L)-108.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((2.0*y*PI)/R)*std::sin((6.0*x*PI)/L)+48.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((3.0*y*PI)/R)*std::sin((6.0*x*PI)/L)-5184.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((2.0*x*PI)/L)*std::cos((y*PI)/R)*std::sin((2.0*x*PI)/L)-2592.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((2.0*x*PI)/L)*std::cos((y*PI)/R)*std::sin((4.0*x*PI)/L)+1296.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((2.0*x*PI)/L)*std::cos((2.0*y*PI)/R)*std::sin((2.0*x*PI)/L)-5184.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((4.0*x*PI)/L)*std::cos((y*PI)/R)*std::sin((2.0*x*PI)/L)-576.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((2.0*x*PI)/L)*std::cos((3.0*y*PI)/R)*std::sin((2.0*x*PI)/L)-1728.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((2.0*x*PI)/L)*std::cos((y*PI)/R)*std::sin((6.0*x*PI)/L)+648.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((2.0*x*PI)/L)*std::cos((2.0*y*PI)/R)*std::sin((4.0*x*PI)/L)-2592.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((4.0*x*PI)/L)*std::cos((y*PI)/R)*std::sin((4.0*x*PI)/L)+1296.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((4.0*x*PI)/L)*std::cos((2.0*y*PI)/R)*std::sin((2.0*x*PI)/L)-5184.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((6.0*x*PI)/L)*std::cos((y*PI)/R)*std::sin((2.0*x*PI)/L)-288.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((2.0*x*PI)/L)*std::cos((3.0*y*PI)/R)*std::sin((4.0*x*PI)/L)-576.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((4.0*x*PI)/L)*std::cos((3.0*y*PI)/R)*std::sin((2.0*x*PI)/L)+432.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((2.0*x*PI)/L)*std::cos((2.0*y*PI)/R)*std::sin((6.0*x*PI)/L)-1728.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((4.0*x*PI)/L)*std::cos((y*PI)/R)*std::sin((6.0*x*PI)/L)+648.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((4.0*x*PI)/L)*std::cos((2.0*y*PI)/R)*std::sin((4.0*x*PI)/L)-2592.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((6.0*x*PI)/L)*std::cos((y*PI)/R)*std::sin((4.0*x*PI)/L)+1296.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((6.0*x*PI)/L)*std::cos((2.0*y*PI)/R)*std::sin((2.0*x*PI)/L)-192.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((2.0*x*PI)/L)*std::cos((3.0*y*PI)/R)*std::sin((6.0*x*PI)/L)-288.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((4.0*x*PI)/L)*std::cos((3.0*y*PI)/R)*std::sin((4.0*x*PI)/L)-576.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((6.0*x*PI)/L)*std::cos((3.0*y*PI)/R)*std::sin((2.0*x*PI)/L)+432.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((4.0*x*PI)/L)*std::cos((2.0*y*PI)/R)*std::sin((6.0*x*PI)/L)-1728.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((6.0*x*PI)/L)*std::cos((y*PI)/R)*std::sin((6.0*x*PI)/L)+648.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((6.0*x*PI)/L)*std::cos((2.0*y*PI)/R)*std::sin((4.0*x*PI)/L)-192.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((4.0*x*PI)/L)*std::cos((3.0*y*PI)/R)*std::sin((6.0*x*PI)/L)-288.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((6.0*x*PI)/L)*std::cos((3.0*y*PI)/R)*std::sin((4.0*x*PI)/L)+432.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((6.0*x*PI)/L)*std::cos((2.0*y*PI)/R)*std::sin((6.0*x*PI)/L)-192.0*L*(std::pow(R,2.0))*(std::pow(U,3.0))*(std::pow(mu,2.0))*PI*std::cos((6.0*x*PI)/L)*std::cos((3.0*y*PI)/R)*std::sin((6.0*x*PI)/L))*K0+(3888.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos(std::pow(((2.0*x*PI)/L),2.0))*std::cos((y*PI)/R)-972.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos(std::pow(((2.0*x*PI)/L),2.0))*std::cos((2.0*y*PI)/R)+432.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos(std::pow(((2.0*x*PI)/L),2.0))*std::cos((3.0*y*PI)/R)+648.0*(std::pow(PI,2.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos(std::pow(((2.0*x*PI)/L),2.0))+4860.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::cos((4.0*x*PI)/L)*std::cos((y*PI)/R)-1215.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::cos((4.0*x*PI)/L)*std::cos((2.0*y*PI)/R)+540.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::cos((4.0*x*PI)/L)*std::cos((3.0*y*PI)/R)+810.0*(std::pow(PI,2.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::cos((4.0*x*PI)/L)+4320.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::cos((6.0*x*PI)/L)*std::cos((y*PI)/R)-1080.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::cos((6.0*x*PI)/L)*std::cos((2.0*y*PI)/R)+480.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::cos((6.0*x*PI)/L)*std::cos((3.0*y*PI)/R)+720.0*(std::pow(PI,2.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::cos((6.0*x*PI)/L)+7776.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::cos((y*PI)/R)*std::sin((2.0*x*PI)/L)+3888.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::cos((y*PI)/R)*std::sin((4.0*x*PI)/L)+2592.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::cos((y*PI)/R)*std::sin((6.0*x*PI)/L)+3240.0*(std::pow(PI,2.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::cos((y*PI)/R)-1944.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::cos((2.0*y*PI)/R)*std::sin((2.0*x*PI)/L)-972.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::cos((2.0*y*PI)/R)*std::sin((4.0*x*PI)/L)-648.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::cos((2.0*y*PI)/R)*std::sin((6.0*x*PI)/L)-810.0*(std::pow(PI,2.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::cos((2.0*y*PI)/R)+864.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::cos((3.0*y*PI)/R)*std::sin((2.0*x*PI)/L)+432.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::cos((3.0*y*PI)/R)*std::sin((4.0*x*PI)/L)+288.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::cos((3.0*y*PI)/R)*std::sin((6.0*x*PI)/L)+360.0*(std::pow(PI,2.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::cos((3.0*y*PI)/R)+1296.0*(std::pow(PI,3.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::sin((2.0*x*PI)/L)+648.0*(std::pow(PI,3.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::sin((4.0*x*PI)/L)+432.0*(std::pow(PI,3.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::sin((6.0*x*PI)/L)+540.0*(std::pow(PI,4.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)+972.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos(std::pow(((4.0*x*PI)/L),2.0))*std::cos((y*PI)/R)-243.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos(std::pow(((4.0*x*PI)/L),2.0))*std::cos((2.0*y*PI)/R)+108.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos(std::pow(((4.0*x*PI)/L),2.0))*std::cos((3.0*y*PI)/R)+162.0*(std::pow(PI,2.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos(std::pow(((4.0*x*PI)/L),2.0))+1404.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((4.0*x*PI)/L)*std::cos((6.0*x*PI)/L)*std::cos((y*PI)/R)-351.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((4.0*x*PI)/L)*std::cos((6.0*x*PI)/L)*std::cos((2.0*y*PI)/R)+156.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((4.0*x*PI)/L)*std::cos((6.0*x*PI)/L)*std::cos((3.0*y*PI)/R)+234.0*(std::pow(PI,2.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((4.0*x*PI)/L)*std::cos((6.0*x*PI)/L)+7776.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((4.0*x*PI)/L)*std::cos((y*PI)/R)*std::sin((2.0*x*PI)/L)+3888.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((4.0*x*PI)/L)*std::cos((y*PI)/R)*std::sin((4.0*x*PI)/L)+2592.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((4.0*x*PI)/L)*std::cos((y*PI)/R)*std::sin((6.0*x*PI)/L)+3240.0*(std::pow(PI,2.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((4.0*x*PI)/L)*std::cos((y*PI)/R)-1944.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((4.0*x*PI)/L)*std::cos((2.0*y*PI)/R)*std::sin((2.0*x*PI)/L)-972.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((4.0*x*PI)/L)*std::cos((2.0*y*PI)/R)*std::sin((4.0*x*PI)/L)-648.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((4.0*x*PI)/L)*std::cos((2.0*y*PI)/R)*std::sin((6.0*x*PI)/L)-810.0*(std::pow(PI,2.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((4.0*x*PI)/L)*std::cos((2.0*y*PI)/R)+864.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((4.0*x*PI)/L)*std::cos((3.0*y*PI)/R)*std::sin((2.0*x*PI)/L)+432.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((4.0*x*PI)/L)*std::cos((3.0*y*PI)/R)*std::sin((4.0*x*PI)/L)+288.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((4.0*x*PI)/L)*std::cos((3.0*y*PI)/R)*std::sin((6.0*x*PI)/L)+360.0*(std::pow(PI,2.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((4.0*x*PI)/L)*std::cos((3.0*y*PI)/R)+1296.0*(std::pow(PI,3.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((4.0*x*PI)/L)*std::sin((2.0*x*PI)/L)+648.0*(std::pow(PI,3.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((4.0*x*PI)/L)*std::sin((4.0*x*PI)/L)+432.0*(std::pow(PI,3.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((4.0*x*PI)/L)*std::sin((6.0*x*PI)/L)+540.0*(std::pow(PI,4.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((4.0*x*PI)/L)+432.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos(std::pow(((6.0*x*PI)/L),2.0))*std::cos((y*PI)/R)-108.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos(std::pow(((6.0*x*PI)/L),2.0))*std::cos((2.0*y*PI)/R)+48.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos(std::pow(((6.0*x*PI)/L),2.0))*std::cos((3.0*y*PI)/R)+72.0*(std::pow(PI,2.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos(std::pow(((6.0*x*PI)/L),2.0))+7776.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((6.0*x*PI)/L)*std::cos((y*PI)/R)*std::sin((2.0*x*PI)/L)+3888.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((6.0*x*PI)/L)*std::cos((y*PI)/R)*std::sin((4.0*x*PI)/L)+2592.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((6.0*x*PI)/L)*std::cos((y*PI)/R)*std::sin((6.0*x*PI)/L)+3240.0*(std::pow(PI,2.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((6.0*x*PI)/L)*std::cos((y*PI)/R)-1944.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((6.0*x*PI)/L)*std::cos((2.0*y*PI)/R)*std::sin((2.0*x*PI)/L)-972.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((6.0*x*PI)/L)*std::cos((2.0*y*PI)/R)*std::sin((4.0*x*PI)/L)-648.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((6.0*x*PI)/L)*std::cos((2.0*y*PI)/R)*std::sin((6.0*x*PI)/L)-810.0*(std::pow(PI,2.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((6.0*x*PI)/L)*std::cos((2.0*y*PI)/R)+864.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((6.0*x*PI)/L)*std::cos((3.0*y*PI)/R)*std::sin((2.0*x*PI)/L)+432.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((6.0*x*PI)/L)*std::cos((3.0*y*PI)/R)*std::sin((4.0*x*PI)/L)+288.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((6.0*x*PI)/L)*std::cos((3.0*y*PI)/R)*std::sin((6.0*x*PI)/L)+360.0*(std::pow(PI,2.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((6.0*x*PI)/L)*std::cos((3.0*y*PI)/R)+1296.0*(std::pow(PI,3.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((6.0*x*PI)/L)*std::sin((2.0*x*PI)/L)+648.0*(std::pow(PI,3.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((6.0*x*PI)/L)*std::sin((4.0*x*PI)/L)+432.0*(std::pow(PI,3.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((6.0*x*PI)/L)*std::sin((6.0*x*PI)/L)+540.0*(std::pow(PI,4.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((6.0*x*PI)/L)-3888.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((y*PI)/R)*std::sin(std::pow(((2.0*x*PI)/L),2.0))-3888.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((y*PI)/R)*std::sin((2.0*x*PI)/L)*std::sin((4.0*x*PI)/L)-2592.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((y*PI)/R)*std::sin((2.0*x*PI)/L)*std::sin((6.0*x*PI)/L)-1944.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((y*PI)/R)*std::sin((2.0*x*PI)/L)-972.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((y*PI)/R)*std::sin(std::pow(((4.0*x*PI)/L),2.0))-1296.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((y*PI)/R)*std::sin((4.0*x*PI)/L)*std::sin((6.0*x*PI)/L)-972.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((y*PI)/R)*std::sin((4.0*x*PI)/L)-432.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((y*PI)/R)*std::sin(std::pow(((6.0*x*PI)/L),2.0))-648.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((y*PI)/R)*std::sin((6.0*x*PI)/L)+972.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*y*PI)/R)*std::sin(std::pow(((2.0*x*PI)/L),2.0))+972.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*y*PI)/R)*std::sin((2.0*x*PI)/L)*std::sin((4.0*x*PI)/L)+648.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*y*PI)/R)*std::sin((2.0*x*PI)/L)*std::sin((6.0*x*PI)/L)+486.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*y*PI)/R)*std::sin((2.0*x*PI)/L)+243.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*y*PI)/R)*std::sin(std::pow(((4.0*x*PI)/L),2.0))+324.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*y*PI)/R)*std::sin((4.0*x*PI)/L)*std::sin((6.0*x*PI)/L)+243.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*y*PI)/R)*std::sin((4.0*x*PI)/L)+108.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*y*PI)/R)*std::sin(std::pow(((6.0*x*PI)/L),2.0))+162.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*y*PI)/R)*std::sin((6.0*x*PI)/L)-432.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((3.0*y*PI)/R)*std::sin(std::pow(((2.0*x*PI)/L),2.0))-432.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((3.0*y*PI)/R)*std::sin((2.0*x*PI)/L)*std::sin((4.0*x*PI)/L)-288.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((3.0*y*PI)/R)*std::sin((2.0*x*PI)/L)*std::sin((6.0*x*PI)/L)-216.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((3.0*y*PI)/R)*std::sin((2.0*x*PI)/L)-108.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((3.0*y*PI)/R)*std::sin(std::pow(((4.0*x*PI)/L),2.0))-144.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((3.0*y*PI)/R)*std::sin((4.0*x*PI)/L)*std::sin((6.0*x*PI)/L)-108.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((3.0*y*PI)/R)*std::sin((4.0*x*PI)/L)-48.0*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((3.0*y*PI)/R)*std::sin(std::pow(((6.0*x*PI)/L),2.0))-72.0*PI*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((3.0*y*PI)/R)*std::sin((6.0*x*PI)/L)-648.0*(std::pow(PI,2.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::sin(std::pow(((2.0*x*PI)/L),2.0))-648.0*(std::pow(PI,2.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::sin((2.0*x*PI)/L)*std::sin((4.0*x*PI)/L)-432.0*(std::pow(PI,2.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::sin((2.0*x*PI)/L)*std::sin((6.0*x*PI)/L)-324.0*(std::pow(PI,3.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::sin((2.0*x*PI)/L)-162.0*(std::pow(PI,2.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::sin(std::pow(((4.0*x*PI)/L),2.0))-216.0*(std::pow(PI,2.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::sin((4.0*x*PI)/L)*std::sin((6.0*x*PI)/L)-162.0*(std::pow(PI,3.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::sin((4.0*x*PI)/L)-72.0*(std::pow(PI,2.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::sin(std::pow(((6.0*x*PI)/L),2.0))-108.0*(std::pow(PI,3.0))*(std::pow(L,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::sin((6.0*x*PI)/L)-5184.0*(std::pow(R,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::cos(std::pow(((y*PI)/R),2.0))+2592.0*(std::pow(R,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::cos((y*PI)/R)*std::cos((2.0*y*PI)/R)-1152.0*(std::pow(R,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::cos((y*PI)/R)*std::cos((3.0*y*PI)/R)-1728.0*(std::pow(PI,2.0))*(std::pow(R,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::cos((y*PI)/R)-324.0*(std::pow(R,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::cos(std::pow(((2.0*y*PI)/R),2.0))+288.0*(std::pow(R,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::cos((2.0*y*PI)/R)*std::cos((3.0*y*PI)/R)+432.0*(std::pow(PI,2.0))*(std::pow(R,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::cos((2.0*y*PI)/R)-64.0*(std::pow(R,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::cos(std::pow(((3.0*y*PI)/R),2.0))-192.0*(std::pow(PI,2.0))*(std::pow(R,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)*std::cos((3.0*y*PI)/R)-144.0*(std::pow(PI,4.0))*(std::pow(R,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((2.0*x*PI)/L)-5184.0*(std::pow(R,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((4.0*x*PI)/L)*std::cos(std::pow(((y*PI)/R),2.0))+2592.0*(std::pow(R,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((4.0*x*PI)/L)*std::cos((y*PI)/R)*std::cos((2.0*y*PI)/R)-1152.0*(std::pow(R,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((4.0*x*PI)/L)*std::cos((y*PI)/R)*std::cos((3.0*y*PI)/R)-1728.0*(std::pow(PI,2.0))*(std::pow(R,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((4.0*x*PI)/L)*std::cos((y*PI)/R)-324.0*(std::pow(R,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((4.0*x*PI)/L)*std::cos(std::pow(((2.0*y*PI)/R),2.0))+288.0*(std::pow(R,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((4.0*x*PI)/L)*std::cos((2.0*y*PI)/R)*std::cos((3.0*y*PI)/R)+432.0*(std::pow(PI,2.0))*(std::pow(R,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((4.0*x*PI)/L)*std::cos((2.0*y*PI)/R)-64.0*(std::pow(R,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((4.0*x*PI)/L)*std::cos(std::pow(((3.0*y*PI)/R),2.0))-192.0*(std::pow(PI,2.0))*(std::pow(R,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((4.0*x*PI)/L)*std::cos((3.0*y*PI)/R)-144.0*(std::pow(PI,4.0))*(std::pow(R,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((4.0*x*PI)/L)-5184.0*(std::pow(R,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((6.0*x*PI)/L)*std::cos(std::pow(((y*PI)/R),2.0))+2592.0*(std::pow(R,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((6.0*x*PI)/L)*std::cos((y*PI)/R)*std::cos((2.0*y*PI)/R)-1152.0*(std::pow(R,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((6.0*x*PI)/L)*std::cos((y*PI)/R)*std::cos((3.0*y*PI)/R)-1728.0*(std::pow(PI,2.0))*(std::pow(R,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((6.0*x*PI)/L)*std::cos((y*PI)/R)-324.0*(std::pow(R,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((6.0*x*PI)/L)*std::cos(std::pow(((2.0*y*PI)/R),2.0))+288.0*(std::pow(R,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((6.0*x*PI)/L)*std::cos((2.0*y*PI)/R)*std::cos((3.0*y*PI)/R)+432.0*(std::pow(PI,2.0))*(std::pow(R,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((6.0*x*PI)/L)*std::cos((2.0*y*PI)/R)-64.0*(std::pow(R,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((6.0*x*PI)/L)*std::cos(std::pow(((3.0*y*PI)/R),2.0))-192.0*(std::pow(PI,2.0))*(std::pow(R,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((6.0*x*PI)/L)*std::cos((3.0*y*PI)/R)-144.0*(std::pow(PI,4.0))*(std::pow(R,2.0))*(std::pow(U,4.0))*(std::pow(mu,3.0))*std::cos((6.0*x*PI)/L)))/((24.0*(std::pow(R,6.0))*(std::pow(PI,4.0)))*(std::pow(K0,3.0))+(36.0*L*(std::pow(R,4.0))*U*mu*(std::pow(PI,4.0))+72.0*L*(std::pow(R,4.0))*U*mu*(std::pow(PI,3.0))*std::sin((2.0*x*PI)/L)+36.0*L*(std::pow(R,4.0))*U*mu*(std::pow(PI,3.0))*std::sin((4.0*x*PI)/L)+24.0*L*(std::pow(R,4.0))*U*mu*(std::pow(PI,3.0))*std::sin((6.0*x*PI)/L))*(std::pow(K0,2.0))+(24.0*(std::pow(R,4.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*(std::pow(PI,4.0))+144.0*(std::pow(R,4.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*(std::pow(PI,2.0))*std::cos((y*PI)/R)-36.0*(std::pow(R,4.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*(std::pow(PI,2.0))*std::cos((2.0*y*PI)/R)+16.0*(std::pow(R,4.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*(std::pow(PI,2.0))*std::cos((3.0*y*PI)/R)-36.0*(std::pow(L,2.0))*(std::pow(R,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*(std::pow(PI,4.0))-108.0*(std::pow(L,2.0))*(std::pow(R,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*(std::pow(PI,2.0))*std::cos((2.0*x*PI)/L)-27.0*(std::pow(L,2.0))*(std::pow(R,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*(std::pow(PI,2.0))*std::cos((4.0*x*PI)/L)-12.0*(std::pow(L,2.0))*(std::pow(R,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*(std::pow(PI,2.0))*std::cos((6.0*x*PI)/L)-108.0*(std::pow(L,2.0))*(std::pow(R,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*(std::pow(PI,3.0))*std::sin((2.0*x*PI)/L)-54.0*(std::pow(L,2.0))*(std::pow(R,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*(std::pow(PI,3.0))*std::sin((4.0*x*PI)/L)-36.0*(std::pow(L,2.0))*(std::pow(R,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*(std::pow(PI,3.0))*std::sin((6.0*x*PI)/L))*K0);
+
+  switch (index)
+  {
+  case 0:
+    return Corrterm;
+
+  default:
+    return 0.0;
+  }
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::vector<double> FLD::CorrectionTermChannelWeaklyCompressibleFourier3Function::EvaluateTimeDerivative(const int      index,
+                                                                                                         const double*  xp,
+                                                                                                         const double   t,
+                                                                                                         const unsigned deg)
+{
+  // resulting vector holding
+  std::vector<double> res(deg+1);
+
+  // add the value at time t
+  res[0] = Evaluate(index,xp,t);
+
+  // add the 1st time derivative at time t
+  if (deg >= 1)
+  {
+    res[1] = 0.0;
+  }
+
+  // add the 2nd time derivative at time t
+  if (deg >= 2)
+  {
+    res[2] = 0.0;
+  }
+
+  // error for higher derivatives
+  if (deg >= 3)
+  {
+    dserror("Higher time derivatives than second not supported!");
+  }
+
+  return res;
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double FLD::BodyForceChannelWeaklyCompressibleFourier3Function::Evaluate(int index, const double* xp, double t)
+{
+  int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid_murnaghantait);
+  const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+  const MAT::PAR::MurnaghanTaitFluid* actmat = static_cast<const MAT::PAR::MurnaghanTaitFluid*>(mat);
+
+  if (actmat->matparameter_ != 1.0)
+  {
+    dserror("The body force is only valid for material parameter = 1");
+  }
+
+  double x = xp[0];
+  double y = xp[1];
+
+  double L = 10.0;
+  double R = 1.0;
+  double U = 1.0;
+  double mu = actmat->viscosity_;
+  double K0 = actmat->refbulkmodulus_;
+
+  LINALG::Matrix<2,1> BodyForce;
+
+  BodyForce(0) = ((36.0*L*(std::pow(R,2.0))*U*mu*PI*std::cos((2.0*x*PI)/L)+36.0*L*(std::pow(R,2.0))*U*mu*PI*std::cos((4.0*x*PI)/L)+36.0*L*(std::pow(R,2.0))*U*mu*PI*std::cos((6.0*x*PI)/L)+36.0*L*(std::pow(R,2.0))*U*mu*PI*std::cos((y*PI)/R)-36.0*L*(std::pow(R,2.0))*U*mu*PI*std::cos((2.0*y*PI)/R)+36.0*L*(std::pow(R,2.0))*U*mu*PI*std::cos((3.0*y*PI)/R))*K0+(54.0*(std::pow(L,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::sin((2.0*x*PI)/L)+27.0*(std::pow(L,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::sin((4.0*x*PI)/L)+18.0*(std::pow(L,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::sin((6.0*x*PI)/L)-108.0*(std::pow(L,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((y*PI)/R)*std::sin((2.0*x*PI)/L)-54.0*(std::pow(L,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((y*PI)/R)*std::sin((4.0*x*PI)/L)+108.0*(std::pow(L,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((2.0*y*PI)/R)*std::sin((2.0*x*PI)/L)-108.0*(std::pow(L,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((3.0*y*PI)/R)*std::sin((2.0*x*PI)/L)-36.0*(std::pow(L,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((y*PI)/R)*std::sin((6.0*x*PI)/L)+54.0*(std::pow(L,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((2.0*y*PI)/R)*std::sin((4.0*x*PI)/L)-54.0*(std::pow(L,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((3.0*y*PI)/R)*std::sin((4.0*x*PI)/L)+36.0*(std::pow(L,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((2.0*y*PI)/R)*std::sin((6.0*x*PI)/L)-36.0*(std::pow(L,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((3.0*y*PI)/R)*std::sin((6.0*x*PI)/L)-54.0*(std::pow(L,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*PI*std::cos((2.0*x*PI)/L)-54.0*(std::pow(L,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*PI*std::cos((4.0*x*PI)/L)-54.0*(std::pow(L,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*PI*std::cos((6.0*x*PI)/L)-576.0*(std::pow(R,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((y*PI)/R)*std::sin((2.0*x*PI)/L)-1152.0*(std::pow(R,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((y*PI)/R)*std::sin((4.0*x*PI)/L)+144.0*(std::pow(R,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((2.0*y*PI)/R)*std::sin((2.0*x*PI)/L)-64.0*(std::pow(R,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((3.0*y*PI)/R)*std::sin((2.0*x*PI)/L)-1728.0*(std::pow(R,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((y*PI)/R)*std::sin((6.0*x*PI)/L)+288.0*(std::pow(R,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((2.0*y*PI)/R)*std::sin((4.0*x*PI)/L)-128.0*(std::pow(R,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((3.0*y*PI)/R)*std::sin((4.0*x*PI)/L)+432.0*(std::pow(R,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((2.0*y*PI)/R)*std::sin((6.0*x*PI)/L)-192.0*(std::pow(R,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((3.0*y*PI)/R)*std::sin((6.0*x*PI)/L)-54.0*(std::pow(L,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*PI*std::cos((y*PI)/R)+54.0*(std::pow(L,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*PI*std::cos((2.0*y*PI)/R)-54.0*(std::pow(L,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*PI*std::cos((3.0*y*PI)/R)-96.0*(std::pow(R,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*(std::pow(PI,2.0))*std::sin((2.0*x*PI)/L)-192.0*(std::pow(R,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*(std::pow(PI,2.0))*std::sin((4.0*x*PI)/L)-288.0*(std::pow(R,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*(std::pow(PI,2.0))*std::sin((6.0*x*PI)/L)))/((6.0*L*(std::pow(R,4.0))*PI)*K0);
+  BodyForce(1) = (3.0*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::sin((2.0*y*PI)/R)-6.0*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::sin((y*PI)/R)-2.0*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::sin((3.0*y*PI)/R)-12.0*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((2.0*x*PI)/L)*std::sin((y*PI)/R)+6.0*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((2.0*x*PI)/L)*std::sin((2.0*y*PI)/R)-12.0*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((4.0*x*PI)/L)*std::sin((y*PI)/R)-4.0*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((2.0*x*PI)/L)*std::sin((3.0*y*PI)/R)+6.0*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((4.0*x*PI)/L)*std::sin((2.0*y*PI)/R)-12.0*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((6.0*x*PI)/L)*std::sin((y*PI)/R)-4.0*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((4.0*x*PI)/L)*std::sin((3.0*y*PI)/R)+6.0*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((6.0*x*PI)/L)*std::sin((2.0*y*PI)/R)-4.0*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((6.0*x*PI)/L)*std::sin((3.0*y*PI)/R))/(((std::pow(R,3.0))*PI)*K0);
+
+  switch (index)
+  {
+  case 0:
+    return BodyForce(0);
+  case 1:
+    return BodyForce(1);
+
+  default:
+    return 0.0;
+  }
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::vector<double> FLD::BodyForceChannelWeaklyCompressibleFourier3Function::EvaluateTimeDerivative(const int      index,
+                                                                                                    const double*  xp,
+                                                                                                    const double   t,
+                                                                                                    const unsigned deg)
+{
+  // resulting vector holding
+  std::vector<double> res(deg+1);
+
+  // add the value at time t
+  res[0] = Evaluate(index,xp,t);
+
+  // add the 1st time derivative at time t
+  if (deg >= 1)
+  {
+    res[1] = 0.0;
+  }
+
+  // add the 2nd time derivative at time t
+  if (deg >= 2)
+  {
+    res[2] = 0.0;
   }
 
   // error for higher derivatives

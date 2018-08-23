@@ -1,9 +1,17 @@
-/*!----------------------------------------------------------------------
-\file fluid_ele_HDG.cpp
-\brief
+/*----------------------------------------------------------------------*/
+/*!
+\file fluid_ele_hdg.cpp
 
+\brief Fluid element based on the HDG method
 
-*----------------------------------------------------------------------*/
+\level 1
+
+\maintainer Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
+*/
+/*----------------------------------------------------------------------*/
 
 #include "fluid_ele_hdg.H"
 #include "fluid_ele_action.H"
@@ -332,6 +340,7 @@ int DRT::ELEMENTS::FluidHDG::Evaluate(Teuchos::ParameterList&            params,
   case FLD::project_hdg_force_on_dof_vec_for_hit:
   case FLD::project_hdg_initial_field_for_hit:
   case FLD::project_fluid_field:
+  case FLD::calc_pressure_average:
   {
     return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)->EvaluateService(this,
                                                                                         params,

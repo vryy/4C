@@ -5,10 +5,11 @@
        example input line:
        MAT 1 MAT_AcousticSol DENSITY 1000.0 C 1500.0 VISC 1.0
 <pre>
-Maintainer: Svenja Schoeder
-            schoeder@lnm.mw.tum.de
+\level 2
+\maintainer Luca Berardocco
+            berardoccoo@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15271
+            089 - 289-15244
 </pre>
  */
 /*----------------------------------------------------------------------*/

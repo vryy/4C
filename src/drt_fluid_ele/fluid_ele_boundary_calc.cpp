@@ -45,6 +45,8 @@
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/permeablefluid.H"
 #include "../drt_mat/sutherland.H"
+#include "../drt_mat/fluid_linear_density_viscosity.H"
+#include "../drt_mat/fluid_murnaghantait.H"
 #include "../drt_mat/tempdepwater.H"
 #include "../drt_mat/cavitationfluid.H"
 #include "../drt_mat/yoghurt.H"
@@ -392,6 +394,35 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(
 
   // get thermodynamic pressure at n+1/n+alpha_F
   const double thermpressaf = params.get<double>("thermpress at n+alpha_F/n+1",0.0);
+
+  // extract pressure values from global velocity/pressure vector
+  // (needed for weakly_compressible fluids)
+  LINALG::Matrix<bdrynen_,1> epreaf(true);
+  DRT::ELEMENTS::FluidEleParameter* fldpara = DRT::ELEMENTS::FluidEleParameterStd::Instance();
+  if (fldpara->PhysicalType() == INPAR::FLUID::weakly_compressible or
+      fldpara->PhysicalType() == INPAR::FLUID::weakly_compressible_stokes)
+  {
+    Teuchos::RCP<const Epetra_Vector> velaf = discretization.GetState("velaf");
+    if (velaf == Teuchos::null) dserror("Cannot get state vector 'velaf'");
+
+    // extract local values from global vector
+    std::vector<double> myvelaf(lm.size());
+    DRT::UTILS::ExtractMyValues(*velaf,myvelaf,lm);
+
+    // insert pressure into element array
+    for (int inode=0;inode<bdrynen_;inode++)
+    {
+      epreaf(inode) = myvelaf[nsd_+inode*numdofpernode_];
+    }
+  }
+  else
+  {
+    // insert pressure into element array
+    for (int inode=0;inode<bdrynen_;inode++)
+    {
+      epreaf(inode) = 0.0;
+    }
+  }
   //========================================================
 
 
@@ -455,7 +486,7 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(
 
     // get density
     // (evaluation always at integration point, in contrast to parent element)
-    GetDensity(material,escaaf,thermpressaf);
+    GetDensity(material,escaaf,thermpressaf,epreaf);
 
     const double tol=1e-8;
     if(densfac_<(1.0-tol) or densfac_>(1.0+tol))
@@ -902,15 +933,17 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(
 
   // create Epetra objects for scalar array and velocities
   LINALG::Matrix<nsd_,bdrynen_> evelaf(true);
+  LINALG::Matrix<bdrynen_,1>    epreaf(true);
   LINALG::Matrix<bdrynen_,1>    escaaf(true);
 
-  // insert velocity and scalar into element array
+  // insert velocity, pressure and scalar into element array
   for (int inode=0;inode<bdrynen_;++inode)
   {
     for (int idim=0; idim<(nsd_);++idim)
     {
       evelaf(idim,inode) = myvelaf[idim+(inode*numdofpernode_)];
     }
+    epreaf(inode) = myvelaf[nsd_+inode*numdofpernode_];
     escaaf(inode) = myscaaf[(nsd_)+(inode*numdofpernode_)];
   }
 
@@ -968,7 +1001,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(
 
       // get density
       // (evaluation always at integration point, in contrast to parent element)
-      GetDensity(material,escaaf,thermpressaf);
+      GetDensity(material,escaaf,thermpressaf,epreaf);
 
       // extended integration factors for left- and right-hand side, respectively
       const double lhsfac = densaf_*normvel*timefac*fac_;
@@ -2249,7 +2282,8 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::GetDensity(
   Teuchos::RCP<const MAT::Material>    material,
   const LINALG::Matrix<bdrynen_,1>&    escaaf,
-  const double                         thermpressaf
+  const double                         thermpressaf,
+  const LINALG::Matrix<bdrynen_,1>&    epreaf
 )
 {
   // initially set density and density factor for Neumann boundary conditions to 1.0
@@ -2323,6 +2357,32 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::GetDensity(
     // compute density at n+alpha_F or n+1 based on temperature
     // and thermodynamic pressure
     densaf_ = actmat->ComputeDensity(tempaf,thermpressaf);
+
+    // set density factor for Neumann boundary conditions to density for present material
+    densfac_ = densaf_;
+  }
+  else if (material->MaterialType() == INPAR::MAT::m_fluid_linear_density_viscosity)
+  {
+    const MAT::LinearDensityViscosity* actmat = static_cast<const MAT::LinearDensityViscosity*>(material.get());
+
+    // compute pressure at n+alpha_F or n+1
+    const double preaf = funct_.Dot(epreaf);
+
+    // compute density at n+alpha_F or n+1 based on pressure
+    densaf_ = actmat->ComputeDensity(preaf);
+
+    // set density factor for Neumann boundary conditions to density for present material
+    densfac_ = densaf_;
+  }
+  else if (material->MaterialType() == INPAR::MAT::m_fluid_murnaghantait)
+  {
+    const MAT::MurnaghanTaitFluid* actmat = static_cast<const MAT::MurnaghanTaitFluid*>(material.get());
+
+    // compute pressure at n+alpha_F or n+1
+    const double preaf = funct_.Dot(epreaf);
+
+    // compute density at n+alpha_F or n+1 based on pressure
+    densaf_ = actmat->ComputeDensity(preaf);
 
     // set density factor for Neumann boundary conditions to density for present material
     densfac_ = densaf_;

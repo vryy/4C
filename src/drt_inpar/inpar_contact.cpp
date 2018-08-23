@@ -543,6 +543,15 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
       "adapt penalty parameter after each converged time step",
       yesnotuple,yesnovalue,&scontact);
 
+  setStringToIntegralParameter<int>("REGULARIZED_NORMAL_CONTACT","No",
+      "add a regularized normal contact formulation",
+      yesnotuple,
+      yesnovalue,
+      &scontact
+      );
+  DoubleParameter("REGULARIZATION_THICKNESS",-1.,"maximum contact penetration",&scontact);
+  DoubleParameter("REGULARIZATION_STIFFNESS",-1.,"initial contact stiffness (i.e. initial \"penalty parameter\")",&scontact);
+
 }
 
 

@@ -41,6 +41,7 @@
 
 
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_lib/drt_discret_faces.H"
 
 #include "../drt_so3/so3_poro_eletypes.H"
 #include "../drt_so3/so3_poro_scatra_eletypes.H"
@@ -376,6 +377,11 @@ void POROELAST::UTILS::CreateVolumeGhosting(DRT::Discretization& idiscret)
 
   //3 Reconnect Face Element -- Porostructural Parent Element Pointers!
     POROELAST::UTILS::ReconnectParentPointers(idiscret, *voldis[0],&(*voldis[1]));
+
+  //4 In case we use
+  Teuchos::RCP<DRT::DiscretizationFaces> facediscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(voldis[1]);
+  if (facediscret != Teuchos::null)
+    facediscret->FillCompleteFaces(true,true,true,true);
 }
 
 /*----------------------------------------------------------------------*

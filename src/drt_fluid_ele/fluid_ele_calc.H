@@ -631,6 +631,11 @@ public:
                         LINALG::Matrix<nen_,1> &           escabofoaf   //< scatra body force at nodes
   );
 
+  /// calculate correction term at nodes
+    static void CorrectionTerm(DRT::ELEMENTS::Fluid*         ele,             //< pointer to element
+                          LINALG::Matrix<1,nen_>&            ecorrectionterm //<correction term at nodes
+    );
+
 
 protected:
   /// private Constructor since we are a Singleton.
@@ -652,12 +657,16 @@ protected:
                        LINALG::Matrix<(nsd_+1)*nen_,            1> & elevec1,
                        const LINALG::Matrix<nsd_,nen_> &             evelaf,
                        const LINALG::Matrix<nen_,1>    &             epreaf,
+                       const LINALG::Matrix<nsd_,nen_> &             evelam,
+                       const LINALG::Matrix<nen_,1>    &             epream,
                        const LINALG::Matrix<nen_,1>    &             eprenp,
                        const LINALG::Matrix<nsd_,nen_> &             evelnp,
                        const LINALG::Matrix<nen_,1>    &             escaaf,
                        const LINALG::Matrix<nsd_,nen_> &             emhist,
                        const LINALG::Matrix<nsd_,nen_> &             eaccam,
                        const LINALG::Matrix<nen_,1>    &             escadtam,
+                       const LINALG::Matrix<nsd_,nen_> &             eveldtam,
+                       const LINALG::Matrix<nen_,1>    &             epredtam,
                        const LINALG::Matrix<nen_,1>    &             escabofoaf,
                        const LINALG::Matrix<nen_,1>    &             escabofon,
                        const LINALG::Matrix<nsd_,nen_> &             eveln,
@@ -692,16 +701,20 @@ protected:
     \param ebofon           (i) body force at n
     \param eprescpgaf       (i) prescribed pressure gradient at n (required for turbulent channel flow)
     \param evelaf           (i) nodal velocities at n+alpha_F/n+1
+    \param evelam           (i) nodal velocities at n+alpha_M/n
     \param eveln            (i) nodal velocities at n
     \param evelnp           (i) nodal velocities at n+1 (np_genalpha)
     \param fsevelaf         (i) fine-scale nodal velocities at n+alpha_F/n+1
     \param fsescaaf         (i) fine-scale nodal scalar at n+alpha_F/n+1
     \param epreaf           (i) nodal pressure at n+alpha_F/n+1
+    \param epream           (i) nodal pressure at n+alpha_M/n
     \param eprenp           (i) nodal pressure at n+1
     \param eaccam           (i) nodal accelerations at n+alpha_M
     \param escaaf           (i) nodal scalar at n+alpha_F/n+1
     \param escaam           (i) nodal scalar at n+alpha_M/n
     \param escadtam         (i) nodal scalar derivatives at n+alpha_M/n+1
+    \param eveldtam         (i) nodal velocity derivatives at n+alpha_M/n+1
+    \param epredtam         (i) nodal pressure derivatives at n+alpha_M/n+1
     \param emhist           (i) time rhs for momentum equation
     \param edispnp          (i) nodal displacements (on moving mesh)
     \param egridv           (i) grid velocity (on moving mesh)
@@ -725,6 +738,7 @@ protected:
                       const LINALG::Matrix<nsd_,nen_> &             ebofon,
                       const LINALG::Matrix<nsd_,nen_> &             eprescpgn,
                       const LINALG::Matrix<nsd_,nen_>&              evelaf,
+                      const LINALG::Matrix<nsd_,nen_>&              evelam,
                       const LINALG::Matrix<nsd_,nen_>&              eveln,
                       const LINALG::Matrix<nsd_,nen_> &             evelnp,
                       const LINALG::Matrix<nsd_,nen_>&              fsevelaf,
@@ -732,12 +746,15 @@ protected:
                       const LINALG::Matrix<nsd_,nen_>&              evel_hat,
                       const LINALG::Matrix<nsd_*nsd_,nen_>&         ereynoldsstress_hat,
                       const LINALG::Matrix<nen_,1>&                 epreaf,
+                      const LINALG::Matrix<nen_,1>&                 epream,
                       const LINALG::Matrix<nen_,1>&                 epren,
                       const LINALG::Matrix<nen_,1>&                 eprenp,
                       const LINALG::Matrix<nsd_,nen_>&              eaccam,
                       const LINALG::Matrix<nen_,1>&                 escaaf,
                       const LINALG::Matrix<nen_,1>&                 escaam,
                       const LINALG::Matrix<nen_,1>&                 escadtam,
+                      const LINALG::Matrix<nsd_,nen_>&              eveldtam,
+                      const LINALG::Matrix<nen_,1>&                 epredtam,
                       const LINALG::Matrix<nen_,1>&                 escabofoaf,
                       const LINALG::Matrix<nen_,1>&                 escabofon,
                       const LINALG::Matrix<nsd_,nen_>&              emhist,
@@ -769,6 +786,7 @@ protected:
                       const LINALG::Matrix<nsd_,nen_> &             ebofon,
                       const LINALG::Matrix<nsd_,nen_> &             eprescpgn,
                       const LINALG::Matrix<nsd_,nen_>&              evelaf,
+                      const LINALG::Matrix<nsd_,nen_>&              evelam,
                       const LINALG::Matrix<nsd_,nen_>&              eveln,
                       const LINALG::Matrix<nsd_,nen_> &             evelnp,
                       const LINALG::Matrix<nsd_,nen_>&              fsevelaf,
@@ -776,6 +794,7 @@ protected:
                       const LINALG::Matrix<nsd_,nen_>&              evel_hat,
                       const LINALG::Matrix<nsd_*nsd_,nen_>&         ereynoldsstress_hat,
                       const LINALG::Matrix<nen_,1>&                 epreaf,
+                      const LINALG::Matrix<nen_,1>&                 epream,
                       const LINALG::Matrix<nen_,1>&                 epren,
                       const LINALG::Matrix<nen_,1>&                 eprenp,
                       const LINALG::Matrix<nsd_,nen_>&              eaccam,
@@ -880,6 +899,8 @@ protected:
   //! get material parameters
   void GetMaterialParams(Teuchos::RCP<const MAT::Material>  material,       ///< reference pointer to material
                          const LINALG::Matrix<nsd_,nen_>&   evelaf,         ///< velocity at time n+alpha_f / n+1
+                         const LINALG::Matrix<nen_,1>&      epreaf,         ///< pressure at time n+alpha_f / n+1
+                         const LINALG::Matrix<nen_,1>&      epream,         ///< pressure at time n+alpha_m / n
                          const LINALG::Matrix<nen_,1>&      escaaf,         ///< scalar at time n+alpha_f / n+1
                          const LINALG::Matrix<nen_,1>&      escaam,         ///< scalar at time n+alpha_m / n
                          const LINALG::Matrix<nen_,1>&      escabofoaf,     ///< body force for scalar transport at time n+alpha_f / n+1
@@ -893,6 +914,8 @@ protected:
   //! get material parameters
   void GetMaterialParams(Teuchos::RCP<const MAT::Material>  material,
                         const LINALG::Matrix<nsd_,nen_>&   evelaf,
+                        const LINALG::Matrix<nen_,1>&      epreaf,
+                        const LINALG::Matrix<nen_,1>&      epream,
                         const LINALG::Matrix<nen_,1>&      escaaf,
                         const LINALG::Matrix<nen_,1>&      escaam,
                         const LINALG::Matrix<nen_,1>&      escabofoaf,
@@ -1246,6 +1269,8 @@ protected:
   //! update material parameters including subgrid-scale part of scalar
   void UpdateMaterialParams(Teuchos::RCP<const MAT::Material> material,  ///< reference pointer to material
                          const LINALG::Matrix<nsd_,nen_>&     evelaf,    ///< velocity at time n+alpha_f / n+1
+                         const LINALG::Matrix<nen_,1>&        epreaf,    ///< pressure at time n+alpha_f / n+1
+                         const LINALG::Matrix<nen_,1>&        epream,    ///< pressure at time n+alpha_m / n
                          const LINALG::Matrix<nen_,1>&        escaaf,    ///< scalar at time n+alpha_f / n+1
                          const LINALG::Matrix<nen_,1>&        escaam,    ///< scalar at time n+alpha_m / n
                          const double                         thermpressaf,    ///< thermodynamic pressure at time n+alpha_f / n+1
@@ -1260,6 +1285,14 @@ protected:
       const LINALG::Matrix<nen_,1>&     escaaf,   ///< scalar at time n+alpha_F/n+1
       const LINALG::Matrix<nen_,1>&     escaam,   ///< scalar at time n+alpha_M/n
       const LINALG::Matrix<nen_,1>&     escadtam, ///< acceleration at time n+alpha_M/n
+      bool                              isale     ///< flag for ALE case
+      );
+
+  //! compute additional Galerkin terms on right-hand side of continuity equation
+  //! (only required for weakly compressibility)
+  void ComputeGalRHSContEqWeakComp(
+      const LINALG::Matrix<nen_,1>&     epreaf,   ///< pressure at time n+alpha_F/n+1
+      const LINALG::Matrix<nen_,1>&     epredtam, ///< derivative of pressure at time n+alpha_M/n
       bool                              isale     ///< flag for ALE case
       );
 
@@ -1294,6 +1327,12 @@ protected:
 
   //! Compute element matrix entries: artificial compressibility
   void ArtCompPressureInertiaGalPartandContStab(
+      LINALG::Matrix<nen_*nsd_,nen_> &   estif_p_v,   ///< block (weighting function v x p)
+      LINALG::Matrix<nen_,nen_> &        ppmat        ///< block (weighting function q x p)
+      );
+
+  //! Compute element matrix entries: weak compressibility
+  void WeakCompPressureInertiaGalPart(
       LINALG::Matrix<nen_*nsd_,nen_> &   estif_p_v,   ///< block (weighting function v x p)
       LINALG::Matrix<nen_,nen_> &        ppmat        ///< block (weighting function q x p)
       );
@@ -1566,12 +1605,16 @@ protected:
 
   LINALG::Matrix<nsd_,nen_> evelaf_;
   LINALG::Matrix<nen_,1>    epreaf_;
+  LINALG::Matrix<nsd_,nen_> evelam_;
+  LINALG::Matrix<nen_,1>    epream_;
   LINALG::Matrix<nsd_,nen_> evelnp_;
   LINALG::Matrix<nen_,1>    eprenp_;
   LINALG::Matrix<nsd_,nen_> eveln_;
   LINALG::Matrix<nen_,1>    epren_;
   LINALG::Matrix<nsd_,nen_> eaccam_;
   LINALG::Matrix<nen_,1>    escadtam_;
+  LINALG::Matrix<nsd_,nen_> eveldtam_;
+  LINALG::Matrix<nen_,1>    epredtam_;
   LINALG::Matrix<nen_,1>    escaaf_;
   LINALG::Matrix<nen_,1>    escaam_;
   LINALG::Matrix<nsd_,nen_> emhist_;
@@ -1744,6 +1787,24 @@ protected:
   double scarhs_;
   //! subgrid-scale part of scalar at integration point
   double sgscaint_;
+
+  //! weakly_compressible-specific variables:
+  //! pressure at t_(n+alpha_F) or t_(n+1)
+  double preaf_;
+  //! pressure at t_(n+alpha_M) or t_(n)
+  double pream_;
+  //! factor for convective pressure term at t_(n+alpha_F) or t_(n+1)
+  double preconvfacaf_;
+  //! time derivative of pressure
+  double tder_pre_;
+  //! factor for pressure time derivative
+  double predtfac_;
+  //! pressure gradient at t_(n+alpha_F) or t_(n+1)
+  LINALG::Matrix<nsd_,1> grad_preaf_;
+  //! convective pressure term at t_(n+alpha_F) or t_(n+1)
+  double conv_preaf_;
+  //! // element correction term
+  LINALG::Matrix<1, nen_> ecorrectionterm_;
 
   //! turbulence-specific variables:
   //! fine-scale velocity vector in gausspoint

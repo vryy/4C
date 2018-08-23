@@ -27,12 +27,14 @@ namespace INPAR
 
   namespace FLUID
   {
-    //! physical type of the fluid flow (incompressible, Boussinesq approximation, varying density, loma,
+    //! physical type of the fluid flow (incompressible, weakly compressible, weakly compressible stokes, Boussinesq approximation, varying density, loma
     //! temperature-dependent water)
     enum PhysicalType
     {
       physicaltype_undefined,
       incompressible,
+      weakly_compressible,
+      weakly_compressible_stokes,
       artcomp,
       boussinesq,
       varying_density,
@@ -189,6 +191,7 @@ namespace INPAR
       EOS_tau_schott_massing_burman_dangelo_zunino,
       EOS_tau_schott_massing_burman_dangelo_zunino_wo_dt,
       EOS_tau_Taylor_Hughes_Zarins_Whiting_Jansen_Codina_scaling,
+      EOS_tau_poroelast_fluid,
       EOS_tau_not_defined
     };
 
@@ -242,7 +245,9 @@ namespace INPAR
       initfield_hit_comte_bellot_corrsin,
       initfield_forced_hit_simple_algebraic_spectrum,
       initfield_forced_hit_numeric_spectrum,
-      initfield_passive_hit_const_input
+      initfield_passive_hit_const_input,
+      initfield_channel_weakly_compressible,
+      initfield_channel_weakly_compressible_fourier_3
     };
 
     /// initial field
@@ -264,7 +269,16 @@ namespace INPAR
       kimmoin_stat_navier_stokes,
       kimmoin_instat_stokes,
       kimmoin_instat_navier_stokes,
-      fsi_fluid_pusher  ///< pseudo 1D FSI fluid pusher
+      fsi_fluid_pusher,  ///< pseudo 1D FSI fluid pusher
+      channel_weakly_compressible,
+      channel_weakly_compressible_fourier_3
+    };
+
+    /// average pressure boundary condition for hdg
+    enum PressAvgBc
+    {
+      no_pressure_average_bc,
+      yes_pressure_average_bc
     };
 
     /// meshtying algorithm

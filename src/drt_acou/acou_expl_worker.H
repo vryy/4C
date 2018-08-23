@@ -5,10 +5,10 @@
 <pre>
 \level 2
 
-\maintainer Svenja Schoeder
-            schoeder@lnm.mw.tum.de
+\maintainer Luca Berardocco
+            berardoccoo@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15265
+            089 - 289-15244
 </pre>
 *----------------------------------------------------------------------*/
 
@@ -104,6 +104,12 @@ namespace ACOU
       return;
     }
 
+    void set_reduction(const bool red)
+    {
+      reduction = red;
+      return;
+    }
+
     void set_time_step_size(double time_step_in) const
     {
       time_step = time_step_in;
@@ -134,6 +140,7 @@ namespace ACOU
   protected:
     unsigned int       timestep_source_number;
     bool               adjoint_eval;
+    bool               reduction;
     mutable value_type time_step;
   };
 
@@ -367,7 +374,8 @@ namespace ACOU
                           value_type time_step_in,
                           int sourceno = 0,
                           Teuchos::RCP<PATMonitorManager> monitormanagerin = Teuchos::null,
-                          bool adjoint = false);
+                          bool adjoint = false,
+                          bool redin = false);
 
     virtual ~WaveEquationOperationAcousticWavePML() {}
 

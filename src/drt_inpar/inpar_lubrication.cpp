@@ -119,4 +119,9 @@ void INPAR::LUBRICATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
     &lubricationdyn
     );
 
+  DoubleParameter("GAP_OFFSET",0.,
+    "Additional offset to the fluid gap",
+    &lubricationdyn
+    );
+
 }

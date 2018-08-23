@@ -108,10 +108,10 @@ void XFEM::XFPCoupling_Manager::SetCouplingStates()
 
 void XFEM::XFPCoupling_Manager::AddCouplingMatrix(LINALG::BlockSparseMatrixBase& systemmatrix, double scaling)
 {
+  const double scaling_disp_vel = 1/((1-poro_->StructureField()->TimIntParam())*poro_->StructureField()->Dt());
+  const double dt = poro_->FluidField()->Dt();
   if (idx_.size() == 2) //assum that the poro field is not split and we just have a blockmatrix P/F
   {
-    const double scaling_disp_vel = 1/((1-poro_->StructureField()->TimIntParam())*poro_->StructureField()->Dt());
-    const double dt = poro_->FluidField()->Dt();
 
     LINALG::SparseMatrix& C_ss_block = (systemmatrix)(idx_[0],idx_[0]);
     LINALG::SparseMatrix& C_fs_block = (systemmatrix)(idx_[1],idx_[0]);
@@ -149,6 +149,35 @@ void XFEM::XFPCoupling_Manager::AddCouplingMatrix(LINALG::BlockSparseMatrixBase&
     C_ss_block.Add(*C_pf_pf,false,scaling*dt,1.0);
 
   }
+  else if (idx_.size()==3)
+  {
+    LINALG::SparseMatrix& C_ss_block = (systemmatrix)(idx_[0],idx_[0]);
+    LINALG::SparseMatrix& C_fs_block = (systemmatrix)(idx_[1],idx_[0]);
+    LINALG::SparseMatrix& C_sf_block = (systemmatrix)(idx_[0],idx_[1]);
+
+    LINALG::SparseMatrix& C_pfpfblock = (systemmatrix)(idx_[2],idx_[2]);
+    LINALG::SparseMatrix& C_fpf_block = (systemmatrix)(idx_[1],idx_[2]);
+    LINALG::SparseMatrix& C_pff_block = (systemmatrix)(idx_[2],idx_[1]);
+
+    LINALG::SparseMatrix& C_pfs_block = (systemmatrix)(idx_[2],idx_[0]);
+    LINALG::SparseMatrix& C_spf_block = (systemmatrix)(idx_[0],idx_[2]);
+
+    //1// Add Blocks f-ps(2), ps-f(3), ps-ps(4)
+    C_ss_block.Add(*xfluid_->C_ss_Matrix(cond_name_ps_ps_),false,scaling*scaling_disp_vel,1.0);
+    C_sf_block.Add(*xfluid_->C_sx_Matrix(cond_name_ps_ps_),false,scaling,1.0);
+    C_fs_block.Add(*xfluid_->C_xs_Matrix(cond_name_ps_ps_),false,scaling*scaling_disp_vel,1.0);
+
+    //2// Add Blocks f-pf(5), ps-pf(6)
+    InsertMatrix(-1,0,*xfluid_->C_ss_Matrix(cond_name_ps_pf_),1,C_spf_block,Coupling_Comm_Manager::col,scaling,true,true);
+    InsertMatrix(-1,0,*xfluid_->C_xs_Matrix(cond_name_ps_pf_),1,C_fpf_block,Coupling_Comm_Manager::col,scaling,true,true);
+
+    //3// Add Blocks pf-f(7), pf-ps(8)
+    InsertMatrix(-1,0,*xfluid_->C_ss_Matrix(cond_name_pf_ps_),1,C_pfs_block,Coupling_Comm_Manager::row,scaling*scaling_disp_vel*dt,true,true);
+    InsertMatrix(-1,0,*xfluid_->C_sx_Matrix(cond_name_pf_ps_),1,C_pff_block,Coupling_Comm_Manager::row,scaling*dt,true,true);
+
+    //4// Add Block pf-pf(9)
+    InsertMatrix(-1,0,*xfluid_->C_ss_Matrix(cond_name_pf_pf_),1,C_pfpfblock,Coupling_Comm_Manager::row_and_col,scaling*dt,true,true);
+  }
   else
     dserror("XFPCoupling_Manager::AddCouplingMatrix: Not implemented for number of blocks = %d", idx_.size());
 }
@@ -158,11 +187,9 @@ void XFEM::XFPCoupling_Manager::AddCouplingMatrix(LINALG::BlockSparseMatrixBase&
 //*-----------------------------------------------------------------------------------------*/
 void XFEM::XFPCoupling_Manager::AddCouplingRHS(Teuchos::RCP<Epetra_Vector> rhs,const LINALG::MultiMapExtractor& me, double scaling)
 {
+  const double dt = poro_->FluidField()->Dt();
   if (idx_.size() == 2) //assum that the poro field is not split and we just have a blockmatrix P/F
   {
-
-    const double dt = poro_->FluidField()->Dt();
-
       Teuchos::RCP<const Epetra_Vector> rhs_C_ps_ps = xfluid_->RHS_s_Vec(cond_name_ps_ps_);
       Teuchos::RCP<const Epetra_Vector> rhs_C_ps_pf = xfluid_->RHS_s_Vec(cond_name_ps_pf_);
       Teuchos::RCP<const Epetra_Vector> rhs_C_pf_ps = xfluid_->RHS_s_Vec(cond_name_pf_ps_);
@@ -198,6 +225,46 @@ void XFEM::XFPCoupling_Manager::AddCouplingRHS(Teuchos::RCP<Epetra_Vector> rhs,c
       }
 
       me.AddVector(prhs,idx_[0],rhs);
+  }
+  else if (idx_.size()==3)
+  {
+      Teuchos::RCP<const Epetra_Vector> rhs_C_ps_ps = xfluid_->RHS_s_Vec(cond_name_ps_ps_);
+      Teuchos::RCP<const Epetra_Vector> rhs_C_ps_pf = xfluid_->RHS_s_Vec(cond_name_ps_pf_);
+      Teuchos::RCP<const Epetra_Vector> rhs_C_pf_ps = xfluid_->RHS_s_Vec(cond_name_pf_ps_);
+      Teuchos::RCP<const Epetra_Vector> rhs_C_pf_pf = xfluid_->RHS_s_Vec(cond_name_pf_pf_);
+
+      Teuchos::RCP<Epetra_Vector> srhs = Teuchos::rcp(new Epetra_Vector(*me.Map(idx_[0]),true));
+      Teuchos::RCP<Epetra_Vector> pfrhs = Teuchos::rcp(new Epetra_Vector(*me.Map(idx_[2]),true));
+
+      InsertVector(0,rhs_C_ps_ps,0,srhs,Coupling_Comm_Manager::partial_to_full,true,scaling);
+      InsertVector(0,rhs_C_ps_pf,0,srhs,Coupling_Comm_Manager::partial_to_full,true,scaling);
+
+      InsertVector(0,rhs_C_pf_ps,1,pfrhs,Coupling_Comm_Manager::partial_to_full,true,scaling*dt);
+      InsertVector(0,rhs_C_pf_pf,1,pfrhs,Coupling_Comm_Manager::partial_to_full,true,scaling*dt);
+
+      //Add lambda contribution
+      if (lambda_ps_ != Teuchos::null && lambda_pf_ != Teuchos::null)
+      {
+        /*----------------------------------------------------------------------*/
+        // get time integration parameters of structure and fluid time integrators
+        // to enable consistent time integration among the fields
+        /*----------------------------------------------------------------------*/
+
+        /*----------------------------------------------------------------------*/
+        // this is the interpolation weight for quantities from last time step
+        // alpha_f for genalpha and (1-theta) for OST (weighting of the old time step n for displacements)
+        // TimeIntegration for poro needs to be consistent!
+        const double stiparam = poro_->StructureField()->TimIntParam();    // (1-theta) for OST and alpha_f for Genalpha
+
+        // scale factor for the structure system matrix w.r.t the new time step
+        const double scaling_S = 1.0/(1.0-stiparam);  // 1/(1-alpha_F) = 1/weight^S_np
+
+       InsertVector(0,lambda_ps_,0,srhs,Coupling_Comm_Manager::partial_to_full,true,stiparam*scaling_S);
+       InsertVector(0,lambda_pf_,1,pfrhs,Coupling_Comm_Manager::partial_to_full,true,stiparam*scaling_S);
+      }
+
+      me.AddVector(srhs,idx_[0],rhs);
+      me.AddVector(pfrhs,idx_[2],rhs);
   }
   else
     dserror("XFPCoupling_Manager::AddCouplingRHS: Not implemented for number of blocks = %d", idx_.size());

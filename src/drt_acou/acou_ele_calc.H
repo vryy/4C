@@ -7,10 +7,10 @@
 <pre>
 \level 2
 
-\maintainer Svenja Schoeder
-            schoeder@lnm.mw.tum.de
+\maintainer Luca Berardocco
+            berardoccoo@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15265
+            089 - 289-15244
 </pre>
 */
 /*--------------------------------------------------------------------------*/
@@ -217,6 +217,10 @@ namespace ELEMENTS
                        const double (&xyz)[nsd_],
                        double  &p,
                        double  (&v)[nsd_]) const;
+
+      void EvaluateLight( double lightxyz[][nsd_], double values[], int numnode,
+          const double(&xyz)[nsd_], double &p,
+          double absorptioncoeff) const;
 
       // convention: we sort the entries in the matrices the following way:
       // first come the velocity gradients, then the velocities, and finally the pressure

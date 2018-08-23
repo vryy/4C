@@ -60,7 +60,10 @@
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/fluid_linear_density_viscosity.H"
+#include "../drt_mat/fluid_murnaghantait.H"
 #include "fluidimpedancecondition.H"
+#include "../drt_inpar/inpar_xfem.H" //for enums only
 
 // print error file for function EvaluateErrorComparedToAnalyticalSol()
 #include "../drt_io/io_control.H"
@@ -1812,7 +1815,11 @@ void FLD::FluidImplicitTimeInt::AssembleEdgeBasedMatandRHS()
        discret_->SetState("gridv", gridv_);
      }
 
-     facediscret_->EvaluateEdgeBased(sysmat_,residual_);
+     Teuchos::ParameterList params;
+     if (params_->sublist("RESIDUAL-BASED STABILIZATION").isParameter("POROUS-FLOW STABILIZATION"))
+       params.set<INPAR::XFEM::FaceType>("FaceType",INPAR::XFEM::face_type_porof);
+
+     facediscret_->EvaluateEdgeBased(sysmat_,residual_,params);
 
      discret_->ClearState();
   }
@@ -4720,6 +4727,8 @@ Teuchos::RCP<std::vector<double> > FLD::FluidImplicitTimeInt::EvaluateErrorCompa
   case INPAR::FLUID::shear_flow:
   case INPAR::FLUID::fsi_fluid_pusher:
   case INPAR::FLUID::byfunct:
+  case INPAR::FLUID::channel_weakly_compressible:
+  case INPAR::FLUID::channel_weakly_compressible_fourier_3:
   {
     // std::vector containing
     // [0]: relative L2 velocity error
@@ -6132,6 +6141,9 @@ void FLD::FluidImplicitTimeInt::Reset(
     // velocity/pressure at time n+alpha_F
     velaf_ = LINALG::CreateVector(*dofrowmap,true);
 
+    // velocity/pressure at time n+alpha_M
+    velam_ = LINALG::CreateVector(*dofrowmap,true);
+
     // acceleration/(scalar time derivative) at time n+alpha_M/(n+alpha_M/n)
     accam_ = LINALG::CreateVector(*dofrowmap,true);
 
@@ -6407,6 +6419,7 @@ void FLD::FluidImplicitTimeInt::SetDirichletNeumannBC()
   // evaluate Neumann conditions
   neumann_loads_->PutScalar(0.0);
   discret_->SetState("scaaf",scaaf_);
+  discret_->SetState("velaf",velaf_);
   discret_->EvaluateNeumann(eleparams,*neumann_loads_);
   discret_->ClearState();
 }

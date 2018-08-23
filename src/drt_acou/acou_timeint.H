@@ -7,10 +7,10 @@
 <pre>
 \level 2
 
-\maintainer Svenja Schoeder
-            schoeder@lnm.mw.tum.de
+\maintainer Luca Berardocco
+            berardoccoo@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15265
+            089 - 289-15244
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -92,7 +92,10 @@ public:
   virtual void SetInitialField(int startfuncno) = 0;
 
   /// set initial field by given light distribution
-  virtual void SetInitialPhotoAcousticField(Teuchos::RCP<SCATRA::TimIntStationary> scatraalgo);
+  //virtual void SetInitialPhotoAcousticField(Teuchos::RCP<SCATRA::TimIntStationary> scatraalgo);
+  virtual void SetInitialPhotoAcousticField(Teuchos::RCP<Epetra_Vector> light,
+                                                       Teuchos::RCP<DRT::Discretization> scatradis,
+                                                       bool meshconform);
 
   /// Output nodal internal pressure field at new time step
   virtual void NodalPressureField(Teuchos::RCP<Epetra_Vector> outvec) = 0;

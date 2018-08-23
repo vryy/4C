@@ -324,7 +324,8 @@ public:
   */
   void EvaluateEdgeBased(
        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-       Teuchos::RCP<Epetra_Vector>          systemvector1
+       Teuchos::RCP<Epetra_Vector>          systemvector1,
+       Teuchos::ParameterList edgebasedparams = Teuchos::ParameterList()
   );
 
 

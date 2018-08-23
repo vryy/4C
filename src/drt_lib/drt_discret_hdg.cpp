@@ -19,11 +19,20 @@
 #include "drt_globalproblem.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
+#include "../drt_fluid_ele/fluid_ele_calc.H"
+#include "../drt_fluid_ele/fluid_ele_hdg.H"
+#include "../drt_fluid_ele/fluid_ele_calc_hdg.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
 #include "../drt_acou/acou_ele.H"
 #include "../drt_acou/acou_ele_action.H"
 
 #include "../linalg/linalg_utils.H"
+#include "../drt_inpar/inpar_fluid.H"
+#include "../drt_mat/matpar_parameter.H"
+
+#include "../drt_mat/matpar_bundle.H"
+#include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/fluid_murnaghantait.H"
 
 
 DRT::DiscretizationHDG::DiscretizationHDG(const std::string name,
@@ -599,6 +608,7 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(
           std::vector<int> predof = discret.Dof(0, discret.lRowElement(0));
           const int gid = predof[0];
           const int lid = discret.DofRowMap(0)->LID(gid);
+
           // amend vector of DOF-IDs which are Dirichlet BCs
           if (systemvectors[0] != Teuchos::null)
             (*systemvectors[0])[lid] = 0.0;
@@ -607,10 +617,53 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(
           if (systemvectors[2] != Teuchos::null)
             (*systemvectors[2])[lid] = 0.0;
 
+          // --------------------------------------------------------------------------------------
+          // get parameters
+          Teuchos::ParameterList params = DRT::Problem::Instance()->FluidDynamicParams();
+
+          // check whether the imposition of the average pressure is requested
+          const int dopressavgbc = DRT::INPUT::IntegralValue<INPAR::FLUID::PressAvgBc>(params,"PRESSAVGBC");
+
+          if (dopressavgbc == INPAR::FLUID::yes_pressure_average_bc)
+          {
+            double pressureavgBC = 0.0;
+
+            // get 1st element
+            DRT::Element* ele = discret.lRowElement(0);
+            DRT::ELEMENTS::Fluid* fluidele = dynamic_cast<DRT::ELEMENTS::Fluid*>(ele);
+
+            // get material
+            Teuchos::RCP<MAT::Material> mat = ele->Material();
+
+            // get discretization type
+            const DRT::Element::DiscretizationType distype = ele->Shape();
+
+            // evaluate pressure average     //TODO als make it valid for every discretization type
+            Epetra_SerialDenseVector elevec = Epetra_SerialDenseVector(1);
+            if (distype == DRT::Element::DiscretizationType::quad4)
+              DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::DiscretizationType::quad4>::Instance()->EvaluatePressureAverage(fluidele,params,mat,elevec);
+            else if (distype == DRT::Element::DiscretizationType::quad8)
+              DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::DiscretizationType::quad8>::Instance()->EvaluatePressureAverage(fluidele,params,mat,elevec);
+            else if (distype == DRT::Element::DiscretizationType::quad9)
+              DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::DiscretizationType::quad9>::Instance()->EvaluatePressureAverage(fluidele,params,mat,elevec);
+            else if (distype == DRT::Element::DiscretizationType::tri3)
+              DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::DiscretizationType::tri3>::Instance()->EvaluatePressureAverage(fluidele,params,mat,elevec);
+            else if (distype == DRT::Element::DiscretizationType::tri6)
+              DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::DiscretizationType::tri6>::Instance()->EvaluatePressureAverage(fluidele,params,mat,elevec);
+            else
+              dserror("Given distype currently not implemented.");
+            pressureavgBC = elevec[0];
+
+            (*systemvectors[0])[lid] = pressureavgBC;
+
+            std::cout<<"\n------------------------------------------------------------------------------------------"<<std::endl;
+            std::cout<<"| Warning: Imposing the analytical average pressure in the first element as Dirichlet BC |"<<std::endl;
+            std::cout<<"------------------------------------------------------------------------------------------\n"<<std::endl;
+          }
+          // --------------------------------------------------------------------------------------
           pressureDone = true;
         }
       }
-
       int nummynodes = discret.lRowFace(i)->NumNode();
       const int * mynodes = discret.lRowFace(i)->NodeIds();
 

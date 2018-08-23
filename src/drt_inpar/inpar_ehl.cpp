@@ -215,6 +215,14 @@ void INPAR::EHL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
     yesnovalue,
     &ehldyn
     );
+
+  // use dry contact model
+  setStringToIntegralParameter<int>("DRY_CONTACT_MODEL","No",
+      "set unprojectable nodes to zero pressure via Dirichlet condition",
+      yesnotuple,
+      yesnovalue,
+      &ehldyn
+      );
 }
 
 
@@ -241,6 +249,9 @@ void INPAR::EHL::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Conditi
           "Initialization","Active",
           Teuchos::tuple<std::string>("Inactive","Active"),
           Teuchos::tuple<std::string>("Inactive","Active"),true)));
+
+    ehlcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("FrCoeffOrBound",true)));
+    ehlcomponents.push_back(Teuchos::rcp(new RealConditionComponent("FrCoeffOrBound")));
 
     Teuchos::RCP<ConditionDefinition> lineehl =
       Teuchos::rcp(new ConditionDefinition("DESIGN LINE EHL MORTAR COUPLING CONDITIONS 2D",

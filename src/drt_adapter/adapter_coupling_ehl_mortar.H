@@ -19,6 +19,7 @@
 #include <Epetra_Vector.h>
 #include "../drt_lib/drt_dserror.H"
 #include "adapter_coupling_nonlin_mortar.H"
+#include "../drt_contact/contact_interface.H"
 
 /*---------------------------------------------------------------------*
  | forward declarations                                                |
@@ -26,6 +27,12 @@
 namespace LINALG
 {
   class SparseMatrix;
+  class BlockSparseMatrixBase;
+  class MapExtractor;
+}
+namespace IO{
+  class DiscretizationWriter;
+  class DiscretizationReader;
 }
 
 namespace ADAPTER
@@ -68,8 +75,32 @@ namespace ADAPTER
         std::map<int, Teuchos::RCP<DRT::Element> >& masterelements,
         std::map<int, Teuchos::RCP<DRT::Element> >& slaveelements);
 
+    /*!
+    \brief initialize routine
+
+    */
+    virtual void Setup(
+               Teuchos::RCP<DRT::Discretization>   masterdis,
+               Teuchos::RCP<DRT::Discretization>   slavedis,
+               std::vector<int>                    coupleddof,
+               const std::string&                  couplingcond);
+
     /// perform interface integration
     virtual void Integrate(Teuchos::RCP<const Epetra_Vector> disp, const double dt);
+
+    /// perform condensation of contact Lagrange multipliers
+    virtual void CondenseContact(
+        Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat,
+        Teuchos::RCP<Epetra_Vector>& combined_RHS,
+        Teuchos::RCP<const Epetra_Vector> disp,
+        const double dt
+        );
+    virtual void RecoverCoupled(
+        Teuchos::RCP<Epetra_Vector> sinc,
+        Teuchos::RCP<Epetra_Vector> tinc);
+
+    void EvaluateRelMov();
+    void StoreDirichletStatus(Teuchos::RCP<const LINALG::MapExtractor> dbcmaps);
 
     /// check whether this displacement state has already been evaluated
     virtual bool AlreadyEvaluated(Teuchos::RCP<const Epetra_Vector> disp);
@@ -82,6 +113,16 @@ namespace ADAPTER
 
     /// Assemble linearization G_{ij,k}*x_i
     Teuchos::RCP<LINALG::SparseMatrix> AssembleSurfGradDeriv(const Teuchos::RCP<const Epetra_Vector> x);
+
+    virtual void WriteRestart(IO::DiscretizationWriter& output);
+    virtual void ReadRestart(IO::DiscretizationReader& reader);
+    void CreateActiveSlipToggle(Teuchos::RCP<Epetra_Vector>* active,Teuchos::RCP<Epetra_Vector>* slip,Teuchos::RCP<Epetra_Vector>* active_old=NULL);
+    void CreateForceVec(Teuchos::RCP<Epetra_Vector>& n,Teuchos::RCP<Epetra_Vector>& t);
+    bool HasContact(){return contact_regularization_;}
+    double ContactRes() {return contact_rhs_norm_;}
+    double ContactIncr(){return contact_LM_incr_norm_;}
+    int ActiveContact(){return interface_->ActiveNodes()->NumGlobalElements();}
+    int SlipContact()  {return interface_->SlipNodes()  ->NumGlobalElements();}
     //@}
 
     //! @name Access
@@ -163,6 +204,22 @@ namespace ADAPTER
 
     Teuchos::RCP<Epetra_Vector>        evaluated_state_;   ///< displacement state that has last been evaluated
 
+    bool as_converged_;
+    double contact_rhs_norm_;
+    double contact_LM_incr_norm_;
+    Teuchos::RCP<Epetra_Vector> fscn_; // structural contact forces of last time step (needed for time integration)
+    Teuchos::RCP<Epetra_Vector> z_; //  contact lagrange mulitplier
+
+    // recovery of contact LM
+    Teuchos::RCP<LINALG::SparseMatrix> dinvA_;          // dinv on active displacement dofs (for recovery)
+    Teuchos::RCP<LINALG::SparseMatrix> kss_a_;          // Part of structure-stiffness (kss) that corresponds to active slave rows
+    Teuchos::RCP<LINALG::SparseMatrix> kst_a_;          // Part of coupling-stiffness  (kst) that corresponds to active slave rows
+    Teuchos::RCP<Epetra_Vector>        rs_a_;           // Part of structural residual that corresponds to active slave rows
+    Teuchos::RCP<Epetra_Vector> sdirichtoggle_;         // global dirichlet toggle of all slave dofs
+
+    bool contact_regularization_;
+    double regularization_thickness_;
+    double regularization_compliance_;
   };
 }
 

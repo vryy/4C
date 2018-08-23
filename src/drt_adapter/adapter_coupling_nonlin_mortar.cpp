@@ -16,7 +16,7 @@
 #include "adapter_coupling_nonlin_mortar.H"
 
 #include "../drt_contact/contact_interface.H"
-#include "../drt_contact/contact_node.H"
+#include "../drt_contact/friction_node.H"
 #include "../drt_contact/contact_element.H"
 #include "../drt_contact/contact_integrator.H"
 
@@ -334,8 +334,8 @@ void ADAPTER::CouplingNonLinMortar::AddMortarNodes(
       }
     }
     Teuchos::RCP<CONTACT::CoNode> cnode = Teuchos::rcp(
-                new CONTACT::CoNode(node->Id(), node->X(), node->Owner(),
-                    numcoupleddof, dofids, false,false));
+                new CONTACT::FriNode(node->Id(), node->X(), node->Owner(),
+                    numcoupleddof, dofids, false,false,false));
 
     if(isnurbs)
     {
@@ -367,8 +367,8 @@ void ADAPTER::CouplingNonLinMortar::AddMortarNodes(
       }
     }
     Teuchos::RCP<CONTACT::CoNode> cnode = Teuchos::rcp(
-                new CONTACT::CoNode(node->Id(), node->X(), node->Owner(),
-                    numcoupleddof, dofids, true,true));
+                new CONTACT::FriNode(node->Id(), node->X(), node->Owner(),
+                    numcoupleddof, dofids, true,true,false));
 
     if(isnurbs)
     {
@@ -729,8 +729,8 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(
     DRT::Node* node = nodeiter->second;
 
     Teuchos::RCP<CONTACT::CoNode> mrtrnode = Teuchos::rcp(
-                    new CONTACT::CoNode(node->Id(), node->X(), node->Owner(),
-                        dof, masterdis->Dof(node), false,false));
+                    new CONTACT::FriNode(node->Id(), node->X(), node->Owner(),
+                        dof, masterdis->Dof(node), false,false,false));
 
     interface->AddCoNode(mrtrnode);
   }
@@ -742,8 +742,8 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(
     DRT::Node* node = nodeiter->second;
 
     Teuchos::RCP<CONTACT::CoNode> mrtrnode = Teuchos::rcp(
-                    new CONTACT::CoNode(node->Id(), node->X(), node->Owner(),
-                        dof, slavedis->Dof(node), true,true));
+                    new CONTACT::FriNode(node->Id(), node->X(), node->Owner(),
+                        dof, slavedis->Dof(node), true,true,false));
 
     interface->AddCoNode(mrtrnode);
   }

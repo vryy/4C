@@ -1,11 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid_ele_calc_loma.cpp
+\file fluid_ele_calc_loma.H
 
 \brief Low-Mach-number flow routines for calculation of fluid element
 
+\level 2
+
 <pre>
-Maintainer: Volker Gravemeier
+\maintainer Volker Gravemeier
             vgravem@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15245
@@ -83,6 +85,7 @@ private:
       LINALG::Matrix<(my::nsd_+1)*my::nen_,my::nen_> & elemat1,
       const LINALG::Matrix<my::nsd_,my::nen_> &    evelaf,
       const LINALG::Matrix<my::nen_,1>    &    epreaf,
+      const LINALG::Matrix<my::nen_,1>    &    epream,
       const LINALG::Matrix<my::nen_,1>    &    escaaf,
       const LINALG::Matrix<my::nsd_,my::nen_> &    emhist,
       const LINALG::Matrix<my::nsd_,my::nen_> &    eaccam,
@@ -127,6 +130,7 @@ private:
       const LINALG::Matrix<my::nsd_,my::nen_>&     evelaf,
       const LINALG::Matrix<my::nsd_,my::nen_>&     eveln,
       const LINALG::Matrix<my::nen_,1>&        epreaf,
+      const LINALG::Matrix<my::nen_,1>&        epream,
       const LINALG::Matrix<my::nsd_,my::nen_>&     eaccam,
       const LINALG::Matrix<my::nen_,1>&        escaaf,
       const LINALG::Matrix<my::nen_,1>&        escaam,

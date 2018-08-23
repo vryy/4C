@@ -147,12 +147,23 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(
   // generalized-alpha scheme and at time n+1 for all other schemes
   // ---------------------------------------------------------------------
   // fill the local element vector/matrix with the global values
-  // af_genalpha: velocity/pressure at time n+alpha_F
+  // af_genalpha: velocity/pressure at time n+alpha_F and n+alpha_M
   // np_genalpha: velocity at time n+alpha_F, pressure at time n+1
   // ost:         velocity/pressure at time n+1
   LINALG::Matrix<my::nsd_,my::nen_> evelaf(true);
   LINALG::Matrix<my::nen_,1>    epreaf(true);
   my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &evelaf, &epreaf,"velaf");
+
+  LINALG::Matrix<my::nsd_,my::nen_> evelam(true);
+  LINALG::Matrix<my::nen_,1>    epream(true);
+  if (my::fldpara_->PhysicalType() == INPAR::FLUID::weakly_compressible && my::fldparatimint_->IsGenalpha())
+  {
+    my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &evelam, &epream,"velam");
+  }
+  if (my::fldpara_->PhysicalType() == INPAR::FLUID::weakly_compressible_stokes && my::fldparatimint_->IsGenalpha())
+  {
+    my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &evelam, &epream,"velam");
+  }
 
   LINALG::Matrix<my::nen_,1> escaaf(true);
   my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, NULL, &escaaf,"scaaf");
@@ -222,6 +233,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(
     elemat1,
     evelaf,
     epreaf,
+    epream,
     escaaf,
     emhist,
     eaccam,
@@ -252,6 +264,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(
   LINALG::Matrix<(my::nsd_+1)*my::nen_,my::nen_> & elemat1,
   const LINALG::Matrix<my::nsd_,my::nen_> &    evelaf,
   const LINALG::Matrix<my::nen_,1>    &    epreaf,
+  const LINALG::Matrix<my::nen_,1>    &    epream,
   const LINALG::Matrix<my::nen_,1>    &    escaaf,
   const LINALG::Matrix<my::nsd_,my::nen_> &    emhist,
   const LINALG::Matrix<my::nsd_,my::nen_> &    eaccam,
@@ -313,6 +326,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(
                         evelaf,
                         eveln,
                         epreaf,
+                        epream,
                         eaccam,
                         escaaf,
                         escaam,
@@ -347,6 +361,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
   const LINALG::Matrix<my::nsd_,my::nen_>&     evelaf,
   const LINALG::Matrix<my::nsd_,my::nen_>&     eveln,
   const LINALG::Matrix<my::nen_,1>&        epreaf,
+  const LINALG::Matrix<my::nen_,1>&        epream,
   const LINALG::Matrix<my::nsd_,my::nen_>&     eaccam,
   const LINALG::Matrix<my::nen_,1>&        escaaf,
   const LINALG::Matrix<my::nen_,1>&        escaam,
@@ -388,7 +403,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
   // get material parameters at element center
   if (not my::fldpara_->MatGp() or not my::fldpara_->TauGp())
   {
-    my::GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
+    my::GetMaterialParams(material,evelaf,epreaf,epream,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
 
     // calculate all-scale subgrid viscosity at element center
     my::visceff_ = my::visc_;
@@ -440,7 +455,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
     // get material parameters at integration point
     if (my::fldpara_->MatGp())
     {
-      my::GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
+      my::GetMaterialParams(material,evelaf,epreaf,epream,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
       // calculate all-scale or fine-scale subgrid viscosity at integration point
       my::visceff_ = my::visc_;
       if (my::fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or
@@ -474,7 +489,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
       if (my::fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or
           my::fldpara_->TurbModAction() == INPAR::FLUID::vreman)
         dserror("No material update in combination with smagorinsky model!");
-      my::UpdateMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,my::sgscaint_);
+      my::UpdateMaterialParams(material,evelaf,epreaf,epream,escaaf,escaam,thermpressaf,thermpressam,my::sgscaint_);
       my::visceff_ = my::visc_;
       if (my::fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or
           my::fldpara_->TurbModAction() == INPAR::FLUID::vreman)

@@ -84,6 +84,7 @@ void POROMULTIPHASE::UTILS::SetupDiscretizationsAndFieldCoupling(
       break;
     }
     }
+    arterydis->FillComplete();
   }
 
   Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis(fluid_disname);

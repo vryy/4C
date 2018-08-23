@@ -28,6 +28,8 @@
 #include "../drt_lib/drt_utils.H"
 
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/fluid_linear_density_viscosity.H"
+#include "../drt_mat/fluid_murnaghantait.H"
 #include "../drt_mat/fluidporo.H"
 
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
@@ -1610,6 +1612,207 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::EvaluateAnalyticSolutionPoint
     else dserror("Material is not a Newtonian Fluid");
   }
   break;
+  case INPAR::FLUID::channel_weakly_compressible:
+  {
+    // Steady, weakly compressible isothermal flow of a Newtonian fluid
+    // with pressure-dependent density according to Murnaghan-Tait law
+    // Comparison to analytical solution obtained in:
+    // "New analytical solutions for weakly compressible Newtonian
+    // Poiseuille flows with pressure-dependent viscosity"
+    // Kostas D. Housiadas, Georgios C. Georgiou
+
+    if (mat->MaterialType() == INPAR::MAT::m_fluid_murnaghantait)
+    {
+      const MAT::MurnaghanTaitFluid* actmat = static_cast<const MAT::MurnaghanTaitFluid*>(mat.get());
+
+      if (actmat->MatParameter() != 1.0)
+      {
+        dserror("The analytical solution is only valid for material parameter = 1");
+      }
+
+      double x = xyzint(0);
+      double y = xyzint(1);
+
+      double length = 10.0;
+      double radius = 1.0;
+      double aspect_ratio = radius/length;
+      double mean_velocity_channel_exit = 1.0;
+      double viscosity = actmat->Viscosity();
+      double reference_pressure = actmat->RefPressure();
+      double reference_bulk_modulus = actmat->RefBulkModulus();
+      double linear_coefficient_density = (3.0*(1.0/reference_bulk_modulus)*viscosity*length*mean_velocity_channel_exit)/std::pow(radius,2.0);
+
+      if (nsd_ == 2)
+      {
+        u(0) = 3.0/2.0*(1-std::pow(y/radius,2.0))*(1.0+linear_coefficient_density*(x/length-1.0));
+        u(1) = 0.0;
+        p    = 1.0-x/length-linear_coefficient_density*(1.0/6.0*std::pow(aspect_ratio,2.0)*(std::pow(y/radius,2.0)-1.0)+1.0/2.0*std::pow(1.0-x/length,2.0));
+        dervel(0,0) = 3.0/2.0*(1.0-std::pow(y/radius,2.0))*linear_coefficient_density/length;
+        dervel(0,1) = -3.0/std::pow(radius,2.0)*y*(1.0+linear_coefficient_density*(x/length-1.0));
+        dervel(1,0) = 0.0;
+        dervel(1,1) = 0.0;
+
+        // scaling correctly the variables
+        u(0) = u(0)*mean_velocity_channel_exit;
+        u(1) = u(1)*mean_velocity_channel_exit*radius/length;
+        p    = p*(3.0*viscosity*length*mean_velocity_channel_exit/std::pow(radius,2.0))+reference_pressure;
+        dervel(0,0) = dervel(0,0)*mean_velocity_channel_exit;
+        dervel(0,1) = dervel(0,1)*mean_velocity_channel_exit;
+        dervel(1,0) = dervel(1,0)*mean_velocity_channel_exit*radius/length;
+        dervel(1,1) = dervel(1,1)*mean_velocity_channel_exit*radius/length;
+      }
+      else
+        dserror("3D analytical solution is not implemented");
+    }
+    else if (mat->MaterialType() == INPAR::MAT::m_fluid_linear_density_viscosity)
+    {
+      const MAT::LinearDensityViscosity* actmat = static_cast<const MAT::LinearDensityViscosity*>(mat.get());
+
+      double x = xyzint(0);
+      double y = xyzint(1);
+
+      double length = 10.0;
+      double radius = 1.0;
+      double aspect_ratio = radius/length;
+      double mean_velocity_channel_exit = 1.0;
+      double reference_viscosity = actmat->RefViscosity();
+      double reference_pressure = actmat->RefPressure();
+      double coefficient_density = actmat->CoeffDensity();
+      double coefficient_viscosity = actmat->CoeffViscosity();
+      double coefficient_density_adim = (3.0*coefficient_density*reference_viscosity*length*mean_velocity_channel_exit)/std::pow(radius,2.0);
+      double coefficient_viscosity_adim = (3.0*coefficient_viscosity*reference_viscosity*length*mean_velocity_channel_exit)/std::pow(radius,2.0);
+
+      // parameters according with the paper
+      double z = x / length;
+      double r = y / radius;
+      double alfa = aspect_ratio;
+      double beta = coefficient_viscosity_adim;
+      double epsilon = coefficient_density_adim;
+      double a = aspect_ratio;
+      double B = alfa*beta;
+      double lambda =     1.0                               +
+                      (   1.0 /      5.0) * std::pow(B,2.0) +
+                      (  11.0 /    175.0) * std::pow(B,4.0) +
+                      ( 533.0 /  23625.0) * std::pow(B,6.0) +
+                      (5231.0 / 606375.0) * std::pow(B,8.0);
+      double p_0_hat = std::cosh(alfa * beta * lambda * r) /
+                       std::cosh(alfa * beta * lambda);
+      double u_r1_hat = -(11.0 * r * std::pow(1.0 - std::pow(r,2.0),2.0)) / 40.0 * std::pow(B,2.0) *
+                         (
+                                  1.0                                                                                                                                 +
+                          ((    173.0 -       85.0 * std::pow(r,2.0))                                                              /       (770.0)) * std::pow(B,2.0) +
+                          ((   5793.0 -     7190.0 * std::pow(r,2.0) +     3965.0 * std::pow(r,4.0))                               /     (83160.0)) * std::pow(B,4.0) +
+                          ((7435723.0 - 16839665.0 * std::pow(r,2.0) + 16836225.0 * std::pow(r,4.0) - 5021275.0 * std::pow(r,6.0)) / (320166000.0)) * std::pow(B,6.0)
+                         );
+      double u_r1_hat_first = (11.0*std::pow(B,2.0)*std::pow(std::pow(r,2.0)-1.0,2.0)*(((4099.0*std::pow(r,6.0))/261360.0-(32069.0*std::pow(r,4.0))/
+          609840.0+(3367933.0*std::pow(r,2.0))/64033200.0-7435723.0/320166000.0)*std::pow(B,6.0)+(-(793.0*std::pow(r,4.0))/
+          16632.0+(719.0*std::pow(r,2.0))/8316.0-1931.0/27720.0)*std::pow(B,4.0)+((17.0*std::pow(r,2.0))/154.0-173.0/770.0)*std::pow(B,2.0)-1.0))/40.0 +
+          (11.0*std::pow(B,2.0)*std::pow(r,2.0)*(std::pow(r,2.0)-1.0)*(((4099.0*std::pow(r,6.0))/261360.0-(32069.0*std::pow(r,4.0))/609840.0+
+          (3367933.0*std::pow(r,2.0))/64033200.0-7435723.0/320166000.0)*std::pow(B,6.0)+(-(793.0*std::pow(r,4.0))/16632.0+(719.0*
+          std::pow(r,2.0))/8316.0-1931.0/27720.0)*std::pow(B,4.0)+((17.0*std::pow(r,2.0))/154.0-173.0/770.0)*std::pow(B,2.0)-1.0))/10.0 +
+          (11.0*std::pow(B,2.0)*
+          r*std::pow(std::pow(r,2.0)-1.0,2.0)*(((4099.0*std::pow(r,5.0))/43560.0-(32069.0*std::pow(r,3.0))/152460.0+(3367933.0*r)/
+          32016600.0)*std::pow(B,6.0)+((719.0*r)/4158.0-(793.0*std::pow(r,3.0))/4158.0)*std::pow(B,4.0)+(17.0*r*std::pow(B,2.0))/77.0))/40.0;
+      double h = 1.0 / std::pow(beta,2.0) *
+                 (
+                        -1.0                                                                                                                                                         +
+                  ((    11.0 -     10.0 * std::pow(r,2.0))                                                                                          /      (15.0)) * std::pow(B,2.0) +
+                  ((   359.0 -    126.0 * std::pow(r,2.0) +      35.0 * std::pow(r,4.0))                                                            /    (1260.0)) * std::pow(B,4.0) +
+                  (( 13761.0 -  17790.0 * std::pow(r,2.0) +   34125.0 * std::pow(r,4.0) -   17500.0 * std::pow(r,6.0))                              /   (94500.0)) * std::pow(B,6.0) +
+                  ((225311.0 - 614515.0 * std::pow(r,2.0) + 1492755.0 * std::pow(r,4.0) - 1324785.0 * std::pow(r,6.0) + 394350.0 * std::pow(r,8.0)) / (3118500.0)) * std::pow(B,8.0)
+                 );
+      double h_1 = 1.0 / std::pow(beta,2.0) *
+                 (
+                        -1.0                                                                                 +
+                  ((    11.0 -     10.0)                                    /      (15.0)) * std::pow(B,2.0) +
+                  ((   359.0 -    126.0 +      35.0)                        /    (1260.0)) * std::pow(B,4.0) +
+                  (( 13761.0 -  17790.0 +   34125.0 -   17500.0)            /   (94500.0)) * std::pow(B,6.0) +
+                  ((225311.0 - 614515.0 + 1492755.0 - 1324785.0 + 394350.0) / (3118500.0)) * std::pow(B,8.0)
+                 );
+
+      if (nsd_ == 2)
+      {
+        u(0) = - (3.0 * std::log(p_0_hat)) / (std::pow(B,2.0) * lambda) +
+               epsilon *
+               (
+                (3 * (std::tanh(B * lambda) - r * std::tanh(B * lambda * r)) + std::log(std::pow(p_0_hat,3.0)) / (B * lambda)) /
+                (beta * (3 * std::tanh(B * lambda) - 2 * B)) +
+                (std::exp(lambda * beta * (1.0 - z))) / (lambda * beta) *
+                ((p_0_hat * std::log(std::pow(p_0_hat,3.0))) / (std::pow(B,2.0)) + u_r1_hat_first)
+               );
+        u(1) = epsilon * u_r1_hat * std::exp(lambda * beta * (1.0 - z));
+        p    = (p_0_hat * std::exp(lambda * beta * (1.0 - z)) - 1.0) / beta +
+               epsilon * p_0_hat * std::exp(lambda * beta * (1.0 - z)) *
+               (
+                (lambda * a * (1.0 - z + a * (r * std::tanh(B * lambda * r) - std::tanh(B * lambda)))) /
+                (3.0 * std::tanh(B * lambda) - 2.0 * B) +
+                p_0_hat * h * std::exp(lambda * beta * (1.0- z )) -
+                h_1
+               );
+
+        // scaling correctly the variables
+        u(0) = u(0)*mean_velocity_channel_exit;
+        u(1) = u(1)*mean_velocity_channel_exit*radius/length;
+        p    = p*(3.0*reference_viscosity*length*mean_velocity_channel_exit/std::pow(radius,2.0))+reference_pressure;
+      }
+      else
+        dserror("3D analytical solution is not implemented");
+    }
+    else
+    {
+      dserror("The analytical solution is not implemented for this material");
+    }
+
+  }
+  break;
+  case INPAR::FLUID::channel_weakly_compressible_fourier_3:
+    {
+      // Steady, weakly compressible isothermal flow of a Newtonian fluid
+      // with pressure-dependent density according to Murnaghan-Tait law
+      // Comparison to analytical solution obtained in:
+      // "New analytical solutions for weakly compressible Newtonian
+      // Poiseuille flows with pressure-dependent viscosity"
+      // Kostas D. Housiadas, Georgios C. Georgiou
+      // Solution obtained with a Fourier expansion up to 3rd order
+
+      if (mat->MaterialType() == INPAR::MAT::m_fluid_murnaghantait)
+      {
+        const MAT::MurnaghanTaitFluid* actmat = static_cast<const MAT::MurnaghanTaitFluid*>(mat.get());
+
+        if (actmat->MatParameter() != 1.0)
+        {
+          dserror("The analytical solution is only valid for material parameter = 1");
+        }
+
+        double x = xyzint(0);
+        double y = xyzint(1);
+
+        double L = 10.0;
+        double R = 1.0;
+        double U = 1.0;
+        double mu = actmat->Viscosity();
+        double p0 = actmat->RefPressure();
+        double K0 = actmat->RefBulkModulus();
+
+        if (nsd_ == 2)
+        {
+          u(0) = (2.0*L*R*U-(3.0*(std::pow(L,2.0))*(std::pow(U,2.0))*mu)/(K0*R))/(2.0*L*R)+(3.0*U*std::cos((y*M_PI)/R)*(2.0*K0*(std::pow(R,2.0))-3.0*L*U*mu))/(K0*(std::pow(R,2.0))*(std::pow(M_PI,2.0)))-(3.0*U*std::cos((2.0*y*M_PI)/R)*(2.0*K0*(std::pow(R,2.0))-3.0*L*U*mu))/(4.0*K0*(std::pow(R,2.0))*(std::pow(M_PI,2.0)))+(U*std::cos((3.0*y*M_PI)/R)*(2.0*K0*(std::pow(R,2.0))-3.0*L*U*mu))/(3.0*K0*(std::pow(R,2.0))*(std::pow(M_PI,2.0)))-(3.0*L*(std::pow(U,2.0))*mu*std::sin((2.0*x*M_PI)/L))/(K0*(std::pow(R,2.0))*M_PI)-(3.0*L*(std::pow(U,2.0))*mu*std::sin((4.0*x*M_PI)/L))/(2.0*K0*(std::pow(R,2.0))*M_PI)-(L*(std::pow(U,2.0))*mu*std::sin((6.0*x*M_PI)/L))/(K0*(std::pow(R,2.0))*M_PI)-(18.0*L*(std::pow(U,2.0))*mu*std::cos((y*M_PI)/R)*std::sin((2.0*x*M_PI)/L))/(K0*(std::pow(R,2.0))*(std::pow(M_PI,3.0)))-(9.0*L*(std::pow(U,2.0))*mu*std::cos((y*M_PI)/R)*std::sin((4.0*x*M_PI)/L))/(K0*(std::pow(R,2.0))*(std::pow(M_PI,3.0)))+(9.0*L*(std::pow(U,2.0))*mu*std::cos((2.0*y*M_PI)/R)*std::sin((2.0*x*M_PI)/L))/(2.0*K0*(std::pow(R,2.0))*(std::pow(M_PI,3.0)))-(2.0*L*(std::pow(U,2.0))*mu*std::cos((3.0*y*M_PI)/R)*std::sin((2.0*x*M_PI)/L))/(K0*(std::pow(R,2.0))*(std::pow(M_PI,3.0)))-(6.0*L*(std::pow(U,2.0))*mu*std::cos((y*M_PI)/R)*std::sin((6.0*x*M_PI)/L))/(K0*(std::pow(R,2.0))*(std::pow(M_PI,3.0)))+(9.0*L*(std::pow(U,2.0))*mu*std::cos((2.0*y*M_PI)/R)*std::sin((4.0*x*M_PI)/L))/(4.0*K0*(std::pow(R,2.0))*(std::pow(M_PI,3.0)))-(L*(std::pow(U,2.0))*mu*std::cos((3.0*y*M_PI)/R)*std::sin((4.0*x*M_PI)/L))/(K0*(std::pow(R,2.0))*(std::pow(M_PI,3.0)))+(3.0*L*(std::pow(U,2.0))*mu*std::cos((2.0*y*M_PI)/R)*std::sin((6.0*x*M_PI)/L))/(2.0*K0*(std::pow(R,2.0))*(std::pow(M_PI,3.0)))-(2.0*L*(std::pow(U,2.0))*mu*std::cos((3.0*y*M_PI)/R)*std::sin((6.0*x*M_PI)/L))/(3.0*K0*(std::pow(R,2.0))*(std::pow(M_PI,3.0)));
+          u(1) = 0.0;
+          p    = (2.0*L*R*p0+(L*(std::pow(R,2.0))*(2.0*(std::pow(U,2.0))*(std::pow(mu,2.0))+3.0*K0*L*U*mu)-3.0*(std::pow(L,3.0))*(std::pow(U,2.0))*(std::pow(mu,2.0)))/(K0*(std::pow(R,3.0))))/(2.0*L*R)+(6.0*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((y*M_PI)/R))/(K0*(std::pow(R,2.0))*(std::pow(M_PI,2.0)))-(3.0*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((2.0*y*M_PI)/R))/(2.0*K0*(std::pow(R,2.0))*(std::pow(M_PI,2.0)))+(2.0*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((3.0*y*M_PI)/R))/(3.0*K0*(std::pow(R,2.0))*(std::pow(M_PI,2.0)))-(9.0*(std::pow(L,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((2.0*x*M_PI)/L))/(2.0*K0*(std::pow(R,4.0))*(std::pow(M_PI,2.0)))-(9.0*(std::pow(L,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((4.0*x*M_PI)/L))/(8.0*K0*(std::pow(R,4.0))*(std::pow(M_PI,2.0)))-((std::pow(L,2.0))*(std::pow(U,2.0))*(std::pow(mu,2.0))*std::cos((6.0*x*M_PI)/L))/(2.0*K0*(std::pow(R,4.0))*(std::pow(M_PI,2.0)))+(3.0*L*U*mu*std::sin((2.0*x*M_PI)/L)*(2.0*K0*(std::pow(R,2.0))-3.0*L*U*mu))/(2.0*K0*(std::pow(R,4.0))*M_PI)+(3.0*L*U*mu*std::sin((4.0*x*M_PI)/L)*(2.0*K0*(std::pow(R,2.0))-3.0*L*U*mu))/(4.0*K0*(std::pow(R,4.0))*M_PI)+(L*U*mu*std::sin((6.0*x*M_PI)/L)*(2.0*K0*(std::pow(R,2.0))-3.0*L*U*mu))/(2.0*K0*(std::pow(R,4.0))*M_PI);
+          dervel(0,0) = (9.0*(std::pow(U,2.0))*mu*std::cos((2.0*x*M_PI)/L)*std::cos((2.0*y*M_PI)/R))/(K0*(std::pow(R,2.0))*(std::pow(M_PI,2.0)))-(6.0*(std::pow(U,2.0))*mu*std::cos((4.0*x*M_PI)/L))/(K0*(std::pow(R,2.0)))-(6.0*(std::pow(U,2.0))*mu*std::cos((6.0*x*M_PI)/L))/(K0*(std::pow(R,2.0)))-(36.0*(std::pow(U,2.0))*mu*std::cos((2.0*x*M_PI)/L)*std::cos((y*M_PI)/R))/(K0*(std::pow(R,2.0))*(std::pow(M_PI,2.0)))-(6.0*(std::pow(U,2.0))*mu*std::cos((2.0*x*M_PI)/L))/(K0*(std::pow(R,2.0)))-(36.0*(std::pow(U,2.0))*mu*std::cos((4.0*x*M_PI)/L)*std::cos((y*M_PI)/R))/(K0*(std::pow(R,2.0))*(std::pow(M_PI,2.0)))-(4.0*(std::pow(U,2.0))*mu*std::cos((2.0*x*M_PI)/L)*std::cos((3.0*y*M_PI)/R))/(K0*(std::pow(R,2.0))*(std::pow(M_PI,2.0)))+(9.0*(std::pow(U,2.0))*mu*std::cos((4.0*x*M_PI)/L)*std::cos((2.0*y*M_PI)/R))/(K0*(std::pow(R,2.0))*(std::pow(M_PI,2.0)))-(36.0*(std::pow(U,2.0))*mu*std::cos((6.0*x*M_PI)/L)*std::cos((y*M_PI)/R))/(K0*(std::pow(R,2.0))*(std::pow(M_PI,2.0)))-(4.0*(std::pow(U,2.0))*mu*std::cos((4.0*x*M_PI)/L)*std::cos((3.0*y*M_PI)/R))/(K0*(std::pow(R,2.0))*(std::pow(M_PI,2.0)))+(9.0*(std::pow(U,2.0))*mu*std::cos((6.0*x*M_PI)/L)*std::cos((2.0*y*M_PI)/R))/(K0*(std::pow(R,2.0))*(std::pow(M_PI,2.0)))-(4.0*(std::pow(U,2.0))*mu*std::cos((6.0*x*M_PI)/L)*std::cos((3.0*y*M_PI)/R))/(K0*(std::pow(R,2.0))*(std::pow(M_PI,2.0)));
+          dervel(0,1) = (3.0*U*std::sin((2.0*y*M_PI)/R)*(2.0*K0*(std::pow(R,2.0))-3.0*L*U*mu))/(2.0*K0*(std::pow(R,3.0))*M_PI)-(3.0*U*std::sin((y*M_PI)/R)*(2.0*K0*(std::pow(R,2.0))-3.0*L*U*mu))/(K0*(std::pow(R,3.0))*M_PI)-(U*std::sin((3.0*y*M_PI)/R)*(2.0*K0*(std::pow(R,2.0))-3.0*L*U*mu))/(K0*(std::pow(R,3.0))*M_PI)+(18.0*L*(std::pow(U,2.0))*mu*std::sin((2.0*x*M_PI)/L)*std::sin((y*M_PI)/R))/(K0*(std::pow(R,3.0))*(std::pow(M_PI,2.0)))-(9.0*L*(std::pow(U,2.0))*mu*std::sin((2.0*x*M_PI)/L)*std::sin((2.0*y*M_PI)/R))/(K0*(std::pow(R,3.0))*(std::pow(M_PI,2.0)))+(9.0*L*(std::pow(U,2.0))*mu*std::sin((4.0*x*M_PI)/L)*std::sin((y*M_PI)/R))/(K0*(std::pow(R,3.0))*(std::pow(M_PI,2.0)))+(6.0*L*(std::pow(U,2.0))*mu*std::sin((2.0*x*M_PI)/L)*std::sin((3.0*y*M_PI)/R))/(K0*(std::pow(R,3.0))*(std::pow(M_PI,2.0)))-(9.0*L*(std::pow(U,2.0))*mu*std::sin((4.0*x*M_PI)/L)*std::sin((2.0*y*M_PI)/R))/(2.0*K0*(std::pow(R,3.0))*(std::pow(M_PI,2.0)))+(6.0*L*(std::pow(U,2.0))*mu*std::sin((6.0*x*M_PI)/L)*std::sin((y*M_PI)/R))/(K0*(std::pow(R,3.0))*(std::pow(M_PI,2.0)))+(3.0*L*(std::pow(U,2.0))*mu*std::sin((4.0*x*M_PI)/L)*std::sin((3.0*y*M_PI)/R))/(K0*(std::pow(R,3.0))*(std::pow(M_PI,2.0)))-(3.0*L*(std::pow(U,2.0))*mu*std::sin((6.0*x*M_PI)/L)*std::sin((2.0*y*M_PI)/R))/(K0*(std::pow(R,3.0))*(std::pow(M_PI,2.0)))+(2.0*L*(std::pow(U,2.0))*mu*std::sin((6.0*x*M_PI)/L)*std::sin((3.0*y*M_PI)/R))/(K0*(std::pow(R,3.0))*(std::pow(M_PI,2.0)));
+          dervel(1,0) = 0.0;
+          dervel(1,1) = 0.0;
+        }
+        else
+          dserror("3D analytical solution is not implemented");
+      }
+      else
+      {
+        dserror("The analytical solution is not implemented for this material");
+      }
+    }
+    break;
   default:
     dserror("analytical solution is not defined");
     break;
@@ -1699,12 +1902,23 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcDissipation(
   // acceleration/scalar time derivative values are at time n+alpha_M for
   // generalized-alpha scheme and at time n+1 for all other schemes
   // fill the local element vector/matrix with the global values
-  // af_genalpha: velocity/pressure at time n+alpha_F
+  // af_genalpha: velocity/pressure at time n+alpha_F and n+alpha_M
   // np_genalpha: velocity at time n+alpha_F, pressure at time n+1
   // ost:         velocity/pressure at time n+1
   LINALG::Matrix<nsd_,nen_> evelaf(true);
   LINALG::Matrix<nen_,1>    epreaf(true);
   ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evelaf, &epreaf,"velaf");
+
+  LINALG::Matrix<nsd_,nen_> evelam(true);
+  LINALG::Matrix<nen_,1>    epream(true);
+  if (fldpara_->PhysicalType() == INPAR::FLUID::weakly_compressible && fldparatimint_->IsGenalpha())
+  {
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evelam, &epream,"velam");
+  }
+  if (fldpara_->PhysicalType() == INPAR::FLUID::weakly_compressible_stokes && fldparatimint_->IsGenalpha())
+  {
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evelam, &epream,"velam");
+  }
 
   // np_genalpha: additional vector for velocity at time n+1
   LINALG::Matrix<nsd_,nen_> evelnp(true);
@@ -1897,7 +2111,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcDissipation(
   if (not fldpara_->MatGp() or not fldpara_->TauGp())
   {
 
-    GetMaterialParams(mat,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
+    GetMaterialParams(mat,evelaf,epreaf,epream,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
 
     // calculate all-scale or fine-scale subgrid viscosity at element center
     visceff_ = visc_;
@@ -1922,8 +2136,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcDissipation(
     {
       // make sure to get material parameters at element center
       if (fldpara_->MatGp())
-        //GetMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,thermpressdtam,vol);
-        GetMaterialParams(mat,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
+        //GetMaterialParams(material,evelaf,epreaf,epream,escaaf,escaam,thermpressaf,thermpressam,thermpressdtam,vol);
+        GetMaterialParams(mat,evelaf,epreaf,epream,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
 
       // provide necessary velocities and gradients at element center
       velint_.Multiply(evelaf,funct_);
@@ -2055,7 +2269,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcDissipation(
     // get material parameters at integration point
     if (fldpara_->MatGp())
     {
-      GetMaterialParams(mat,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
+      GetMaterialParams(mat,evelaf,epreaf,epream,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
 
       // calculate all-scale or fine-scale subgrid viscosity at integration point
       visceff_ = visc_;
@@ -2076,7 +2290,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcDissipation(
       {
         // make sure to get material parameters at gauss point
         if (not fldpara_->MatGp())
-          GetMaterialParams(mat,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
+          GetMaterialParams(mat,evelaf,epreaf,epream,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
 
         // calculate parameters of multifractal subgrid-scales
         PrepareMultifractalSubgrScales(B_mfs, D_mfs, evelaf, fsevelaf, vol);
@@ -2123,9 +2337,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcDissipation(
       if (fldpara_->UpdateMat())
       {
         if (fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
-          UpdateMaterialParams(mat,evelaf,escaaf,escaam,thermpressaf,thermpressam,mfssgscaint_);
+          UpdateMaterialParams(mat,evelaf,epreaf,epream,escaaf,escaam,thermpressaf,thermpressam,mfssgscaint_);
         else
-          UpdateMaterialParams(mat,evelaf,escaaf,escaam,thermpressaf,thermpressam,sgscaint_);
+          UpdateMaterialParams(mat,evelaf,epreaf,epream,escaaf,escaam,thermpressaf,thermpressam,sgscaint_);
         visceff_ = visc_;
         if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::vreman)
         visceff_ += sgvisc_;
@@ -3004,7 +3218,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InflowElement(DRT::Element* e
 }
 
 /*-----------------------------------------------------------------------------*
- | Calculate element mass matrix                               mayr.mt 05/2014 |
+ | Calculate element mass matrix                              la spina 06/2017 |
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcMassMatrix(
@@ -3028,7 +3242,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcMassMatrix(
   LINALG::Matrix<nsd_, nen_> mat1(true);
   LINALG::Matrix<nen_, 1> mat2(true);
 
-  GetMaterialParams(mat, mat1, mat2, mat2, mat2, 0.0, 0.0, 0.0, 0.0, 0.0);
+  GetMaterialParams(mat, mat1, mat2, mat2, mat2, mat2, mat2, 0.0, 0.0, 0.0, 0.0, 0.0);
 
   // ---------------------------------------------------------------------------
   // Geometry
@@ -3097,6 +3311,61 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcMassMatrix(
       } // end for (vi)
     } // end for (jdim)
   } // end for (ui)
+
+  // add terms associated to pressure dofs for weakly_compressible flows
+  if (fldpara_->PhysicalType() == INPAR::FLUID::weakly_compressible)
+  {
+    dserror("Evaluation of the mass matrix for pressure dofs");
+    // check fluid material
+    if (mat->MaterialType() != INPAR::MAT::m_fluid_murnaghantait)
+    {
+      dserror("The evaluation of the mass matrix for pressure dofs is implemented only for Murnaghan-Tait equation of state");
+    }
+
+    // extract fluid material parameters
+    const MAT::MurnaghanTaitFluid* actmat = static_cast<const MAT::MurnaghanTaitFluid*>(mat.get());
+    double RefPressure           = actmat->RefPressure();        // reference pressure
+    double RefBulkModulus        = actmat->RefBulkModulus();     // reference bulk modulus
+    double MatParameter          = actmat->MatParameter();       // material parameter according to Murnaghan-Tait
+
+    // evaluation of the "compressibility factor"
+    double compr_fac = 1.0 / (RefBulkModulus + MatParameter * (preaf_ - RefPressure));
+
+    // definition of matrices
+    LINALG::Matrix<nen_,nen_> ppmat(true);
+
+    // ---------------------------------------------------------------------------
+    // Integration loop
+    // ---------------------------------------------------------------------------
+    for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints_.begin(); iquad!=intpoints_.end(); ++iquad )
+    {
+      // evaluate shape functions and derivatives at integration point
+      EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
+
+      for (int ui=0; ui<nen_; ++ui)
+      {
+        for (int vi=0; vi<nen_; ++vi)
+        {
+          ppmat(vi,ui) += funct_(vi)*funct_(ui)*fac_*compr_fac;
+        } // end for (vi)
+      } // end for (ui)
+    } // end of integration loop
+
+    // ---------------------------------------------------------------------------
+    // Add pressure-pressure part to matrix
+    // ---------------------------------------------------------------------------
+    for (int ui=0; ui<nen_; ++ui)
+    {
+      const int numdof_ui = numdofpernode_*ui;
+
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int numdof_vi = numdofpernode_*vi;
+
+        elemat1_epetra(numdof_vi+nsd_, numdof_ui+nsd_) += ppmat(vi,ui);
+      } // end for (vi)
+    } // end for (ui)
+  }
 
   return 0;
 }
@@ -5161,7 +5430,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcMassFlowPeriodicHill(
   LINALG::Matrix<nsd_, nen_> mat1(true);
   LINALG::Matrix<nen_, 1> mat2(true);
 
-  GetMaterialParams(mat, mat1, mat2, mat2, mat2, 0.0, 0.0, 0.0, 0.0, 0.0);
+  GetMaterialParams(mat, mat1, mat2, mat2, mat2, mat2, mat2, 0.0, 0.0, 0.0, 0.0, 0.0);
 
   // ---------------------------------------------------------------------------
   // Geometry
@@ -5195,7 +5464,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcMassFlowPeriodicHill(
     LINALG::Matrix<nsd_, nen_> mat1(true);
     LINALG::Matrix<nen_, 1> mat2(true);
 
-    GetMaterialParams(mat, mat1, mat2, mat2, mat2, 0.0, 0.0, 0.0, 0.0, 0.0);
+    GetMaterialParams(mat, mat1, mat2, mat2, mat2, mat2, mat2, 0.0, 0.0, 0.0, 0.0, 0.0);
 
     velint_.Multiply(evelnp,funct_);
 

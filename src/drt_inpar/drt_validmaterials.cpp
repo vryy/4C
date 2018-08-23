@@ -97,6 +97,42 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
+  // Weakly compressible fluid according to Murnaghan-Tait
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_fluid_murnaghantait",
+                                            "Weakly compressible fluid according to Murnaghan-Tait",
+                                            INPAR::MAT::m_fluid_murnaghantait));
+
+    AddNamedReal(m,"DYNVISCOSITY","dynamic viscosity");
+    AddNamedReal(m,"REFDENSITY","reference spatial mass density");
+    AddNamedReal(m,"REFPRESSURE","reference pressure");
+    AddNamedReal(m,"REFBULKMODULUS","reference bulk modulus");
+    AddNamedReal(m,"MATPARAMETER","material parameter according to Murnaghan-Tait");
+    AddNamedReal(m,"GAMMA","surface tension coefficient",0.0,true);
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // Linear law (pressure-dependent) for the density and the viscosity
+  {
+    Teuchos::RCP<MaterialDefinition> m
+    = Teuchos::rcp(new MaterialDefinition("MAT_fluid_linear_density_viscosity",
+        "Linear law (pressure-dependent) for the density and the viscosity",
+        INPAR::MAT::m_fluid_linear_density_viscosity));
+
+    AddNamedReal(m,"REFDENSITY","reference density");
+    AddNamedReal(m,"REFVISCOSITY","reference viscosity");
+    AddNamedReal(m,"REFPRESSURE","reference pressure");
+    AddNamedReal(m,"COEFFDENSITY","density-pressure coefficient");
+    AddNamedReal(m,"COEFFVISCOSITY","viscosity-pressure coefficient");
+    AddNamedReal(m,"GAMMA","surface tension coefficient",0.0,true);
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // fluid with non-linear viscosity according to Carreau-Yasuda
   {
     Teuchos::RCP<MaterialDefinition> m

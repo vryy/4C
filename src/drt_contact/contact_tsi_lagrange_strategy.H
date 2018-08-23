@@ -224,7 +224,7 @@ protected:
 namespace UTILS
 {
 //! @name little helpers
-inline void AddVector(Epetra_Vector& src,Epetra_Vector& dst);
+void AddVector(Epetra_Vector& src,Epetra_Vector& dst);
 }
 } // namespace CONTACT
 

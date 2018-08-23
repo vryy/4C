@@ -6,10 +6,10 @@
 <pre>
 \level 2
 
-\maintainer Svenja Schoeder
-            schoeder@lnm.mw.tum.de
+\maintainer Luca Berardocco
+            berardoccoo@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15265
+            089 - 289-15244
 </pre>
  */
 /*--------------------------------------------------------------------------*/
@@ -857,6 +857,10 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ProjectField(
       for (unsigned int i=0;i<nsd_;++i)
         ele->eleinteriorVelnp_(i*shapes_.ndofs_+r) += localMat(r, i); // velocity
     }
+
+    if(trac_with_pml)
+      ele->eleinteriorAuxiliaryPML_.Scale(0.0);
+
     // projection according to Cockburn, formula 2.8 in "uniform-in-time superconvergence of the hdg methods for the acosutic wave equation" */
     /*
     // need smaller polynomial space
@@ -1085,36 +1089,245 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ProjectOpticalField(
 {
   shapes_.Evaluate(*ele);
 
-  double* energy = params.get<double*>("gpvalues");
+  bool meshconform = params.get<bool>("mesh conform");
 
-  Epetra_SerialDenseMatrix localMat(shapes_.ndofs_,1);
+  // this is the easy case: the corresponding optical element has exactly the same nodes
+  // and hence we can easily get the scatra dofs of the nodes and substitute the pressure
+  // values
+  int numlightnode = nen_;
 
-  for (unsigned int q = 0; q < shapes_.nqpoints_; ++q)
+  double lightxyz[numlightnode][nsd_];
+  double values[numlightnode];
+  double absorptioncoeff = -1.0;
+
+  if (meshconform)
   {
-    const double fac = shapes_.jfac(q);
-    for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
+    // get the absorption coefficient
+    absorptioncoeff = params.get<double>("absorption");
+
+    Teuchos::RCP<std::vector<double> > nodevals = params.get<Teuchos::RCP<std::vector<double> > >("nodevals");
+
+    if (int((*nodevals).size() / (nsd_ + 1)) != numlightnode)
+      dserror("node number not matching");
+
+    // meanwhile: check if we are at least near the element, otherwise we can already go home
+    for (int i = 0; i < numlightnode; ++i)
     {
-      massPart(i, q) = shapes_.shfunct(i, q);
-      massPartW(i, q) = shapes_.shfunct(i, q) * fac;
-      localMat(i,0) -= shapes_.shfunct(i, q) * energy[q] * fac;
+      for (unsigned int j = 0; j < nsd_; ++j)
+        lightxyz[i][j] = (*nodevals)[i * (nsd_ + 1) + j];
+      values[i] = (*nodevals)[i * (nsd_ + 1) + nsd_];
+    }
+
+  }
+  else
+  {
+    // get node based values!
+    Teuchos::RCP<const Epetra_Vector> matrix_state = params.get<Teuchos::RCP<Epetra_Vector> >("pressurenode");
+    std::vector<double> nodevals;
+    DRT::UTILS::ExtractMyNodeBasedValues(ele, nodevals, *matrix_state);
+    if (nodevals.size() != nen_)
+      dserror("node number not matching: %d vs. %d", nodevals.size(), nen_);
+
+    for (int i = 0; i < numlightnode; ++i)
+    {
+      for (unsigned int j = 0; j < nsd_; ++j)
+        lightxyz[i][j] = shapes_.xyze(j, i);
+      values[i] = nodevals[i];
     }
   }
 
-  Mmat.Multiply('N', 'T', 1., massPart, massPartW, 0.);
-  {
-    Epetra_SerialDenseSolver inverseMass;
-    inverseMass.SetMatrix(Mmat);
-    inverseMass.SetVectors(localMat, localMat);
-    inverseMass.Solve();
-  }
+  // now we have locations "lightxyz" and corresponding phis in "values"
+  // what we want to do now is to evaluate the field in the locations of the
+  // Gauss points in this element, to assign an initial distribution
+  // so we do exactly the same as in ProjectInitalField BUT call an other
+  // evaluate function which will interpolate from given lightxyz and values
 
-   //standard L2-projection
-  for (unsigned int r = 0; r < shapes_.ndofs_; ++r)
-    ele->eleinteriorPressnp_(r) += localMat(r, 0); // pressure
-  ele->eleinteriorVelnp_.Scale(0.0);
+  // internal variables
+  if (elevec2.M() > 0)
+  {
+    /*Epetra_SerialDenseMatrix localMat(shapes_.ndofs_, 1);
+
+    for (unsigned int q = 0; q < shapes_.nqpoints_; ++q)
+    {
+      const double fac = shapes_.jfac(q);
+      double xyz[nsd_];
+      for (unsigned int d = 0; d < nsd_; ++d)
+        xyz[d] = shapes_.xyzreal(d, q); // coordinates of quadrature point in real coordinates
+      double p = 0.0;
+      EvaluateLight(lightxyz, values, numlightnode, xyz, p, absorptioncoeff); // p at quadrature point
+
+      for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
+      {
+        massPart(i, q) = shapes_.shfunct(i, q);
+        massPartW(i, q) = shapes_.shfunct(i, q)* fac;
+        localMat(i, 0) += shapes_.shfunct(i, q) * p * fac;
+      }
+    }
+
+    Mmat.Multiply('N', 'T', 1., massPart, massPartW, 0.);
+    {
+      Epetra_SerialDenseSolver inverseMass;
+      inverseMass.SetMatrix(Mmat);
+      inverseMass.SetVectors(localMat, localMat);
+      inverseMass.Solve();
+    }
+
+    for (unsigned int r = 0; r < shapes_.ndofs_; ++r)
+    {
+      elevec2[r * (nsd_ + 1) + nsd_] += localMat(r, 0); // pressure
+      ele->eleinteriorPressnp_(r) += localMat(r, 0); // pressure
+    }
+    */
+    for (unsigned int r = 0; r < shapes_.ndofs_; ++r)
+    {
+      double xyz[nsd_];
+      for (unsigned int d = 0; d < nsd_; ++d)
+        xyz[d] = shapes_.nodexyzreal(d, r);
+      double p = 0.0;
+      EvaluateLight(lightxyz, values, numlightnode, xyz, p, absorptioncoeff); // p at quadrature point
+
+      elevec2[r * (nsd_ + 1) + nsd_] += p; // pressure
+      ele->eleinteriorPressnp_(r) += p; // pressure
+    }
+
+
+  }
 
   return 0;
 }
+/*----------------------------------------------------------------------*
+ * EvaluateLight
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::EvaluateLight(
+    double lightxyz[][nsd_], double values[], int numnode,
+    const double(&xyz)[nsd_], double &p,
+    double absorptioncoeff) const
+{
+
+  // interpolation from nodes
+  if (distype == DRT::Element::quad4)
+  {
+    if (numnode != 4)
+      dserror("wrong number of nodes given");
+
+    //*******************************************************************
+    /*LINALG::Matrix<4, 4> coeff(true);
+    for(int i=0; i<4; ++i)
+    {
+      coeff(i,0)=1.0;
+      coeff(i,1)=lightxyz[i][0];
+      coeff(i,2)=lightxyz[i][1];
+      coeff(i,3)=lightxyz[i][0]*lightxyz[i][1];
+    }
+    LINALG::Matrix<4,4> coeff_N(true);
+    coeff_N(0,0)=1.0;
+    coeff_N(1,1)=1.0;
+    coeff_N(2,2)=1.0;
+    coeff_N(3,3)=1.0;
+    {
+      LINALG::FixedSizeSerialDenseSolver<4,4,4> inverseCoeff;
+      inverseCoeff.SetMatrix(coeff);
+      inverseCoeff.SetVectors(coeff_N,coeff_N);
+      int err = inverseCoeff.Solve();
+      if(err != 0) dserror("Inversion of matrix in light evaluation failed with errorcode %d",err);
+    }
+
+    p = ( coeff_N(0,0) + coeff_N(1,0) * xyz[0] + coeff_N(2,0) * xyz[1] + coeff_N(3,0) * xyz[0] * xyz[1] ) * values[0]
+      + ( coeff_N(0,1) + coeff_N(1,1) * xyz[0] + coeff_N(2,1) * xyz[1] + coeff_N(3,1) * xyz[0] * xyz[1] ) * values[1]
+      + ( coeff_N(0,2) + coeff_N(1,2) * xyz[0] + coeff_N(2,2) * xyz[1] + coeff_N(3,2) * xyz[0] * xyz[1] ) * values[2]
+      + ( coeff_N(0,3) + coeff_N(1,3) * xyz[0] + coeff_N(2,3) * xyz[1] + coeff_N(3,3) * xyz[0] * xyz[1] ) * values[3];
+     */
+    double average = (values[0]+values[1]+values[2]+values[3])/4.0;
+    //if(p>10.0*average|| p<average/10.0)
+    p = average;
+    p *= -absorptioncoeff;
+  }
+  else if (distype == DRT::Element::hex8)
+  {
+    if(numnode != 8) dserror("wrong number of nodes given");
+
+    //*******************************************************************
+    LINALG::Matrix<8,8> coeff(true);
+    for(int i=0; i<8; ++i)
+    {
+      coeff(i,0)=1.0;
+      coeff(i,1)=lightxyz[i][0];
+      coeff(i,2)=lightxyz[i][1];
+      coeff(i,3)=lightxyz[i][2];
+      coeff(i,4)=lightxyz[i][0]*lightxyz[i][1];
+      coeff(i,5)=lightxyz[i][0]*lightxyz[i][2];
+      coeff(i,6)=lightxyz[i][1]*lightxyz[i][2];
+      coeff(i,7)=lightxyz[i][0]*lightxyz[i][1]*lightxyz[i][2];
+    }
+    LINALG::Matrix<8,8> coeff_N(true);
+    for(int i=0; i<8; ++i)
+      coeff_N(i,i)=1.0;
+
+    {
+      LINALG::FixedSizeSerialDenseSolver<8,8,8> inverseCoeff;
+      inverseCoeff.SetMatrix(coeff);
+      inverseCoeff.SetVectors(coeff_N,coeff_N);
+      int err = inverseCoeff.Solve();
+      if(err != 0) dserror("Inversion of matrix in light evaluation failed with errorcode %d",err);
+    }
+
+    p = ( coeff_N(0,0) + coeff_N(1,0) * xyz[0] + coeff_N(2,0) * xyz[1] + coeff_N(3,0) * xyz[2] + coeff_N(4,0) * xyz[0] * xyz[1] + coeff_N(5,0) * xyz[0] * xyz[2] + coeff_N(6,0) * xyz[1] * xyz[2] + coeff_N(7,0) * xyz[0] * xyz[1] * xyz[2] ) * values[0]
+      + ( coeff_N(0,1) + coeff_N(1,1) * xyz[0] + coeff_N(2,1) * xyz[1] + coeff_N(3,1) * xyz[2] + coeff_N(4,1) * xyz[0] * xyz[1] + coeff_N(5,1) * xyz[0] * xyz[2] + coeff_N(6,1) * xyz[1] * xyz[2] + coeff_N(7,1) * xyz[0] * xyz[1] * xyz[2] ) * values[1]
+      + ( coeff_N(0,2) + coeff_N(1,2) * xyz[0] + coeff_N(2,2) * xyz[1] + coeff_N(3,2) * xyz[2] + coeff_N(4,2) * xyz[0] * xyz[1] + coeff_N(5,2) * xyz[0] * xyz[2] + coeff_N(6,2) * xyz[1] * xyz[2] + coeff_N(7,2) * xyz[0] * xyz[1] * xyz[2] ) * values[2]
+      + ( coeff_N(0,3) + coeff_N(1,3) * xyz[0] + coeff_N(2,3) * xyz[1] + coeff_N(3,3) * xyz[2] + coeff_N(4,3) * xyz[0] * xyz[1] + coeff_N(5,3) * xyz[0] * xyz[2] + coeff_N(6,3) * xyz[1] * xyz[2] + coeff_N(7,3) * xyz[0] * xyz[1] * xyz[2] ) * values[3]
+      + ( coeff_N(0,4) + coeff_N(1,4) * xyz[0] + coeff_N(2,4) * xyz[1] + coeff_N(3,4) * xyz[2] + coeff_N(4,4) * xyz[0] * xyz[1] + coeff_N(5,4) * xyz[0] * xyz[2] + coeff_N(6,4) * xyz[1] * xyz[2] + coeff_N(7,4) * xyz[0] * xyz[1] * xyz[2] ) * values[4]
+      + ( coeff_N(0,5) + coeff_N(1,5) * xyz[0] + coeff_N(2,5) * xyz[1] + coeff_N(3,5) * xyz[2] + coeff_N(4,5) * xyz[0] * xyz[1] + coeff_N(5,5) * xyz[0] * xyz[2] + coeff_N(6,5) * xyz[1] * xyz[2] + coeff_N(7,5) * xyz[0] * xyz[1] * xyz[2] ) * values[5]
+      + ( coeff_N(0,6) + coeff_N(1,6) * xyz[0] + coeff_N(2,6) * xyz[1] + coeff_N(3,6) * xyz[2] + coeff_N(4,6) * xyz[0] * xyz[1] + coeff_N(5,6) * xyz[0] * xyz[2] + coeff_N(6,6) * xyz[1] * xyz[2] + coeff_N(7,6) * xyz[0] * xyz[1] * xyz[2] ) * values[6]
+      + ( coeff_N(0,7) + coeff_N(1,7) * xyz[0] + coeff_N(2,7) * xyz[1] + coeff_N(3,7) * xyz[2] + coeff_N(4,7) * xyz[0] * xyz[1] + coeff_N(5,7) * xyz[0] * xyz[2] + coeff_N(6,7) * xyz[1] * xyz[2] + coeff_N(7,7) * xyz[0] * xyz[1] * xyz[2] ) * values[7];
+    p *= -absorptioncoeff;
+  }
+  else
+    dserror("not yet implemented");
+
+  return;
+}
+//template<DRT::Element::DiscretizationType distype>
+//int DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ProjectOpticalField(
+//    DRT::ELEMENTS::Acou* ele,
+//    Teuchos::ParameterList& params,
+//    Epetra_SerialDenseVector& elevec2)
+//{
+//  shapes_.Evaluate(*ele);
+//
+//  double* energy = params.get<double*>("gpvalues");
+//
+//  Epetra_SerialDenseMatrix localMat(shapes_.ndofs_,1);
+//
+//  for (unsigned int q = 0; q < shapes_.nqpoints_; ++q)
+//  {
+//    const double fac = shapes_.jfac(q);
+//    for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
+//    {
+//      massPart(i, q) = shapes_.shfunct(i, q);
+//      massPartW(i, q) = shapes_.shfunct(i, q) * fac;
+//      localMat(i,0) -= shapes_.shfunct(i, q) * energy[q] * fac;
+//    }
+//  }
+//
+//  Mmat.Multiply('N', 'T', 1., massPart, massPartW, 0.);
+//  {
+//    Epetra_SerialDenseSolver inverseMass;
+//    inverseMass.SetMatrix(Mmat);
+//    inverseMass.SetVectors(localMat, localMat);
+//    inverseMass.Solve();
+//  }
+//
+//   //standard L2-projection
+//  for (unsigned int r = 0; r < shapes_.ndofs_; ++r)
+//    ele->eleinteriorPressnp_(r) += localMat(r, 0); // pressure
+//  ele->eleinteriorVelnp_.Scale(0.0);
+//
+//  if(trac_with_pml)
+//    ele->eleinteriorAuxiliaryPML_.Scale(0.0);
+//
+//  return 0;
+//}
 
 /*----------------------------------------------------------------------*
  * EvaluateAll
@@ -1193,7 +1406,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::NodeBasedValues(
     shapes_->polySpace_->Evaluate(shapes_->xsi, values);
 
     // compute values for velocity and pressure by summing over all basis functions
-    double sum = 0;
+    double sum = 0.0;
     for (unsigned int k = 0; k < shapes_->ndofs_; ++k)
     {
       sum += values(k) * interiorPressnp_(k);

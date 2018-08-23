@@ -90,7 +90,11 @@ namespace FSI
     //! access to ale field
     const Teuchos::RCP< ::ADAPTER::AleFpsiWrapper>& AleField(){return ale_;}
 
+    //! is an monolithic ale computations
     bool HaveAle() {return (AleField() != Teuchos::null);}
+
+    //! number of physical fields to solve involved
+    int NumFields(){return num_fields_;}
 
     //@}
 
@@ -129,8 +133,10 @@ namespace FSI
 
     //--------------------------------------------------------------------------//
     //! @name block ids of the monolithic system
+    int num_fields_;
     int structp_block_;
     int fluid_block_;
+    int fluidp_block_;
     int ale_i_block_;
 
     //@}

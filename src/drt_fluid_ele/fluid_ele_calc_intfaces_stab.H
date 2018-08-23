@@ -1114,6 +1114,9 @@ namespace DRT
       //! density
       double density_;
 
+      //! reaction coefficient!
+      double reacoeff_;
+
       //! longest edge in parent element
       double p_hk_;
 

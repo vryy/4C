@@ -178,9 +178,9 @@ lnm-buildtest_minimal:
     << : *buildtest_minimal
     variables:
         CTEST_MAKE: "make full -j3"
-        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-minimal-GITLAB-TEST-PLEASEIGNORE"
+        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-minimal-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "centos74_Q12015.config"
-        CTEST_DROP_SITE_CDASH_GITLAB: "0"
+        CTEST_DROP_SITE_CDASH_GITLAB: "1"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
@@ -190,7 +190,7 @@ lnm-buildtest_full:
     << : *buildtest_full
     variables:
         CTEST_MAKE: "make full -j3"
-        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-$TEST_TAG-GITLAB-TEST-PLEASEIGNORE"
+        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-$TEST_TAG-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "centos74_Q12015.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "0"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
@@ -202,9 +202,9 @@ lnm-buildtest_daily:
     << : *buildtest_daily
     variables:
         CTEST_MAKE: "make full -j3"
-        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-GITLAB-TEST-PLEASEIGNORE"
+        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "centos74_Q12015.config"
-        CTEST_DROP_SITE_CDASH_GITLAB: "0"
+        CTEST_DROP_SITE_CDASH_GITLAB: "1"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
@@ -214,9 +214,9 @@ lnm-buildtest_daily_debug:
     << : *buildtest_daily_debug
     variables:
         CTEST_MAKE: "make full -j3"
-        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015 DEBUG-GITLAB-TEST-PLEASEIGNORE"
+        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015 DEBUG-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "centos74_Q12015_nightlytest.config"
-        CTEST_DROP_SITE_CDASH_GITLAB: "0"
+        CTEST_DROP_SITE_CDASH_GITLAB: "1"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
@@ -226,9 +226,9 @@ lnm-doxygen:
     << : *doxygen
     variables:
         CTEST_MAKE: "make documentation"
-        CTEST_BUILD_NAME_GITLAB: "Doxygen-GITLAB-TEST-PLEASEIGNORE"
+        CTEST_BUILD_NAME_GITLAB: "Doxygen-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "centos74_Q12015.config"
-        CTEST_DROP_SITE_CDASH_GITLAB: "0"
+        CTEST_DROP_SITE_CDASH_GITLAB: "1"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:

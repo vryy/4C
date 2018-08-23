@@ -5,10 +5,10 @@
 <pre>
 \level 2
 
-\maintainer Svenja Schoeder
-            schoeder@lnm.mw.tum.de
+\maintainer Luca Berardocco
+            berardoccoo@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15265
+            089 - 289-15244
 </pre>
 *----------------------------------------------------------------------*/
 
@@ -219,9 +219,11 @@ void AcouExplicitTimeInt::SetInitialField(int startfuncno)
 /*----------------------------------------------------------------------*
  | Initialization by given scatra solution vector (pub)  schoeder 01/14 |
  *----------------------------------------------------------------------*/
-void ACOU::AcouExplicitTimeInt::SetInitialPhotoAcousticField(Teuchos::RCP<SCATRA::TimIntStationary> scatraalgo)
+void ACOU::AcouExplicitTimeInt::SetInitialPhotoAcousticField(Teuchos::RCP<Epetra_Vector> light,
+    Teuchos::RCP<DRT::Discretization> scatradis,
+    bool meshconform)
 {
-  ACOU::AcouTimeInt::SetInitialPhotoAcousticField(scatraalgo);
+  ACOU::AcouTimeInt::SetInitialPhotoAcousticField(light,scatradis,meshconform);
 
 
   // read initial conditions by loop over elements of discret.
@@ -701,12 +703,14 @@ WaveEquationProblem<dim,Number>::WaveEquationProblem(Teuchos::RCP<DRT::Discretiz
   }
 
   if(bacitimeint->MonitorManager()!=Teuchos::null)
+  {
     if(bacitimeint->MonitorManager()->CellIdsRequired())
     {
       // careful with this if h and delta t scale differently
       double eps = time_step/10.0;
       std::vector<double> positions;
       bacitimeint->MonitorManager()->GetMonitorPositions(positions);
+
       int numdetec = positions.size()/dim;
       std::vector<int> cellids(numdetec,-1);
       std::vector<bool> cellrowflag(numdetec,false);
@@ -735,7 +739,14 @@ WaveEquationProblem<dim,Number>::WaveEquationProblem(Teuchos::RCP<DRT::Discretiz
               {
                 cellhasmonitoredface = true;
                 facemeasure = cell->face(f)->measure();
-                fullfacemeasure += facemeasure;
+                if(facemeasure!=facemeasure)
+                {
+                  //std::cout<<"gid "<<discret->ElementColMap()->GID(cell->index())<<
+                  //    " rowlid "<<discret->ElementRowMap()->LID(discret->ElementColMap()->GID(cell->index()))<<std::endl;
+                  //dserror("cell %d face %d has no face measure",cell->index(),f);
+                }
+                else
+                  fullfacemeasure += facemeasure;
               }
             }
             else
@@ -757,11 +768,12 @@ WaveEquationProblem<dim,Number>::WaveEquationProblem(Teuchos::RCP<DRT::Discretiz
                 if(pressmonBC[0]->ContainsNode(ele->NodeIds()[n]))
                   count++;
 
-              if(count>1)
+              if(count>= 2)//dim) //if(count>1)
               {
                 cellhasmonitoredface = true;
                 facemeasure = cell->face(f)->measure();
-                fullfacemeasure += facemeasure/2.0; // an inner face is touched two times by this
+                if(facemeasure==facemeasure)
+                  fullfacemeasure += facemeasure/2.0; // an inner face is touched two times by this
               }
             }
           }
@@ -793,7 +805,7 @@ WaveEquationProblem<dim,Number>::WaveEquationProblem(Teuchos::RCP<DRT::Discretiz
       discret->Comm().SumAll(&fullfacemeasure,&globalfacemeasure,1);
       bacitimeint->MonitorManager()->SetCellIds(cellids,cellrowflag,globalfacemeasure);
     }
-
+  }
 }
 
 template <int dim, typename Number>
@@ -883,17 +895,17 @@ void WaveEquationProblem<dim,Number>::set_evaluator(const Teuchos::RCP<Teuchos::
     sigma->read_pml_definition(filename_pml);
 
     if (fe_degree==1)
-      evaluator.reset(new WaveEquationOperationAcousticWavePML<dim,1,Number>(dof_handlers, discret, diriboundary, rhs, sigma, time_step, sourcetermfuncno, bacitimeint->MonitorManager(),invana&&adjoint));
+      evaluator.reset(new WaveEquationOperationAcousticWavePML<dim,1,Number>(dof_handlers, discret, diriboundary, rhs, sigma, time_step, sourcetermfuncno, bacitimeint->MonitorManager(),invana&&adjoint,reduction));
     else if (fe_degree==2)
-      evaluator.reset(new WaveEquationOperationAcousticWavePML<dim,2,Number>(dof_handlers, discret, diriboundary, rhs, sigma, time_step, sourcetermfuncno, bacitimeint->MonitorManager(),invana&&adjoint));
+      evaluator.reset(new WaveEquationOperationAcousticWavePML<dim,2,Number>(dof_handlers, discret, diriboundary, rhs, sigma, time_step, sourcetermfuncno, bacitimeint->MonitorManager(),invana&&adjoint,reduction));
     else if (fe_degree==3)
-      evaluator.reset(new WaveEquationOperationAcousticWavePML<dim,3,Number>(dof_handlers, discret, diriboundary, rhs, sigma, time_step, sourcetermfuncno, bacitimeint->MonitorManager(),invana&&adjoint));
+      evaluator.reset(new WaveEquationOperationAcousticWavePML<dim,3,Number>(dof_handlers, discret, diriboundary, rhs, sigma, time_step, sourcetermfuncno, bacitimeint->MonitorManager(),invana&&adjoint,reduction));
     else if (fe_degree==4)
-      evaluator.reset(new WaveEquationOperationAcousticWavePML<dim,4,Number>(dof_handlers, discret, diriboundary, rhs, sigma, time_step, sourcetermfuncno, bacitimeint->MonitorManager(),invana&&adjoint));
+      evaluator.reset(new WaveEquationOperationAcousticWavePML<dim,4,Number>(dof_handlers, discret, diriboundary, rhs, sigma, time_step, sourcetermfuncno, bacitimeint->MonitorManager(),invana&&adjoint,reduction));
     else if (fe_degree==5)
-      evaluator.reset(new WaveEquationOperationAcousticWavePML<dim,5,Number>(dof_handlers, discret, diriboundary, rhs, sigma, time_step, sourcetermfuncno, bacitimeint->MonitorManager(),invana&&adjoint));
+      evaluator.reset(new WaveEquationOperationAcousticWavePML<dim,5,Number>(dof_handlers, discret, diriboundary, rhs, sigma, time_step, sourcetermfuncno, bacitimeint->MonitorManager(),invana&&adjoint,reduction));
     else if (fe_degree==6)
-      evaluator.reset(new WaveEquationOperationAcousticWavePML<dim,6,Number>(dof_handlers, discret, diriboundary, rhs, sigma, time_step, sourcetermfuncno, bacitimeint->MonitorManager(),invana&&adjoint));
+      evaluator.reset(new WaveEquationOperationAcousticWavePML<dim,6,Number>(dof_handlers, discret, diriboundary, rhs, sigma, time_step, sourcetermfuncno, bacitimeint->MonitorManager(),invana&&adjoint,reduction));
   }
   else
   {
@@ -910,6 +922,8 @@ void WaveEquationProblem<dim,Number>::set_evaluator(const Teuchos::RCP<Teuchos::
     else if (fe_degree==6)
       evaluator.reset(new WaveEquationOperationAcousticWave<dim,6,Number>(dof_handlers, discret, diriboundary, rhs, time_step, sourcetermfuncno, bacitimeint->MonitorManager()));
   }
+
+  evaluator->set_reduction(reduction);
 
   return;
 }
@@ -1416,10 +1430,12 @@ WaveEquationProblem<dim,Number>::output_results (const unsigned int timestep_num
     bacitimeint->MonitorManager()->StoreForwardValues(time,values);
   }
 
-  if (exactsolutionfuncno>=0 && this->solid==false)
+
+  if (step%up_res == 0 && exactsolutionfuncno>=0 && this->solid==false)
   {
-    for(int d=0; d<dim+1; ++d)
+    for(int d=dim; d<dim+1; ++d) //for(int d=0; d<dim+1; ++d)
     {
+
       Vector<double> norm_per_cell_p (triangulation.n_active_cells());
 
       // calculate norm of field
@@ -1434,12 +1450,33 @@ WaveEquationProblem<dim,Number>::output_results (const unsigned int timestep_num
       IndexSet relevant_set;
       get_relevant_set(dof_handler, relevant_set);
       parallel::distributed::Vector<double> ghosted_sol(dof_handler.locally_owned_dofs(),relevant_set,
-                                                        solutions[d].get_mpi_communicator());
+          solutions[d].get_mpi_communicator());
+
+      /************************* nur fuer pml konvergenz test 1D *****************************/
+
+      // overwrite values in cell in pml
+      ghosted_sol = solutions[d];
+      const unsigned int dofs_per_cell = dof_handler.get_fe().dofs_per_cell;
+      typename DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active(),
+          cend = dof_handler.end();
+      std::vector<types::global_dof_index> local_dof_indices(dofs_per_cell);
+      for (; cell!=cend; ++cell)
+      {
+        if(cell->center()[0]>1.0)
+        {
+          cell->get_dof_indices(local_dof_indices);
+          for (unsigned int i=0; i<dofs_per_cell; ++i)
+            ghosted_sol(local_dof_indices[i]) = 0.0;
+        }
+      }
+
+      /************************* nur fuer pml konvergenz test 1D *****************************/
+
 
       // calculate norm of difference between field and analytic field
       norm_per_cell_p = 0;
       VectorTools::integrate_difference (dof_handler,
-          solutions[d],
+          ghosted_sol, //solutions[d],
           ExactSolution<dim>(dim,time,exactsolutionfuncno+d),
           norm_per_cell_p,
           QGauss<dim>(fe.degree+2),

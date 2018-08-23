@@ -3,10 +3,10 @@
 \brief Main control routine for acoustic simulations
 \level 2
 <pre>
-\maintainer Svenja Schoeder
-            schoeder@lnm.mw.tum.de
+\maintainer Luca Berardocco
+            berardoccoo@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15265
+            089 - 289-15244
 </pre>
 *----------------------------------------------------------------------*/
 
@@ -345,7 +345,11 @@ void acoustics_drt()
       }
 
       // calculate initial pressure distribution by means of the scalar transport problem
-      acoualgo->SetInitialPhotoAcousticField(scatraalgo);
+      Teuchos::RCP<Epetra_Vector> scatrainitialpress;
+      scatrainitialpress = scatraalgo->Phinp();
+      bool meshconform = DRT::INPUT::IntegralValue<bool>(acouparams,"MESHCONFORM");
+      acoualgo->SetInitialPhotoAcousticField(scatrainitialpress,DRT::Problem::Instance()->GetDis("scatra"), meshconform);
+      //acoualgo->SetInitialPhotoAcousticField(scatraalgo);
     }
 
     acoualgo->Integrate();
@@ -417,6 +421,9 @@ void acoustics_drt()
     break;
     case INPAR::ACOU::pat_optisplitacouident:
       myinverseproblem = Teuchos::rcp(new ACOU::PatImageReconstructionOptiSplitAcouIdent(scatradis,acoudishdg,scatraparams,params,scatrasolver,solver,scatraoutput,output));
+    break;
+    case INPAR::ACOU::pat_optisplitacouidentsmart:
+      myinverseproblem = Teuchos::rcp(new ACOU::PatImageReconstructionOptiSplitAcouIdentSmart(scatradis,acoudishdg,scatraparams,params,scatrasolver,solver,scatraoutput,output));
     break;
     case INPAR::ACOU::pat_reduction:
       myinverseproblem = Teuchos::rcp(new ACOU::PatImageReconstructionReduction(scatradis,acoudishdg,scatraparams,params,scatrasolver,solver,scatraoutput,output));

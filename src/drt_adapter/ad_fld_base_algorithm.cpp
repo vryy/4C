@@ -52,6 +52,7 @@
 #include "../drt_fluid/fluid_timint_two_phase_ost.H"
 #include "../drt_fluid/fluid_timint_two_phase_stat.H"
 #include "../drt_fluid/fluid_timint_hdg.H"
+#include "../drt_fluid/fluid_timint_stat_hdg.H"
 #include "../drt_fluid_xfluid/xfluid.H"
 #include "../drt_fluid_xfluid/xfluidfluid.H"
 #include "../linalg/linalg_solver.H"
@@ -383,7 +384,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
 
   // for poro problems, use POROUS-FLOW STABILIZATION
   if ((probtype == prb_poroelast or probtype == prb_poroscatra or probtype == prb_fpsi or probtype == prb_fps3i or probtype == prb_fpsi_xfem or probtype == prb_immersed_cell) and disname == "porofluid")
+  {
     fluidtimeparams->sublist("RESIDUAL-BASED STABILIZATION")    = fdyn.sublist("POROUS-FLOW STABILIZATION");
+    fluidtimeparams->sublist("RESIDUAL-BASED STABILIZATION").set<bool>("POROUS-FLOW STABILIZATION",true);
+  }
 
   // add some loma specific parameters
   // get also scatra stabilization sublist
@@ -649,8 +653,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
     case prb_cavitation:
     {
       // HDG implements all time stepping schemes within gen-alpha
-      if (DRT::Problem::Instance()->SpatialApproximation() == "HDG")
+      if (DRT::Problem::Instance()->SpatialApproximation() == "HDG" && timeint != INPAR::FLUID::timeint_stationary)
         fluid_ = Teuchos::rcp(new FLD::TimIntHDG(actdis, solver, fluidtimeparams, output, isale));
+      else if (DRT::Problem::Instance()->SpatialApproximation() == "HDG" && timeint == INPAR::FLUID::timeint_stationary)
+        fluid_ = Teuchos::rcp(new FLD::TimIntStationaryHDG(actdis, solver, fluidtimeparams, output, isale));
       else if(timeint == INPAR::FLUID::timeint_stationary)
         fluid_ = Teuchos::rcp(new FLD::TimIntStationary(actdis, solver, fluidtimeparams, output, isale));
       else if(timeint == INPAR::FLUID::timeint_one_step_theta)

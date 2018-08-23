@@ -264,6 +264,7 @@ void FSI::MonolithicXFEM::SetupCouplingObjects()
       idx.clear();
       idx.push_back(structp_block_);
       idx.push_back(fluid_block_);
+      idx.push_back(fluidp_block_);
       coup_man_[coup_idx] = Teuchos::rcp( new XFEM::XFPCoupling_Manager(FluidField()->GetConditionManager(), StructurePoro()->PoroField(), FluidField(),idx));
     }
   }
@@ -378,15 +379,7 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
 
   /*----------------------------------------------------------------------*/
   // extract Jacobian matrices and put them into composite system
-  Teuchos::RCP<LINALG::SparseMatrix> s = StructurePoro()->SystemMatrix();
   Teuchos::RCP<LINALG::SparseMatrix> f = FluidField()->SystemMatrix();
-
-#ifdef DEBUG
-  if (s==Teuchos::null)
-    dserror("expect structure matrix");
-  if (f==Teuchos::null)
-    dserror("expect fluid matrix");
-#endif
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
@@ -421,25 +414,41 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
   /*----------------------------------------------------------------------*/
   // Structure diagonal block (structural system matrix)
   /*----------------------------------------------------------------------*/
+  if (!StructurePoro()->isPoro())
+  {
+    // extract Jacobian matrices and put them into composite system
+    Teuchos::RCP<LINALG::SparseMatrix> s = StructurePoro()->SystemMatrix();
 
-  // Uncomplete structure matrix to be able to deal with slightly defective interface meshes.
-  //
-  // The additional coupling block C_ss can contain additional non-zero entries,
-  // e.g. from DBCs which are already applied to s in the structural evaluate, however, not
-  // to the coupling block C_ss yet
-  s->UnComplete();
+    // Uncomplete structure matrix to be able to deal with slightly defective interface meshes.
+    //
+    // The additional coupling block C_ss can contain additional non-zero entries,
+    // e.g. from DBCs which are already applied to s in the structural evaluate, however, not
+    // to the coupling block C_ss yet
+    s->UnComplete();
 
-  // NOTE: UnComplete creates a new Matrix and a new matrix graph as well which is not allocated with staticprofile
-  // Therefore, the savegraph = true option set in structural timint has no effect, as a new graph is created
-  // whenever UnComplete is called
-  // then, due to memory fragmentation the evaluate time for the structure can vary a lot!
-  // UPDATE: actually after the next complete with store the graph
+    // NOTE: UnComplete creates a new Matrix and a new matrix graph as well which is not allocated with staticprofile
+    // Therefore, the savegraph = true option set in structural timint has no effect, as a new graph is created
+    // whenever UnComplete is called
+    // then, due to memory fragmentation the evaluate time for the structure can vary a lot!
+    // UPDATE: actually after the next complete with store the graph
 
-  // scale the structure system matrix
-  s->Scale(scaling_S);
+    // scale the structure system matrix
+    s->Scale(scaling_S);
 
-  // assign the structure sysmat diagonal block
-  systemmatrix_->Assign(0,0,LINALG::View,*s);
+    // assign the structure sysmat diagonal block
+    systemmatrix_->Assign(structp_block_,structp_block_,LINALG::View,*s);
+  }
+  else //we use a block structure for poro
+  {
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> ps = StructurePoro()->BlockSystemMatrix();
+    ps->UnComplete();
+    ps->Scale(scaling_S);
+    systemmatrix_->Assign(structp_block_,structp_block_,LINALG::View,ps->Matrix(0,0)); //psps
+    systemmatrix_->Assign(fluidp_block_,structp_block_,LINALG::View,ps->Matrix(1,0)); //pfps
+    systemmatrix_->Assign(structp_block_,fluidp_block_,LINALG::View,ps->Matrix(0,1)); //pspf
+    systemmatrix_->Assign(fluidp_block_,fluidp_block_,LINALG::View,ps->Matrix(1,1)); //pfpf
+
+  }
 
   /*----------------------------------------------------------------------*/
   // Fluid diagonal block
@@ -449,7 +458,7 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
   f->Scale(scaling_F); //<  1/(theta_f*dt) = 1/weight(t^f_np)
 
   // assign the fluid diagonal block
-  systemmatrix_->Assign(1,1,LINALG::View,*f);
+  systemmatrix_->Assign(fluid_block_,fluid_block_,LINALG::View,*f);
 
   //Add Coupling Sysmat
   for (std::map<int, Teuchos::RCP<XFEM::Coupling_Manager> >::iterator coupit = coup_man_.begin(); coupit != coup_man_.end(); ++coupit)
@@ -588,34 +597,48 @@ void FSI::MonolithicXFEM::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
 void FSI::MonolithicXFEM::CreateCombinedDofRowMap()
 {
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
+  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces_mergedporo;
 
   // Append the structural DOF map
-  vecSpaces.push_back(StructurePoro()->DofRowMap());
+  vecSpaces.push_back(StructurePoro()->StructureField()->DofRowMap());
+  vecSpaces_mergedporo.push_back(StructurePoro()->DofRowMap());
 
   // Append the background fluid DOF map
   vecSpaces.push_back(FluidField()->DofRowMap());
+  vecSpaces_mergedporo.push_back(FluidField()->DofRowMap());
 
   // solid maps empty??
-  if (vecSpaces[0]->NumGlobalElements() == 0)
+  if (vecSpaces[structp_block_]->NumGlobalElements() == 0)
     dserror("No solid equations. Panic.");
 
   // fluid maps empty??
-  if (vecSpaces[1]->NumGlobalElements() == 0)
+  if (vecSpaces[fluid_block_]->NumGlobalElements() == 0)
     dserror("No fluid equations. Panic.");
+
+  if (StructurePoro()->isPoro())
+  {
+    vecSpaces.push_back(StructurePoro()->FluidField()->DofRowMap());
+    Teuchos::RCP<const Epetra_Map> empty_map = Teuchos::rcp(new Epetra_Map(0,0,Comm()));
+    vecSpaces_mergedporo.push_back(empty_map);
+    // porofluid maps empty??
+    if (vecSpaces[fluidp_block_]->NumGlobalElements() == 0)
+      dserror("No porofluid equations. Panic.");
+  }
 
   // Append the background fluid DOF map
   if (HaveAle())
   {
    vecSpaces.push_back(AleField()->Interface()->OtherMap());
+   vecSpaces_mergedporo.push_back(AleField()->Interface()->OtherMap());
 
    // ale maps empty??
-   if (vecSpaces[2]->NumGlobalElements() == 0)
+   if (vecSpaces[ale_i_block_]->NumGlobalElements() == 0)
      dserror("No ale equations. Panic.");
   }
 
   // The vector is complete, now fill the system's global block row map
   // with the maps previously set together!
-  SetDofRowMaps(vecSpaces);
+  SetDofRowMaps(vecSpaces,vecSpaces_mergedporo);
 
   return;
 }
@@ -626,11 +649,13 @@ void FSI::MonolithicXFEM::CreateCombinedDofRowMap()
 /*----------------------------------------------------------------------*/
 // set full monolithic dof row map
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicXFEM::SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps)
+void FSI::MonolithicXFEM::SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps,
+    const std::vector<Teuchos::RCP<const Epetra_Map> >& maps_mergedporo)
 {
 
   Teuchos::RCP<Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMaps(maps);
   blockrowdofmap_.Setup(*fullmap,maps);
+  blockrowdofmap_mergedporo_.Setup(*fullmap,maps_mergedporo);
 }
 
 
@@ -640,12 +665,12 @@ void FSI::MonolithicXFEM::SetDofRowMaps(const std::vector<Teuchos::RCP<const Epe
  *----------------------------------------------------------------------*/
 void FSI::MonolithicXFEM::CombineFieldVectors(
       Epetra_Vector &v,                       ///< composed vector containing all field vectors
-      Teuchos::RCP<const Epetra_Vector> sv,   ///< structural DOFs
-      Teuchos::RCP<const Epetra_Vector> fv    ///< fluid DOFs
+      Teuchos::RCP<const Epetra_Vector> sv,   ///< structuralporo DOFs
+      Teuchos::RCP<const Epetra_Vector> fv   ///< fluid DOFs
 )
 {
-  Extractor().AddVector(*sv, 0, v);
-  Extractor().AddVector(*fv, 1, v);
+  Extractor_MergedPoro().AddVector(*sv, structp_block_, v);
+  Extractor_MergedPoro().AddVector(*fv, fluid_block_, v);
 }
 
 
@@ -665,13 +690,13 @@ void FSI::MonolithicXFEM::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> 
   //Process structure unknowns
   /*----------------------------------------------------------------------*/
   // Extract whole structure field vector
-  sx = Extractor().ExtractVector(x,structp_block_);
+  sx = Extractor_MergedPoro().ExtractVector(x,structp_block_);
 
   /*----------------------------------------------------------------------*/
   //Process fluid unknowns
   /*----------------------------------------------------------------------*/
   // Extract vector of fluid unknowns from x
-  fx = Extractor().ExtractVector(x,fluid_block_);
+  fx = Extractor_MergedPoro().ExtractVector(x,fluid_block_);
 
   // Extract vector of ale unknowns from x
   if (HaveAle())
@@ -923,7 +948,7 @@ bool FSI::MonolithicXFEM::Newton()
   // We want to make sure, that the loop is entered at least once!
   // We exit the loop if either the convergence criteria are met (checked in
   // Converged() method) OR the maximum number of inner iterations is exceeded!
-  while ( (iter_ <= itermin_) or ( (not Converged()) and (iter_ <= itermax_)) )
+  while ( (iter_+(iter_outer_-1)) <= itermin_ or ( (not Converged()) and (iter_ <= itermax_)) )
   {
 //    std::cout << "Evaluate-Call " << "iter_ " << iter_ << "/" << itermax_ << std::endl;
 
@@ -1080,7 +1105,7 @@ bool FSI::MonolithicXFEM::Newton()
       // and has been set at the beginning of the first outer iteration using the structural PrepareTimeStep-call
 
       // if not a new time-step, take the step-increment which has been summed up so far
-      if(sx_sum_ != Teuchos::null) Extractor().AddVector(sx_sum_, structp_block_, x_sum_);
+      if(sx_sum_ != Teuchos::null) Extractor_MergedPoro().AddVector(sx_sum_, structp_block_, x_sum_);
 
       //-------------------
       // initialize the fluid part of the global step-increment
@@ -1210,16 +1235,23 @@ void FSI::MonolithicXFEM::BuildCovergenceNorms()
   rhs_->Norm2(&normrhs_);
 
   // structural Dofs
-  Extractor().ExtractVector(rhs_,0)->Norm2(&normstrrhsL2_);
-  Extractor().ExtractVector(rhs_,0)->NormInf(&normstrrhsInf_);
+  Extractor_MergedPoro().ExtractVector(rhs_,structp_block_)->Norm2(&normstrrhsL2_);
+  Extractor_MergedPoro().ExtractVector(rhs_,structp_block_)->NormInf(&normstrrhsInf_);
 
   // fluid velocity Dofs
-  fluidvelpresextract.ExtractVector(Extractor().ExtractVector(rhs_,1),0)->Norm2(&normflvelrhsL2_);
-  fluidvelpresextract.ExtractVector(Extractor().ExtractVector(rhs_,1),0)->NormInf(&normflvelrhsInf_);
+  fluidvelpresextract.ExtractVector(Extractor().ExtractVector(rhs_,fluid_block_),0)->Norm2(&normflvelrhsL2_);
+  fluidvelpresextract.ExtractVector(Extractor().ExtractVector(rhs_,fluid_block_),0)->NormInf(&normflvelrhsInf_);
 
   // fluid pressure Dofs
-  fluidvelpresextract.ExtractVector(Extractor().ExtractVector(rhs_,1),1)->Norm2(&normflpresrhsL2_);
-  fluidvelpresextract.ExtractVector(Extractor().ExtractVector(rhs_,1),1)->NormInf(&normflpresrhsInf_);
+  fluidvelpresextract.ExtractVector(Extractor().ExtractVector(rhs_,fluid_block_),1)->Norm2(&normflpresrhsL2_);
+  fluidvelpresextract.ExtractVector(Extractor().ExtractVector(rhs_,fluid_block_),1)->NormInf(&normflpresrhsInf_);
+
+  if (StructurePoro()->isPoro())
+  {
+    // porofluid Dofs
+    Extractor().ExtractVector(rhs_,fluidp_block_)->Norm2(&normpflvelrhsL2_);
+    Extractor().ExtractVector(rhs_,fluidp_block_)->NormInf(&normpflvelrhsInf_);
+  }
 
 
   //-------------------------------
@@ -1230,25 +1262,32 @@ void FSI::MonolithicXFEM::BuildCovergenceNorms()
   iterinc_->Norm2(&norminc_);
 
   // structural Dofs
-  Extractor().ExtractVector(iterinc_,0)->Norm2(&normstrincL2_);
-  Extractor().ExtractVector(iterinc_,0)->NormInf(&normstrincInf_);
+  Extractor_MergedPoro().ExtractVector(iterinc_,0)->Norm2(&normstrincL2_);
+  Extractor_MergedPoro().ExtractVector(iterinc_,0)->NormInf(&normstrincInf_);
 
   // fluid velocity Dofs
-  fluidvelpresextract.ExtractVector(Extractor().ExtractVector(iterinc_,1),0)->Norm2(&normflvelincL2_);
-  fluidvelpresextract.ExtractVector(Extractor().ExtractVector(iterinc_,1),0)->NormInf(&normflvelincInf_);
+  fluidvelpresextract.ExtractVector(Extractor().ExtractVector(iterinc_,fluid_block_),0)->Norm2(&normflvelincL2_);
+  fluidvelpresextract.ExtractVector(Extractor().ExtractVector(iterinc_,fluid_block_),0)->NormInf(&normflvelincInf_);
 
   // fluid pressure Dofs
-  fluidvelpresextract.ExtractVector(Extractor().ExtractVector(iterinc_,1),1)->Norm2(&normflpresincL2_);
-  fluidvelpresextract.ExtractVector(Extractor().ExtractVector(iterinc_,1),1)->NormInf(&normflpresincInf_);
+  fluidvelpresextract.ExtractVector(Extractor().ExtractVector(iterinc_,fluid_block_),1)->Norm2(&normflpresincL2_);
+  fluidvelpresextract.ExtractVector(Extractor().ExtractVector(iterinc_,fluid_block_),1)->NormInf(&normflpresincInf_);
+
+  if (StructurePoro()->isPoro())
+  {
+    // porofluid Dofs
+    Extractor().ExtractVector(iterinc_,fluidp_block_)->Norm2(&normpflvelincL2_);
+    Extractor().ExtractVector(iterinc_,fluidp_block_)->NormInf(&normpflvelincInf_);
+  }
 
 
   //-------------------------------
   //get length of the structural and fluid vector
   //-------------------------------
-  ns_   = (*(Extractor().ExtractVector(rhs_,0))).GlobalLength();                                      //structure
-  nf_   = (*(Extractor().ExtractVector(rhs_,1))).GlobalLength();                                      //fluid
-  nfv_  = (*(fluidvelpresextract.ExtractVector(Extractor().ExtractVector(rhs_,1),0))).GlobalLength(); //fluid velocity
-  nfp_  = (*(fluidvelpresextract.ExtractVector(Extractor().ExtractVector(rhs_,1),1))).GlobalLength(); //fluid pressure
+  ns_   = (*(Extractor_MergedPoro().ExtractVector(rhs_,structp_block_))).GlobalLength();                                      //structure
+  nf_   = (*(Extractor().ExtractVector(rhs_,fluid_block_))).GlobalLength();                                      //fluid
+  nfv_  = (*(fluidvelpresextract.ExtractVector(Extractor().ExtractVector(rhs_,fluid_block_),0))).GlobalLength(); //fluid velocity
+  nfp_  = (*(fluidvelpresextract.ExtractVector(Extractor().ExtractVector(rhs_,fluid_block_),1))).GlobalLength(); //fluid pressure
   nall_ = (*rhs_).GlobalLength();                                                                     //all
 
 
@@ -1841,14 +1880,25 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
   if (slinsolvernumber == (-1))
     dserror("no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL DYNAMIC to a valid number!");
 
-  // get parameter list of thermal dynamics
+  // get parameter list of fluid dynamics
   const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
   // use solver blocks for temperature (thermal field)
   // get the solver number used for thermal solver
   const int flinsolvernumber = fdyn.get<int>("LINEAR_SOLVER");
-  // check if the XFSI solver has a valid solver number
+  // check if the fluid solver has a valid solver number
   if (flinsolvernumber == (-1))
-    dserror("no linear solver defined for fluid field. Please set FLUID_SOLVER in FLUID DYNAMIC to a valid number!");
+    dserror("no linear solver defined for fluid field. Please set LINEAR_SOLVER in FLUID DYNAMIC to a valid number!");
+
+  const int alinsolvernumber = -1;
+  if (HaveAle())
+  {
+    // get parameter list of ale dynamics
+    const Teuchos::ParameterList& adyn = DRT::Problem::Instance()->AleDynamicParams();
+    const int alinsolvernumber = adyn.get<int>("LINEAR_SOLVER");
+    // check if the ale solver has a valid solver number
+    if (alinsolvernumber == (-1))
+      dserror("no linear solver defined for ale field. Please set LINEAR_SOLVER in ALE DYNAMIC to a valid number!");
+  }
 
 
   const int azprectype = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>( xfsisolverparams, "AZPREC" );
@@ -1918,15 +1968,37 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
     const Teuchos::ParameterList& fsolverparams = DRT::Problem::Instance()->SolverParams(flinsolvernumber);
 
     solver_->PutSolverParamsToSubParams("Inverse1", ssolverparams);
-    solver_->PutSolverParamsToSubParams("Inverse2", fsolverparams);
-
-    // prescribe rigid body modes
     StructurePoro()->Discretization()->ComputeNullSpaceIfNecessary(
-        solver_->Params().sublist("Inverse1")
-        );
+        solver_->Params().sublist("Inverse1"));
+
+    solver_->PutSolverParamsToSubParams("Inverse2", fsolverparams);
     FluidField()->Discretization()->ComputeNullSpaceIfNecessary(
-      solver_->Params().sublist("Inverse2")
-      );
+      solver_->Params().sublist("Inverse2"));
+
+    if (StructurePoro()->isPoro())
+    {
+      solver_->PutSolverParamsToSubParams("Inverse3", fsolverparams);
+      StructurePoro()->FluidField()->Discretization()->ComputeNullSpaceIfNecessary(
+        solver_->Params().sublist("Inverse3"));
+    }
+    if (HaveAle())
+    {
+      const Teuchos::ParameterList& asolverparams = DRT::Problem::Instance()->SolverParams(alinsolvernumber);
+      if (ale_i_block_==3)
+      {
+        solver_->PutSolverParamsToSubParams("Inverse3", asolverparams);
+        AleField()->WriteAccessDiscretization()->ComputeNullSpaceIfNecessary(
+          solver_->Params().sublist("Inverse3"));
+      }
+      else if (ale_i_block_==4)
+      {
+        solver_->PutSolverParamsToSubParams("Inverse4", asolverparams);
+        AleField()->WriteAccessDiscretization()->ComputeNullSpaceIfNecessary(
+          solver_->Params().sublist("Inverse4"));
+      }
+      else
+        dserror("You have more than 4 Fields? --> add another Inverse 5 here!");
+    }
 
     if(azprectype==INPAR::SOLVER::azprec_CheapSIMPLE)
     {
@@ -2108,6 +2180,8 @@ void FSI::MonolithicXFEM::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra
 
   if (scaling_infnorm_)
   {
+    if (num_fields_ > 2)
+      dserror("InfNorm Scaling just implemented for 2x2 Block!");
     // The matrices are modified here. Do we have to change them back later on?
 
     Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0,0).EpetraMatrix();

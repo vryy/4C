@@ -44,15 +44,21 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm,
                                   const Teuchos::ParameterList& timeparams,
                                   const ADAPTER::FieldWrapper::Fieldtype type)
   : AlgorithmBase(comm, timeparams),
-    structp_block_(0),
-    fluid_block_(1),
-    ale_i_block_(2)
+    num_fields_(0),
+    structp_block_(-1),
+    fluid_block_(-1),
+    fluidp_block_(-1),
+    ale_i_block_(-1)
 {
   // access structural dynamic params list which will be possibly modified while creating the time integrator
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
   const Teuchos::ParameterList& xfdyn = DRT::Problem::Instance()->XFluidDynamicParams();
   bool ale = DRT::INPUT::IntegralValue<bool>((xfdyn.sublist("GENERAL")),"ALE_XFluid");
+
+  num_fields_ +=2;
+  structp_block_ = 0;
+  fluid_block_ = 1;
 
   if (type == ADAPTER::StructurePoroWrapper::type_StructureField)
   {
@@ -65,6 +71,9 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm,
   }
   else if (type == ADAPTER::StructurePoroWrapper::type_PoroField)
   {
+    num_fields_ +=1;
+    fluidp_block_ = 2 ;
+
     DRT::Problem* problem = DRT::Problem::Instance();
     const Teuchos::ParameterList& poroelastdyn = problem->PoroelastDynamicParams(); // access the problem-specific parameter list
     Teuchos::RCP<POROELAST::Monolithic> poro = Teuchos::rcp_dynamic_cast<POROELAST::Monolithic>(POROELAST::UTILS::CreatePoroAlgorithm(poroelastdyn,comm,false));
@@ -79,6 +88,8 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm,
 
   if (ale)
   {
+    num_fields_ +=1;
+    ale_i_block_ = num_fields_-1;
     DRT::Problem* problem = DRT::Problem::Instance();
     const Teuchos::ParameterList& fsidynparams       = problem->FSIDynamicParams();
     // ask base algorithm for the ale time integrator

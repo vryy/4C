@@ -1019,6 +1019,10 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
         && DRT::INPUT::IntegralValue<int>(contact, "FRLESS_FIRST") == true)
       dserror("ERROR: Frictionless first contact step with wear not yet implemented");
 
+    if (problemtype != prb_ehl
+        && DRT::INPUT::IntegralValue<int>(contact, "REGULARIZED_NORMAL_CONTACT") == true)
+      dserror("ERROR: Regularized normal contact only implemented for EHL");
+
     // *********************************************************************
     // Augmented Lagrangian strategy
     // *********************************************************************

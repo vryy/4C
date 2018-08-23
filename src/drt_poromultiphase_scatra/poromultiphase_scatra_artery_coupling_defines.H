@@ -20,7 +20,7 @@
 //default: 10
 #define PROJOUTPUT false   /* output of projection algorithm */
 //default: false
-#define SMALLESTSEGMENT 1.0e-12   /* segments can be smaller than this */
+#define SMALLESTSEGMENT 1.0e-12   /* segments cannot be smaller than this */
 //default: 1.0e-12
 #define ETAABTOL 1.0e-10   /* used for check if segments are identical */
 //default: 1.0e-10
@@ -32,13 +32,15 @@
 //default: 1.0e-14
 #define NUMPROJCHECKS 11   /* number of checks performed in interval [-0.99, 0.99] */
 //default: 11
+#define THROW_ERR_AT_DEGENERATE_CASE false   /* throw error if degenerate case is detected */
+//default: false
 /************************************************************************/
 /* Random                                                               */
 /************************************************************************/
 #define KAPPAINVTOL 1.0e-10   /* used if kappa vector can be inverted */
 //default: 1.0e-10
 #define CONVTOLNEWTONMESHMOVEMENT 1.0e-09   /* used for convergence check of Newton for
-//default: 1.0e-8                             recomputation of eta and xi in current configuration */
+//default: 1.0e-9                             recomputation of eta and xi in current configuration */
 #define MESHMOVEMENTMAXITER 10     /* max number of steps for local Newton (mesh movement) */
 //default: 10
 #define BRUTEFORCESAFETY 1.4     /* safety factor for brute force search */

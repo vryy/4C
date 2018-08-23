@@ -27,7 +27,9 @@
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_geometry/position_array.H"
 
+#include "../drt_fluid/fluid_functions.H"
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/fluid_murnaghantait.H"
 
 #include "../drt_fem_general/drt_utils_polynomial.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
@@ -51,7 +53,8 @@ namespace
  * Constructor
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::FluidEleCalcHDG<distype>::FluidEleCalcHDG()
+DRT::ELEMENTS::FluidEleCalcHDG<distype>::FluidEleCalcHDG() :
+usescompletepoly_(true)
 {}
 
 
@@ -102,7 +105,6 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::InitializeShapes(const DRT::ELEMEN
       DRT::UTILS::ShapeValuesFaceParams svfparams(ele->Degree(), usescompletepoly_, 2 * ele->Degree());
       shapesface_ = Teuchos::rcp(new DRT::UTILS::ShapeValuesFace<distype>(svfparams));
     }
-    // TODO: check distype
 
     if (localSolver_ == Teuchos::null)
       localSolver_ = Teuchos::rcp(new LocalSolver(ele,*shapes_,*shapesface_,usescompletepoly_));
@@ -126,7 +128,6 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
                                                       Epetra_SerialDenseVector&  ,
                                                       bool                       offdiag)
 {
-
   InitializeShapes(ele);
 
   const bool updateLocally = params.get<bool>("needslocalupdate");
@@ -148,11 +149,24 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
     DRT::UTILS::ExtractMyValues(*matrix_state,interiorebofoaf_,localDofs);
   }
 
+  // interior correction term for the weakly compressible benchmark if applicable
+  interiorecorrectionterm_.resize(shapes_->ndofs_,0.0);
+  const Teuchos::ParameterList& fluidparams = DRT::Problem::Instance()->FluidDynamicParams();
+  int corrtermfuncnum = fluidparams.get<int>("CORRTERMFUNCNO");
+  if (corrtermfuncnum > 0)
+    localSolver_->ComputeCorrectionTerm(interiorecorrectionterm_,corrtermfuncnum);
+
+  // interior body force term for the weakly compressible benchmark if applicable
+  interiorebodyforce_.resize(nsd_*shapes_->ndofs_,0.0);
+  int bodyforcefuncnum = fluidparams.get<int>("BODYFORCEFUNCNO");
+  if (bodyforcefuncnum > 0)
+    localSolver_->ComputeBodyForce(interiorebodyforce_,bodyforcefuncnum);
+
   ReadGlobalVectors(*ele, discretization, lm, updateLocally);
 
   // solves the local problem of the nonlinear iteration before
   if (updateLocally) {
-    localSolver_->ComputeInteriorResidual(mat, interiorVal_, interiorAcc_, traceVal_[0], ebofoaf_, interiorebofoaf_);
+    localSolver_->ComputeInteriorResidual(mat, interiorVal_, interiorAcc_, traceVal_[0], ebofoaf_, interiorebofoaf_, elevec1, interiorecorrectionterm_, interiorebodyforce_);
     localSolver_->ComputeInteriorMatrices(mat, false);
 
     dsassert(nfaces_ == static_cast<unsigned int>(ele->NumFace()), "Internal error");
@@ -171,7 +185,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
 
   zeroMatrix(elemat1);
   zeroMatrix(elevec1);
-  localSolver_->ComputeInteriorResidual(mat, interiorVal_, interiorAcc_, traceVal_[0], ebofoaf_, interiorebofoaf_);
+  localSolver_->ComputeInteriorResidual(mat, interiorVal_, interiorAcc_, traceVal_[0], ebofoaf_, interiorebofoaf_, elevec1, interiorecorrectionterm_, interiorebodyforce_);
   localSolver_->ComputeInteriorMatrices(mat, updateLocally);
   for (unsigned int f=0; f<nfaces_; ++f) {
     shapesface_->EvaluateFace(*ele,f);
@@ -184,7 +198,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
 
   localSolver_->CondenseLocalPart(elemat1,elevec1);
 
-  elevec1.Scale(1./localSolver_->fldparatimint_->AlphaF());
+  if (not localSolver_->fldparatimint_->IsStationary())
+    elevec1.Scale(1./localSolver_->fldparatimint_->AlphaF());
 
   return 0;
 }
@@ -200,8 +215,8 @@ ReadGlobalVectors(const DRT::Element     & ele,
 {
   // read the HDG solution vector (for traces)
   traceVal_.resize(1+nfaces_*nsd_*shapesface_->nfdofs_);
-  interiorVal_.resize(((nsd_+1)*nsd_+1)*shapes_->ndofs_);
-  interiorAcc_.resize(((nsd_+1)*nsd_+1)*shapes_->ndofs_);
+  interiorVal_.resize(((nsd_+1)*nsd_+1)*shapes_->ndofs_+1);
+  interiorAcc_.resize(((nsd_+1)*nsd_+1)*shapes_->ndofs_+1);
   dsassert(lm.size() == traceVal_.size(), "Internal error");
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState("velaf");
   DRT::UTILS::ExtractMyValues(*matrix_state,traceVal_,lm);
@@ -234,19 +249,29 @@ UpdateSecondarySolution(const DRT::Element     & ele,
   Epetra_Vector& secondary = const_cast<Epetra_Vector&>(*matrix_state);
   const Epetra_Map* intdofcolmap = discretization.DofColMap(1);
 
+  double valfac;
+  double accfac;
+  if (localSolver_->fldparatimint_->IsStationary())  // TODO als this distinction shouldn't be here. The problem is that the HDG approach was meant for the GenAlpha Time integration scheme
+  {
+    valfac = 1.;
+    accfac = 1.;
+  }
+  else
+  {
+    valfac = 1./localSolver_->fldparatimint_->AlphaF();
+    accfac = localSolver_->fldparatimint_->AlphaM() * valfac / (localSolver_->fldparatimint_->Dt() * localSolver_->fldparatimint_->Gamma());
+  }
+
   for (unsigned int i=0; i<localDofs.size(); ++i) {
     const int lid = intdofcolmap->LID(localDofs[i]);
     double update = i<nsd_*nsd_*shapes_->ndofs_ ? updateG(i) : updateUp(i-nsd_*nsd_*shapes_->ndofs_);
 
-    const double valfac = 1./localSolver_->fldparatimint_->AlphaF();
     secondary[lid] += update * valfac;
 
     // write the update back into the local vectors (when doing local update,
     // we do not re-read from the global vectors)
     interiorVal_[i] += update;
 
-    const double accfac = localSolver_->fldparatimint_->AlphaM() * valfac /
-        (localSolver_->fldparatimint_->Dt() * localSolver_->fldparatimint_->Gamma());
     interiorAcc_[i] += update * accfac;
   }
 }
@@ -324,6 +349,15 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateService(
         lm,
         elevec1,
         elevec2);
+    break;
+  }
+  case FLD::calc_pressure_average:
+  {
+    return EvaluatePressureAverage(
+        ele,
+        params,
+        mat,
+        elevec1);
     break;
   }
   default:
@@ -436,7 +470,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(
 
   // reshape elevec2 as matrix
   dsassert(elevec2.M() == 0 ||
-           elevec2.M() == static_cast<int>((nsd_*nsd_+nsd_+1)*shapes_->ndofs_), "Wrong size in project vector 2");
+           elevec2.M() == static_cast<int>((nsd_*nsd_+nsd_+1)*shapes_->ndofs_+1), "Wrong size in project vector 2");
 
   // get initial function and current time
   const int *initfield = params.getPtr<int>("initfield");
@@ -714,6 +748,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(
     solvalues[i] = (*matrix_state)[lid];
   }
 
+  elevec1.Scale(0.);
+
   // EVALUATE SHAPE POLYNOMIALS IN NODE
   //In hdg we can have several more points inside the element than in the
   //"real" discretization and therefore it is necessary to compute the value
@@ -839,6 +875,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(
         {
           elevec1((nsd_+1+d)*nen_+shapesface_->faceNodeOrder[f][i]) += sum;
         }
+        //elevec1((nsd_+1+d)*nen_+shapesface_->faceNodeOrder[f][i]) = sum;
       }
     }
   }
@@ -1291,6 +1328,32 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateAll(const int startfunc,
   }
   break;
 
+  case INPAR::FLUID::initfield_channel_weakly_compressible:
+  {
+    FLD::ChannelWeaklyCompressibleFunction* channelfunc = new FLD::ChannelWeaklyCompressibleFunction;
+    u(0)      = channelfunc->Evaluate(0,xyz.A(),0);
+    u(1)      = channelfunc->Evaluate(1,xyz.A(),0);
+    p         = channelfunc->Evaluate(2,xyz.A(),0);
+    grad(0,0) = channelfunc->Evaluate(3,xyz.A(),0);
+    grad(0,1) = channelfunc->Evaluate(4,xyz.A(),0);
+    grad(1,0) = channelfunc->Evaluate(5,xyz.A(),0);
+    grad(1,1) = channelfunc->Evaluate(6,xyz.A(),0);
+  }
+  break;
+
+  case INPAR::FLUID::initfield_channel_weakly_compressible_fourier_3:
+  {
+    FLD::ChannelWeaklyCompressibleFourier3Function* channelfunc = new FLD::ChannelWeaklyCompressibleFourier3Function;
+    u(0)      = channelfunc->Evaluate(0,xyz.A(),0);
+    u(1)      = channelfunc->Evaluate(1,xyz.A(),0);
+    p         = channelfunc->Evaluate(2,xyz.A(),0);
+    grad(0,0) = channelfunc->Evaluate(3,xyz.A(),0);
+    grad(0,1) = channelfunc->Evaluate(4,xyz.A(),0);
+    grad(1,0) = channelfunc->Evaluate(5,xyz.A(),0);
+    grad(1,1) = channelfunc->Evaluate(6,xyz.A(),0);
+  }
+  break;
+
   case INPAR::FLUID::initfield_field_by_function:
   case INPAR::FLUID::initfield_disturbed_field_from_function:
   {
@@ -1345,8 +1408,58 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::Done()
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::FluidEleCalcHDG<distype>::
+EvaluatePressureAverage(DRT::ELEMENTS::Fluid*             ele,
+                        Teuchos::ParameterList&           params,
+                        Teuchos::RCP<MAT::Material>&      mat,
+                        Epetra_SerialDenseVector&         elevec)
+{
+  double pressureint =0.;
+  double volume = 0.;
+  double pressureavg = 0.;
 
+  InitializeShapes(ele);
 
+  shapes_->Evaluate(*ele);
+
+  // get time
+  const double time = localSolver_->fldparatimint_->Time();
+
+  // initialize variables
+  LINALG::Matrix<nsd_,1> u(true);
+  double p = 0.0;
+  LINALG::Matrix<nsd_,nsd_> dervel(true);
+  LINALG::Matrix<nsd_,1> xyz(true);
+
+  // get function used to evaluate the error
+  const Teuchos::ParameterList fluidparams = DRT::Problem::Instance()->FluidDynamicParams();
+  const INPAR::FLUID::CalcError calcerr = DRT::INPUT::IntegralValue<INPAR::FLUID::CalcError>(fluidparams,"CALCERROR");
+  const int calcerrfunctno = fluidparams.get<int>("CALCERRORFUNCNO");
+
+  for (unsigned int q=0; q<shapes_->nqpoints_; ++q)
+  {
+    const double jfac = shapes_->jfac(q);
+    for (unsigned int d=0; d<nsd_; ++d)
+      xyz(d) = shapes_->xyzreal(d,q);
+
+    // get analytical solution
+    FluidEleCalc<distype>::EvaluateAnalyticSolutionPoint(xyz, time, calcerr, calcerrfunctno, mat, u, p, dervel);
+
+    pressureint += p * jfac;
+
+    volume += jfac;
+  }
+
+  // evaluate pressure average
+  pressureavg = pressureint / volume;
+
+  elevec[0] = pressureavg;
+
+  return 0;
+}
 
 
 template <DRT::Element::DiscretizationType distype>
@@ -1358,11 +1471,12 @@ LocalSolver(const DRT::ELEMENTS::Fluid* ele,
 :
 ndofs_ (shapeValues.ndofs_),
 stokes (false),
+weaklycompressible (false),
 shapes_(shapeValues),
 shapesface_(shapeValuesFace)
 {
-  uuMat.Shape((nsd_+1)*ndofs_,(nsd_+1)*ndofs_);
-  uuMatFinal.Shape((nsd_+1)*ndofs_,(nsd_+1)*ndofs_);
+  uuMat.Shape((nsd_+1)*ndofs_+1,(nsd_+1)*ndofs_+1);
+  uuMatFinal.Shape((nsd_+1)*ndofs_+1,(nsd_+1)*ndofs_+1);
   guMat.Shape(nsd_*ndofs_,ndofs_);
   ugMat.Shape(nsd_*ndofs_,ndofs_);
 
@@ -1376,7 +1490,7 @@ shapesface_(shapeValuesFace)
 
   gfMat.Shape(nsd_*nsd_*ndofs_,1+onfdofs);
   fgMat.Shape(gfMat.N(), gfMat.M());
-  ufMat.Shape((nsd_+1)*ndofs_,1+onfdofs);
+  ufMat.Shape((nsd_+1)*ndofs_+1,1+onfdofs);
   fuMat.Shape(ufMat.N(), ufMat.M());
 
   massPart.Shape(ndofs_,shapes_.nqpoints_);
@@ -1390,10 +1504,15 @@ shapesface_(shapeValuesFace)
   tmpMatGrad.Shape(nsd_*ndofs_,ndofs_);
 
   velnp.Shape(nsd_,shapes_.nqpoints_);
+
+  uucomp.Shape(ndofs_,(nsd_+1)*ndofs_);
+  presnp.Resize(shapes_.nqpoints_);
+  gradpresnp.Shape(nsd_,shapes_.nqpoints_);
+
   gRes.Resize(nsd_*nsd_*ndofs_);
-  upRes.Resize((nsd_+1)*ndofs_);
+  upRes.Resize((nsd_+1)*ndofs_+1);
   gUpd.Resize(nsd_*nsd_*ndofs_);
-  upUpd.Resize((nsd_+1)*ndofs_);
+  upUpd.Resize((nsd_+1)*ndofs_+1);
 
   // pointer to class FluidEleParameter (access to the general parameter)
   fldparatimint_ = Teuchos::rcp(DRT::ELEMENTS::FluidEleParameterTimInt::Instance(), false);
@@ -1410,17 +1529,27 @@ ComputeInteriorResidual(const Teuchos::RCP<MAT::Material> & mat,
                         const std::vector<double>         & accel,
                         const double                        avgPressure,
                         const LINALG::Matrix<nsd_,nen_>   & ebodyforce,
-                        const std::vector<double>         & intebodyforce)
+                        const std::vector<double>         & intebodyforce,
+                        Epetra_SerialDenseVector          & elevec,
+                        const std::vector<double>         & interiorecorrectionterm,
+                        const std::vector<double>         & interiorebodyforce)
 {
+  // get physical type
+  INPAR::FLUID::PhysicalType physicaltype = fldpara_->PhysicalType();
+  stokes = (physicaltype == INPAR::FLUID::stokes ||
+            physicaltype == INPAR::FLUID::weakly_compressible_stokes);
+  weaklycompressible = (physicaltype == INPAR::FLUID::weakly_compressible ||
+                        physicaltype == INPAR::FLUID::weakly_compressible_stokes);
+
   zeroMatrix(gRes);
   zeroMatrix(upRes);
-  // get constant dynamic viscosity
-  const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
-  const double viscosity = actmat->Viscosity();
-  const double density = actmat->Density();
+
+  // extract lambda_np
+  double lambdanp = val[(nsd_*nsd_+nsd_+1)*ndofs_];
 
   // interpolate the interior values onto quadrature points
   for (unsigned int q=0; q<shapes_.nqpoints_; ++q) {
+
     // interpolate L_np onto quadrature points
     double velgrad[nsd_][nsd_];
     double acceleration[nsd_];
@@ -1430,6 +1559,7 @@ ComputeInteriorResidual(const Teuchos::RCP<MAT::Material> & mat,
         for (unsigned int i=0; i<ndofs_; ++i)
           velgrad[d][e] += shapes_.shfunct(i,q) * val[(d*nsd_+e)*ndofs_+i];
       }
+
     // interpolate u_np and acceleration
     for (unsigned int d=0; d<nsd_; ++d) {
       double sum = 0.;
@@ -1440,10 +1570,27 @@ ComputeInteriorResidual(const Teuchos::RCP<MAT::Material> & mat,
       }
       velnp(d,q) = sum;
     }
+
     // interpolate p_np
-    double pres = 0.;
+    double sum = 0.;
     for (unsigned int i=0; i<ndofs_; ++i)
-      pres += shapes_.shfunct(i,q) * val[(nsd_*nsd_+nsd_)*ndofs_+i];
+      sum += shapes_.shfunct(i,q) * val[(nsd_*nsd_+nsd_)*ndofs_+i];
+    presnp(q) = sum;
+
+    // interpolate time derivative of pressure
+    double timederpressure = 0.;
+    if (weaklycompressible && !stokes)
+      for (unsigned int i=0; i<ndofs_; ++i)
+        timederpressure += shapes_.shfunct(i,q) * accel[(nsd_*nsd_+nsd_)*ndofs_+i];
+
+    // interpolate grad(p_np)
+    if (weaklycompressible)
+      for (unsigned int d=0; d<nsd_; ++d) {
+        double sum = 0.;
+        for (unsigned int i=0; i<ndofs_; ++i)
+          sum += shapes_.shderxy(i*nsd_+d,q) * val[(nsd_*nsd_+nsd_)*ndofs_+i];
+        gradpresnp(d,q) = sum;
+      }
 
     // interpolate body force (currently only ebofoaf_), values from input file
     double force[nsd_];
@@ -1455,12 +1602,54 @@ ComputeInteriorResidual(const Teuchos::RCP<MAT::Material> & mat,
 
     // interpolate body force (currently only ebofoaf_), values from forcing vector based on interior dofs
     for (unsigned int d=0; d<nsd_; ++d)
-    {
       for (unsigned int i=0; i<ndofs_; ++i)
-      {
         force[d] += shapes_.shfunct(i,q) * intebodyforce[(nsd_*nsd_+d)*ndofs_+i];
-      }
+
+    // interpolate correction term for the weakly compressible benchmark
+    double correctionterm = 0.;
+    if (weaklycompressible && stokes)
+      for (unsigned int i=0; i<ndofs_; ++i)
+        correctionterm += shapes_.shfunct(i,q) * interiorecorrectionterm[i];
+
+    // interpolate body force for the weakly compressible benchmark
+    if (weaklycompressible && stokes)
+      for (unsigned int d=0; d<nsd_; ++d)
+        for (unsigned int i=0; i<ndofs_; ++i)
+          force[d] += shapes_.shfunct(i,q) * interiorebodyforce[d*ndofs_+i];
+
+    // get material properties
+    double viscosity;
+    double density;
+    double RefPressure;
+    double RefBulkModulus;
+    double MatParameter;
+    if (mat->MaterialType() == INPAR::MAT::m_fluid)
+    {
+      const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
+      viscosity = actmat->Viscosity();
+      density   = actmat->Density();
     }
+    else if (mat->MaterialType() == INPAR::MAT::m_fluid_murnaghantait)
+    {
+      const MAT::MurnaghanTaitFluid* actmat = static_cast<const MAT::MurnaghanTaitFluid*>(mat.get());
+      viscosity      = actmat->Viscosity();
+      density        = actmat->ComputeDensity(presnp(q));
+      RefPressure    = actmat->RefPressure();
+      RefBulkModulus = actmat->RefBulkModulus();
+      MatParameter   = actmat->MatParameter();
+    }
+
+    // trace of velocity gradient
+    double tracevelgrad = 0.;
+    double eye[nsd_][nsd_];
+    for (unsigned int d=0; d<nsd_; ++d)
+    {
+      tracevelgrad += velgrad[d][d];
+      for (unsigned int e=0; e<nsd_; ++e)
+        eye[d][e] = 0.;
+      eye[d][d] = 1.;
+    }
+
     // ---------------------------- compute interior residuals
     // residual for L_np
     for (unsigned int d=0; d<nsd_; ++d)
@@ -1478,7 +1667,10 @@ ComputeInteriorResidual(const Teuchos::RCP<MAT::Material> & mat,
       else
         for (unsigned int e=0; e<nsd_; ++e)
           momresd[e] = -viscosity*(velgrad[d][e]+velgrad[e][d])+density*velnp(d,q)*velnp(e,q);
-      momresd[d] += pres;
+      if (weaklycompressible)
+        for (unsigned int e=0; e<nsd_; ++e)
+          momresd[e] += viscosity*2./3.*tracevelgrad*eye[d][e];
+      momresd[d] += presnp(q);
       if (!stokes)
         force[d] -= density*acceleration[d];
       for (unsigned int i=0; i<ndofs_; ++i) {
@@ -1489,13 +1681,46 @@ ComputeInteriorResidual(const Teuchos::RCP<MAT::Material> & mat,
       }
     }
     // residual for p_np
-    upRes(nsd_*ndofs_) += (avgPressure - pres) * shapes_.jfac(q); // mean pressure
-    for (unsigned int i=1; i<ndofs_; ++i) {
+    for (unsigned int i=0; i<ndofs_; ++i) {
       double sum = 0.;
       for (unsigned int d=0; d<nsd_; ++d)
         sum += velnp(d,q) * shapes_.shderxy(i*nsd_+d,q);
       upRes(nsd_*ndofs_+i) += sum * shapes_.jfac(q);
     }
+
+    double compfac = 0.;
+    double gradpvel = 0.;
+    if (weaklycompressible) {
+      compfac = 1. / (RefBulkModulus + MatParameter * (presnp(q) - RefPressure));
+      for (unsigned int d=0; d<nsd_; ++d)
+        gradpvel += gradpresnp(d,q) * velnp(d,q);
+    }
+
+    if (weaklycompressible) {
+      for (unsigned int i=0; i<ndofs_; ++i)
+        upRes(nsd_*ndofs_+i) -= compfac * gradpvel * (shapes_.shfunct(i,q)-shapes_.shfunctAvg(i)) * shapes_.jfac(q);
+
+      elevec(0) -= compfac * gradpvel * shapes_.jfac(q);
+    }
+
+    if (weaklycompressible && stokes) {
+      for (unsigned int i=0; i<ndofs_; ++i)
+        upRes(nsd_*ndofs_+i) += correctionterm * (shapes_.shfunct(i,q)-shapes_.shfunctAvg(i)) * shapes_.jfac(q);
+
+      elevec(0) += correctionterm * shapes_.jfac(q);
+    }
+
+    if (weaklycompressible && !stokes) {
+      for (unsigned int i=0; i<ndofs_; ++i)
+        upRes(nsd_*ndofs_+i) -= compfac * timederpressure * (shapes_.shfunct(i,q)-shapes_.shfunctAvg(i)) * shapes_.jfac(q);
+
+      elevec(0) -= compfac * timederpressure * shapes_.jfac(q);
+    }
+
+    for (unsigned int i=0; i<ndofs_; ++i)
+      upRes(nsd_*ndofs_+i) -= shapes_.shfunct(i,q) * lambdanp * shapes_.jfac(q);
+
+    upRes((nsd_+1)*ndofs_) += (presnp(q) - avgPressure) * shapes_.jfac(q);
   }
 }
 
@@ -1506,20 +1731,25 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::
 ComputeInteriorMatrices(const Teuchos::RCP<MAT::Material> &mat,
                         const bool                         evaluateOnlyNonlinear)
 {
+  // get physical type
+  INPAR::FLUID::PhysicalType physicaltype = fldpara_->PhysicalType();
+  stokes = (physicaltype == INPAR::FLUID::stokes ||
+            physicaltype == INPAR::FLUID::weakly_compressible_stokes);
+  weaklycompressible = (physicaltype == INPAR::FLUID::weakly_compressible ||
+                        physicaltype == INPAR::FLUID::weakly_compressible_stokes);
+
   const double invtimefac = 1.0/(fldparatimint_->TimeFac());
   //Decide if the complete matrix has to be inverted
-  if (evaluateOnlyNonlinear && stokes)
-    return;
+  if (evaluateOnlyNonlinear && stokes && !weaklycompressible)
+      return;
 
   //Decide if the stokes part has to be inverted
   if (stokes)
     //Only invert the convective part
     zeroMatrix(uuconv);
 
-  // get constant dynamic viscosity
-  const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
-  const double viscosity = actmat->Viscosity();
-  const double density = actmat->Density();
+  // the matrix must be reset in order to not sum the contributions twice from the 2nd iteration on
+  zeroMatrix(uucomp);
 
   // The whole convective par thas to be recalculated
   if (!evaluateOnlyNonlinear) {
@@ -1537,16 +1767,30 @@ ComputeInteriorMatrices(const Teuchos::RCP<MAT::Material> &mat,
         ufMat(i,f) = 0.;
   }
 
+  double viscosity;
+  double density;
+  double RefPressure;
+  double RefBulkModulus;
+  double MatParameter;
+
   // loop over interior quadrature points
   for (unsigned int q=0; q<shapes_.nqpoints_; ++q )
   {
-    if (!evaluateOnlyNonlinear) {
-      for (unsigned int i=0; i<ndofs_; ++i)
-        //uuMat contains the shapes functions multiplied by the jacobian
-        //(the jacobian is also multiplied by the weighting functions)
-        uuMat(nsd_*ndofs_,nsd_*ndofs_+i) += shapes_.shfunct(i,q) * shapes_.jfac(q);
-      //the last line of ufMat only contains the weighted jacobian determinant
-      ufMat(nsd_*ndofs_,0) -= shapes_.jfac(q);
+    // get material properties
+    if (mat->MaterialType() == INPAR::MAT::m_fluid)
+    {
+      const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
+      viscosity = actmat->Viscosity();
+      density   = actmat->Density();
+    }
+    else if (mat->MaterialType() == INPAR::MAT::m_fluid_murnaghantait)
+    {
+      const MAT::MurnaghanTaitFluid* actmat = static_cast<const MAT::MurnaghanTaitFluid*>(mat.get());
+      viscosity      = actmat->Viscosity();
+      density        = actmat->ComputeDensity(presnp(q));
+      RefPressure    = actmat->RefPressure();
+      RefBulkModulus = actmat->RefBulkModulus();
+      MatParameter   = actmat->MatParameter();
     }
 
     // now fill the components in the one-sided matrices
@@ -1573,6 +1817,69 @@ ComputeInteriorMatrices(const Teuchos::RCP<MAT::Material> &mat,
           //multiply the matrix by the velocity terms
           uPart(d*ndofs_+i,q) = -valf * velnp(d,q) * density;
       }
+    }
+
+    if (weaklycompressible) {
+      double compfac = 1. / (RefBulkModulus + MatParameter * (presnp(q) - RefPressure));
+      double compfac2 = MatParameter / std::pow(RefBulkModulus + MatParameter * (presnp(q) - RefPressure) , 2.);
+      double gradpvel = 0.;
+      for (unsigned int d=0; d<nsd_; ++d)
+        gradpvel += gradpresnp(d,q) * velnp(d,q);
+      for (unsigned int i=0; i<ndofs_; ++i)
+        for (unsigned int j=0; j<ndofs_; ++j) {
+          for (unsigned int d=0; d<nsd_; ++d) {
+            // fill in term + (q * 1/(K0+n(p_np-p0)) grad(p_np) * du)
+            uucomp(j,d*ndofs_+i) += (shapes_.shfunct(j,q)-shapes_.shfunctAvg(j)) * compfac * gradpresnp(d,q) * shapes_.shfunct(i,q) * shapes_.jfac(q);
+
+            // fill in term + (q * 1/(K0+n(p_np-p0)) dgrad(p) * u_np)
+            uucomp(j,nsd_*ndofs_+i) += (shapes_.shfunct(j,q)-shapes_.shfunctAvg(j)) * compfac * shapes_.shderxy(i*nsd_+d,q) * velnp(d,q) * shapes_.jfac(q);
+          }
+
+          // fill in term - (q * n/(K0+n(p_np-p0))^2 grad(p_np) * u_np * dp)
+          uucomp(j,nsd_*ndofs_+i) -= (shapes_.shfunct(j,q)-shapes_.shfunctAvg(j)) * compfac2 * gradpvel * shapes_.shfunct(i,q) * shapes_.jfac(q);
+
+          if (!stokes) {
+            // fill in term + (q * invtimefac 1/(K0+n(p_np-p0)) * dp)
+            uucomp(j,nsd_*ndofs_+i) += (shapes_.shfunct(j,q)-shapes_.shfunctAvg(j)) * invtimefac * compfac * shapes_.shfunct(i,q) * shapes_.jfac(q);
+
+            // fill in term + (q * invtimefac n/(K0+n(p_np-p0))^2 * p_np * dp)
+            uucomp(j,nsd_*ndofs_+i) -= (shapes_.shfunct(j,q)-shapes_.shfunctAvg(j)) * invtimefac * compfac2 * presnp(q) * shapes_.shfunct(i,q) * shapes_.jfac(q);
+          }
+        }
+
+      for (unsigned int i=0; i<ndofs_; ++i) {
+        for (unsigned int d=0; d<nsd_; ++d) {
+          // fill in term + (1 * 1/(K0+n(p_np-p0)) grad(p_np) * du)
+          fuMat(0,d*ndofs_+i) += compfac * gradpresnp(d,q) * shapes_.shfunct(i,q) * shapes_.jfac(q);
+
+          // fill in term + (1 * 1/(K0+n(p_np-p0)) dgrad(p) * u_np)
+          fuMat(0,nsd_*ndofs_+i) += compfac * shapes_.shderxy(i*nsd_+d,q) * velnp(d,q) * shapes_.jfac(q);
+        }
+
+        // fill in term - (1 * n/(K0+n(p_np-p0))^2 grad(p_np) * u_np * dp)
+        fuMat(0,nsd_*ndofs_+i) -= compfac2 * gradpvel * shapes_.shfunct(i,q) * shapes_.jfac(q);
+
+        if (!stokes) {
+          // fill in term + (1 * invtimefac 1/(K0+n(p_np-p0)) * dp)
+          fuMat(0,nsd_*ndofs_+i) += invtimefac * compfac * shapes_.shfunct(i,q) * shapes_.jfac(q);
+
+          // fill in term + (1 * invtimefac n/(K0+n(p_np-p0))^2 * p_np * dp)
+          fuMat(0,nsd_*ndofs_+i) -= invtimefac * compfac2 * presnp(q) * shapes_.shfunct(i,q) * shapes_.jfac(q);
+        }
+      }
+    }
+
+    if (!evaluateOnlyNonlinear) {
+      // fill in term + (q * dlambda)
+      for (unsigned int j=0; j<ndofs_; ++j)
+        uuMat(nsd_*ndofs_+j,(nsd_+1)*ndofs_) += shapes_.shfunct(j,q) * shapes_.jfac(q);
+
+      // fill in term - (1 * dp)
+      for (unsigned int i=0; i<ndofs_; ++i)
+        uuMat((nsd_+1)*ndofs_,nsd_*ndofs_+i) -= shapes_.shfunct(i,q) * shapes_.jfac(q);
+
+      // fill in term + (1 * dpsi)
+      ufMat((nsd_+1)*ndofs_,0) += shapes_.jfac(q) ;
     }
   }
 
@@ -1606,25 +1913,25 @@ ComputeInteriorMatrices(const Teuchos::RCP<MAT::Material> &mat,
       }
   }
 
+  // fill in mass matrix for the velocity
+  if (!stokes)
+    for (unsigned int q=0; q<shapes_.nqpoints_; ++q )
+      for (unsigned int i=0; i<ndofs_; ++i)
+        for (unsigned int j=0; j<ndofs_; ++j)
+          for (unsigned int d=0; d<nsd_; ++d)
+            uuconv(d*ndofs_+j,d*ndofs_+i) += shapes_.shfunct(j,q) * density * invtimefac * shapes_.shfunct(i,q) * shapes_.jfac(q);
+
   // merge matrices (do not merge convection matrices into uuMat now but later)
   if (!evaluateOnlyNonlinear) {
     for (unsigned int i=0; i<ndofs_; ++i)
-      for (unsigned int j=0; j<ndofs_; ++j) {
-
-        // fill in mass matrix for the velocity
-        if (!stokes)
-          for (unsigned int d=0; d<nsd_; ++d) {
-            uuMat(d*ndofs_+j,d*ndofs_+i) = density * invtimefac * massMat(j,i);
-          }
-
+      for (unsigned int j=0; j<ndofs_; ++j)
         for (unsigned int d=0; d<nsd_; ++d) {
           // fill in -grad v * pI
           uuMat(d*ndofs_+j,nsd_*ndofs_+i) = -guMat(d*ndofs_+j,i);
           // fill in -u * grad q
-          if (j > 0)
-            uuMat(nsd_*ndofs_+j,d*ndofs_+i) = -guMat(d*ndofs_+j,i);
+          uuMat(nsd_*ndofs_+j,d*ndofs_+i) += -guMat(d*ndofs_+j,i);
         }
-      }
+
     // we want to multiply ugMat by guMat below for which we need to access the
     // entries in guMat in a transposed way
     for (unsigned int i=0; i<ndofs_; ++i)
@@ -1644,9 +1951,12 @@ ComputeFaceResidual(const int                           face,
                     const std::vector<double>         & traceval,
                     Epetra_SerialDenseVector          & elevec)
 {
-  const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
-  const double viscosity = actmat->Viscosity();
-  const double density = actmat->Density();
+  // get physical type
+  INPAR::FLUID::PhysicalType physicaltype = fldpara_->PhysicalType();
+  stokes = (physicaltype == INPAR::FLUID::stokes ||
+            physicaltype == INPAR::FLUID::weakly_compressible_stokes);
+  weaklycompressible = (physicaltype == INPAR::FLUID::weakly_compressible ||
+                        physicaltype == INPAR::FLUID::weakly_compressible_stokes);
 
   // compute pressure average on element
   double presavg = 0.;
@@ -1666,9 +1976,8 @@ ComputeFaceResidual(const int                           face,
   }
   velnorm = std::sqrt(velnorm/vol);
 
-  const double lengthScale = 1.;
-  stabilization[face] = viscosity/lengthScale + (stokes ? 0. : velnorm*density);
   fvelnp.Shape(nsd_,shapesface_.nqpoints_);
+  ifpresnp.Resize(shapesface_.nqpoints_);
 
   // interpolate the boundary values onto face quadrature points
   for (unsigned int q=0; q<shapesface_.nqpoints_; ++q) {
@@ -1689,10 +1998,10 @@ ComputeFaceResidual(const int                           face,
         ifvelnp[d] += shapesface_.shfunctI(i,q) * val[(nsd_*nsd_+d)*ndofs_+i];
     }
     // interpolate p_np
-    double presnp = 0.;
+    double sum = 0.;
     for (unsigned int i=0; i<ndofs_; ++i)
-      presnp += shapesface_.shfunctI(i,q) * val[(nsd_*nsd_+nsd_)*ndofs_+i];
-
+      sum += shapesface_.shfunctI(i,q) * val[(nsd_*nsd_+nsd_)*ndofs_+i];
+    ifpresnp(q) = sum;
 
     // interpolate trace value
     for (unsigned int d=0; d<nsd_; ++d) {
@@ -1701,6 +2010,37 @@ ComputeFaceResidual(const int                           face,
           sum += shapesface_.shfunct(i,q) * traceval[1+face*nsd_*shapesface_.nfdofs_+d*shapesface_.nfdofs_+i];
       fvelnp(d,q) = sum;
     }
+
+    // get material properties
+    double viscosity;
+    double density;
+    if (mat->MaterialType() == INPAR::MAT::m_fluid)
+    {
+      const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
+      viscosity = actmat->Viscosity();
+      density   = actmat->Density();
+    }
+    else if (mat->MaterialType() == INPAR::MAT::m_fluid_murnaghantait)
+    {
+      const MAT::MurnaghanTaitFluid* actmat = static_cast<const MAT::MurnaghanTaitFluid*>(mat.get());
+      viscosity      = actmat->Viscosity();
+      density        = actmat->ComputeDensity(ifpresnp(q));
+    }
+
+    // trace of velocity gradient
+    double tracevelgradnp = 0.;
+    double eye[nsd_][nsd_];
+    for (unsigned int d=0; d<nsd_; ++d)
+    {
+      tracevelgradnp += velgradnp[d][d];
+      for (unsigned int e=0; e<nsd_; ++e)
+        eye[d][e] = 0.;
+      eye[d][d] = 1.;
+    }
+
+    // stabilization parameter
+    const double lengthScale = 1.;
+    stabilization[face] = viscosity/lengthScale + (stokes ? 0. : velnorm*density);
 
     // ---------------------------- compute face residuals
     // residual for L_np
@@ -1720,8 +2060,10 @@ ComputeFaceResidual(const int                           face,
       else
         for (unsigned int e=0; e<nsd_; ++e)
           momres[e] = -viscosity*(velgradnp[d][e]+velgradnp[e][d])+density*fvelnp(d,q)*fvelnp(e,q);
-
-      momres[d] += presnp;
+      if (weaklycompressible)
+        for (unsigned int e=0; e<nsd_; ++e)
+          momres[e] += viscosity*2./3.*tracevelgradnp*eye[d][e];
+      momres[d] += ifpresnp(q);
       double res = 0;
       for (unsigned int e=0; e<nsd_; ++e)
         res += momres[e] * shapesface_.normals(e,q);
@@ -1740,10 +2082,8 @@ ComputeFaceResidual(const int                           face,
     for (unsigned int d=0; d<nsd_; ++d)
       presres += fvelnp(d,q)*shapesface_.normals(d,q);
     presres *= shapesface_.jfac(q);
-    for (unsigned int i=1; i<ndofs_; ++i) {
-      upRes(nsd_*ndofs_+i) -=
-          presres*(shapesface_.shfunctI(i,q)-shapes_.shfunctAvg(i));
-    }
+    for (unsigned int i=0; i<ndofs_; ++i)
+      upRes(nsd_*ndofs_+i) -= presres*(shapesface_.shfunctI(i,q)-shapes_.shfunctAvg(i));
   }
 }
 
@@ -1756,19 +2096,35 @@ ComputeFaceMatrices (const int                          face,
                      const bool                         evaluateOnlyNonlinear,
                      Epetra_SerialDenseMatrix          &elemat)
 {
-  // get constant dynamic viscosity
-  const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
-  const double viscosity = actmat->Viscosity();
-  const double density = actmat->Density();
+  // get physical type
+  INPAR::FLUID::PhysicalType physicaltype = fldpara_->PhysicalType();
+  stokes = (physicaltype == INPAR::FLUID::stokes ||
+            physicaltype == INPAR::FLUID::weakly_compressible_stokes);
+  weaklycompressible = (physicaltype == INPAR::FLUID::weakly_compressible ||
+                        physicaltype == INPAR::FLUID::weakly_compressible_stokes);
 
   trMat.Shape(ndofs_*nsd_,shapesface_.nfdofs_);
   trMatAvg.Shape(ndofs_*nsd_,shapesface_.nfdofs_);
 
-  // TODO write a fast version of this function where we build on the assumption that
-  // face basis functions and interior basis functions coincide for certain indices
+  double viscosity;
+  double density;
 
   // perform face quadrature
   for (unsigned int q=0; q<shapesface_.nqpoints_; ++q) {
+
+    // get material properties
+    if (mat->MaterialType() == INPAR::MAT::m_fluid)
+    {
+      const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
+      viscosity = actmat->Viscosity();
+      density   = actmat->Density();
+    }
+    else if (mat->MaterialType() == INPAR::MAT::m_fluid_murnaghantait)
+    {
+      const MAT::MurnaghanTaitFluid* actmat = static_cast<const MAT::MurnaghanTaitFluid*>(mat.get());
+      viscosity      = actmat->Viscosity();
+      density        = actmat->ComputeDensity(ifpresnp(q));
+    }
 
     double velNormal = 0.;
     for (unsigned int d=0; d<nsd_; ++d)
@@ -1854,6 +2210,10 @@ ComputeFaceMatrices (const int                          face,
             gfMat((nsd_*d+e)*ndofs_+j,1+face*nsd_*shapesface_.nfdofs_+shapesface_.nfdofs_*d+i) = -trMat(e*ndofs_+j,i);
             fgMat(1+face*nsd_*shapesface_.nfdofs_+shapesface_.nfdofs_*d+i,(nsd_*d+e)*ndofs_+j) -= viscosity*trMat(e*ndofs_+j,i);
             fgMat(1+face*nsd_*shapesface_.nfdofs_+shapesface_.nfdofs_*e+i,(nsd_*d+e)*ndofs_+j) -= viscosity*trMat(d*ndofs_+j,i);
+
+            // fill in the term + <vhat * 2/3 mu tr(L) n>
+            if (weaklycompressible)
+              fgMat(1+face*nsd_*shapesface_.nfdofs_+shapesface_.nfdofs_*d+i,(nsd_*e+e)*ndofs_+j) += 2./3.*viscosity*trMat(d*ndofs_+j,i);
           }
       }
     }
@@ -1865,6 +2225,11 @@ ComputeFaceMatrices (const int                          face,
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::EliminateVelocityGradient(Epetra_SerialDenseMatrix &elemat)
 {
+  // get physical type
+  INPAR::FLUID::PhysicalType physicaltype = fldpara_->PhysicalType();
+  weaklycompressible = (physicaltype == INPAR::FLUID::weakly_compressible ||
+                        physicaltype == INPAR::FLUID::weakly_compressible_stokes);
+
   // invert mass matrix. Inverse will be stored in massMat, too
   {
     Epetra_SerialDenseSolver inverseMass;
@@ -1899,6 +2264,13 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::EliminateVelocityGrad
         for (unsigned int e=0; e<nsd_; ++e)
           if (d != e)
             uuMat(d*ndofs_+j,e*ndofs_+i) -= tmpMat(e*ndofs_+j,d*ndofs_+i);
+
+      // fill in the terms (- grad(v) * 2/3 mu tr(L) I)
+      //                   <+ v * 2/3 mu tr(L) n>
+      if (weaklycompressible)
+        for (unsigned int d=0; d<nsd_; ++d)
+          for (unsigned int e=0; e<nsd_; ++e)
+            uuMat(d*ndofs_+j,e*ndofs_+i) += 2./3. * tmpMat(d*ndofs_+j,e*ndofs_+i);
     }
 }
 
@@ -1908,7 +2280,12 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::
 SolveResidual()
 {
-  for (unsigned int i=0; i<(nsd_+1)*ndofs_; ++i)
+  // get physical type
+  INPAR::FLUID::PhysicalType physicaltype = fldpara_->PhysicalType();
+  weaklycompressible = (physicaltype == INPAR::FLUID::weakly_compressible ||
+                        physicaltype == INPAR::FLUID::weakly_compressible_stokes);
+
+  for (unsigned int i=0; i<(nsd_+1)*ndofs_+1; ++i)
     upUpd(i) = upRes(i);
 
   // compute UG * M^{-1} gRes. Since UG is not stored completely, need some loops.
@@ -1928,27 +2305,33 @@ SolveResidual()
       for (unsigned int e=0; e<nsd_; ++e)
         sum[e] = 0.;
       for (unsigned int j=0; j<ndofs_; ++j)
-        for (unsigned int e=0; e<nsd_; ++e)
+        for (unsigned int e=0; e<nsd_; ++e) {
           sum[e] += tmpMatGrad(d*ndofs_+i,j) * (gRes((e*nsd_+d)*ndofs_+j) + gRes((d*nsd_+e)*ndofs_+j));
+
+          if (weaklycompressible)
+            sum[e] -= 2./3. * tmpMatGrad(e*ndofs_+i,j) * gRes((d*nsd_+d)*ndofs_+j);
+        }
       for (unsigned int e=0; e<nsd_; ++e)
         upUpd(e*ndofs_+i) -= sum[e];
     }
 
-  // merge matrices for uu to get the real Schur complement matrix
+  // merge matrices to get the real Schur complement matrix
   for (unsigned int i=0; i<nsd_*ndofs_; ++i) {
     for (unsigned int j=0; j<nsd_*ndofs_; ++j)
       uuMatFinal(j,i) = uuMat(j,i) + uuconv(j,i);
     for (unsigned int j=nsd_*ndofs_; j<(nsd_+1)*ndofs_; ++j)
-      uuMatFinal(j,i) = uuMat(j,i);
+      uuMatFinal(j,i) = uuMat(j,i) + uucomp(j-nsd_*ndofs_,i);
   }
-  for (unsigned int i=nsd_*ndofs_; i<(nsd_+1)*ndofs_; ++i)
-    for (unsigned int j=0; j<(nsd_+1)*ndofs_; ++j)
+  for (unsigned int i=nsd_*ndofs_; i<(nsd_+1)*ndofs_; ++i) {
+    for (unsigned int j=0; j<nsd_*ndofs_; ++j)
       uuMatFinal(j,i) = uuMat(j,i);
-
-  // clear first pressure column
+    for (unsigned int j=nsd_*ndofs_; j<(nsd_+1)*ndofs_; ++j)
+      uuMatFinal(j,i) = uuMat(j,i) + uucomp(j-nsd_*ndofs_,i);
+  }
+  for (unsigned int j=0; j<(nsd_+1)*ndofs_+1; ++j)
+    uuMatFinal(j,(nsd_+1)*ndofs_) = uuMat(j,(nsd_+1)*ndofs_);
   for (unsigned int i=0; i<(nsd_+1)*ndofs_; ++i)
-    uuMatFinal(i,nsd_*ndofs_) = uuMatFinal(nsd_*ndofs_,i) = 0.;
-  uuMatFinal(nsd_*ndofs_,nsd_*ndofs_) = 1.;
+    uuMatFinal((nsd_+1)*ndofs_,i) = uuMat((nsd_+1)*ndofs_,i);
 
   // factorize uuMatFinal and solve. do not use LINALG::FixedSizeSerialDenseSolver because
   // we want to solve twice and reuse the factorization
@@ -2014,14 +2397,10 @@ CondenseLocalPart(Epetra_SerialDenseMatrix &eleMat,
   // which will also compute and factorize uuMatFinal
   SolveResidual();
 
-  // clear first column of pressure
-  for (unsigned int i=1; i<1+nfaces_*nsd_*shapesface_.nfdofs_; ++i)
-    fuMat(i,ndofs_*nsd_) = 0;
-
   // compute residual vector: need to multiply residual by fuMat and fgMat
   for (unsigned int i=1; i<1+nfaces_*nsd_*shapesface_.nfdofs_; ++i) {
     double sum = 0.;
-    for (unsigned int j=0; j<ndofs_*(nsd_+1); ++j)
+    for (unsigned int j=0; j<ndofs_*(nsd_+1)+1; ++j)
       sum += fuMat(i,j) * upUpd(j);
     eleVec(i) -= sum;
     sum = 0.;
@@ -2033,8 +2412,10 @@ CondenseLocalPart(Epetra_SerialDenseMatrix &eleMat,
   Epetra_BLAS blas;
 
   for (unsigned int f=1; f<1+nfaces_*shapesface_.nfdofs_*nsd_; ++f) {
+
     // gfMat is block-structured similarly to GU, so only use non-zero entries
     const unsigned cindex = ((f-1)/shapesface_.nfdofs_)%nsd_;
+
     // compute (UG * M^{-1}) * GF = tmpMatGrad * GF
     // shape of UG in 3D:
     // [ x y z             ]   [ x     y     z     ]
@@ -2048,6 +2429,8 @@ CondenseLocalPart(Epetra_SerialDenseMatrix &eleMat,
         for (unsigned int j=0; j<ndofs_; ++j) {
           sum1 += tmpPtr[i+e*ndofs_+j*nsd_*ndofs_] * gfMat((cindex*nsd_+e)*ndofs_+j,f);
           sum2 += tmpPtr[i+cindex*ndofs_+j*nsd_*ndofs_] * gfMat((cindex*nsd_+e)*ndofs_+j,f);
+          if (weaklycompressible)
+            sum2 -= 2./3. * tmpPtr[i+e*ndofs_+j*nsd_*ndofs_] * gfMat((cindex*nsd_+cindex)*ndofs_+j,f);
         }
         ufMat(e*ndofs_+i,f) -= sum2;
       }
@@ -2069,6 +2452,8 @@ CondenseLocalPart(Epetra_SerialDenseMatrix &eleMat,
             1., eleMat.A(), eleMat.M());
 
   // update gfMat and apply inverse mass matrix: GF <- M^{-1} (GF - GU * UF)
+  Epetra_SerialDenseVector gAux;
+  gAux.Resize(nsd_*nsd_*ndofs_);
   for (unsigned int f=1; f<1+nfaces_*shapesface_.nfdofs_*nsd_; ++f) {
     for (unsigned int d=0; d<nsd_; ++d)
       for (unsigned int i=0; i<ndofs_; ++i) {
@@ -2090,10 +2475,10 @@ CondenseLocalPart(Epetra_SerialDenseMatrix &eleMat,
         for (unsigned int e=0; e<nsd_*nsd_; ++e)
           sum[e] += massMat(j,i) * gfMat(e*ndofs_+j,f); // use symmetry for faster matrix access
       for (unsigned int e=0; e<nsd_*nsd_; ++e)
-        gRes(e*ndofs_+i) = sum[e];
+        gAux(e*ndofs_+i) = sum[e];
     }
     for (unsigned int i=0; i<ndofs_*nsd_*nsd_; ++i)
-      gfMat(i,f) = gRes(i);
+      gfMat(i,f) = gAux(i);
   }
 
   // compute FG * (M^{-1} GF)
@@ -2102,6 +2487,138 @@ CondenseLocalPart(Epetra_SerialDenseMatrix &eleMat,
 
 }
 
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::
+ComputeCorrectionTerm(std::vector<double>    & interiorecorrectionterm,
+                      int                      corrtermfuncnum)
+{
+  for (unsigned int i=0; i<ndofs_; ++i ) {
+    double x[nsd_];
+    for (unsigned int d=0; d<nsd_; ++d)
+      x[d] = shapes_.nodexyzreal[i][d];
+
+    interiorecorrectionterm[i] = DRT::Problem::Instance()->Funct(corrtermfuncnum-1).Evaluate(0,x,0.0);
+  }
+}
+
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::
+ComputeBodyForce(std::vector<double>    & interiorebodyforce,
+                 int                      bodyforcefuncnum)
+{
+  for (unsigned int i=0; i<ndofs_; ++i ) {
+    double x[nsd_];
+    for (unsigned int d=0; d<nsd_; ++d)
+      x[d] = shapes_.nodexyzreal[i][d];
+
+    for (unsigned int d=0; d<nsd_; ++d)
+      interiorebodyforce[d*ndofs_+i] = DRT::Problem::Instance()->Funct(bodyforcefuncnum-1).Evaluate(d,x,0.0);
+  }
+}
+
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::FluidEleCalcHDG<distype>::PrintLocalResiduals(DRT::ELEMENTS::Fluid* ele)
+{
+  std::cout<<"ELEMENT ID = "<<ele->Id()<<" "<<"---------------------------------------------------------------"<<std::endl;
+  double centre_x = 0.;
+    double centre_y = 0.;
+    for (unsigned int i=0; i<4; ++i) {
+      const double* xyz = (ele->Nodes()[i])->X();
+      centre_x += xyz[0];
+      centre_y += xyz[1];
+    }
+    centre_x /= 4;
+    centre_y /= 4;
+    std::cout<<"centre = ("<<centre_x<<","<<centre_y<<")"<<std::endl;
+  for (unsigned int i=0; i<localSolver_->ndofs_; ++i) {
+    double Res_ux = localSolver_->upRes(0*localSolver_->ndofs_+i);
+    double Res_uy = localSolver_->upRes(1*localSolver_->ndofs_+i);
+    double Res_p  = localSolver_->upRes(nsd_*localSolver_->ndofs_+i);
+    // The residuals include the velocity gradient residuals
+    std::cout<<"Res_uxC = "; if (Res_ux >= 0) std::cout<<" "; std::cout<<Res_ux;
+    std::cout<<"  Res_uyC = "; if (Res_uy >= 0) std::cout<<" "; std::cout<<Res_uy;
+    std::cout<<"  Res_pC = ";  if (Res_p >= 0)  std::cout<<" "; std::cout<<Res_p;
+    std::cout<<std::endl;
+  }
+  double Res_lambda  = localSolver_->upRes((nsd_+1)*localSolver_->ndofs_);
+  std::cout<<"Res_lambdaC = "; if (Res_lambda >= 0) std::cout<<" "; std::cout<<Res_lambda<<std::endl;
+  std::cout<<"------------------------------------------------------------------------------"<<std::endl;
+}
+
+
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::FluidEleCalcHDG<distype>::PrintLocalVariables(DRT::ELEMENTS::Fluid* ele)
+{
+  std::cout<<"ELEMENT ID = "<<ele->Id()<<" "<<"---------------------------------------------------------------"<<std::endl;
+  double centre_x = 0.;
+    double centre_y = 0.;
+    for (unsigned int i=0; i<4; ++i) {
+      const double* xyz = (ele->Nodes()[i])->X();
+      centre_x += xyz[0];
+      centre_y += xyz[1];
+    }
+    centre_x /= 4;
+    centre_y /= 4;
+    std::cout<<"centre = ("<<centre_x<<","<<centre_y<<")"<<std::endl;
+  for (unsigned int i=0; i<localSolver_->ndofs_; ++i) {
+    double Lxx = interiorVal_[(0)*localSolver_->ndofs_+i];
+    double Lxy = interiorVal_[(1)*localSolver_->ndofs_+i];
+    double Lyx = interiorVal_[(2)*localSolver_->ndofs_+i];
+    double Lyy = interiorVal_[(3)*localSolver_->ndofs_+i];
+    double ux  = interiorVal_[(nsd_*nsd_+0)*localSolver_->ndofs_+i];
+    double uy  = interiorVal_[(nsd_*nsd_+1)*localSolver_->ndofs_+i];
+    double p   = interiorVal_[(nsd_*nsd_+nsd_)*localSolver_->ndofs_+i];
+    std::cout<<"Lxx = "<<Lxx<<"  Lxy = "<<Lxy<<"  Lyx = "<<Lyx<<"  Lyy = "<<Lyy<<"  ux = "<<ux<<"  uy = "<<uy<<"  p = "<<p<<std::endl;
+  }
+  double lambda= interiorVal_[(nsd_*nsd_+nsd_+1)*localSolver_->ndofs_];
+  std::cout<<"lambda = "<<lambda<<std::endl;
+  std::cout<<"------------------------------------------------------------------------------"<<std::endl;
+}
+
+
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::FluidEleCalcHDG<distype>::PrintLocalCorrection(DRT::ELEMENTS::Fluid* ele,
+                                                                   std::vector<double> & interiorecorrectionterm)
+{
+  std::cout<<"ELEMENT ID = "<<ele->Id()<<" "<<"---------------------------------------------------------------"<<std::endl;
+  for (unsigned int i=0; i<localSolver_->ndofs_; ++i) {
+    std::cout<<"xyz = (";
+    double x[nsd_];
+    for (unsigned int d=0; d<nsd_; ++d) {
+      x[d] = localSolver_->shapes_.nodexyzreal[i][d];
+      std::cout<<x[d];
+      if (d<nsd_-1)
+        std::cout<<",\t";
+    }
+    std::cout<<")";
+    double corr  = interiorecorrectionterm[i];
+    std::cout<<"\tcorr = "<<corr<<std::endl;
+  }
+  std::cout<<"------------------------------------------------------------------------------"<<std::endl;
+}
+
+
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::FluidEleCalcHDG<distype>::PrintLocalBodyForce(DRT::ELEMENTS::Fluid* ele,
+                                                                  std::vector<double> & interiorebodyforce)
+{
+  std::cout<<"ELEMENT ID = "<<ele->Id()<<" "<<"---------------------------------------------------------------"<<std::endl;
+  for (unsigned int i=0; i<localSolver_->ndofs_; ++i) {
+    std::cout<<"xyz = (";
+    double x[nsd_];
+    for (unsigned int d=0; d<nsd_; ++d) {
+      x[d] = localSolver_->shapes_.nodexyzreal[i][d];
+      std::cout<<x[d];
+      if (d<nsd_-1)
+        std::cout<<",\t";
+    }
+    std::cout<<")";
+    double fx  = interiorebodyforce[0*localSolver_->ndofs_+i];
+    double fy  = interiorebodyforce[1*localSolver_->ndofs_+i];
+    std::cout<<"\tfx = "<<fx<<"  fy = "<<fy<<std::endl;
+  }
+  std::cout<<"------------------------------------------------------------------------------"<<std::endl;
+}
 
 
 // explicit instantiation of template classes

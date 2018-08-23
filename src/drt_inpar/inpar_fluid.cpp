@@ -40,6 +40,8 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                     "Physical Type",
                                     tuple<std::string>(
                                       "Incompressible",
+                                      "Weakly_compressible",
+                                      "Weakly_compressible_stokes",
                                       "Artificial_compressibility",
                                       "Varying_density",
                                       "Loma",
@@ -51,6 +53,8 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                       ),
                                     tuple<int>(
                                       incompressible,
+                                      weakly_compressible,
+                                      weakly_compressible_stokes,
                                       artcomp,
                                       varying_density,
                                       loma,
@@ -184,8 +188,8 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   {
     // a standard Teuchos::tuple can have at maximum 10 entries! We have to circumvent this here.
-    Teuchos::Tuple<std::string,11> name;
-    Teuchos::Tuple<int,11> label;
+    Teuchos::Tuple<std::string,13> name;
+    Teuchos::Tuple<int,13> label;
     name[ 0] = "zero_field";                             label[ 0] = initfield_zero_field;
     name[ 1] = "field_by_function";                      label[ 1] = initfield_field_by_function;
     name[ 2] = "disturbed_field_from_function";          label[ 2] = initfield_disturbed_field_from_function;
@@ -197,6 +201,8 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
     name[ 8] = "forced_hit_simple_algebraic_spectrum";   label[ 8] = initfield_forced_hit_simple_algebraic_spectrum;
     name[ 9] = "forced_hit_numeric_spectrum";            label[ 9] = initfield_forced_hit_numeric_spectrum;
     name[10] = "forced_hit_passive";                     label[10] = initfield_passive_hit_const_input;
+    name[11] = "channel_weakly_compressible";            label[11] = initfield_channel_weakly_compressible;
+    name[12] = "channel_weakly_compressible_fourier_3";  label[12] = initfield_channel_weakly_compressible_fourier_3;
 
     setStringToIntegralParameter<int>(
         "INITIALFIELD",
@@ -258,26 +264,28 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   BoolParameter("ALLDOFCOUPLED","Yes","all dof (incl. pressure) are coupled",&fdyn);
 
   {
-   Teuchos::Tuple<std::string,17> name;
-   Teuchos::Tuple<int,17> label;
+   Teuchos::Tuple<std::string,19> name;
+   Teuchos::Tuple<int,19> label;
 
-   name[ 0] = "no";                             label[ 0] = no_error_calculation;
-   name[ 1] = "beltrami_flow";                  label[ 1] = beltrami_flow;
-   name[ 2] = "channel2D";                      label[ 2] = channel2D;
-   name[ 3] = "gravitation";                    label[ 3] = gravitation;
-   name[ 4] = "shear_flow";                     label[ 4] = shear_flow;
-   name[ 5] = "jeffery_hamel_flow";             label[ 5] = jeffery_hamel_flow;
-   name[ 6] = "byfunct";                        label[ 6] = byfunct;
-   name[ 7] = "beltrami_stat_stokes";           label[ 7] = beltrami_stat_stokes;
-   name[ 8] = "beltrami_stat_navier_stokes";    label[ 8] = beltrami_stat_navier_stokes;
-   name[ 9] = "beltrami_instat_stokes";         label[ 9] = beltrami_instat_stokes;
-   name[10] = "beltrami_instat_navier_stokes";  label[10] = beltrami_instat_navier_stokes;
-   name[11] = "kimmoin_stat_stokes";            label[11] = kimmoin_stat_stokes;
-   name[12] = "kimmoin_stat_navier_stokes";     label[12] = kimmoin_stat_navier_stokes;
-   name[13] = "kimmoin_instat_stokes";          label[13] = kimmoin_instat_stokes;
-   name[14] = "kimmoin_instat_navier_stokes";   label[14] = kimmoin_instat_navier_stokes;
-   name[15] = "fsi_fluid_pusher";               label[15] = fsi_fluid_pusher;
-   name[16] = "topopt_channel";                 label[16] = topoptchannel;
+   name[ 0] = "no";                                      label[ 0] = no_error_calculation;
+   name[ 1] = "beltrami_flow";                           label[ 1] = beltrami_flow;
+   name[ 2] = "channel2D";                               label[ 2] = channel2D;
+   name[ 3] = "gravitation";                             label[ 3] = gravitation;
+   name[ 4] = "shear_flow";                              label[ 4] = shear_flow;
+   name[ 5] = "jeffery_hamel_flow";                      label[ 5] = jeffery_hamel_flow;
+   name[ 6] = "byfunct";                                 label[ 6] = byfunct;
+   name[ 7] = "beltrami_stat_stokes";                    label[ 7] = beltrami_stat_stokes;
+   name[ 8] = "beltrami_stat_navier_stokes";             label[ 8] = beltrami_stat_navier_stokes;
+   name[ 9] = "beltrami_instat_stokes";                  label[ 9] = beltrami_instat_stokes;
+   name[10] = "beltrami_instat_navier_stokes";           label[10] = beltrami_instat_navier_stokes;
+   name[11] = "kimmoin_stat_stokes";                     label[11] = kimmoin_stat_stokes;
+   name[12] = "kimmoin_stat_navier_stokes";              label[12] = kimmoin_stat_navier_stokes;
+   name[13] = "kimmoin_instat_stokes";                   label[13] = kimmoin_instat_stokes;
+   name[14] = "kimmoin_instat_navier_stokes";            label[14] = kimmoin_instat_navier_stokes;
+   name[15] = "fsi_fluid_pusher";                        label[15] = fsi_fluid_pusher;
+   name[16] = "topopt_channel";                          label[16] = topoptchannel;
+   name[17] = "channel_weakly_compressible";             label[17] = channel_weakly_compressible;
+   name[18] = "channel_weakly_compressible_fourier_3";   label[18] = channel_weakly_compressible_fourier_3;
 
    setStringToIntegralParameter<int>("CALCERROR","no",
                                      "Flag to (de)activate error calculations",
@@ -286,6 +294,26 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                      &fdyn);
   }
   IntParameter("CALCERRORFUNCNO",-1,"Function for Error Calculation",&fdyn);
+
+  IntParameter("CORRTERMFUNCNO",-1,"Function for calculation of the correction term for the weakly compressible problem",&fdyn);
+
+  IntParameter("BODYFORCEFUNCNO",-1,"Function for calculation of the body force for the weakly compressible problem",&fdyn);
+
+  {
+   Teuchos::Tuple<std::string,2> name;
+   Teuchos::Tuple<int,2> label;
+
+   name[0] = "no";                              label[0] = no_pressure_average_bc;
+   name[1] = "yes";                             label[1] = yes_pressure_average_bc;
+
+   setStringToIntegralParameter<int>("PRESSAVGBC","no",
+                                     "Flag to (de)activate imposition of boundary condition for the considered element average pressure",
+                                     name,
+                                     label,
+                                     &fdyn);
+    }
+
+  DoubleParameter("REFMACH",1.0,"Reference Mach number",&fdyn);
 
   setStringToIntegralParameter<int>("SIMPLER","no",
                                "Switch on SIMPLE family of solvers, only works with block preconditioners like CheapSIMPLE!",

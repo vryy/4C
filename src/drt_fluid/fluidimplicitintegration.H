@@ -234,6 +234,12 @@ public:
   virtual void UpdateVelafGenAlpha() {}
 
   /*!
+  \brief Update velam_ for GenAlpha
+
+  */
+  virtual void UpdateVelamGenAlpha() {}
+
+  /*!
   \brief Insert Womersley condition
 
   */
@@ -629,6 +635,7 @@ public:
   virtual Teuchos::RCP<const Epetra_Vector> Velnp()       { return velnp_; }
   virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp()  { return velnp_; }
   virtual Teuchos::RCP<const Epetra_Vector> Velaf()       { return velaf_; }
+  virtual Teuchos::RCP<const Epetra_Vector> Velam()       { return velam_; }
   virtual Teuchos::RCP<const Epetra_Vector> Veln()        { return veln_; }
   virtual Teuchos::RCP<const Epetra_Vector> Velnm()       { return velnm_; }
   virtual Teuchos::RCP<Epetra_Vector> WriteAccessAccnp()  { return accnp_; }
@@ -1187,11 +1194,12 @@ protected:
   Teuchos::RCP<Epetra_Vector> accnm_; ///< acceleration at time \f$t^{n-1}\f$
   //@}
 
-  //! @name velocity and pressure at time n+1, n, n-1 and n+alpha_F
+  //! @name velocity and pressure at time n+1, n, n-1 and n+alpha_F (and n+alpha_M for weakly_compressible)
   //@{
   Teuchos::RCP<Epetra_Vector> velnp_; ///< velocity at time \f$t^{n+1}\f$
   Teuchos::RCP<Epetra_Vector> veln_;  ///< velocity at time \f$t^{n}\f$
   Teuchos::RCP<Epetra_Vector> velaf_; ///< velocity at time \f$t^{n+\alpha_F}\f$
+  Teuchos::RCP<Epetra_Vector> velam_; ///< velocity at time \f$t^{n+\alpha_M}\f$
   Teuchos::RCP<Epetra_Vector> velnm_; ///< velocity at time \f$t^{n-1}\f$
   //@}
 

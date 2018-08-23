@@ -9,10 +9,10 @@
 <pre>
 \level 3
 
-\maintainer Svenja Schoeder
-            schoeder@lnm.mw.tum.de
+\maintainer Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15265
+            089 - 289-15235
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -215,6 +215,9 @@ protected:
   //! write output for the acoustical field
   bool write_baci_acou_output_;
 
+  //! indicator for which illumination condition is applied currently
+  unsigned int illusetup_;
+
   //! node based vector holding absorption coefficient
   Teuchos::RCP<Epetra_Vector> node_reac_;
   //@}
@@ -247,8 +250,11 @@ protected:
   Teuchos::RCP<PATRegula> reac_regula_;
 
   //! monitor manager
-  Teuchos::RCP<PATMonitorManager> monitor_manager_;
+  std::vector<Teuchos::RCP<PATMonitorManager> > monitor_manager_;
   //@}
+
+  //! currentsequenzenumber
+  int currentsequenzeiter_;
 
   //! the underlying subproblems
   //@{
@@ -502,10 +508,10 @@ protected:
   //! bring restart parameters to vectors and elements
   virtual void SetRestartParameters(Teuchos::RCP<Epetra_Vector> reacs, Teuchos::RCP<Epetra_Vector> diffs, Teuchos::RCP<Epetra_Vector> cs, Teuchos::RCP<Epetra_Vector> rhos);
 
-private:
-
   //! perform one iteration
   virtual bool PerformIteration();
+
+private:
 
   //! evaluate c gradient and rho gradient
   void EvaluateCGrad();
@@ -534,13 +540,18 @@ public:
   //! replace parameters
   virtual void ReplaceParams(Teuchos::RCP<Epetra_Vector> params);
 
-private:
+protected:
 
   //! number of materials
   unsigned int nummats_;
 
   // table holding the material values
   std::vector<std::vector<double> > materialtable_;
+
+  //! read of predefined materials
+  void ReadMaterials(std::string materialfilename);
+
+private:
 
   //! number of iterations for sequential optimization
   int sequenzeiter_;
@@ -563,14 +574,57 @@ private:
   //! update acoustical parameters according to the optical ones
   void UpdateAcousticalParameters();
 
-  //! read of predefined materials
-  void ReadMaterials(std::string materialfilename);
-
   //! calculation of error in parameter field for analytic examples
   virtual void ComputeParameterError();
 
   //! bring restart parameters to vectors and elements
   virtual void SetRestartParameters(Teuchos::RCP<Epetra_Vector> reacs, Teuchos::RCP<Epetra_Vector> diffs, Teuchos::RCP<Epetra_Vector> cs, Teuchos::RCP<Epetra_Vector> rhos);
+
+};
+
+class PatImageReconstructionOptiSplitAcouIdentSmart : public PatImageReconstructionOptiSplitAcouSplit
+{
+public:
+
+  //! standard constructor
+  PatImageReconstructionOptiSplitAcouIdentSmart(
+    Teuchos::RCP<DRT::Discretization>      scatradis,
+    Teuchos::RCP<DRT::DiscretizationHDG>   acoudis,
+    Teuchos::RCP<Teuchos::ParameterList>   scatrapara,
+    Teuchos::RCP<Teuchos::ParameterList>   acoupara,
+    Teuchos::RCP<LINALG::Solver>           scatrasolv,
+    Teuchos::RCP<LINALG::Solver>           acousolv,
+    Teuchos::RCP<IO::DiscretizationWriter> scatraout,
+    Teuchos::RCP<IO::DiscretizationWriter> acouout);
+
+  //! standard destructor
+  virtual ~PatImageReconstructionOptiSplitAcouIdentSmart() {}
+
+
+  //! replace parameters
+  virtual void ReplaceParams(Teuchos::RCP<Epetra_Vector> params);
+
+protected:
+
+  virtual bool PerformIteration();
+
+  void UpdateAcousticalParameters();
+
+private:
+
+  //! number of materials
+  unsigned int nummats_;
+
+  // table holding the material values
+  std::vector<std::vector<double> > materialtable_;
+
+  double min_all_c;
+  double max_all_c;
+  double min_all_rho;
+  double max_all_rho;
+
+  //! read of predefined materials
+  void ReadMaterials(std::string materialfilename);
 
 };
 

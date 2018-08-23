@@ -137,6 +137,9 @@ namespace EHL
     //! setup composed system matrix from field solvers
     void SetupSystemMatrix();
 
+    //! apply all Dirichlet boundary conditions
+    void ApplyDBC();
+
     //! composed system matrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const
     {

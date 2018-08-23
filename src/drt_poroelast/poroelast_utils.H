@@ -87,6 +87,7 @@ Teuchos::RCP<POROELAST::PoroScatraBase> CreatePoroScatraAlgorithm(
     const Epetra_Comm& comm //!< communicator(i)
     );
 
+/// reset Material pointers after redistribution
 void SetMaterialPointersMatchingGrid(
     Teuchos::RCP<const DRT::Discretization> sourcedis,
     Teuchos::RCP<const DRT::Discretization> targetdis);
