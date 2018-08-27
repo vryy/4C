@@ -302,7 +302,7 @@ VtuWriter::WritePointDataVector(
   this->WriteDataArray(data, num_components_per_point, name);
 
   if ( myrank_ == 0 )
-    IO::cout(IO::verbose) << "\nVtuWriter: point data " << name << " written." << IO::endl;
+    IO::cout(IO::debug) << "\nVtuWriter: point data " << name << " written." << IO::endl;
 }
 
 /*----------------------------------------------------------------------*
@@ -350,5 +350,5 @@ VtuWriter::WriteCellDataVector(
   this->WriteDataArray(data, num_components_per_cell, name);
 
   if ( myrank_ == 0 )
-    IO::cout(IO::verbose) << "\nVtuWriter: cell data " << name << " written." << IO::endl;
+    IO::cout(IO::debug) << "\nVtuWriter: cell data " << name << " written." << IO::endl;
 }

@@ -70,6 +70,9 @@ namespace MAT
       /// deltaD in Bell's equation for force dependent off rate
       double const deltabelleq_;
 
+      /// distance to sphere elements in which binding is prohibited
+      double const nobonddistsphere;
+
       /// type of crosslinker
       INPAR::BEAMINTERACTION::CrosslinkerType linkertype_;
 
@@ -182,6 +185,9 @@ private:
 
     /// force depedent off rate according to bells equation
     virtual double DeltaBellEq() const { return params_->deltabelleq_; };
+
+    /// distance to sphere elements in which no double bonded beam to beam linker is allowed
+    virtual double NoBondDistSphere() const { return params_->nobonddistsphere; };
 
     /// force depedent off rate according to bells equation
     virtual INPAR::BEAMINTERACTION::CrosslinkerType LinkerType() const { return params_->linkertype_; };

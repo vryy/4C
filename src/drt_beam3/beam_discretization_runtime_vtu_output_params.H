@@ -108,11 +108,18 @@ namespace ELEMENTS {
       return write_filament_condition_;
     };
 
-        /// whether to write element and network orientation paramter
+        /// whether to write element and network orientation parameter
     bool IsWriteOrientationParamter() const
     {
       CheckInitSetup();
       return write_orientation_parameter_;
+    };
+
+    /// whether to write crosssection forces of periodic rve in x, y, and z direction
+    bool IsWriteRVECrosssectionForces() const
+    {
+      CheckInitSetup();
+      return write_rve_crosssection_forces_;
     };
 
   private:
@@ -168,6 +175,9 @@ namespace ELEMENTS {
 
     /// whether to write element and network orientation parameter
     bool write_orientation_parameter_;
+
+    /// whether to write crosssection forces of periodic rve in x, y, and z direction
+    bool write_rve_crosssection_forces_;
 
     //@}
   };

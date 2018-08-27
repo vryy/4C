@@ -3235,6 +3235,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     // optional parameter
     AddNamedReal( matdef, "DELTABELLEQ","deltaD in Bell's equation for force dependent off rate", 0.0, true );
+    AddNamedReal( matdef, "NOBONDDISTSPHERE","distance to sphere elements in which no double bonded linker is allowed", 0.0, true );
     AddNamedString( matdef, "TYPE","type of crosslinker", "Arbitrary", true );
 
     AppendMaterialDefinition( matlist, matdef );

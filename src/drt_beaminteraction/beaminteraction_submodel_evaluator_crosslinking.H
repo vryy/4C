@@ -43,6 +43,7 @@ namespace DATA {
   struct BeamData;
   struct BindEventData;
   struct UnBindEventData;
+  struct BspotLinkerData;
 }
 class CrosslinkingParams;
 class BeamLink;
@@ -112,6 +113,9 @@ namespace SUBMODELEVALUATOR {
     virtual void WriteRestart(
         IO::DiscretizationWriter & ia_writer,
         IO::DiscretizationWriter & bin_writer) const;
+
+    //! derived
+    virtual void PreReadRestart() override;
 
     //! derived
     virtual void ReadRestart(
@@ -204,6 +208,27 @@ private:
         std::vector< Teuchos::RCP<BEAMINTERACTION::DATA::CrosslinkerData> > & newlinker,
         std::map< int, NewDoubleBonds > & mynewdbondcl);
 
+    /// get all possible links between beam binding spots
+    void GetAllPossibleBspotLinks(
+        std::vector< BEAMINTERACTION::DATA::BspotLinkerData > & my_bspot_linker);
+
+    /// communicate initial linker
+    void CommunicateInitialLinker(
+        std::vector< BEAMINTERACTION::DATA::BspotLinkerData > const & my_bspot_linker,
+        std::map< int, std::vector< BEAMINTERACTION::DATA::BspotLinkerData > > & global_bspot_linker);
+
+    /// all procs decide in the same way which bonds are valid
+    void UnambiguousDecisionsOnAllProcs(
+        std::vector< Teuchos::RCP< BEAMINTERACTION::DATA::CrosslinkerData > > & newlinker,
+        std::map< int, std::vector< BEAMINTERACTION::DATA::BspotLinkerData > > const & global_bspot_linker,
+        std::vector< int > & newlinkermatid);
+
+    /// setup my initial double bonded linker
+    void SetupMyInitialDoubleBondedLinker(
+        std::vector< Teuchos::RCP< BEAMINTERACTION::DATA::CrosslinkerData > > & newlinker,
+        std::map< int, NewDoubleBonds > & mynewdbondcl,
+        std::vector< int > const & newlinkermatid);
+
     /// diffuse crosslinker depending on number of bonds they have
     void DiffuseCrosslinker();
 
@@ -291,6 +316,11 @@ private:
         std::map< int, std::vector< std::map< int, std::set< int > > > > & intendedbeambonds,
         bool checklinkingprop
     );
+
+    /// check if sphere should prohibit binding if double bond would be to close
+    bool CheckIfSphereProhibitsBinding(
+        std::set< DRT::Element * > const & neighboring_col_spheres,
+        DRT::Node * node_i ) const;
 
     /// search for binding events on each proc separately (i.e. pretending myrank is alone)
     /// communication to ensure correct binding over all procs is done afterwards

@@ -814,7 +814,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
   /* unshift node positions, i.e. manipulate element displacement vector
    * as if there where no periodic boundary conditions */
   if(BrownianDynParamsInterfacePtr() != Teuchos::null)
-    UnShiftNodePosition(disp);
+    UnShiftNodePosition( disp, *BrownianDynParamsInterface().GetPeriodicBoundingBox() );
 
   /* current nodal DOFs relevant for centerline interpolation in total Lagrangian
    * style, i.e. initial values + displacements */
@@ -836,6 +836,139 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
       force,
       inertia_force);
 }
+
+///*----------------------------------------------------------------------------*
+// *----------------------------------------------------------------------------*/
+//template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
+//void DRT::ELEMENTS::Beam3r::CalcSpatialForceAtXi(
+//    std::vector<double> & disp,
+//    GEO::MESHFREE::BoundingBox const & pbb )
+//{
+//  // nnodetriad: number of nodes used for interpolation of triad field
+//  // nnodecl: number of nodes used for interpolation of centerline
+//  // assumptions: nnodecl<=nnodetriad; centerline nodes have local ID 0...nnodecl-1
+//  // vpernode: number of interpolated values per centerline node (1: value (i.e. Lagrange), 2: value + derivative of value (i.e. Hermite))
+//
+//  //************ periodic boundary conditions **********************
+//  /* unshift node positions, i.e. manipulate element displacement vector
+//   * as if there where no periodic boundary conditions */
+//  UnShiftNodePosition( disp, pbb );
+//
+//  /* current nodal DOFs relevant for centerline interpolation in total Lagrangian
+//   * style, i.e. initial values + displacements */
+//  LINALG::TMatrix<double,3*vpernode*nnodecl,1> disp_totlag_centerline(true);
+//
+//  // quaternions of all nodal triads
+//  std::vector<LINALG::TMatrix<double,4,1> > Qnode(nnodetriad);
+//
+//  UpdateDispTotLagAndNodalTriads<nnodetriad,nnodecl,vpernode,double>(
+//      disp,
+//      disp_totlag_centerline,
+//      Qnode);
+//
+//  /********************************** Initialize/resize variables **************************************
+//   *****************************************************************************************************/
+//
+//  //********************************** quantities valid for entire element *****************************
+//  const unsigned int dofperclnode = 3*vpernode;
+//  const unsigned int dofpertriadnode = 3;
+//  const unsigned int dofpercombinode = dofperclnode+dofpertriadnode;
+//
+//
+//  //*************************** physical quantities evaluated at a certain GP ***************************
+//
+//  // derivation of beam centerline with respect to arc-length parameter: r'(x) from (2.12), Jelenic 1999
+//  LINALG::TMatrix<T,3,1> r_s;
+//  // spin matrix related to vector r_s
+//  LINALG::TMatrix<T,3,3> r_s_hat;
+//  // interpolated local relative rotation \Psi^l at a certain Gauss point according to (3.11), Jelenic 1999
+//  LINALG::TMatrix<T,3,1> Psi_l;
+//  /* derivative of interpolated local relative rotation \Psi^l with respect to arc-length parameter
+//   * at a certain Gauss point according to (3.11), Jelenic 1999*/
+//  LINALG::TMatrix<T,3,1> Psi_l_s;
+//  // triad at GP
+//  LINALG::TMatrix<T,3,3> Lambda;
+//
+//  // 3D vector related to spin matrix \hat{\kappa} from (2.1), Jelenic 1999
+//  LINALG::TMatrix<T,3,1> K;
+//  // 3D vector of material axial and shear strains from (2.1), Jelenic 1999
+//  LINALG::TMatrix<T,3,1> Gamma;
+//
+//  // convected stresses N and M and constitutive matrices C_N and C_M according to section 2.4, Jelenic 1999
+//  LINALG::TMatrix<T,3,1> stressN;
+//  LINALG::TMatrix<T,3,1> stressM;
+//  LINALG::TMatrix<T,3,3> CN;
+//  LINALG::TMatrix<T,3,3> CM;
+//
+//  // spatial stresses n and m according to (3.10), Romero 2004 and spatial constitutive matrices c_n and c_m according to page 148, Jelenic 1999
+//  LINALG::TMatrix<T,3,1> stressn;
+//  LINALG::TMatrix<T,3,1> stressm;
+//  LINALG::TMatrix<T,3,3> cn;
+//  LINALG::TMatrix<T,3,3> cm;
+//
+//  //********************************** (generalized) shape functions ************************************
+//  /* Note: index i refers to the i-th shape function (i = 0 ... nnode*vpernode-1)
+//   * the vectors store individual shape functions, NOT an assembled matrix of shape functions)*/
+//
+//  /* vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial shape functions evaluated at the numgp-th Gauss point
+//   * these shape functions are used for the interpolation of the triad field*/
+//  LINALG::TMatrix<double,1,nnodetriad> I_i;
+//  // same for the derivatives
+//  LINALG::TMatrix<double,1,nnodetriad> I_i_xi;
+//
+//  /* vector whose numgp-th element is a 1x(vpernode*nnode)-matrix with all (Lagrange/Hermite) shape functions evaluated at the numgp-th GP
+//   * these shape functions are used for the interpolation of the beam centerline*/
+//  std::vector<LINALG::TMatrix<double,1,vpernode*nnodecl> > H_i;
+//  // same for the derivatives
+//  std::vector<LINALG::TMatrix<double,1,vpernode*nnodecl> > H_i_xi;
+//
+//
+//  /*************************** update/compute quantities valid for entire element **********************
+//   *****************************************************************************************************/
+//
+//  // setup constitutive matrices
+//  GetConstitutiveMatrices<T>(CN,CM);
+//
+//  // create object of triad interpolation scheme
+//  Teuchos::RCP<LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad, T> >
+//      triad_interpolation_scheme_ptr =
+//      Teuchos::rcp(new LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad, T>() );
+//
+//  // reset triad interpolation scheme based on nodal quaternions
+//  triad_interpolation_scheme_ptr->Reset(Qnode);
+//
+//
+//  /******************************* elasticity: compute fint and stiffmatrix ****************************
+//   *****************************************************************************************************/
+//
+//  //************************* residual and stiffmatrix contributions from forces ***********************
+//  // for these contributions, reduced integration is applied to avoid locking
+//
+//  EvaluateShapeFunctionsAtXi< nnodetriad, 1 >(xi, I_i, this->Shape(), -1.0 );
+//
+//  EvaluateShapeFunctionDerivsAtXi< nnodecl, vpernode >(xi, H_i_xi, this->Shape(),
+//      this->RefLength());
+//
+//
+//  Calc_r_s<nnodecl,vpernode,T>(disp_totlag_centerline, H_i_x, jacobiGPelastf_[numgp], r_s);
+//
+//  triad_interpolation_scheme_ptr->GetInterpolatedTriadAtXi(
+//      Lambda,
+//      gausspoints_elast_force.qxg[numgp][0] );
+//
+//  // compute spin matrix related to vector rprime for later use
+//  LARGEROTATIONS::computespin<T>(r_s_hat,r_s);
+//
+//  // compute material strains Gamma and K
+//  computeGamma<T>(r_s,Lambda,GammarefGP_[numgp],Gamma);
+//
+//  // compute material stresses by multiplying strains with constitutive matrix
+//  stressN.Multiply(CN,Gamma);
+//
+//  /* compute spatial stresses and constitutive matrices from convected ones according to Jelenic 1999, page 148, paragraph
+//   * between (2.22) and (2.23) and Romero 2004, (3.10)*/
+//  pushforward<T>(Lambda,stressN,CN,stressn,cn);
+//}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -1050,10 +1183,9 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
   material_shear_force_2_GP_elastf_.resize( gausspoints_elast_force.nquad );
   material_shear_force_3_GP_elastf_.resize( gausspoints_elast_force.nquad );
 
-  spatial_axial_force_GP_elastf_.resize( gausspoints_elast_force.nquad );
-  spatial_shear_force_2_GP_elastf_.resize( gausspoints_elast_force.nquad );
-  spatial_shear_force_3_GP_elastf_.resize( gausspoints_elast_force.nquad );
-
+  spatial_x_force_GP_elastf_.resize( gausspoints_elast_force.nquad );
+  spatial_y_force_2_GP_elastf_.resize( gausspoints_elast_force.nquad );
+  spatial_z_force_3_GP_elastf_.resize( gausspoints_elast_force.nquad );
 
   // Loop through all GP and calculate their contribution to the forcevector and stiffnessmatrix
   for (int numgp=0; numgp < gausspoints_elast_force.nquad; ++numgp)
@@ -1137,9 +1269,9 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
     material_shear_force_2_GP_elastf_[numgp] = FADUTILS::CastToDouble( stressN(1) );
     material_shear_force_3_GP_elastf_[numgp] = FADUTILS::CastToDouble( stressN(2) );
 
-    spatial_axial_force_GP_elastf_[numgp] = FADUTILS::CastToDouble( stressn(0) );
-    spatial_shear_force_2_GP_elastf_[numgp] = FADUTILS::CastToDouble( stressn(1) );
-    spatial_shear_force_3_GP_elastf_[numgp] = FADUTILS::CastToDouble( stressn(2) );
+    spatial_x_force_GP_elastf_[numgp] = FADUTILS::CastToDouble( stressn(0) );
+    spatial_y_force_2_GP_elastf_[numgp] = FADUTILS::CastToDouble( stressn(1) );
+    spatial_z_force_3_GP_elastf_[numgp] = FADUTILS::CastToDouble( stressn(2) );
 
   }
 
@@ -1169,9 +1301,9 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
   material_bending_moment_2_GP_elastm_.resize( gausspoints_elast_moment.nquad );
   material_bending_moment_3_GP_elastm_.resize( gausspoints_elast_moment.nquad );
 
-  spatial_torque_GP_elastm_.resize( gausspoints_elast_moment.nquad );
-  spatial_bending_moment_2_GP_elastm_.resize( gausspoints_elast_moment.nquad );
-  spatial_bending_moment_3_GP_elastm_.resize( gausspoints_elast_moment.nquad );
+  spatial_x_moment_GP_elastm_.resize( gausspoints_elast_moment.nquad );
+  spatial_y_moment_2_GP_elastm_.resize( gausspoints_elast_moment.nquad );
+  spatial_z_moment_3_GP_elastm_.resize( gausspoints_elast_moment.nquad );
 
 
   // Loop through all GP and calculate their contribution to the forcevector and stiffnessmatrix
@@ -1254,9 +1386,9 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
     material_bending_moment_2_GP_elastm_[numgp] = FADUTILS::CastToDouble( stressM(1) );
     material_bending_moment_3_GP_elastm_[numgp] = FADUTILS::CastToDouble( stressM(2) );
 
-    spatial_torque_GP_elastm_[numgp] = FADUTILS::CastToDouble( stressm(0) );
-    spatial_bending_moment_2_GP_elastm_[numgp] = FADUTILS::CastToDouble( stressm(1) );
-    spatial_bending_moment_3_GP_elastm_[numgp] = FADUTILS::CastToDouble( stressm(2) );
+    spatial_x_moment_GP_elastm_[numgp] = FADUTILS::CastToDouble( stressm(0) );
+    spatial_y_moment_2_GP_elastm_[numgp] = FADUTILS::CastToDouble( stressm(1) );
+    spatial_z_moment_3_GP_elastm_[numgp] = FADUTILS::CastToDouble( stressm(2) );
   }
 
   return;
@@ -2108,7 +2240,7 @@ void DRT::ELEMENTS::Beam3r::CalcBrownianForcesAndStiff(Teuchos::ParameterList&  
   // unshift node positions, i.e. manipulate element displacement vector
   // as if there where no periodic boundary conditions
   if (BrownianDynParamsInterfacePtr() != Teuchos::null)
-    UnShiftNodePosition(disp);
+    UnShiftNodePosition( disp, *BrownianDynParamsInterface().GetPeriodicBoundingBox() );
 
   /****** update/compute key variables describing displacement and velocity state of this element *****/
 

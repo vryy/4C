@@ -35,6 +35,7 @@ MAT::PAR::CrosslinkerMat::CrosslinkerMat(
     k_on_( matdata->GetDouble("K_ON") ),
     k_off_( matdata->GetDouble("K_OFF") ),
     deltabelleq_( matdata->GetDouble("DELTABELLEQ") ),
+    nobonddistsphere( matdata->GetDouble("NOBONDDISTSPHERE") ),
     linkertype_( INPAR::BEAMINTERACTION::String2CrosslinkerType( *(matdata->Get<std::string>("TYPE") ) ) )
 {
   if ( link_element_matnum_ < 0 )

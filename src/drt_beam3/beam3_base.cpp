@@ -365,11 +365,10 @@ void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity(
  | space; the shift affects computation on element level within that           |
  | iteration step, only (no change in global variables performed)              |
  *-----------------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(
-    std::vector<double>& disp,
+void DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(
+    std::vector<double> & disp,
     GEO::MESHFREE::BoundingBox const & periodic_boundingbox) const
 {
-  bool unshifted = false;
   /* get number of degrees of freedom per node; note:
    * the following function assumes the same number of degrees
    * of freedom for each element node*/
@@ -391,23 +390,54 @@ bool DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(
       X(dim) = Nodes()[i]->X()[dim];
     }
 
-    unshifted = periodic_boundingbox.UnShift3D( d, ref, X );
+    periodic_boundingbox.UnShift3D( d, ref, X );
 
     for( unsigned int dim = 0; dim < 3; ++dim )
     {
       disp[ numdof * i + dim ] = d(dim);
     }
   }
-  return unshifted;
 }
 
-/*---------------------------------------------------------------------------------------------   *
- | shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions|
- *------------------------------------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(std::vector<double>& disp) const
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3Base::GetDirectionsOfShifts(
+    std::vector<double> & disp,
+    GEO::MESHFREE::BoundingBox const & periodic_boundingbox,
+    std::vector< bool > & shift_in_dim ) const
 {
-  return this->UnShiftNodePosition( disp, *BrownianDynParamsInterface().GetPeriodicBoundingBox() );
+  /* get number of degrees of freedom per node; note:
+   * the following function assumes the same number of degrees
+   * of freedom for each element node*/
+  int numdof = NumDofPerNode( *( Nodes()[0] ) );
+  // get number of nodes that are used for centerline interpolation
+  unsigned int nnodecl = NumCenterlineNodes();
+
+  shift_in_dim.clear();
+  shift_in_dim.resize(3);
+
+  // loop through all nodes except for the first node which remains
+  // fixed as reference node
+  static LINALG::Matrix< 3, 1 > d(true), ref(true), X(true);
+  d.Clear(); ref.Clear(); X.Clear();
+  for ( unsigned int i = 1; i < nnodecl; ++i )
+  {
+    for ( int dim = 0; dim < 3; ++dim )
+    {
+      d(dim) = disp[ numdof * i + dim ];
+      ref(dim) = Nodes()[0]->X()[dim] + disp[ numdof * 0 + dim ];
+      X(dim) = Nodes()[i]->X()[dim];
+    }
+
+    periodic_boundingbox.CheckIfShiftBetweenPoints( d, ref, shift_in_dim, X );
+
+    for( unsigned int dim = 0; dim < 3; ++dim )
+    {
+      disp[ numdof * i + dim ] = d(dim);
+    }
+  }
 }
+
 /*--------------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3Base::GetPosOfBindingSpot(

@@ -1194,7 +1194,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
   // unshift node positions, i.e. manipulate element displacement vector
   // as if there where no periodic boundary conditions
   if(BrownianDynParamsInterfacePtr() != Teuchos::null)
-    UnShiftNodePosition(disp);
+    UnShiftNodePosition( disp, *BrownianDynParamsInterface().GetPeriodicBoundingBox() );
 
   UpdateDispTotlag<nnode,dofpn>(disp,disp_totlag);
 
@@ -2297,7 +2297,7 @@ void DRT::ELEMENTS::Beam3eb::CalcBrownianForcesAndStiff(Teuchos::ParameterList& 
   // unshift node positions, i.e. manipulate element displacement vector
   // as if there where no periodic boundary conditions
   if(BrownianDynParamsInterfacePtr() != Teuchos::null)
-    UnShiftNodePosition(disp);
+    UnShiftNodePosition( disp, *BrownianDynParamsInterface().GetPeriodicBoundingBox() );
 
   // update current total position state of element
   LINALG::Matrix<nnode*vpernode*ndim,1> disp_totlag(true);

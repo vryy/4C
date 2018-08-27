@@ -19,7 +19,6 @@
 #include "../drt_lib/drt_globalproblem.H"
 
 
-
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 BEAMINTERACTION::CrosslinkingParams::CrosslinkingParams()
@@ -27,7 +26,8 @@ BEAMINTERACTION::CrosslinkingParams::CrosslinkingParams()
     issetup_(false),
     viscosity_(0.0),
     kt_(0.0),
-    deltatime_(0.0)
+    deltatime_(0.0),
+    init_box_(true)
 {
   maxnum_init_crosslinker_pertype_.clear();
   numcrosslinkerpertype_.clear();
@@ -57,6 +57,46 @@ void BEAMINTERACTION::CrosslinkingParams::Init( STR::TIMINT::BaseDataGlobalState
 
   // time step for stochastic events concering crosslinking
   deltatime_ = crosslinking_params_list.get<double> ("TIMESTEP");
+
+  init_box_.PutScalar(1.0e12);
+  std::istringstream init_box_stream( Teuchos::getNumericStringParameter(
+      crosslinking_params_list,"INIT_LINKER_BOUNDINGBOX") );
+  for( int col = 0; col < 2; ++col )
+  {
+    for( int row = 0; row < 3; ++row )
+    {
+      double value = 1.0e12;
+      if( init_box_stream >> value )
+        init_box_( row, col ) = value;
+      else
+        dserror(" Specify six values for bounding box in three dimensional problem."
+                " Fix your input file.");
+    }
+  }
+
+  bool feasibleboxinput = true;
+  for ( int col = 0; col < 2; ++col )
+    for ( int row = 0; row < 3; ++row )
+      if ( init_box_( row, col ) > 1.0e11 )
+        feasibleboxinput = false;
+
+  if ( not feasibleboxinput )
+  {
+    std::istringstream pbb_stream( Teuchos::getNumericStringParameter(
+        DRT::Problem::Instance()->BinningStrategyParams(),"BOUNDINGBOX") );
+    for( int col = 0; col < 2; ++col )
+    {
+      for( int row = 0; row < 3; ++row )
+      {
+        double value = 1.0e12;
+        if( pbb_stream >> value )
+          init_box_( row, col ) = value;
+        else
+          dserror(" Specify six values for bounding box in three dimensional problem."
+                  " Fix your input file.");
+      }
+    }
+  }
 
   // safety check
   // todo: maybe make input of time step obligatory

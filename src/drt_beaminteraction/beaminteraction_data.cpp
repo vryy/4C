@@ -272,3 +272,34 @@ void BEAMINTERACTION::DATA::UnBindEventData::Unpack( std::vector<char> const & d
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+BEAMINTERACTION::DATA::BspotLinkerData::BspotLinkerData() :
+    elegid_1_(-1),
+    elegid_2_(-1),
+    locbspot_1_(-1),
+    locbspot_2_(-1),
+    type_(-1),
+    mat_id_(-1),
+    number_of_bonds_1_(-1),
+    number_of_bonds_2_(-1)
+{
+
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool BEAMINTERACTION::DATA::BspotLinkerData::SameAs( BspotLinkerData bspotlinker )
+{
+  if ( bspotlinker.GetEleGid1()     == elegid_1_ and
+       bspotlinker.GetEleGid2()     == elegid_2_ and
+       bspotlinker.GetLocBspotId1() == locbspot_1_ and
+       bspotlinker.GetLocBspotId2() == locbspot_2_ and
+       bspotlinker.GetMatId()      == mat_id_ and
+       bspotlinker.GetType()       == type_)
+    return true;
+
+  return false;
+
+}

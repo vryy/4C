@@ -555,12 +555,12 @@ void DRT::ELEMENTS::Beam3r::Unpack(const std::vector<char>& data)
   material_torque_GP_elastm_.clear();
   material_bending_moment_2_GP_elastm_.clear();
   material_bending_moment_3_GP_elastm_.clear();
-  spatial_axial_force_GP_elastf_.clear();
-  spatial_shear_force_2_GP_elastf_.clear();
-  spatial_shear_force_3_GP_elastf_.clear();
-  spatial_torque_GP_elastm_.clear();
-  spatial_bending_moment_2_GP_elastm_.clear();
-  spatial_bending_moment_3_GP_elastm_.clear();
+  spatial_x_force_GP_elastf_.clear();
+  spatial_y_force_2_GP_elastf_.clear();
+  spatial_z_force_3_GP_elastf_.clear();
+  spatial_x_moment_GP_elastm_.clear();
+  spatial_y_moment_2_GP_elastm_.clear();
+  spatial_z_moment_3_GP_elastm_.clear();
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -924,12 +924,12 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(const std::vector<double>& xr
     material_shear_force_3_GP_elastf_.resize( gausspoints_elast_force.nquad );
     std::fill( material_shear_force_3_GP_elastf_.begin(), material_shear_force_3_GP_elastf_.end(), 0.0 );
 
-    spatial_axial_force_GP_elastf_.resize( gausspoints_elast_force.nquad );
-    std::fill( spatial_axial_force_GP_elastf_.begin(), spatial_axial_force_GP_elastf_.end(), 0.0 );
-    spatial_shear_force_2_GP_elastf_.resize( gausspoints_elast_force.nquad );
-    std::fill( spatial_shear_force_2_GP_elastf_.begin(), spatial_shear_force_2_GP_elastf_.end(), 0.0 );
-    spatial_shear_force_3_GP_elastf_.resize( gausspoints_elast_force.nquad );
-    std::fill( spatial_shear_force_3_GP_elastf_.begin(), spatial_shear_force_3_GP_elastf_.end(), 0.0 );
+    spatial_x_force_GP_elastf_.resize( gausspoints_elast_force.nquad );
+    std::fill( spatial_x_force_GP_elastf_.begin(), spatial_x_force_GP_elastf_.end(), 0.0 );
+    spatial_y_force_2_GP_elastf_.resize( gausspoints_elast_force.nquad );
+    std::fill( spatial_y_force_2_GP_elastf_.begin(), spatial_y_force_2_GP_elastf_.end(), 0.0 );
+    spatial_z_force_3_GP_elastf_.resize( gausspoints_elast_force.nquad );
+    std::fill( spatial_z_force_3_GP_elastf_.begin(), spatial_z_force_3_GP_elastf_.end(), 0.0 );
 
     dummy.Clear();
 
@@ -987,12 +987,12 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(const std::vector<double>& xr
     material_bending_moment_3_GP_elastm_.resize( gausspoints_elast_moment.nquad );
     std::fill( material_bending_moment_3_GP_elastm_.begin(), material_bending_moment_3_GP_elastm_.end(), 0.0 );
 
-    spatial_torque_GP_elastm_.resize( gausspoints_elast_moment.nquad );
-    std::fill( spatial_torque_GP_elastm_.begin(), spatial_torque_GP_elastm_.end(), 0.0 );
-    spatial_bending_moment_2_GP_elastm_.resize( gausspoints_elast_moment.nquad );
-    std::fill( spatial_bending_moment_2_GP_elastm_.begin(), spatial_bending_moment_2_GP_elastm_.end(), 0.0 );
-    spatial_bending_moment_3_GP_elastm_.resize( gausspoints_elast_moment.nquad );
-    std::fill( spatial_bending_moment_3_GP_elastm_.begin(), spatial_bending_moment_3_GP_elastm_.end(), 0.0 );
+    spatial_x_moment_GP_elastm_.resize( gausspoints_elast_moment.nquad );
+    std::fill( spatial_x_moment_GP_elastm_.begin(), spatial_x_moment_GP_elastm_.end(), 0.0 );
+    spatial_y_moment_2_GP_elastm_.resize( gausspoints_elast_moment.nquad );
+    std::fill( spatial_y_moment_2_GP_elastm_.begin(), spatial_y_moment_2_GP_elastm_.end(), 0.0 );
+    spatial_z_moment_3_GP_elastm_.resize( gausspoints_elast_moment.nquad );
+    std::fill( spatial_z_moment_3_GP_elastm_.begin(), spatial_z_moment_3_GP_elastm_.end(), 0.0 );
 
 
     dummy.Clear();

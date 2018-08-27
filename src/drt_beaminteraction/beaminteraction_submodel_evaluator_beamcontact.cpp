@@ -688,8 +688,6 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::ResetStepState()
 {
   CheckInitSetup();
 
-  dserror("Not yet implemented");
-
 }
 
 /*----------------------------------------------------------------------------*
@@ -697,6 +695,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::ResetStepState()
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::WriteRestart(
     IO::DiscretizationWriter & ia_writer,
     IO::DiscretizationWriter & bin_writer) const
+{
+  // empty
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::PreReadRestart()
 {
   // empty
 }

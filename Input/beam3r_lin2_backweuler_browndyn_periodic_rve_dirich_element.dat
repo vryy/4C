@@ -2,7 +2,7 @@
 // Maintainer: Jonas Eichinger
 //
 ----------------------------------------------------------TITLE
-beam3r_lin2_singlefil_periodic_uniaxial_shear.dat
+beam3r_lin2_singlefil_periodic_uniaxial_stretch.dat
 ----------------------------------------------------------PROBLEM SIZE
 DIM                             3
 NUMDF                           6
@@ -20,10 +20,10 @@ OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 FILESTEPS                       1000000
 STDOUTEVRY                      100
-VERBOSITY                       Standard
+VERBOSITY                       standard//debug
 ----------------------------------------------------------IO/RUNTIME VTP OUTPUT STRUCTURE
 OUTPUT_DATA_FORMAT              binary
-INTERVAL_STEPS                  1
+INTERVAL_STEPS                  10
 EVERY_ITERATION                 No
 OWNER                           Yes
 ORIENTATIONANDLENGTH            Yes
@@ -31,7 +31,7 @@ NUMBEROFBONDS                   Yes
 //DISPLACEMENT                    Yes
 ----------------------------------------------------------IO/RUNTIME VTK OUTPUT
 OUTPUT_DATA_FORMAT              binary
-INTERVAL_STEPS                  1
+INTERVAL_STEPS                  10
 EVERY_ITERATION                 No
 ----------------------------------------------------------IO/RUNTIME VTK OUTPUT/STRUCTURE
 OUTPUT_STRUCTURE                Yes
@@ -43,6 +43,7 @@ USE_ABSOLUTE_POSITIONS          Yes
 TRIAD_VISUALIZATIONPOINT        Yes
 STRAINS_GAUSSPOINT              Yes
 MATERIAL_FORCES_GAUSSPOINT      Yes
+BEAMFILAMENTCONDITION           Yes
 RVE_CROSSSECTION_FORCES         Yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
@@ -50,10 +51,10 @@ INT_STRATEGY                    Standard
 DYNAMICTYP                      OneStepTheta
 RESULTSEVRY                     1000
 RESTARTEVRY                     50
-RESEVRYERGY                     0
+RESEVRYERGY                     1
 NLNSOL                          fullnewton
 DIVERCONT                       stop
-TIMESTEP                        0.005
+TIMESTEP                        0.01
 NUMSTEP                         100
 MAXTIME                         1
 PREDICT                         ConstDis
@@ -63,21 +64,13 @@ MAXITER                         25
 MASSLIN                         rotations
 NEGLECTINERTIA                  yes
 ----------------------------------------------------------BINNING STRATEGY
-CUTOFF_RADIUS                   1
+CUTOFF_RADIUS                   2.0
 PERIODICONOFF                   1 1 1
-BOUNDINGBOX                     0 0 0 5 5 5
+BOUNDINGBOX                     0 0 0 4 4 4
 ----------------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1
 ----------------------------------------------------------BROWNIAN DYNAMICS
 BROWNDYNPROB                    yes
-VISCOSITY                       0.001
-KT                              0.0
-----------------------------------------------------------BEAM INTERACTION/CROSSLINKING
-CROSSLINKER                     yes
-MAXNUMINITCROSSLINKERPERTYPE    0
-NUMCROSSLINKERPERTYPE           0
-MATCROSSLINKERPERTYPE           2
-FILAMENTBSPOTINTERVALGLOBAL     0.8
 VISCOSITY                       0.001
 KT                              0.0
 ----------------------------------------------------------SOLVER 1
@@ -91,37 +84,26 @@ Linear Solver Details           = No
 Test Details                    = No
 Debug                           = No
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 2
-NDLINE  1
+NDPOINT 0
+NDLINE  2
 NDSURF  2
 NDVOL   0
-----------------------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT  1
-E 1 - NUMDOF 9 ONOFF 1 1 1 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 0 0 0 0 0 0
 ----------------------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  2
-E 1 - NUMDOF 9 ONOFF 1 0 0 0 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0 0 0 0
-E 2 - NUMDOF 9 ONOFF 1 0 0 0 0 0 0 0 0 VAL  1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0 0 0 0
-------------------------------------DESIGN POINT COUPLING CONDITIONS
-DPOINT 1
-E 2 - NUMDOF 6 ONOFF 1 1 1 1 1 1
+E 1 - NUMDOF 9 ONOFF 0 0 1 0 0 0 0 0 0 VAL 0.0 0.0 -1.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 1 0 0 0 0 0 0
+E 2 - NUMDOF 9 ONOFF 0 0 1 0 0 0 0 0 0 VAL 0.0 0.0  1.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 1 0 0 0 0 0 0
 ----------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
-VARIABLE 0 NAME a TYPE expression DESCRIPTION t/2.0
+VARIABLE 0 NAME a TYPE expression DESCRIPTION t
 --------------------------------------------------DESIGN LINE BEAM FILAMENT CONDITIONS
-DLINE 1
-E 1 - ID 0 TYPE arbitrary
-----------------------------------------------------------DNODE-NODE TOPOLOGY
-NODE  3 DNODE 1
-NODE  1 DNODE 2
-NODE  6 DNODE 2
+DLINE 2
+E 1 - ID 0 TYPE actin
+E 2 - ID 1 TYPE actin
 ----------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE  1 DLINE 1
-NODE  2 DLINE 1
-NODE  3 DLINE 1
 NODE  4 DLINE 1
-NODE  5 DLINE 1
-NODE  6 DLINE 1
+NODE  3 DLINE 2
+NODE  4 DLINE 2
 ----------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE  7 DSURF 1
 NODE  8 DSURF 1
@@ -136,31 +118,28 @@ NODE  1 COORD  2.500000000000000e+00  2.500000000000000e+00  0.500000000000000e+
 NODE  2 COORD  2.500000000000000e+00  2.500000000000000e+00  1.500000000000000e+00
 NODE  3 COORD  2.500000000000000e+00  2.500000000000000e+00  2.500000000000000e+00
 NODE  4 COORD  2.500000000000000e+00  2.500000000000000e+00  3.500000000000000e+00
-NODE  5 COORD  2.500000000000000e+00  2.500000000000000e+00  4.500000000000000e+00
-NODE  6 COORD  2.500000000000000e+00  2.500000000000000e+00  0.500000000000000e+00
 
 NODE  7 COORD  0.000000000000000e+00  0.000000000000000e+00  0.000000000000000e+00
-NODE  8 COORD  5.000000000000000e+00  0.000000000000000e+00  0.000000000000000e+00
-NODE  9 COORD  5.000000000000000e+00  5.000000000000000e+00  0.000000000000000e+00
-NODE 10 COORD  0.000000000000000e+00  5.000000000000000e+00  0.000000000000000e+00
-NODE 11 COORD  0.000000000000000e+00  0.000000000000000e+00  5.000000000000000e+00
-NODE 12 COORD  5.000000000000000e+00  0.000000000000000e+00  5.000000000000000e+00
-NODE 13 COORD  5.000000000000000e+00  5.000000000000000e+00  5.000000000000000e+00
-NODE 14 COORD  0.000000000000000e+00  5.000000000000000e+00  5.000000000000000e+00
+NODE  8 COORD  4.000000000000000e+00  0.000000000000000e+00  0.000000000000000e+00
+NODE  9 COORD  4.000000000000000e+00  4.000000000000000e+00  0.000000000000000e+00
+NODE 10 COORD  0.000000000000000e+00  4.000000000000000e+00  0.000000000000000e+00
+NODE 11 COORD  0.000000000000000e+00  0.000000000000000e+00  4.000000000000000e+00
+NODE 12 COORD  4.000000000000000e+00  0.000000000000000e+00  4.000000000000000e+00
+NODE 13 COORD  4.000000000000000e+00  4.000000000000000e+00  4.000000000000000e+00
+NODE 14 COORD  0.000000000000000e+00  4.000000000000000e+00  4.000000000000000e+00
 ----------------------------------------------------------STRUCTURE ELEMENTS
 1 BEAM3R LIN2 1  2 MAT 1 TRIADS  0 -1.57079632679 0 0 -1.57079632679 0
 2 BEAM3R LIN2 2  3 MAT 1 TRIADS  0 -1.57079632679 0 0 -1.57079632679 0
 3 BEAM3R LIN2 3  4 MAT 1 TRIADS  0 -1.57079632679 0 0 -1.57079632679 0
-4 BEAM3R LIN2 4  5 MAT 1 TRIADS  0 -1.57079632679 0 0 -1.57079632679 0
-5 BEAM3R LIN2 5  6 MAT 1 TRIADS  0 -1.57079632679 0 0 -1.57079632679 0
+4 BEAM3R LIN2 4  1 MAT 1 TRIADS  0 -1.57079632679 0 0 -1.57079632679 0
 ----------------------------------------------------------PERIODIC BOUNDINGBOX ELEMENTS ELEMENTS
 6 VELE3 HEX8  7 8 9 10 11 12 13 14
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_BeamReissnerElastHyper YOUNG 1.3e+09 POISSONRATIO 0.3 DENS 1.384e-09 CROSSAREA 1.9e-07 SHEARCORR 1.0 MOMINPOL 5.7e-11 MOMIN2 2.85e-11 MOMIN3 2.85e-11
-MAT 2 MAT_Crosslinker MATNUM 3 JOINTTYPE beam3rlin2rigid LINKINGLENGTH 0.2 LINKINGLENGTHTOL 0.15 LINKINGANGLE 0.0 LINKINGANGLETOL 0.392699081698724 K_ON 1e+07 K_OFF 0.0
-MAT 3 MAT_BeamReissnerElastHyper YOUNG 1.3e+09 POISSONRATIO 0.3 DENS 1.384e-09 CROSSAREA 4.751658e-06 SHEARCORR 1.0 MOMINPOL 8.9836e-11 MOMIN2 4.4918e-11 MOMIN3 4.4918e-11
+MAT 2 MAT_Crosslinker MATNUM 3 JOINTTYPE beam3rlin2rigid LINKINGLENGTH 1.0 LINKINGLENGTHTOL 0.15 LINKINGANGLE 0.0 LINKINGANGLETOL 8.392699081698724 K_ON 1e+07 K_OFF 0.0 TYPE Actin
+MAT 3 MAT_BeamReissnerElastHyper YOUNG 1.3e+09 POISSONRATIO 0.3 DENS 1.384e-09 CROSSAREA 1.9e-07 SHEARCORR 1.0 MOMINPOL 5.7e-11 MOMIN2 2.85e-11 MOMIN3 2.85e-11
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE -1.96786273464890221e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE  0.00000000000000000e+00 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE -1.20682191677671030e-04 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE  0.00000000000000000e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE  0.00000000000000000e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 2 QUANTITY dispz VALUE -2.47500871887900376e-01 TOLERANCE 1e-8
 ----------------------------------------------------------END

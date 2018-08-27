@@ -90,6 +90,8 @@ void STR::MODELEVALUATOR::Structure::Setup()
     dis_incr_ptr_ = Teuchos::rcp(new Epetra_Vector(DisNp().Map(),true));
   }
 
+
+
   if ( GInOutput().GetRuntimeVtkOutputParams() != Teuchos::null )
   {
     if ( GInOutput().GetRuntimeVtkOutputParams()->OutputStructure() )
@@ -830,10 +832,11 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkBeams(
 
   // append filament id and type if desired
   if ( beam_vtu_output_params.IsWriteOrientationParamter() )
-  beam_vtu_writer_ptr_->AppendElementOrientationParamater( displacement_state_vector );
+    beam_vtu_writer_ptr_->AppendElementOrientationParamater( displacement_state_vector );
 
-//  beam_vtu_writer_ptr_->AppendPeriodicBoxCrossSectionStressResultants(
-//      displacement_state_vector );
+  // export displacement state to column format
+  if ( beam_vtu_output_params.IsWriteRVECrosssectionForces() )
+    beam_vtu_writer_ptr_->AppendRVECrosssectionForces( displacement_state_vector );
 
   // finalize everything and write all required VTU files to filesystem
   beam_vtu_writer_ptr_->WriteFiles();
