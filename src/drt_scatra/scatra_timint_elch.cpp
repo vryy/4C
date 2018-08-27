@@ -1342,7 +1342,7 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
           file.open(filename.c_str(),std::fstream::app);
 
         // write results for current electrode to file
-        file << Step() << "," << Time() << "," << std::setprecision(16) << std::fixed << soc << "," << c_rate << std::endl;
+        file << Step() << "," << Time() << "," << std::setprecision(9) << std::fixed << soc << "," << c_rate << std::endl;
 
         // close file
         file.close();
@@ -1500,7 +1500,7 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
         file.open(filename.c_str(),std::fstream::app);
 
       // write results for current electrode to file
-      file << Step() << "," << Time() << "," << std::setprecision(16) << std::fixed << cellvoltage_ << std::endl;
+      file << Step() << "," << Time() << "," << std::setprecision(12) << std::fixed << cellvoltage_ << std::endl;
 
       // close file
       file.close();
