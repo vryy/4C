@@ -46,8 +46,8 @@ namespace MAT
       /// @name material parameters
       //@{
 
-      /// critical pressure (Pa)
-      const double critpress_;
+      /// critical density (kg/m^3)
+      const double critdens_;
       /// critical temperature (K)
       const double crittemp_;
       /// specific heat capacity
@@ -146,8 +146,8 @@ private:
     /// return material parameters for element calculation
     //@{
 
-    /// critical pressure (Pa)
-    double CritPress() const { return params_->critpress_; }
+    /// critical density (kg/m^3)
+    double CritDens() const { return params_->critdens_; }
     /// reference temperature (K)
     double CritTemp() const { return params_->crittemp_; }
     /// specific heat capacity

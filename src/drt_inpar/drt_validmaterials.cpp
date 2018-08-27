@@ -521,7 +521,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             "material for temperature-dependent water",
                                             INPAR::MAT::m_tempdepwater));
 
-    AddNamedReal(m,"CRITPRESS","critical pressure (Pa)");
+    AddNamedReal(m,"CRITDENS","critical density (kg/m^3)");
     AddNamedReal(m,"CRITTEMP","critical temperature (K)");
     AddNamedReal(m,"SHC","specific heat capacity at constant pressure (J/(kg*K))");
 

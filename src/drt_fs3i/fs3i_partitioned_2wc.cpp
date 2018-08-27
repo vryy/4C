@@ -114,6 +114,9 @@ void FS3I::PartFS3I_2WC::InitialCalculations()
   // for constant thermodynamic pressure in low-Mach-number flow and
   // for temperature-dependent water, thermodynamic pressure is set
   // to a constant here and never touched again
+  if ((fsi_->FluidField()->PhysicalType() == INPAR::FLUID::tempdepwater) &&
+      (consthermpress_ != "Yes"))
+    dserror("Constant thermodynamic pressure required if TFSI algorithm is used with temperature-dependent water!");
   Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())->SetInitialThermPressure();
 
   // energy conservation: compute initial time derivative of therm. pressure
@@ -234,28 +237,40 @@ void FS3I::PartFS3I_2WC::SetScaTraValuesInFSI()
   {
   case INPAR::FLUID::timeint_afgenalpha:
   {
-    fsi_->FluidField()->SetLomaIterScalarFields(FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phiaf()),
-                                                FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phiam()),
-                                                FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phidtam()),
-                                                Teuchos::null,
-                                                Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())->ThermPressAf(),
-                                                Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())->ThermPressAm(),
-                                                Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())->ThermPressDtAf(),
-                                                Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())->ThermPressDtAm(),
-                                                Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())->Discretization());
+    if (fsi_->FluidField()->PhysicalType() == INPAR::FLUID::tempdepwater)
+      fsi_->FluidField()->SetIterScalarFields(FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phiaf()),
+                                              FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phiam()),
+                                              FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phidtam()),
+                                              scatravec_[0]->ScaTraField()->Discretization());
+    else
+      fsi_->FluidField()->SetLomaIterScalarFields(FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phiaf()),
+                                                  FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phiam()),
+                                                  FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phidtam()),
+                                                  Teuchos::null,
+                                                  Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())->ThermPressAf(),
+                                                  Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())->ThermPressAm(),
+                                                  Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())->ThermPressDtAf(),
+                                                  Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())->ThermPressDtAm(),
+                                                  Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())->Discretization());
   }
   break;
   case INPAR::FLUID::timeint_one_step_theta:
   {
-    fsi_->FluidField()->SetLomaIterScalarFields(FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phinp()),
-                                                FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phin()),
-                                                FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phidtnp()),
-                                                Teuchos::null,
-                                                Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())->ThermPressNp(),
-                                                Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())->ThermPressN(),
-                                                Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())->ThermPressDtNp(),
-                                                Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())->ThermPressDtNp(),
-                                                Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())->Discretization());
+    if (fsi_->FluidField()->PhysicalType() == INPAR::FLUID::tempdepwater)
+      fsi_->FluidField()->SetIterScalarFields(FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phinp()),
+                                              FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phin()),
+                                              FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phidtnp()),
+                                              scatravec_[0]->ScaTraField()->Discretization());
+    else
+      fsi_->FluidField()->SetLomaIterScalarFields(FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phinp()),
+                                                  FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phin()),
+                                                  FluidScalarToFluid(scatravec_[0]->ScaTraField()->Phidtnp()),
+                                                  Teuchos::null,
+                                                  Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())->ThermPressNp(),
+                                                  Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())->ThermPressN(),
+                                                  Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())->ThermPressDtNp(),
+                                                  Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())->ThermPressDtNp(),
+                                                  Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())->Discretization());
   }
   break;
   default:

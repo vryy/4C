@@ -1134,6 +1134,9 @@ void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
   // add element parameters and vectors according to time-integration scheme
   AddTimeIntegrationSpecificVectors();
 
+  // set thermodynamic pressure in case of loma
+  AddProblemSpecificParametersAndVectors(condparams);
+
   std::string condstring("TransportNeumannInflow");
   discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,condstring);
   discret_->ClearState();
