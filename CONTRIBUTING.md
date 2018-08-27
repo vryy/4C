@@ -39,7 +39,7 @@ such that the issue can be understood and tackled as soon as it is practicable.
 Issues begin their life in the **Backlog** of our [Kanban board](https://gitlab.lrz.de/baci/baci/boards)
 and then move through the board from left to right.
 If at any point in an issue's life it becomes blocked by something (either another BACI issue, or perhaps something external), 
-move the issue card into the **Blocked** column to indicate that work can't proceed until something else is dealt with.
+move the issue card into the **Blocked** column to indicate that work can't proceed until something else is dealt with. Add a comment to the blocked issue to explain why it is blocked and what needs to happen to resolve the **Blocked** status.
 
 [↑ Contents](#contents)
 
@@ -50,8 +50,9 @@ Then the workflow to use is the following:
 
 ### Create a Feature Branch
 
-To keep your local `master` branch in `baci` up-to-date with the remote `master`:
+> **Note:** It is important to keep your local `master` branch in `baci` up-to-date with the remote `master`. Hence, creation of a feature branch consists of *two* steps.
 
+First, update the `master` branch:
 ```bash
 cd <path/to/baci-source-code>
 git checkout master
@@ -60,15 +61,13 @@ git pull
 
 where `<path/to/baci-source-code>` is the location of your local BACI repository, i.e. the BACI source code. 
 
-Create a local branch off of `master` in `baci` on which to make your changes:
-
-
+Then, create a local branch off of `master` in `baci` on which to make your changes:
 ```bash
 git branch <branchName>
 git checkout <branchName>
 ```
 
-`<branchName>` can be whatever you like, though we have some recommendations:
+The branch name `<branchName>` can be whatever you like, though we have some recommendations:
 *  Include the issue number in it in some way, for instance, `123-<restOfBranchName>`, or `<restOfBranchName>-123`.
 *  Make the branch name descriptive; that is, avoid `fixSomeStuff`, `performanceTweaks`, and generic names along those lines.
 *  To indicate your branch is intended solely for your own use, include your username in the branch name somehow, as in `<username>-<restOfBranchName>` or `<restOfBranchName>-<username>`.
@@ -94,6 +93,8 @@ then use `git rebase -i` to reorganize your commits before sharing.
 * The **first line** of the commit message should be a descriptive title, **limited to 50 characters**.
 * This is then followed by a blank line, and then the rest of the commit message is a description of the changes, 
 limited to 72 characters wide.
+
+Use the commit message to explain the context and reasons for your changes, i.e. the **What?** and **Why?**, rather than providing details on how you changed the code. Use comments in the source code or in the Doxygen documentation to explain *how* the code works. 
 
 [↑ Contents](#contents)
 
@@ -126,7 +127,7 @@ though there are others that are equally valid.
 
 ### Test your Changes
 
-To ensure your changes haven't broken anything, you'll want to run `ctest` in your BACI build directory.
+To ensure your changes haven't broken anything, run `ctest` in your BACI build directory.
 A small set of test cases can be run via `ctest -L minimal`.
 
 [↑ Contents](#contents)
@@ -160,7 +161,7 @@ move the issue card from **In Progress** to **Under Review** on our
    * To notify interested parties and possible reviewers about your merge request, @mention possible reviewers for this merge request as well as the maintainers of all the files you've touched in the *Interested Parties / Possible Reviewers* section of the *Description* field. 
 * Trigger the execution of the test suite manually:
    * Go to BACI's [CI/CD](https://gitlab.lrz.de/baci/baci/pipelines) page
-   * Select your branch `<branchName>` and start pipeline
+   * Select your branch `<branchName>` and start the pipeline
 
 [↑ Contents](#contents)
 
