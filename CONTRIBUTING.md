@@ -143,7 +143,10 @@ To merge changes into `master`, a feature branch needs to satisfy these conditio
 
 To publish your changes and make them available to others, you have to push them to GitLab. Before pushing your branch to GitLab, we recommend using `git rebase -i` to squash the commits on your feature branch into the smallest number of logical commits.  Much of the time this will just mean a single commit, but you may wish to keep more than one &mdash; for instance, have the majority of your feature addition in one commit, but keep some performance tweaks separate in another commit, in case it becomes necessary to revert the performance tweaks later while keeping the rest of the feature.
 
-Push your local feature branch up to the remote with `git push --set-upstream origin <branchName>`.
+Push your local feature branch up to the remote with: 
+```bash
+git push --set-upstream origin <branchName>
+```
 
 > **Important**: Use `git rebase -i` only on commits that haven't been pushed to the remote, yet. 
 
