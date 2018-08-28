@@ -76,6 +76,14 @@ namespace INPAR
       adhesion_regDMT
     };
 
+    /// Rolling contact law
+    enum RollingContact
+    {
+      rolling_none,
+      rolling_viscous,
+      rolling_constant
+    };
+
     //! type of collision
     enum coltype
     {
@@ -99,6 +107,14 @@ namespace INPAR
       radiusdistribution_none,
       radiusdistribution_lognormal,
       radiusdistribution_normal
+    };
+
+    /// random distribution of surface energy
+    enum AdhesionSurfaceEnergyDistribution
+    {
+      adhesionsurfaceenergydistribution_none,
+      adhesionsurfaceenergydistribution_lognormal,
+      adhesionsurfaceenergydistribution_normal
     };
 
     /// Weight function for SPH interactions

@@ -6,11 +6,12 @@
                   General Data File BACI
 ==================================================================
 ---------------------------------------------------------------------------TITLE
-DEM test case for rolling_resistance interaction particle-wall.
+DEM test case for variable surface energy in particle-particle-contact and particle-wall-contact.
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Particle
 SHAPEFCT                        Meshfree
 RESTART                         0
+RANDSEED                        1
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
@@ -28,34 +29,46 @@ PERIODICONOFF                   0 0 0
 BOUNDINGBOX                     -0.1 -0.1 -0.1 0.3 0.1 0.1
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      CentrDiff
-RESULTSEVRY                     10000
-RESTARTEVRY                     19000
+RESULTSEVRY                     100
+RESTARTEVRY                     100
 TIMESTEP                        0.0004
-NUMSTEP                         20000
+NUMSTEP                         200000
 MAXTIME                         8
-GRAVITY_ACCELERATION            0.0 0.0 -9.81e-3
+GRAVITY_ACCELERATION            0.0 0.0 0.0
 PARTICLE_INTERACTION            NormalAndTangentialContact_DEM
 NORMAL_CONTACT_LAW              LinearSpringDamp
-ROLLING_CONTACT_LAW             Viscous
+ROLLING_CONTACT_LAW             Constant//None, Viscous, Constant
 MIN_RADIUS                      0.01
 MAX_RADIUS                      0.01
 REL_PENETRATION                 0.055
 REL_PENETRATION_WALL            0.055
 MAX_VELOCITY                    3.1e-2
 TENSION_CUTOFF                  Yes
-ROLL_FRICT_COEFF                50
 FRICT_COEFF                     1.0
 FRICT_COEFF_WALL                1.0
+ROLL_FRICT_COEFF                0.5  //ROLLING_CONTACT_LAW: Constant --> ROLL_FRICT_COEFF = particle-particle frict coeff; ROLLING_CONTACT_LAW: Viscous --> ROLL_FRICT_COEFF = rolling resistance factor
+ROLL_FRICT_COEFF_WALL           0.5
 COEFF_RESTITUTION               0.8
 COEFF_RESTITUTION_WALL          0.8
 YOUNG_WALL                      210.0E3
 NUE_WALL                        0.3
 RADIUS_DISTRIBUTION             None
 RADIUS_DISTRIBUTION_SIGMA       -1.0
+NORMAL_ADHESION_LAW             vanderWaalsDMT// None, LennardJones, LinearSpring, LinearSpringDamp, vanderWaalsDMT, regularDMT
+ADHESION_NORMAL_EPS             4e-16 // Hamaker constant
+ADHESION_SURFACE_ENERGY         1.0e-07 //8e-9; for r=10 um gold particles (Heim2002): 8e-6
+ADHESION_SURFACE_ENERGY_WALL  1.0e-08
+ADHESION_MAX_DISP               0.0025//0.01 // > g_reg (2 -> Wallcontact) s. Matlab script
+ADHESION_MAXWALLELEID           6
+ADHESION_SURFACE_ENERGY_DISTRIBUTION  Normal  //None, LogNormal, Normal
+ADHESION_SURFACE_ENERGY_DISTRIBUTION_SIGMA  1e-9
+ADHESION_SURFACE_ENERGY_CUTOFF_FACTOR  3
 MOVING_WALLS                    No
 RANDOM_AMPLITUDE                0.00
 ------------------------------------------------NODE COORDS
-PARTICLE 1 COORD 0.0 0.0 0.0
+PARTICLE 1 COORD 0.0 0.0 -0.08
+PARTICLE 2 COORD 0.0 0.0 -0.03
+PARTICLE 3 COORD 0.0 0.0 -0.05
 NODE 1 COORD -0.1 -0.1 -0.01
 NODE 2 COORD -0.1 0.1 -0.01
 NODE 3 COORD 0.3 0.1 -0.01
@@ -67,41 +80,62 @@ NODE 8 COORD 0.3 -0.1 -0.1
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
-NDSURF                          1
+NDSURF                          2
 NDVOL                           0
-NDPARTICLE                      1
+NDPARTICLE                      3
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  0
 -------------------------------------------DESIGN PARTICLE DIRICH CONDITIONS
 DPARTICLE                       0
 ------------------------------------DESIGN PARTICLE INITIAL FIELD CONDITIONS
-DPARTICLE                       1
+DPARTICLE                       2
 E 1 - Velocity 1
+E 2 - Velocity 2
 ------------------------------------------------DESIGN SURFACE PARTICLE WALL
-DSURF                           1
+DSURF                           2
 E 1 - 1
+E 2 - 2
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------------DPARTICLE-NODE TOPOLOGY
 NODE 1 DPARTICLE 1
+NODE 2 DPARTICLE 2
+NODE 3 DPARTICLE 3
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1
 NODE 3 DSURFACE 1
 NODE 4 DSURFACE 1
+NODE 5 DSURFACE 2
+NODE 6 DSURFACE 2
+NODE 7 DSURFACE 2
+NODE 8 DSURFACE 2
 ----------------------------------------------------------DVOL-NODE TOPOLOGY
 ----------------------------------------------------------STRUCTURE ELEMENTS
 1 SOLIDH8 HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear EAS none
+2 SOLIDH8 HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear EAS none
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 3.0e-2
+COMPONENT 0 FUNCTION 0.0
 COMPONENT 1 FUNCTION 0.0
-COMPONENT 2 FUNCTION 0.0
+COMPONENT 2 FUNCTION -3e-1
+----------------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION 0.0
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 3e-1
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 210.0E3 NUE 0.3 DENS 1.0
 MAT 2 MAT_Particle DENSITY 4.43E-3 INITRADIUS 0.01 NUE 0.342 YOUNG 113.8E3 YIELD 790
 ----------------------------------------------------------RESULT DESCRIPTION
-PARTICLE DIS particle NODE 1 QUANTITY velx VALUE  2.04244839014980925e-03 TOLERANCE 1.0e-10
-PARTICLE DIS particle NODE 1 QUANTITY velz VALUE  2.96348956178151657e-14 TOLERANCE 1.0e-10
-PARTICLE DIS particle NODE 1 QUANTITY dispx VALUE 7.83128865543596120e-02 TOLERANCE 1.0e-10
-PARTICLE DIS particle NODE 1 QUANTITY dispz VALUE -6.17591051050005589e-06 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 1 QUANTITY velx VALUE  -5.25973230091328692e-12 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 1 QUANTITY velz VALUE  -1.58889199971886221e-03 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 1 QUANTITY dispx VALUE -2.09177496551233390e-11 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 1 QUANTITY dispz VALUE -8.70574211872612302e-02 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 2 QUANTITY velx VALUE  -7.17282571920898345e-12 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 2 QUANTITY velz VALUE  -8.13156768092346098e-03 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 2 QUANTITY dispx VALUE -1.23502225616104918e-11 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 2 QUANTITY dispz VALUE -3.38736424162130317e-02 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 3 QUANTITY velx VALUE  -7.70377790751427480e-12 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 3 QUANTITY velz VALUE  -8.12802681209459990e-03 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 3 QUANTITY dispx VALUE -3.07784878971500191e-11 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 3 QUANTITY dispz VALUE -5.36592277634924952e-02 TOLERANCE 1.0e-10
 -------------------------------------------------------------------------END

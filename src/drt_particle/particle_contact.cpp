@@ -41,7 +41,17 @@
 #include <Teuchos_TimeMonitor.hpp>
 #include <Sacado.hpp>
 
+#include <iostream>
+#include <fstream>
+
+bool ispartofset = false;
+//double ispartofset_i = -1;
+//double ispartofset_j = -1;
+
 typedef Sacado::Fad::DFad<double> FAD;
+
+//TODO: Remove data.id from CalculateTangentialContactForce and CalculateRollingContactForce
+//TODO: Remove timestep frfom CalcNeighboringParticle and CalcParticleWallContact
 
 //#define OUTPUT
 
@@ -55,6 +65,7 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
   const Teuchos::ParameterList& particledynparams
   ) :
   normal_contact_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::NormalContact>(particledynparams,"NORMAL_CONTACT_LAW")),
+  rolling_contact_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::RollingContact>(particledynparams,"ROLLING_CONTACT_LAW")),
   normal_adhesion_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::NormalAdhesion>(particledynparams,"NORMAL_ADHESION_LAW")),
   nue_(0.),
   young_(0.),
@@ -71,16 +82,21 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
   k_normal_wall_(particledynparams.get<double>("NORMAL_STIFF_WALL")),
   k_tang_(0.),
   k_tang_wall_(0.),
+  k_roll_wall_(0.),
+  k_roll_(0.),
   kappa_(0.),
   kappa_wall_(0.),
   d_normal_(0.),
   d_tang_(0.),
   d_normal_wall_(0.),
   d_tang_wall_(0.),
+  d_roll_wall_(0.),
+  d_roll_(0.),
   mu_(particledynparams.get<double>("FRICT_COEFF")),
   mu_wall_(particledynparams.get<double>("FRICT_COEFF_WALL")),
+  mu_roll_wall_(particledynparams.get<double>("ROLL_FRICT_COEFF_WALL")),
+  mu_roll_(particledynparams.get<double>("ROLL_FRICT_COEFF")),
   tension_cutoff_(DRT::INPUT::IntegralValue<int>(particledynparams,"TENSION_CUTOFF") == 1),
-  rolling_resistance_(particledynparams.get<double>("ROLLING_RESISTANCE")),
   damp_reg_fac_(particledynparams.get<double>("DAMP_REG_FAC")),
   contact_energy_(0.),
   g_max_(0.0),
@@ -101,13 +117,34 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
   adhesion_max_force_(particledynparams.get<double>("ADHESION_MAX_FORCE")),
   adhesion_max_disp_(particledynparams.get<double>("ADHESION_MAX_DISP")),
   adhesion_surface_energy_(particledynparams.get<double>("ADHESION_SURFACE_ENERGY")),
+  adhesion_surface_energy_factor_(particledynparams.get<double>("ADHESION_SURFACE_ENERGY_FACTOR")),
+  adhesion_surface_energy_wall_(particledynparams.get<double>("ADHESION_SURFACE_ENERGY_WALL")),
+  adhesion_surface_energy_wall_factor_(particledynparams.get<double>("ADHESION_SURFACE_ENERGY_WALL_FACTOR")),
   adhesion_maxwalleleID_(particledynparams.get<int>("ADHESION_MAXWALLELEID")),
+  adhesion_minwalleleID_(particledynparams.get<int>("ADHESION_MINWALLELEID")),
+  adhesion_surface_energy_distribution_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::AdhesionSurfaceEnergyDistribution>(particledynparams,"ADHESION_SURFACE_ENERGY_DISTRIBUTION")),
+  adhesion_surface_energy_distribution_sigma_(particledynparams.get<double>("ADHESION_SURFACE_ENERGY_DISTRIBUTION_SIGMA")),
+  adhesion_surface_energy_cutoff_factor_(particledynparams.get<double>("ADHESION_SURFACE_ENERGY_CUTOFF_FACTOR")),
+  adhesion_max_contact_pressure_(particledynparams.get<double>("ADHESION_MAX_CONTACT_PRESSURE")),
+  adhesion_max_contact_pressure_wall_(particledynparams.get<double>("ADHESION_MAX_CONTACT_PRESSURE_WALL")),
+  adhesion_variant_max_contact_force_(DRT::INPUT::IntegralValue<int>(particledynparams,"ADHESION_VARIANT_MAX_CONTACT_FORCE")),
+  adhesion_vdW_curve_shift_(particledynparams.get<int>("ADHESION_VDW_CURVE_SHIFT")),
   writeenergyevery_(particledynparams.get<int>("RESEVRYERGY")),
   myrank_(discret->Comm().MyPID()),
   discret_(discret),
   particle_algorithm_(particlealgorithm),
   particleData_(0)
 {
+
+  if(adhesion_surface_energy_wall_<0)
+    adhesion_surface_energy_wall_ = adhesion_surface_energy_;
+
+  if(adhesion_surface_energy_wall_factor_<0)
+    adhesion_surface_energy_wall_factor_ = adhesion_surface_energy_factor_;
+
+  if(adhesion_max_contact_pressure_wall_ > 0)
+    adhesion_max_contact_pressure_wall_ = adhesion_max_contact_pressure_;
+
   // extract the material (only one material allowed in vector)
   if(particle_algorithm_->ParticleMat().size()!=1)
     dserror("Only one particle material allowed in ParticleCollisionHandlerBase so far!");
@@ -198,7 +235,10 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
 
       // for tangential contact same stiffness is used
       k_tang_ = kappa_ * k_normal_;
+      k_roll_ = k_tang_;
       k_tang_wall_ = kappa_wall_ * k_normal_wall_;
+      k_roll_wall_ = k_tang_wall_;
+
 
       // critical time step size is calculated based on particle-particle (not particle-wall) contact
       k_tkrit = k_normal_;
@@ -247,6 +287,7 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
     //------------------damping--------------------------------
     d_normal_ = -1.0;
     d_tang_ = -1.0;
+    d_roll_ = -1.0;
 
     if(normal_contact_ == INPAR::PARTICLE::LinSpringDamp)
     {
@@ -292,6 +333,7 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
     {
       d_normal_wall_ = -1.0;
       d_tang_wall_ = -1.0;
+      d_roll_wall_ = 1.04797e-07;
 
       if(normal_contact_ == INPAR::PARTICLE::LinSpringDamp)
       {
@@ -465,7 +507,7 @@ void PARTICLE::ParticleCollisionHandlerBase::Init(
   if(orientn != Teuchos::null)
     err += orientnCol->Import(*orientn, *particle_algorithm_->DofImporter(), Insert);
   if (err)
-    dserror("Export using importer failed for dof based Epetra_Vector: return value != 0");
+    dserror("Export using importer failed for dof based Epetesistencera_Vector: return value != 0");
 
   // node based vector
   Teuchos::RCP<Epetra_Vector> massCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
@@ -658,7 +700,6 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
 
     // extract the pointer to the particles
     DRT::Node** currentBinParticles = currentBin->Nodes();
-
     // remove current content but keep memory
     neighboring_particles.clear();
 
@@ -684,7 +725,7 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
       {
         // compute contact with neighboring particles
         CalcNeighboringParticlesContact(particle_i, data_i, neighboring_particles,
-            havepbc, dt, f_contact, m_contact);
+            havepbc, dt, f_contact, m_contact, timestep);
       }
     }
   }
@@ -738,10 +779,13 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
     const bool                           havepbc,                 //!< flag indicating periodic boundaries
     const double                         dt,                      //!< time step size
     const Teuchos::RCP<Epetra_Vector>&   f_contact,               //!< global force vector
-    const Teuchos::RCP<Epetra_Vector>&   m_contact                //!< global moment vector
+    const Teuchos::RCP<Epetra_Vector>&   m_contact,               //!< global moment vector
+    int timestep
     )
 {
+
   std::map<int, PARTICLE::Collision>& history_particle_i = static_cast<PARTICLE::ParticleNode*>(particle_i)->Get_history_particle();
+  std::map<int, PARTICLE::Adhesion>& history_particle_i_adhesion = static_cast<PARTICLE::ParticleNode*>(particle_i)->Get_history_particle_adhesion();
   if(history_particle_i.size() > 20)
     dserror("Particle i is in contact with more than 20 particles! Check whether history is deleted correctly!");
 
@@ -754,15 +798,16 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
     // extract data
     ParticleCollData& data_j = particleData_[neighborparticle->LID()];
     std::map<int, PARTICLE::Collision>& history_particle_j = static_cast<PARTICLE::ParticleNode*>(neighborparticle)->Get_history_particle();
+    std::map<int, PARTICLE::Adhesion>& history_particle_j_adhesion = static_cast<PARTICLE::ParticleNode*>(neighborparticle)->Get_history_particle_adhesion();
     if(history_particle_j.size() > 20)
       dserror("Particle j is in contact with more than 20 particles! Check whether history is deleted correctly!");
 
     // evaluate contact only once in case we own particle j. Otherwise compute everything,
     // the assemble method does not write in case the particle is a ghost
-    if(data_i.id < data_j.id || data_j.owner != myrank_)
+    if((data_i.id < data_j.id || data_j.owner != myrank_) and (ispartofset == false))
     {
-      // normalized mass
-      const double m_eff = data_i.mass * data_j.mass / (data_i.mass + data_j.mass);
+      double m_eff = 0;
+      m_eff = data_i.mass * data_j.mass / (data_i.mass + data_j.mass);
 
       // might need to shift position of particle j in the presence of periodic boundary conditions
       static LINALG::Matrix<3,1> data_i_dis, data_j_dis;
@@ -843,8 +888,47 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
         // part of v_rel in normal direction: v_rel * n
         const double v_rel_normal(v_rel.Dot(normal));
 
+        if(normal_adhesion_!=INPAR::PARTICLE::adhesion_none)
+        {
+          // if history variables do not exist -> create them
+          if(history_particle_i_adhesion.find(data_j.id) == history_particle_i_adhesion.end())
+          {
+            // safety check
+            if(history_particle_j_adhesion.find(data_i.id) != history_particle_j_adhesion.end())
+              dserror("History of particle j contains particle i, but not vice versa! Something must be wrong...");
+
+            // initialize history of particle i
+            PARTICLE::Adhesion adhe;
+            // initialize adhesion
+            adhe.adhesion = false;
+            // initialize surface energy
+            adhe.surface_energy = 0.0;
+            // initialize normal adhesion force (pull out force)
+            adhe.normal_adhesion_force = 0.0;
+
+            // insert new entries
+            history_particle_i_adhesion.insert(std::pair<int,PARTICLE::Adhesion>(data_j.id,adhe));
+            history_particle_j_adhesion.insert(std::pair<int,PARTICLE::Adhesion>(data_i.id,adhe));
+          }
+
+          // safety check
+          else if(history_particle_j_adhesion.find(data_i.id) == history_particle_j_adhesion.end())
+            dserror("History of particle i contains particle j, but not vice versa! Something must be wrong...");
+        }
+
+        // extract histories
+        PARTICLE::Adhesion& history_particle_i_j_adhesion = history_particle_i_adhesion[data_j.id];
+        PARTICLE::Adhesion& history_particle_j_i_adhesion = history_particle_j_adhesion[data_i.id];
+
+        ComputeAdhesionSurfaceEnergyDistribution(history_particle_i_j_adhesion, false);
+
+        // obtain history of particle j by copying from history of particle i
+        history_particle_j_i_adhesion.adhesion = history_particle_i_j_adhesion.adhesion;
+        history_particle_j_i_adhesion.surface_energy = history_particle_i_j_adhesion.surface_energy;
+        history_particle_j_i_adhesion.normal_adhesion_force = history_particle_i_j_adhesion.normal_adhesion_force;
+
         // calculation of normal contact force
-        CalculateNormalContactForce(g, data_i.rad, data_j.rad, v_rel_normal, m_eff, totalnormalforce, normalcontactforce, data_i.owner, data_j.owner);
+        CalculateNormalContactForce(g, data_i.rad, data_j.rad, v_rel_normal, m_eff, history_particle_i_j_adhesion, totalnormalforce, normalcontactforce, data_i.owner, data_j.owner);
 
         // output normal contact force between the two particles to *.csv file if applicable
         if(writecontactforcesevery_ and particle_algorithm_->Step() % writecontactforcesevery_ == 0 and data_i.owner == myrank_ and data_j.owner <= myrank_)
@@ -861,7 +945,6 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
           static LINALG::Matrix<3,1> v_rel_tangential;
           v_rel_tangential.Clear();
           v_rel_tangential.Update(1.,v_rel,-v_rel_normal,normal);
-
           // if history variables do not exist -> create them
           if(history_particle_i.find(data_j.id) == history_particle_i.end())
           {
@@ -872,13 +955,14 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
             // initialize history of particle i
             PARTICLE::Collision col;
             col.stick = true;
+            col.stick_roll = true;
             memset(col.g_t, 0., sizeof(col.g_t));
+            memset(col.g_r, 0., sizeof(col.g_r));
 
             // insert new entries
             history_particle_i.insert(std::pair<int,PARTICLE::Collision>(data_j.id,col));
             history_particle_j.insert(std::pair<int,PARTICLE::Collision>(data_i.id,col));
           }
-
           // safety check
           else if(history_particle_j.find(data_i.id) == history_particle_j.end())
             dserror("History of particle i contains particle j, but not vice versa! Something must be wrong...");
@@ -890,16 +974,34 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
           CalculateTangentialContactForce(normalcontactforce, normal, tangentcontactforce,
               history_particle_i_j, v_rel_tangential, m_eff, dt, data_i.owner, data_j.owner);
 
-          if(rolling_resistance_>0)
-          {
-            CalculateVirtualRollingForce(normalcontactforce, normal, tangentrollingforce,
-              data_i.angvel, data_j.angvel, data_i.rad, data_j.rad, data_i.owner, data_j.owner);
-          }
+            if(rolling_contact_==INPAR::PARTICLE::rolling_constant)
+            {
+              // rolling velocity in contact point between particles i and j
+              static LINALG::Matrix<3,1> v_roll;
+              v_roll.Clear();
+
+              // compute rolling velocity
+              ComputeRollingVelocity(v_roll,normal,r_iC,r_jC,data_i,data_j);
+
+              // calculate rolling contact force
+              CalculateRollingContactForce(normalcontactforce, normal, tangentrollingforce,
+                history_particle_i_j, v_roll, m_eff, dt, data_i.owner, data_j.owner);
+
+            }
+            else if(rolling_contact_==INPAR::PARTICLE::rolling_viscous)
+            {
+              CalculateVirtualRollingForce(normalcontactforce, normal, tangentrollingforce,
+                data_i.angvel, data_j.angvel, data_i.rad, data_j.rad, data_i.owner, data_j.owner);
+            }
 
           // obtain history of particle j by copying from history of particle i
           for(unsigned dim=0; dim<3; ++dim)
+          {
             history_particle_j_i.g_t[dim] = -history_particle_i_j.g_t[dim];
-          history_particle_j_i.stick = history_particle_i_j.stick;
+            history_particle_j_i.g_r[dim] = -history_particle_i_j.g_r[dim];
+            history_particle_j_i.stick = history_particle_i_j.stick;
+            history_particle_j_i.stick_roll = history_particle_i_j.stick_roll;
+          }
         }
 
         // calculation of overall contact forces and moments acting on particles i and j
@@ -915,31 +1017,47 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
         contactmoment_j.CrossProduct(r_jC,contactforce_j);
 
         // contact moment contributions from rolling resistance
-        if(rolling_resistance_>0)
-        {
           static LINALG::Matrix<3,1> rollfricmoment_i, rollfricmoment_j;
           rollfricmoment_i.Clear();
           rollfricmoment_j.Clear();
 
+          if(rolling_contact_==INPAR::PARTICLE::rolling_constant)
+          {
+            double r_ij = (r_iC.Norm2() * r_jC.Norm2()) / (r_iC.Norm2() + r_jC.Norm2());
+            rollfricmoment_i.CrossProduct(tangentrollingforce, normal);
+            rollfricmoment_i.Update(r_ij, rollfricmoment_i);
+            rollfricmoment_j.Update(-1.0,rollfricmoment_i);
+            contactmoment_i.Update(1.0,rollfricmoment_i,1.0);
+            contactmoment_j.Update(1.0,rollfricmoment_j,1.0);
+
+          }
+          else if(rolling_contact_==INPAR::PARTICLE::rolling_viscous)
+          {
           rollfricmoment_i.CrossProduct(normal,tangentrollingforce);
           rollfricmoment_j.Update(-1.0,rollfricmoment_i);
           contactmoment_i.Update(1.0,rollfricmoment_i,1.0);
           contactmoment_j.Update(1.0,rollfricmoment_j,1.0);
-        }
+          }
 
         // assembly contact forces and moments for particles i and j
         LINALG::Assemble(*f_contact, contactforce_i, data_i.lm, data_i.owner);
         LINALG::Assemble(*f_contact, contactforce_j, data_j.lm, data_j.owner);
         LINALG::Assemble(*m_contact, contactmoment_i, data_i.lm, data_i.owner);
         LINALG::Assemble(*m_contact, contactmoment_j, data_j.lm, data_j.owner);
+
       }
-      else if(particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::NormalAndTang_DEM)// g > 0.0 and no adhesion --> no contact
+      if(g > 0 and particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::NormalAndTang_DEM)// g > 0.0 and no adhesion --> no contact
       {
+
         // erase entries in histories if still existing
         history_particle_i.erase(data_j.id);
         history_particle_j.erase(data_i.id);
       }
-
+      if(ConsiderNormalAdhesion(g) != 1 and normal_adhesion_!=INPAR::PARTICLE::adhesion_none)
+      {
+        history_particle_i_adhesion.erase(data_j.id);
+        history_particle_j_adhesion.erase(data_i.id);
+      }
       // undo periodic shift of position of particle i or j if necessary
       if(havepbc)
       {
@@ -948,7 +1066,6 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
       }
     }
   }  // loop over neighboring particles
-
   return;
 }
 
@@ -970,8 +1087,8 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
     int timestep
     )
 {
-  const double radius_i = data_i.rad;
   const double mass_i = data_i.mass;
+  const double radius_i = data_i.rad;
   const std::vector<int>& lm_i = data_i.lm;
   const int owner_i = data_i.owner;
 
@@ -1053,7 +1170,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
       for(size_t i=0; i<(*pointer).size(); ++i)
       {
         static LINALG::Matrix<3,1> distance_vector;
-      distance_vector.Clear();
+        distance_vector.Clear();
 
         distance_vector.Update(1.0, nearestPoint, -1.0, (*pointer)[i].point);
         const double distance = distance_vector.Norm2();
@@ -1151,6 +1268,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
 
   // evaluate contact between particle_i and entries of surfaces
   std::map<int, PARTICLE::Collision>& history_wall = static_cast<PARTICLE::ParticleNode*>(particle_i)->Get_history_wall();
+  std::map<int, PARTICLE::Adhesion>& history_wall_adhesion = static_cast<PARTICLE::ParticleNode*>(particle_i)->Get_history_wall_adhesion();
   if(history_wall.size() > 3 and normal_adhesion_ == INPAR::PARTICLE::adhesion_none)
     std::cout << "ATTENTION: Contact of particle " << data_i.id << " with " << history_wall.size() << " wall elements." << std::endl;
 
@@ -1223,24 +1341,47 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
     double normalcontactforce = 0.0; //only contact forces
     static LINALG::Matrix<3,1> tangentcontactforce;
     //tangentcontactforce.PutScalar(0.0);
-    static LINALG::Matrix<3,1> tangentrollingforce(true);
+    static LINALG::Matrix<3,1> tangentrollingforce;
     tangentcontactforce.Clear();
     tangentrollingforce.Clear();
 
     // normal contact force between particle and wall (note: owner_j = -1)
-    // disable adhesion between selected wall elements
     int owner_wall = -1;
-    // The summand -1 is required, since IDs start with 1 in the input file and with 0 in the Code
+    // disable adhesion between selected wall elements
+    //The summand -1 is required, since IDs start with 1 in the input file and with 0 in the Code
     if(adhesion_maxwalleleID_ > 0 and gid_wall > adhesion_maxwalleleID_ -1)
-        owner_wall = -2;
+      owner_wall = -2;
 
-    CalculateNormalContactForce(g, data_i.rad, 0., v_rel_normal, m_eff, totalnormalforce, normalcontactforce, owner_i, owner_wall,true);
+    // The summand -1 is required, since IDs start with 1 in the input file and with 0 in the Code
+    if(adhesion_minwalleleID_ > 0 and gid_wall < adhesion_minwalleleID_ -1)
+      owner_wall = -2;
+
+    if(normal_adhesion_!=INPAR::PARTICLE::adhesion_none)
+    {
+      if(history_wall_adhesion.find(gid_wall) == history_wall_adhesion.end())
+      {
+        PARTICLE::Adhesion adhe;
+        // initialize adhesion
+        adhe.adhesion = false;
+        // initialize surface energy
+        adhe.surface_energy = 0.0;
+        // initialize normal adhesion force (pull out force)
+        adhe.normal_adhesion_force = 0.0;
+
+        // insert new entry
+        history_wall_adhesion.insert(std::pair<int,PARTICLE::Adhesion>(gid_wall,adhe));
+      }
+    }
+
+    ComputeAdhesionSurfaceEnergyDistribution(history_wall_adhesion[gid_wall], true);
+
+    CalculateNormalContactForce(g, data_i.rad, 0., v_rel_normal, m_eff, history_wall_adhesion[gid_wall], totalnormalforce, normalcontactforce, owner_i, owner_wall,true);
 
     // output normal contact force between particle and wall to *.csv file if applicable
     if(writecontactforcesevery_ and particle_algorithm_->Step() % writecontactforcesevery_ == 0 and owner_i == myrank_)
       OutputNormalContactForceToFile(totalnormalforce,wallcontact.point);
 
-    if(particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
+    if(g <= 0. and particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
     {
       // velocity v_rel_tangential
       static LINALG::Matrix<3,1> v_rel_tangential;
@@ -1254,10 +1395,12 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
          PARTICLE::Collision col;
          // initialize with stick
          col.stick = true;
-         // initialize g_t[3]
+         col.stick_roll = true;
+         // initialize g_t[3] and g_r[3]
          for(int dim=0; dim<3; ++dim)
          {
            col.g_t[dim] = 0.0;
+           col.g_r[dim] = 0.0;
          }
 
          // insert new entry
@@ -1273,11 +1416,25 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
       static LINALG::Matrix<3,1> wall_angvel(true);
       wall_angvel.Clear();
 
-      if(rolling_resistance_>0)
-      {
+        if(rolling_contact_==INPAR::PARTICLE::rolling_constant)
+        {
+          // rolling velocity in contact point between particles i and j
+          static LINALG::Matrix<3,1> v_roll;
+          v_roll.Clear();
+
+          //compute rolling velocity
+          ComputeRollingVelocity(v_roll,r_iC,data_i);
+
+          // calculate rolling contact force
+          CalculateRollingContactForce(normalcontactforce, wallcontact.normal, tangentrollingforce,
+            history_wall[gid_wall], v_roll, m_eff, dt, owner_i, -1);
+
+        }
+        else if(rolling_contact_==INPAR::PARTICLE::rolling_viscous)
+        {
         CalculateVirtualRollingForce(normalcontactforce, wallcontact.normal, tangentrollingforce,
                     data_i.angvel, wall_angvel, data_i.rad, 0.0, data_i.owner, owner_wall,true);
-      }
+        }
     }
 
     // calculation of overall contact force
@@ -1293,14 +1450,20 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
     contactmoment.CrossProduct(r_iC,contactforce);
 
     // contact moment contributions from rolling resistance
-    if(rolling_resistance_>0)
-    {
       static LINALG::Matrix<3,1> rollfricmoment;
       rollfricmoment.Clear();
 
+      if(rolling_contact_==INPAR::PARTICLE::rolling_constant)
+      {
+        rollfricmoment.CrossProduct(wallcontact.normal,tangentrollingforce);
+        rollfricmoment.Update(-r_iC.Norm2(), rollfricmoment);
+        contactmoment.Update(1.0,rollfricmoment,1.0);
+      }
+      else if(rolling_contact_==INPAR::PARTICLE::rolling_viscous)
+      {
       rollfricmoment.CrossProduct(wallcontact.normal,tangentrollingforce);
       contactmoment.Update(1.0,rollfricmoment,1.0);
-    }
+      }
 
     if (f_contact != Teuchos::null and m_contact != Teuchos::null)
     {
@@ -1339,10 +1502,15 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
     {
       const int gid_wall = w->first;
       if( unusedIds.find(gid_wall) != unusedIds.end() and history_wall.find(gid_wall) != history_wall.end() )
+      {
         history_wall.erase(gid_wall);
+      }
+      if( unusedIds.find(gid_wall) != unusedIds.end() and history_wall_adhesion.find(gid_wall) != history_wall_adhesion.end() )
+      {
+        history_wall_adhesion.erase(gid_wall);
+      }
     }
   }
-
   return;
 }
 
@@ -1355,6 +1523,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
   const double radius_j,
   const double v_rel_normal,
   const double m_eff,
+  PARTICLE::Adhesion &currentAdhe,
   double& totalnormalforce,
   double& normalcontactforce,
   const int owner_i,
@@ -1539,11 +1708,10 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
     }
     normalcontactforce=totalnormalforce;
   }
-
   // evaluate normal contact force arising from particle adhesion
   if(normal_adhesion_ != INPAR::PARTICLE::adhesion_none  and owner_j > -2)
   {
-    // initialize variables for normal adhesion force and energy
+    // initialize variable for normal adhesion energy
     double normaladhesionforce(0.), normaladhesionenergy(0.);
 
     // calculate normal adhesion force and update internal system energy if applicable
@@ -1567,33 +1735,109 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
       case INPAR::PARTICLE::adhesion_vdWDMT:
       {
         double r_rep = (radius_i * radius_j) / (radius_i + radius_j);
-        if(iswallele==true) // wall contact
-          r_rep = radius_i;
+        double adhesion_surface_energy = currentAdhe.surface_energy;
+        double adhesion_surface_energy_factor = adhesion_surface_energy_factor_;
 
-        double normaladhesionforce_pullout = 4 * PI * r_rep * adhesion_surface_energy_;
-        double g_min = 0.;
-        double g_min_trial = sqrt(adhesion_normal_eps_/(24*PI*adhesion_surface_energy_));
+        double adhesion_contact_pressure = adhesion_max_contact_pressure_;
+
+        if(iswallele==true) // wall contact
+        {
+          r_rep = radius_i;
+          adhesion_surface_energy_factor = adhesion_surface_energy_wall_factor_;
+          adhesion_contact_pressure = adhesion_max_contact_pressure_wall_;
+        }
+
+        if(adhesion_surface_energy_factor != 1 and adhesion_contact_pressure > 0)
+          dserror("ADHESION_CONTACT_PRESSURE has to be defined and negative!");
+
+        double E_rep = young_ / (2*(1-pow(nue_,2.0)));
+        double adhesion_contact_force = (pow(PI * adhesion_contact_pressure,3.0) * pow(r_rep,2.0)) / (6 * pow(E_rep,2.0));
+
+        if(adhesion_variant_max_contact_force_)
+          adhesion_contact_force = adhesion_contact_pressure;
+
+        if(adhesion_contact_force>0)
+          dserror("Check input parameter ADHESION_MAX_CONTACT_PRESSURE and ADHESION_MAX_CONTACT_PRESSURE_WALL. The pressure has to be negative!");
+
+        double normaladhesionforce_pullout_max = 4 * PI * r_rep * adhesion_surface_energy;
+        double normaladhesionforce_pullout = 4 * PI * r_rep * adhesion_surface_energy * adhesion_surface_energy_factor;
+        // calculate g where maximum pullout force is achieved
+        const double k = owner_j < 0 ? k_normal_wall_ : k_normal_;
+        double g_intersect_max = adhesion_contact_force / k;
+        //double slope = (normaladhesionforce_pullout - normaladhesionforce_pullout_max) / (g_intersect_min - g_intersect_max);
+        double slope = 0.;
+        if(g_intersect_max!=0)
+          slope = (normaladhesionforce_pullout - normaladhesionforce_pullout_max) / (- g_intersect_max);
+        //double y_intercept = (normaladhesionforce_pullout_max * g_intersect_min - normaladhesionforce_pullout * g_intersect_max) / (g_intersect_min - g_intersect_max);
+        double y_intercept = normaladhesionforce_pullout;
+        // calculate g at intersection between normaladhesionforce and normaladhesionforce_pullout_min
+        double g_intersect_min = 0;
+
+        if(adhesion_vdW_curve_shift_ != 1)
+        {
+          if(slope == 0)
+          {
+            g_intersect_min = sqrt((adhesion_normal_eps_ * r_rep) / (6 * normaladhesionforce_pullout));
+          }
+          else
+            CalculateIntersectionGap(slope, y_intercept, 0, -(1./6) * adhesion_normal_eps_ * r_rep, g_intersect_min);
+        }
+
+        double g_offset = sqrt((adhesion_normal_eps_ * r_rep) / (6. * normaladhesionforce_pullout));
 
         //Here we compare with a finite value instead of zero in order to avoid division by zero!
         //For small values of g, we will run into the cut-off case "if(normaladhesionforce > normaladhesionforce_pullout)" anyways.
-        if(g<1.0e-12*r_rep)
+        if(g<g_intersect_max)
         {
-          normaladhesionforce = normaladhesionforce_pullout;
-          g_min = g_min_trial;
+          normaladhesionforce = normaladhesionforce_pullout_max;
+        }
+        else if(g>=g_intersect_max and g<g_intersect_min)
+        {
+          normaladhesionforce = slope * g + y_intercept;
         }
         else
         {
-          normaladhesionforce = (1./6) * adhesion_normal_eps_ * (r_rep/pow(g,2.0));
-          if(normaladhesionforce > normaladhesionforce_pullout)
+          if(adhesion_vdW_curve_shift_ == 1)
           {
-            normaladhesionforce = normaladhesionforce_pullout;
-            g_min = g_min_trial;
+            normaladhesionforce = (1./6) * adhesion_normal_eps_ * (r_rep/pow(g + g_offset,2.0));
+          }
+          else
+          {
+            normaladhesionforce = (1./6) * adhesion_normal_eps_ * (r_rep/pow(g,2.0));
           }
         }
 
-        if(writeenergyevery_)
-          normaladhesionenergy = EnergyAssemble(owner_i,owner_j)*normaladhesionforce*(abs(g-g_min)+g_min);
-
+        if(adhesion_vdW_curve_shift_ ==1)
+        {
+          if(normaladhesionforce > currentAdhe.normal_adhesion_force or normaladhesionforce < normaladhesionforce_pullout)
+            {
+              currentAdhe.normal_adhesion_force = normaladhesionforce;
+            }
+          else
+          {
+            double g_max = sqrt((adhesion_normal_eps_ * r_rep) / (6 * currentAdhe.normal_adhesion_force)) - g_offset;
+            if(g >= g_max)
+            {
+              currentAdhe.normal_adhesion_force = (1./6) * adhesion_normal_eps_ * (r_rep/pow(g + g_offset,2.0));
+            }
+          }
+        }
+        else
+        {
+          if(normaladhesionforce > currentAdhe.normal_adhesion_force or (normaladhesionforce < normaladhesionforce_pullout and g > g_intersect_min))
+          {
+            currentAdhe.normal_adhesion_force = normaladhesionforce;
+          }
+          else
+          {
+            double g_max = sqrt((adhesion_normal_eps_ * r_rep) / (6 * currentAdhe.normal_adhesion_force));
+            if(g >= g_max)
+            {
+              currentAdhe.normal_adhesion_force = (1./6) * adhesion_normal_eps_ * (r_rep/pow(g,2.0));
+            }
+          }
+        }
+        normaladhesionforce = currentAdhe.normal_adhesion_force;
         break;
       }
 
@@ -1601,29 +1845,105 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
       case INPAR::PARTICLE::adhesion_regDMT:
       {
         double r_rep = (radius_i * radius_j) / (radius_i + radius_j);
+        double adhesion_surface_energy = currentAdhe.surface_energy;
+        double adhesion_surface_energy_factor = adhesion_surface_energy_factor_;
+        double adhesion_contact_pressure = adhesion_max_contact_pressure_;
         if(iswallele==true) // wall contact
+        {
           r_rep = radius_i;
-
-        double normaladhesionforce_pullout = 4 * PI * r_rep * adhesion_surface_energy_;
-        double g_reg = 2* normaladhesionforce_pullout / k_normal_; // regularizaton with same stiffness as normal contact force
-
-        if (g>0. && g> g_reg)
-        {
-          normaladhesionforce = 0.;
-          break;
+          adhesion_surface_energy_factor = adhesion_surface_energy_wall_factor_;
+          adhesion_contact_pressure = adhesion_max_contact_pressure_wall_;
         }
-        else if (g> 0. && g< g_reg)
+
+        if(adhesion_surface_energy_factor != 1 and adhesion_contact_pressure > 0)
+          dserror("ADHESION_CONTACT_PRESSURE has to be defined and negative!");
+
+        double E_rep = young_ / (2*(1-pow(nue_,2.0)));
+        double adhesion_contact_force = (pow(PI * adhesion_contact_pressure,3.0) * pow(r_rep,2.0)) / (6 * pow(E_rep,2.0));
+
+        if(adhesion_variant_max_contact_force_)
+          adhesion_contact_force = adhesion_contact_pressure;
+
+        double normaladhesionforce_pullout = 4 * PI * r_rep * adhesion_surface_energy * adhesion_surface_energy_factor;
+        double normaladhesionforce_pullout_max = 4 * PI * r_rep * adhesion_surface_energy;
+
+        double g_reg = adhesion_max_disp_; // regularizaton with adhesion_max_disp_
+
+        // calculate g where maximum pullout force is achieved
+        const double k = owner_j < 0 ? k_normal_wall_ : k_normal_;
+        double g_intersect_max = adhesion_contact_force / k;
+
+        double slope = 0.;
+                if(g_intersect_max!=0)
+                  slope = (normaladhesionforce_pullout - normaladhesionforce_pullout_max) / (- g_intersect_max);
+
+        double y_intercept = normaladhesionforce_pullout;
+
+        double g_intersect_min = 0;
+
+        if(adhesion_vdW_curve_shift_ != 1)
         {
-          normaladhesionforce = normaladhesionforce_pullout * (1-g/g_reg);
-          if(writeenergyevery_)
-            normaladhesionenergy = EnergyAssemble(owner_i,owner_j)* normaladhesionforce_pullout * (-g+pow(g,2.0)/(2*g_reg) + 0.5*g_reg);
+          g_intersect_min = (normaladhesionforce_pullout_max - y_intercept) / (slope + normaladhesionforce_pullout_max / g_reg);
+          if(g_intersect_min < 0)
+            dserror("The combination of these input parameters leads to an unreasonable result!");
+        }
+
+        if (g < g_intersect_max)
+        {
+          normaladhesionforce = normaladhesionforce_pullout_max;
+        }
+        else if (g>=g_intersect_max and g<g_intersect_min)
+        {
+          normaladhesionforce = slope * g + y_intercept;
+        }
+        else if (g>= g_intersect_min and g< g_reg)
+        {
+          if(adhesion_vdW_curve_shift_ == 1)
+          {
+            normaladhesionforce = normaladhesionforce_pullout * (1 - g/g_reg);
+          }
+          else
+          {
+            normaladhesionforce = normaladhesionforce_pullout_max * (1-g/g_reg);
+          }
         }
         else
         {
-          normaladhesionforce = normaladhesionforce_pullout;
-          if(writeenergyevery_)
-            normaladhesionenergy = EnergyAssemble(owner_i,owner_j)* normaladhesionforce_pullout * (abs(g)+0.5*g_reg);
+          normaladhesionforce = 0.;
         }
+
+        if(adhesion_vdW_curve_shift_ == 1)
+        {
+          if(normaladhesionforce > currentAdhe.normal_adhesion_force or normaladhesionforce < normaladhesionforce_pullout)
+          {
+            currentAdhe.normal_adhesion_force = normaladhesionforce;
+          }
+          else
+          {
+            double g_max = (1 - currentAdhe.normal_adhesion_force / normaladhesionforce_pullout) * g_reg;
+            if(g > g_max)
+            {
+              currentAdhe.normal_adhesion_force = normaladhesionforce_pullout * (1-g/g_reg);
+            }
+          }
+        }
+        else
+        {
+          if(normaladhesionforce > currentAdhe.normal_adhesion_force or (normaladhesionforce < normaladhesionforce_pullout and g > g_intersect_min))
+          {
+            currentAdhe.normal_adhesion_force = normaladhesionforce;
+          }
+          else
+          {
+            double g_max = (1 - currentAdhe.normal_adhesion_force / normaladhesionforce_pullout_max) * g_reg;
+            if(g > g_max)
+            {
+              currentAdhe.normal_adhesion_force = normaladhesionforce_pullout_max * (1-g/g_reg);
+            }
+          }
+        }
+
+        normaladhesionforce = currentAdhe.normal_adhesion_force;
         break;
       }
 
@@ -1667,7 +1987,13 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
       yield_max_rel_ = yield_criterion;
 
     if(yield_max_rel_ > 1.1)
+    {
+#ifndef PARTICLE_NOTIMESTEPDSERROR
       dserror("WARNING!!! Von-Mises yield criterion exceeded by more than 10 percent - elastic theory is not valid anymore");
+#else
+      std::cout << "WARNING!!! Von-Mises yield criterion exceeded by more than 10 percent - elastic theory is not valid anymore" << std::endl << std::endl;
+#endif
+    }
   }
 
   return;
@@ -1833,6 +2159,167 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateTangentialContactForce(
 }
 
 
+/*----------------------------------------------------------------------*
+ | calculate rolling contact torque for single             meier 03/18  |
+ | contact pair                                                         |
+ *----------------------------------------------------------------------*/
+void PARTICLE::ParticleCollisionHandlerDEM::CalculateRollingContactForce(
+  const double normalcontactforce,
+  const LINALG::Matrix<3,1>& normal,
+  LINALG::Matrix<3,1>& tangentrollingforce,
+  PARTICLE::Collision &currentColl,
+  const LINALG::Matrix<3,1>& v_roll,
+  const double m_eff,
+  const double dt,
+  const int owner_i,
+  const int owner_j
+  )
+{
+  // damping parameter
+  double d = -0.0;
+  // stiffness
+  double k = -1.0;
+  // frictional coefficient
+  double mu = -1.0;
+
+  if(owner_j<0) //contact particle-wall
+  {
+    // friction
+    mu = mu_roll_wall_;
+    // stiffness
+    k = k_roll_wall_;
+    // damping
+    if(d_roll_wall_ < 0.0)
+    {
+      if(e_wall_ != 0.0)
+      {
+        const double lnewall = log(e_wall_);
+        d = 2.0 * std::abs(lnewall) * sqrt(k_normal_wall_ * m_eff / (lnewall*lnewall + M_PI*M_PI));
+      }
+      else
+      {
+        d = 2.0 * sqrt(k_normal_wall_ * m_eff);
+      }
+    }
+    else
+    {
+      d = d_roll_wall_;
+    }
+  }
+  else // contact particle-particle
+  {
+    // friction
+    mu = mu_roll_;
+    // stiffness
+    k = k_roll_;
+    // damping
+    if(d_roll_ < 0.0)
+    {
+      if(e_ != 0.0)
+      {
+        const double lne = log(e_);
+        d = 2.0 * std::abs(lne) * sqrt(k_normal_ * m_eff / (lne*lne + M_PI*M_PI));
+      }
+      else
+      {
+        d = 2.0 * sqrt(k_normal_ * m_eff);
+      }
+    }
+    else
+    {
+      d = d_roll_;
+    }
+  }
+
+  // store length of g_r at time n
+  double old_length = 0.0;
+  double interime = 0.0;
+  for(int n=0; n<3; ++n)
+  {
+    old_length += currentColl.g_r[n] * currentColl.g_r[n];
+    interime += normal(n) * currentColl.g_r[n];
+  }
+  old_length = sqrt(old_length);
+
+  // projection of g_r onto current normal at time n+1
+  double new_length = 0.0;
+  for(int n=0; n<3; ++n)
+  {
+    currentColl.g_r[n] += - interime * normal(n);
+    new_length += currentColl.g_r[n] * currentColl.g_r[n];
+  }
+  new_length = sqrt(new_length);
+
+  // ensure that g_r has the same length as before projection
+  // if almost no rolling spring elongation, neglect it
+  if(new_length > 1.0E-14)
+  {
+    const double scale = old_length/new_length;
+    for(int n=0; n<3; ++n)
+    {
+      currentColl.g_r[n] = scale * currentColl.g_r[n];
+    }
+  }
+
+  // update of elastic rolling displacement if stick is true
+  if(currentColl.stick_roll == true)
+  {
+    for(int n=0; n<3; ++n)
+    {
+      currentColl.g_r[n] += v_roll(n) * dt;
+    }
+  }
+
+  // calculate rolling test force
+  for(int n=0; n<3; ++n)
+    tangentrollingforce(n) = - k * currentColl.g_r[n] - d * v_roll(n);
+
+  // norm of rolling contact force
+  const double norm_f_r(tangentrollingforce.Norm2());
+
+  // Coulomb friction law
+
+  // rolling contact force for "stick" - case----------------------
+  if( norm_f_r <= (mu * std::abs(normalcontactforce)) )
+  {
+    currentColl.stick_roll = true;
+    //rolling contact force already calculated
+  }
+  else //"slip"-case
+  {
+    currentColl.stick_roll = false;
+    //calculate tangent vector ( unit vector in (test-)rollingcontactforce-direction )
+    static LINALG::Matrix<3,1> tangent;
+    tangent.Clear();
+
+    tangent.Update(1.0/norm_f_r,tangentrollingforce);
+
+    // calculate rolling contact force and rolling displacements
+    tangentrollingforce.Update(mu*std::abs(normalcontactforce),tangent);
+    const double kinv = 1.0/k;
+    for(int n=0; n<3; ++n)
+    {
+      currentColl.g_r[n] = - kinv * (tangentrollingforce(n) + d * v_roll(n));
+    }
+  }
+  //---------------------------------------------------------------
+
+  if(writeenergyevery_)
+  {
+    new_length = 0.0;
+    for(int n=0; n<3; ++n)
+    {
+      new_length += currentColl.g_r[n] * currentColl.g_r[n];
+    }
+    new_length  = sqrt(new_length);
+
+    contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.5 * k * new_length * new_length;
+  }
+
+  return;
+}
+
+
 /*------------------------------------------------------------------------------------------------------*
  | compute contact normal, contact gap, and vectors from particle centers to contact point   fang 10/17 |
  *------------------------------------------------------------------------------------------------------*/
@@ -1961,6 +2448,206 @@ void PARTICLE::ParticleCollisionHandlerDEM::ComputeRelativeVelocity(
   return;
 }
 
+
+/*-----------------------------------------------------------------------------------*
+ | compute rolling velocity in contact point between two particles      meier 03/18 |
+ *-----------------------------------------------------------------------------------*/
+void PARTICLE::ParticleCollisionHandlerDEM::ComputeRollingVelocity(
+    LINALG::Matrix<3,1>&         v_roll,   //!< rolling velocity between two particles
+    const LINALG::Matrix<3,1>&   normal,   //!< contact normal
+    const LINALG::Matrix<3,1>&   r_iC,     //!< vector from center of particle i to contact point C
+    const LINALG::Matrix<3,1>&   r_jC,     //!< vector from center of particle j to contact point C
+    const ParticleCollData&      data_i,   //!< collision data for particle i
+    const ParticleCollData&      data_j    //!< collision data for particle j
+    ) const
+{
+  // compute rolling velocity between two particles:
+  // v_roll = -r_ijC (omega_i x n - omega_j x n)
+
+  // reduced radius
+  double r_ijC;
+  r_ijC = (r_iC.Norm2() * r_jC.Norm2()) / (r_iC.Norm2() + r_jC.Norm2());
+
+  // compute rotational part, taking account of roundoff i parallel settings
+  static LINALG::Matrix<3,1> v_roll_rot_i, v_roll_rot_j;
+  v_roll_rot_i.Clear();
+  v_roll_rot_j.Clear();
+
+  v_roll_rot_i.CrossProduct(data_i.angvel, normal);
+  v_roll_rot_j.CrossProduct(data_j.angvel, normal);
+
+  // compute rolling velocity
+  v_roll.Update(-r_ijC, v_roll_rot_i, r_ijC, v_roll_rot_j);
+
+  return;
+}
+
+
+/*-----------------------------------------------------------------------------------------------*
+ | compute rolling velocity in contact point between particle and wall element       meier 03/18 |
+ *-----------------------------------------------------------------------------------------------*/
+void PARTICLE::ParticleCollisionHandlerDEM::ComputeRollingVelocity(
+    LINALG::Matrix<3,1>&         v_roll,   //!< rolling velocity between two particles
+    const LINALG::Matrix<3,1>&   r_C,     //!< vector from center of particle to contact point C
+    const ParticleCollData&      data   //!< collision data for particle
+    ) const
+{
+  // compute rolling velocity between two particles:
+  // v_roll = (r_iC x omega_i)
+  v_roll.CrossProduct(r_C, data.angvel);
+
+  return;
+}
+
+
+/*-----------------------------------------------------------------------------------------------*
+ | compute surface energy distribution for particle-particle and particle-wall       meier 03/18 |
+ *-----------------------------------------------------------------------------------------------*/
+void PARTICLE::ParticleCollisionHandlerDEM::ComputeAdhesionSurfaceEnergyDistribution(
+    PARTICLE::Adhesion &currentAdhe,
+    bool iswallele
+) const
+{
+  // if particle is in contact with wall, but was not in contact in the prior timstep
+  if(currentAdhe.adhesion == false)
+  {
+    currentAdhe.adhesion = true;
+
+    switch(adhesion_surface_energy_distribution_)
+    {
+      case INPAR::PARTICLE::adhesionsurfaceenergydistribution_none:
+      {
+        currentAdhe.surface_energy = adhesion_surface_energy_;
+        if(iswallele == true)
+        {
+          currentAdhe.surface_energy = adhesion_surface_energy_wall_;
+        }
+        break;
+      }
+      case INPAR::PARTICLE::adhesionsurfaceenergydistribution_lognormal:
+      case INPAR::PARTICLE::adhesionsurfaceenergydistribution_normal:
+      {
+        double adhesionsurfaceenergy = adhesion_surface_energy_;
+        if(iswallele == true)
+        {
+          adhesionsurfaceenergy = adhesion_surface_energy_wall_;
+        }
+        // calculate minimum and maximum surface energy for particles
+        double min_surface_energy = adhesionsurfaceenergy - adhesion_surface_energy_cutoff_factor_ * adhesion_surface_energy_distribution_sigma_;
+        double max_surface_energy = adhesionsurfaceenergy + adhesion_surface_energy_cutoff_factor_ * adhesion_surface_energy_distribution_sigma_;
+
+        // loop over all particles
+        for(int n=0; n<discret_->NumMyRowNodes(); ++n)
+        {
+          // initialize random number generator with current particle radius or its natural logarithm as mean and input parameter value as standard deviation
+          DRT::Problem::Instance()->Random()->SetMeanVariance(adhesion_surface_energy_distribution_ == INPAR::PARTICLE::adhesionsurfaceenergydistribution_lognormal ? log(adhesionsurfaceenergy) : adhesionsurfaceenergy,DRT::Problem::Instance()->ParticleParams().get<double>("ADHESION_SURFACE_ENERGY_DISTRIBUTION_SIGMA"));
+
+          // generate normally or log-normally distributed random value for particle radius
+          double random_surface_energy = adhesion_surface_energy_distribution_ == INPAR::PARTICLE::adhesionsurfaceenergydistribution_lognormal ? exp(DRT::Problem::Instance()->Random()->Normal()) : DRT::Problem::Instance()->Random()->Normal();
+
+          // check whether random value lies within allowed bounds, and adjust otherwise
+          if(random_surface_energy > max_surface_energy)
+            random_surface_energy = max_surface_energy;
+          else if(random_surface_energy < min_surface_energy)
+            random_surface_energy = min_surface_energy;
+
+          currentAdhe.surface_energy = random_surface_energy;
+        }
+
+        break;
+      }
+
+      default:
+      {
+        dserror("Invalid random distribution of adhesion surface energy!");
+        break;
+      }
+    }
+  }
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | calculate gap at which vdW-curve                        meier 06/18  |
+ | intersects linear ramp                                               |
+ *----------------------------------------------------------------------*/
+void PARTICLE::ParticleCollisionHandlerDEM::CalculateIntersectionGap(
+    double a,
+    double b,
+    double c,
+    double d,
+    double& gap_intersect)
+{
+  double x1 = 0;
+  double x2 = 0;
+  double x3 = 0;
+
+  b /= a;
+  c /= a;
+  d /= a;
+  double q = (3.0 * c - pow(b,2.0))/9.0;
+  double r = -(27.0 * d) + b * (9.0 * c - 2.0 * pow(b, 2.0));
+  r /= 54.0;
+  double disc = pow(q,3.0) + pow(r,2.0);
+  double term1 = b/3.0;
+  double r13 = 0;
+
+  if(disc > 0)
+    dserror("The combination of these input parameters leads to an unreasonable result!");
+
+  //All roots real, at least two are equal
+  if (disc == 0)
+  {
+    r13 = ((r < 0) ? -pow(-r,1.0/3.0) : pow(r, 1.0/3.0));
+    x1 = -term1 + 2.0 * r13;
+    x2 = -(r13 + term1);
+    x3 = -(r13 + term1);
+
+    if(x1 > x2)
+      gap_intersect = x1;
+    else
+      gap_intersect = x2;
+  }
+  else
+  {
+    q = -q;
+    double dum1 = pow(q, 3.0);
+    dum1 = acos(r/sqrt(dum1));
+    r13 = 2.0 * sqrt(q);
+    x1 = -term1 + r13 * cos(dum1/3.0);
+    x2 = -term1 + r13 * cos((dum1 + 2.0 * PI)/3.0);
+    x3 = -term1 + r13 * cos((dum1 + 4.0 * PI)/3.0);
+
+    if (x1 > x2)
+    {
+      if(x3 > x1)
+        gap_intersect = x1;
+      else
+      {
+        if (x3 > x2)
+          gap_intersect = x3;
+        else
+          gap_intersect = x2;
+      }
+    }
+    else
+    {
+    if (x3 > x2)
+      gap_intersect = x2;
+      else
+      {
+        if (x3 > x1)
+          gap_intersect = x3;
+        else
+          gap_intersect = x1;
+      }
+    }
+  }
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
  | calculate virtual quasi-force due to                    meier 12/17  |
  | rolling resistance for single contact pair                           |
@@ -1986,7 +2673,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateVirtualRollingForce(
 
   const double theta = (young_/(1- pow(nue_,2.0) )) * pow(0.5*R_rep,0.5);
   const double C_1 = 1.15344;
-  const double d_rol = rolling_resistance_*(1-e_) / (C_1 * pow(theta,0.4) *pow(v_max_,0.2));
+  const double d_rol = mu_roll_*(1-e_) / (C_1 * pow(theta,0.4) *pow(v_max_,0.2));
 
   // calculate force
   static LINALG::Matrix<3,1> vel_i;
@@ -2010,6 +2697,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateVirtualRollingForce(
 
   return;
 }
+
 
 /*---------------------------------------------------------------------------*
  | check whether normal particle adhesion needs to be evaluated   fang 02/17 |

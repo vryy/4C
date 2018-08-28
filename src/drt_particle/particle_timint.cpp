@@ -130,7 +130,6 @@ PARTICLE::TimInt::TimInt
   distWall_(Teuchos::null),
 
   global_num_boundaryparticles_(0),
-
   dofmapexporter_(Teuchos::null),
   nodemapexporter_(Teuchos::null),
 
@@ -628,7 +627,9 @@ void PARTICLE::TimInt::ComputeAcc(
   {
     const double invmass = 1.0/(*mass_)[i];
     for(int dim=0; dim<3; ++dim)
+    {
       (*global_acc)[i*3+dim] = invmass * (*fifc_)[i*3+dim];
+    }
   }
 
   return;
