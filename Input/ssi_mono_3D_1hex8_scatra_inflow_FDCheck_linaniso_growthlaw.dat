@@ -12,8 +12,7 @@ simple, academic test case for monolithic scalar-structure interaction:
 - three-dimensional problem involving standard scalar transport
 - cubic domain discretized by 1 hex8 element
 - constant initial value 0.0 of transported scalar
-- scalar inflow via Neumann boundary condition applied to one side of the hex8 element for the first 5 seconds, after that homogeneous
-  Neumann boundary condition is applied
+- scalar inflow via Neumann boundary condition applied to one side of the hex8 element
 - homogeneous Neumann boundary conditions are applied to all other sides throughout the simulation time
 - structure and scatra fields are coupled via MAT_MultiplicativeSplitDefgradElastHyper using the following inelastic deformation
   gradient formulation:
@@ -43,9 +42,9 @@ INITFUNCNO                      1
 CONVFORM                        conservative
 FDCHECK                         global
 FDCHECKEPS                      1.e-7
-FDCHECKTOL                      2.e-3
+FDCHECKTOL                      4.e-4
 -------------------------------------------------------SSI CONTROL
-NUMSTEP                         100
+NUMSTEP                         50
 TIMESTEP                        0.1
 COUPALGO                        ssi_Monolithic
 SCATRATIMINTTYPE                Standard
@@ -65,21 +64,21 @@ SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 1
 ------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 0.0
 ------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION (1.0-1.0*heaviside(t-5.0))
+COMPONENT 0 FUNCTION 1.0
 ------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 1 QUANTITY phi VALUE 4.77713130528840790e-01 TOLERANCE 1.e-10
-SCATRA DIS scatra NODE 3 QUANTITY phi VALUE 4.77713130528841012e-01 TOLERANCE 1.e-10
-SCATRA DIS scatra NODE 5 QUANTITY phi VALUE 4.73041727467432782e-01 TOLERANCE 1.e-10
-SCATRA DIS scatra NODE 7 QUANTITY phi VALUE 4.73041727467433559e-01 TOLERANCE 1.e-10
-STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 0.00000000000000000e+00 TOLERANCE 1.e-18
-STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE -5.59749451494276837e-02 TOLERANCE 1.e-11
-STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE 1.55151706182761484e-04 TOLERANCE 1.e-13
-STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE 5.56325539650352613e-02 TOLERANCE 1.e-11
-STRUCTURE DIS structure NODE 5 QUANTITY dispy VALUE -5.56458795659402067e-02 TOLERANCE 1.e-11
-STRUCTURE DIS structure NODE 5 QUANTITY dispz VALUE 5.63870422096920411e-05 TOLERANCE 1.e-14
-STRUCTURE DIS structure NODE 7 QUANTITY dispx VALUE 5.56325539650333392e-02 TOLERANCE 1.e-11
-STRUCTURE DIS structure NODE 7 QUANTITY dispy VALUE 5.56458795659487138e-02 TOLERANCE 1.e-11
-STRUCTURE DIS structure NODE 7 QUANTITY dispz VALUE -5.63870422133224718e-05 TOLERANCE 1.e-14
+SCATRA DIS scatra NODE 1 QUANTITY phi VALUE 7.27563559686380867e-01 TOLERANCE 7.e-10
+SCATRA DIS scatra NODE 3 QUANTITY phi VALUE 7.27563559686378980e-01 TOLERANCE 7.e-10
+SCATRA DIS scatra NODE 5 QUANTITY phi VALUE 2.04727179636109258e-01 TOLERANCE 2.e-10
+SCATRA DIS scatra NODE 7 QUANTITY phi VALUE 2.04727179636109619e-01 TOLERANCE 2.e-10
+STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 0.00000000000000000e+00 TOLERANCE 1.e-20
+STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE -8.39930296113932939e-02 TOLERANCE 8.e-11
+STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE 7.31451569603398712e-03 TOLERANCE 7.e-12
+STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE 5.33228030291286459e-02 TOLERANCE 5.e-11
+STRUCTURE DIS structure NODE 5 QUANTITY dispy VALUE -2.56627316836308544e-02 TOLERANCE 3.e-11
+STRUCTURE DIS structure NODE 5 QUANTITY dispz VALUE -6.82011091678407129e-03 TOLERANCE 7.e-12
+STRUCTURE DIS structure NODE 7 QUANTITY dispx VALUE 5.33228030291290345e-02 TOLERANCE 5.e-11
+STRUCTURE DIS structure NODE 7 QUANTITY dispy VALUE 2.56627316836339249e-02 TOLERANCE 3.e-11
+STRUCTURE DIS structure NODE 7 QUANTITY dispz VALUE 6.82011091678408257e-03 TOLERANCE 7.e-12
 ------------------------------------------------DESIGN DESCRIPTION
 NDSURF  2
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
