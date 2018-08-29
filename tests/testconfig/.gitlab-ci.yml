@@ -10,6 +10,14 @@ variables:
     # 2: daily debug
     GITLAB_SCHEDULER_TYPE: "0"
 
+    # Prefix for do-configure (in ubuntu the do-configure needs to be called by bash).
+    CTEST_CONFIGURE_PREFIX: ""
+
+    # Postfix for do-configure.
+    CTEST_CONFIGURE_POSTFIX: "--useDEAL"
+
+    # Temporary exclude postprocessing tests at IMCS.
+    CTEST_OPTION_IMCS: ""
 
 #-------------------------------------------------------------------------------
 # Define the base jobs for testing
@@ -48,7 +56,7 @@ variables:
     script:
         - "echo full test: triggered by user with TEST_TAG=$TEST_TAG"
         # Output to log because it is too much for the gitlab console.
-        - "ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -R $TEST_TAG> ../buildtest_full.log"
+        - "ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV $CTEST_OPTION_IMCS -R $TEST_TAG > ../buildtest_full.log"
     after_script:
         # Write Selection of the output into the terminal and therefore to GITLAB
         - sed -n '/* Extra verbosity turned on/,/Test project /p' ../buildtest_full.log
@@ -150,58 +158,76 @@ checkcode:
 
 # IMCS--------------------------------------------------------------------------
 
-.imcs-buildtest_minimal:
+imcs-buildtest_minimal:
     << : *buildtest_minimal
     variables:
+        CTEST_CONFIGURE_PREFIX: "bash "
+        CTEST_OPTION_IMCS: "-E '-pp|-energy'"
+        CTEST_CONFIGURE_POSTFIX: ""
         CTEST_MAKE: "make full -j3"
-        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-minimal-GITLAB"
-        CTEST_BUILD_CONFIG_GITLAB: "centos74_Q12015.config"
-        CTEST_DROP_SITE_CDASH_GITLAB: "1"
+        CTEST_BUILD_NAME_GITLAB: "Ubuntu-baci-Q1-2015-minimal-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "ubuntu1604.config"
+        CTEST_DROP_SITE_CDASH_GITLAB: "0"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
-        - imcs-test
+        - imcs-minimal
 
 imcs-buildtest_full:
     << : *buildtest_full
     variables:
+        CTEST_CONFIGURE_PREFIX: "bash "
+        CTEST_OPTION_IMCS: "-E '-pp|-energy'"
+        CTEST_CONFIGURE_POSTFIX: ""
         CTEST_MAKE: "make full -j3"
         CTEST_BUILD_NAME_GITLAB: "Ubuntu-baci-Q1-2015-$TEST_TAG-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "ubuntu1604.config"
+        CTEST_DROP_SITE_CDASH_GITLAB: "0"
+        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
+        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
-        - imcs-test
+        - imcs-full
 
-.imcs-buildtest_daily:
+imcs-buildtest_daily:
     << : *buildtest_daily
     variables:
+        CTEST_CONFIGURE_PREFIX: "bash "
+        CTEST_OPTION_IMCS: "-E '-pp|-energy'"
+        CTEST_CONFIGURE_POSTFIX: ""
         CTEST_MAKE: "make full -j3"
-        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-GITLAB"
-        CTEST_BUILD_CONFIG_GITLAB: "centos74_Q12015.config"
-        CTEST_DROP_SITE_CDASH_GITLAB: "1"
+        CTEST_BUILD_NAME_GITLAB: "Ubuntu-baci-Q1-2015-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "ubuntu1604.config"
+        CTEST_DROP_SITE_CDASH_GITLAB: "0"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
-        - imcs-nightly1
+        - imcs-nightly-full
 
-.imcs-buildtest_daily_debug:
+imcs-buildtest_daily_debug:
     << : *buildtest_daily_debug
     variables:
+        CTEST_CONFIGURE_PREFIX: "bash "
+        CTEST_OPTION_IMCS: "-E '-pp|-energy'"
+        CTEST_CONFIGURE_POSTFIX: ""
         CTEST_MAKE: "make full -j3"
-        CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015 DEBUG-GITLAB"
-        CTEST_BUILD_CONFIG_GITLAB: "centos74_Q12015_nightlytest.config"
-        CTEST_DROP_SITE_CDASH_GITLAB: "1"
+        CTEST_BUILD_NAME_GITLAB: "Ubuntu-baci-Q1-2015-DEBUG-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "ubuntu1604.config"
+        CTEST_DROP_SITE_CDASH_GITLAB: "0"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
-        - imcs-nightly2
+        - imcs-nightly-debug
 
-.imcs-doxygen:
+imcs-doxygen:
     << : *doxygen
     variables:
+        CTEST_CONFIGURE_PREFIX: "bash "
+        CTEST_OPTION_IMCS: "-E '-pp|-energy'"
+        CTEST_CONFIGURE_POSTFIX: ""
         CTEST_MAKE: "make documentation"
         CTEST_BUILD_NAME_GITLAB: "Doxygen-GITLAB"
-        CTEST_BUILD_CONFIG_GITLAB: "centos74_Q12015.config"
-        CTEST_DROP_SITE_CDASH_GITLAB: "1"
+        CTEST_BUILD_CONFIG_GITLAB: "ubuntu1604.config"
+        CTEST_DROP_SITE_CDASH_GITLAB: "0"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
@@ -269,4 +295,3 @@ lnm-doxygen:
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
         - lnm-nightly
-
