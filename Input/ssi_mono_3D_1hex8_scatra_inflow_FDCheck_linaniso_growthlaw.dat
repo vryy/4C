@@ -42,7 +42,7 @@ INITFUNCNO                      1
 CONVFORM                        conservative
 FDCHECK                         global
 FDCHECKEPS                      1.e-7
-FDCHECKTOL                      4.e-4
+FDCHECKTOL                      5.1e-4
 -------------------------------------------------------SSI CONTROL
 NUMSTEP                         50
 TIMESTEP                        0.1
