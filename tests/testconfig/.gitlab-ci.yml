@@ -162,7 +162,7 @@ imcs-buildtest_minimal:
     << : *buildtest_minimal
     variables:
         CTEST_CONFIGURE_PREFIX: "bash "
-        CTEST_OPTION_IMCS: "-E '-pp|-energy'"
+        CTEST_OPTION_IMCS: "-E '-*pp*|-*energy*'"
         CTEST_CONFIGURE_POSTFIX: ""
         CTEST_MAKE: "make full -j3"
         CTEST_BUILD_NAME_GITLAB: "Ubuntu-baci-Q1-2015-minimal-GITLAB"
@@ -177,7 +177,7 @@ imcs-buildtest_full:
     << : *buildtest_full
     variables:
         CTEST_CONFIGURE_PREFIX: "bash "
-        CTEST_OPTION_IMCS: "-E '-pp|-energy'"
+        CTEST_OPTION_IMCS: "-E '-*pp*|-*energy*'"
         CTEST_CONFIGURE_POSTFIX: ""
         CTEST_MAKE: "make full -j3"
         CTEST_BUILD_NAME_GITLAB: "Ubuntu-baci-Q1-2015-$TEST_TAG-GITLAB"
@@ -192,7 +192,7 @@ imcs-buildtest_daily:
     << : *buildtest_daily
     variables:
         CTEST_CONFIGURE_PREFIX: "bash "
-        CTEST_OPTION_IMCS: "-E '-pp|-energy'"
+        CTEST_OPTION_IMCS: "-E '-*pp*|-*energy*'"
         CTEST_CONFIGURE_POSTFIX: ""
         CTEST_MAKE: "make full -j3"
         CTEST_BUILD_NAME_GITLAB: "Ubuntu-baci-Q1-2015-GITLAB"
@@ -207,7 +207,7 @@ imcs-buildtest_daily_debug:
     << : *buildtest_daily_debug
     variables:
         CTEST_CONFIGURE_PREFIX: "bash "
-        CTEST_OPTION_IMCS: "-E '-pp|-energy'"
+        CTEST_OPTION_IMCS: "-E '-*pp*|-*energy*'"
         CTEST_CONFIGURE_POSTFIX: ""
         CTEST_MAKE: "make full -j3"
         CTEST_BUILD_NAME_GITLAB: "Ubuntu-baci-Q1-2015-DEBUG-GITLAB"
@@ -222,7 +222,7 @@ imcs-buildtest_daily_debug:
     << : *doxygen
     variables:
         CTEST_CONFIGURE_PREFIX: "bash "
-        CTEST_OPTION_IMCS: "-E '-pp|-energy'"
+        CTEST_OPTION_IMCS: "-E '-*pp*|-*energy*'"
         CTEST_CONFIGURE_POSTFIX: ""
         CTEST_MAKE: "make documentation"
         CTEST_BUILD_NAME_GITLAB: "Doxygen-GITLAB"
