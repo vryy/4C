@@ -86,7 +86,7 @@ variables:
     only:
         variables:
             - $GITLAB_SCHEDULER_TYPE == "1"
-            
+
 # This kind of job is started by a daily scheduler, with the variable
 # $GITLAB_SCHEDULER_TYPE = "2"
 # Debug tests are performed.
@@ -115,7 +115,7 @@ variables:
         - "echo doxygen"
         # Output to log because it is too much for the gitlab console.
         - "ctest -S $CI_PROJECT_DIR/tests/testconfig/test_doxygen.cmake -VV > ../doxygen.log"
-        - "cp -r $CI_PROJECT_DIR/../baci-build/doc/html /home/gitlab-runner/."
+        - "cp -r $CI_PROJECT_DIR/../baci-build/doc/html $DOXYGEN_PATH"
     after_script:
         # Write Selection of the output into the terminal and therefore to GITLAB
         - sed -n '/* Extra verbosity turned on/,/Test project /p' ../doxygen.log
@@ -218,7 +218,7 @@ imcs-buildtest_daily_debug:
     tags:
         - imcs-nightly-debug
 
-imcs-doxygen:
+.imcs-doxygen:
     << : *doxygen
     variables:
         CTEST_CONFIGURE_PREFIX: "bash "
@@ -230,6 +230,8 @@ imcs-doxygen:
         CTEST_DROP_SITE_CDASH_GITLAB: "0"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
+        # Path on testing machine where doxygen will be copied to.
+        DOXYGEN_PATH: "TBD"
     tags:
         - imcs-nightly
 
@@ -293,5 +295,7 @@ lnm-doxygen:
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
+        # Path on testing machine where doxygen will be copied to.
+        DOXYGEN_PATH: "/home/gitlab-runner/."
     tags:
         - lnm-nightly
