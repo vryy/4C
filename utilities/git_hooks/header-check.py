@@ -4,7 +4,6 @@
 import os
 import baciheader as bh
 import inputheader as ih
-
 #UTILS
 
 def command_output(cmd):
@@ -70,7 +69,7 @@ def files_deleted_or_updated(look_cmd):
 
 def file_contents(filename):
   " Return a file's contents for this transaction. "
-  output=command_output("cat %s" %filename) 
+  output=command_output("cat ../../%s" %filename) 
   output=output.decode()
   return output 
 def pretty_print_error(allerrors):
@@ -129,7 +128,7 @@ def check_cpp_files_for_header(look_cmd, allerrors):
   if len(cpp_files_wo_file) > 0 or len(cpp_files_wo_brief) > 0 or len(cpp_files_wo_maint) > 0 or len(cpp_files_wo_lvl) > 0:
     allerrors += bh.Header.get_example()
 
-    return len(cpp_files_wo_file)+len(cpp_files_wo_brief)+len(cpp_files_wo_maint)+len(cpp_files_wo_lvl)
+  return len(cpp_files_wo_file)+len(cpp_files_wo_brief)+len(cpp_files_wo_maint)+len(cpp_files_wo_lvl)
 
 #CHECK INPUT FILE HEADERS
 def check_input_files_for_header(look_cmd, allerrors):
@@ -169,20 +168,20 @@ def check_all_files_for_gitignore(look_cmd, allerrors):
 
 #######################################################################################################################
 
-def main(): 
-  errors = 0                  
+def main():
+  errors = 0
   allerrors = []
   try:
-      look_cmd= "git diff --name-status"
+      look_cmd = "git diff --name-status"
       errors += check_cpp_files_for_header(look_cmd, allerrors)
       errors += check_input_files_for_header(look_cmd, allerrors)
-     # errors += check_all_files_for_gitignore(look_cmd, allerrors)  # Did not work in latest Python env.
+      #errors += check_all_files_for_gitignore(look_cmd, allerrors)  # Did not work in latest Python env.
   except ValueError:
-    print("Something went wrong! Check the error functions in this script again!")
-    errors += 1
-    if errors > 0:
-       pretty_print_error(allerrors) 
-    return errors
+      print("Something went wrong! Check the error functions in this script again!")
+      errors += 1
+  if errors > 0:
+    pretty_print_error(allerrors)
+  return errors
 
 if __name__ == "__main__":
      import sys
