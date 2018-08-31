@@ -17,7 +17,7 @@ variables:
     CTEST_CONFIGURE_POSTFIX: "--useDEAL"
 
     # Temporary exclude postprocessing tests at IMCS.
-    CTEST_OPTION_IMCS: ""
+    CTEST_EXCLUDE_STRING: ""
 
 #-------------------------------------------------------------------------------
 # Define the base jobs for testing
@@ -55,8 +55,9 @@ variables:
     stage: buildtest
     script:
         - "echo full test: triggered by user with TEST_TAG=$TEST_TAG"
+        - "echo exclude string: CTEST_EXCLUDE_STRING=$CTEST_EXCLUDE_STRING"
         # Output to log because it is too much for the gitlab console.
-        - "ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV $CTEST_OPTION_IMCS -R $TEST_TAG > ../buildtest_full.log"
+        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -E "$CTEST_EXCLUDE_STRING" -R $TEST_TAG > ../buildtest_full.log'
     after_script:
         # Write Selection of the output into the terminal and therefore to GITLAB
         - sed -n '/* Extra verbosity turned on/,/Test project /p' ../buildtest_full.log
@@ -75,8 +76,9 @@ variables:
     stage: buildtest
     script:
         - "echo full test: nightly test"
+        - "echo exclude string: CTEST_EXCLUDE_STRING=$CTEST_EXCLUDE_STRING"
         # Output to log because it is too much for the gitlab console.
-        - "ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV > ../buildtest_daily.log"
+        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -E "$CTEST_EXCLUDE_STRING" > ../buildtest_daily.log'
     after_script:
         # Write Selection of the output into the terminal and therefore to GITLAB
         - sed -n '/* Extra verbosity turned on/,/Test project /p' ../buildtest_daily.log
@@ -94,8 +96,9 @@ variables:
     stage: buildtest
     script:
         - "echo full test: nightly test debug"
+        - "echo exclude string: CTEST_EXCLUDE_STRING=$CTEST_EXCLUDE_STRING"
         # Output to log because it is too much for the gitlab console.
-        - "ctest -S $CI_PROJECT_DIR/tests/testconfig/test_debug.cmake -VV > ../buildtest_daily_debug.log"
+        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_debug.cmake -VV -E "$CTEST_EXCLUDE_STRING" > ../buildtest_daily_debug.log'
     after_script:
         # Write Selection of the output into the terminal and therefore to GITLAB
         - sed -n '/* Extra verbosity turned on/,/Test project /p' ../buildtest_daily_debug.log
@@ -162,7 +165,7 @@ imcs-buildtest_minimal:
     << : *buildtest_minimal
     variables:
         CTEST_CONFIGURE_PREFIX: "bash "
-        CTEST_OPTION_IMCS: "-E '-*pp*|-*energy*'"
+        CTEST_EXCLUDE_STRING: "-pp|-energy"
         CTEST_CONFIGURE_POSTFIX: ""
         CTEST_MAKE: "make full -j3"
         CTEST_BUILD_NAME_GITLAB: "Ubuntu-baci-Q1-2015-minimal-GITLAB"
@@ -177,7 +180,7 @@ imcs-buildtest_full:
     << : *buildtest_full
     variables:
         CTEST_CONFIGURE_PREFIX: "bash "
-        CTEST_OPTION_IMCS: "-E '-*pp*|-*energy*'"
+        CTEST_EXCLUDE_STRING: "-pp|-energy"
         CTEST_CONFIGURE_POSTFIX: ""
         CTEST_MAKE: "make full -j3"
         CTEST_BUILD_NAME_GITLAB: "Ubuntu-baci-Q1-2015-$TEST_TAG-GITLAB"
@@ -192,7 +195,7 @@ imcs-buildtest_daily:
     << : *buildtest_daily
     variables:
         CTEST_CONFIGURE_PREFIX: "bash "
-        CTEST_OPTION_IMCS: "-E '-*pp*|-*energy*'"
+        CTEST_EXCLUDE_STRING: "-pp|-energy"
         CTEST_CONFIGURE_POSTFIX: ""
         CTEST_MAKE: "make full -j3"
         CTEST_BUILD_NAME_GITLAB: "Ubuntu-baci-Q1-2015-GITLAB"
@@ -207,7 +210,7 @@ imcs-buildtest_daily_debug:
     << : *buildtest_daily_debug
     variables:
         CTEST_CONFIGURE_PREFIX: "bash "
-        CTEST_OPTION_IMCS: "-E '-*pp*|-*energy*'"
+        CTEST_EXCLUDE_STRING: "-pp|-energy"
         CTEST_CONFIGURE_POSTFIX: ""
         CTEST_MAKE: "make full -j3"
         CTEST_BUILD_NAME_GITLAB: "Ubuntu-baci-Q1-2015-DEBUG-GITLAB"
