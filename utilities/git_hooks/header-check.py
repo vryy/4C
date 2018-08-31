@@ -32,39 +32,17 @@ def is_checked_file(fname):
 
 def files_changed(look_cmd):
   """ List the files added or updated by this transaction.
-
-"git diff --name-status" gives output like (careful there is a tab after the indicator):
-  C   trunk/file1.cpp # file has been copied and modified
-  A   trunk/file2.cpp # file has been added
-  M   trunk/file3.cpp # file has been modified
-  R   trunk/file4.cpp # file has been renamed and modified
   """
   def filename(line):
-    return line[3:] # now the filename starts at the second entry of line 
-  def added_or_updated(line):
-    return line and line[0] in ("A", "C", "M") 
+    return line
   looked_files  = command_output(look_cmd).decode().split("\n")
-  changed_files = [filename(line) for line in looked_files if added_or_updated(line)]
-  return changed_files
-
-def files_deleted_or_updated(look_cmd):
-  """ List the files added or updated by this transaction.
-
-"git diff --name-status" gives output like:
-  D   trunk/file1.cpp  # file has been deleted
-  R   trunk/file2.cpp  # file has been renamed and modified
-  """
-  def filename(line):
-    return line[3:] # now the filename start at the second entry of the line
-  def deleted_or_updated(line):
-    return line and line[0] in ("D", "R")
-  looked_files  = command_output(look_cmd).decode().split("\n")
-  changed_files = [filename(line) for line in looked_files if deleted_or_updated(line)]
+  changed_files = [filename(line) for line in looked_files]
   return changed_files
 
 def file_contents(filename):
   " Return a file's contents for this transaction. "
   output=command_output("cat %s" %filename)
+  output=output.decode()
   return output
 
 def pretty_print_error(allerrors):
@@ -85,7 +63,7 @@ def pretty_print_error(allerrors):
 def check_cpp_files_for_header(look_cmd, allerrors):
   " Check C/C++ files in this transaction have a maintainer. "
   import os
-  headers = dict([(ff,bh.Header(file_contents(ff))) for ff in files_changed(look_cmd) if is_source_file(ff)])
+  headers = dict([(ff,bh.Header(file_contents(ff))) for ff in files_changed(look_cmd)[:-1] if is_source_file(ff)])
 # \file tag
   cpp_files_wo_file = [ff for ff,hdr in headers.items() if hdr.get_file() != os.path.basename(ff)]
   if len(cpp_files_wo_file) > 0:
@@ -124,7 +102,7 @@ def check_cpp_files_for_header(look_cmd, allerrors):
 #CHECK INPUT FILE HEADERS
 def check_input_files_for_header(look_cmd, allerrors):
   " Check .dat file in the Input folder for a proper header. "
-  headers = dict([(ff,ih.Header(file_contents(ff))) for ff in files_changed(look_cmd) if is_input_file(ff)])
+  headers = dict([(ff,ih.Header(file_contents(ff))) for ff in files_changed(look_cmd)[:-1] if is_input_file(ff)])
   datfiles_without_header = [ff for ff,hdr in headers.items() if len(hdr.get_maintainer()) < 5]
   if len(datfiles_without_header) > 0:
     if len(allerrors) > 0:
@@ -163,7 +141,7 @@ def main():
   errors = 0
   allerrors = []
   try:
-    look_cmd = "git status -s"
+    look_cmd = "git diff --name-only --cached --diff-filter=MRAC"
     errors += check_cpp_files_for_header(look_cmd, allerrors)
     errors += check_input_files_for_header(look_cmd, allerrors)
     #errors += check_all_files_for_gitignore(look_cmd, allerrors)  # Did not work in latest Python env.

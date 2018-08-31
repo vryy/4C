@@ -18,13 +18,9 @@
 
 
 # Author: Jonas Nitzler
-# Date:   29.08.2018
-# Version: 1.0
-
-########### Give text output when the hook is started #########################################################################################################
-echo "####################################################################"
-echo "GIT Hook started: Checking now for format and header compliance....."
-echo "####################################################################"
+#         Maximilian Grill
+# Date:   31.08.2018
+# Version: 1.1
 
 ########### Execute clang-format with style file settings (taken from https://github.com/sheredom/git-hooks)##################################################
 
@@ -41,15 +37,30 @@ then
       # format the file
       clang-format -i -style=file $(pwd)/${line}
 
+ ####### Inform user about clang changes ##########
+      echo "####################################################################"
+      echo "In the following the changes by clang are presented...              "
+      echo "####################################################################"
+
+      git diff --diff-filter=ACMR $(pwd)/${line}
+
       # and then add the file (so that any formatting changes get committed)
       git add $(pwd)/${line}
+      echo "################ END OF CLANG CHANGES ##############################"
+
     fi
   done
 else
   echo "ERROR: clang-format was not found, cannot format files!"
   exit 1
 fi
+### Header check ################################################
+utilities/git_hooks/header-check.py || exit 1
+exit 0
 
+
+
+############### OLD VERSION--> WILL BE DELETED SOON ##############################
 
 #gitvar=$(git diff --cached --name-only --diff-filter=ACMRT -- src/ Unittests/ tests/ |
 #          grep -E ".cpp$|.h$|.cp$|.H$|.cc$|.hpp$|.hh$|.hxx$|.cxx")
@@ -76,17 +87,17 @@ fi
 
 
 ########### Execute header checks ###############################################################################################################################
-echo "################################################"
-echo "Checking now for headers ......................."
-echo "################################################"
-utilities/git_hooks/header-check.py || exit 1
+#echo "################################################"
+#echo "Checking now for headers ......................."
+#echo "################################################"
+#utilities/git_hooks/header-check.py || exit 1
 
 # 4) The python script runs internally only on the diffs by design --> no need for git diff...
 # 5) Header design cannot be automated! Hence: if not compliant reject the current commit and give out error messages, accordingly (done by python script)
 
-echo "################################################################"
-echo "All headers were compliant with the code style! Commit accepted!"
-echo "################################################################"
+#echo "################################################################"
+#echo "All headers were compliant with the code style! Commit accepted!"
+#echo "################################################################"
 
-exit 0
+#exit 0
 
