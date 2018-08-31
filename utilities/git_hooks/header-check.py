@@ -23,16 +23,13 @@ def path_contains(test, path):
   if test == tail or len(head) <= 0:
     return (test == tail)
   return path_contains(test, head)
-    
+
 def is_input_file(fname):
   return path_contains("Input", fname) and os.path.splitext(fname)[1] == ".dat"
 
 def is_checked_file(fname):
   return is_source_file(fname) or is_support_file(fname)
 
-
-######### Adopted for GIT ###########################################################################
-#####################################################################################################
 def files_changed(look_cmd):
   """ List the files added or updated by this transaction.
 
@@ -43,9 +40,9 @@ def files_changed(look_cmd):
   R   trunk/file4.cpp # file has been renamed and modified
   """
   def filename(line):
-      return line[2:] # now the filename starts at the second entry of line 
+    return line[3:] # now the filename starts at the second entry of line 
   def added_or_updated(line):
-      return line and line[0] in ("A", "C", "M") 
+    return line and line[0] in ("A", "C", "M") 
   looked_files  = command_output(look_cmd).decode().split("\n")
   changed_files = [filename(line) for line in looked_files if added_or_updated(line)]
   return changed_files
@@ -58,20 +55,18 @@ def files_deleted_or_updated(look_cmd):
   R   trunk/file2.cpp  # file has been renamed and modified
   """
   def filename(line):
-      return line[2:] # now the filename start at the second entry of the line
+    return line[3:] # now the filename start at the second entry of the line
   def deleted_or_updated(line):
-      return line and line[0] in ("D", "R")
+    return line and line[0] in ("D", "R")
   looked_files  = command_output(look_cmd).decode().split("\n")
   changed_files = [filename(line) for line in looked_files if deleted_or_updated(line)]
   return changed_files
-#######################################################################################################
-#######################################################################################################
 
 def file_contents(filename):
   " Return a file's contents for this transaction. "
-  output=command_output("cat ../../%s" %filename) 
-  output=output.decode()
-  return output 
+  output=command_output("cat %s" %filename)
+  return output
+
 def pretty_print_error(allerrors):
   max_width = 56
   if len(allerrors) > 0:
@@ -86,11 +81,7 @@ def pretty_print_error(allerrors):
   sys.stderr.write("E"+" "*(max_width+2)+"E\n"+"E"*(max_width+4)+"\n")
   return
 
-##################### START OF HEADER CHECKS ############################################################
-#########################################################################################################
-
 #CHECK HEADER
-
 def check_cpp_files_for_header(look_cmd, allerrors):
   " Check C/C++ files in this transaction have a maintainer. "
   import os
@@ -152,7 +143,7 @@ def build_filter(look_cmd):
   import pathspec
   #text= file_contents(".gitignore")
   with open('.gitignore', 'r') as text:
-       spec = pathspec.PathSpec.from_lines(pathspec.GitIgnorePattern,text)
+    spec = pathspec.PathSpec.from_lines(pathspec.GitIgnorePattern,text)
   return spec
 
 def check_all_files_for_gitignore(look_cmd, allerrors):
@@ -172,17 +163,17 @@ def main():
   errors = 0
   allerrors = []
   try:
-      look_cmd = "git diff --name-status"
-      errors += check_cpp_files_for_header(look_cmd, allerrors)
-      errors += check_input_files_for_header(look_cmd, allerrors)
-      #errors += check_all_files_for_gitignore(look_cmd, allerrors)  # Did not work in latest Python env.
+    look_cmd = "git status -s"
+    errors += check_cpp_files_for_header(look_cmd, allerrors)
+    errors += check_input_files_for_header(look_cmd, allerrors)
+    #errors += check_all_files_for_gitignore(look_cmd, allerrors)  # Did not work in latest Python env.
   except ValueError:
-      print("Something went wrong! Check the error functions in this script again!")
-      errors += 1
+    print("Something went wrong! Check the error functions in this script again!")
+    errors += 1
   if errors > 0:
     pretty_print_error(allerrors)
   return errors
 
 if __name__ == "__main__":
-     import sys
-     sys.exit(main())
+  import sys
+  sys.exit(main())

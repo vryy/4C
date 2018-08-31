@@ -21,41 +21,65 @@
 # Date:   29.08.2018
 # Version: 1.0
 
-########### Give text output when the hook is stated #########################################################################################################
+########### Give text output when the hook is started #########################################################################################################
 echo "####################################################################"
 echo "GIT Hook started: Checking now for format and header compliance....."
 echo "####################################################################"
 
-########### Execute clang-format with syle file settings #####################################################################################################
-gitvar=$(git diff --cached --name-only --diff-filter=ACMRT -- ../../src/ ../../Unittests/ ../../tests/ |
-            grep -E ".cpp$|.h$|.cp$|.H$|.cc$|.hpp$|.hh$|.hxx$|.cxx")
+########### Execute clang-format with style file settings (taken from https://github.com/sheredom/git-hooks)##################################################
 
-# 1) give out all files that differ from the last commit under the constraint of being A : Added,  C : Copied, M : Modified, R : Renamed, T : Changed
+if [ -f utilities/code_styles/clang-format ]
+then
+  # set the field separator to new line
+  IFS=$'\n'
 
-if [[ $? != 0 ]]; then
-       echo "#######################################################"
-       echo "Commit matched clang format style, no changes by clang!"
-       echo "#######################################################"
+  for line in $(git diff --cached --name-only --diff-filter=ACMR)
+  do
+    # if the file is a c or cpp file
+    if [[ $line == *.cpp || $line == *.cc || $line == *.cp || $line == *.cxx || $line == *.H || $line == *.h || $line == *.hpp || $line == *.hh || $line == *.hxx ]]
+    then
+      # format the file
+      clang-format -i -style=file $(pwd)/${line}
 
+      # and then add the file (so that any formatting changes get committed)
+      git add $(pwd)/${line}
+    fi
+  done
 else
-       echo "#################################################################"
-       echo "Commit did not match clang-format and was automatically formated:"
-       echo "#################################################################"
-
-# 2) run clang - format with our modified Google style on those files
-../code_styles/clang-format -i -style=file ../../$gitvar
-
-# 3) Give the user a short feedback if he was compliant or not and show the differences again
-git diff --cached --diff-filter=ACMRT -- ../../src/ ../../Unittests/ ../../tests/
-
+  echo "ERROR: clang-format was not found, cannot format files!"
+  exit 1
 fi
+
+
+#gitvar=$(git diff --cached --name-only --diff-filter=ACMRT -- src/ Unittests/ tests/ |
+#          grep -E ".cpp$|.h$|.cp$|.H$|.cc$|.hpp$|.hh$|.hxx$|.cxx")
+#
+## 1) give out all files that differ from the last commit under the constraint of being A : Added,  C : Copied, M : Modified, R : Renamed, T : Changed
+#
+#if [[ $? != 0 ]]; then
+#       echo "#######################################################"
+#       echo "Commit matched clang format style, no changes by clang!"
+#       echo "#######################################################"
+#
+#else
+#       echo "#################################################################"
+#       echo "Commit did not match clang-format and was automatically formated:"
+#       echo "#################################################################"
+#
+## 2) run clang - format with our modified Google style on those files
+#utilities/code_styles/clang-format -i -style=file $gitvar
+#
+## 3) Give the user a short feedback if he was compliant or not and show the differences again
+#git diff --cached --diff-filter=ACMRT -- src/ Unittests/ tests/
+#
+#fi
 
 
 ########### Execute header checks ###############################################################################################################################
 echo "################################################"
 echo "Checking now for headers ......................."
 echo "################################################"
-../git_hooks/header-check.py || exit 1
+utilities/git_hooks/header-check.py || exit 1
 
 # 4) The python script runs internally only on the diffs by design --> no need for git diff...
 # 5) Header design cannot be automated! Hence: if not compliant reject the current commit and give out error messages, accordingly (done by python script)
