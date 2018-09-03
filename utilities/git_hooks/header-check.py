@@ -1,5 +1,5 @@
 #!/bin/env python
-" Baci Git pre-commit hook. "
+" Baci header check to be executed along with the Git pre-commit hook. "
 
 import os
 import baciheader as bh

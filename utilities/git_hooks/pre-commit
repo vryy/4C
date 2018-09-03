@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #####################################################
 ########## DESCRIPTION ##############################
@@ -58,7 +58,7 @@ else
   exit 1
 fi
 ### Header check ################################################
-python utilities/git_hooks/header-check.py || exit 1
+python ./utilities/git_hooks/header-check.py || exit 1
 exit 0
 
 

@@ -1,12 +1,11 @@
-## Contributing to BACI
+# Contributing to BACI
 
-Thank you for your willingness to contribute to BACI. The procedure to do so is given below. 
-Do ensure you are familiar with all the information in our [README.md](https://gitlab.lrz.de/baci/baci/blob/master/README.md) file, as that is necessary for understanding what follows.
-
+Thank you for your willingness to contribute to BACI. 
+The steps outlined in [Setup and Initial Configuration](#setup-and-initial-configuration) have to be performed only once, while the  [Baci Development Workflow](#the-baci-development-workflow) has to be cycled for every bit of code development in Baci.
+ 
 > **Note:**  By contributing to BACI, you implicitly agree to our [contributor license agreement](https://gitlab.lrz.de/baci/baci/blob/master/ContributorLicenseAgreement.md).
 
 BACI development is strongly based on the [GitHub Flow](https://guides.github.com/introduction/flow/index.html) which is a branch-based workflow involving only two types of branches: the `master` branch and `feature` branches.
-
 The most important rules are: 
 - Anything in the `master` branch is always deployable, i.e. considered stable.
 - Development (and bugfixes) are carried out in `feature` branches.
@@ -14,20 +13,37 @@ The most important rules are:
 To incorporate a `feature` branch into the `master` branch, BACI employs GitLab's *merge request* mechanism resulting in a *merge commit*.
 
 ### Contents
-1. [Create a GitLab Issue](#create-a-gitlab-issue)
-1. [Work an Issue](#work-an-issue)
-   1. [Create a Feature Branch](#create-a-feature-branch)
-   1. [Make your Changes](#make-your-changes)
-   1. [Integrate changes from `master` into your feature branch](#integrate-changes-from-master-into-your-feature-branch)
-   1. [Test your Changes](#test-your-changes)
-1. [Merging Changes into `master`](#merging-changes-into-master)
-   1. [Push your branch to GitLab](#push-your-branch-to-gitlab)
-   1. [Create a Merge Request](#create-a-merge-request)
-   1. [Feedback](#feedback)
-   1. [Merging a Merge Request](#merging-a-merge-request)
-1. [Final Clean-Up](#final-clean-up)
+1. [Setup and Initial Configuration](#setup-and-initial-configuration)
+1. [The Baci Development Workflow](#the-baci-development-workflow)
+   1. [Create a GitLab Issue](#create-a-gitlab-issue)
+   1. [Work an Issue](#work-an-issue)
+      1. [Create a Feature Branch](#create-a-feature-branch)
+      1. [Make your Changes](#make-your-changes)
+      1. [Integrate changes from `master` into your feature branch](#integrate-changes-from-master-into-your-feature-branch)
+      1. [Test your Changes](#test-your-changes)
+   1. [Merging Changes into `master`](#merging-changes-into-master)
+      1. [Push your branch to GitLab](#push-your-branch-to-gitlab)
+      1. [Create a Merge Request](#create-a-merge-request)
+      1. [Feedback](#feedback)
+      1. [Merging a Merge Request](#merging-a-merge-request)
+   1. [Final Clean-Up](#final-clean-up)
 
-## Create a GitLab Issue
+## Setup and Initial Configuration
+
+
+### Read the [README.md](https://gitlab.lrz.de/baci/baci/blob/master/README.md)
+
+Do ensure you are familiar with all the information in our [README.md](https://gitlab.lrz.de/baci/baci/blob/master/README.md) file, as that is necessary for understanding what follows.
+Double-check that your local Git repository is configured as described in [README.md](https://gitlab.lrz.de/baci/baci/blob/master/README.md#set-up-git).
+
+### Setup your Integrated Development Environment
+
+We recommend to use an Integrated Develoment Environment (IDE) for code development because it provides many convenient features and also eases to comply with our mandatory code style.
+Set-up instructions for various IDEs can be found on the respective [Wiki page](https://gitlab.lrz.de/baci/baci/wikis/set-up-your-integrated-development-environment).
+
+## The Baci Development Workflow
+
+### Create a GitLab Issue
 
 Navigate to BACI's [GitLab Issues page](https://gitlab.lrz.de/baci/baci/issues) and create a new issue.
 The issue can be used for any number of things &mdash; reporting a bug, suggesting an enhancement, posing a question, etc.
@@ -43,12 +59,12 @@ move the issue card into the **Blocked** column to indicate that work can't proc
 
 [↑ Contents](#contents)
 
-## Work an Issue
+### Work an Issue
 
 When work commences on an issue, move the issue card to the **In Progress** column of our [Kanban board](https://gitlab.lrz.de/baci/baci/boards). 
 Then the workflow to use is the following:
 
-### Create a Feature Branch
+#### Create a Feature Branch
 
 > **Note:** It is important to keep your local `master` branch in `baci` up-to-date with the remote `master`. Hence, creation of a feature branch consists of *two* steps.
 
@@ -76,7 +92,7 @@ The branch name `<branchName>` can be whatever you like, though we have some rec
 
 [↑ Contents](#contents)
 
-### Make your Changes
+#### Make your Changes
 
 * Do whatever work is necessary to address the issue you're tackling.
 * Commit your changes locally.
@@ -87,7 +103,7 @@ then use `git rebase -i` to reorganize your commits before sharing.
 
 [↑ Contents](#contents)
 
-#### Commit Messages
+##### Commit Messages
 
 * Make sure your commit messages reference the appropriate GitLab issue numbers using the `#<issueNumber>` syntax.
 * The **first line** of the commit message should be a descriptive title, **limited to 50 characters**.
@@ -98,14 +114,14 @@ Use the commit message to explain the context and reasons for your changes, i.e.
 
 [↑ Contents](#contents)
 
-#### Doxygen
+##### Doxygen
 
 BACI uses [Doxygen](http://www.stack.nl/~dimitri/doxygen/index.html) to generate documentation from annotated source code.
 Please see [this wiki page](https://gitlab.lrz.de/baci/baci/wikis/Doxygen) for our Doxygen guidelines.
 
 [↑ Contents](#contents)
 
-### Integrate changes from `master` into your feature branch
+#### Integrate changes from `master` into your feature branch
 
 While working on your feature in your local `<branchName>` branch in `baci`, other commits will likely make it into the remote `master` branch.  There are a variety of ways to incorporate these changes into your local feature branch. Our preferred possibility is
 ```bash
@@ -125,21 +141,21 @@ though there are others that are equally valid.
 
 [↑ Contents](#contents)
 
-### Test your Changes
+#### Test your Changes
 
 To ensure your changes haven't broken anything, run `ctest` in your BACI build directory.
 A small set of test cases can be run via `ctest -L minimal`.
 
 [↑ Contents](#contents)
 
-## Merging Changes into `master`
+### Merging Changes into `master`
 
 To merge changes into `master`, a feature branch needs to satisfy these conditions:
 * Passing code check, e.g. no trailing white spaces, proper Doxygen style, ...
 * No build errors and passing all tests
 * Passing code inspection by one of your fellow developers
 
-### Push your branch to GitLab
+#### Push your branch to GitLab
 
 To publish your changes and make them available to others, you have to push them to GitLab. Before pushing your branch to GitLab, use interactive rebasing via `git rebase -i` to squash the commits on your feature branch into the smallest number of logical commits.  Much of the time this will just mean a single commit, but you may wish to keep more than one &mdash; for instance, have the majority of your feature addition in one commit, but keep some performance tweaks separate in another commit, in case it becomes necessary to revert the performance tweaks later while keeping the rest of the feature.
 
@@ -150,7 +166,7 @@ git push --set-upstream origin <branchName>
 
 > **Important**: Use `git rebase -i` only on commits that haven't been pushed to the remote, yet. 
 
-### Create a Merge Request
+#### Create a Merge Request
 
 When your changes are ready to be integrated into `baci`'s `master` branch,
 move the issue card from **In Progress** to **Under Review** on our 
@@ -168,7 +184,7 @@ move the issue card from **In Progress** to **Under Review** on our
 
 [↑ Contents](#contents)
 
-#### Work-in-Progress Merge Requests
+##### Work-in-Progress Merge Requests
 
 If work on an issue is not yet complete, but you'd like to get another set of eyes on your work sooner rather than later,
 you can create a "work-in-progress" merge request.
@@ -184,13 +200,13 @@ rather than having to look at the entire change set at once.
 
 [↑ Contents](#contents)
 
-### Feedback
+#### Feedback
 
 At this point you'll enter into a stage where you and various BACI developers will iterate back and forth until your changes are in an acceptable state and can be merged in. If you need to make changes to your merge request, make additional commits on your `<branchName>` branch and push them up to the remote.  Make sure you don't delete your remote feature branch before your merge request has been merged.
 
 [↑ Contents](#contents)
 
-### Merging a Merge Request
+#### Merging a Merge Request
 
 Once the feature branch is ready to be merged, use the "Merge" button on the merge request page on GitLab.
 
@@ -200,7 +216,7 @@ If your merge request *Description* has some form of "closes #\<issueNumber\>" i
 
 [↑ Contents](#contents)
 
-## Final Clean-Up
+### Final Clean-Up
 
 To keep the repository clean, delete your feature branch *after* merging it into `master`.  When you merge a merge request, GitLab will give you the option to click a button to remove the source branch.  If you click this, then
 ```bash
