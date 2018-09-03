@@ -45,11 +45,14 @@ and your email address to your institute email address with the following comman
 
     > **Note:** Another popular choice is `vim`.
 
-1. Set path to our common set of `git-hooks` via
+1. Set path to our common set of `git-hooks`. After [cloning the repository](#clone-the-repository) into the directory `<someBaseDir>/<sourceDir>`, run
 
     ```bash
+    cd <someBaseDir>/<sourceDir>
     git config core.hooksPath ./utilities/git_hooks/
     ```
+    
+    > **Note:** Before actually executing these command, first [setup your LRZ GitLab account](#set-up-lrz-gitlab) and [clone the repository](#clone-the-repository).
 
 Our Wiki provides a [detailed setup guide for your local git configuration](https://gitlab.lrz.de/baci/baci/wikis/Set-up-Git).
 
