@@ -26,7 +26,8 @@
 BEAMINTERACTION::SphereBeamLinkingParams::SphereBeamLinkingParams()
   : isinit_(false),
     issetup_(false),
-    deltatime_(-1.0)
+    deltatime_(-1.0),
+    own_deltatime_(true)
 {
   mat_.clear();
   contractionrate_.clear();
@@ -55,6 +56,7 @@ void BEAMINTERACTION::SphereBeamLinkingParams::Init( STR::TIMINT::BaseDataGlobal
   // todo: maybe make input of time step obligatory
   if ( deltatime_ < 0.0 )
   {
+    own_deltatime_ = false;
     deltatime_ = (*gstate.GetDeltaTime())[0];
     if ( gstate.GetMyRank() == 0 )
       std::cout << " Time step " << (*gstate.GetDeltaTime())[0] << " from Structural Dynamic section "
@@ -261,4 +263,16 @@ void BEAMINTERACTION::SphereBeamLinkingParams::Setup()
   // empty for now
 
   issetup_ = true;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void BEAMINTERACTION::SphereBeamLinkingParams::ResetTimeStep(
+    double structure_delta_time )
+{
+  CheckInitSetup();
+
+  if ( not own_deltatime_ )
+    deltatime_ = structure_delta_time;
+
 }

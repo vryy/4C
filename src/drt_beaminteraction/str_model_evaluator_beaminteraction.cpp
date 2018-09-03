@@ -11,18 +11,23 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "str_model_evaluator_beaminteraction.H"
+#include "../drt_beaminteraction/str_model_evaluator_beaminteraction.H"
 
 #include "../drt_structure_new/str_timint_base.H"
 #include "../drt_structure_new/str_utils.H"
 #include "../drt_structure_new/str_model_evaluator_data.H"
+
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_parallel.H"
+
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
+
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
+
 #include "../drt_inpar/inpar_beamcontact.H"
 
 #include "../drt_fsi/fsi_matrixtransform.H"
@@ -181,6 +186,10 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
     PartitionProblem();
 
   PostSetup();
+
+  // some screen output
+  DRT::UTILS::PrintParallelDistribution(*ia_discret_);
+  DRT::UTILS::PrintParallelDistribution(*bindis_);
 
   issetup_ = true;
 }
@@ -672,6 +681,11 @@ void STR::MODELEVALUATOR::BeamInteraction::ReadRestart(
 
   int const stepn = GState().GetStepN();
 
+  // pre sub model loop
+  Vector::iterator sme_iter;
+  for ( sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter )
+    (*sme_iter)->PreReadRestart();
+
   // read interaction discretization
   IO::DiscretizationReader ia_reader( ia_discret_, stepn );
   // includes FillComplete()
@@ -692,11 +706,10 @@ void STR::MODELEVALUATOR::BeamInteraction::ReadRestart(
   PartitionProblem();
 
   // sub model loop
-  Vector::iterator sme_iter;
   for ( sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter )
     (*sme_iter)->ReadRestart( ia_reader, bin_reader );
 
-  // sub model loop
+  // post sub model loop
   for ( sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter )
     (*sme_iter)->PostReadRestart();
 }
@@ -750,67 +763,16 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepElement()
 
   Vector::iterator sme_iter;
 
-  // repartition every time
-  bool beam_redist = true;
-
   /* the idea is the following: redistribution of elements is only necessary if
    * one node on any proc has moved "too far" compared to the time step of the
    * last redistribution. Therefore we only do the expensive redistribution,
    * change of ghosting and assigning of elements if necessary.
    * This holds for both the beam discretization as well as the particle/linker/binning
-   * discretization. Note that a transfer of particles is possible (usually way cheaper)
-   * without the need to also redistribute the beam discretization. Reciprocally,
-   * if the beam discretization needs to be redistributed, also the binning discretization
-   * needs to be changed.*/
-  // store bin col map that may be needed in the following, if so, it gets deleted before though
-  Teuchos::RCP<Epetra_Map> bincolmap =
-      Teuchos::rcp( new Epetra_Map( *bindis_->ElementColMap() ) );
+   * discretization.
+   */
 
-  if ( beaminteraction_params_ptr_->GetRepartitionStrategy() == INPAR::BEAMINTERACTION::repstr_adaptive )
-  {
-    Teuchos::RCP<Epetra_Vector> dis_increment =
-        Teuchos::rcp( new Epetra_Vector( *GState().DofRowMap(), true ) );
-    int doflid[3];
-    for ( int i = 0; i < discret_ptr_->NumMyRowNodes(); ++i )
-    {
-      //get a pointer at i-th row node
-      DRT::Node* node = discret_ptr_->lRowNode(i);
-
-      /* Hermite Interpolation: Check whether node is a beam node which is NOT
-       * used for centerline interpolation if so, we simply skip it because
-       * it does not have position DoFs */
-      if ( BEAMINTERACTION::UTILS::IsBeamNode(*node) and not BEAMINTERACTION::UTILS::IsBeamCenterlineNode(*node) )
-        continue;
-
-      //get GIDs of this node's degrees of freedom
-      std::vector<int> dofnode = discret_ptr_->Dof(node);
-
-      for ( int dim = 0; dim < 3; ++dim )
-      {
-        // note: we are using the displacement vector of the problem discretization
-        // ( this one also does not get shifted, therefore we do not need to worry
-        // about a periodic boundary shift of a node between dis_at_last_redistr_ and the current disp)
-        doflid[dim] = dis_at_last_redistr_->Map().LID( dofnode[dim] );
-        (*dis_increment)[doflid[dim]] = (*GState().GetDisNp())[doflid[dim]] - (*dis_at_last_redistr_)[doflid[dim]];
-      }
-    }
-
-    // get maximal displacement increment since last redistribution over all procs
-    double extrema[2] = { 0.0, 0.0 };
-    dis_increment->MinValue( &extrema[0] );
-    dis_increment->MaxValue( &extrema[1] );
-    const double gmaxdisincr = std::max( -extrema[0], extrema[1] );
-
-    beam_redist = ( ( half_interaction_distance_ + gmaxdisincr ) > ( 0.5 * binstrategy_->CutoffRadius() ) );
-
-    // some verbose screen output
-    if ( GState().GetMyRank() == 0 )
-    {
-      IO::cout(IO::verbose) << " half interaction distance " << half_interaction_distance_ << IO::endl;
-      IO::cout(IO::verbose) << " gmaxdisincr " << gmaxdisincr << IO::endl;
-      IO::cout(IO::verbose) << " half cutoff " << 0.5 * binstrategy_->CutoffRadius() << IO::endl;
-    }
-  }
+  // repartition every time
+  bool beam_redist = CheckIfBeamDiscretRedistributionNeedsToBeDone();
 
   // submodel loop
   bool binning_redist = false;
@@ -831,9 +793,6 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepElement()
     binstrategy_->RemoveAllElesFromBins();
     binstrategy_->AssignElesToBins( ia_discret_, ia_state_ptr_->GetExtendedBinToRowEleMap() );
 
-    // update maps of state vectors and matrices
-    UpdateMaps();
-
     // current displacement state gets new reference state
     dis_at_last_redistr_ = Teuchos::rcp( new Epetra_Vector( *GState().GetDisN() ) );
 
@@ -846,8 +805,7 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepElement()
   }
   else if ( binning_redist )
   {
-    bindis_->CheckFilledGlobally();
-    bindis_->ExtendedGhosting( *bincolmap, true, false, true );
+    ExtendGhosting();
     binstrategy_->RemoveAllElesFromBins();
     binstrategy_->AssignElesToBins( ia_discret_, ia_state_ptr_->GetExtendedBinToRowEleMap() );
 
@@ -858,6 +816,9 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepElement()
       IO::cout(IO::verbose) << "\n************************************************\n" <<IO::endl;
     }
   }
+
+  // update maps of state vectors and matrices
+  UpdateMaps();
 
   // update coupling adapter, this should be done every time step as
   // interacting elements and therefore system matrix can change every time step
@@ -870,6 +831,57 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepElement()
   // submodel post update
   for ( sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter )
     (*sme_iter)->PostUpdateStepElement();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::MODELEVALUATOR::BeamInteraction::CheckIfBeamDiscretRedistributionNeedsToBeDone()
+{
+  if ( beaminteraction_params_ptr_->GetRepartitionStrategy() != INPAR::BEAMINTERACTION::repstr_adaptive )
+    return true;
+
+  Teuchos::RCP<Epetra_Vector> dis_increment =
+      Teuchos::rcp( new Epetra_Vector( *GState().DofRowMap(), true ) );
+  int doflid[3];
+  for ( int i = 0; i < discret_ptr_->NumMyRowNodes(); ++i )
+  {
+    //get a pointer at i-th row node
+    DRT::Node* node = discret_ptr_->lRowNode(i);
+
+    /* Hermite Interpolation: Check whether node is a beam node which is NOT
+     * used for centerline interpolation if so, we simply skip it because
+     * it does not have position DoFs */
+    if ( BEAMINTERACTION::UTILS::IsBeamNode(*node) and not BEAMINTERACTION::UTILS::IsBeamCenterlineNode(*node) )
+      continue;
+
+    //get GIDs of this node's degrees of freedom
+    std::vector<int> dofnode = discret_ptr_->Dof(node);
+
+    for ( int dim = 0; dim < 3; ++dim )
+    {
+      // note: we are using the displacement vector of the problem discretization
+      // ( this one also does not get shifted, therefore we do not need to worry
+      // about a periodic boundary shift of a node between dis_at_last_redistr_ and the current disp)
+      doflid[dim] = dis_at_last_redistr_->Map().LID( dofnode[dim] );
+      (*dis_increment)[doflid[dim]] = (*GState().GetDisNp())[doflid[dim]] - (*dis_at_last_redistr_)[doflid[dim]];
+    }
+  }
+
+  // get maximal displacement increment since last redistribution over all procs
+  double extrema[2] = { 0.0, 0.0 };
+  dis_increment->MinValue( &extrema[0] );
+  dis_increment->MaxValue( &extrema[1] );
+  double gmaxdisincr = std::max( -extrema[0], extrema[1] );
+
+  // some verbose screen output
+  if ( GState().GetMyRank() == 0 )
+  {
+    IO::cout(IO::debug) << " half interaction distance " << half_interaction_distance_ << IO::endl;
+    IO::cout(IO::debug) << " gmaxdisincr " << gmaxdisincr << IO::endl;
+    IO::cout(IO::debug) << " half cutoff " << 0.5 * binstrategy_->CutoffRadius() << IO::endl;
+  }
+
+  return ( ( half_interaction_distance_ + gmaxdisincr ) > ( 0.5 * binstrategy_->CutoffRadius() ) );
 }
 
 /*----------------------------------------------------------------------------*
@@ -973,7 +985,9 @@ void STR::MODELEVALUATOR::BeamInteraction::PostOutput()
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteraction::ResetStepState()
 {
-  // empty
+  Vector::iterator sme_iter;
+  for ( sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter )
+    (*sme_iter)->ResetStepState();
 }
 
 /*----------------------------------------------------------------------------*

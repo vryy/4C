@@ -153,7 +153,10 @@ namespace SUBMODELEVALUATOR {
         IO::DiscretizationReader & ia_writer,
         IO::DiscretizationReader & bin_writer) = 0;
 
-    //! \brief do stuff post read of model specific restart information
+    //! \brief do stuff pre reading of model specific restart information
+    virtual void PreReadRestart() = 0;
+
+    //! \brief do stuff post reading of model specific restart information
     virtual void PostReadRestart() = 0;
 
     /*! \brief Executed at the end of the NOX::Solver::Generic::Step() (f.k.a. Iterate()) method

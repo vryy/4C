@@ -46,7 +46,18 @@ private:
 
 struct Collision {
   bool stick;
+  bool stick_roll;
   double g_t[3];
+  double g_r[3];
+};
+
+
+//! @name Struct to store adhesion info
+
+struct Adhesion {
+  bool adhesion;
+  double surface_energy;
+  double normal_adhesion_force;
 };
 
 //@}
@@ -143,9 +154,19 @@ public:
   virtual std::map<int, Collision>& Get_history_particle(){ return  history_particle_; }
 
   /*!
+  \brief Return collision history of this ParticleNode with particles
+  */
+  virtual std::map<int, Adhesion>& Get_history_particle_adhesion(){ return  history_particle_adhesion_; }
+
+  /*!
   \brief Return collision history of this ParticleNode with walls
   */
   virtual std::map<int, Collision>& Get_history_wall(){ return  history_wall_; }
+
+  /*!
+  \brief Return adhesion history of this ParticleNode with walls
+  */
+  virtual std::map<int, Adhesion>& Get_history_wall_adhesion(){ return  history_wall_adhesion_; }
 
   /*!
   \brief Return flag for boundary particles
@@ -166,7 +187,9 @@ public:
 protected:
 
   std::map<int, Collision> history_particle_;
+  std::map<int, Adhesion> history_particle_adhesion_;
   std::map<int, Collision> history_wall_;
+  std::map<int, Adhesion> history_wall_adhesion_;
 
   bool is_bdry_particle_;
 

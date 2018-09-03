@@ -180,6 +180,14 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
         dserror("Your STRUCTSCAL_INITIALFIELD type is not supported!");
         break;
       }
+
+      // structure scatra does not require any Neumann inflow boundary conditions
+      scatratimeparams->set<std::string>("NEUMANNINFLOW","no");
+    }
+    else if (disname == "scatra1") //fluid_scatra discretisation
+    {
+      // fluid scatra does not require any convective heat transfer boundary conditions
+      scatratimeparams->set<std::string>("CONV_HEAT_TRANS","no");
     }
   }
 

@@ -19,6 +19,7 @@
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
@@ -37,6 +38,12 @@ void STR::MonitorDbc::Init(
 {
   issetup_ = false;
   isinit_ = false;
+
+  const Teuchos::ParameterList& sublist_IO_monitor_structure_dbc =
+      DRT::Problem::Instance()->IOParams().sublist("MONITOR STRUCTURE DBC");
+
+  of_precision_ = sublist_IO_monitor_structure_dbc.get<int> ("PRECISION_FILE");
+  os_precision_ = sublist_IO_monitor_structure_dbc.get<int> ("PRECISION_SCREEN");
 
   std::vector<const DRT::Condition*> tagged_conds;
   GetTaggedCondition( tagged_conds, "Dirichlet", "monitor_reaction", discret );
@@ -137,6 +144,11 @@ void STR::MonitorDbc::Setup()
 {
   ThrowIfNotInit();
 
+  const Teuchos::ParameterList& sublist_IO_monitor_structure_dbc =
+      DRT::Problem::Instance()->IOParams().sublist("MONITOR STRUCTURE DBC");
+
+  std::string filetype = sublist_IO_monitor_structure_dbc.get<std::string>("FILE_TYPE");
+
   if ( isempty_ )
   {
     issetup_ = true;
@@ -156,6 +168,32 @@ void STR::MonitorDbc::Setup()
           rcond.Id() );
 
     CreateReactionMaps( *discret_ptr_, rcond, ipair.first->second.data() );
+  }
+
+  // create directory ...
+  const std::string full_dirpath(
+      DRT::Problem::Instance()->OutputControlFile()->FileName() + "_monitor_dbc" );
+  const std::string filename_only_prefix(
+      DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix() );
+  IO::CreateDirectory( full_dirpath, Comm().MyPID() );
+  // ... create files paths ...
+  full_filepaths_ = CreateFilePaths( rconds, full_dirpath, filename_only_prefix, filetype );
+  // ... clear them and write header
+  ClearFilesAndWriteHeader( rconds, full_filepaths_,
+      DRT::INPUT::IntegralValue<int>(sublist_IO_monitor_structure_dbc, "WRITE_HEADER") );
+
+  // handle restart
+  if ( DRT::Problem::Instance()->Restart() )
+  {
+    const std::string full_restart_dirpath(
+        DRT::Problem::Instance()->OutputControlFile()->RestartName() + "_monitor_dbc" );
+    const std::string filename_restart_only_prefix( IO::ExtractFileName(
+        DRT::Problem::Instance()->OutputControlFile()->RestartName() ) );
+
+    std::vector<std::string> full_restart_filepaths = CreateFilePaths( rconds,
+        full_restart_dirpath, filename_restart_only_prefix, filetype );
+
+    ReadResultsPriorRestartStepAndWriteToFile(full_restart_filepaths, gstate_ptr_->GetStepN() );
   }
 
   issetup_ = true;
@@ -199,6 +237,61 @@ void STR::MonitorDbc::CreateReactionMaps(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::MonitorDbc::ReadResultsPriorRestartStepAndWriteToFile(
+    const std::vector<std::string> & full_restart_filepaths,
+    int restart_step) const
+{
+  if ( Comm().MyPID() != 0 )
+    return;
+
+  if ( full_restart_filepaths.size() != full_filepaths_.size() )
+    dserror(" Your monitoring of dbc's has changed after restart, this is not supported right now");
+
+  for ( unsigned int i = 0; i < full_restart_filepaths.size(); ++i )
+  {
+    std::stringstream section_prior_restart;
+    std::ifstream restart_file;
+    restart_file.open( full_restart_filepaths[i].c_str(), std::ios_base::out );
+
+    // check if file was found
+    if ( not restart_file )
+      dserror(" restart file for monitoring structure dbcs could not be found");
+
+    // loop over lines of restarted collection file
+    std::string line;
+    bool at_numerics = false;
+    while ( std::getline( restart_file, line ) )
+    {
+      if ( ( not at_numerics ) and ( line.find( "step", 0 ) != std::string::npos ) )
+      {
+        at_numerics = true;
+        continue;
+      }
+
+      // found line with timestep
+      if ( at_numerics )
+      {
+        // get time step of current line
+        int readtime = std::atof( line.substr ( 0, OF_WIDTH ).c_str() );
+
+        if ( readtime <= restart_step )
+          section_prior_restart << line << "\n";
+        else
+          break;
+      }
+    }
+
+    // write to file
+    std::ofstream of( full_filepaths_[i], std::ios_base::out|std::ios_base::app );
+    of << section_prior_restart.str();
+    of.close();
+
+    restart_file.close();
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::MonitorDbc::Execute( IO::DiscretizationWriter& writer )
 {
   ThrowIfNotInit();
@@ -210,15 +303,12 @@ void STR::MonitorDbc::Execute( IO::DiscretizationWriter& writer )
   std::vector<Teuchos::RCP<DRT::Condition> > rconds;
   discret_ptr_->GetCondition("ReactionForce",rconds);
 
-  static std::vector<std::string> full_filepaths =
-      CreateDirectoryAndFiles( rconds, writer, true );
-
   double area[2] = {0.0, 0.0};
   double& area_ref = area[0];
   double& area_curr = area[1];
   LINALG::Matrix<DIM,1> rforce_xyz(false);
 
-  auto filepath = full_filepaths.cbegin();
+  auto filepath = full_filepaths_.cbegin();
   for ( const Teuchos::RCP<DRT::Condition>& rcond_ptr : rconds )
   {
     std::fill( area, area+2, 0.0 );
@@ -247,7 +337,7 @@ void STR::MonitorDbc::WriteResultsToFile(
 
   std::ofstream of(full_filepath,std::ios_base::out|std::ios_base::app);
 
-  WriteResults( of, OF_WIDTH, OF_PRECISION, gstate_ptr_->GetStepN(),
+  WriteResults( of, OF_WIDTH, of_precision_, gstate_ptr_->GetStepN(),
       gstate_ptr_->GetTimeN(), rforce, area_ref, area_curr );
 
   of.close();
@@ -265,54 +355,59 @@ void STR::MonitorDbc::WriteResultsToScreen(
     return;
 
   IO::cout << "\n\n--- Monitor Dirichlet boundary condition " << rcond_ptr->Id() + 1 <<" \n";
-  WriteHeader( IO::cout.os(), OS_WIDTH );
-  WriteResults( IO::cout.os(), OS_WIDTH, OS_PRECISION, gstate_ptr_->GetStepN(),
+  WriteConditionHeader( IO::cout.os(), OS_WIDTH );
+  WriteColumnHeader( IO::cout.os(), OS_WIDTH );
+  WriteResults( IO::cout.os(), OS_WIDTH, os_precision_, gstate_ptr_->GetStepN(),
       gstate_ptr_->GetTimeN(), rforce, area_ref, area_curr );
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::vector<std::string> STR::MonitorDbc::CreateDirectoryAndFiles(
-    const std::vector<Teuchos::RCP<DRT::Condition> >& rconds,
-    IO::DiscretizationWriter& writer,
-    const bool write_header ) const
+std::vector<std::string> STR::MonitorDbc::CreateFilePaths(
+    const std::vector< Teuchos::RCP< DRT::Condition > > & rconds,
+    const std::string & full_dirpath,
+    const std::string & filename_only_prefix,
+    const std::string & file_type ) const
 {
   std::vector<std::string> full_filepaths( rconds.size() );
 
   if ( Comm().MyPID() != 0 )
     return full_filepaths;
 
-  const std::string& file_path = writer.Output()->FileName();
-
-  const std::string path( IO::ExtractPath( file_path ) );
-  const std::string dir_name( IO::RemoveRestartCountFromFileName(
-      IO::ExtractFileName( file_path ) ) + "_monitor_dbc" );
-
-  const std::string full_dirpath( path + dir_name );
-  IO::CreateDirectory( full_dirpath, Comm().MyPID() );
-
   size_t i = 0;
   for ( const Teuchos::RCP<DRT::Condition>& rcond : rconds )
-  {
-    std::string& full_filepath = full_filepaths[i++];
-    full_filepath = full_dirpath + "/" + std::to_string(rcond->Id()+1) +
-        "_monitor_dbc.data";
-
-    if ( write_header )
-    {
-      // clear old content
-      std::ofstream of( full_filepath, std::ios_base::out );
-      WriteHeader( of, OF_WIDTH, rcond.get() );
-      of.close();
-    }
-  }
+    full_filepaths[i++] = full_dirpath + "/" + filename_only_prefix + "_" +
+        std::to_string( rcond->Id() + 1 ) + "_monitor_dbc." + file_type;
 
   return full_filepaths;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MonitorDbc::WriteHeader(
+void STR::MonitorDbc::ClearFilesAndWriteHeader(
+    const std::vector<Teuchos::RCP<DRT::Condition> >& rconds,
+    std::vector<std::string> & full_filepaths,
+    bool write_condition_header)
+{
+  if ( Comm().MyPID() != 0 )
+    return;
+
+  size_t i = 0;
+  for ( const Teuchos::RCP<DRT::Condition>& rcond : rconds )
+  {
+    // clear old content
+    std::ofstream of( full_filepaths[i], std::ios_base::out );
+    if ( write_condition_header )
+      WriteConditionHeader( of, OF_WIDTH, rcond.get() );
+    WriteColumnHeader( of, OF_WIDTH );
+    of.close();
+    ++i;
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MonitorDbc::WriteConditionHeader(
     std::ostream& os,
     const int col_width,
     const DRT::Condition* cond ) const
@@ -322,6 +417,14 @@ void STR::MonitorDbc::WriteHeader(
     cond->Print( os );
     os << "\n\n";
   }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MonitorDbc::WriteColumnHeader(
+    std::ostream& os,
+    const int col_width) const
+{
 
   os << std::setw(col_width) << "step"
      << std::setw(col_width) << "time"

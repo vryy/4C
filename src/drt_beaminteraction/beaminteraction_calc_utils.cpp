@@ -50,6 +50,13 @@ bool IsBeamElement( DRT::Element const & element )
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+bool IsRigidSphereElement( DRT::Element const & element )
+{
+  return ( dynamic_cast<const DRT::ELEMENTS::Rigidsphere*>(&element) != NULL ) ? true : false;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 bool IsBeamNode( DRT::Node const & node )
 {
   bool beameles = false;
@@ -86,6 +93,29 @@ bool IsBeamCenterlineNode( DRT::Node const & node )
         beamclnode = true;
   }
   return beamclnode;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool IsRigidSphereNode( DRT::Node const & node )
+{
+  bool sphereele = false;
+  bool othereles = false;
+
+  //TODO: actually we would have to check all elements of all processors!!! Gather?
+  for ( int i = 0; i < node.NumElement(); ++i )
+  {
+    if ( IsRigidSphereElement(*(node.Elements())[i]) )
+      sphereele = true;
+    else
+      othereles = true;
+  }
+
+  if (sphereele and othereles)
+    dserror("Rigid sphere elements and other (solid, beam) elements sharing "
+        "the same node is currently not allowed in BACI!");
+
+  return sphereele;
 }
 
 /*----------------------------------------------------------------------------*
@@ -270,8 +300,8 @@ void SetFilamentBindingSpotPositions(
       if ( numbspot == 0 ) continue;
 
       // print number of binding spots for current filament
-      IO::cout(IO::verbose) << "\n---------------------------------------------------------------"<< IO::endl;
-      IO::cout(IO::verbose) << numbspot << " binding spots of type " << INPAR::BEAMINTERACTION::CrosslinkerType2String(linkertypes[linkertype_i])
+      IO::cout(IO::debug) << "\n---------------------------------------------------------------"<< IO::endl;
+      IO::cout(IO::debug) << numbspot << " binding spots of type " << INPAR::BEAMINTERACTION::CrosslinkerType2String(linkertypes[linkertype_i])
           << " on filament " << filiter << " (consists of " << static_cast< int >(sortedfilamenteles.size()) <<
           " elements)" << " with: " << IO::endl;
 
@@ -279,7 +309,7 @@ void SetFilamentBindingSpotPositions(
       SetBindingSpotsPositionsOnFilament( sortedfilamenteles, start, linkertypes[linkertype_i],
           numbspot, filamentbspotinterval, tol );
 
-      IO::cout(IO::verbose) << "---------------------------------------------------------------\n"<< IO::endl;
+      IO::cout(IO::debug) << "---------------------------------------------------------------\n"<< IO::endl;
     }
   }
 }
@@ -455,7 +485,7 @@ void SetBindingSpotsPositionsOnFilament(
       bspotposxi.push_back(xi);
 
       // print to screen
-      IO::cout(IO::verbose) << bspotcounter + 1 << ". binding spot: "<< "xi = " << xi << " on element "
+      IO::cout(IO::debug) << bspotcounter + 1 << ". binding spot: "<< "xi = " << xi << " on element "
           << se_iter << " (gid " << beamele->Id() << ")"<< IO::endl;
 
       ++bspotcounter;
@@ -1114,7 +1144,12 @@ long long CantorPairing( std::pair< int, int > const & pair )
  *----------------------------------------------------------------------------*/
 std::pair< int, int > CantorDePairing( long long z )
 {
-  long long w = std::floor( ( std::sqrt( 8.0 * z + 1.0 ) - 1.0 ) * 0.5 );
+#ifdef DEBUG
+  if ( 8.0 * z > std::numeric_limits< long long >::max() )
+    dserror(" Your cantor paired value exceeds limit of data type int.");
+#endif
+
+  long long w = std::floor( ( std::sqrt( 8.0 * z + 1.0 )   - 1.0 ) * 0.5 );
   long long t = ( w + 1 ) * w * 0.5;
 
   std::pair< int, int > pair;

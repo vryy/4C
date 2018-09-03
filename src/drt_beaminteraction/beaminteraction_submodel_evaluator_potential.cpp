@@ -527,7 +527,6 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::ResetStepState()
 {
   CheckInitSetup();
 
-  dserror("Not yet implemented");
 }
 
 /*----------------------------------------------------------------------------*
@@ -535,6 +534,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::ResetStepState()
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteRestart(
     IO::DiscretizationWriter & ia_writer,
     IO::DiscretizationWriter & bin_writer) const
+{
+  // empty
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::PreReadRestart()
 {
   // empty
 }

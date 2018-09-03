@@ -191,5 +191,5 @@ VtpWriter::WritePointDataVector(
   this->WriteDataArray(data, num_components_per_point, name);
 
   if ( myrank_ == 0 )
-    IO::cout(IO::verbose) << "\nVtpWriter: point data " << name << " written." << IO::endl;
+    IO::cout(IO::debug) << "\nVtpWriter: point data " << name << " written." << IO::endl;
 }

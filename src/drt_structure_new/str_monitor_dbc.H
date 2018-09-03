@@ -52,11 +52,9 @@ namespace TIMINT {
 
     /// constants for the FILE output
     const static unsigned OF_WIDTH = 24;
-    const static unsigned OF_PRECISION = 16;
 
     /// constants for the SCREEN output
     const static unsigned OS_WIDTH = 14;
-    const static unsigned OS_PRECISION = 5;
 
   public:
     MonitorDbc() = default;
@@ -95,20 +93,34 @@ namespace TIMINT {
         const DRT::Condition& rcond,
         Teuchos::RCP<Epetra_Map>* react_maps ) const;
 
+    void ReadResultsPriorRestartStepAndWriteToFile(
+        const std::vector<std::string> & full_restart_filepaths,
+        int restart_step) const;
+
     void GetArea(double area_ref[], const DRT::Condition* rcond ) const;
 
     double GetReactionForce( LINALG::Matrix<3,1>& rforce_xyz,
         const Teuchos::RCP<Epetra_Map>* react_maps ) const;
 
-    std::vector<std::string> CreateDirectoryAndFiles(
-        const std::vector<Teuchos::RCP<DRT::Condition> >& rconds,
-        IO::DiscretizationWriter& writer,
-        const bool write_header ) const;
+    std::vector<std::string> CreateFilePaths(
+        const std::vector< Teuchos::RCP< DRT::Condition > > & rconds,
+        const std::string & full_dirpath,
+        const std::string & filename_only_prefix,
+        const std::string & file_type) const;
 
-    void WriteHeader(
+    void ClearFilesAndWriteHeader(
+        const std::vector<Teuchos::RCP<DRT::Condition> >& rconds,
+        std::vector<std::string> & full_filepaths,
+        bool write_condition_header );
+
+    void WriteConditionHeader(
         std::ostream& os,
         const int col_width,
         const DRT::Condition* cond = NULL) const;
+
+    void WriteColumnHeader(
+        std::ostream& os,
+        const int col_width) const;
 
     void WriteResultsToFile(
         const std::string& full_filepath,
@@ -151,9 +163,14 @@ namespace TIMINT {
     STR::TIMINT::BaseDataGlobalState* gstate_ptr_ = NULL;
     STR::Dbc* dbc_ptr_ = NULL;
 
+    std::vector<std::string> full_filepaths_ = std::vector<std::string>();
+
     /// extract the dofs of the reaction forces which shall be monitored
     std::map< int, std::vector<Teuchos::RCP<Epetra_Map> > > react_maps_;
     DRT::Condition::GeometryType geo_type_ = DRT::Condition::NoGeom;
+
+    unsigned of_precision_ = -1;
+    unsigned os_precision_ = -1;
 
     bool isempty_ = true;
     bool isinit_ = false;

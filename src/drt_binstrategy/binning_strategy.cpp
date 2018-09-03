@@ -30,6 +30,7 @@
 #include "../drt_particle/particle_algorithm.H"
 
 #include "../drt_io/io.H"
+#include "../drt_io/io_pstream.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
@@ -1994,8 +1995,10 @@ void BINSTRATEGY::BinningStrategy::BuildPeriodicBC()
       {
         // output pbc bounds based on XAABB of bins
         if(myrank_ == 0)
-          std::cout << "INFO: PBC bounds for particles is computed automatically for direction " << dim
-                    << " based on XAABB of bins (left: " <<  XAABB_(dim,0) << " , right: " <<  XAABB_(dim,1) << " )" << std::endl;
+        {
+          IO::cout(IO::verbose) << "INFO: PBC bounds for particles is computed automatically for direction " << dim
+                    << " based on XAABB of bins (left: " <<  XAABB_(dim,0) << " , right: " <<  XAABB_(dim,1) << " )" << IO::endl;
+        }
 
         // set flag
         pbconoff_[dim] = true;

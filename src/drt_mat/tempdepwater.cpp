@@ -29,7 +29,7 @@ MAT::PAR::TempDepWater::TempDepWater(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
-  critpress_(matdata->GetDouble("CRITPRESS")),
+  critdens_(matdata->GetDouble("CRITDENS")),
   crittemp_(matdata->GetDouble("CRITTEMP")),
   shc_(matdata->GetDouble("SHC"))
 {
@@ -123,7 +123,7 @@ double MAT::TempDepWater::ComputeViscosity(const double temp) const
   const double B_mu =  578.919;
   const double C_mu = -137.546;
 
-  const double visc = exp(A_mu+(B_mu/(C_mu+temp)));
+  const double visc = exp(A_mu+(B_mu/(C_mu+temp)))*1e-3;
 
   return visc;
 }
@@ -155,7 +155,7 @@ double MAT::TempDepWater::ComputeDensity(const double temp) const
 
   const double oneminustbytc = 1.0 - (temp/CritTemp());
 
-  const double density = CritPress() + A_rho*std::pow(oneminustbytc,0.35) + B_rho*std::pow(oneminustbytc,(2.0/3.0)) + + C_rho*oneminustbytc + D_rho*std::pow(oneminustbytc,(4.0/3.0));
+  const double density = CritDens() + A_rho*std::pow(oneminustbytc,0.35) + B_rho*std::pow(oneminustbytc,(2.0/3.0)) + + C_rho*oneminustbytc + D_rho*std::pow(oneminustbytc,(4.0/3.0));
 
   return density;
 }

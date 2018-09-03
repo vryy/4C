@@ -241,6 +241,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--BINNING STRATEGY", *list);
   reader.ReadGidSection("--IO", *list);
   reader.ReadGidSection("--IO/EVERY ITERATION", *list);
+  reader.ReadGidSection("--IO/MONITOR STRUCTURE DBC", *list);
   reader.ReadGidSection("--IO/RUNTIME VTK OUTPUT", *list);
   reader.ReadGidSection("--IO/RUNTIME VTK OUTPUT/STRUCTURE", *list);
   reader.ReadGidSection("--IO/RUNTIME VTK OUTPUT/BEAMS", *list);

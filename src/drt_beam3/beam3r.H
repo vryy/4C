@@ -413,13 +413,39 @@ public:
       std::vector<double>& spatial_bending_moment_2_GPs,
       std::vector<double>& spatial_bending_moment_3_GPs) const
   {
-    spatial_axial_force_GPs = spatial_axial_force_GP_elastf_;
-    spatial_shear_force_2_GPs = spatial_shear_force_2_GP_elastf_;
-    spatial_shear_force_3_GPs = spatial_shear_force_3_GP_elastf_;
+    GetSpatialForcesAtAllGPs( spatial_axial_force_GPs, spatial_shear_force_2_GPs,
+        spatial_shear_force_3_GPs );
 
-    spatial_torque_GPs = spatial_torque_GP_elastm_;
-    spatial_bending_moment_2_GPs = spatial_bending_moment_2_GP_elastm_;
-    spatial_bending_moment_3_GPs = spatial_bending_moment_3_GP_elastm_;
+    GetSpatialMomentsAtAllGPs( spatial_torque_GPs, spatial_bending_moment_2_GPs,
+        spatial_bending_moment_3_GPs );
+  }
+
+  /** \brief Get spatial cross-section stress resultants
+   *
+   *  \author grill
+   *  \date 04/17 */
+  virtual inline void GetSpatialForcesAtAllGPs(
+      std::vector<double>& spatial_axial_force_GPs,
+      std::vector<double>& spatial_shear_force_2_GPs,
+      std::vector<double>& spatial_shear_force_3_GPs) const
+  {
+    spatial_axial_force_GPs = spatial_x_force_GP_elastf_;
+    spatial_shear_force_2_GPs = spatial_y_force_2_GP_elastf_;
+    spatial_shear_force_3_GPs = spatial_z_force_3_GP_elastf_;
+  }
+
+  /** \brief Get spatial cross-section stress resultants
+   *
+   *  \author grill
+   *  \date 04/17 */
+  virtual inline void GetSpatialMomentsAtAllGPs(
+      std::vector<double>& spatial_torque_GPs,
+      std::vector<double>& spatial_bending_moment_2_GPs,
+      std::vector<double>& spatial_bending_moment_3_GPs) const
+  {
+    spatial_torque_GPs = spatial_x_moment_GP_elastm_;
+    spatial_bending_moment_2_GPs = spatial_y_moment_2_GP_elastm_;
+    spatial_bending_moment_3_GPs = spatial_z_moment_3_GP_elastm_;
   }
 
   /** \brief Get material cross-section stress resultants
@@ -724,6 +750,15 @@ private:
       const std::vector<LINALG::TMatrix<T,4,1> >&             Qnode,
       Epetra_SerialDenseMatrix*                               stiffmatrix,
       LINALG::TMatrix<T, 3*vpernode*nnodecl+3*nnodetriad, 1>& internal_force);
+
+//  /** \brief compute spatial (elastic) force at xi
+//   *
+//   *  \author grill
+//   *  \date 06/18 */
+//  template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
+//  void CalcSpatialForceAtXi(
+//      std::vector<double> & disp,
+//      GEO::MESHFREE::BoundingBox const & pbb);
 
   /** \brief calculate inertia force and mass matrix
    *
@@ -1217,13 +1252,13 @@ private:
   std::vector<double> material_bending_moment_3_GP_elastm_;
 
   //! spatial stress resultant values at GPs
-  std::vector<double> spatial_axial_force_GP_elastf_;
-  std::vector<double> spatial_shear_force_2_GP_elastf_;
-  std::vector<double> spatial_shear_force_3_GP_elastf_;
+  std::vector<double> spatial_x_force_GP_elastf_;
+  std::vector<double> spatial_y_force_2_GP_elastf_;
+  std::vector<double> spatial_z_force_3_GP_elastf_;
 
-  std::vector<double> spatial_torque_GP_elastm_;
-  std::vector<double> spatial_bending_moment_2_GP_elastm_;
-  std::vector<double> spatial_bending_moment_3_GP_elastm_;
+  std::vector<double> spatial_x_moment_GP_elastm_;
+  std::vector<double> spatial_y_moment_2_GP_elastm_;
+  std::vector<double> spatial_z_moment_3_GP_elastm_;
 
   //! @}
 };

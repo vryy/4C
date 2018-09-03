@@ -36,13 +36,14 @@ MAXTIME                         8
 GRAVITY_ACCELERATION            0.0 0.0 -9.81e-3
 PARTICLE_INTERACTION            NormalAndTangentialContact_DEM
 NORMAL_CONTACT_LAW              LinearSpringDamp
+ROLLING_CONTACT_LAW             Viscous
 MIN_RADIUS                      0.01
 MAX_RADIUS                      0.01
 REL_PENETRATION                 0.055
 REL_PENETRATION_WALL            0.055
 MAX_VELOCITY                    3.1e-2
 TENSION_CUTOFF                  Yes
-ROLLING_RESISTANCE              50
+ROLL_FRICT_COEFF                50
 FRICT_COEFF                     1.0
 FRICT_COEFF_WALL                1.0
 COEFF_RESTITUTION               0.8

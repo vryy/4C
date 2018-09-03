@@ -96,6 +96,9 @@ namespace SUBMODELEVALUATOR {
         IO::DiscretizationWriter & bin_writer) const;
 
     //! derived
+    virtual void PreReadRestart() override;
+
+    //! derived
     virtual void ReadRestart(
         IO::DiscretizationReader & ia_reader,
         IO::DiscretizationReader & bin_reader);

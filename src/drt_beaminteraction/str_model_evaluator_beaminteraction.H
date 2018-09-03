@@ -206,6 +206,9 @@ namespace MODELEVALUATOR{
     //!@name routines that manage to discretizations with distinct parallel distribution
     //! @{
 
+    /// check if interaction discretization needs to be redistributed completely
+    bool CheckIfBeamDiscretRedistributionNeedsToBeDone();
+
     /// update coupling adapter and matrix transformation object with new maps
     void UpdateCouplingAdapterAndMatrixTransformation();
 

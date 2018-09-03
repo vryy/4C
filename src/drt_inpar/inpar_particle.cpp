@@ -132,6 +132,21 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                &particledyn);
 
    setStringToIntegralParameter<int>(
+                               "ROLLING_CONTACT_LAW","None",
+                               "rolling contact law governing rolling contact of particles",
+                               tuple<std::string>(
+                                 "None",
+                                 "Viscous",
+                                 "Constant"
+                                 ),
+                               tuple<int>(
+                                 INPAR::PARTICLE::rolling_none,
+                                 INPAR::PARTICLE::rolling_viscous,
+                                 INPAR::PARTICLE::rolling_constant
+                                 ),
+                               &particledyn);
+
+   setStringToIntegralParameter<int>(
                                "WEIGHT_FUNCTION","CubicBspline",
                                "weight function for SPH interaction dynamics",
                                tuple<std::string>(
@@ -254,6 +269,8 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    DoubleParameter("COEFF_RESTITUTION_WALL",-1.0,"coefficient of restitution (wall)",&particledyn);
    DoubleParameter("FRICT_COEFF_WALL",-1.0,"friction coefficient for contact particle-wall",&particledyn);
    DoubleParameter("FRICT_COEFF",-1.0,"dynamic friction coefficient for contact particle-particle",&particledyn);
+   DoubleParameter("ROLL_FRICT_COEFF",-1.0,"dynamic rolling friction coefficient for contact particle-particle",&particledyn);
+   DoubleParameter("ROLL_FRICT_COEFF_WALL",-1.0,"dynamic rolling friction coefficient for contact particle-wall",&particledyn);
    DoubleParameter("NORMAL_STIFF",-1.0,"stiffness for normal contact force",&particledyn);
    DoubleParameter("NORMAL_STIFF_WALL",-1.0,"stiffness for normal contact force (wall)",&particledyn);
    DoubleParameter("TANG_STIFF",-1.0,"stiffness for tangential contact force",&particledyn);
@@ -266,7 +283,6 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    DoubleParameter("NUE_WALL",-1.0,"Possion's ratio of wall",&particledyn);
    BoolParameter("TENSION_CUTOFF","no","switch on/off tension cutoff",&particledyn);
    BoolParameter("MOVING_WALLS","no","switch on/off moving walls",&particledyn);
-   DoubleParameter("ROLLING_RESISTANCE",-1.0,"Scaling factor for rolling resistance (-1.0: rolling resistance off)",&particledyn);
    DoubleParameter("RANDOM_AMPLITUDE",0.0,"random value for initial position",&particledyn);
 
    setStringToIntegralParameter<int>(
@@ -281,6 +297,21 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                  INPAR::PARTICLE::radiusdistribution_none,
                                  INPAR::PARTICLE::radiusdistribution_lognormal,
                                  INPAR::PARTICLE::radiusdistribution_normal
+                                 ),
+                               &particledyn);
+
+   setStringToIntegralParameter<int>(
+                               "ADHESION_SURFACE_ENERGY_DISTRIBUTION","None",
+                               "random distribution of adhesion surface energy",
+                               tuple<std::string>(
+                                 "None",
+                                 "LogNormal",
+                                 "Normal"
+                                 ),
+                               tuple<int>(
+                                 INPAR::PARTICLE::adhesionsurfaceenergydistribution_none,
+                                 INPAR::PARTICLE::adhesionsurfaceenergydistribution_lognormal,
+                                 INPAR::PARTICLE::adhesionsurfaceenergydistribution_normal
                                  ),
                                &particledyn);
 
@@ -374,7 +405,19 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    DoubleParameter("ADHESION_MAX_FORCE",-1.0,"maximum adhesion force",&particledyn);
    DoubleParameter("ADHESION_MAX_DISP",-1.0,"maximum displacement from adhesion equilibrium",&particledyn);
    DoubleParameter("ADHESION_SURFACE_ENERGY",-1.0,"surface energy density for the calculation of the pull-out force",&particledyn);
+   DoubleParameter("ADHESION_SURFACE_ENERGY_FACTOR",1.0,"factor to calculate minimum surface energy out of surface energy",&particledyn);
+   DoubleParameter("ADHESION_SURFACE_ENERGY_WALL",-1.0,"surface energy density between particle and wall",&particledyn);
+   DoubleParameter("ADHESION_SURFACE_ENERGY_WALL_FACTOR",-1.0,"factor to calculate minimum surface energy out of surface energy of wall",&particledyn);
+   DoubleParameter("ADHESION_SURFACE_ENERGY_CUTOFF_FACTOR",-1.0,"surface energy distribution limited by multiple of standard deviation",&particledyn);
+   DoubleParameter("ADHESION_SURFACE_ENERGY_DISTRIBUTION_SIGMA",-1.0,"standard deviation of adhesion surface energy distribution",&particledyn);
+   DoubleParameter("ADHESION_NORMAL_FORCE_PULLOUT_MAX",-1.0,"maximum pullout force",&particledyn);
+   DoubleParameter("ADHESION_NORMAL_FORCE_PULLOUT_MIN",-1.0,"minimum pullout force",&particledyn);
+   DoubleParameter("ADHESION_MAX_CONTACT_PRESSURE",0.0,"adhesion maximum contact pressure particle particle contact",&particledyn);
+   DoubleParameter("ADHESION_MAX_CONTACT_PRESSURE_WALL",0.0,"adhesion maximum contact pressure particle wall contact",&particledyn);
+   BoolParameter("ADHESION_VARIANT_MAX_CONTACT_FORCE","no","take maximum contact force instead of pressure for adhesion ramp function",&particledyn);
+   IntParameter("ADHESION_VDW_CURVE_SHIFT",0,"shifts van-der-Waals-curve to g = 0",&particledyn);
    IntParameter("ADHESION_MAXWALLELEID",-1,"Maximal wall element ID to which adhesion forces are applied (-1: apply to all wall elements)",&particledyn);
+   IntParameter("ADHESION_MINWALLELEID",-1,"Minimal wall element ID to which adhesion forces are applied (-1: apply to all wall elements)",&particledyn);
 }
 
 

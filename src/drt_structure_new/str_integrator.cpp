@@ -348,6 +348,9 @@ void STR::Integrator::MonitorDbc( IO::DiscretizationWriter& writer ) const
 void STR::Integrator::RuntimeOutputStepState() const
 {
   CheckInitSetup();
+
+  IO::DiscretizationWriter& iowriter = *(io_ptr_->GetMutableOutputPtr());
+  MonitorDbc(iowriter);
   ModelEval().RuntimeOutputStepState();
 }
 

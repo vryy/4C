@@ -30,7 +30,8 @@ DRT::ELEMENTS::BeamRuntimeVtuOutputParams::BeamRuntimeVtuOutputParams()
       write_material_crosssection_stresses_gausspoints_(false),
       write_spatial_crosssection_stresses_gausspoints_(false),
       write_filament_condition_(false),
-      write_orientation_parameter_(false)
+      write_orientation_parameter_(false),
+      write_rve_crosssection_forces_(false)
 {
   // empty constructor
 }
@@ -80,6 +81,10 @@ void DRT::ELEMENTS::BeamRuntimeVtuOutputParams::Init(
   write_orientation_parameter_ =
       (bool) DRT::INPUT::IntegralValue<int>(
           IO_vtk_structure_beams_paramslist, "ORIENTATION_PARAMETER");
+
+  write_rve_crosssection_forces_ =
+      (bool) DRT::INPUT::IntegralValue<int>(
+          IO_vtk_structure_beams_paramslist, "RVE_CROSSSECTION_FORCES");
 
 
   isinit_ = true;
